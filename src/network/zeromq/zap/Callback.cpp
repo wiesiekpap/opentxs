@@ -26,7 +26,7 @@ template class opentxs::Pimpl<opentxs::network::zeromq::zap::Callback>;
 namespace opentxs::network::zeromq::zap
 {
 auto Callback::Factory(
-    const std::string& domain,
+    const UnallocatedCString& domain,
     const ReceiveCallback& callback) -> OTZMQZAPCallback
 {
     auto output = OTZMQZAPCallback(new implementation::Callback());
@@ -67,7 +67,7 @@ auto Callback::default_callback(const zap::Request& in) const -> Reply
 auto Callback::get_domain(const ReadView domain) const
     -> const Callback::Lambda&
 {
-    const auto key = std::string{domain};
+    const auto key = UnallocatedCString{domain};
     auto lock = Lock{domain_lock_};
 
     try {
@@ -95,7 +95,7 @@ auto Callback::Process(const zap::Request& request) const -> Reply
 }
 
 auto Callback::SetDomain(
-    const std::string& domain,
+    const UnallocatedCString& domain,
     const ReceiveCallback& callback) const -> bool
 {
     auto lock = Lock{domain_lock_};

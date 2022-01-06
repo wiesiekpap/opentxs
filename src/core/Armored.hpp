@@ -8,10 +8,10 @@
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
-#include <string>
 
 #include "String.hpp"
 #include "opentxs/core/Armored.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -41,16 +41,16 @@ public:
         -> bool override;
     auto WriteArmoredString(
         opentxs::String& strOutput,
-        const std::string str_type,
+        const UnallocatedCString str_type,
         bool bEscaped = false) const -> bool override;
     auto LoadFrom_ifstream(std::ifstream& fin) -> bool override;
-    auto LoadFromExactPath(const std::string& filename) -> bool override;
+    auto LoadFromExactPath(const UnallocatedCString& filename) -> bool override;
     auto LoadFromString(
         opentxs::String& theStr,
         bool bEscaped = false,
-        const std::string str_override = "-----BEGIN") -> bool override;
+        const UnallocatedCString str_override = "-----BEGIN") -> bool override;
     auto SaveTo_ofstream(std::ofstream& fout) -> bool override;
-    auto SaveToExactPath(const std::string& filename) -> bool override;
+    auto SaveToExactPath(const UnallocatedCString& filename) -> bool override;
     auto SetData(const opentxs::Data& theData, bool bLineBreaks = true)
         -> bool override;
     auto SetString(const opentxs::String& theData, bool bLineBreaks = true)
@@ -69,9 +69,11 @@ private:
     static std::unique_ptr<OTDB::OTPacker> s_pPacker;
 
     auto clone() const -> Armored* override;
-    auto compress_string(const std::string& str, std::int32_t compressionlevel)
-        const -> std::string;
-    auto decompress_string(const std::string& str) const -> std::string;
+    auto compress_string(
+        const UnallocatedCString& str,
+        std::int32_t compressionlevel) const -> UnallocatedCString;
+    auto decompress_string(const UnallocatedCString& str) const
+        -> UnallocatedCString;
 
     explicit Armored(const opentxs::Data& theValue);
     explicit Armored(const opentxs::String& strValue);

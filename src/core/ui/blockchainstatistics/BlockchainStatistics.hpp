@@ -8,14 +8,9 @@
 #include <atomic>
 #include <functional>
 #include <iosfwd>
-#include <list>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "core/Worker.hpp"
@@ -32,6 +27,7 @@
 #include "opentxs/core/ui/Blockchains.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"

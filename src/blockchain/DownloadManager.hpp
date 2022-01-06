@@ -7,18 +7,16 @@
 
 #include <algorithm>
 #include <atomic>
-#include <deque>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <vector>
 
 #include "blockchain/DownloadTask.hpp"
 #include "core/Worker.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/Work.hpp"
 
@@ -33,7 +31,7 @@ class Manager
 {
 public:
     using Position = block::Position;
-    using Positions = std::vector<Position>;
+    using Positions = UnallocatedVector<Position>;
     using BatchType = Batch<DownloadType, FinishedType, ExtraData>;
     using Finished = typename BatchType::TaskType::Finished;
     using PreviousData = std::pair<Position, Finished>;
@@ -251,7 +249,7 @@ protected:
     Manager(
         const Position& position,
         Finished&& previous,
-        const std::string& log,
+        const UnallocatedCString& log,
         const std::size_t max,
         const std::size_t min) noexcept
         : log_(log)
@@ -282,10 +280,10 @@ private:
     };
 
     using TaskPtr = std::shared_ptr<TaskType>;
-    using Buffer = std::deque<TaskPtr>;
+    using Buffer = UnallocatedDeque<TaskPtr>;
     using BatchID = typename BatchType::ID;
 
-    const std::string log_;
+    const UnallocatedCString log_;
     const std::size_t max_queue_;
     mutable std::mutex dm_lock_;
     Finished dm_previous_;

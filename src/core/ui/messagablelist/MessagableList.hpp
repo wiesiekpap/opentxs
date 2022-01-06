@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <list>
-#include <map>
 #include <utility>
 
 #include "1_Internal.hpp"
@@ -19,6 +17,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/ui/MessagableList.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"

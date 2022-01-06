@@ -17,9 +17,9 @@
 
 namespace opentxs::storage
 {
-const std::string Node::BLANK_HASH = "blankblankblankblankblank";
+const UnallocatedCString Node::BLANK_HASH = "blankblankblankblankblank";
 
-Node::Node(const Driver& storage, const std::string& key)
+Node::Node(const Driver& storage, const UnallocatedCString& key)
     : driver_(storage)
     , version_(0)
     , original_version_(0)
@@ -36,7 +36,7 @@ void Node::blank(const VersionNumber version)
     root_ = BLANK_HASH;
 }
 
-auto Node::check_hash(const std::string& hash) const -> bool
+auto Node::check_hash(const UnallocatedCString& hash) const -> bool
 {
     const bool empty = hash.empty();
     const bool blank = (Node::BLANK_HASH == hash);
@@ -44,14 +44,14 @@ auto Node::check_hash(const std::string& hash) const -> bool
     return !(empty || blank);
 }
 
-auto Node::delete_item(const std::string& id) -> bool
+auto Node::delete_item(const UnallocatedCString& id) -> bool
 {
     auto lock = Lock{write_lock_};
 
     return delete_item(lock, id);
 }
 
-auto Node::delete_item(const Lock& lock, const std::string& id) -> bool
+auto Node::delete_item(const Lock& lock, const UnallocatedCString& id) -> bool
 {
     OT_ASSERT(verify_write_lock(lock))
 
@@ -77,9 +77,9 @@ auto Node::extract_revision(const proto::Seed& input) const -> std::uint64_t
     return input.index();
 }
 
-auto Node::get_alias(const std::string& id) const -> std::string
+auto Node::get_alias(const UnallocatedCString& id) const -> UnallocatedCString
 {
-    std::string output;
+    UnallocatedCString output;
     std::lock_guard<std::mutex> lock(write_lock_);
     const auto& it = item_map_.find(id);
 
@@ -103,9 +103,9 @@ auto Node::List() const -> ObjectList
 }
 
 auto Node::load_raw(
-    const std::string& id,
-    std::string& output,
-    std::string& alias,
+    const UnallocatedCString& id,
+    UnallocatedCString& output,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     std::lock_guard<std::mutex> lock(write_lock_);
@@ -127,7 +127,8 @@ auto Node::load_raw(
     return driver_.Load(std::get<0>(it->second), checking, output);
 }
 
-auto Node::migrate(const std::string& hash, const Driver& to) const -> bool
+auto Node::migrate(const UnallocatedCString& hash, const Driver& to) const
+    -> bool
 {
     if (false == check_hash(hash)) { return true; }
 
@@ -136,7 +137,7 @@ auto Node::migrate(const std::string& hash, const Driver& to) const -> bool
 
 auto Node::Migrate(const Driver& to) const -> bool
 {
-    if (std::string(BLANK_HASH) == root_) {
+    if (UnallocatedCString(BLANK_HASH) == root_) {
         if (0 < item_map_.size()) {
             LogError()(OT_PRETTY_CLASS())(
                 "Items present in object with blank root hash.")
@@ -159,7 +160,7 @@ auto Node::Migrate(const Driver& to) const -> bool
     return output;
 }
 
-auto Node::normalize_hash(const std::string& hash) -> std::string
+auto Node::normalize_hash(const UnallocatedCString& hash) -> UnallocatedCString
 {
     if (hash.empty()) { return BLANK_HASH; }
 
@@ -180,7 +181,7 @@ auto Node::normalize_hash(const std::string& hash) -> std::string
     return hash;
 }
 
-auto Node::Root() const -> std::string
+auto Node::Root() const -> UnallocatedCString
 {
     Lock lock_(write_lock_);
 
@@ -189,7 +190,7 @@ auto Node::Root() const -> std::string
 
 void Node::serialize_index(
     const VersionNumber version,
-    const std::string& id,
+    const UnallocatedCString& id,
     const Metadata& metadata,
     proto::StorageItemHash& output,
     const proto::StorageHashType type) const
@@ -198,7 +199,9 @@ void Node::serialize_index(
     output.set_alias(std::get<1>(metadata));
 }
 
-auto Node::set_alias(const std::string& id, const std::string& value) -> bool
+auto Node::set_alias(
+    const UnallocatedCString& id,
+    const UnallocatedCString& value) -> bool
 {
     auto lock = Lock{write_lock_};
 
@@ -224,8 +227,8 @@ auto Node::set_alias(const std::string& id, const std::string& value) -> bool
 
 void Node::set_hash(
     const VersionNumber version,
-    const std::string& id,
-    const std::string& hash,
+    const UnallocatedCString& id,
+    const UnallocatedCString& hash,
     proto::StorageItemHash& output,
     const proto::StorageHashType type) const
 {
@@ -251,9 +254,9 @@ void Node::set_hash(
 }
 
 auto Node::store_raw(
-    const std::string& data,
-    const std::string& id,
-    const std::string& alias) -> bool
+    const UnallocatedCString& data,
+    const UnallocatedCString& id,
+    const UnallocatedCString& alias) -> bool
 {
     auto lock = Lock{write_lock_};
 
@@ -262,9 +265,9 @@ auto Node::store_raw(
 
 auto Node::store_raw(
     const Lock& lock,
-    const std::string& data,
-    const std::string& id,
-    const std::string& alias) -> bool
+    const UnallocatedCString& data,
+    const UnallocatedCString& id,
+    const UnallocatedCString& alias) -> bool
 {
     OT_ASSERT(verify_write_lock(lock))
 

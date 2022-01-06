@@ -8,15 +8,13 @@
 #include <irrxml/irrXML.hpp>
 #include <chrono>
 #include <cstdint>
-#include <list>
-#include <map>
 #include <memory>
-#include <string>
 
 #include "internal/otx/common/Contract.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -49,14 +47,17 @@ class OTMarket;
 class PasswordPrompt;
 
 /** mapOfCronItems:      Mapped (uniquely) to transaction number. */
-using mapOfCronItems = std::map<std::int64_t, std::shared_ptr<OTCronItem>>;
+using mapOfCronItems =
+    UnallocatedMap<std::int64_t, std::shared_ptr<OTCronItem>>;
 /** multimapOfCronItems: Mapped to date the item was added to Cron. */
-using multimapOfCronItems = std::multimap<Time, std::shared_ptr<OTCronItem>>;
+using multimapOfCronItems =
+    UnallocatedMultimap<Time, std::shared_ptr<OTCronItem>>;
 /** Mapped (uniquely) to market ID. */
-using mapOfMarkets = std::map<std::string, std::shared_ptr<OTMarket>>;
+using mapOfMarkets =
+    UnallocatedMap<UnallocatedCString, std::shared_ptr<OTMarket>>;
 /** Cron stores a bunch of these on this list, which the server refreshes from
  * time to time. */
-using listOfLongNumbers = std::list<std::int64_t>;
+using listOfLongNumbers = UnallocatedList<std::int64_t>;
 
 /** OTCron has a list of OTCronItems. (Really subclasses of that such as OTTrade
  * and OTAgreement.) */

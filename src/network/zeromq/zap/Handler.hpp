@@ -5,16 +5,14 @@
 
 #pragma once
 
-#include <map>
 #include <ostream>
-#include <string>
-#include <vector>
 
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Receiver.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/zap/Handler.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -40,7 +38,7 @@ class Handler final
       zeromq::curve::implementation::Server
 {
 public:
-    auto Start(const std::string& endpoint) const noexcept -> bool final
+    auto Start(const UnallocatedCString& endpoint) const noexcept -> bool final
     {
         return false;
     }

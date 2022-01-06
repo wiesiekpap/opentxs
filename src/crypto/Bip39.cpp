@@ -18,7 +18,6 @@
 #include <stdexcept>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 #include "2_Factory.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -34,6 +33,7 @@
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Allocator.hpp"
@@ -59,7 +59,7 @@ const std::size_t Bip39::DictionarySize{2048};
 const std::size_t Bip39::EntropyBitDivisor{32};
 const std::size_t Bip39::HmacOutputSizeBytes{64};
 const std::size_t Bip39::HmacIterationCount{2048};
-const std::string Bip39::PassphrasePrefix{"mnemonic"};
+const UnallocatedCString Bip39::PassphrasePrefix{"mnemonic"};
 const std::size_t Bip39::ValidMnemonicWordMultiple{3};
 
 Bip39::Bip39(const api::Crypto& crypto) noexcept
@@ -184,7 +184,7 @@ auto Bip39::entropy_to_words(
         return false;
     }
 
-    auto output = std::string{};
+    auto output = UnallocatedCString{};
     auto nIndex = int{-1};
 
     for (const auto& word : mnemonicWords) {
@@ -278,9 +278,9 @@ auto Bip39::SeedToWords(const Secret& seed, Secret& words, const Language lang)
 }
 
 auto Bip39::tokenize(const Language lang, const ReadView words) noexcept(false)
-    -> std::vector<std::size_t>
+    -> UnallocatedVector<std::size_t>
 {
-    auto s = std::vector<std::string>{};
+    auto s = UnallocatedVector<UnallocatedCString>{};
     boost::split(
         s, words, [](char c) { return c == ' '; }, boost::token_compress_on);
     const auto& d = [&] {
@@ -292,7 +292,7 @@ auto Bip39::tokenize(const Language lang, const ReadView words) noexcept(false)
             throw std::runtime_error{"Unsupported language"};
         }
     }();
-    auto output = std::vector<std::size_t>{};
+    auto output = UnallocatedVector<std::size_t>{};
     output.reserve(s.size());
     const auto first = d.begin();
 
@@ -310,9 +310,11 @@ auto Bip39::words_to_root_bip39(
     Secret& bip32RootNode,
     const Secret& passphrase) const noexcept -> bool
 {
-    auto salt = std::string{PassphrasePrefix};
+    auto salt = UnallocatedCString{PassphrasePrefix};
 
-    if (passphrase.size() > 0) { salt += std::string{passphrase.Bytes()}; }
+    if (passphrase.size() > 0) {
+        salt += UnallocatedCString{passphrase.Bytes()};
+    }
 
     auto dataOutput = opentxs::Data::Factory();  // TODO should be secret
     const auto dataSalt = opentxs::Data::Factory(salt.data(), salt.size());
@@ -424,7 +426,7 @@ auto Bip39::words_to_root_pkt(
             return false;
         }
 
-        static const auto salt = std::string{"pktwallet seed 0"};
+        static const auto salt = UnallocatedCString{"pktwallet seed 0"};
         static constexpr auto keyBytes = std::size_t{19u};
         const auto key = [&] {
             const auto sKey = api.Crypto().Symmetric().Key(

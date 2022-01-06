@@ -7,9 +7,7 @@
 
 #include <atomic>
 #include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "core/ui/accountactivity/BalanceItem.hpp"
@@ -20,6 +18,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -67,15 +66,16 @@ public:
         return effective_amount();
     }
     auto Confirmations() const noexcept -> int final { return confirmations_; }
-    auto Contacts() const noexcept -> std::vector<std::string> final;
-    auto DisplayAmount() const noexcept -> std::string final;
-    auto Memo() const noexcept -> std::string final;
+    auto Contacts() const noexcept
+        -> UnallocatedVector<UnallocatedCString> final;
+    auto DisplayAmount() const noexcept -> UnallocatedCString final;
+    auto Memo() const noexcept -> UnallocatedCString final;
     auto Type() const noexcept -> StorageBox final
     {
         return StorageBox::BLOCKCHAIN;
     }
-    auto UUID() const noexcept -> std::string final;
-    auto Workflow() const noexcept -> std::string final { return {}; }
+    auto UUID() const noexcept -> UnallocatedCString final;
+    auto Workflow() const noexcept -> UnallocatedCString final { return {}; }
 
     BlockchainBalanceItem(
         const AccountActivityInternalInterface& parent,
@@ -88,15 +88,15 @@ public:
         const blockchain::Type chain,
         const OTData txid,
         const opentxs::Amount amount,
-        const std::string memo,
-        const std::string text) noexcept;
+        const UnallocatedCString memo,
+        const UnallocatedCString text) noexcept;
     ~BlockchainBalanceItem() final = default;
 
 private:
     const blockchain::Type chain_;
     const OTData txid_;
     opentxs::Amount amount_;
-    std::string memo_;
+    UnallocatedCString memo_;
     std::atomic_int confirmations_;
 
     auto effective_amount() const noexcept -> opentxs::Amount final

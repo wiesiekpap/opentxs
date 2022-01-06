@@ -6,10 +6,10 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 
 #include "internal/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Config.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -53,7 +53,7 @@ private:
 
     auto GetSetAll() const -> bool;
     auto GetSetValue(
-        const std::string& strKeyName,
+        const UnallocatedCString& strKeyName,
         const std::int32_t nDefaultValue,
         std::int32_t& out_nValue) const -> bool;
 

@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 
 #include "internal/util/storage/drivers/Factory.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Plugin.hpp"
 
 namespace opentxs::factory
@@ -17,7 +18,7 @@ auto StorageFSArchive(
     const api::session::Storage& parent,
     const storage::Config& config,
     const Flag& bucket,
-    const std::string& folder,
+    const UnallocatedCString& folder,
     crypto::key::Symmetric& key) noexcept -> std::unique_ptr<storage::Plugin>
 {
     return {};

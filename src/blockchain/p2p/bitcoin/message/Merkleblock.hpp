@@ -7,8 +7,6 @@
 
 #include <cstddef>
 #include <memory>
-#include <set>
-#include <vector>
 
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
@@ -17,6 +15,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -55,11 +54,11 @@ public:
         return Data::Factory(block_header_);
     }
     auto getTxnCount() const noexcept -> TxnCount { return txn_count_; }
-    auto getHashes() const noexcept -> const std::vector<OTData>&
+    auto getHashes() const noexcept -> const UnallocatedVector<OTData>&
     {
         return hashes_;
     }
-    auto getFlags() const noexcept -> const std::vector<std::byte>&
+    auto getFlags() const noexcept -> const UnallocatedVector<std::byte>&
     {
         return flags_;
     }
@@ -69,23 +68,23 @@ public:
         const blockchain::Type network,
         const Data& block_header,
         const TxnCount txn_count,
-        const std::vector<OTData>& hashes,
-        const std::vector<std::byte>& flags) noexcept;
+        const UnallocatedVector<OTData>& hashes,
+        const UnallocatedVector<std::byte>& flags) noexcept;
     Merkleblock(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const Data& block_header,
         const TxnCount txn_count,
-        const std::vector<OTData>& hashes,
-        const std::vector<std::byte>& flags) noexcept(false);
+        const UnallocatedVector<OTData>& hashes,
+        const UnallocatedVector<std::byte>& flags) noexcept(false);
 
     ~Merkleblock() final = default;
 
 private:
     const OTData block_header_;
     const TxnCount txn_count_{};
-    const std::vector<OTData> hashes_;
-    const std::vector<std::byte> flags_;
+    const UnallocatedVector<OTData> hashes_;
+    const UnallocatedVector<std::byte> flags_;
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;

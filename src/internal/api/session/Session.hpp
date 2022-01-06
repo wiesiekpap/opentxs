@@ -7,10 +7,10 @@
 
 #include <cstdint>
 #include <mutex>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -58,7 +58,7 @@ public:
         Secret& secret,
         const PasswordPrompt& reason,
         const bool twice,
-        const std::string& key = "") const -> bool = 0;
+        const UnallocatedCString& key = "") const -> bool = 0;
     auto Internal() const noexcept -> const Session& final { return *this; }
     virtual auto Legacy() const noexcept -> const api::Legacy& = 0;
     virtual auto Lock() const -> std::mutex& = 0;

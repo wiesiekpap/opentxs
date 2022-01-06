@@ -5,13 +5,8 @@
 
 #pragma once
 
-#include <list>
-#include <map>
 #include <mutex>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -22,6 +17,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -67,9 +63,9 @@ class Contact final : public ContactType
 {
 public:
     auto ClearCallbacks() const noexcept -> void final;
-    auto ContactID() const noexcept -> std::string final;
-    auto DisplayName() const noexcept -> std::string final;
-    auto PaymentCode() const noexcept -> std::string final;
+    auto ContactID() const noexcept -> UnallocatedCString final;
+    auto DisplayName() const noexcept -> UnallocatedCString final;
+    auto PaymentCode() const noexcept -> UnallocatedCString final;
 
     auto SetCallbacks(Callbacks&& cb) noexcept -> void final;
 
@@ -85,13 +81,15 @@ private:
         Callbacks cb_{};
     };
 
-    static const std::set<identity::wot::claim::SectionType> allowed_types_;
-    static const std::map<identity::wot::claim::SectionType, int> sort_keys_;
+    static const UnallocatedSet<identity::wot::claim::SectionType>
+        allowed_types_;
+    static const UnallocatedMap<identity::wot::claim::SectionType, int>
+        sort_keys_;
 
     const ListenerDefinitions listeners_;
     mutable CallbackHolder callbacks_;
-    std::string name_;
-    std::string payment_code_;
+    UnallocatedCString name_;
+    UnallocatedCString payment_code_;
 
     static auto sort_key(const identity::wot::claim::SectionType type) noexcept
         -> int;

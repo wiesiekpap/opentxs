@@ -7,7 +7,6 @@
 
 #include <chrono>
 #include <cstdint>
-#include <list>
 #include <memory>
 #include <thread>
 #include <thread>
@@ -17,6 +16,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Periodic.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {

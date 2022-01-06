@@ -8,12 +8,12 @@
 #include "internal/otx/smartcontract/OTClause.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
 
 #include "internal/otx/common/util/Tag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -56,7 +56,7 @@ OTClause::~OTClause()
         nullptr;  // I wasn't the owner, it was a pointer for convenience only.
 }
 
-void OTClause::SetCode(const std::string& str_code)
+void OTClause::SetCode(const UnallocatedCString& str_code)
 {
     m_strCode->Set(str_code.c_str());
 }

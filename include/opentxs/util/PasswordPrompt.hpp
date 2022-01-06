@@ -8,9 +8,9 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
 
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -78,12 +78,12 @@ private:
     }
 
     const api::Session& api_;
-    std::string display_;
+    UnallocatedCString display_;
     OTSecret password_;
 
     PasswordPrompt(
         const api::Session& api,
-        const std::string& display) noexcept;
+        const UnallocatedCString& display) noexcept;
     PasswordPrompt(const PasswordPrompt&) noexcept;
     PasswordPrompt(const PasswordPrompt&&) = delete;
     auto operator=(const PasswordPrompt&) -> const PasswordPrompt& = delete;

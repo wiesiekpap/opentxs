@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <map>
 #include <mutex>
 #include <thread>
 
@@ -17,6 +16,7 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -68,8 +68,8 @@ private:
 
     mutable int next_task_;
     mutable std::mutex task_lock_;
-    mutable std::map<int, SocketCallback> socket_tasks_;
-    mutable std::map<int, bool> task_result_;
+    mutable UnallocatedMap<int, SocketCallback> socket_tasks_;
+    mutable UnallocatedMap<int, bool> task_result_;
 
     auto add_task(SocketCallback&& cb) const noexcept -> int;
     auto task_result(const int id) const noexcept -> bool;

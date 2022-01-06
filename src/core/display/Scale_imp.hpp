@@ -26,16 +26,17 @@ namespace bmp = boost::multiprecision;
 namespace opentxs::display
 {
 struct Scale::Imp {
-    const std::string prefix_;
-    const std::string suffix_;
+    const UnallocatedCString prefix_;
+    const UnallocatedCString suffix_;
     const OptionalInt default_min_;
     const OptionalInt default_max_;
-    const std::vector<Ratio> ratios_;
+    const UnallocatedVector<Ratio> ratios_;
 
     auto format(
         const Amount& amount,
         const OptionalInt minDecimals,
-        const OptionalInt maxDecimals) const noexcept(false) -> std::string
+        const OptionalInt maxDecimals) const noexcept(false)
+        -> UnallocatedCString
     {
         auto output = std::stringstream{};
 
@@ -108,7 +109,8 @@ struct Scale::Imp {
 
         return output.str();
     }
-    auto Import(const std::string& formatted) const noexcept(false) -> Amount
+    auto Import(const UnallocatedCString& formatted) const noexcept(false)
+        -> Amount
     {
         try {
             const auto output = incoming_ * Imp::Backend{Imp::strip(formatted)};
@@ -136,9 +138,9 @@ struct Scale::Imp {
         , locale_{}
     {
     }
-    Imp(const std::string& prefix,
-        const std::string& suffix,
-        const std::vector<Ratio>& ratios,
+    Imp(const UnallocatedCString& prefix,
+        const UnallocatedCString& suffix,
+        const UnallocatedVector<Ratio>& ratios,
         const OptionalInt defaultMinDecimals,
         const OptionalInt defaultMaxDecimals) noexcept
         : prefix_(prefix)
@@ -176,7 +178,7 @@ private:
 
     // ratio for converting display string to Amount
     static auto calculate_incoming_ratio(
-        const std::vector<Ratio>& ratios) noexcept -> Backend
+        const UnallocatedVector<Ratio>& ratios) noexcept -> Backend
     {
         auto output = Backend{1};
 
@@ -188,7 +190,7 @@ private:
     }
     // ratio for converting Amount to display string
     static auto calculate_outgoing_ratio(
-        const std::vector<Ratio>& ratios) noexcept -> Backend
+        const UnallocatedVector<Ratio>& ratios) noexcept -> Backend
     {
         auto output = Backend{1};
 
@@ -220,10 +222,11 @@ private:
         return output;
     }
 
-    auto strip(const std::string& in) const noexcept -> std::string
+    auto strip(const UnallocatedCString& in) const noexcept
+        -> UnallocatedCString
     {
         const auto decimal = locale_.decimal_point();
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
 
         for (const auto& c : in) {
             if (0 != std::isdigit(c)) {

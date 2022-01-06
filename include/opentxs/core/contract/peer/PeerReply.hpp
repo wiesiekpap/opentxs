@@ -7,10 +7,9 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs

@@ -7,13 +7,10 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <optional>
-#include <string>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "blockchain/block/Block.hpp"
@@ -26,6 +23,7 @@
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -63,8 +61,8 @@ class Block : public bitcoin::Block, public block::implementation::Block
 public:
     using CalculatedSize =
         std::pair<std::size_t, network::blockchain::bitcoin::CompactSize>;
-    using TxidIndex = std::vector<Space>;
-    using TransactionMap = std::map<ReadView, value_type>;
+    using TxidIndex = UnallocatedVector<Space>;
+    using TransactionMap = UnallocatedMap<ReadView, value_type>;
 
     static const std::size_t header_bytes_;
 
@@ -103,12 +101,12 @@ public:
     }
     auto end() const noexcept -> const_iterator final { return cend(); }
     auto ExtractElements(const filter::Type style) const noexcept
-        -> std::vector<Space> final;
+        -> UnallocatedVector<Space> final;
     auto FindMatches(
         const filter::Type type,
         const Patterns& outpoints,
         const Patterns& scripts) const noexcept -> Matches final;
-    auto Print() const noexcept -> std::string override;
+    auto Print() const noexcept -> UnallocatedCString override;
     auto Serialize(AllocateOutput bytes) const noexcept -> bool final;
     auto size() const noexcept -> std::size_t final { return index_.size(); }
 

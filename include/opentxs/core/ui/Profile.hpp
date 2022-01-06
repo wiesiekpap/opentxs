@@ -8,12 +8,11 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <string>
 #include <tuple>
-#include <vector>
 
 #include "opentxs/core/ui/List.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -32,49 +31,50 @@ namespace ui
 class OPENTXS_EXPORT Profile : virtual public List
 {
 public:
-    using ItemType = std::pair<identity::wot::claim::ClaimType, std::string>;
-    using ItemTypeList = std::vector<ItemType>;
+    using ItemType =
+        std::pair<identity::wot::claim::ClaimType, UnallocatedCString>;
+    using ItemTypeList = UnallocatedVector<ItemType>;
     using SectionType =
-        std::pair<identity::wot::claim::SectionType, std::string>;
-    using SectionTypeList = std::vector<SectionType>;
+        std::pair<identity::wot::claim::SectionType, UnallocatedCString>;
+    using SectionTypeList = UnallocatedVector<SectionType>;
 
     virtual auto AddClaim(
         const identity::wot::claim::SectionType section,
         const identity::wot::claim::ClaimType type,
-        const std::string& value,
+        const UnallocatedCString& value,
         const bool primary,
         const bool active) const noexcept -> bool = 0;
     virtual auto AllowedItems(
         const identity::wot::claim::SectionType section,
-        const std::string& lang) const noexcept -> ItemTypeList = 0;
-    virtual auto AllowedSections(const std::string& lang) const noexcept
+        const UnallocatedCString& lang) const noexcept -> ItemTypeList = 0;
+    virtual auto AllowedSections(const UnallocatedCString& lang) const noexcept
         -> SectionTypeList = 0;
     virtual auto Delete(
         const int section,
         const int type,
-        const std::string& claimID) const noexcept -> bool = 0;
-    virtual auto DisplayName() const noexcept -> std::string = 0;
+        const UnallocatedCString& claimID) const noexcept -> bool = 0;
+    virtual auto DisplayName() const noexcept -> UnallocatedCString = 0;
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ProfileSection> = 0;
-    virtual auto ID() const noexcept -> std::string = 0;
+    virtual auto ID() const noexcept -> UnallocatedCString = 0;
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ProfileSection> = 0;
-    virtual auto PaymentCode() const noexcept -> std::string = 0;
+    virtual auto PaymentCode() const noexcept -> UnallocatedCString = 0;
     virtual auto SetActive(
         const int section,
         const int type,
-        const std::string& claimID,
+        const UnallocatedCString& claimID,
         const bool active) const noexcept -> bool = 0;
     virtual auto SetPrimary(
         const int section,
         const int type,
-        const std::string& claimID,
+        const UnallocatedCString& claimID,
         const bool primary) const noexcept -> bool = 0;
     virtual auto SetValue(
         const int section,
         const int type,
-        const std::string& claimID,
-        const std::string& value) const noexcept -> bool = 0;
+        const UnallocatedCString& claimID,
+        const UnallocatedCString& value) const noexcept -> bool = 0;
 
     ~Profile() override = default;
 

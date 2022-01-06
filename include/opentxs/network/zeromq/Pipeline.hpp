@@ -38,7 +38,7 @@ public:
 
     auto Close() const noexcept -> bool;
     auto ConnectDealer(
-        const std::string& endpoint,
+        const UnallocatedCString& endpoint,
         std::function<Message(bool)> notify = {}) const noexcept -> bool;
     auto ConnectionIDDealer() const noexcept -> std::size_t;
     auto ConnectionIDInternal() const noexcept -> std::size_t;
@@ -46,10 +46,10 @@ public:
     auto ConnectionIDSubscribe() const noexcept -> std::size_t;
     OPENTXS_NO_EXPORT auto Internal() const noexcept
         -> const internal::Pipeline&;
-    auto PullFrom(const std::string& endpoint) const noexcept -> bool;
+    auto PullFrom(const UnallocatedCString& endpoint) const noexcept -> bool;
     auto Push(Message&& msg) const noexcept -> bool;
     auto Send(Message&& msg) const noexcept -> bool;
-    auto SubscribeTo(const std::string& endpoint) const noexcept -> bool;
+    auto SubscribeTo(const UnallocatedCString& endpoint) const noexcept -> bool;
 
     OPENTXS_NO_EXPORT auto Internal() noexcept -> internal::Pipeline&;
     virtual auto swap(Pipeline& rhs) noexcept -> void;

@@ -8,10 +8,10 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
-#include <string>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/StorageSeeds.pb.h"
 #include "util/storage/tree/Node.hpp"
@@ -39,16 +39,16 @@ private:
 
     static constexpr auto current_version_ = VersionNumber{2};
 
-    std::string default_seed_;
+    UnallocatedCString default_seed_;
 
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     void set_default(
         const std::unique_lock<std::mutex>& lock,
-        const std::string& id);
+        const UnallocatedCString& id);
     auto serialize() const -> proto::StorageSeeds;
 
-    Seeds(const Driver& storage, const std::string& hash);
+    Seeds(const Driver& storage, const UnallocatedCString& hash);
     Seeds() = delete;
     Seeds(const Seeds&) = delete;
     Seeds(Seeds&&) = delete;
@@ -56,18 +56,20 @@ private:
     auto operator=(Seeds&&) -> Seeds = delete;
 
 public:
-    auto Alias(const std::string& id) const -> std::string;
-    auto Default() const -> std::string;
+    auto Alias(const UnallocatedCString& id) const -> UnallocatedCString;
+    auto Default() const -> UnallocatedCString;
     auto Load(
-        const std::string& id,
+        const UnallocatedCString& id,
         std::shared_ptr<proto::Seed>& output,
-        std::string& alias,
+        UnallocatedCString& alias,
         const bool checking) const -> bool;
 
-    auto Delete(const std::string& id) -> bool;
-    auto SetAlias(const std::string& id, const std::string& alias) -> bool;
-    auto SetDefault(const std::string& id) -> bool;
-    auto Store(const proto::Seed& data, const std::string& alias) -> bool;
+    auto Delete(const UnallocatedCString& id) -> bool;
+    auto SetAlias(const UnallocatedCString& id, const UnallocatedCString& alias)
+        -> bool;
+    auto SetDefault(const UnallocatedCString& id) -> bool;
+    auto Store(const proto::Seed& data, const UnallocatedCString& alias)
+        -> bool;
 
     ~Seeds() final = default;
 };

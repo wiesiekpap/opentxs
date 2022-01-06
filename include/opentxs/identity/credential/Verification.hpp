@@ -35,7 +35,7 @@ public:
         -> proto::Verification;
     OPENTXS_NO_EXPORT static auto VerificationID(
         const api::Session& api,
-        const proto::Verification& item) -> std::string;
+        const proto::Verification& item) -> UnallocatedCString;
 
     ~Verification() override = default;
 

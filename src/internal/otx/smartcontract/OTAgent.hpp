@@ -6,12 +6,11 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
-#include <string>
 
 #include "internal/otx/common/Account.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -123,7 +122,7 @@ public:
     OTAgent(const api::session::Wallet& wallet);
     OTAgent(
         const api::session::Wallet& wallet,
-        const std::string& str_agent_name,
+        const UnallocatedCString& str_agent_name,
         const identity::Nym& theNym,
         const bool bNymRepresentsSelf = true);
     /*IF false, then: ENTITY and ROLE parameters go here.*/

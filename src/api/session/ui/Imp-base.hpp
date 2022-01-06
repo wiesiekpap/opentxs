@@ -10,12 +10,10 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "api/session/ui/UI.hpp"
@@ -49,6 +47,7 @@
 #include "opentxs/core/ui/UnitList.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 
 class QAbstractItemModel;
 
@@ -354,25 +353,26 @@ protected:
     using UnitListPointer = std::unique_ptr<opentxs::ui::internal::UnitList>;
 
     using AccountActivityMap =
-        std::map<AccountActivityKey, AccountActivityPointer>;
-    using AccountListMap = std::map<AccountListKey, AccountListPointer>;
+        UnallocatedMap<AccountActivityKey, AccountActivityPointer>;
+    using AccountListMap = UnallocatedMap<AccountListKey, AccountListPointer>;
     using AccountSummaryMap =
-        std::map<AccountSummaryKey, AccountSummaryPointer>;
+        UnallocatedMap<AccountSummaryKey, AccountSummaryPointer>;
     using ActivitySummaryMap =
-        std::map<ActivitySummaryKey, ActivitySummaryPointer>;
+        UnallocatedMap<ActivitySummaryKey, ActivitySummaryPointer>;
     using ActivityThreadMap =
-        std::map<ActivityThreadKey, ActivityThreadPointer>;
-    using BlockchainAccountStatusMap =
-        std::map<BlockchainAccountStatusKey, BlockchainAccountStatusPointer>;
+        UnallocatedMap<ActivityThreadKey, ActivityThreadPointer>;
+    using BlockchainAccountStatusMap = UnallocatedMap<
+        BlockchainAccountStatusKey,
+        BlockchainAccountStatusPointer>;
     using BlockchainSelectionMap =
-        std::map<opentxs::ui::Blockchains, BlockchainSelectionPointer>;
-    using ContactListMap = std::map<ContactListKey, ContactListPointer>;
-    using ContactMap = std::map<ContactKey, ContactPointer>;
+        UnallocatedMap<opentxs::ui::Blockchains, BlockchainSelectionPointer>;
+    using ContactListMap = UnallocatedMap<ContactListKey, ContactListPointer>;
+    using ContactMap = UnallocatedMap<ContactKey, ContactPointer>;
     using MessagableListMap =
-        std::map<MessagableListKey, MessagableListPointer>;
-    using PayableListMap = std::map<PayableListKey, PayableListPointer>;
-    using ProfileMap = std::map<ProfileKey, ProfilePointer>;
-    using UnitListMap = std::map<UnitListKey, UnitListPointer>;
+        UnallocatedMap<MessagableListKey, MessagableListPointer>;
+    using PayableListMap = UnallocatedMap<PayableListKey, PayableListPointer>;
+    using ProfileMap = UnallocatedMap<ProfileKey, ProfilePointer>;
+    using UnitListMap = UnallocatedMap<UnitListKey, UnitListPointer>;
 
     const api::session::Client& api_;
     const api::crypto::Blockchain& blockchain_;

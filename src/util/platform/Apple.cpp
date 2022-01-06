@@ -34,7 +34,7 @@ auto Legacy::get_suffix() noexcept -> fs::path
     return get_suffix("OpenTransactions");
 }
 
-auto Legacy::prepend() noexcept -> std::string
+auto Legacy::prepend() noexcept -> UnallocatedCString
 {
 #if TARGET_OS_IPHONE  // iOS
     return "Documents/";

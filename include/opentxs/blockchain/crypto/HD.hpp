@@ -37,7 +37,7 @@ class OPENTXS_EXPORT HD : virtual public Deterministic
 public:
     OPENTXS_NO_EXPORT virtual auto InternalHD() const noexcept
         -> internal::HD& = 0;
-    virtual auto Name() const noexcept -> std::string = 0;
+    virtual auto Name() const noexcept -> UnallocatedCString = 0;
     virtual auto Standard() const noexcept -> HDProtocol = 0;
 
     OPENTXS_NO_EXPORT ~HD() override = default;

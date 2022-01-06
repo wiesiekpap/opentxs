@@ -11,9 +11,9 @@
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
-#include <vector>
 
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -26,7 +26,7 @@ namespace bitcoin
 class OPENTXS_EXPORT CompactSize
 {
 public:
-    using Bytes = std::vector<std::byte>;
+    using Bytes = UnallocatedVector<std::byte>;
 
     // Returns the number of bytes SUBSEQUENT to the marker byte
     // Possible output values are: 0, 2, 4, 8

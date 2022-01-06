@@ -12,6 +12,6 @@ namespace opentxs
 auto license_chaiscript(LicenseMap& out) noexcept -> void
 {
     out.emplace(
-        "Chaiscript", std::string{R"~!~(@CHAISCRIPT_LICENSE_TEXT@)~!~"});
+        "Chaiscript", UnallocatedCString{R"~!~(@CHAISCRIPT_LICENSE_TEXT@)~!~"});
 }
 }  // namespace opentxs

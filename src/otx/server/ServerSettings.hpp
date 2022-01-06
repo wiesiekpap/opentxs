@@ -6,7 +6,8 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::server
 {
@@ -41,12 +42,12 @@ struct ServerSettings {
         __heartbeat_ms_between_beats = value;
     }
 
-    static auto GetOverrideNymID() -> const std::string&
+    static auto GetOverrideNymID() -> const UnallocatedCString&
     {
         return __override_nym_id;
     }
 
-    static void SetOverrideNymID(const std::string& id)
+    static void SetOverrideNymID(const UnallocatedCString& id)
     {
         __override_nym_id = id;
     }
@@ -57,7 +58,7 @@ struct ServerSettings {
     static std::int32_t __heartbeat_ms_between_beats;
 
     // The Nym who's allowed to do certain commands even if they are turned off.
-    static std::string __override_nym_id;
+    static UnallocatedCString __override_nym_id;
     // Are usage credits REQUIRED in order to use this server?
     static bool __admin_usage_credits;
     // Is server currently locked to non-override Nyms?

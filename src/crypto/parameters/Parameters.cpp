@@ -9,7 +9,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <utility>
 
@@ -25,15 +24,18 @@
 #include "opentxs/identity/CredentialType.hpp"
 #include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/SourceType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/Container.hpp"
 
 namespace opentxs::crypto
 {
-const std::map<crypto::key::asymmetric::Algorithm, ParameterType> key_to_nym_{
-    {crypto::key::asymmetric::Algorithm::Legacy, ParameterType::rsa},
-    {crypto::key::asymmetric::Algorithm::Secp256k1, ParameterType::secp256k1},
-    {crypto::key::asymmetric::Algorithm::ED25519, ParameterType::ed25519},
-};
+const UnallocatedMap<crypto::key::asymmetric::Algorithm, ParameterType>
+    key_to_nym_{
+        {crypto::key::asymmetric::Algorithm::Legacy, ParameterType::rsa},
+        {crypto::key::asymmetric::Algorithm::Secp256k1,
+         ParameterType::secp256k1},
+        {crypto::key::asymmetric::Algorithm::ED25519, ParameterType::ed25519},
+    };
 const auto nym_to_key_{reverse_map(key_to_nym_)};
 
 auto swap(Parameters& lhs, Parameters& rhs) noexcept -> void { lhs.swap(rhs); }
@@ -74,7 +76,7 @@ Parameters::Parameters(const std::int32_t keySize) noexcept
 }
 
 Parameters::Parameters(
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const int index,
     const std::uint8_t pcVersion) noexcept
     : Parameters()
@@ -199,7 +201,10 @@ auto Parameters::PaymentCodeVersion() const noexcept -> std::uint8_t
     return imp_->payment_code_version_;
 }
 
-auto Parameters::Seed() const noexcept -> std::string { return imp_->seed_; }
+auto Parameters::Seed() const noexcept -> UnallocatedCString
+{
+    return imp_->seed_;
+}
 
 auto Parameters::SeedLanguage() const noexcept -> crypto::Language
 {
@@ -278,7 +283,7 @@ auto Parameters::SetPaymentCodeVersion(const std::uint8_t version) noexcept
     imp_->payment_code_version_ = version;
 }
 
-auto Parameters::SetSeed(const std::string& seed) noexcept -> void
+auto Parameters::SetSeed(const UnallocatedCString& seed) noexcept -> void
 {
     imp_->seed_ = seed;
 }

@@ -7,7 +7,6 @@
 #include <chrono>
 #include <ctime>
 #include <future>
-#include <string>
 #include <thread>
 
 #include "opentxs/OT.hpp"
@@ -20,7 +19,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Pair.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -36,12 +35,14 @@ class Test_PairSocket : public ::testing::Test
 public:
     const zmq::Context& context_;
 
-    const std::string testMessage_{"zeromq test message"};
-    const std::string testMessage2_{"zeromq test message 2"};
+    const ot::UnallocatedCString testMessage_{"zeromq test message"};
+    const ot::UnallocatedCString testMessage2_{"zeromq test message 2"};
 
     ot::OTZMQPairSocket* pairSocket_;
 
-    void pairSocketThread(const std::string& msg, std::promise<void>* promise);
+    void pairSocketThread(
+        const ot::UnallocatedCString& msg,
+        std::promise<void>* promise);
 
     Test_PairSocket()
         : context_(ot::Context().ZMQ())
@@ -55,7 +56,7 @@ public:
 };
 
 void Test_PairSocket::pairSocketThread(
-    const std::string& message,
+    const ot::UnallocatedCString& message,
     std::promise<void>* promise)
 {
     struct Cleanup {
@@ -82,7 +83,8 @@ void Test_PairSocket::pairSocketThread(
         [&callbackFinished,
          &message](ot::network::zeromq::Message&& msg) -> void {
             EXPECT_EQ(1, msg.size());
-            const auto inputString = std::string{msg.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{msg.Body().begin()->Bytes()};
 
             EXPECT_EQ(message, inputString);
 
@@ -148,7 +150,8 @@ TEST_F(Test_PairSocket, PairSocket_Send1)
     auto listenCallback = ot::network::zeromq::ListenCallback::Factory(
         [this, &callbackFinished](ot::network::zeromq::Message&& msg) -> void {
             EXPECT_EQ(1, msg.size());
-            const auto inputString = std::string{msg.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{msg.Body().begin()->Bytes()};
 
             EXPECT_EQ(testMessage_, inputString);
 
@@ -192,7 +195,8 @@ TEST_F(Test_PairSocket, PairSocket_Send2)
     auto listenCallback = ot::network::zeromq::ListenCallback::Factory(
         [this, &callbackFinished](ot::network::zeromq::Message&& msg) -> void {
             EXPECT_EQ(1, msg.size());
-            const auto inputString = std::string{msg.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{msg.Body().begin()->Bytes()};
 
             EXPECT_EQ(testMessage_, inputString);
 
@@ -236,7 +240,8 @@ TEST_F(Test_PairSocket, PairSocket_Send3)
     auto listenCallback = ot::network::zeromq::ListenCallback::Factory(
         [this, &callbackFinished](ot::network::zeromq::Message&& msg) -> void {
             EXPECT_EQ(1, msg.size());
-            const auto inputString = std::string{msg.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{msg.Body().begin()->Bytes()};
 
             EXPECT_EQ(testMessage_, inputString);
 
@@ -281,7 +286,8 @@ TEST_F(Test_PairSocket, PairSocket_Send_Two_Way)
         [this,
          &peerCallbackFinished](ot::network::zeromq::Message&& msg) -> void {
             EXPECT_EQ(1, msg.size());
-            const auto inputString = std::string{msg.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{msg.Body().begin()->Bytes()};
 
             EXPECT_EQ(testMessage_, inputString);
 
@@ -300,7 +306,8 @@ TEST_F(Test_PairSocket, PairSocket_Send_Two_Way)
     auto listenCallback = ot::network::zeromq::ListenCallback::Factory(
         [this, &callbackFinished](ot::network::zeromq::Message&& msg) -> void {
             EXPECT_EQ(1, msg.size());
-            const auto inputString = std::string{msg.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{msg.Body().begin()->Bytes()};
 
             EXPECT_EQ(testMessage2_, inputString);
 

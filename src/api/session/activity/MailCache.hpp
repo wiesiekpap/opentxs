@@ -7,9 +7,9 @@
 
 #include <future>
 #include <memory>
-#include <string>
 
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -53,13 +53,13 @@ public:
         const identifier::Nym& nym,
         const Identifier& id,
         const StorageBox box,
-        const std::string& text) noexcept -> void;
+        const UnallocatedCString& text) noexcept -> void;
     auto GetText(
         const identifier::Nym& nym,
         const Identifier& id,
         const StorageBox box,
         const PasswordPrompt& reason) noexcept
-        -> std::shared_future<std::string>;
+        -> std::shared_future<UnallocatedCString>;
 
     MailCache(
         const api::Session& api,

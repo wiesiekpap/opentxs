@@ -12,10 +12,7 @@
 #include <chrono>
 #include <cstdint>
 #include <ctime>
-#include <list>
 #include <memory>
-#include <set>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/BasketContract.hpp"
@@ -23,6 +20,7 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -90,7 +88,7 @@ class OPENTXS_EXPORT Wallet
 public:
     using AccountCallback = std::function<void(const Account&)>;
 
-    virtual auto AccountPartialMatch(const std::string& hint) const
+    virtual auto AccountPartialMatch(const UnallocatedCString& hint) const
         -> OTIdentifier = 0;
     virtual auto DeleteAccount(const Identifier& accountID) const -> bool = 0;
     virtual auto UpdateAccount(
@@ -102,7 +100,7 @@ public:
         const Identifier& accountID,
         const otx::context::Server&,
         const String& serialized,
-        const std::string& label,
+        const UnallocatedCString& label,
         const PasswordPrompt& reason) const -> bool = 0;
     [[deprecated]] virtual auto ImportAccount(
         std::unique_ptr<opentxs::Account>& imported) const -> bool = 0;
@@ -148,13 +146,13 @@ public:
 
     /**   Returns a list of all issuers associated with a local nym */
     virtual auto IssuerList(const identifier::Nym& nymID) const
-        -> std::set<OTNymID> = 0;
+        -> UnallocatedSet<OTNymID> = 0;
 
-    virtual auto IsLocalNym(const std::string& id) const -> bool = 0;
+    virtual auto IsLocalNym(const UnallocatedCString& id) const -> bool = 0;
 
     virtual auto LocalNymCount() const -> std::size_t = 0;
 
-    virtual auto LocalNyms() const -> std::set<OTNymID> = 0;
+    virtual auto LocalNyms() const -> UnallocatedSet<OTNymID> = 0;
 
     /**   Obtain a smart pointer to an instantiated nym.
      *
@@ -192,18 +190,19 @@ public:
     virtual auto Nym(
         const opentxs::identity::wot::claim::ClaimType type,
         const PasswordPrompt& reason,
-        const std::string& name = {}) const -> Nym_p = 0;
+        const UnallocatedCString& name = {}) const -> Nym_p = 0;
     virtual auto Nym(
         const opentxs::crypto::Parameters& parameters,
         const PasswordPrompt& reason,
-        const std::string& name = {}) const -> Nym_p = 0;
-    virtual auto Nym(const PasswordPrompt& reason, const std::string& name = {})
-        const -> Nym_p = 0;
+        const UnallocatedCString& name = {}) const -> Nym_p = 0;
+    virtual auto Nym(
+        const PasswordPrompt& reason,
+        const UnallocatedCString& name = {}) const -> Nym_p = 0;
     virtual auto Nym(
         const opentxs::crypto::Parameters& parameters,
         const opentxs::identity::wot::claim::ClaimType type,
         const PasswordPrompt& reason,
-        const std::string& name = {}) const -> Nym_p = 0;
+        const UnallocatedCString& name = {}) const -> Nym_p = 0;
 
     virtual auto mutable_Nym(
         const identifier::Nym& id,
@@ -214,7 +213,7 @@ public:
         const PasswordPrompt& reason) const
         -> std::unique_ptr<const opentxs::NymFile> = 0;
 
-    virtual auto NymByIDPartialMatch(const std::string& partialId) const
+    virtual auto NymByIDPartialMatch(const UnallocatedCString& partialId) const
         -> Nym_p = 0;
 
     /**   Returns a list of all known nyms and their aliases
@@ -482,10 +481,10 @@ public:
      *    \throw std::runtime_error the contract can not be created
      */
     virtual auto Server(
-        const std::string& nymid,
-        const std::string& name,
-        const std::string& terms,
-        const std::list<contract::Server::Endpoint>& endpoints,
+        const UnallocatedCString& nymid,
+        const UnallocatedCString& name,
+        const UnallocatedCString& terms,
+        const UnallocatedList<contract::Server::Endpoint>& endpoints,
         const PasswordPrompt& reason,
         const VersionNumber version) const noexcept(false)
         -> OTServerContract = 0;
@@ -505,7 +504,7 @@ public:
      */
     virtual auto SetNymAlias(
         const identifier::Nym& id,
-        const std::string& alias) const -> bool = 0;
+        const UnallocatedCString& alias) const -> bool = 0;
 
     /**   Updates the alias for the specified server contract.
      *
@@ -518,7 +517,7 @@ public:
      */
     virtual auto SetServerAlias(
         const identifier::Notary& id,
-        const std::string& alias) const -> bool = 0;
+        const UnallocatedCString& alias) const -> bool = 0;
 
     /**   Updates the alias for the specified unit definition contract.
      *
@@ -531,7 +530,7 @@ public:
      */
     virtual auto SetUnitDefinitionAlias(
         const identifier::UnitDefinition& id,
-        const std::string& alias) const -> bool = 0;
+        const UnallocatedCString& alias) const -> bool = 0;
 
     /**   Obtain a list of all available unit definition contracts and their
      *    aliases
@@ -581,35 +580,35 @@ public:
      *    \throw std::runtime_error the contract can not be created
      */
     virtual auto CurrencyContract(
-        const std::string& nymid,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& nymid,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const PasswordPrompt& reason) const noexcept(false)
         -> OTUnitDefinition = 0;
     virtual auto CurrencyContract(
-        const std::string& nymid,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& nymid,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const display::Definition& displayDefinition,
         const PasswordPrompt& reason) const noexcept(false)
         -> OTUnitDefinition = 0;
     virtual auto CurrencyContract(
-        const std::string& nymid,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& nymid,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const VersionNumber version,
         const PasswordPrompt& reason) const noexcept(false)
         -> OTUnitDefinition = 0;
     virtual auto CurrencyContract(
-        const std::string& nymid,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& nymid,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const display::Definition& displayDefinition,
@@ -626,9 +625,9 @@ public:
      *    \throw std::runtime_error the contract can not be created
      */
     virtual auto SecurityContract(
-        const std::string& nymid,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& nymid,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const PasswordPrompt& reason,
         const display::Definition& displayDefinition,

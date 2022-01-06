@@ -13,7 +13,6 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/api/Crypto.hpp"
@@ -26,6 +25,7 @@
 #include "opentxs/crypto/key/Ed25519.hpp"
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 

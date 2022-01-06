@@ -8,12 +8,11 @@
 #include "opentxs/network/p2p/Block.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <set>
 #include <stdexcept>
-#include <string>
 #include <string_view>
 
 #include "Proto.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/BlockchainP2PSync.pb.h"
 

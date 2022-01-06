@@ -11,10 +11,10 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/ContractEnums.pb.h"
 #include "serialization/protobuf/PairEvent.pb.h"
 #include "serialization/protobuf/PeerEnums.pb.h"
@@ -40,12 +40,15 @@ enum class PairEventType : std::uint8_t {
 struct PairEvent {
     std::uint32_t version_;
     PairEventType type_;
-    std::string issuer_;
+    UnallocatedCString issuer_;
 
     PairEvent(const ReadView);
 
 private:
-    PairEvent(const std::uint32_t, const PairEventType, const std::string&);
+    PairEvent(
+        const std::uint32_t,
+        const PairEventType,
+        const UnallocatedCString&);
     PairEvent(const proto::PairEvent&);
 
     PairEvent() = delete;

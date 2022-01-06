@@ -9,7 +9,6 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <map>
 #include <tuple>
 #include <utility>
 
@@ -18,6 +17,7 @@
 #include "internal/serialization/protobuf/verify/ServerContract.hpp"
 #include "internal/serialization/protobuf/verify/StorageServers.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/StorageItemHash.pb.h"
@@ -29,7 +29,7 @@ namespace opentxs
 {
 namespace storage
 {
-Servers::Servers(const Driver& storage, const std::string& hash)
+Servers::Servers(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {
@@ -39,14 +39,17 @@ Servers::Servers(const Driver& storage, const std::string& hash)
     }
 }
 
-auto Servers::Alias(const std::string& id) const -> std::string
+auto Servers::Alias(const UnallocatedCString& id) const -> UnallocatedCString
 {
     return get_alias(id);
 }
 
-auto Servers::Delete(const std::string& id) -> bool { return delete_item(id); }
+auto Servers::Delete(const UnallocatedCString& id) -> bool
+{
+    return delete_item(id);
+}
 
-void Servers::init(const std::string& hash)
+void Servers::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageServers> serialized;
     driver_.LoadProto(hash, serialized);
@@ -66,9 +69,9 @@ void Servers::init(const std::string& hash)
 }
 
 auto Servers::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     std::shared_ptr<proto::ServerContract>& output,
-    std::string& alias,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     return load_proto<proto::ServerContract>(id, output, alias, checking);
@@ -112,15 +115,17 @@ auto Servers::serialize() const -> proto::StorageServers
     return serialized;
 }
 
-auto Servers::SetAlias(const std::string& id, const std::string& alias) -> bool
+auto Servers::SetAlias(
+    const UnallocatedCString& id,
+    const UnallocatedCString& alias) -> bool
 {
     return set_alias(id, alias);
 }
 
 auto Servers::Store(
     const proto::ServerContract& data,
-    const std::string& alias,
-    std::string& plaintext) -> bool
+    const UnallocatedCString& alias,
+    UnallocatedCString& plaintext) -> bool
 {
     return store_proto(data, data.id(), alias, plaintext);
 }

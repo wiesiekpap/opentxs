@@ -8,7 +8,6 @@
 #include "blockchain/database/common/Blocks.hpp"  // IWYU pragma: associated
 
 #include <cstring>
-#include <map>
 #include <mutex>
 #include <shared_mutex>
 #include <type_traits>
@@ -19,8 +18,8 @@
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
@@ -32,7 +31,7 @@ struct Blocks::Imp {
     Bulk& bulk_;
     const int table_;
     mutable std::mutex lock_;
-    mutable std::map<pHash, std::shared_mutex> block_locks_;
+    mutable UnallocatedMap<pHash, std::shared_mutex> block_locks_;
 
     auto Exists(const Hash& block) const noexcept -> bool
     {

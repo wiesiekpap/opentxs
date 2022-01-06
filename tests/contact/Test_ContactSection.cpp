@@ -5,9 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <iterator>
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "1_Internal.hpp"
@@ -21,7 +19,7 @@
 #include "opentxs/identity/wot/claim/Section.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 
@@ -34,24 +32,24 @@ public:
         : api_(ot::Context().StartClientSession(0))
         , contactSection_(
               dynamic_cast<const ot::api::session::Client&>(api_),
-              std::string("testContactSectionNym1"),
+              ot::UnallocatedCString("testContactSectionNym1"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
               ot::identity::wot::claim::SectionType::Identifier,
               ot::identity::wot::claim::Section::GroupMap{})
         , contactGroup_(new ot::identity::wot::claim::Group(
-              std::string("testContactGroupNym1"),
+              ot::UnallocatedCString("testContactGroupNym1"),
               ot::identity::wot::claim::SectionType::Identifier,
               ot::identity::wot::claim::ClaimType::Employee,
               {}))
         , activeContactItem_(new ot::identity::wot::claim::Item(
               dynamic_cast<const ot::api::session::Client&>(api_),
-              std::string("activeContactItem"),
+              ot::UnallocatedCString("activeContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
               ot::identity::wot::claim::SectionType::Identifier,
               ot::identity::wot::claim::ClaimType::Employee,
-              std::string("activeContactItemValue"),
+              ot::UnallocatedCString("activeContactItemValue"),
               {ot::identity::wot::claim::Attribute::Active},
               NULL_START,
               NULL_END,
@@ -152,12 +150,12 @@ TEST_F(Test_ContactSection, operator_plus)
     const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("activeContactItem2"),
+            ot::UnallocatedCString("activeContactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::Employee,
-            std::string("activeContactItemValue2"),
+            ot::UnallocatedCString("activeContactItemValue2"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -183,12 +181,12 @@ TEST_F(Test_ContactSection, operator_plus)
     const std::shared_ptr<ot::identity::wot::claim::Item> contactItem3(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("activeContactItem3"),
+            ot::UnallocatedCString("activeContactItem3"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::Employee,
-            std::string("activeContactItemValue3"),
+            ot::UnallocatedCString("activeContactItemValue3"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -196,12 +194,12 @@ TEST_F(Test_ContactSection, operator_plus)
     const std::shared_ptr<ot::identity::wot::claim::Item> contactItem4(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("activeContactItem4"),
+            ot::UnallocatedCString("activeContactItem4"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::SSL,
-            std::string("activeContactItemValue4"),
+            ot::UnallocatedCString("activeContactItemValue4"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -254,12 +252,12 @@ TEST_F(Test_ContactSection, AddItem)
     const std::shared_ptr<ot::identity::wot::claim::Item> scopeContactItem(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("scopeContactItem"),
+            ot::UnallocatedCString("scopeContactItem"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Scope,
             ot::identity::wot::claim::ClaimType::Individual,
-            std::string("scopeContactItemValue"),
+            ot::UnallocatedCString("scopeContactItemValue"),
             {ot::identity::wot::claim::Attribute::Local},
             NULL_START,
             NULL_END,
@@ -289,12 +287,12 @@ TEST_F(Test_ContactSection, AddItem)
     const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("activeContactItem2"),
+            ot::UnallocatedCString("activeContactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::Employee,
-            std::string("activeContactItemValue2"),
+            ot::UnallocatedCString("activeContactItemValue2"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -310,12 +308,12 @@ TEST_F(Test_ContactSection, AddItem)
     const std::shared_ptr<ot::identity::wot::claim::Item> contactItem3(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("activeContactItem3"),
+            ot::UnallocatedCString("activeContactItem3"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::SSL,
-            std::string("activeContactItemValue3"),
+            ot::UnallocatedCString("activeContactItemValue3"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -334,12 +332,12 @@ TEST_F(Test_ContactSection, AddItem_different_versions)
     const std::shared_ptr<ot::identity::wot::claim::Item> scopeContactItem(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("scopeContactItem"),
+            ot::UnallocatedCString("scopeContactItem"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Scope,
             ot::identity::wot::claim::ClaimType::BOT,
-            std::string("scopeContactItemValue"),
+            ot::UnallocatedCString("scopeContactItemValue"),
             {ot::identity::wot::claim::Attribute::Local},
             NULL_START,
             NULL_END,
@@ -366,12 +364,12 @@ TEST_F(Test_ContactSection, AddItem_different_versions)
     const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("contactItem2"),
+            ot::UnallocatedCString("contactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Relationship,
             ot::identity::wot::claim::ClaimType::Owner,
-            std::string("contactItem2Value"),
+            ot::UnallocatedCString("contactItem2Value"),
             {ot::identity::wot::claim::Attribute::Local},
             NULL_START,
             NULL_END,
@@ -423,12 +421,12 @@ TEST_F(Test_ContactSection, Claim_found)
     const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("activeContactItem2"),
+            ot::UnallocatedCString("activeContactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::SSL,
-            std::string("activeContactItemValue2"),
+            ot::UnallocatedCString("activeContactItemValue2"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -487,12 +485,12 @@ TEST_F(Test_ContactSection, HaveClaim_true)
     const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("activeContactItem2"),
+            ot::UnallocatedCString("activeContactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::SSL,
-            std::string("activeContactItemValue2"),
+            ot::UnallocatedCString("activeContactItemValue2"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -515,12 +513,12 @@ TEST_F(Test_ContactSection, Delete)
     const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("activeContactItem2"),
+            ot::UnallocatedCString("activeContactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::Employee,
-            std::string("activeContactItemValue2"),
+            ot::UnallocatedCString("activeContactItemValue2"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -547,12 +545,12 @@ TEST_F(Test_ContactSection, Delete)
     const std::shared_ptr<ot::identity::wot::claim::Item> contactItem3(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("activeContactItem3"),
+            ot::UnallocatedCString("activeContactItem3"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::SSL,
-            std::string("activeContactItemValue3"),
+            ot::UnallocatedCString("activeContactItemValue3"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -634,12 +632,12 @@ TEST_F(Test_ContactSection, Size)
     const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("activeContactItem2"),
+            ot::UnallocatedCString("activeContactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::Employee,
-            std::string("activeContactItemValue2"),
+            ot::UnallocatedCString("activeContactItemValue2"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -652,12 +650,12 @@ TEST_F(Test_ContactSection, Size)
     const std::shared_ptr<ot::identity::wot::claim::Item> contactItem3(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("activeContactItem3"),
+            ot::UnallocatedCString("activeContactItem3"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::SSL,
-            std::string("activeContactItemValue3"),
+            ot::UnallocatedCString("activeContactItemValue3"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,

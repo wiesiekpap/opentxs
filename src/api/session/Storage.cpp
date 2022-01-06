@@ -13,7 +13,6 @@
 #include <limits>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "Proto.tpp"
@@ -32,6 +31,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -121,7 +121,8 @@ Storage::Storage(
     OT_ASSERT(multiplex_p_);
 }
 
-auto Storage::AccountAlias(const Identifier& accountID) const -> std::string
+auto Storage::AccountAlias(const Identifier& accountID) const
+    -> UnallocatedCString
 {
     return Root().Tree().Accounts().Alias(accountID.str());
 }
@@ -161,32 +162,32 @@ auto Storage::AccountUnit(const Identifier& accountID) const -> core::UnitType
     return Root().Tree().Accounts().AccountUnit(accountID);
 }
 
-auto Storage::AccountsByContract(
-    const identifier::UnitDefinition& contract) const -> std::set<OTIdentifier>
+auto Storage::AccountsByContract(const identifier::UnitDefinition& contract)
+    const -> UnallocatedSet<OTIdentifier>
 {
     return Root().Tree().Accounts().AccountsByContract(contract);
 }
 
 auto Storage::AccountsByIssuer(const identifier::Nym& issuerNym) const
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     return Root().Tree().Accounts().AccountsByIssuer(issuerNym);
 }
 
 auto Storage::AccountsByOwner(const identifier::Nym& ownerNym) const
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     return Root().Tree().Accounts().AccountsByOwner(ownerNym);
 }
 
 auto Storage::AccountsByServer(const identifier::Notary& server) const
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     return Root().Tree().Accounts().AccountsByServer(server);
 }
 
 auto Storage::AccountsByUnit(const core::UnitType unit) const
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     return Root().Tree().Accounts().AccountsByUnit(unit);
 }
@@ -233,27 +234,27 @@ auto Storage::Bip47ChannelsByChain(
 
 auto Storage::blockchain_thread_item_id(
     const opentxs::blockchain::Type chain,
-    const Data& txid) const noexcept -> std::string
+    const Data& txid) const noexcept -> UnallocatedCString
 {
     return opentxs::blockchain_thread_item_id(crypto_, chain, txid)->str();
 }
 
 auto Storage::BlockchainAccountList(
-    const std::string& nymID,
-    const core::UnitType type) const -> std::set<std::string>
+    const UnallocatedCString& nymID,
+    const core::UnitType type) const -> UnallocatedSet<UnallocatedCString>
 {
     return Root().Tree().Nyms().Nym(nymID).BlockchainAccountList(type);
 }
 
 auto Storage::BlockchainAccountType(
-    const std::string& nymID,
-    const std::string& accountID) const -> core::UnitType
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& accountID) const -> core::UnitType
 {
     return Root().Tree().Nyms().Nym(nymID).BlockchainAccountType(accountID);
 }
 
 auto Storage::BlockchainThreadMap(const identifier::Nym& nym, const Data& txid)
-    const noexcept -> std::vector<OTIdentifier>
+    const noexcept -> UnallocatedVector<OTIdentifier>
 {
     const auto& nyms = Root().Tree().Nyms();
 
@@ -267,7 +268,7 @@ auto Storage::BlockchainThreadMap(const identifier::Nym& nym, const Data& txid)
 }
 
 auto Storage::BlockchainTransactionList(
-    const identifier::Nym& nym) const noexcept -> std::vector<OTData>
+    const identifier::Nym& nym) const noexcept -> UnallocatedVector<OTData>
 {
     const auto& nyms = Root().Tree().Nyms();
 
@@ -284,7 +285,7 @@ auto Storage::CheckTokenSpent(
     const identifier::Notary& notary,
     const identifier::UnitDefinition& unit,
     const std::uint64_t series,
-    const std::string& key) const -> bool
+    const UnallocatedCString& key) const -> bool
 {
     return Root().Tree().Notary(notary.str()).CheckSpent(unit, series, key);
 }
@@ -298,7 +299,8 @@ void Storage::Cleanup() { Cleanup_Storage(); }
 
 void Storage::CollectGarbage() const { Root().Migrate(multiplex_.Primary()); }
 
-auto Storage::ContactAlias(const std::string& id) const -> std::string
+auto Storage::ContactAlias(const UnallocatedCString& id) const
+    -> UnallocatedCString
 {
     return Root().Tree().Contacts().Alias(id);
 }
@@ -308,7 +310,8 @@ auto Storage::ContactList() const -> ObjectList
     return Root().Tree().Contacts().List();
 }
 
-auto Storage::ContactOwnerNym(const std::string& nymID) const -> std::string
+auto Storage::ContactOwnerNym(const UnallocatedCString& nymID) const
+    -> UnallocatedCString
 {
     return Root().Tree().Contacts().NymOwner(nymID);
 }
@@ -323,15 +326,15 @@ auto Storage::ContactUpgradeLevel() const -> VersionNumber
     return Root().Tree().Contacts().UpgradeLevel();
 }
 
-auto Storage::ContextList(const std::string& nymID) const -> ObjectList
+auto Storage::ContextList(const UnallocatedCString& nymID) const -> ObjectList
 {
     return Root().Tree().Nyms().Nym(nymID).Contexts().List();
 }
 
 auto Storage::CreateThread(
-    const std::string& nymID,
-    const std::string& threadID,
-    const std::set<std::string>& participants) const -> bool
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& threadID,
+    const UnallocatedSet<UnallocatedCString>& participants) const -> bool
 {
     const auto id = mutable_Root()
                         .get()
@@ -348,12 +351,12 @@ auto Storage::CreateThread(
     return (false == id.empty());
 }
 
-auto Storage::DefaultSeed() const -> std::string
+auto Storage::DefaultSeed() const -> UnallocatedCString
 {
     return Root().Tree().Seeds().Default();
 }
 
-auto Storage::DeleteAccount(const std::string& id) const -> bool
+auto Storage::DeleteAccount(const UnallocatedCString& id) const -> bool
 {
     return mutable_Root()
         .get()
@@ -364,7 +367,7 @@ auto Storage::DeleteAccount(const std::string& id) const -> bool
         .Delete(id);
 }
 
-auto Storage::DeleteContact(const std::string& id) const -> bool
+auto Storage::DeleteContact(const UnallocatedCString& id) const -> bool
 {
     return mutable_Root()
         .get()
@@ -376,8 +379,8 @@ auto Storage::DeleteContact(const std::string& id) const -> bool
 }
 
 auto Storage::DeletePaymentWorkflow(
-    const std::string& nymID,
-    const std::string& workflowID) const -> bool
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& workflowID) const -> bool
 {
     const bool exists = Root().Tree().Nyms().Exists(nymID);
 
@@ -428,7 +431,7 @@ void Storage::InitPlugins()
     multiplex_.SynchronizePlugins(hash, *root, syncPrimary);
 }
 
-auto Storage::IssuerList(const std::string& nymID) const -> ObjectList
+auto Storage::IssuerList(const UnallocatedCString& nymID) const -> ObjectList
 {
     const bool exists = Root().Tree().Nyms().Exists(nymID);
 
@@ -442,17 +445,17 @@ auto Storage::IssuerList(const std::string& nymID) const -> ObjectList
 }
 
 auto Storage::Load(
-    const std::string& accountID,
-    std::string& output,
-    std::string& alias,
+    const UnallocatedCString& accountID,
+    UnallocatedCString& output,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     return Root().Tree().Accounts().Load(accountID, output, alias, checking);
 }
 
 auto Storage::Load(
-    const std::string& nymID,
-    const std::string& accountID,
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& accountID,
     proto::HDAccount& output,
     const bool checking) const -> bool
 {
@@ -493,19 +496,19 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     proto::Contact& output,
     const bool checking) const -> bool
 {
-    auto notUsed = std::string{};
+    auto notUsed = UnallocatedCString{};
 
     return Load(id, output, notUsed, checking);
 }
 
 auto Storage::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     proto::Contact& output,
-    std::string& alias,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     auto temp = std::make_shared<proto::Contact>(output);
@@ -517,12 +520,12 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& nym,
-    const std::string& id,
+    const UnallocatedCString& nym,
+    const UnallocatedCString& id,
     proto::Context& output,
     const bool checking) const -> bool
 {
-    auto notUsed = std::string{};
+    auto notUsed = UnallocatedCString{};
     auto temp = std::make_shared<proto::Context>(output);
     const auto rc = Root().Tree().Nyms().Nym(nym).Contexts().Load(
         id, temp, notUsed, checking);
@@ -533,7 +536,7 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     proto::Credential& output,
     const bool checking) const -> bool
 {
@@ -550,7 +553,7 @@ auto Storage::Load(
     proto::Nym& output,
     const bool checking) const -> bool
 {
-    auto notUsed = std::string{};
+    auto notUsed = UnallocatedCString{};
 
     return Load(id, output, notUsed, checking);
 }
@@ -561,7 +564,7 @@ auto Storage::LoadNym(
     const bool checking) const -> bool
 {
     auto temp = std::make_shared<proto::Nym>();
-    auto alias = std::string{};
+    auto alias = UnallocatedCString{};
 
     if (false ==
         Root().Tree().Nyms().Nym(id.str()).Load(temp, alias, checking)) {
@@ -578,7 +581,7 @@ auto Storage::LoadNym(
 auto Storage::Load(
     const identifier::Nym& id,
     proto::Nym& output,
-    std::string& alias,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     auto temp = std::make_shared<proto::Nym>(output);
@@ -591,8 +594,8 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& nymID,
-    const std::string& id,
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& id,
     proto::Issuer& output,
     const bool checking) const -> bool
 {
@@ -602,7 +605,7 @@ auto Storage::Load(
         return false;
     }
 
-    auto notUsed = std::string{};
+    auto notUsed = UnallocatedCString{};
     auto temp = std::make_shared<proto::Issuer>(output);
     const auto rc = Root().Tree().Nyms().Nym(nymID).Issuers().Load(
         id, temp, notUsed, checking);
@@ -613,8 +616,8 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& nymID,
-    const std::string& workflowID,
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& workflowID,
     proto::PaymentWorkflow& output,
     const bool checking) const -> bool
 {
@@ -634,11 +637,11 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& nymID,
-    const std::string& id,
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& id,
     const StorageBox box,
-    std::string& output,
-    std::string& alias,
+    UnallocatedCString& output,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     switch (box) {
@@ -657,8 +660,8 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& nymID,
-    const std::string& id,
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& id,
     const StorageBox box,
     proto::PeerReply& output,
     const bool checking) const -> bool
@@ -694,15 +697,15 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& nymID,
-    const std::string& id,
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& id,
     const StorageBox box,
     proto::PeerRequest& output,
     std::time_t& time,
     const bool checking) const -> bool
 {
     auto temp = std::make_shared<proto::PeerRequest>(output);
-    auto alias = std::string{};
+    auto alias = UnallocatedCString{};
     const auto rc = [&] {
         switch (box) {
             case StorageBox::SENTPEERREQUEST: {
@@ -779,19 +782,19 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     proto::Seed& output,
     const bool checking) const -> bool
 {
-    auto notUsed = std::string{};
+    auto notUsed = UnallocatedCString{};
 
     return Load(id, output, notUsed, checking);
 }
 
 auto Storage::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     proto::Seed& output,
-    std::string& alias,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     auto temp = std::make_shared<proto::Seed>(output);
@@ -807,7 +810,7 @@ auto Storage::Load(
     proto::ServerContract& output,
     const bool checking) const -> bool
 {
-    auto notUsed = std::string{};
+    auto notUsed = UnallocatedCString{};
 
     return Load(id, output, notUsed, checking);
 }
@@ -815,7 +818,7 @@ auto Storage::Load(
 auto Storage::Load(
     const identifier::Notary& id,
     proto::ServerContract& output,
-    std::string& alias,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     auto temp = std::make_shared<proto::ServerContract>(output);
@@ -828,8 +831,8 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& nymId,
-    const std::string& threadId,
+    const UnallocatedCString& nymId,
+    const UnallocatedCString& threadId,
     proto::StorageThread& output) const -> bool
 {
     const bool exists =
@@ -857,7 +860,7 @@ auto Storage::Load(
     proto::UnitDefinition& output,
     const bool checking) const -> bool
 {
-    auto notUsed = std::string{};
+    auto notUsed = UnallocatedCString{};
 
     return Load(id, output, notUsed, checking);
 }
@@ -865,7 +868,7 @@ auto Storage::Load(
 auto Storage::Load(
     const identifier::UnitDefinition& id,
     proto::UnitDefinition& output,
-    std::string& alias,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     auto temp = std::make_shared<proto::UnitDefinition>(output);
@@ -876,7 +879,7 @@ auto Storage::Load(
     return rc;
 }
 
-auto Storage::LocalNyms() const -> const std::set<std::string>
+auto Storage::LocalNyms() const -> const UnallocatedSet<UnallocatedCString>
 {
     return Root().Tree().Nyms().LocalNyms();
 }
@@ -905,7 +908,7 @@ auto Storage::MarkTokenSpent(
     const identifier::Notary& notary,
     const identifier::UnitDefinition& unit,
     const std::uint64_t series,
-    const std::string& key) const -> bool
+    const UnallocatedCString& key) const -> bool
 {
     return mutable_Root()
         .get()
@@ -917,10 +920,10 @@ auto Storage::MarkTokenSpent(
 }
 
 auto Storage::MoveThreadItem(
-    const std::string& nymId,
-    const std::string& fromThreadID,
-    const std::string& toThreadID,
-    const std::string& itemID) const -> bool
+    const UnallocatedCString& nymId,
+    const UnallocatedCString& fromThreadID,
+    const UnallocatedCString& toThreadID,
+    const UnallocatedCString& itemID) const -> bool
 {
     const auto& nyms = Root().Tree().Nyms();
 
@@ -965,10 +968,10 @@ auto Storage::MoveThreadItem(
     auto found{false};
     auto time = std::uint64_t{};
     auto box = StorageBox{};
-    const auto alias = std::string{};
-    const auto contents = std::string{};
+    const auto alias = UnallocatedCString{};
+    const auto contents = UnallocatedCString{};
     auto index = std::uint64_t{};
-    auto account = std::string{};
+    auto account = UnallocatedCString{};
 
     for (const auto& item : thread.item()) {
         if (item.id() == itemID) {
@@ -1028,8 +1031,8 @@ auto Storage::mutable_Root() const -> Editor<opentxs::storage::Root>
     return Editor<opentxs::storage::Root>(write_lock_, root(), callback);
 }
 
-auto Storage::NymBoxList(const std::string& nymID, const StorageBox box) const
-    -> ObjectList
+auto Storage::NymBoxList(const UnallocatedCString& nymID, const StorageBox box)
+    const -> ObjectList
 {
     switch (box) {
         case StorageBox::SENTPEERREQUEST: {
@@ -1073,7 +1076,8 @@ auto Storage::NymList() const -> ObjectList
     return Root().Tree().Nyms().List();
 }
 
-auto Storage::PaymentWorkflowList(const std::string& nymID) const -> ObjectList
+auto Storage::PaymentWorkflowList(const UnallocatedCString& nymID) const
+    -> ObjectList
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
         LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
@@ -1085,8 +1089,8 @@ auto Storage::PaymentWorkflowList(const std::string& nymID) const -> ObjectList
 }
 
 auto Storage::PaymentWorkflowLookup(
-    const std::string& nymID,
-    const std::string& sourceID) const -> std::string
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& sourceID) const -> UnallocatedCString
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
         LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
@@ -1099,8 +1103,9 @@ auto Storage::PaymentWorkflowLookup(
 }
 
 auto Storage::PaymentWorkflowsByAccount(
-    const std::string& nymID,
-    const std::string& accountID) const -> std::set<std::string>
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& accountID) const
+    -> UnallocatedSet<UnallocatedCString>
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
         LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
@@ -1113,10 +1118,10 @@ auto Storage::PaymentWorkflowsByAccount(
 }
 
 auto Storage::PaymentWorkflowsByState(
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const otx::client::PaymentWorkflowType type,
     const otx::client::PaymentWorkflowState state) const
-    -> std::set<std::string>
+    -> UnallocatedSet<UnallocatedCString>
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
         LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
@@ -1129,8 +1134,9 @@ auto Storage::PaymentWorkflowsByState(
 }
 
 auto Storage::PaymentWorkflowsByUnit(
-    const std::string& nymID,
-    const std::string& unitID) const -> std::set<std::string>
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& unitID) const
+    -> UnallocatedSet<UnallocatedCString>
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
         LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
@@ -1143,8 +1149,8 @@ auto Storage::PaymentWorkflowsByUnit(
 }
 
 auto Storage::PaymentWorkflowState(
-    const std::string& nymID,
-    const std::string& workflowID) const -> std::
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& workflowID) const -> std::
     pair<otx::client::PaymentWorkflowType, otx::client::PaymentWorkflowState>
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
@@ -1158,8 +1164,8 @@ auto Storage::PaymentWorkflowState(
 }
 
 auto Storage::RelabelThread(
-    const std::string& threadID,
-    const std::string& label) const -> bool
+    const UnallocatedCString& threadID,
+    const UnallocatedCString& label) const -> bool
 {
     return mutable_Root()
         .get()
@@ -1233,9 +1239,9 @@ auto Storage::RemoveBlockchainThreadItem(
 }
 
 auto Storage::RemoveNymBoxItem(
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const StorageBox box,
-    const std::string& itemID) const -> bool
+    const UnallocatedCString& itemID) const -> bool
 {
     switch (box) {
         case StorageBox::SENTPEERREQUEST: {
@@ -1408,7 +1414,7 @@ auto Storage::RemoveNymBoxItem(
     }
 }
 
-auto Storage::RemoveServer(const std::string& id) const -> bool
+auto Storage::RemoveServer(const UnallocatedCString& id) const -> bool
 {
     return mutable_Root()
         .get()
@@ -1422,7 +1428,7 @@ auto Storage::RemoveServer(const std::string& id) const -> bool
 auto Storage::RemoveThreadItem(
     const identifier::Nym& nym,
     const Identifier& threadID,
-    const std::string& id) const -> bool
+    const UnallocatedCString& id) const -> bool
 {
     const auto& nyms = Root().Tree().Nyms();
 
@@ -1479,7 +1485,7 @@ auto Storage::RemoveThreadItem(
     return true;
 }
 
-auto Storage::RemoveUnitDefinition(const std::string& id) const -> bool
+auto Storage::RemoveUnitDefinition(const UnallocatedCString& id) const -> bool
 {
     return mutable_Root()
         .get()
@@ -1491,9 +1497,9 @@ auto Storage::RemoveUnitDefinition(const std::string& id) const -> bool
 }
 
 auto Storage::RenameThread(
-    const std::string& nymId,
-    const std::string& threadId,
-    const std::string& newID) const -> bool
+    const UnallocatedCString& nymId,
+    const UnallocatedCString& threadId,
+    const UnallocatedCString& newID) const -> bool
 {
     return mutable_Root()
         .get()
@@ -1565,8 +1571,9 @@ auto Storage::SeedList() const -> ObjectList
     return Root().Tree().Seeds().List();
 }
 
-auto Storage::SetAccountAlias(const std::string& id, const std::string& alias)
-    const -> bool
+auto Storage::SetAccountAlias(
+    const UnallocatedCString& id,
+    const UnallocatedCString& alias) const -> bool
 {
     return mutable_Root()
         .get()
@@ -1577,8 +1584,9 @@ auto Storage::SetAccountAlias(const std::string& id, const std::string& alias)
         .SetAlias(id, alias);
 }
 
-auto Storage::SetContactAlias(const std::string& id, const std::string& alias)
-    const -> bool
+auto Storage::SetContactAlias(
+    const UnallocatedCString& id,
+    const UnallocatedCString& alias) const -> bool
 {
     return mutable_Root()
         .get()
@@ -1589,7 +1597,7 @@ auto Storage::SetContactAlias(const std::string& id, const std::string& alias)
         .SetAlias(id, alias);
 }
 
-auto Storage::SetDefaultSeed(const std::string& id) const -> bool
+auto Storage::SetDefaultSeed(const UnallocatedCString& id) const -> bool
 {
     return mutable_Root()
         .get()
@@ -1600,8 +1608,9 @@ auto Storage::SetDefaultSeed(const std::string& id) const -> bool
         .SetDefault(id);
 }
 
-auto Storage::SetNymAlias(const identifier::Nym& id, const std::string& alias)
-    const -> bool
+auto Storage::SetNymAlias(
+    const identifier::Nym& id,
+    const UnallocatedCString& alias) const -> bool
 {
     return mutable_Root()
         .get()
@@ -1615,11 +1624,11 @@ auto Storage::SetNymAlias(const identifier::Nym& id, const std::string& alias)
 }
 
 auto Storage::SetPeerRequestTime(
-    const std::string& nymID,
-    const std::string& id,
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& id,
     const StorageBox box) const -> bool
 {
-    const std::string now = std::to_string(time(nullptr));
+    const UnallocatedCString now = std::to_string(time(nullptr));
 
     switch (box) {
         case StorageBox::SENTPEERREQUEST: {
@@ -1681,9 +1690,9 @@ auto Storage::SetPeerRequestTime(
 }
 
 auto Storage::SetReadState(
-    const std::string& nymId,
-    const std::string& threadId,
-    const std::string& itemId,
+    const UnallocatedCString& nymId,
+    const UnallocatedCString& threadId,
+    const UnallocatedCString& itemId,
     const bool unread) const -> bool
 {
     auto& nyms = mutable_Root().get().mutable_Tree().get().mutable_Nyms().get();
@@ -1707,8 +1716,9 @@ auto Storage::SetReadState(
     return threads.mutable_Thread(threadId).get().Read(itemId, unread);
 }
 
-auto Storage::SetSeedAlias(const std::string& id, const std::string& alias)
-    const -> bool
+auto Storage::SetSeedAlias(
+    const UnallocatedCString& id,
+    const UnallocatedCString& alias) const -> bool
 {
     return mutable_Root()
         .get()
@@ -1721,7 +1731,7 @@ auto Storage::SetSeedAlias(const std::string& id, const std::string& alias)
 
 auto Storage::SetServerAlias(
     const identifier::Notary& id,
-    const std::string& alias) const -> bool
+    const UnallocatedCString& alias) const -> bool
 {
     return mutable_Root()
         .get()
@@ -1733,9 +1743,9 @@ auto Storage::SetServerAlias(
 }
 
 auto Storage::SetThreadAlias(
-    const std::string& nymId,
-    const std::string& threadId,
-    const std::string& alias) const -> bool
+    const UnallocatedCString& nymId,
+    const UnallocatedCString& threadId,
+    const UnallocatedCString& alias) const -> bool
 {
     return mutable_Root()
         .get()
@@ -1754,7 +1764,7 @@ auto Storage::SetThreadAlias(
 
 auto Storage::SetUnitDefinitionAlias(
     const identifier::UnitDefinition& id,
-    const std::string& alias) const -> bool
+    const UnallocatedCString& alias) const -> bool
 {
     return mutable_Root()
         .get()
@@ -1765,7 +1775,8 @@ auto Storage::SetUnitDefinitionAlias(
         .SetAlias(id.str(), alias);
 }
 
-auto Storage::ServerAlias(const std::string& id) const -> std::string
+auto Storage::ServerAlias(const UnallocatedCString& id) const
+    -> UnallocatedCString
 {
     return Root().Tree().Servers().Alias(id);
 }
@@ -1778,9 +1789,9 @@ auto Storage::ServerList() const -> ObjectList
 void Storage::start() { InitPlugins(); }
 
 auto Storage::Store(
-    const std::string& accountID,
-    const std::string& data,
-    const std::string& alias,
+    const UnallocatedCString& accountID,
+    const UnallocatedCString& data,
+    const UnallocatedCString& alias,
     const identifier::Nym& ownerNym,
     const identifier::Nym& signerNym,
     const identifier::Nym& issuerNym,
@@ -1807,7 +1818,7 @@ auto Storage::Store(
 }
 
 auto Storage::Store(
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const identity::wot::claim::ClaimType type,
     const proto::HDAccount& data) const -> bool
 {
@@ -1861,7 +1872,7 @@ auto Storage::Store(const proto::Contact& data) const -> bool
 
 auto Storage::Store(const proto::Context& data) const -> bool
 {
-    auto notUsed = std::string{};
+    auto notUsed = UnallocatedCString{};
 
     return mutable_Root()
         .get()
@@ -1878,7 +1889,7 @@ auto Storage::Store(const proto::Context& data) const -> bool
 
 auto Storage::Store(const proto::Credential& data) const -> bool
 {
-    auto notUsed = std::string{};
+    auto notUsed = UnallocatedCString{};
 
     return mutable_Root()
         .get()
@@ -1889,10 +1900,10 @@ auto Storage::Store(const proto::Credential& data) const -> bool
         .Store(data, notUsed);
 }
 
-auto Storage::Store(const proto::Nym& data, const std::string& alias) const
-    -> bool
+auto Storage::Store(const proto::Nym& data, const UnallocatedCString& alias)
+    const -> bool
 {
-    std::string plaintext;
+    UnallocatedCString plaintext;
     const bool saved = mutable_Root()
                            .get()
                            .mutable_Tree()
@@ -1914,14 +1925,14 @@ auto Storage::Store(const proto::Nym& data, const std::string& alias) const
     return false;
 }
 
-auto Storage::Store(const ReadView& view, const std::string& alias) const
+auto Storage::Store(const ReadView& view, const UnallocatedCString& alias) const
     -> bool
 {
     return Store(proto::Factory<proto::Nym>(view), alias);
 }
 
-auto Storage::Store(const std::string& nymID, const proto::Issuer& data) const
-    -> bool
+auto Storage::Store(const UnallocatedCString& nymID, const proto::Issuer& data)
+    const -> bool
 {
     const bool exists = Root().Tree().Nyms().Exists(nymID);
 
@@ -1945,7 +1956,7 @@ auto Storage::Store(const std::string& nymID, const proto::Issuer& data) const
 }
 
 auto Storage::Store(
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const proto::PaymentWorkflow& data) const -> bool
 {
     const bool exists = Root().Tree().Nyms().Exists(nymID);
@@ -1956,7 +1967,7 @@ auto Storage::Store(
         return false;
     }
 
-    std::string notUsed{};
+    UnallocatedCString notUsed{};
 
     return mutable_Root()
         .get()
@@ -1972,14 +1983,14 @@ auto Storage::Store(
 }
 
 auto Storage::Store(
-    const std::string& nymid,
-    const std::string& threadid,
-    const std::string& itemid,
+    const UnallocatedCString& nymid,
+    const UnallocatedCString& threadid,
+    const UnallocatedCString& itemid,
     const std::uint64_t time,
-    const std::string& alias,
-    const std::string& data,
+    const UnallocatedCString& alias,
+    const UnallocatedCString& data,
     const StorageBox box,
-    const std::string& account) const -> bool
+    const UnallocatedCString& account) const -> bool
 {
     return mutable_Root()
         .get()
@@ -2003,8 +2014,8 @@ auto Storage::Store(
     const Data& txid,
     const Time time) const noexcept -> bool
 {
-    const auto alias = std::string{};
-    const auto account = std::string{};
+    const auto alias = UnallocatedCString{};
+    const auto account = UnallocatedCString{};
     const auto id = blockchain_thread_item_id(chain, txid);
 
     return mutable_Root()
@@ -2032,7 +2043,7 @@ auto Storage::Store(
 
 auto Storage::Store(
     const proto::PeerReply& data,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const StorageBox box) const -> bool
 {
     switch (box) {
@@ -2096,12 +2107,12 @@ auto Storage::Store(
 
 auto Storage::Store(
     const proto::PeerRequest& data,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const StorageBox box) const -> bool
 {
     // Use the alias field to store the time at which the request was saved.
     // Useful for managing retry logic in the high level api
-    const std::string now = std::to_string(time(nullptr));
+    const UnallocatedCString now = std::to_string(time(nullptr));
 
     switch (box) {
         case StorageBox::SENTPEERREQUEST: {
@@ -2176,8 +2187,8 @@ auto Storage::Store(const identifier::Nym& nym, const proto::Purse& purse) const
     return nymNode.get().mutable_Nym(nym.str()).get().Store(purse);
 }
 
-auto Storage::Store(const proto::Seed& data, const std::string& alias) const
-    -> bool
+auto Storage::Store(const proto::Seed& data, const UnallocatedCString& alias)
+    const -> bool
 {
     return mutable_Root()
         .get()
@@ -2188,12 +2199,13 @@ auto Storage::Store(const proto::Seed& data, const std::string& alias) const
         .Store(data, alias);
 }
 
-auto Storage::Store(const proto::ServerContract& data, const std::string& alias)
-    const -> bool
+auto Storage::Store(
+    const proto::ServerContract& data,
+    const UnallocatedCString& alias) const -> bool
 {
     auto storageVersion(data);
     storageVersion.clear_publicnym();
-    std::string plaintext;
+    UnallocatedCString plaintext;
     const bool saved =
         mutable_Root().get().mutable_Tree().get().mutable_Servers().get().Store(
             data, alias, plaintext);
@@ -2214,12 +2226,13 @@ auto Storage::Store(const proto::Ciphertext& serialized) const -> bool
     return mutable_Root().get().mutable_Tree().get().Store(serialized);
 }
 
-auto Storage::Store(const proto::UnitDefinition& data, const std::string& alias)
-    const -> bool
+auto Storage::Store(
+    const proto::UnitDefinition& data,
+    const UnallocatedCString& alias) const -> bool
 {
     auto storageVersion(data);
     storageVersion.clear_issuer_nym();
-    std::string plaintext;
+    UnallocatedCString plaintext;
     const bool saved =
         mutable_Root().get().mutable_Tree().get().mutable_Units().get().Store(
             data, alias, plaintext);
@@ -2235,14 +2248,15 @@ auto Storage::Store(const proto::UnitDefinition& data, const std::string& alias)
     return false;
 }
 
-auto Storage::ThreadList(const std::string& nymID, const bool unreadOnly) const
-    -> ObjectList
+auto Storage::ThreadList(const UnallocatedCString& nymID, const bool unreadOnly)
+    const -> ObjectList
 {
     return Root().Tree().Nyms().Nym(nymID).Threads().List(unreadOnly);
 }
 
-auto Storage::ThreadAlias(const std::string& nymID, const std::string& threadID)
-    const -> std::string
+auto Storage::ThreadAlias(
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& threadID) const -> UnallocatedCString
 {
     return Root().Tree().Nyms().Nym(nymID).Threads().Thread(threadID).Alias();
 }
@@ -2266,7 +2280,8 @@ auto Storage::UnaffiliatedBlockchainTransaction(
         .AddIndex(txid, blank);
 }
 
-auto Storage::UnitDefinitionAlias(const std::string& id) const -> std::string
+auto Storage::UnitDefinitionAlias(const UnallocatedCString& id) const
+    -> UnallocatedCString
 {
     return Root().Tree().Units().Alias(id);
 }
@@ -2276,8 +2291,9 @@ auto Storage::UnitDefinitionList() const -> ObjectList
     return Root().Tree().Units().List();
 }
 
-auto Storage::UnreadCount(const std::string& nymId, const std::string& threadId)
-    const -> std::size_t
+auto Storage::UnreadCount(
+    const UnallocatedCString& nymId,
+    const UnallocatedCString& threadId) const -> std::size_t
 {
     auto& nyms = Root().Tree().Nyms();
 

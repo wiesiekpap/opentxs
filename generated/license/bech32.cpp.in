@@ -11,6 +11,6 @@ namespace opentxs
 {
 auto license_bech32(LicenseMap& out) noexcept -> void
 {
-    out.emplace("bech32", std::string{R"~!~(@BECH32_LICENSE_TEXT@)~!~"});
+    out.emplace("bech32", UnallocatedCString{R"~!~(@BECH32_LICENSE_TEXT@)~!~"});
 }
 }  // namespace opentxs

@@ -6,11 +6,10 @@
 #include "internal/serialization/protobuf/verify/PaymentEvent.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <map>
-#include <set>
 #include <stdexcept>
 
 #include "internal/serialization/protobuf/verify/VerifyWorkflows.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/PaymentEvent.pb.h"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
@@ -24,7 +23,7 @@ auto CheckProto_3(
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events) -> bool
+    UnallocatedMap<PaymentEventType, std::size_t>& events) -> bool
 {
     try {
         const bool valid =
@@ -101,7 +100,8 @@ auto CheckProto_4(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(4)
 }
@@ -111,7 +111,8 @@ auto CheckProto_5(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(5)
 }
@@ -121,7 +122,8 @@ auto CheckProto_6(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(6)
 }
@@ -131,7 +133,8 @@ auto CheckProto_7(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(7)
 }
@@ -141,7 +144,8 @@ auto CheckProto_8(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(8)
 }
@@ -151,7 +155,8 @@ auto CheckProto_9(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(9)
 }
@@ -161,7 +166,8 @@ auto CheckProto_10(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(10)
 }
@@ -171,7 +177,8 @@ auto CheckProto_11(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(11)
 }
@@ -181,7 +188,8 @@ auto CheckProto_12(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(12)
 }
@@ -191,7 +199,8 @@ auto CheckProto_13(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(13)
 }
@@ -201,7 +210,8 @@ auto CheckProto_14(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(14)
 }
@@ -211,7 +221,8 @@ auto CheckProto_15(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(15)
 }
@@ -221,7 +232,8 @@ auto CheckProto_16(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(16)
 }
@@ -231,7 +243,8 @@ auto CheckProto_17(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(17)
 }
@@ -241,7 +254,8 @@ auto CheckProto_18(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(18)
 }
@@ -251,7 +265,8 @@ auto CheckProto_19(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(19)
 }
@@ -261,7 +276,8 @@ auto CheckProto_20(
     const bool silent,
     [[maybe_unused]] const std::uint32_t parentVersion,
     [[maybe_unused]] const PaymentWorkflowType parent,
-    [[maybe_unused]] std::map<PaymentEventType, std::size_t>& events) -> bool
+    [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
+    -> bool
 {
     UNDEFINED_VERSION(20)
 }

@@ -7,9 +7,6 @@
 
 #pragma once
 
-#include <list>
-#include <map>
-#include <set>
 #include <utility>
 
 #include "1_Internal.hpp"
@@ -24,6 +21,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
@@ -83,9 +81,9 @@ public:
 private:
     const ListenerDefinitions listeners_;
     const core::UnitType currency_;
-    std::set<OTNymID> issuers_;
-    std::map<OTNotaryID, OTNymID> server_issuer_map_;
-    std::map<OTNymID, OTNotaryID> nym_server_map_;
+    UnallocatedSet<OTNymID> issuers_;
+    UnallocatedMap<OTNotaryID, OTNymID> server_issuer_map_;
+    UnallocatedMap<OTNymID, OTNotaryID> nym_server_map_;
 
     auto construct_row(
         const AccountSummaryRowID& id,

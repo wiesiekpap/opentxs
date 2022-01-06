@@ -7,10 +7,9 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/core/ui/List.hpp"
 #include "opentxs/core/ui/ListRow.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -30,7 +29,7 @@ class OPENTXS_EXPORT BlockchainSubaccount : virtual public List,
 {
 public:
     virtual auto First() const noexcept -> SharedPimpl<BlockchainSubchain> = 0;
-    virtual auto Name() const noexcept -> std::string = 0;
+    virtual auto Name() const noexcept -> UnallocatedCString = 0;
     virtual auto Next() const noexcept -> SharedPimpl<BlockchainSubchain> = 0;
     virtual auto SubaccountID() const noexcept -> const Identifier& = 0;
 

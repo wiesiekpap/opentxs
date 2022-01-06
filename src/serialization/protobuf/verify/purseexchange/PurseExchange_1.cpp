@@ -5,11 +5,10 @@
 
 #include "internal/serialization/protobuf/verify/PurseExchange.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/Purse.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCash.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/CashEnums.pb.h"
 #include "serialization/protobuf/Purse.pb.h"
 #include "serialization/protobuf/PurseExchange.pb.h"
@@ -21,8 +20,8 @@ namespace opentxs::proto
 {
 auto CheckProto_1(const PurseExchange& input, const bool silent) -> bool
 {
-    std::string inValue{"0"};
-    std::string outValue{"0"};
+    UnallocatedCString inValue{"0"};
+    UnallocatedCString outValue{"0"};
     const auto& incoming = input.exchange();
     const auto& outgoing = input.request();
 

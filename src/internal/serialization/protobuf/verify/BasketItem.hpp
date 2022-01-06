@@ -6,10 +6,9 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
-#include <string>
 
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -23,7 +22,7 @@ namespace opentxs
 {
 namespace proto
 {
-using BasketItemMap = std::map<std::string, std::uint64_t>;
+using BasketItemMap = UnallocatedMap<UnallocatedCString, std::uint64_t>;
 
 auto CheckProto_1(const BasketItem& item, const bool silent, BasketItemMap& map)
     -> bool;

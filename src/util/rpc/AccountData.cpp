@@ -25,25 +25,25 @@ struct AccountData::Imp {
     static constexpr auto default_version_ = VersionNumber{2};
 
     const VersionNumber version_;
-    const std::string id_;
-    const std::string name_;
-    const std::string unit_;
-    const std::string owner_;
-    const std::string issuer_;
-    const std::string balance_formatted_;
-    const std::string pending_formatted_;
+    const UnallocatedCString id_;
+    const UnallocatedCString name_;
+    const UnallocatedCString unit_;
+    const UnallocatedCString owner_;
+    const UnallocatedCString issuer_;
+    const UnallocatedCString balance_formatted_;
+    const UnallocatedCString pending_formatted_;
     const Amount balance_;
     const Amount pending_;
     const AccountType type_;
 
     Imp(const VersionNumber version,
-        const std::string& id,
-        const std::string& name,
-        const std::string& unit,
-        const std::string& owner,
-        const std::string& issuer,
-        const std::string& balanceF,
-        const std::string& pendingF,
+        const UnallocatedCString& id,
+        const UnallocatedCString& name,
+        const UnallocatedCString& unit,
+        const UnallocatedCString& owner,
+        const UnallocatedCString& issuer,
+        const UnallocatedCString& balanceF,
+        const UnallocatedCString& pendingF,
         Amount balance,
         Amount pending,
         AccountType type) noexcept(false)
@@ -87,13 +87,13 @@ private:
 };
 
 AccountData::AccountData(
-    const std::string& id,
-    const std::string& name,
-    const std::string& unit,
-    const std::string& owner,
-    const std::string& issuer,
-    const std::string& balanceS,
-    const std::string& pendingS,
+    const UnallocatedCString& id,
+    const UnallocatedCString& name,
+    const UnallocatedCString& unit,
+    const UnallocatedCString& owner,
+    const UnallocatedCString& issuer,
+    const UnallocatedCString& balanceS,
+    const UnallocatedCString& pendingS,
     Amount balance,
     Amount pending,
     AccountType type) noexcept(false)
@@ -149,27 +149,27 @@ auto AccountData::ConfirmedBalance() const noexcept -> Amount
     return imp_->balance_;
 }
 
-auto AccountData::ConfirmedBalance_str() const noexcept -> std::string
+auto AccountData::ConfirmedBalance_str() const noexcept -> UnallocatedCString
 {
     return imp_->balance_formatted_;
 }
 
-auto AccountData::ID() const noexcept -> const std::string&
+auto AccountData::ID() const noexcept -> const UnallocatedCString&
 {
     return imp_->id_;
 }
 
-auto AccountData::Issuer() const noexcept -> const std::string&
+auto AccountData::Issuer() const noexcept -> const UnallocatedCString&
 {
     return imp_->issuer_;
 }
 
-auto AccountData::Name() const noexcept -> const std::string&
+auto AccountData::Name() const noexcept -> const UnallocatedCString&
 {
     return imp_->name_;
 }
 
-auto AccountData::Owner() const noexcept -> const std::string&
+auto AccountData::Owner() const noexcept -> const UnallocatedCString&
 {
     return imp_->owner_;
 }
@@ -179,7 +179,7 @@ auto AccountData::PendingBalance() const noexcept -> Amount
     return imp_->pending_;
 }
 
-auto AccountData::PendingBalance_str() const noexcept -> std::string
+auto AccountData::PendingBalance_str() const noexcept -> UnallocatedCString
 {
     return imp_->pending_formatted_;
 }
@@ -204,7 +204,7 @@ auto AccountData::Serialize(proto::AccountData& dest) const noexcept -> bool
 
 auto AccountData::Type() const noexcept -> AccountType { return imp_->type_; }
 
-auto AccountData::Unit() const noexcept -> const std::string&
+auto AccountData::Unit() const noexcept -> const UnallocatedCString&
 {
     return imp_->unit_;
 }

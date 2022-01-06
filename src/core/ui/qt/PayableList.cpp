@@ -10,11 +10,11 @@
 #include <QObject>
 #include <QVariant>
 #include <memory>
-#include <string>
 
 #include "core/ui/contactlist/ContactListItem.hpp"
 #include "core/ui/payablelist/PayableListItem.hpp"
 #include "internal/core/ui/UI.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::factory
 {

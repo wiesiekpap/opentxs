@@ -6,11 +6,11 @@
 #pragma once
 
 #include <optional>
-#include <string>
 
 #include "blockchain/node/wallet/Job.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {

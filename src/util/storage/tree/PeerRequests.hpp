@@ -7,10 +7,10 @@
 
 #include <memory>
 #include <mutex>
-#include <string>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/tree/Node.hpp"
 
@@ -35,11 +35,11 @@ class PeerRequests final : public Node
 private:
     friend Nym;
 
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
 
-    PeerRequests(const Driver& storage, const std::string& hash);
+    PeerRequests(const Driver& storage, const UnallocatedCString& hash);
     PeerRequests() = delete;
     PeerRequests(const PeerRequests&) = delete;
     PeerRequests(PeerRequests&&) = delete;
@@ -48,14 +48,15 @@ private:
 
 public:
     auto Load(
-        const std::string& id,
+        const UnallocatedCString& id,
         std::shared_ptr<proto::PeerRequest>& output,
-        std::string& alias,
+        UnallocatedCString& alias,
         const bool checking) const -> bool;
 
-    auto Delete(const std::string& id) -> bool;
-    auto SetAlias(const std::string& id, const std::string& alias) -> bool;
-    auto Store(const proto::PeerRequest& data, const std::string& alias)
+    auto Delete(const UnallocatedCString& id) -> bool;
+    auto SetAlias(const UnallocatedCString& id, const UnallocatedCString& alias)
+        -> bool;
+    auto Store(const proto::PeerRequest& data, const UnallocatedCString& alias)
         -> bool;
 
     ~PeerRequests() final = default;

@@ -95,7 +95,7 @@
 
 namespace opentxs::storage
 {
-Accounts::Accounts(const Driver& storage, const std::string& hash)
+Accounts::Accounts(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {
@@ -135,32 +135,32 @@ auto Accounts::AccountUnit(const Identifier& id) const -> core::UnitType
     EXTRACT_FIELD(5);
 }
 
-auto Accounts::AccountsByContract(
-    const identifier::UnitDefinition& contract) const -> std::set<OTIdentifier>
+auto Accounts::AccountsByContract(const identifier::UnitDefinition& contract)
+    const -> UnallocatedSet<OTIdentifier>
 {
     EXTRACT_SET_BY_ID(contract_index_, contract);
 }
 
 auto Accounts::AccountsByIssuer(const identifier::Nym& issuerNym) const
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     EXTRACT_SET_BY_ID(issuer_index_, issuerNym);
 }
 
 auto Accounts::AccountsByOwner(const identifier::Nym& ownerNym) const
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     EXTRACT_SET_BY_ID(owner_index_, ownerNym);
 }
 
 auto Accounts::AccountsByServer(const identifier::Notary& server) const
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     EXTRACT_SET_BY_ID(server_index_, server);
 }
 
 auto Accounts::AccountsByUnit(const core::UnitType unit) const
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     EXTRACT_SET_BY_VALUE(unit_index_, unit);
 }
@@ -191,7 +191,7 @@ auto Accounts::add_set_index(
     return true;
 }
 
-auto Accounts::Alias(const std::string& id) const -> std::string
+auto Accounts::Alias(const UnallocatedCString& id) const -> UnallocatedCString
 {
     return get_alias(id);
 }
@@ -279,7 +279,7 @@ auto Accounts::check_update_account(
     return true;
 }
 
-auto Accounts::Delete(const std::string& id) -> bool
+auto Accounts::Delete(const UnallocatedCString& id) -> bool
 {
     Lock lock(write_lock_);
     const auto accountID = Identifier::Factory(id);
@@ -326,7 +326,7 @@ auto Accounts::get_account_data(const Lock& lock, const OTIdentifier& accountID)
     return data->second;
 }
 
-void Accounts::init(const std::string& hash)
+void Accounts::init(const UnallocatedCString& hash)
 {
     Lock lock(write_lock_);
     std::shared_ptr<proto::StorageAccounts> serialized{nullptr};
@@ -367,9 +367,9 @@ void Accounts::init(const std::string& hash)
 }
 
 auto Accounts::Load(
-    const std::string& id,
-    std::string& output,
-    std::string& alias,
+    const UnallocatedCString& id,
+    UnallocatedCString& output,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     return load_raw(id, output, alias, checking);
@@ -434,15 +434,17 @@ auto Accounts::serialize() const -> proto::StorageAccounts
     return serialized;
 }
 
-auto Accounts::SetAlias(const std::string& id, const std::string& alias) -> bool
+auto Accounts::SetAlias(
+    const UnallocatedCString& id,
+    const UnallocatedCString& alias) -> bool
 {
     return set_alias(id, alias);
 }
 
 auto Accounts::Store(
-    const std::string& id,
-    const std::string& data,
-    const std::string& alias,
+    const UnallocatedCString& id,
+    const UnallocatedCString& data,
+    const UnallocatedCString& alias,
     const identifier::Nym& owner,
     const identifier::Nym& signer,
     const identifier::Nym& issuer,

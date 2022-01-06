@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "ContactListItem.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -29,7 +28,7 @@ namespace ui
 class OPENTXS_EXPORT PayableListItem : virtual public ContactListItem
 {
 public:
-    virtual auto PaymentCode() const noexcept -> std::string = 0;
+    virtual auto PaymentCode() const noexcept -> UnallocatedCString = 0;
 
     ~PayableListItem() override = default;
 

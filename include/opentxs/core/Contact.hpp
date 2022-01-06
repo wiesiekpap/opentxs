@@ -13,13 +13,9 @@
 #include <atomic>
 #include <cstdint>
 #include <ctime>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <tuple>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -32,6 +28,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/Data.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -75,55 +72,56 @@ class OPENTXS_EXPORT Contact
 public:
     static auto Best(const identity::wot::claim::Group& group)
         -> std::shared_ptr<identity::wot::claim::Item>;
-    static auto ExtractLabel(const identity::Nym& nym) -> std::string;
+    static auto ExtractLabel(const identity::Nym& nym) -> UnallocatedCString;
     static auto ExtractType(const identity::Nym& nym)
         -> identity::wot::claim::ClaimType;
     static auto PaymentCode(
         const identity::wot::claim::Data& data,
-        const core::UnitType currency) -> std::string;
+        const core::UnitType currency) -> UnallocatedCString;
 
     OPENTXS_NO_EXPORT Contact(
         const api::session::Client& api,
         const proto::Contact& serialized);
-    Contact(const api::session::Client& api, const std::string& label);
+    Contact(const api::session::Client& api, const UnallocatedCString& label);
 
     auto operator+=(Contact& rhs) -> Contact&;
 
-    auto BestEmail() const -> std::string;
-    auto BestPhoneNumber() const -> std::string;
+    auto BestEmail() const -> UnallocatedCString;
+    auto BestPhoneNumber() const -> UnallocatedCString;
     auto BestSocialMediaProfile(
-        const identity::wot::claim::ClaimType type) const -> std::string;
-    auto BlockchainAddresses() const -> std::vector<
+        const identity::wot::claim::ClaimType type) const -> UnallocatedCString;
+    auto BlockchainAddresses() const -> UnallocatedVector<
         std::tuple<OTData, blockchain::crypto::AddressStyle, blockchain::Type>>;
     auto Data() const -> std::shared_ptr<identity::wot::claim::Data>;
-    auto EmailAddresses(bool active = true) const -> std::string;
+    auto EmailAddresses(bool active = true) const -> UnallocatedCString;
     auto ID() const -> const Identifier&;
-    auto Label() const -> const std::string&;
+    auto Label() const -> const UnallocatedCString&;
     auto LastUpdated() const -> std::time_t;
-    auto Nyms(const bool includeInactive = false) const -> std::vector<OTNymID>;
+    auto Nyms(const bool includeInactive = false) const
+        -> UnallocatedVector<OTNymID>;
     auto PaymentCode(const core::UnitType currency = core::UnitType::BTC) const
-        -> std::string;
+        -> UnallocatedCString;
     auto PaymentCodes(const core::UnitType currency = core::UnitType::BTC) const
-        -> std::vector<std::string>;
-    auto PhoneNumbers(bool active = true) const -> std::string;
-    auto Print() const -> std::string;
+        -> UnallocatedVector<UnallocatedCString>;
+    auto PhoneNumbers(bool active = true) const -> UnallocatedCString;
+    auto Print() const -> UnallocatedCString;
     OPENTXS_NO_EXPORT auto Serialize(proto::Contact& out) const -> bool;
     auto SocialMediaProfiles(
         const identity::wot::claim::ClaimType type,
-        bool active = true) const -> std::string;
+        bool active = true) const -> UnallocatedCString;
     auto SocialMediaProfileTypes() const
-        -> const std::set<identity::wot::claim::ClaimType>;
+        -> const UnallocatedSet<identity::wot::claim::ClaimType>;
     auto Type() const -> identity::wot::claim::ClaimType;
 
     auto AddBlockchainAddress(
-        const std::string& address,
+        const UnallocatedCString& address,
         const blockchain::Type currency) -> bool;
     auto AddBlockchainAddress(
         const blockchain::crypto::AddressStyle& style,
         const blockchain::Type chain,
         const opentxs::Data& bytes) -> bool;
     auto AddEmail(
-        const std::string& value,
+        const UnallocatedCString& value,
         const bool primary,
         const bool active) -> bool;
     auto AddNym(const Nym_p& nym, const bool primary) -> bool;
@@ -134,16 +132,16 @@ public:
         const core::UnitType currency = core::UnitType::BTC,
         const bool active = true) -> bool;
     auto AddPhoneNumber(
-        const std::string& value,
+        const UnallocatedCString& value,
         const bool primary,
         const bool active) -> bool;
     auto AddSocialMediaProfile(
-        const std::string& value,
+        const UnallocatedCString& value,
         const identity::wot::claim::ClaimType type,
         const bool primary,
         const bool active) -> bool;
     auto RemoveNym(const identifier::Nym& nymID) -> bool;
-    void SetLabel(const std::string& label);
+    void SetLabel(const UnallocatedCString& label);
     void Update(const identity::Nym::Serialized& nym);
 
     ~Contact();

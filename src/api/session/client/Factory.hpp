@@ -9,10 +9,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <set>
-#include <string>
 #include <string_view>
-#include <vector>
 
 #include "Proto.hpp"
 #include "api/session/Factory.hpp"
@@ -63,6 +60,7 @@
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Time.hpp"
@@ -130,7 +128,7 @@ public:
         const opentxs::blockchain::block::Header& previous,
         const Transaction_p generationTransaction,
         const std::uint32_t nBits,
-        const std::vector<Transaction_p>& extraTransactions,
+        const UnallocatedVector<Transaction_p>& extraTransactions,
         const std::int32_t version,
         const AbortFunction abort) const noexcept
         -> std::shared_ptr<
@@ -138,8 +136,8 @@ public:
     auto BitcoinGenerationTransaction(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::block::Height height,
-        std::vector<OutputBuilder>&& outputs,
-        const std::string& coinbase,
+        UnallocatedVector<OutputBuilder>&& outputs,
+        const UnallocatedCString& coinbase,
         const std::int32_t version) const noexcept -> Transaction_p final;
     auto BitcoinTransaction(
         const opentxs::blockchain::Type chain,
@@ -162,11 +160,11 @@ public:
         const opentxs::blockchain::block::Height height) const
         -> BlockHeaderP final;
 #endif  // OT_BLOCKCHAIN
-    auto PeerObject(const Nym_p& senderNym, const std::string& message) const
-        -> std::unique_ptr<opentxs::PeerObject> final;
+    auto PeerObject(const Nym_p& senderNym, const UnallocatedCString& message)
+        const -> std::unique_ptr<opentxs::PeerObject> final;
     auto PeerObject(
         const Nym_p& senderNym,
-        const std::string& payment,
+        const UnallocatedCString& payment,
         const bool isPayment) const
         -> std::unique_ptr<opentxs::PeerObject> final;
     auto PeerObject(const Nym_p& senderNym, otx::blind::Purse&&) const

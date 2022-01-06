@@ -8,15 +8,11 @@
 #include "IncomingConnectionManager.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
-#include <deque>
-#include <map>
 #include <mutex>
 #include <queue>
 #include <stdexcept>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -43,6 +39,7 @@
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -114,8 +111,8 @@ private:
     using CachedMessages = std::queue<network::zeromq::Message>;
     using PeerData =
         std::tuple<ConnectionID, ConnectionID, bool, CachedMessages>;
-    using Peers = std::map<int, PeerData>;
-    using PeerIndex = std::map<ConnectionID, int>;
+    using Peers = UnallocatedMap<int, PeerData>;
+    using PeerIndex = UnallocatedMap<ConnectionID, int>;
 
     const api::Session& api_;
     mutable std::mutex lock_;

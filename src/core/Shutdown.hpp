@@ -7,12 +7,11 @@
 
 #include <functional>
 #include <future>
-#include <string>
-#include <vector>
 
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -30,7 +29,7 @@ namespace opentxs::internal
 class ShutdownSender
 {
 public:
-    const std::string endpoint_;
+    const UnallocatedCString endpoint_;
 
     auto Activate() const noexcept -> void;
 
@@ -38,7 +37,7 @@ public:
 
     ShutdownSender(
         const network::zeromq::Context& zmq,
-        const std::string endpoint) noexcept;
+        const UnallocatedCString endpoint) noexcept;
 
     ~ShutdownSender();
 
@@ -58,7 +57,7 @@ public:
     using Promise = std::promise<void>;
     using Future = std::shared_future<void>;
     using Callback = std::function<void(Promise&)>;
-    using Endpoints = std::vector<std::string>;
+    using Endpoints = UnallocatedVector<UnallocatedCString>;
 
     Promise promise_;
     Future future_;

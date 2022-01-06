@@ -11,13 +11,13 @@
 #include <limits>
 #include <memory>
 #include <mutex>
-#include <string>
 #include <thread>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
 #include "internal/util/Flag.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/StorageRoot.pb.h"
 #include "util/storage/tree/Node.hpp"
@@ -89,10 +89,10 @@ private:
 
         auto Serialize(proto::StorageRoot& out) const noexcept -> void;
 
-        auto Check(const std::string root) noexcept -> CheckState;
+        auto Check(const UnallocatedCString root) noexcept -> CheckState;
         auto Cleanup() noexcept -> void;
         auto Init(
-            const std::string& root,
+            const UnallocatedCString& root,
             bool resume,
             std::uint64_t last) noexcept -> void;
         auto Resume(bool fromBucket) noexcept -> bool;
@@ -114,7 +114,7 @@ private:
         mutable std::mutex lock_;
         OTFlag running_;
         OTFlag resume_;
-        std::string root_;
+        UnallocatedCString root_;
         std::atomic<std::uint64_t> last_;
         std::promise<bool> promise_;
         std::shared_future<bool> future_;
@@ -130,7 +130,7 @@ private:
     Flag& current_bucket_;
     mutable std::atomic<std::uint64_t> sequence_;
     mutable GC gc_;
-    std::string tree_root_;
+    UnallocatedCString tree_root_;
     mutable std::mutex tree_lock_;
     mutable std::unique_ptr<storage::Tree> tree_;
 
@@ -139,7 +139,7 @@ private:
 
     void blank(const VersionNumber version) final;
     void cleanup() const;
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
     auto save(const Lock& lock, const Driver& to) const -> bool;
     auto save(const Lock& lock) const -> bool final;
     void save(storage::Tree* tree, const Lock& lock);
@@ -147,7 +147,7 @@ private:
     Root(
         const api::network::Asio& asio,
         const Driver& storage,
-        const std::string& hash,
+        const UnallocatedCString& hash,
         const std::int64_t interval,
         Flag& bucket);
     Root() = delete;

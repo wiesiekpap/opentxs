@@ -7,12 +7,11 @@
 
 #include <algorithm>
 #include <iterator>
-#include <map>
-#include <set>
 #include <stdexcept>
 #include <utility>
 
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -106,7 +105,7 @@ auto ValidContactSectionName(
     const std::uint32_t version,
     const ContactSectionName name) -> bool
 {
-    std::set<ContactSectionName> allowedNames =
+    UnallocatedSet<ContactSectionName> allowedNames =
         AllowedSectionNames().at(version);
 
     try {
@@ -122,7 +121,8 @@ auto ValidContactItemType(
     const ContactSectionVersion version,
     const ContactItemType itemType) -> bool
 {
-    std::set<ContactItemType> allowedTypes = AllowedItemTypes().at(version);
+    UnallocatedSet<ContactItemType> allowedTypes =
+        AllowedItemTypes().at(version);
 
     try {
         return (
@@ -151,7 +151,7 @@ auto ValidContactItemAttribute(
 
 auto TranslateSectionName(
     const std::uint32_t enumValue,
-    const std::string& lang) -> std::string
+    const UnallocatedCString& lang) -> UnallocatedCString
 {
     EnumLang langPair{enumValue, lang};
 
@@ -161,8 +161,9 @@ auto TranslateSectionName(
 
     return "";
 }
-auto TranslateItemType(const std::uint32_t enumValue, const std::string& lang)
-    -> std::string
+auto TranslateItemType(
+    const std::uint32_t enumValue,
+    const UnallocatedCString& lang) -> UnallocatedCString
 {
     EnumLang langPair{enumValue, lang};
 
@@ -174,7 +175,7 @@ auto TranslateItemType(const std::uint32_t enumValue, const std::string& lang)
 }
 auto TranslateItemAttributes(
     const std::uint32_t enumValue,
-    const std::string& lang) -> std::string
+    const UnallocatedCString& lang) -> UnallocatedCString
 {
     EnumLang langPair{enumValue, lang};
 

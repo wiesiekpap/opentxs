@@ -10,13 +10,11 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
-#include <deque>
 #include <functional>
 #include <future>
 #include <limits>
 #include <memory>
 #include <new>
-#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -54,6 +52,7 @@
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"

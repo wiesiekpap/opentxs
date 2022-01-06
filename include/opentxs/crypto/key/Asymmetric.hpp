@@ -8,9 +8,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <list>
 #include <memory>
-#include <string>
 
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
@@ -18,6 +16,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs
@@ -94,7 +93,7 @@ public:
     virtual auto keyType() const noexcept
         -> crypto::key::asymmetric::Algorithm = 0;
     virtual auto Params() const noexcept -> ReadView = 0;
-    virtual auto Path() const noexcept -> const std::string = 0;
+    virtual auto Path() const noexcept -> const UnallocatedCString = 0;
     OPENTXS_NO_EXPORT virtual auto Path(proto::HDPath& output) const noexcept
         -> bool = 0;
     virtual auto PrivateKey(const PasswordPrompt& reason) const noexcept

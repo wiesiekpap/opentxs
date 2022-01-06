@@ -19,13 +19,14 @@ namespace
 extern const std::array<std::uint8_t, 381319> bch_filter_1307544_;
 extern const std::array<std::uint8_t, 430483> bch_filter_1307723_;
 
-auto some_moron_wrote_the_bytes_backwards(const std::string& in) -> std::string
+auto some_moron_wrote_the_bytes_backwards(const ot::UnallocatedCString& in)
+    -> ot::UnallocatedCString
 {
     if (0 != (in.size() % 2)) {
         throw std::runtime_error("Invalid hex string");
     }
 
-    auto output = std::string{};
+    auto output = ot::UnallocatedCString{};
     output.reserve(in.size());
 
     for (auto i{in.size()}; i > 0; i -= 2) { output.append(in, i - 2, 2); }
@@ -35,7 +36,7 @@ auto some_moron_wrote_the_bytes_backwards(const std::string& in) -> std::string
 
 auto parse_hex(
     const ot::api::Session& api,
-    const std::string& hex,
+    const ot::UnallocatedCString& hex,
     const bool reverse = false) noexcept -> ot::OTData
 {
     return api.Factory().Data(
@@ -45,13 +46,13 @@ auto parse_hex(
 
 struct Bip158Vector {
     ot::blockchain::block::Height height_;
-    std::string block_hash_;
-    std::string block_;
-    std::vector<std::string> previous_outputs_;
-    std::string previous_filter_header_;
-    std::string filter_;
-    std::string filter_header_;
-    std::string notes_;
+    ot::UnallocatedCString block_hash_;
+    ot::UnallocatedCString block_;
+    ot::UnallocatedVector<ot::UnallocatedCString> previous_outputs_;
+    ot::UnallocatedCString previous_filter_header_;
+    ot::UnallocatedCString filter_;
+    ot::UnallocatedCString filter_header_;
+    ot::UnallocatedCString notes_;
 
     [[maybe_unused]] auto Block(const ot::api::Session& api) const noexcept
     {
@@ -78,7 +79,7 @@ struct Bip158Vector {
     [[maybe_unused]] auto PreviousOutputs(
         const ot::api::Session& api) const noexcept
     {
-        auto output = std::vector<ot::OTData>{};
+        auto output = ot::UnallocatedVector<ot::OTData>{};
 
         for (const auto& hex : previous_outputs_) {
             output.emplace_back(parse_hex(api, hex));
@@ -88,7 +89,7 @@ struct Bip158Vector {
     }
 };
 
-const auto bip_158_vectors_ = std::vector<Bip158Vector>{
+const auto bip_158_vectors_ = ot::UnallocatedVector<Bip158Vector>{
     {0,
      "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943",
      "0100000000000000000000000000000000000000000000000000000000000000000000003"
@@ -374,7 +375,9 @@ const auto bip_158_vectors_ = std::vector<Bip158Vector>{
      "00",
      "021e8882ef5a0ed932edeebbecfeda1d7ce528ec7b3daa27641acf1189d7b5dc",
      "Empty data"}};
-const std::map<ot::blockchain::block::Height, std::vector<std::string>>
+const ot::UnallocatedMap<
+    ot::blockchain::block::Height,
+    ot::UnallocatedVector<ot::UnallocatedCString>>
     indexed_elements_{
         {0,
          {

@@ -5,8 +5,6 @@
 
 #include "internal/serialization/protobuf/verify/RPCCommand.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/APIArgument.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/AcceptPendingPayment.hpp"  // IWYU pragma: keep
@@ -25,6 +23,7 @@
 #include "internal/serialization/protobuf/verify/VerifyClaim.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "internal/serialization/protobuf/verify/VerifyRPC.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/RPCCommand.pb.h"
 #include "serialization/protobuf/RPCEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"

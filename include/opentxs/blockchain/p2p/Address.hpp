@@ -7,10 +7,9 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <set>
-
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -45,20 +44,21 @@ public:
 
     virtual auto Bytes() const noexcept -> OTData = 0;
     virtual auto Chain() const noexcept -> blockchain::Type = 0;
-    virtual auto Display() const noexcept -> std::string = 0;
+    virtual auto Display() const noexcept -> UnallocatedCString = 0;
     virtual auto ID() const noexcept -> const Identifier& = 0;
     virtual auto LastConnected() const noexcept -> Time = 0;
     virtual auto Port() const noexcept -> std::uint16_t = 0;
     OPENTXS_NO_EXPORT virtual auto Serialize(SerializedType& out) const noexcept
         -> bool = 0;
-    virtual auto Services() const noexcept -> std::set<Service> = 0;
+    virtual auto Services() const noexcept -> UnallocatedSet<Service> = 0;
     virtual auto Style() const noexcept -> Protocol = 0;
     virtual auto Type() const noexcept -> Network = 0;
 
     virtual void AddService(const Service service) noexcept = 0;
     virtual void RemoveService(const Service service) noexcept = 0;
     virtual void SetLastConnected(const Time& time) noexcept = 0;
-    virtual void SetServices(const std::set<Service>& services) noexcept = 0;
+    virtual void SetServices(
+        const UnallocatedSet<Service>& services) noexcept = 0;
 
     virtual ~Address() = default;
 

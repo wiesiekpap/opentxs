@@ -6,12 +6,11 @@
 #pragma once
 
 #include <future>
-#include <map>
-#include <string>
 
 #include "internal/util/Lockable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "util/storage/Plugin.hpp"
 
@@ -51,11 +50,11 @@ class MemDB final : public implementation::Plugin,
 public:
     auto EmptyBucket(const bool bucket) const -> bool final;
     auto LoadFromBucket(
-        const std::string& key,
-        std::string& value,
+        const UnallocatedCString& key,
+        UnallocatedCString& value,
         const bool bucket) const -> bool final;
-    auto LoadRoot() const -> std::string final;
-    auto StoreRoot(const bool commit, const std::string& hash) const
+    auto LoadRoot() const -> UnallocatedCString final;
+    auto StoreRoot(const bool commit, const UnallocatedCString& hash) const
         -> bool final;
 
     void Cleanup() final {}
@@ -72,14 +71,14 @@ public:
 private:
     using ot_super = Plugin;
 
-    mutable std::string root_;
-    mutable std::map<std::string, std::string> a_;
-    mutable std::map<std::string, std::string> b_;
+    mutable UnallocatedCString root_;
+    mutable UnallocatedMap<UnallocatedCString, UnallocatedCString> a_;
+    mutable UnallocatedMap<UnallocatedCString, UnallocatedCString> b_;
 
     void store(
         const bool isTransaction,
-        const std::string& key,
-        const std::string& value,
+        const UnallocatedCString& key,
+        const UnallocatedCString& value,
         const bool bucket,
         std::promise<bool>* promise) const final;
 

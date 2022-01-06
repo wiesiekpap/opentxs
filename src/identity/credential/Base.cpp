@@ -7,10 +7,8 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "identity/credential/Base.tpp"  // IWYU pragma: associated
 
-#include <list>
 #include <memory>
 #include <stdexcept>
-#include <string>
 
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
@@ -35,6 +33,7 @@
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/identity/credential/Primary.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/ChildCredentialParameters.pb.h"
 #include "serialization/protobuf/Credential.pb.h"
@@ -51,7 +50,7 @@ Base::Base(
     const VersionNumber version,
     const identity::CredentialRole role,
     const crypto::key::asymmetric::Mode mode,
-    const std::string& masterID) noexcept
+    const UnallocatedCString& masterID) noexcept
     : Signable(api, {}, version, {}, {})
     , parent_(parent)
     , source_(source)
@@ -68,7 +67,7 @@ Base::Base(
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const proto::Credential& serialized,
-    const std::string& masterID) noexcept(false)
+    const UnallocatedCString& masterID) noexcept(false)
     : Signable(
           api,
           {},
@@ -101,7 +100,9 @@ void Base::add_master_signature(
     auto& signature = *serialized->add_signature();
 
     bool havePublicSig = master.Sign(
-        [&serialized]() -> std::string { return proto::ToString(*serialized); },
+        [&serialized]() -> UnallocatedCString {
+            return proto::ToString(*serialized);
+        },
         crypto::SignatureRole::PublicCredential,
         signature,
         reason);
@@ -114,7 +115,7 @@ void Base::add_master_signature(
     signatures_.push_back(serializedMasterSignature);
 }
 
-auto Base::asString(const bool asPrivate) const -> std::string
+auto Base::asString(const bool asPrivate) const -> UnallocatedCString
 {
     auto credential = SerializedType{};
     auto dataCredential = Data::Factory();
@@ -141,14 +142,14 @@ auto Base::extract_signatures(const SerializedType& serialized) -> Signatures
 }
 
 auto Base::get_master_id(const internal::Primary& master) noexcept
-    -> std::string
+    -> UnallocatedCString
 {
     return master.ID()->str();
 }
 
 auto Base::get_master_id(
     const proto::Credential& serialized,
-    const internal::Primary& master) noexcept(false) -> std::string
+    const internal::Primary& master) noexcept(false) -> UnallocatedCString
 {
     const auto& id = serialized.childdata().masterid();
 

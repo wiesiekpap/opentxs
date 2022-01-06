@@ -9,7 +9,8 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -33,5 +34,5 @@ enum class Bip32Child : Bip32Index;
 enum class Bip43Purpose : Bip32Index;
 enum class Bip44Type : Bip32Index;
 
-auto print(crypto::SeedStyle) noexcept -> std::string;
+auto print(crypto::SeedStyle) noexcept -> UnallocatedCString;
 }  // namespace opentxs

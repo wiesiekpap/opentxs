@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 #include <cstdint>
 #include <memory>
-#include <vector>
 
 #include "Helpers.hpp"
 #include "VectorsV1.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

@@ -10,7 +10,6 @@
 #pragma once
 
 #include <functional>
-#include <map>
 #include <memory>
 #include <mutex>
 
@@ -33,6 +32,7 @@
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
 #include "opentxs/crypto/library/SymmetricProvider.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -109,10 +109,10 @@ private:
     using AType = opentxs::crypto::key::asymmetric::Algorithm;
     using SaType = opentxs::crypto::key::symmetric::Algorithm;
     using SsType = opentxs::crypto::key::symmetric::Source;
-    using AMap = std::map<AType, opentxs::crypto::AsymmetricProvider*>;
-    using EMap = std::map<AType, opentxs::crypto::EcdsaProvider*>;
-    using SaMap = std::map<SaType, opentxs::crypto::SymmetricProvider*>;
-    using SsMap = std::map<SsType, opentxs::crypto::SymmetricProvider*>;
+    using AMap = UnallocatedMap<AType, opentxs::crypto::AsymmetricProvider*>;
+    using EMap = UnallocatedMap<AType, opentxs::crypto::EcdsaProvider*>;
+    using SaMap = UnallocatedMap<SaType, opentxs::crypto::SymmetricProvider*>;
+    using SsMap = UnallocatedMap<SsType, opentxs::crypto::SymmetricProvider*>;
 
     static auto pbkdf2_choose(
         std::unique_ptr<opentxs::crypto::Sodium>& sodium,

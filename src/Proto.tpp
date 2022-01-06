@@ -12,19 +12,19 @@
 #include <iostream>
 #include <limits>
 #include <memory>
-#include <string>
 
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
 namespace proto
 {
-std::string ToString(const ProtobufType& input);
+UnallocatedCString ToString(const ProtobufType& input);
 
 template <typename Output>
 Output Factory(const void* input, const std::size_t size);

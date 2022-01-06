@@ -46,7 +46,8 @@ namespace opentxs::factory
 auto PeerObject(
     const api::Session& api,
     const Nym_p& senderNym,
-    const std::string& message) noexcept -> std::unique_ptr<opentxs::PeerObject>
+    const UnallocatedCString& message) noexcept
+    -> std::unique_ptr<opentxs::PeerObject>
 {
     try {
         std::unique_ptr<opentxs::PeerObject> output(
@@ -65,7 +66,7 @@ auto PeerObject(
 auto PeerObject(
     const api::Session& api,
     const Nym_p& senderNym,
-    const std::string& payment,
+    const UnallocatedCString& payment,
     const bool isPayment) noexcept -> std::unique_ptr<opentxs::PeerObject>
 {
     try {
@@ -209,8 +210,8 @@ namespace opentxs::peer::implementation
 Object::Object(
     const api::Session& api,
     const Nym_p& nym,
-    const std::string& message,
-    const std::string& payment,
+    const UnallocatedCString& message,
+    const UnallocatedCString& payment,
     const OTPeerReply reply,
     const OTPeerRequest request,
     otx::blind::Purse&& purse,
@@ -218,8 +219,8 @@ Object::Object(
     const VersionNumber version) noexcept
     : api_(api)
     , nym_(nym)
-    , message_(message.empty() ? nullptr : new std::string(message))
-    , payment_(payment.empty() ? nullptr : new std::string(payment))
+    , message_(message.empty() ? nullptr : new UnallocatedCString(message))
+    , payment_(payment.empty() ? nullptr : new UnallocatedCString(payment))
     , reply_(reply)
     , request_(request)
     , purse_(std::move(purse))
@@ -259,7 +260,8 @@ Object::Object(
 
     switch (translate(serialized.type())) {
         case (contract::peer::PeerObjectType::Message): {
-            message_ = std::make_unique<std::string>(serialized.otmessage());
+            message_ =
+                std::make_unique<UnallocatedCString>(serialized.otmessage());
         } break;
         case (contract::peer::PeerObjectType::Request): {
             request_ = api_.Factory().InternalSession().PeerRequest(
@@ -279,7 +281,8 @@ Object::Object(
                 nym_, serialized.otreply());
         } break;
         case (contract::peer::PeerObjectType::Payment): {
-            payment_ = std::make_unique<std::string>(serialized.otpayment());
+            payment_ =
+                std::make_unique<UnallocatedCString>(serialized.otpayment());
         } break;
         case (contract::peer::PeerObjectType::Cash): {
             purse_ = factory::Purse(api_, serialized.purse());
@@ -293,7 +296,7 @@ Object::Object(
 Object::Object(
     const api::Session& api,
     const Nym_p& senderNym,
-    const std::string& message) noexcept
+    const UnallocatedCString& message) noexcept
     : Object(
           api,
           senderNym,
@@ -326,7 +329,7 @@ Object::Object(
 
 Object::Object(
     const api::Session& api,
-    const std::string& payment,
+    const UnallocatedCString& payment,
     const Nym_p& senderNym) noexcept
     : Object(
           api,

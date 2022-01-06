@@ -22,6 +22,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 

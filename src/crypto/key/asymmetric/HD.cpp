@@ -332,7 +332,7 @@ auto HD::get_params() const noexcept -> std::tuple<bool, Bip32Depth, Bip32Index>
     return output;
 }
 
-auto HD::Path() const noexcept -> const std::string
+auto HD::Path() const noexcept -> const UnallocatedCString
 {
     auto path = String::Factory();
 
@@ -386,7 +386,7 @@ auto HD::serialize(const Lock& lock, Serialized& output) const noexcept -> bool
     return true;
 }
 
-auto HD::Xprv(const PasswordPrompt& reason) const noexcept -> std::string
+auto HD::Xprv(const PasswordPrompt& reason) const noexcept -> UnallocatedCString
 {
     auto lock = Lock{lock_};
     const auto [ready, depth, child] = get_params();
@@ -406,7 +406,7 @@ auto HD::Xprv(const PasswordPrompt& reason) const noexcept -> std::string
         privateKey);
 }
 
-auto HD::Xpub(const PasswordPrompt& reason) const noexcept -> std::string
+auto HD::Xpub(const PasswordPrompt& reason) const noexcept -> UnallocatedCString
 {
     auto lock = Lock{lock_};
     const auto [ready, depth, child] = get_params();

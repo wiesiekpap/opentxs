@@ -7,7 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -28,14 +28,15 @@ namespace opentxs::api::network
 class OPENTXS_EXPORT Dht
 {
 public:
-    virtual auto GetPublicNym(const std::string& key) const noexcept
+    virtual auto GetPublicNym(const UnallocatedCString& key) const noexcept
         -> void = 0;
-    virtual auto GetServerContract(const std::string& key) const noexcept
+    virtual auto GetServerContract(const UnallocatedCString& key) const noexcept
         -> void = 0;
-    virtual auto GetUnitDefinition(const std::string& key) const noexcept
+    virtual auto GetUnitDefinition(const UnallocatedCString& key) const noexcept
         -> void = 0;
-    virtual auto Insert(const std::string& key, const std::string& value)
-        const noexcept -> void = 0;
+    virtual auto Insert(
+        const UnallocatedCString& key,
+        const UnallocatedCString& value) const noexcept -> void = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Dht& = 0;
 

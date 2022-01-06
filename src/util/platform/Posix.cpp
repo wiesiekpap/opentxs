@@ -34,7 +34,8 @@ extern "C" {
 
 namespace opentxs
 {
-auto vformat(const char* fmt, va_list* pvl, std::string& str_Output) -> bool
+auto vformat(const char* fmt, va_list* pvl, UnallocatedCString& str_Output)
+    -> bool
 {
     OT_ASSERT(nullptr != fmt);
     OT_ASSERT(nullptr != pvl);
@@ -108,7 +109,8 @@ auto Signals::handle() -> void
 
 namespace opentxs::implementation
 {
-auto String::tokenize_basic(std::map<std::string, std::string>& mapOutput) const
+auto String::tokenize_basic(
+    UnallocatedMap<UnallocatedCString, UnallocatedCString>& mapOutput) const
     -> bool
 {
     // simple parser that allows for one level of quotes nesting but no escaped
@@ -116,7 +118,7 @@ auto String::tokenize_basic(std::map<std::string, std::string>& mapOutput) const
     if (!Exists()) return true;
 
     const char* txt = Get();
-    std::string buf = txt;
+    UnallocatedCString buf = txt;
     for (std::int32_t i = 0; txt[i] != 0;) {
         while (txt[i] == ' ') i++;
         std::int32_t k = i;
@@ -137,7 +139,7 @@ auto String::tokenize_basic(std::map<std::string, std::string>& mapOutput) const
             while (txt[i] != ' ' && txt[i] != 0) i++;
             k2 = i;
         }
-        const std::string key = buf.substr(k, k2 - k);
+        const UnallocatedCString key = buf.substr(k, k2 - k);
 
         while (txt[i] == ' ') i++;
         std::int32_t v = i;
@@ -158,19 +160,21 @@ auto String::tokenize_basic(std::map<std::string, std::string>& mapOutput) const
             while (txt[i] != ' ' && txt[i] != 0) i++;
             v2 = i;
         }
-        const std::string value = buf.substr(v, v2 - v);
+        const UnallocatedCString value = buf.substr(v, v2 - v);
 
         if (key.length() != 0 && value.length() != 0) {
             LogVerbose()(OT_PRETTY_CLASS())("Parsed: ")(key)(" = ")(value)
                 .Flush();
-            mapOutput.insert(std::pair<std::string, std::string>(key, value));
+            mapOutput.insert(
+                std::pair<UnallocatedCString, UnallocatedCString>(key, value));
         }
     }
     return true;
 }
 
 auto String::tokenize_enhanced(
-    std::map<std::string, std::string>& mapOutput) const -> bool
+    UnallocatedMap<UnallocatedCString, UnallocatedCString>& mapOutput) const
+    -> bool
 {
 #if __has_include(<wordexp.h>)
     // fabcy-pansy parser that allows for multiple level of quotes nesting and
@@ -207,13 +211,13 @@ auto String::tokenize_enhanced(
              (exp_result.we_wordv[i + 1] !=
               nullptr);  // odd man out. Only PAIRS of strings are processed!
              i += 2) {
-            const std::string str_key = exp_result.we_wordv[i];
-            const std::string str_val = exp_result.we_wordv[i + 1];
+            const UnallocatedCString str_key = exp_result.we_wordv[i];
+            const UnallocatedCString str_val = exp_result.we_wordv[i + 1];
 
             LogVerbose()(OT_PRETTY_CLASS())("Parsed: ")(str_key)(" = ")(str_val)
                 .Flush();
-            mapOutput.insert(
-                std::pair<std::string, std::string>(str_key, str_val));
+            mapOutput.insert(std::pair<UnallocatedCString, UnallocatedCString>(
+                str_key, str_val));
         }
 
         wordfree(&exp_result);
@@ -289,7 +293,7 @@ auto Context::Init_Rlimit() noexcept -> void
 #endif  // !defined(PREDEF_MODE_DEBUG)
 }
 
-auto Legacy::get_home_platform() noexcept -> std::string
+auto Legacy::get_home_platform() noexcept -> UnallocatedCString
 {
     const auto* pwd = getpwuid(getuid());
 

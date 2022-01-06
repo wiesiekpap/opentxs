@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <optional>
-#include <string>
 
 #include "internal/api/session/Client.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
@@ -25,7 +24,7 @@
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -124,7 +123,7 @@ TEST_F(Test_Symmetric, key_functionality)
 
     ASSERT_TRUE(recoveredKey.get());
 
-    std::string plaintext{};
+    ot::UnallocatedCString plaintext{};
     auto decrypted = recoveredKey->Decrypt(
         ot::reader(ciphertext_), password, [&](const auto size) {
             plaintext.resize(size);

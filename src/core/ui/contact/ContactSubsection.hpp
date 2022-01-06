@@ -6,11 +6,7 @@
 #pragma once
 
 #include <iosfwd>
-#include <list>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -22,6 +18,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -84,7 +81,8 @@ class ContactSubsection final : public Combined<
                                     ContactSectionSortKey>
 {
 public:
-    auto Name(const std::string& lang) const noexcept -> std::string final;
+    auto Name(const UnallocatedCString& lang) const noexcept
+        -> UnallocatedCString final;
     auto Type() const noexcept -> identity::wot::claim::ClaimType final
     {
         return row_id_.second;
@@ -113,7 +111,7 @@ private:
         return ContactSubsectionList::last(id);
     }
     auto process_group(const identity::wot::claim::Group& group) noexcept
-        -> std::set<ContactSubsectionRowID>;
+        -> UnallocatedSet<ContactSubsectionRowID>;
     auto reindex(const ContactSectionSortKey& key, CustomData& custom) noexcept
         -> bool final;
     auto startup(const identity::wot::claim::Group group) noexcept -> void;

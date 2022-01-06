@@ -5,10 +5,8 @@
 
 #include <gtest/gtest.h>
 #include <atomic>
-#include <map>
 #include <memory>
 #include <optional>
-#include <string>
 
 #include "integration/Helpers.hpp"
 #include "opentxs/OT.hpp"
@@ -29,6 +27,7 @@
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "paymentcode/VectorsV3.hpp"
@@ -42,10 +41,12 @@ public:
     using Protocol = ot::blockchain::crypto::HDProtocol;
     using Subaccount = ot::blockchain::crypto::SubaccountType;
     using Subchain = ot::blockchain::crypto::Subchain;
-    using HDAccountMap =
-        std::map<ot::OTNymID, std::map<Protocol, ot::OTIdentifier>>;
-    using PCAccountMap =
-        std::map<std::string, std::map<std::string, ot::OTIdentifier>>;
+    using HDAccountMap = ot::UnallocatedMap<
+        ot::OTNymID,
+        ot::UnallocatedMap<Protocol, ot::OTIdentifier>>;
+    using PCAccountMap = std::map<
+        ot::UnallocatedCString,
+        ot::UnallocatedMap<ot::UnallocatedCString, ot::OTIdentifier>>;
 
     static constexpr auto chain_{ot::blockchain::Type::UnitTest};
     static constexpr auto pkt_words_{
@@ -160,7 +161,8 @@ TEST_F(BlockchainSelector, alice_initial)
         alice_.nym_id_->str(),
         chain_,
         {
-            {std::string{"BIP-39 seed: "} + alice_.seed_id_ + " (default)",
+            {ot::UnallocatedCString{"BIP-39 seed: "} + alice_.seed_id_ +
+                 " (default)",
              alice_.seed_id_,
              Subaccount::HD,
              {
@@ -211,7 +213,8 @@ TEST_F(BlockchainSelector, bob_initial)
         bob_.nym_id_->str(),
         chain_,
         {
-            {std::string{"BIP-39 seed: "} + bob_.seed_id_ + " (default)",
+            {ot::UnallocatedCString{"BIP-39 seed: "} + bob_.seed_id_ +
+                 " (default)",
              bob_.seed_id_,
              Subaccount::HD,
              {
@@ -241,7 +244,7 @@ TEST_F(BlockchainSelector, chris_initial)
         chris_.nym_id_->str(),
         chain_,
         {
-            {std::string{"pktwallet seed: "} + chris_.seed_id_,
+            {ot::UnallocatedCString{"pktwallet seed: "} + chris_.seed_id_,
              chris_.seed_id_,
              Subaccount::HD,
              {
@@ -272,7 +275,7 @@ TEST_F(BlockchainSelector, chris_final)
         chris_.nym_id_->str(),
         chain_,
         {
-            {std::string{"pktwallet seed: "} + chris_.seed_id_,
+            {ot::UnallocatedCString{"pktwallet seed: "} + chris_.seed_id_,
              chris_.seed_id_,
              Subaccount::HD,
              {

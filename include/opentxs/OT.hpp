@@ -9,10 +9,9 @@
 
 #include <chrono>
 #include <functional>
-#include <map>
-#include <string>
 
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -68,7 +67,7 @@ OPENTXS_EXPORT auto InitContext(
  */
 OPENTXS_EXPORT auto Join() noexcept -> void;
 
-using LicenseMap = std::map<std::string, std::string>;
+using LicenseMap = UnallocatedMap<UnallocatedCString, UnallocatedCString>;
 
 OPENTXS_EXPORT auto LicenseData() noexcept -> const LicenseMap&;
 OPENTXS_EXPORT auto VersionMajor() noexcept -> unsigned int;

@@ -18,7 +18,6 @@ extern "C" {
 #include <functional>
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <string_view>
 
 #include "crypto/library/EcdsaProvider.hpp"
@@ -31,6 +30,7 @@ extern "C" {
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

@@ -6,11 +6,11 @@
 #pragma once
 
 #include <future>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "util/LMDB.hpp"
 #include "util/storage/Plugin.hpp"
@@ -50,11 +50,11 @@ class LMDB final : public virtual implementation::Plugin,
 public:
     auto EmptyBucket(const bool bucket) const -> bool final;
     auto LoadFromBucket(
-        const std::string& key,
-        std::string& value,
+        const UnallocatedCString& key,
+        UnallocatedCString& value,
         const bool bucket) const -> bool final;
-    auto LoadRoot() const -> std::string final;
-    auto StoreRoot(const bool commit, const std::string& hash) const
+    auto LoadRoot() const -> UnallocatedCString final;
+    auto StoreRoot(const bool commit, const UnallocatedCString& hash) const
         -> bool final;
 
     void Cleanup() final;
@@ -84,8 +84,8 @@ private:
     auto get_table(const bool bucket) const -> Table;
     void store(
         const bool isTransaction,
-        const std::string& key,
-        const std::string& value,
+        const UnallocatedCString& key,
+        const UnallocatedCString& value,
         const bool bucket,
         std::promise<bool>* promise) const final;
 

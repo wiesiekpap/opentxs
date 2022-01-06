@@ -94,7 +94,7 @@ auto Log::Imp::Assert(
     const char* message) const noexcept -> void
 {
     if (auto done = logger_.running_.get(); false == done) {
-        auto id = std::string{};
+        auto id = UnallocatedCString{};
         auto& [socket, buffer] = get_buffer(id);
         buffer = std::stringstream{};
         buffer << "OT ASSERT";
@@ -112,11 +112,11 @@ auto Log::Imp::Assert(
 
 auto Log::Imp::Flush() const noexcept -> void { send(false); }
 
-auto Log::Imp::get_buffer(std::string& out) noexcept -> Logger::Source&
+auto Log::Imp::get_buffer(UnallocatedCString& out) noexcept -> Logger::Source&
 {
     struct Buffer {
         const std::thread::id id_;
-        const std::string text_;
+        const UnallocatedCString text_;
         const int index_;
         Logger::SourceMap::iterator source_;
 
@@ -169,7 +169,7 @@ auto Log::Imp::operator()(const char* in) const noexcept -> const opentxs::Log&
 {
     if (false == active()) { return parent_; }
 
-    auto id = std::string{};
+    auto id = UnallocatedCString{};
 
     if (auto done = logger_.running_.get(); false == done) {
         std::get<1>(get_buffer(id)) << in;
@@ -183,7 +183,7 @@ auto Log::Imp::operator()(const boost::system::error_code& error) const noexcept
 {
     if (false == active()) { return parent_; }
 
-    auto id = std::string{};
+    auto id = UnallocatedCString{};
 
     if (auto done = logger_.running_.get(); false == done) {
         std::get<1>(get_buffer(id)) << error.message();
@@ -195,7 +195,7 @@ auto Log::Imp::operator()(const boost::system::error_code& error) const noexcept
 auto Log::Imp::send(const bool terminate) const noexcept -> void
 {
     if (auto done = logger_.running_.get(); false == done) {
-        auto id = std::string{};
+        auto id = UnallocatedCString{};
         auto& [socket, buffer] = get_buffer(id);
         auto message = zmq::Message{};
         message.StartBody();
@@ -226,7 +226,7 @@ auto Log::Imp::Trace(
     const char* message) const noexcept -> void
 {
     if (auto done = logger_.running_.get(); false == done) {
-        std::string id{};
+        UnallocatedCString id{};
         auto& [socket, buffer] = get_buffer(id);
         buffer = std::stringstream{};
         buffer << "Stack trace requested";
@@ -253,7 +253,7 @@ auto Log::operator()() const noexcept -> const Log& { return *this; }
 
 auto Log::operator()(char* in) const noexcept -> const Log&
 {
-    return operator()(std::string(in));
+    return operator()(UnallocatedCString(in));
 }
 
 auto Log::operator()(const char* in) const noexcept -> const Log&
@@ -261,7 +261,7 @@ auto Log::operator()(const char* in) const noexcept -> const Log&
     return (*imp_)(in);
 }
 
-auto Log::operator()(const std::string& in) const noexcept -> const Log&
+auto Log::operator()(const UnallocatedCString& in) const noexcept -> const Log&
 {
     return operator()(in.c_str());
 }
@@ -314,7 +314,7 @@ auto Log::operator()(const Amount& in) const noexcept -> const Log&
 {
     if (false == imp_->active()) { return *this; }
 
-    auto amount = std::string{};
+    auto amount = UnallocatedCString{};
     in.Serialize(opentxs::writer(amount));
 
     auto raw_amount = in.Internal().extract_float<bmp::cpp_dec_float_100>();
@@ -328,7 +328,7 @@ auto Log::operator()(const Amount& in, core::UnitType currency) const noexcept
 {
     if (false == imp_->active()) { return *this; }
 
-    auto amount = std::string{};
+    auto amount = UnallocatedCString{};
     in.Serialize(opentxs::writer(amount));
 
     if (core::UnitType::Unknown != currency) {
@@ -504,7 +504,7 @@ auto LogVerbose() noexcept -> Log&
     return logger;
 }
 
-auto PrintStackTrace() noexcept -> std::string
+auto PrintStackTrace() noexcept -> UnallocatedCString
 {
     auto output = std::stringstream{};
     output << boost::stacktrace::stacktrace();

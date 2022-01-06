@@ -10,9 +10,7 @@
 #include <robin_hood.h>
 #include <cstdint>
 #include <iterator>
-#include <map>
 #include <memory>
-#include <set>
 #include <stdexcept>
 #include <tuple>
 #include <utility>
@@ -35,8 +33,10 @@
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/HD.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Bip47Channel.pb.h"
@@ -139,7 +139,7 @@ PaymentCode::PaymentCode(
     , version_(DefaultVersion)
     , outgoing_notifications_()
     , incoming_notifications_([&] {
-        auto out = std::set<opentxs::blockchain::block::pTxid>{};
+        auto out = UnallocatedSet<opentxs::blockchain::block::pTxid>{};
 
         if (false == txid.empty()) { out.emplace(txid); }
 
@@ -223,7 +223,7 @@ PaymentCode::PaymentCode(
           id)
     , version_(serialized.version())
     , outgoing_notifications_([&] {
-        auto out = std::set<opentxs::blockchain::block::pTxid>{};
+        auto out = UnallocatedSet<opentxs::blockchain::block::pTxid>{};
 
         for (const auto& notif : serialized.outgoing().notification()) {
             out.emplace(api_.Factory().Data(notif, StringStyle::Raw));
@@ -232,7 +232,7 @@ PaymentCode::PaymentCode(
         return out;
     }())
     , incoming_notifications_([&] {
-        auto out = std::set<opentxs::blockchain::block::pTxid>{};
+        auto out = UnallocatedSet<opentxs::blockchain::block::pTxid>{};
 
         for (const auto& notif : serialized.incoming().notification()) {
             out.emplace(api_.Factory().Data(notif, StringStyle::Raw));
@@ -349,7 +349,7 @@ auto PaymentCode::Reserve(
     const std::size_t batch,
     const PasswordPrompt& reason,
     const Identifier&,
-    const std::string& label,
+    const UnallocatedCString& label,
     const Time time) const noexcept -> Batch
 {
     return Deterministic::Reserve(

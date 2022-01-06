@@ -168,8 +168,9 @@ auto Wallet::mutable_ServerContext(
     return Editor<otx::context::Server>(child, callback);
 }
 
-void Wallet::nym_to_contact(const identity::Nym& nym, const std::string& name)
-    const noexcept
+void Wallet::nym_to_contact(
+    const identity::Nym& nym,
+    const UnallocatedCString& name) const noexcept
 {
     auto code = api_.Factory().PaymentCode(nym.PaymentCode());
     client_.Contacts().NewContact(name, nym.ID(), code);

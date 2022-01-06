@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/peermanager/PeerManager.hpp"  // IWYU pragma: associated
 
-#include <map>
 #include <utility>
 
 #include "internal/blockchain/node/Node.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -91,7 +91,8 @@ auto PeerManager::Jobs::Dispatch(zmq::Message&& work) noexcept -> void
     socket_map_.at(task)->Send(std::move(work));
 }
 
-auto PeerManager::Jobs::Endpoint(const Task type) const noexcept -> std::string
+auto PeerManager::Jobs::Endpoint(const Task type) const noexcept
+    -> UnallocatedCString
 {
     try {
 

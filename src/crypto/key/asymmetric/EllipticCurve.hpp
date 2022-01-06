@@ -6,7 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include "Proto.hpp"
 #include "crypto/key/asymmetric/Asymmetric.hpp"
@@ -22,6 +21,7 @@
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -83,7 +83,10 @@ public:
         -> std::unique_ptr<key::EllipticCurve> final;
     auto IncrementPublic(const opentxs::Secret& scalar) const noexcept
         -> std::unique_ptr<key::EllipticCurve> final;
-    auto Path() const noexcept -> const std::string override { return {}; }
+    auto Path() const noexcept -> const UnallocatedCString override
+    {
+        return {};
+    }
     auto Path(proto::HDPath&) const noexcept -> bool override { return {}; }
     auto SignDER(
         const ReadView preimage,

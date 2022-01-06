@@ -12,7 +12,6 @@
 #include <functional>
 #include <iosfwd>
 #include <memory>
-#include <string>
 #include <string_view>
 #include <tuple>
 #include <typeindex>
@@ -23,6 +22,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -44,11 +44,11 @@ enum class SubaccountType : std::uint16_t;
 enum class Subchain : std::uint8_t;
 
 /// transaction id, output index
-using Coin = std::pair<std::string, std::size_t>;
+using Coin = std::pair<UnallocatedCString, std::size_t>;
 using ECKey = std::shared_ptr<const opentxs::crypto::key::EllipticCurve>;
 using HDKey = std::shared_ptr<const opentxs::crypto::key::HD>;
 /// account id, chain, index
-using Key = std::tuple<std::string, Subchain, Bip32Index>;
+using Key = std::tuple<UnallocatedCString, Subchain, Bip32Index>;
 using Activity = std::tuple<Coin, Key, Amount>;
 }  // namespace opentxs::blockchain::crypto
 
@@ -71,8 +71,9 @@ OPENTXS_EXPORT auto operator!=(
     const blockchain::crypto::Key& rhs) noexcept -> bool;
 auto preimage(const blockchain::crypto::Key& in) noexcept -> Space;
 OPENTXS_EXPORT auto print(blockchain::crypto::HDProtocol) noexcept
-    -> std::string;
-OPENTXS_EXPORT auto print(blockchain::crypto::Subchain) noexcept -> std::string;
+    -> UnallocatedCString;
+OPENTXS_EXPORT auto print(blockchain::crypto::Subchain) noexcept
+    -> UnallocatedCString;
 OPENTXS_EXPORT auto print(const blockchain::crypto::Key&) noexcept
-    -> std::string;
+    -> UnallocatedCString;
 }  // namespace opentxs

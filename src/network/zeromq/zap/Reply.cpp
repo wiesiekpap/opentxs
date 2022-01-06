@@ -10,10 +10,8 @@
 #include <algorithm>
 #include <memory>
 #include <sstream>
-#include <string>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 #include "internal/network/zeromq/zap/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -25,6 +23,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/zap/Reply.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
@@ -126,7 +125,8 @@ Reply::Imp::Imp(const Imp& rhs) noexcept
 {
 }
 
-auto Reply::Imp::code_to_string(const zap::Status& code) noexcept -> std::string
+auto Reply::Imp::code_to_string(const zap::Status& code) noexcept
+    -> UnallocatedCString
 {
     try {
         return code_map_.at(code);
@@ -138,7 +138,7 @@ auto Reply::Imp::code_to_string(const zap::Status& code) noexcept -> std::string
 
 auto Reply::Imp::string_to_code(const ReadView string) noexcept -> zap::Status
 {
-    const auto key = std::string{string};
+    const auto key = UnallocatedCString{string};
 
     try {
         return code_reverse_map_.at(key);
@@ -199,7 +199,7 @@ auto Reply::Code() const noexcept -> zap::Status
     return Imp::string_to_code(code);
 }
 
-auto Reply::Debug() const noexcept -> std::string
+auto Reply::Debug() const noexcept -> UnallocatedCString
 {
     const auto code = [&]() -> ReadView {
         try {

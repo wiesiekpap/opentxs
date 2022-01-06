@@ -7,11 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <set>
-#include <string>
-#include <vector>
-
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -43,27 +40,29 @@ public:
     struct Imp;
 
     using Chain = opentxs::blockchain::Type;
-    using Endpoints = std::vector<std::string>;
+    using Endpoints = UnallocatedVector<UnallocatedCString>;
 
-    auto AddSyncServer(const std::string& endpoint) const noexcept -> bool;
+    auto AddSyncServer(const UnallocatedCString& endpoint) const noexcept
+        -> bool;
     auto ConnectedSyncServers() const noexcept -> Endpoints;
-    auto DeleteSyncServer(const std::string& endpoint) const noexcept -> bool;
+    auto DeleteSyncServer(const UnallocatedCString& endpoint) const noexcept
+        -> bool;
     auto Disable(const Chain type) const noexcept -> bool;
-    auto Enable(const Chain type, const std::string& seednode = "")
+    auto Enable(const Chain type, const UnallocatedCString& seednode = "")
         const noexcept -> bool;
-    auto EnabledChains() const noexcept -> std::set<Chain>;
+    auto EnabledChains() const noexcept -> UnallocatedSet<Chain>;
     /// throws std::out_of_range if chain has not been started
     auto GetChain(const Chain type) const noexcept(false)
         -> const opentxs::blockchain::node::Manager&;
     auto GetSyncServers() const noexcept -> Endpoints;
     OPENTXS_NO_EXPORT auto Internal() const noexcept -> internal::Blockchain&;
-    auto Start(const Chain type, const std::string& seednode = "")
+    auto Start(const Chain type, const UnallocatedCString& seednode = "")
         const noexcept -> bool;
     auto StartSyncServer(
-        const std::string& syncEndpoint,
-        const std::string& publicSyncEndpoint,
-        const std::string& updateEndpoint,
-        const std::string& publicUpdateEndpoint) const noexcept -> bool;
+        const UnallocatedCString& syncEndpoint,
+        const UnallocatedCString& publicSyncEndpoint,
+        const UnallocatedCString& updateEndpoint,
+        const UnallocatedCString& publicUpdateEndpoint) const noexcept -> bool;
     auto Stop(const Chain type) const noexcept -> bool;
 
     OPENTXS_NO_EXPORT Blockchain(Imp* imp) noexcept;

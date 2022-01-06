@@ -10,14 +10,10 @@
 #include <algorithm>
 #include <cstdint>
 #include <iterator>
-#include <map>
 #include <memory>
-#include <set>
 #include <stdexcept>
-#include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
@@ -48,6 +44,7 @@
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/identity/credential/Key.hpp"
 #include "opentxs/identity/credential/Verification.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -261,7 +258,7 @@ Authority::Authority(
 
 auto Authority::AddChildKeyCredential(
     const crypto::Parameters& nymParameters,
-    const opentxs::PasswordPrompt& reason) -> std::string
+    const opentxs::PasswordPrompt& reason) -> UnallocatedCString
 {
     auto output = api_.Factory().Identifier();
     auto revisedParameters{nymParameters};
@@ -545,7 +542,7 @@ auto Authority::create_master(
 auto Authority::EncryptionTargets() const noexcept -> AuthorityKeys
 {
     auto output = AuthorityKeys{GetMasterCredID(), {}};
-    auto set = std::set<crypto::key::asymmetric::Algorithm>{};
+    auto set = UnallocatedSet<crypto::key::asymmetric::Algorithm>{};
     auto& list = output.second;
 
     for (const auto& [id, pCredential] : key_credentials_) {
@@ -574,7 +571,7 @@ void Authority::extract_child(
     const credential::Base::SerializedType& serialized,
     const proto::KeyMode mode,
     const proto::CredentialRole role,
-    std::map<OTIdentifier, std::unique_ptr<Type>>& map) noexcept(false)
+    UnallocatedMap<OTIdentifier, std::unique_ptr<Type>>& map) noexcept(false)
 {
     if (role != serialized.role()) { return; }
 
@@ -619,7 +616,7 @@ auto Authority::get_keypair(
 }
 
 auto Authority::get_secondary_credential(
-    const std::string& strSubID,
+    const UnallocatedCString& strSubID,
     const String::List* plistRevokedIDs) const -> const credential::Base*
 {
     if (is_revoked(strSubID, plistRevokedIDs)) { return nullptr; }
@@ -782,7 +779,7 @@ auto Authority::hasCapability(const NymCapability& capability) const -> bool
 }
 
 auto Authority::is_revoked(
-    const std::string& id,
+    const UnallocatedCString& id,
     const String::List* plistRevokedIDs) -> bool
 {
     if (nullptr == plistRevokedIDs) { return false; }
@@ -800,9 +797,9 @@ auto Authority::load_child(
     const Serialized& serialized,
     const proto::KeyMode mode,
     const proto::CredentialRole role) noexcept(false)
-    -> std::map<OTIdentifier, std::unique_ptr<Type>>
+    -> UnallocatedMap<OTIdentifier, std::unique_ptr<Type>>
 {
-    auto output = std::map<OTIdentifier, std::unique_ptr<Type>>{};
+    auto output = UnallocatedMap<OTIdentifier, std::unique_ptr<Type>>{};
 
     if (proto::AUTHORITYMODE_INDEX == serialized.mode()) {
         for (auto& it : serialized.activechildids()) {
@@ -992,7 +989,8 @@ auto Authority::Path(proto::HDPath& output) const -> bool
     return false;
 }
 
-void Authority::RevokeContactCredentials(std::list<std::string>& output)
+void Authority::RevokeContactCredentials(
+    UnallocatedList<UnallocatedCString>& output)
 {
     const auto revoke = [&](const auto& item) -> void {
         output.push_back(item.first->str());
@@ -1002,7 +1000,8 @@ void Authority::RevokeContactCredentials(std::list<std::string>& output)
     contact_credentials_.clear();
 }
 
-void Authority::RevokeVerificationCredentials(std::list<std::string>& output)
+void Authority::RevokeVerificationCredentials(
+    UnallocatedList<UnallocatedCString>& output)
 {
     const auto revoke = [&](const auto& item) -> void {
         output.push_back(item.first->str());
@@ -1222,7 +1221,7 @@ auto Authority::Verify(
     const proto::Signature& sig,
     const crypto::key::asymmetric::Role key) const -> bool
 {
-    std::string signerID(sig.credentialid());
+    UnallocatedCString signerID(sig.credentialid());
 
     if (signerID == GetMasterCredID()->str()) {
         LogError()(OT_PRETTY_CLASS())(

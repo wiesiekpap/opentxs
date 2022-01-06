@@ -19,9 +19,9 @@ extern "C" {
 #include <cstring>
 #include <iosfwd>
 #include <iterator>
-#include <map>
 #include <optional>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "blockchain/database/common/BlockFilter.hpp"
@@ -38,6 +38,7 @@ extern "C" {
 #include "opentxs/blockchain/GCS.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -164,7 +165,7 @@ struct Database::Imp {
     }
     static auto init_storage_path(
         const api::Legacy& legacy,
-        const std::string& dataFolder) noexcept(false) -> OTString
+        const UnallocatedCString& dataFolder) noexcept(false) -> OTString
     {
         auto output = String::Factory();
 
@@ -259,8 +260,8 @@ struct Database::Imp {
         return std::move(output);
     }
 
-    auto AllocateStorageFolder(const std::string& dir) const noexcept
-        -> std::string
+    auto AllocateStorageFolder(const UnallocatedCString& dir) const noexcept
+        -> UnallocatedCString
     {
         return init_folder(legacy_, blockchain_path_, String::Factory(dir))
             ->Get();
@@ -269,7 +270,7 @@ struct Database::Imp {
     Imp(const api::Session& api,
         const api::crypto::Blockchain& blockchain,
         const api::Legacy& legacy,
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const Options& args) noexcept(false)
         : api_(api)
         , legacy_(legacy)
@@ -312,7 +313,7 @@ struct Database::Imp {
               }(),
               0,
               [&] {
-                  auto deleted = std::vector<Table>{};
+                  auto deleted = UnallocatedVector<Table>{};
                   deleted.emplace_back(Table::BlockHeadersDeleted);
                   deleted.emplace_back(Table::FiltersBasicDeleted);
                   deleted.emplace_back(Table::FiltersBCHDeleted);
@@ -376,7 +377,7 @@ Database::Database(
     const api::Session& api,
     const api::crypto::Blockchain& blockchain,
     const api::Legacy& legacy,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const Options& args) noexcept(false)
     : imp_p_(std::make_unique<Imp>(api, blockchain, legacy, dataFolder, args))
     , imp_(*imp_p_)
@@ -389,20 +390,21 @@ auto Database::AddOrUpdate(Address_p address) const noexcept -> bool
     return imp_.peers_.Insert(std::move(address));
 }
 
-auto Database::AllocateStorageFolder(const std::string& dir) const noexcept
-    -> std::string
+auto Database::AllocateStorageFolder(
+    const UnallocatedCString& dir) const noexcept -> UnallocatedCString
 {
     return imp_.AllocateStorageFolder(dir);
 }
 
 auto Database::AssociateTransaction(
     const Txid& txid,
-    const std::vector<PatternID>& patterns) const noexcept -> bool
+    const UnallocatedVector<PatternID>& patterns) const noexcept -> bool
 {
     return imp_.wallet_.AssociateTransaction(txid, patterns);
 }
 
-auto Database::AddSyncServer(const std::string& endpoint) const noexcept -> bool
+auto Database::AddSyncServer(const UnallocatedCString& endpoint) const noexcept
+    -> bool
 {
     return imp_.config_.AddSyncServer(endpoint);
 }
@@ -433,8 +435,8 @@ auto Database::BlockStore(const BlockHash& block, const std::size_t bytes)
     return imp_.blocks_.Store(block, bytes);
 }
 
-auto Database::DeleteSyncServer(const std::string& endpoint) const noexcept
-    -> bool
+auto Database::DeleteSyncServer(
+    const UnallocatedCString& endpoint) const noexcept -> bool
 {
     return imp_.config_.DeleteSyncServer(endpoint);
 }
@@ -447,7 +449,7 @@ auto Database::Disable(const Chain type) const noexcept -> bool
     return imp_.lmdb_.Store(Enabled, key, reader(value)).first;
 }
 
-auto Database::Enable(const Chain type, const std::string& seednode)
+auto Database::Enable(const Chain type, const UnallocatedCString& seednode)
     const noexcept -> bool
 {
     static_assert(sizeof(true_byte_) == 1);
@@ -468,8 +470,8 @@ auto Database::Enable(const Chain type, const std::string& seednode)
 auto Database::Find(
     const Chain chain,
     const Protocol protocol,
-    const std::set<Type> onNetworks,
-    const std::set<Service> withServices) const noexcept -> Address_p
+    const UnallocatedSet<Type> onNetworks,
+    const UnallocatedSet<Service> withServices) const noexcept -> Address_p
 {
     return imp_.peers_.Find(chain, protocol, onNetworks, withServices);
 }
@@ -497,7 +499,7 @@ auto Database::HaveFilterHeader(
     return imp_.filters_.HaveFilterHeader(type, blockHash);
 }
 
-auto Database::Import(std::vector<Address_p> peers) const noexcept -> bool
+auto Database::Import(UnallocatedVector<Address_p> peers) const noexcept -> bool
 {
     return imp_.peers_.Import(std::move(peers));
 }
@@ -537,7 +539,7 @@ auto Database::LoadTransaction(const ReadView txid) const noexcept
 }
 
 auto Database::LookupContact(const Data& pubkeyHash) const noexcept
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     return imp_.wallet_.LookupContact(pubkeyHash);
 }
@@ -551,14 +553,15 @@ auto Database::LoadSync(
 }
 
 auto Database::LookupTransactions(const PatternID pattern) const noexcept
-    -> std::vector<pTxid>
+    -> UnallocatedVector<pTxid>
 {
     return imp_.wallet_.LookupTransactions(pattern);
 }
 
-auto Database::LoadEnabledChains() const noexcept -> std::vector<EnabledChain>
+auto Database::LoadEnabledChains() const noexcept
+    -> UnallocatedVector<EnabledChain>
 {
-    auto output = std::vector<EnabledChain>{};
+    auto output = UnallocatedVector<EnabledChain>{};
     const auto cb = [&](const auto key, const auto value) -> bool {
         if (0 == value.size()) { return true; }
 
@@ -572,7 +575,7 @@ auto Database::LoadEnabledChains() const noexcept -> std::vector<EnabledChain>
             static_cast<void*>(data.data()), value.data(), value.size());
 
         if (true_byte_ == data.front()) {
-            auto seed = std::string{};
+            auto seed = UnallocatedCString{};
             std::transform(
                 std::next(data.begin()),
                 data.end(),
@@ -608,22 +611,22 @@ auto Database::StoreBlockHeaders(const UpdatedHeader& headers) const noexcept
 
 auto Database::StoreFilterHeaders(
     const filter::Type type,
-    const std::vector<FilterHeader>& headers) const noexcept -> bool
+    const UnallocatedVector<FilterHeader>& headers) const noexcept -> bool
 {
     return imp_.filters_.StoreFilterHeaders(type, headers);
 }
 
 auto Database::StoreFilters(
     const filter::Type type,
-    std::vector<FilterData>& filters) const noexcept -> bool
+    UnallocatedVector<FilterData>& filters) const noexcept -> bool
 {
     return imp_.filters_.StoreFilters(type, filters);
 }
 
 auto Database::StoreFilters(
     const filter::Type type,
-    const std::vector<FilterHeader>& headers,
-    const std::vector<FilterData>& filters) const noexcept -> bool
+    const UnallocatedVector<FilterHeader>& headers,
+    const UnallocatedVector<FilterData>& filters) const noexcept -> bool
 {
     return imp_.filters_.StoreFilters(type, headers, filters);
 }
@@ -646,13 +649,13 @@ auto Database::SyncTip(const Chain chain) const noexcept -> Height
 }
 
 auto Database::UpdateContact(const Contact& contact) const noexcept
-    -> std::vector<pTxid>
+    -> UnallocatedVector<pTxid>
 {
     return imp_.wallet_.UpdateContact(contact);
 }
 
 auto Database::UpdateMergedContact(const Contact& parent, const Contact& child)
-    const noexcept -> std::vector<pTxid>
+    const noexcept -> UnallocatedVector<pTxid>
 {
     return imp_.wallet_.UpdateMergedContact(parent, child);
 }

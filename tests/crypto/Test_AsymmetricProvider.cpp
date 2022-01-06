@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 #include <cstdint>
 #include <memory>
-#include <string>
 #include <string_view>
 
 #include "internal/api/Crypto.hpp"
@@ -30,13 +29,13 @@
 #include "opentxs/crypto/ParameterType.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
-#include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/HDIndex.hpp"  // IWYU pragma: keep
 
@@ -56,15 +55,15 @@ public:
     static const bool have_ed25519_;
 
     const ot::api::session::Client& api_;
-    const std::string fingerprint_;
+    const ot::UnallocatedCString fingerprint_;
     const ot::crypto::HashType sha256_{ot::crypto::HashType::Sha256};
     const ot::crypto::HashType sha512_{ot::crypto::HashType::Sha512};
     const ot::crypto::HashType blake160_{ot::crypto::HashType::Blake2b160};
     const ot::crypto::HashType blake256_{ot::crypto::HashType::Blake2b256};
     const ot::crypto::HashType blake512_{ot::crypto::HashType::Blake2b512};
     const ot::crypto::HashType ripemd160_{ot::crypto::HashType::Ripemd160};
-    const std::string plaintext_string_1_{"Test string"};
-    const std::string plaintext_string_2_{"Another string"};
+    const ot::UnallocatedCString plaintext_string_1_{"Test string"};
+    const ot::UnallocatedCString plaintext_string_2_{"Another string"};
     const ot::OTData plaintext_1{ot::Data::Factory(
         plaintext_string_1_.data(),
         plaintext_string_1_.size())};
@@ -135,12 +134,12 @@ public:
 
     static ot::OTAsymmetricKey get_hd_key(
         const ot::api::session::Client& api,
-        const std::string& fingerprint,
+        const ot::UnallocatedCString& fingerprint,
         const ot::EcdsaCurve& curve,
         const std::uint32_t index = 0)
     {
         auto reason = api.Factory().PasswordPrompt(__func__);
-        std::string id{fingerprint};
+        ot::UnallocatedCString id{fingerprint};
 
         return ot::OTAsymmetricKey{
             api.Crypto()

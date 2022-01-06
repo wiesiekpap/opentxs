@@ -5,9 +5,6 @@
 
 #pragma once
 
-#include <list>
-#include <map>
-#include <string>
 #include <utility>
 
 #include "1_Internal.hpp"
@@ -21,6 +18,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/ui/ActivitySummary.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -98,9 +96,9 @@ private:
         const ActivitySummarySortKey& index,
         CustomData& custom) const noexcept -> RowPointer final;
     auto display_name(const proto::StorageThread& thread) const noexcept
-        -> std::string;
+        -> UnallocatedCString;
 
-    void process_thread(const std::string& threadID) noexcept;
+    void process_thread(const UnallocatedCString& threadID) noexcept;
     void process_thread(const Message& message) noexcept;
     void startup() noexcept;
 

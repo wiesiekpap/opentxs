@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "otx/Reply.hpp"   // IWYU pragma: associated
 
-#include <list>
 #include <utility>
 
 #include "Proto.hpp"
@@ -28,6 +27,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/Reply.hpp"
 #include "opentxs/otx/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -42,8 +42,9 @@ namespace opentxs::otx
 const VersionNumber Reply::DefaultVersion{1};
 const VersionNumber Reply::MaxVersion{1};
 
-static auto construct_push(OTXPushType pushtype, const std::string& payload)
-    -> std::shared_ptr<proto::OTXPush>
+static auto construct_push(
+    OTXPushType pushtype,
+    const UnallocatedCString& payload) -> std::shared_ptr<proto::OTXPush>
 {
     auto pPush = std::make_shared<proto::OTXPush>();
     auto& push = *pPush;
@@ -97,7 +98,7 @@ auto Reply::Factory(
     const bool success,
     const PasswordPrompt& reason,
     opentxs::otx::OTXPushType pushtype,
-    const std::string& payload) -> OTXReply
+    const UnallocatedCString& payload) -> OTXReply
 {
     return Factory(
         api,

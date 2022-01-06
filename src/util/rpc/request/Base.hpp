@@ -35,13 +35,13 @@ namespace opentxs::rpc::request
 struct Base::Imp {
     const Base* parent_;
     const VersionNumber version_;
-    const std::string cookie_;
+    const UnallocatedCString cookie_;
     const CommandType type_;
     const SessionIndex session_;
     const AssociateNyms associate_nym_;
-    const std::string owner_;
-    const std::string notary_;
-    const std::string unit_;
+    const UnallocatedCString owner_;
+    const UnallocatedCString notary_;
+    const UnallocatedCString unit_;
     const Identifiers identifiers_;
 
     static auto check_dups(const Identifiers& data, const char* type) noexcept(
@@ -79,26 +79,26 @@ struct Base::Imp {
         const CommandType& command,
         VersionNumber version,
         SessionIndex session,
-        const std::string& owner,
-        const std::string& notary,
-        const std::string& unit,
+        const UnallocatedCString& owner,
+        const UnallocatedCString& notary,
+        const UnallocatedCString& unit,
         const AssociateNyms& nyms) noexcept;
     Imp(const Base* parent, const proto::RPCCommand& serialized) noexcept;
 
     virtual ~Imp() = default;
 
 private:
-    static auto make_cookie() noexcept -> std::string;
+    static auto make_cookie() noexcept -> UnallocatedCString;
 
     Imp(const Base* parent,
         VersionNumber version,
-        const std::string& cookie,
+        const UnallocatedCString& cookie,
         const CommandType& type,
         SessionIndex session,
         const AssociateNyms& nyms,
-        const std::string& owner,
-        const std::string& notary,
-        const std::string& unit,
+        const UnallocatedCString& owner,
+        const UnallocatedCString& notary,
+        const UnallocatedCString& unit,
         const Identifiers identifiers) noexcept;
     Imp() = delete;
 

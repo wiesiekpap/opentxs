@@ -7,14 +7,12 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
-#include <map>
-#include <string>
-#include <vector>
 
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Contract.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -56,18 +54,21 @@ class Tag;
 
 namespace opentxs
 {
-using mapOfBylaws = std::map<std::string, OTBylaw*>;
-using mapOfClauses = std::map<std::string, OTClause*>;
-using mapOfParties = std::map<std::string, OTParty*>;
-using mapOfVariables = std::map<std::string, OTVariable*>;
+using mapOfBylaws = UnallocatedMap<UnallocatedCString, OTBylaw*>;
+using mapOfClauses = UnallocatedMap<UnallocatedCString, OTClause*>;
+using mapOfParties = UnallocatedMap<UnallocatedCString, OTParty*>;
+using mapOfVariables = UnallocatedMap<UnallocatedCString, OTVariable*>;
 
-auto vectorToString(const std::vector<std::int64_t>& v) -> std::string;
-auto stringToVector(const std::string& s) -> std::vector<std::int64_t>;
+auto vectorToString(const UnallocatedVector<std::int64_t>& v)
+    -> UnallocatedCString;
+auto stringToVector(const UnallocatedCString& s)
+    -> UnallocatedVector<std::int64_t>;
 
 class OTScriptable : public Contract
 {
 public:
-    auto openingNumsInOrderOfSigning() const -> const std::vector<std::int64_t>&
+    auto openingNumsInOrderOfSigning() const
+        -> const UnallocatedVector<std::int64_t>&
     {
         return openingNumsInOrderOfSigning_;
     }
@@ -77,7 +78,7 @@ public:
     auto arePartiesSpecified() const -> bool;
     auto areAssetTypesSpecified() const -> bool;
 
-    virtual void SetDisplayLabel(const std::string* pstrLabel = nullptr);
+    virtual void SetDisplayLabel(const UnallocatedCString* pstrLabel = nullptr);
     auto GetPartyCount() const -> std::int32_t
     {
         return static_cast<std::int32_t>(m_mapParties.size());
@@ -94,11 +95,11 @@ public:
         OTParty& theParty,  // Takes ownership.
         otx::context::Server& context,
         const PasswordPrompt& reason) -> bool;
-    auto RemoveParty(std::string str_Name) -> bool;
-    auto RemoveBylaw(std::string str_Name) -> bool;
-    auto GetParty(std::string str_party_name) const -> OTParty*;
-    auto GetBylaw(std::string str_bylaw_name) const -> OTBylaw*;
-    auto GetClause(std::string str_clause_name) const -> OTClause*;
+    auto RemoveParty(UnallocatedCString str_Name) -> bool;
+    auto RemoveBylaw(UnallocatedCString str_Name) -> bool;
+    auto GetParty(UnallocatedCString str_party_name) const -> OTParty*;
+    auto GetBylaw(UnallocatedCString str_bylaw_name) const -> OTBylaw*;
+    auto GetClause(UnallocatedCString str_clause_name) const -> OTClause*;
     auto GetPartyByIndex(std::int32_t nIndex) const -> OTParty*;
     auto GetBylawByIndex(std::int32_t nIndex) const -> OTBylaw*;
     auto FindPartyBasedOnNymAsAgent(
@@ -119,8 +120,9 @@ public:
     auto FindPartyBasedOnAccountID(
         const Identifier& theAcctID,
         OTPartyAccount** ppPartyAccount = nullptr) const -> OTParty*;
-    auto GetAgent(std::string str_agent_name) const -> OTAgent*;
-    auto GetPartyAccount(std::string str_acct_name) const -> OTPartyAccount*;
+    auto GetAgent(UnallocatedCString str_agent_name) const -> OTAgent*;
+    auto GetPartyAccount(UnallocatedCString str_acct_name) const
+        -> OTPartyAccount*;
     auto GetPartyAccountByID(const Identifier& theAcctID) const
         -> OTPartyAccount*;
     // This function returns the count of how many trans#s a Nym needs in order
@@ -131,8 +133,8 @@ public:
     // which agent is the
     // authorized agent.)
     //
-    auto GetCountTransNumsNeededForAgent(std::string str_agent_name) const
-        -> std::int32_t;
+    auto GetCountTransNumsNeededForAgent(
+        UnallocatedCString str_agent_name) const -> std::int32_t;
     // Verifies that Nym is actually an agent for this agreement.
     // (Verifies that Nym has signed this agreement, if it's a trade or a
     // payment plan, OR
@@ -195,15 +197,16 @@ public:
     // hook name, but you can NOT have the same clause name repeated
     // multiple times in theResults. Each clause can only trigger once.
     //
-    auto GetHooks(std::string str_HookName, mapOfClauses& theResults) -> bool;
-    auto GetCallback(std::string str_CallbackName)
+    auto GetHooks(UnallocatedCString str_HookName, mapOfClauses& theResults)
+        -> bool;
+    auto GetCallback(UnallocatedCString str_CallbackName)
         -> OTClause*;  // See if a
                        // scripted
                        // clause was
                        // provided for
                        // any given
                        // callback name.
-    auto GetVariable(std::string str_VarName)
+    auto GetVariable(UnallocatedCString str_VarName)
         -> OTVariable*;            // See if a variable
                                    // exists for a
                                    // given variable
@@ -238,9 +241,9 @@ public:
     // the script can reply true/false.
     //
     auto CanExecuteClause(
-        std::string str_party_name,
-        std::string str_clause_name) -> bool;  // This calls (if
-                                               // available) the
+        UnallocatedCString str_party_name,
+        UnallocatedCString str_clause_name) -> bool;  // This calls (if
+                                                      // available) the
     // scripted clause:
     // bool party_may_execute_clause(party_name,
     // clause_name)
@@ -262,21 +265,23 @@ public:
     // And make sure it's not blank. This is for script variable names, clause
     // names, party names, etc.
     //
-    static auto ValidateName(const std::string& str_name) -> bool;
-    static auto ValidateBylawName(const std::string& str_name) -> bool;
-    static auto ValidatePartyName(const std::string& str_name) -> bool;
-    static auto ValidateAgentName(const std::string& str_name) -> bool;
-    static auto ValidateAccountName(const std::string& str_name) -> bool;
-    static auto ValidateVariableName(const std::string& str_name) -> bool;
-    static auto ValidateClauseName(const std::string& str_name) -> bool;
-    static auto ValidateHookName(const std::string& str_name) -> bool;
-    static auto ValidateCallbackName(const std::string& str_name) -> bool;
+    static auto ValidateName(const UnallocatedCString& str_name) -> bool;
+    static auto ValidateBylawName(const UnallocatedCString& str_name) -> bool;
+    static auto ValidatePartyName(const UnallocatedCString& str_name) -> bool;
+    static auto ValidateAgentName(const UnallocatedCString& str_name) -> bool;
+    static auto ValidateAccountName(const UnallocatedCString& str_name) -> bool;
+    static auto ValidateVariableName(const UnallocatedCString& str_name)
+        -> bool;
+    static auto ValidateClauseName(const UnallocatedCString& str_name) -> bool;
+    static auto ValidateHookName(const UnallocatedCString& str_name) -> bool;
+    static auto ValidateCallbackName(const UnallocatedCString& str_name)
+        -> bool;
 
     // For use from inside server-side scripts.
     //
     static auto GetTime()
-        -> std::string;  // Returns a string, containing seconds as
-                         // std::int32_t. (Time in seconds.)
+        -> UnallocatedCString;  // Returns a string, containing seconds as
+                                // std::int32_t. (Time in seconds.)
 
     void UpdateContentsToTag(Tag& parent, bool bCalculatingID) const;
     void CalculateContractID(Identifier& newID) const override;
@@ -290,7 +295,7 @@ public:
 protected:
     // This is how we know the opening numbers for each signer, IN THE ORDER
     // that they signed.
-    std::vector<std::int64_t> openingNumsInOrderOfSigning_;
+    UnallocatedVector<std::int64_t> openingNumsInOrderOfSigning_;
 
     mapOfParties m_mapParties;  // The parties to the contract. Could be Nyms,
                                 // or

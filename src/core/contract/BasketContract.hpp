@@ -6,7 +6,6 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 
 #include "Proto.hpp"
 #include "core/contract/UnitDefinition.hpp"
@@ -19,6 +18,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
@@ -56,8 +56,8 @@ public:
     Basket(
         const api::Session& api,
         const Nym_p& nym,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const std::uint64_t weight,
         const core::UnitType unitOfAccount,
         const VersionNumber version,

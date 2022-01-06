@@ -7,9 +7,9 @@
 
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
-#include <string>
 
 #include "opentxs/blockchain/Work.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -33,8 +33,11 @@ public:
     auto operator>=(const blockchain::Work& rhs) const noexcept -> bool final;
     auto operator+(const blockchain::Work& rhs) const noexcept -> OTWork final;
 
-    auto asHex() const noexcept -> std::string final;
-    auto Decimal() const noexcept -> std::string final { return data_.str(); }
+    auto asHex() const noexcept -> UnallocatedCString final;
+    auto Decimal() const noexcept -> UnallocatedCString final
+    {
+        return data_.str();
+    }
 
     Work(Type&& data) noexcept;
     Work() noexcept;

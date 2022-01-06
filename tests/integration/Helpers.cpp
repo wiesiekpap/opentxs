@@ -78,7 +78,7 @@ auto test_future(std::future<bool>& future, const unsigned int seconds) noexcept
     return false;
 }
 
-Callbacks::Callbacks(const std::string& name) noexcept
+Callbacks::Callbacks(const ot::UnallocatedCString& name) noexcept
     : callback_lock_()
     , callback_(ot::network::zeromq::ListenCallback::Factory(
           [this](auto&& incoming) -> void { callback(std::move(incoming)); }))
@@ -93,8 +93,8 @@ auto Callbacks::callback(ot::network::zeromq::Message&& incoming) noexcept
     -> void
 {
     ot::Lock lock(callback_lock_);
-    const auto widgetID =
-        ot::Identifier::Factory(std::string{incoming.Body().at(0).Bytes()});
+    const auto widgetID = ot::Identifier::Factory(
+        ot::UnallocatedCString{incoming.Body().at(0).Bytes()});
 
     ASSERT_NE("", widgetID->str().c_str());
 
@@ -201,7 +201,7 @@ auto Server::init(const ot::api::session::Notary& api) noexcept -> void
 
         OT_ASSERT(exists);
 
-        const_cast<std::string&>(password_) = value->Get();
+        const_cast<ot::UnallocatedCString&>(password_) = value->Get();
     }
 
     OT_ASSERT(false == id_->empty());
@@ -211,9 +211,9 @@ auto Server::init(const ot::api::session::Notary& api) noexcept -> void
 }
 
 User::User(
-    const std::string words,
-    const std::string name,
-    const std::string passphrase) noexcept
+    const ot::UnallocatedCString words,
+    const ot::UnallocatedCString name,
+    const ot::UnallocatedCString passphrase) noexcept
     : words_(words)
     , passphrase_(passphrase)
     , name_(name)
@@ -240,7 +240,7 @@ User::User(
 {
 }
 
-auto User::Account(const std::string& type) const noexcept
+auto User::Account(const ot::UnallocatedCString& type) const noexcept
     -> const ot::Identifier&
 {
     ot::Lock lock(lock_);
@@ -248,7 +248,7 @@ auto User::Account(const std::string& type) const noexcept
     return accounts_.at(type).get();
 }
 
-auto User::Contact(const std::string& contact) const noexcept
+auto User::Contact(const ot::UnallocatedCString& contact) const noexcept
     -> const ot::Identifier&
 {
     static const auto blank = api_->Factory().Identifier();
@@ -370,16 +370,18 @@ auto User::Reason() const noexcept -> ot::OTPasswordPrompt
     return api_->Factory().PasswordPrompt(__func__);
 }
 
-auto User::SetAccount(const std::string& type, const std::string& id)
-    const noexcept -> bool
+auto User::SetAccount(
+    const ot::UnallocatedCString& type,
+    const ot::UnallocatedCString& id) const noexcept -> bool
 {
     OT_ASSERT(nullptr != api_);
 
     return SetAccount(type, api_->Factory().Identifier(id));
 }
 
-auto User::SetAccount(const std::string& type, const ot::Identifier& id)
-    const noexcept -> bool
+auto User::SetAccount(
+    const ot::UnallocatedCString& type,
+    const ot::Identifier& id) const noexcept -> bool
 {
     OT_ASSERT(nullptr != api_);
 
@@ -389,16 +391,18 @@ auto User::SetAccount(const std::string& type, const ot::Identifier& id)
     return added;
 }
 
-auto User::SetContact(const std::string& contact, const std::string& id)
-    const noexcept -> bool
+auto User::SetContact(
+    const ot::UnallocatedCString& contact,
+    const ot::UnallocatedCString& id) const noexcept -> bool
 {
     OT_ASSERT(nullptr != api_);
 
     return SetContact(contact, api_->Factory().Identifier(id));
 }
 
-auto User::SetContact(const std::string& contact, const ot::Identifier& id)
-    const noexcept -> bool
+auto User::SetContact(
+    const ot::UnallocatedCString& contact,
+    const ot::Identifier& id) const noexcept -> bool
 {
     OT_ASSERT(nullptr != api_);
 

@@ -14,10 +14,8 @@
 #include <memory>
 #include <mutex>
 #include <stdexcept>
-#include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "blockchain/node/wallet/Batch.hpp"
 #include "blockchain/node/wallet/Process.hpp"
@@ -33,6 +31,7 @@
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -67,9 +66,9 @@ auto Scan::Do(
         std::min(std::min(startHeight + 999, best.first), stop);
     auto atLeastOnce{false};
     auto highestClean = std::optional<block::Position>{std::nullopt};
-    auto batches = std::vector<std::unique_ptr<Batch>>{};
-    auto jobs = std::vector<Work*>{};
-    auto blocks = std::vector<block::Position>{};
+    auto batches = UnallocatedVector<std::unique_ptr<Batch>>{};
+    auto jobs = UnallocatedVector<Work*>{};
+    auto blocks = UnallocatedVector<block::Position>{};
     auto postcondition = ScopeGuard{[&] {
         const auto& log = LogTrace();
         const auto start = Clock::now();

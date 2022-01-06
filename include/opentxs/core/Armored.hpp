@@ -9,10 +9,9 @@
 
 #include <cstdint>
 #include <iosfwd>
-#include <map>
-#include <string>
 
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -80,7 +79,7 @@ public:
     static auto LoadFromString(
         Armored& ascArmor,
         const String& strInput,
-        std::string str_bookend = "-----BEGIN") -> bool;
+        UnallocatedCString str_bookend = "-----BEGIN") -> bool;
 
     virtual auto GetData(Data& theData, bool bLineBreaks = true) const
         -> bool = 0;
@@ -92,11 +91,12 @@ public:
     // no default, to force you to enter the right string.
     virtual auto WriteArmoredString(
         String& strOutput,
-        const std::string str_type,
+        const UnallocatedCString str_type,
         bool bEscaped = false) const -> bool = 0;
 
     virtual auto LoadFrom_ifstream(std::ifstream& fin) -> bool = 0;
-    virtual auto LoadFromExactPath(const std::string& filename) -> bool = 0;
+    virtual auto LoadFromExactPath(const UnallocatedCString& filename)
+        -> bool = 0;
     // This code reads up the string, discards the bookends, and saves only the
     // gibberish itself. the bEscaped option allows you to load a normal
     // ASCII-Armored file if off, and allows you to load an escaped
@@ -108,9 +108,10 @@ public:
     virtual auto LoadFromString(
         String& theStr,
         bool bEscaped = false,
-        const std::string str_override = "-----BEGIN") -> bool = 0;
+        const UnallocatedCString str_override = "-----BEGIN") -> bool = 0;
     virtual auto SaveTo_ofstream(std::ofstream& fout) -> bool = 0;
-    virtual auto SaveToExactPath(const std::string& filename) -> bool = 0;
+    virtual auto SaveToExactPath(const UnallocatedCString& filename)
+        -> bool = 0;
     virtual auto SetData(const Data& theData, bool bLineBreaks = true)
         -> bool = 0;
     virtual auto SetString(const String& theData, bool bLineBreaks = true)

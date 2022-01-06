@@ -6,14 +6,13 @@
 #include "internal/serialization/protobuf/verify/Envelope.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <map>
-#include <set>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/AsymmetricKey.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/Ciphertext.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/TaggedKey.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/Envelope.pb.h"
@@ -25,10 +24,11 @@ namespace opentxs
 {
 namespace proto
 {
-const std::map<std::uint32_t, std::set<AsymmetricKeyType>> allowed_types_{
-    {1, {AKEYTYPE_LEGACY, AKEYTYPE_SECP256K1, AKEYTYPE_ED25519}},
-    {2, {AKEYTYPE_LEGACY, AKEYTYPE_SECP256K1, AKEYTYPE_ED25519}},
-};
+const UnallocatedMap<std::uint32_t, UnallocatedSet<AsymmetricKeyType>>
+    allowed_types_{
+        {1, {AKEYTYPE_LEGACY, AKEYTYPE_SECP256K1, AKEYTYPE_ED25519}},
+        {2, {AKEYTYPE_LEGACY, AKEYTYPE_SECP256K1, AKEYTYPE_ED25519}},
+    };
 
 auto CheckProto_1(const Envelope& input, const bool silent) -> bool
 {
@@ -41,7 +41,7 @@ auto CheckProto_1(const Envelope& input, const bool silent) -> bool
     CHECK_SUBOBJECTS(sessionkey, EnvelopeAllowedTaggedKey())
     CHECK_SUBOBJECT_VA(ciphertext, EnvelopeAllowedCiphertext(), false)
 
-    auto dh = std::map<AsymmetricKeyType, int>{};
+    auto dh = UnallocatedMap<AsymmetricKeyType, int>{};
 
     for (const auto& key : input.dhkey()) {
         const auto type = key.type();

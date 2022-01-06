@@ -9,5 +9,6 @@
 
 namespace opentxs::storage
 {
-const std::string Config::default_plugin_{OT_STORAGE_PRIMARY_PLUGIN_MEMDB};
+const UnallocatedCString Config::default_plugin_{
+    OT_STORAGE_PRIMARY_PLUGIN_MEMDB};
 }  // namespace opentxs::storage

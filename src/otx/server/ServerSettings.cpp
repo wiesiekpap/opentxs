@@ -8,7 +8,8 @@
 #include "otx/server/ServerSettings.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::server
 {
@@ -22,7 +23,7 @@ std::int32_t ServerSettings::__heartbeat_no_requests = 10;
 std::int32_t ServerSettings::__heartbeat_ms_between_beats = 100;
 // The Nym who's allowed to do certain
 // commands even if they are turned off.
-std::string ServerSettings::__override_nym_id;
+UnallocatedCString ServerSettings::__override_nym_id;
 
 // NOTE: These are all static variables, and these are all just default values.
 //       (The ACTUAL values are configured in ~/.ot/server.cfg)

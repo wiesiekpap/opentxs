@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "opentxs/util/rpc/AccountEvent.hpp"
 #include "opentxs/util/rpc/request/GetAccountActivity.hpp"
 #include "serialization/protobuf/RPCResponse.pb.h"
 

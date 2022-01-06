@@ -31,7 +31,7 @@
 
 namespace opentxs::storage
 {
-Nyms::Nyms(const Driver& storage, const std::string& hash)
+Nyms::Nyms(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
     , nyms_()
     , local_nyms_()
@@ -43,14 +43,14 @@ Nyms::Nyms(const Driver& storage, const std::string& hash)
     }
 }
 
-auto Nyms::Exists(const std::string& id) const -> bool
+auto Nyms::Exists(const UnallocatedCString& id) const -> bool
 {
     Lock lock(write_lock_);
 
     return nyms_.find(id) != nyms_.end();
 }
 
-void Nyms::init(const std::string& hash)
+void Nyms::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageNymList> serialized;
     driver_.LoadProto(hash, serialized);
@@ -73,7 +73,7 @@ void Nyms::init(const std::string& hash)
     }
 }
 
-auto Nyms::LocalNyms() const -> const std::set<std::string>
+auto Nyms::LocalNyms() const -> const UnallocatedSet<UnallocatedCString>
 {
     return local_nyms_;
 }
@@ -112,7 +112,7 @@ auto Nyms::Migrate(const Driver& to) const -> bool
     return output;
 }
 
-auto Nyms::mutable_Nym(const std::string& id) -> Editor<storage::Nym>
+auto Nyms::mutable_Nym(const UnallocatedCString& id) -> Editor<storage::Nym>
 {
     std::function<void(storage::Nym*, Lock&)> callback =
         [&](storage::Nym* in, Lock& lock) -> void { this->save(in, lock, id); };
@@ -120,14 +120,15 @@ auto Nyms::mutable_Nym(const std::string& id) -> Editor<storage::Nym>
     return Editor<storage::Nym>(write_lock_, nym(id), callback);
 }
 
-auto Nyms::nym(const std::string& id) const -> storage::Nym*
+auto Nyms::nym(const UnallocatedCString& id) const -> storage::Nym*
 {
     Lock lock(write_lock_);
 
     return nym(lock, id);
 }
 
-auto Nyms::nym(const Lock& lock, const std::string& id) const -> storage::Nym*
+auto Nyms::nym(const Lock& lock, const UnallocatedCString& id) const
+    -> storage::Nym*
 {
     OT_ASSERT(verify_write_lock(lock))
 
@@ -148,16 +149,17 @@ auto Nyms::nym(const Lock& lock, const std::string& id) const -> storage::Nym*
     return node.get();
 }
 
-auto Nyms::Nym(const std::string& id) const -> const storage::Nym&
+auto Nyms::Nym(const UnallocatedCString& id) const -> const storage::Nym&
 {
     return *nym(id);
 }
 
-auto Nyms::RelabelThread(const std::string& threadID, const std::string label)
-    -> bool
+auto Nyms::RelabelThread(
+    const UnallocatedCString& threadID,
+    const UnallocatedCString label) -> bool
 {
     Lock lock(write_lock_);
-    std::set<std::string> nyms{};
+    UnallocatedSet<UnallocatedCString> nyms{};
 
     for (const auto& it : item_map_) {
         const auto& nymID = it.first;
@@ -204,7 +206,10 @@ auto Nyms::save(const Lock& lock) const -> bool
     return driver_.StoreProto(serialized, root_);
 }
 
-void Nyms::save(storage::Nym* nym, const Lock& lock, const std::string& id)
+void Nyms::save(
+    storage::Nym* nym,
+    const Lock& lock,
+    const UnallocatedCString& id)
 {
     if (!verify_write_lock(lock)) {
         LogError()(OT_PRETTY_CLASS())("Lock failure.").Flush();
@@ -259,7 +264,7 @@ void Nyms::UpgradeLocalnym()
         const auto& id = index.first;
         const auto& node = *nym(lock, id);
         auto credentials = std::make_shared<proto::Nym>();
-        std::string alias{};
+        UnallocatedCString alias{};
         const auto loaded = node.Load(credentials, alias, false);
 
         if (false == loaded) { continue; }

@@ -12,12 +12,9 @@
 #include <robin_hood.h>
 #include <algorithm>
 #include <cstddef>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <string>
-#include <vector>
 
 #include "blockchain/database/wallet/Output.hpp"
 #include "blockchain/database/wallet/Position.hpp"
@@ -34,6 +31,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
@@ -81,10 +79,10 @@ using Dir = storage::lmdb::LMDB::Dir;
 using Mode = storage::lmdb::LMDB::Mode;
 using SubchainID = Identifier;
 using pSubchainID = OTIdentifier;
-using States = std::vector<node::TxoState>;
-using Matches = std::vector<block::Outpoint>;
+using States = UnallocatedVector<node::TxoState>;
+using Matches = UnallocatedVector<block::Outpoint>;
 using Outpoints = robin_hood::unordered_node_set<block::Outpoint>;
-using NymBalances = std::map<OTNymID, Balance>;
+using NymBalances = UnallocatedMap<OTNymID, Balance>;
 using Nyms = robin_hood::unordered_node_set<OTNymID>;
 
 auto all_states() noexcept -> const States&;
@@ -233,7 +231,7 @@ private:
         const MapKeyType& key,
         const DBKeyType dbKey,
         const char* indexName,
-        const std::string& keyName,
+        const UnallocatedCString& keyName,
         MapType& map) noexcept -> Outpoints&;
     auto load_nyms() noexcept -> Nyms&;
     auto load_position() noexcept -> void;

@@ -5,19 +5,16 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -72,19 +69,19 @@ public:
 
     auto AssociateTransaction(
         const Txid& txid,
-        const std::vector<PatternID>& patterns) const noexcept -> bool;
+        const UnallocatedVector<PatternID>& patterns) const noexcept -> bool;
     auto LoadTransaction(const ReadView txid) const noexcept
         -> std::unique_ptr<block::bitcoin::Transaction>;
     auto LookupContact(const Data& pubkeyHash) const noexcept
-        -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
     auto LookupTransactions(const PatternID pattern) const noexcept
-        -> std::vector<pTxid>;
+        -> UnallocatedVector<pTxid>;
     auto StoreTransaction(const block::bitcoin::Transaction& tx) const noexcept
         -> bool;
     auto UpdateContact(const Contact& contact) const noexcept
-        -> std::vector<pTxid>;
+        -> UnallocatedVector<pTxid>;
     auto UpdateMergedContact(const Contact& parent, const Contact& child)
-        const noexcept -> std::vector<pTxid>;
+        const noexcept -> UnallocatedVector<pTxid>;
 
     Wallet(
         const api::Session& api,
@@ -95,10 +92,14 @@ public:
     ~Wallet();
 
 private:
-    using ContactToElement = std::map<OTIdentifier, std::set<OTData>>;
-    using ElementToContact = std::map<OTData, std::set<OTIdentifier>>;
-    using TransactionToPattern = std::map<pTxid, std::set<PatternID>>;
-    using PatternToTransaction = std::map<PatternID, std::set<pTxid>>;
+    using ContactToElement =
+        UnallocatedMap<OTIdentifier, UnallocatedSet<OTData>>;
+    using ElementToContact =
+        UnallocatedMap<OTData, UnallocatedSet<OTIdentifier>>;
+    using TransactionToPattern =
+        UnallocatedMap<pTxid, UnallocatedSet<PatternID>>;
+    using PatternToTransaction =
+        UnallocatedMap<PatternID, UnallocatedSet<pTxid>>;
 
     const api::Session& api_;
     const api::crypto::Blockchain& blockchain_;
@@ -113,8 +114,8 @@ private:
 
     auto update_contact(
         const Lock& lock,
-        const std::set<OTData>& existing,
-        const std::set<OTData>& incoming,
-        const Identifier& contactID) const noexcept -> std::vector<pTxid>;
+        const UnallocatedSet<OTData>& existing,
+        const UnallocatedSet<OTData>& incoming,
+        const Identifier& contactID) const noexcept -> UnallocatedVector<pTxid>;
 };
 }  // namespace opentxs::blockchain::database::common

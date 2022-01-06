@@ -14,16 +14,12 @@
 #include <cstdint>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
 #include <shared_mutex>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #if OT_BLOCKCHAIN
@@ -53,6 +49,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Blank.hpp"
 #include "util/LMDB.hpp"
@@ -189,14 +186,15 @@ namespace opentxs::blockchain::node
 {
 // parent hash, child hash
 using ChainSegment = std::pair<block::pHash, block::pHash>;
-using UpdatedHeader =
-    std::map<block::pHash, std::pair<std::unique_ptr<block::Header>, bool>>;
-using BestHashes = std::map<block::Height, block::pHash>;
-using Hashes = std::set<block::pHash>;
-using HashVector = std::vector<block::pHash>;
-using Segments = std::set<ChainSegment>;
+using UpdatedHeader = UnallocatedMap<
+    block::pHash,
+    std::pair<std::unique_ptr<block::Header>, bool>>;
+using BestHashes = UnallocatedMap<block::Height, block::pHash>;
+using Hashes = UnallocatedSet<block::pHash>;
+using HashVector = UnallocatedVector<block::pHash>;
+using Segments = UnallocatedSet<ChainSegment>;
 // parent block hash, disconnected block hash
-using DisconnectedList = std::multimap<block::pHash, block::pHash>;
+using DisconnectedList = UnallocatedMultimap<block::pHash, block::pHash>;
 
 using CfheaderJob =
     download::Batch<filter::pHash, filter::pHeader, filter::Type>;
@@ -260,7 +258,7 @@ struct Config {
     bool use_sync_server_{false};
     bool disable_wallet_{false};
 
-    auto print() const noexcept -> std::string;
+    auto print() const noexcept -> UnallocatedCString;
 };
 
 struct FilterDatabase {
@@ -293,16 +291,16 @@ struct FilterDatabase {
         const block::Position& position) const noexcept -> bool = 0;
     virtual auto StoreFilters(
         const filter::Type type,
-        std::vector<Filter> filters) const noexcept -> bool = 0;
+        UnallocatedVector<Filter> filters) const noexcept -> bool = 0;
     virtual auto StoreFilters(
         const filter::Type type,
-        const std::vector<Header>& headers,
-        const std::vector<Filter>& filters,
+        const UnallocatedVector<Header>& headers,
+        const UnallocatedVector<Filter>& filters,
         const block::Position& tip) const noexcept -> bool = 0;
     virtual auto StoreFilterHeaders(
         const filter::Type type,
         const ReadView previous,
-        const std::vector<Header> headers) const noexcept -> bool = 0;
+        const UnallocatedVector<Header> headers) const noexcept -> bool = 0;
 
     virtual ~FilterDatabase() = default;
 };
@@ -321,7 +319,7 @@ struct FilterOracle : virtual public node::FilterOracle {
         -> bool = 0;
     virtual auto ProcessSyncData(
         const block::Hash& prior,
-        const std::vector<block::pHash>& hashes,
+        const UnallocatedVector<block::pHash>& hashes,
         const network::p2p::Data& data) const noexcept -> void = 0;
     virtual auto Tip(const filter::Type type) const noexcept
         -> block::Position = 0;
@@ -364,12 +362,13 @@ struct HeaderDatabase {
 };
 
 struct Mempool {
-    virtual auto Dump() const noexcept -> std::set<std::string> = 0;
+    virtual auto Dump() const noexcept
+        -> UnallocatedSet<UnallocatedCString> = 0;
     virtual auto Query(ReadView txid) const noexcept
         -> std::shared_ptr<const block::bitcoin::Transaction> = 0;
     virtual auto Submit(ReadView txid) const noexcept -> bool = 0;
-    virtual auto Submit(const std::vector<ReadView>& txids) const noexcept
-        -> std::vector<bool> = 0;
+    virtual auto Submit(const UnallocatedVector<ReadView>& txids) const noexcept
+        -> UnallocatedVector<bool> = 0;
     virtual auto Submit(std::unique_ptr<const block::bitcoin::Transaction> tx)
         const noexcept -> void = 0;
 
@@ -387,9 +386,11 @@ struct PeerDatabase {
     virtual auto AddOrUpdate(Address address) const noexcept -> bool = 0;
     virtual auto Get(
         const Protocol protocol,
-        const std::set<Type> onNetworks,
-        const std::set<Service> withServices) const noexcept -> Address = 0;
-    virtual auto Import(std::vector<Address> peers) const noexcept -> bool = 0;
+        const UnallocatedSet<Type> onNetworks,
+        const UnallocatedSet<Service> withServices) const noexcept
+        -> Address = 0;
+    virtual auto Import(UnallocatedVector<Address> peers) const noexcept
+        -> bool = 0;
 
     virtual ~PeerDatabase() = default;
 };
@@ -431,7 +432,8 @@ struct PeerManager {
     virtual auto Connect() noexcept -> bool = 0;
     virtual auto Database() const noexcept -> const PeerDatabase& = 0;
     virtual auto Disconnect(const int id) const noexcept -> void = 0;
-    virtual auto Endpoint(const Task type) const noexcept -> std::string = 0;
+    virtual auto Endpoint(const Task type) const noexcept
+        -> UnallocatedCString = 0;
     virtual auto GetPeerCount() const noexcept -> std::size_t = 0;
     virtual auto GetVerifiedPeerCount() const noexcept -> std::size_t = 0;
     virtual auto Heartbeat() const noexcept -> void = 0;
@@ -442,9 +444,9 @@ struct PeerManager {
     virtual auto RequestBlock(const block::Hash& block) const noexcept
         -> bool = 0;
     virtual auto RequestBlocks(
-        const std::vector<ReadView>& hashes) const noexcept -> bool = 0;
+        const UnallocatedVector<ReadView>& hashes) const noexcept -> bool = 0;
     virtual auto RequestHeaders() const noexcept -> bool = 0;
-    virtual auto VerifyPeer(const int id, const std::string& address)
+    virtual auto VerifyPeer(const int id, const UnallocatedCString& address)
         const noexcept -> void = 0;
 
     virtual auto init() noexcept -> void = 0;
@@ -479,9 +481,9 @@ struct Network : virtual public node::Manager {
     virtual auto FilterOracleInternal() const noexcept
         -> const internal::FilterOracle& = 0;
     virtual auto GetTransactions() const noexcept
-        -> std::vector<block::pTxid> = 0;
+        -> UnallocatedVector<block::pTxid> = 0;
     virtual auto GetTransactions(const identifier::Nym& account) const noexcept
-        -> std::vector<block::pTxid> = 0;
+        -> UnallocatedVector<block::pTxid> = 0;
     virtual auto Heartbeat() const noexcept -> void = 0;
     virtual auto IsSynchronized() const noexcept -> bool = 0;
     virtual auto JobReady(const PeerManager::Task type) const noexcept
@@ -492,7 +494,7 @@ struct Network : virtual public node::Manager {
     virtual auto RequestBlock(const block::Hash& block) const noexcept
         -> bool = 0;
     virtual auto RequestBlocks(
-        const std::vector<ReadView>& hashes) const noexcept -> bool = 0;
+        const UnallocatedVector<ReadView>& hashes) const noexcept -> bool = 0;
     virtual auto Submit(network::zeromq::Message&& work) const noexcept
         -> void = 0;
     virtual auto Track(network::zeromq::Message&& work) const noexcept
@@ -510,7 +512,7 @@ struct Network : virtual public node::Manager {
 
 struct SyncDatabase {
     using Height = block::Height;
-    using Items = std::vector<network::p2p::Block>;
+    using Items = UnallocatedVector<network::p2p::Block>;
     using Message = network::p2p::Data;
 
     virtual auto LoadSync(const Height height, Message& output) const noexcept
@@ -556,10 +558,10 @@ struct WalletDatabase {
     using Subchain = blockchain::crypto::Subchain;
     using SubchainID = std::pair<Subchain, pNodeID>;
     using ElementID = std::pair<Bip32Index, SubchainID>;
-    using ElementMap = std::map<Bip32Index, std::vector<Space>>;
+    using ElementMap = UnallocatedMap<Bip32Index, UnallocatedVector<Space>>;
     using Pattern = std::pair<ElementID, Space>;
-    using Patterns = std::vector<Pattern>;
-    using MatchingIndices = std::vector<Bip32Index>;
+    using Patterns = UnallocatedVector<Pattern>;
+    using MatchingIndices = UnallocatedVector<Bip32Index>;
     using UTXO = std::pair<
         blockchain::block::Outpoint,
         std::unique_ptr<block::bitcoin::Output>>;
@@ -570,13 +572,13 @@ struct WalletDatabase {
         const Subchain subchain,
         const block::Position& block,
         const std::size_t blockIndex,
-        const std::vector<std::uint32_t> outputIndices,
+        const UnallocatedVector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) const noexcept
         -> bool = 0;
     virtual auto AddMempoolTransaction(
         const NodeID& balanceNode,
         const Subchain subchain,
-        const std::vector<std::uint32_t> outputIndices,
+        const UnallocatedVector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) const noexcept
         -> bool = 0;
     virtual auto AddOutgoingTransaction(
@@ -593,12 +595,12 @@ struct WalletDatabase {
     virtual auto CancelProposal(const Identifier& id) const noexcept
         -> bool = 0;
     virtual auto CompletedProposals() const noexcept
-        -> std::set<OTIdentifier> = 0;
+        -> UnallocatedSet<OTIdentifier> = 0;
     virtual auto FinalizeReorg(
         storage::lmdb::LMDB::Transaction& tx,
         const block::Position& pos) const noexcept -> bool = 0;
     virtual auto ForgetProposals(
-        const std::set<OTIdentifier>& ids) const noexcept -> bool = 0;
+        const UnallocatedSet<OTIdentifier>& ids) const noexcept -> bool = 0;
     virtual auto GetBalance() const noexcept -> Balance = 0;
     virtual auto GetBalance(const identifier::Nym& owner) const noexcept
         -> Balance = 0;
@@ -607,32 +609,33 @@ struct WalletDatabase {
     virtual auto GetBalance(const crypto::Key& key) const noexcept
         -> Balance = 0;
     virtual auto GetOutputs(node::TxoState type) const noexcept
-        -> std::vector<UTXO> = 0;
+        -> UnallocatedVector<UTXO> = 0;
     virtual auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
-        const noexcept -> std::vector<UTXO> = 0;
+        const noexcept -> UnallocatedVector<UTXO> = 0;
     virtual auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& node,
-        node::TxoState type) const noexcept -> std::vector<UTXO> = 0;
+        node::TxoState type) const noexcept -> UnallocatedVector<UTXO> = 0;
     virtual auto GetOutputs(const crypto::Key& key, TxoState type)
-        const noexcept -> std::vector<UTXO> = 0;
+        const noexcept -> UnallocatedVector<UTXO> = 0;
     virtual auto GetOutputTags(const block::Outpoint& output) const noexcept
-        -> std::set<node::TxoTag> = 0;
+        -> UnallocatedSet<node::TxoTag> = 0;
     virtual auto GetPatterns(const SubchainIndex& index) const noexcept
         -> Patterns = 0;
     virtual auto GetSubchainID(
         const NodeID& balanceNode,
         const Subchain subchain) const noexcept -> pSubchainIndex = 0;
     virtual auto GetTransactions() const noexcept
-        -> std::vector<block::pTxid> = 0;
+        -> UnallocatedVector<block::pTxid> = 0;
     virtual auto GetTransactions(const identifier::Nym& account) const noexcept
-        -> std::vector<block::pTxid> = 0;
+        -> UnallocatedVector<block::pTxid> = 0;
     virtual auto GetUnconfirmedTransactions() const noexcept
-        -> std::set<block::pTxid> = 0;
-    virtual auto GetUnspentOutputs() const noexcept -> std::vector<UTXO> = 0;
+        -> UnallocatedSet<block::pTxid> = 0;
+    virtual auto GetUnspentOutputs() const noexcept
+        -> UnallocatedVector<UTXO> = 0;
     virtual auto GetUnspentOutputs(
         const NodeID& balanceNode,
-        const Subchain subchain) const noexcept -> std::vector<UTXO> = 0;
+        const Subchain subchain) const noexcept -> UnallocatedVector<UTXO> = 0;
     virtual auto GetUntestedPatterns(
         const SubchainIndex& index,
         const ReadView blockID) const noexcept -> Patterns = 0;
@@ -640,9 +643,9 @@ struct WalletDatabase {
     virtual auto LoadProposal(const Identifier& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal> = 0;
     virtual auto LoadProposals() const noexcept
-        -> std::vector<proto::BlockchainTransactionProposal> = 0;
+        -> UnallocatedVector<proto::BlockchainTransactionProposal> = 0;
     virtual auto LookupContact(const Data& pubkeyHash) const noexcept
-        -> std::set<OTIdentifier> = 0;
+        -> UnallocatedSet<OTIdentifier> = 0;
     virtual auto ReorgTo(
         const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
@@ -650,7 +653,8 @@ struct WalletDatabase {
         const NodeID& balanceNode,
         const Subchain subchain,
         const SubchainIndex& index,
-        const std::vector<block::Position>& reorg) const noexcept -> bool = 0;
+        const UnallocatedVector<block::Position>& reorg) const noexcept
+        -> bool = 0;
     virtual auto ReserveUTXO(
         const identifier::Nym& spender,
         const Identifier& proposal,
@@ -666,7 +670,7 @@ struct WalletDatabase {
         -> block::Position = 0;
     virtual auto SubchainMatchBlock(
         const SubchainIndex& index,
-        const std::vector<std::pair<ReadView, MatchingIndices>>& results)
+        const UnallocatedVector<std::pair<ReadView, MatchingIndices>>& results)
         const noexcept -> bool = 0;
     virtual auto SubchainSetLastScanned(
         const SubchainIndex& index,

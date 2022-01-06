@@ -50,7 +50,7 @@ struct TCPConnectionManager : virtual public ConnectionManager {
     network::asio::Socket socket_;
     OTData header_;
 
-    auto address() const noexcept -> std::string final
+    auto address() const noexcept -> UnallocatedCString final
     {
         return endpoint_.GetMapped();
     }
@@ -59,7 +59,7 @@ struct TCPConnectionManager : virtual public ConnectionManager {
         return {address(), port()};
     }
     auto filter(const Task) const noexcept -> bool final { return true; }
-    auto host() const noexcept -> std::string final
+    auto host() const noexcept -> UnallocatedCString final
     {
         return endpoint_.GetAddress();
     }

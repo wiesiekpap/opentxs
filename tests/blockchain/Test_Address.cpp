@@ -4,12 +4,8 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
-#include <map>
-#include <set>
-#include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
@@ -21,15 +17,19 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 
 using Style = ot::blockchain::crypto::AddressStyle;
 using Chain = ot::blockchain::Type;
-using TestData = std::map<std::string, std::pair<Style, std::set<Chain>>>;
-using SegwitGood = std::map<std::string, std::pair<Chain, std::string>>;
-using SegwitBad = std::vector<std::string>;
+using TestData = ot::UnallocatedMap<
+    ot::UnallocatedCString,
+    std::pair<Style, ot::UnallocatedSet<Chain>>>;
+using SegwitGood = ot::UnallocatedMap<
+    ot::UnallocatedCString,
+    std::pair<Chain, ot::UnallocatedCString>>;
+using SegwitBad = ot::UnallocatedVector<ot::UnallocatedCString>;
 
 // https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses
 // https://bitcoin.stackexchange.com/questions/62781/litecoin-constants-and-prefixes

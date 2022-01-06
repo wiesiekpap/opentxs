@@ -5,8 +5,6 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "VectorsV3.hpp"
 #include "opentxs/OT.hpp"
@@ -24,7 +22,6 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
-#include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
@@ -32,6 +29,7 @@
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;

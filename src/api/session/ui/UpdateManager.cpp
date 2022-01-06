@@ -8,11 +8,9 @@
 #include "api/session/ui/UpdateManager.hpp"  // IWYU pragma: associated
 
 #include <functional>
-#include <map>
 #include <mutex>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -28,6 +26,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
 
@@ -96,7 +95,8 @@ struct UpdateManager::Imp {
 private:
     const api::session::Client& api_;
     mutable std::mutex lock_;
-    mutable std::map<OTIdentifier, std::vector<SimpleCallback>> map_;
+    mutable UnallocatedMap<OTIdentifier, UnallocatedVector<SimpleCallback>>
+        map_;
     OTZMQPublishSocket publisher_;
     opentxs::network::zeromq::Pipeline pipeline_;
 

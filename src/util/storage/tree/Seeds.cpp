@@ -9,7 +9,6 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <map>
 #include <tuple>
 #include <utility>
 
@@ -19,6 +18,7 @@
 #include "internal/serialization/protobuf/verify/StorageSeeds.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/Seed.pb.h"
 #include "serialization/protobuf/StorageItemHash.pb.h"
@@ -28,7 +28,7 @@
 
 namespace opentxs::storage
 {
-Seeds::Seeds(const Driver& storage, const std::string& hash)
+Seeds::Seeds(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
     , default_seed_()
 {
@@ -39,21 +39,24 @@ Seeds::Seeds(const Driver& storage, const std::string& hash)
     }
 }
 
-auto Seeds::Alias(const std::string& id) const -> std::string
+auto Seeds::Alias(const UnallocatedCString& id) const -> UnallocatedCString
 {
     return get_alias(id);
 }
 
-auto Seeds::Default() const -> std::string
+auto Seeds::Default() const -> UnallocatedCString
 {
     std::lock_guard<std::mutex> lock(write_lock_);
 
     return default_seed_;
 }
 
-auto Seeds::Delete(const std::string& id) -> bool { return delete_item(id); }
+auto Seeds::Delete(const UnallocatedCString& id) -> bool
+{
+    return delete_item(id);
+}
 
-void Seeds::init(const std::string& hash)
+void Seeds::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageSeeds> serialized;
     driver_.LoadProto(hash, serialized);
@@ -74,9 +77,9 @@ void Seeds::init(const std::string& hash)
 }
 
 auto Seeds::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     std::shared_ptr<proto::Seed>& output,
-    std::string& alias,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     return load_proto<proto::Seed>(id, output, alias, checking);
@@ -115,14 +118,16 @@ auto Seeds::serialize() const -> proto::StorageSeeds
 
     return serialized;
 }
-auto Seeds::SetAlias(const std::string& id, const std::string& alias) -> bool
+auto Seeds::SetAlias(
+    const UnallocatedCString& id,
+    const UnallocatedCString& alias) -> bool
 {
     return set_alias(id, alias);
 }
 
 void Seeds::set_default(
     const std::unique_lock<std::mutex>& lock,
-    const std::string& id)
+    const UnallocatedCString& id)
 {
     if (!verify_write_lock(lock)) {
         std::cerr << __func__ << ": Lock failure." << std::endl;
@@ -132,7 +137,7 @@ void Seeds::set_default(
     default_seed_ = id;
 }
 
-auto Seeds::SetDefault(const std::string& id) -> bool
+auto Seeds::SetDefault(const UnallocatedCString& id) -> bool
 {
     std::unique_lock<std::mutex> lock(write_lock_);
 
@@ -141,11 +146,12 @@ auto Seeds::SetDefault(const std::string& id) -> bool
     return save(lock);
 }
 
-auto Seeds::Store(const proto::Seed& data, const std::string& alias) -> bool
+auto Seeds::Store(const proto::Seed& data, const UnallocatedCString& alias)
+    -> bool
 {
     std::unique_lock<std::mutex> lock(write_lock_);
 
-    const std::string id = data.fingerprint();
+    const UnallocatedCString id = data.fingerprint();
     const auto incomingRevision = data.index();
     const bool existingKey = (item_map_.end() != item_map_.find(id));
     auto& metadata = item_map_[id];

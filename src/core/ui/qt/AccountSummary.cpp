@@ -11,7 +11,6 @@
 #include <QVariant>
 #include <exception>
 #include <memory>
-#include <string>
 
 #include "core/Amount.hpp"
 #include "core/ui/accountsummary/AccountSummaryItem.hpp"
@@ -19,6 +18,7 @@
 #include "internal/core/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::factory

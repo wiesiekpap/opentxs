@@ -10,9 +10,7 @@
 #include <cstdint>
 #include <cstring>
 #include <iterator>
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "internal/api/Legacy.hpp"
@@ -47,6 +45,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -225,13 +224,13 @@ void OTMarket::UpdateContents(const PasswordPrompt& reason)
         "instrumentDefinitionID", INSTRUMENT_DEFINITION_ID->Get());
     tag.add_attribute("currencyTypeID", CURRENCY_TYPE_ID->Get());
     tag.add_attribute("marketScale", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         m_lScale.Serialize(writer(buf));
         return buf;
     }());
     tag.add_attribute("lastSaleDate", m_strLastSaleDate);
     tag.add_attribute("lastSalePrice", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         m_lLastSalePrice.Serialize(writer(buf));
         return buf;
     }());
@@ -268,7 +267,7 @@ void OTMarket::UpdateContents(const PasswordPrompt& reason)
         tag.add_tag(tagOffer);
     }
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());
@@ -357,7 +356,7 @@ auto OTMarket::GetNym_OfferList(
             if (!pOfferData->stop_sign.compare(">") ||
                 !pOfferData->stop_sign.compare("<")) {
                 pOfferData->stop_price = [&] {
-                    auto buf = std::string{};
+                    auto buf = UnallocatedCString{};
                     pTrade->GetStopPrice().Serialize(writer(buf));
                     return buf;
                 }();
@@ -366,27 +365,27 @@ auto OTMarket::GetNym_OfferList(
 
         pOfferData->transaction_id = std::to_string(lTransactionNum);
         pOfferData->price_per_scale = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lPriceLimit.Serialize(writer(buf));
             return buf;
         }();
         pOfferData->total_assets = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lTotalAssets.Serialize(writer(buf));
             return buf;
         }();
         pOfferData->finished_so_far = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lFinishedSoFar.Serialize(writer(buf));
             return buf;
         }();
         pOfferData->minimum_increment = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lMinimumIncrement.Serialize(writer(buf));
             return buf;
         }();
         pOfferData->scale = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lScale.Serialize(writer(buf));
             return buf;
         }();
@@ -530,17 +529,17 @@ auto OTMarket::GetOfferList(
 
         pOfferData->transaction_id = std::to_string(lTransactionNum);
         pOfferData->price_per_scale = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lPriceLimit.Serialize(writer(buf));
             return buf;
         }();
         pOfferData->available_assets = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lAvailableAssets.Serialize(writer(buf));
             return buf;
         }();
         pOfferData->minimum_increment = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lMinimumIncrement.Serialize(writer(buf));
             return buf;
         }();
@@ -574,17 +573,17 @@ auto OTMarket::GetOfferList(
 
         pOfferData->transaction_id = std::to_string(lTransactionNum);
         pOfferData->price_per_scale = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lPriceLimit.Serialize(writer(buf));
             return buf;
         }();
         pOfferData->available_assets = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lAvailableAssets.Serialize(writer(buf));
             return buf;
         }();
         pOfferData->minimum_increment = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lMinimumIncrement.Serialize(writer(buf));
             return buf;
         }();
@@ -650,7 +649,7 @@ auto OTMarket::GetOfferList(
 // the
 // order received for that price.
 //
-// typedef std::multimap<std::int64_t, OTOffer *>    mapOfOffers;
+// typedef UnallocatedMultimap<std::int64_t, OTOffer *>    mapOfOffers;
 // mapOfOffers    m_mapBids; // The buyers, ordered
 // mapOfOffers    m_mapAsks; // The sellers, ordered
 
@@ -977,7 +976,7 @@ void OTMarket::GetIdentifier(Identifier& theIdentifier) const
          strAsset = String::Factory(GetInstrumentDefinitionID()),
          strCurrency = String::Factory(GetCurrencyID());
 
-    auto lScale = std::string{};
+    auto lScale = UnallocatedCString{};
     GetScale().Serialize(writer(lScale));
 
     // In this way we generate a unique ID that will always be consistent
@@ -1966,12 +1965,12 @@ void OTMarket::ProcessTrade(
                     pTradeData->date =
                         std::to_string(Clock::to_time_t(theDate));
                     pTradeData->price = [&] {
-                        auto buf = std::string{};
+                        auto buf = UnallocatedCString{};
                         theOtherOffer.GetPriceLimit().Serialize(writer(buf));
                         return buf;
                     }();  // Priced per scale.
                     pTradeData->amount_sold = [&] {
-                        auto buf = std::string{};
+                        auto buf = UnallocatedCString{};
                         lOfferFinished.Serialize(writer(buf));
                         return buf;
                     }();

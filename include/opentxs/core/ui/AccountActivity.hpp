@@ -34,50 +34,50 @@ class OPENTXS_EXPORT AccountActivity : virtual public List
 public:
     using Scale = unsigned int;
 
-    virtual auto AccountID() const noexcept -> std::string = 0;
+    virtual auto AccountID() const noexcept -> UnallocatedCString = 0;
     virtual auto Balance() const noexcept -> const Amount = 0;
     virtual auto BalancePolarity() const noexcept -> int = 0;
-    virtual auto ContractID() const noexcept -> std::string = 0;
-    virtual auto DepositAddress() const noexcept -> std::string = 0;
+    virtual auto ContractID() const noexcept -> UnallocatedCString = 0;
+    virtual auto DepositAddress() const noexcept -> UnallocatedCString = 0;
     virtual auto DepositAddress(const blockchain::Type chain) const noexcept
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
     virtual auto DepositChains() const noexcept
-        -> std::vector<blockchain::Type> = 0;
-    virtual auto DisplayBalance() const noexcept -> std::string = 0;
-    virtual auto DisplayUnit() const noexcept -> std::string = 0;
+        -> UnallocatedVector<blockchain::Type> = 0;
+    virtual auto DisplayBalance() const noexcept -> UnallocatedCString = 0;
+    virtual auto DisplayUnit() const noexcept -> UnallocatedCString = 0;
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::BalanceItem> = 0;
-    virtual auto Name() const noexcept -> std::string = 0;
+    virtual auto Name() const noexcept -> UnallocatedCString = 0;
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::BalanceItem> = 0;
-    virtual auto NotaryID() const noexcept -> std::string = 0;
-    virtual auto NotaryName() const noexcept -> std::string = 0;
+    virtual auto NotaryID() const noexcept -> UnallocatedCString = 0;
+    virtual auto NotaryName() const noexcept -> UnallocatedCString = 0;
     virtual auto Send(
         const Identifier& contact,
         const Amount& amount,
-        const std::string& memo = {}) const noexcept -> bool = 0;
+        const UnallocatedCString& memo = {}) const noexcept -> bool = 0;
     virtual auto Send(
         const Identifier& contact,
-        const std::string& amount,
-        const std::string& memo = {},
+        const UnallocatedCString& amount,
+        const UnallocatedCString& memo = {},
         Scale scale = 0) const noexcept -> bool = 0;
     virtual auto Send(
-        const std::string& address,
+        const UnallocatedCString& address,
         const Amount& amount,
-        const std::string& memo = {}) const noexcept -> bool = 0;
+        const UnallocatedCString& memo = {}) const noexcept -> bool = 0;
     virtual auto Send(
-        const std::string& address,
-        const std::string& amount,
-        const std::string& memo = {},
+        const UnallocatedCString& address,
+        const UnallocatedCString& amount,
+        const UnallocatedCString& memo = {},
         Scale scale = 0) const noexcept -> bool = 0;
     virtual auto SyncPercentage() const noexcept -> double = 0;
     virtual auto SyncProgress() const noexcept -> std::pair<int, int> = 0;
     virtual auto Type() const noexcept -> AccountType = 0;
     virtual auto Unit() const noexcept -> core::UnitType = 0;
-    virtual auto ValidateAddress(const std::string& text) const noexcept
+    virtual auto ValidateAddress(const UnallocatedCString& text) const noexcept
         -> bool = 0;
-    virtual auto ValidateAmount(const std::string& text) const noexcept
-        -> std::string = 0;
+    virtual auto ValidateAmount(const UnallocatedCString& text) const noexcept
+        -> UnallocatedCString = 0;
 
     ~AccountActivity() override = default;
 

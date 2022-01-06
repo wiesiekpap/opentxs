@@ -6,11 +6,10 @@
 #pragma once
 
 #include <future>
-#include <set>
-#include <string>
 
 #include "opentxs/Version.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -29,17 +28,18 @@ public:
     virtual auto AddIssuer(
         const identifier::Nym& localNymID,
         const identifier::Nym& issuerNymID,
-        const std::string& pairingCode) const noexcept -> bool = 0;
+        const UnallocatedCString& pairingCode) const noexcept -> bool = 0;
     virtual auto CheckIssuer(
         const identifier::Nym& localNymID,
         const identifier::UnitDefinition& unitDefinitionID) const noexcept
         -> bool = 0;
     virtual auto IssuerDetails(
         const identifier::Nym& localNymID,
-        const identifier::Nym& issuerNymID) const noexcept -> std::string = 0;
+        const identifier::Nym& issuerNymID) const noexcept
+        -> UnallocatedCString = 0;
     virtual auto IssuerList(
         const identifier::Nym& localNymID,
-        const bool onlyTrusted) const noexcept -> std::set<OTNymID> = 0;
+        const bool onlyTrusted) const noexcept -> UnallocatedSet<OTNymID> = 0;
     /** For unit tests */
     virtual auto Stop() const noexcept -> std::shared_future<void> = 0;
     /** For unit tests */

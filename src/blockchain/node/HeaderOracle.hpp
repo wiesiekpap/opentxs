@@ -7,16 +7,11 @@
 
 #include <array>
 #include <cstddef>
-#include <deque>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -26,6 +21,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -127,21 +123,21 @@ public:
     {
         return database_.RecentHashes();
     }
-    auto Siblings() const noexcept -> std::set<block::pHash> final;
+    auto Siblings() const noexcept -> UnallocatedSet<block::pHash> final;
 
     auto AddCheckpoint(
         const block::Height position,
         const block::Hash& requiredHash) noexcept -> bool final;
     auto AddHeader(std::unique_ptr<block::Header> header) noexcept
         -> bool final;
-    auto AddHeaders(std::vector<std::unique_ptr<block::Header>>&) noexcept
+    auto AddHeaders(UnallocatedVector<std::unique_ptr<block::Header>>&) noexcept
         -> bool final;
     auto DeleteCheckpoint() noexcept -> bool final;
     auto Init() noexcept -> void final;
     auto Internal() noexcept -> internal::HeaderOracle& final { return *this; }
     auto ProcessSyncData(
         block::Hash& prior,
-        std::vector<block::pHash>& hashes,
+        UnallocatedVector<block::pHash>& hashes,
         const network::p2p::Data& data) noexcept -> std::size_t final;
 
     HeaderOracle(
@@ -154,10 +150,10 @@ public:
 private:
     struct Candidate {
         bool blacklisted_{false};
-        std::deque<block::Position> chain_{};
+        UnallocatedDeque<block::Position> chain_{};
     };
 
-    using Candidates = std::vector<Candidate>;
+    using Candidates = UnallocatedVector<Candidate>;
 
     const api::Session& api_;
     const internal::HeaderDatabase& database_;

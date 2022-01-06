@@ -9,7 +9,6 @@
 
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "internal/api/Crypto.hpp"
 #include "internal/api/crypto/Factory.hpp"
@@ -31,6 +30,7 @@
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
@@ -67,7 +67,7 @@ Asymmetric::Asymmetric(const api::Session& api) noexcept
 template <typename ReturnType, typename NullType>
 auto Asymmetric::instantiate_hd_key(
     const opentxs::crypto::key::asymmetric::Algorithm type,
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const opentxs::crypto::Bip32::Key& serialized,
     const opentxs::crypto::key::asymmetric::Role role,
     const VersionNumber version,
@@ -184,7 +184,7 @@ auto Asymmetric::InstantiateHDKey(const proto::AsymmetricKey& serialized)
 
 auto Asymmetric::InstantiateKey(
     const opentxs::crypto::key::asymmetric::Algorithm type,
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const opentxs::crypto::Bip32::Key& serialized,
     const PasswordPrompt& reason) const noexcept
     -> std::unique_ptr<opentxs::crypto::key::HD>
@@ -200,7 +200,7 @@ auto Asymmetric::InstantiateKey(
 
 auto Asymmetric::InstantiateKey(
     const opentxs::crypto::key::asymmetric::Algorithm type,
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const opentxs::crypto::Bip32::Key& serialized,
     const opentxs::crypto::key::asymmetric::Role role,
     const PasswordPrompt& reason) const noexcept
@@ -217,7 +217,7 @@ auto Asymmetric::InstantiateKey(
 
 auto Asymmetric::InstantiateKey(
     const opentxs::crypto::key::asymmetric::Algorithm type,
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const opentxs::crypto::Bip32::Key& serialized,
     const VersionNumber version,
     const PasswordPrompt& reason) const noexcept
@@ -234,7 +234,7 @@ auto Asymmetric::InstantiateKey(
 
 auto Asymmetric::InstantiateKey(
     const opentxs::crypto::key::asymmetric::Algorithm type,
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const opentxs::crypto::Bip32::Key& serialized,
     const opentxs::crypto::key::asymmetric::Role role,
     const VersionNumber version,
@@ -387,7 +387,7 @@ auto Asymmetric::InstantiateSecp256k1Key(
 }
 
 auto Asymmetric::NewHDKey(
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const Secret& seed,
     const EcdsaCurve& curve,
     const opentxs::crypto::Bip32::Path& path,
@@ -405,7 +405,7 @@ auto Asymmetric::NewHDKey(
 }
 
 auto Asymmetric::NewHDKey(
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const Secret& seed,
     const EcdsaCurve& curve,
     const opentxs::crypto::Bip32::Path& path,
@@ -424,7 +424,7 @@ auto Asymmetric::NewHDKey(
 }
 
 auto Asymmetric::NewHDKey(
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const Secret& seed,
     const EcdsaCurve& curve,
     const opentxs::crypto::Bip32::Path& path,
@@ -443,7 +443,7 @@ auto Asymmetric::NewHDKey(
 }
 
 auto Asymmetric::NewHDKey(
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const Secret& seed,
     const EcdsaCurve& curve,
     const opentxs::crypto::Bip32::Path& path,
@@ -538,7 +538,7 @@ auto Asymmetric::NewKey(
 }
 
 auto Asymmetric::NewSecp256k1Key(
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const Secret& seed,
     const opentxs::crypto::Bip32::Path& derive,
     const PasswordPrompt& reason) const
@@ -554,7 +554,7 @@ auto Asymmetric::NewSecp256k1Key(
 }
 
 auto Asymmetric::NewSecp256k1Key(
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const Secret& seed,
     const opentxs::crypto::Bip32::Path& derive,
     const opentxs::crypto::key::asymmetric::Role role,
@@ -571,7 +571,7 @@ auto Asymmetric::NewSecp256k1Key(
 }
 
 auto Asymmetric::NewSecp256k1Key(
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const Secret& seed,
     const opentxs::crypto::Bip32::Path& derive,
     const VersionNumber version,
@@ -588,7 +588,7 @@ auto Asymmetric::NewSecp256k1Key(
 }
 
 auto Asymmetric::NewSecp256k1Key(
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const Secret& seed,
     const opentxs::crypto::Bip32::Path& derive,
     const opentxs::crypto::key::asymmetric::Role role,
@@ -615,7 +615,7 @@ auto Asymmetric::NewSecp256k1Key(
 }
 
 auto Asymmetric::serialize_path(
-    const std::string& seedID,
+    const UnallocatedCString& seedID,
     const opentxs::crypto::Bip32::Path& children) -> proto::HDPath
 {
     proto::HDPath output;

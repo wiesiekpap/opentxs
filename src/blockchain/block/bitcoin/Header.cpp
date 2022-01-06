@@ -66,8 +66,8 @@ auto BitcoinBlockHeader(
     };
     auto serialized = ReturnType::BitcoinFormat{
         version,
-        std::string{previous.Hash().Bytes()},
-        std::string{merkle->Bytes()},
+        UnallocatedCString{previous.Hash().Bytes()},
+        UnallocatedCString{merkle->Bytes()},
         now(),
         nBits,
         0};
@@ -384,8 +384,8 @@ Header::BitcoinFormat::BitcoinFormat() noexcept
 
 Header::BitcoinFormat::BitcoinFormat(
     const std::int32_t version,
-    const std::string& previous,
-    const std::string& merkle,
+    const UnallocatedCString& previous,
+    const UnallocatedCString& merkle,
     const std::uint32_t time,
     const std::uint32_t nbits,
     const std::uint32_t nonce) noexcept(false)
@@ -554,7 +554,7 @@ auto Header::preimage(const SerializedType& in) -> BitcoinFormat
         in.bitcoin().nonce()};
 }
 
-auto Header::Print() const noexcept -> std::string
+auto Header::Print() const noexcept -> UnallocatedCString
 {
     const auto time = Clock::to_time_t(timestamp_);
     auto out = std::stringstream{};

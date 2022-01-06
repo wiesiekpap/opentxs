@@ -12,9 +12,6 @@
 #include <chrono>
 #include <future>
 #include <memory>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "Proto.hpp"
 #include "core/ui/base/Widget.hpp"
@@ -41,6 +38,7 @@
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -87,7 +85,7 @@ CustodialAccountActivity::CustodialAccountActivity(
     OT_ASSERT(0 < Notary().Version());
 }
 
-auto CustodialAccountActivity::ContractID() const noexcept -> std::string
+auto CustodialAccountActivity::ContractID() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 
@@ -95,11 +93,11 @@ auto CustodialAccountActivity::ContractID() const noexcept -> std::string
 }
 
 auto CustodialAccountActivity::display_balance(
-    opentxs::Amount amount) const noexcept -> std::string
+    opentxs::Amount amount) const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
     const auto& definition = display::GetDefinition(Contract().UnitOfAccount());
-    std::string output = definition.Format(amount);
+    UnallocatedCString output = definition.Format(amount);
 
     if (0 < output.size()) { return output; }
 
@@ -107,7 +105,8 @@ auto CustodialAccountActivity::display_balance(
     return output;
 }
 
-auto CustodialAccountActivity::DisplayUnit() const noexcept -> std::string
+auto CustodialAccountActivity::DisplayUnit() const noexcept
+    -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 
@@ -168,9 +167,10 @@ auto CustodialAccountActivity::extract_event(
 }
 
 auto CustodialAccountActivity::extract_rows(
-    const proto::PaymentWorkflow& workflow) noexcept -> std::vector<RowKey>
+    const proto::PaymentWorkflow& workflow) noexcept
+    -> UnallocatedVector<RowKey>
 {
-    auto output = std::vector<RowKey>{};
+    auto output = UnallocatedVector<RowKey>{};
 
     switch (translate(workflow.type())) {
         case otx::client::PaymentWorkflowType::OutgoingCheque: {
@@ -349,21 +349,21 @@ auto CustodialAccountActivity::extract_rows(
     return output;
 }
 
-auto CustodialAccountActivity::Name() const noexcept -> std::string
+auto CustodialAccountActivity::Name() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 
     return alias_;
 }
 
-auto CustodialAccountActivity::NotaryID() const noexcept -> std::string
+auto CustodialAccountActivity::NotaryID() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 
     return notary_->ID()->str();
 }
 
-auto CustodialAccountActivity::NotaryName() const noexcept -> std::string
+auto CustodialAccountActivity::NotaryName() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 
@@ -505,7 +505,7 @@ auto CustodialAccountActivity::process_notary(const Message& message) noexcept
 
 auto CustodialAccountActivity::process_workflow(
     const Identifier& workflowID,
-    std::set<AccountActivityRowID>& active) noexcept -> void
+    UnallocatedSet<AccountActivityRowID>& active) noexcept -> void
 {
     const auto workflow = [&] {
         auto out = proto::PaymentWorkflow{};
@@ -575,7 +575,7 @@ auto CustodialAccountActivity::startup() noexcept -> void
 
     const auto workflows =
         Widget::api_.Workflow().WorkflowsByAccount(primary_id_, account_id_);
-    auto active = std::set<AccountActivityRowID>{};
+    auto active = UnallocatedSet<AccountActivityRowID>{};
 
     for (const auto& id : workflows) { process_workflow(id, active); }
 

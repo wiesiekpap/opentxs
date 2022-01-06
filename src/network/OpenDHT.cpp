@@ -11,13 +11,13 @@
 #include <cstdint>
 #include <iostream>
 #include <stdexcept>
-#include <vector>
 
 #include "internal/network/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/DhtConfig.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::factory
@@ -103,8 +103,8 @@ auto OpenDHT::Init() const -> bool
 }
 
 auto OpenDHT::Insert(
-    const std::string& key,
-    const std::string& value,
+    const UnallocatedCString& key,
+    const UnallocatedCString& value,
     DhtDoneCallback cb) const noexcept -> void
 {
     if (false == Init()) { return; }
@@ -133,7 +133,7 @@ auto OpenDHT::Insert(
 }
 
 auto OpenDHT::Retrieve(
-    const std::string& key,
+    const UnallocatedCString& key,
     DhtResultsCallback vcb,
     DhtDoneCallback dcb) const noexcept -> void
 {
@@ -145,15 +145,15 @@ auto OpenDHT::Retrieve(
         // to need to include OpenDHT headers. Solution: this lambda performs
         // the translation
         dht::GetCallback cb(
-            [vcb](const std::vector<std::shared_ptr<dht::Value>> results)
+            [vcb](const UnallocatedVector<std::shared_ptr<dht::Value>> results)
                 -> bool {
                 DhtResults input;
 
                 for (const auto& it : results) {
                     if (nullptr == it) { continue; }
 
-                    auto& bytes =
-                        input.emplace_back(std::make_shared<std::string>());
+                    auto& bytes = input.emplace_back(
+                        std::make_shared<UnallocatedCString>());
 
                     OT_ASSERT(bytes);
 

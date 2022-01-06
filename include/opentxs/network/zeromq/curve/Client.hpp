@@ -32,12 +32,13 @@ namespace curve
 class OPENTXS_EXPORT Client : virtual public socket::Socket
 {
 public:
-    static auto RandomKeypair() noexcept -> std::pair<std::string, std::string>;
+    static auto RandomKeypair() noexcept
+        -> std::pair<UnallocatedCString, UnallocatedCString>;
 
     virtual auto SetKeysZ85(
-        const std::string& serverPublic,
-        const std::string& clientPrivate,
-        const std::string& clientPublic) const noexcept -> bool = 0;
+        const UnallocatedCString& serverPublic,
+        const UnallocatedCString& clientPrivate,
+        const UnallocatedCString& clientPublic) const noexcept -> bool = 0;
     virtual auto SetServerPubkey(
         const contract::Server& contract) const noexcept -> bool = 0;
     virtual auto SetServerPubkey(const Data& key) const noexcept -> bool = 0;

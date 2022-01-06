@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <string>
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {

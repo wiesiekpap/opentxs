@@ -7,12 +7,10 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
@@ -43,7 +41,7 @@ struct SyncClient {
         Processed = OT_ZMQ_INTERNAL_SIGNAL + 2,
     };
 
-    auto Endpoint() const noexcept -> const std::string&;
+    auto Endpoint() const noexcept -> const UnallocatedCString&;
 
     auto Init(const Blockchain& parent) noexcept -> void;
 

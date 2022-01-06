@@ -7,7 +7,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <set>
 
 #include "internal/otx/Types.hpp"
 #include "internal/otx/common/Message.hpp"
@@ -15,6 +14,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -69,7 +69,7 @@ public:
         Message& output,
         const PasswordPrompt& reason);
 
-    auto Acknowledged() const -> std::set<RequestNumber>;
+    auto Acknowledged() const -> UnallocatedSet<RequestNumber>;
     auto HaveContext() const -> bool;
     auto Init() const -> const bool&;
     auto Original() const -> const Message&;

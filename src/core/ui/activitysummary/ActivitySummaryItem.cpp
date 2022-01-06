@@ -12,7 +12,6 @@
 #include <future>
 #include <memory>
 #include <mutex>
-#include <string>
 #include <thread>
 #include <type_traits>
 #include <utility>
@@ -29,6 +28,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -70,7 +70,7 @@ ActivitySummaryItem::ActivitySummaryItem(
     const ActivitySummarySortKey& sortKey,
     CustomData& custom,
     const Flag& running,
-    std::string text) noexcept
+    UnallocatedCString text) noexcept
     : ActivitySummaryItemRow(parent, api, rowID, true)
     , running_(running)
     , nym_id_(nymID)
@@ -91,7 +91,7 @@ ActivitySummaryItem::ActivitySummaryItem(
     OT_ASSERT(newest_item_thread_)
 }
 
-auto ActivitySummaryItem::DisplayName() const noexcept -> std::string
+auto ActivitySummaryItem::DisplayName() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 
@@ -102,7 +102,7 @@ auto ActivitySummaryItem::DisplayName() const noexcept -> std::string
 
 auto ActivitySummaryItem::find_text(
     const PasswordPrompt& reason,
-    const ItemLocator& locator) const noexcept -> std::string
+    const ItemLocator& locator) const noexcept -> UnallocatedCString
 {
     const auto& [itemID, box, accountID, thread] = locator;
 
@@ -163,7 +163,7 @@ void ActivitySummaryItem::get_text() noexcept
     }
 }
 
-auto ActivitySummaryItem::ImageURI() const noexcept -> std::string
+auto ActivitySummaryItem::ImageURI() const noexcept -> UnallocatedCString
 {
     // TODO
 
@@ -173,11 +173,11 @@ auto ActivitySummaryItem::ImageURI() const noexcept -> std::string
 auto ActivitySummaryItem::LoadItemText(
     const api::session::Client& api,
     const identifier::Nym& nym,
-    const CustomData& custom) noexcept -> std::string
+    const CustomData& custom) noexcept -> UnallocatedCString
 {
     const auto& box = *static_cast<const StorageBox*>(custom.at(1));
     const auto& thread = *static_cast<const OTIdentifier*>(custom.at(4));
-    const auto& itemID = *static_cast<const std::string*>(custom.at(0));
+    const auto& itemID = *static_cast<const UnallocatedCString*>(custom.at(0));
 
     if (StorageBox::BLOCKCHAIN == box) {
         return api.Crypto().Blockchain().ActivityDescription(
@@ -202,21 +202,21 @@ auto ActivitySummaryItem::reindex(
 void ActivitySummaryItem::startup(CustomData& custom) noexcept
 {
     auto locator = ItemLocator{
-        extract_custom<std::string>(custom, 0),
+        extract_custom<UnallocatedCString>(custom, 0),
         type_,
-        extract_custom<std::string>(custom, 2),
+        extract_custom<UnallocatedCString>(custom, 2),
         extract_custom<OTIdentifier>(custom, 4)};
     newest_item_.Push(++next_task_id_, std::move(locator));
 }
 
-auto ActivitySummaryItem::Text() const noexcept -> std::string
+auto ActivitySummaryItem::Text() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 
     return text_;
 }
 
-auto ActivitySummaryItem::ThreadID() const noexcept -> std::string
+auto ActivitySummaryItem::ThreadID() const noexcept -> UnallocatedCString
 {
     return row_id_->str();
 }

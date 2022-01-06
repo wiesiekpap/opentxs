@@ -9,17 +9,12 @@
 
 #include <chrono>
 #include <cstdint>
-#include <deque>
 #include <functional>
-#include <map>
 #include <mutex>
 #include <optional>
-#include <set>
 #include <stdexcept>
-#include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "blockchain/node/wallet/BitcoinTransactionBuilder.hpp"
@@ -40,6 +35,7 @@
 #include "opentxs/core/PaymentCode.hpp"  // IWYU pragma: keep
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -189,8 +185,8 @@ private:
     private:
         const api::Session& api_;
         mutable std::mutex lock_;
-        std::deque<Data> data_;
-        std::set<OTIdentifier> ids_;
+        UnallocatedDeque<Data> data_;
+        UnallocatedSet<OTIdentifier> ids_;
     };
 
     const api::Session& api_;
@@ -199,7 +195,7 @@ private:
     const Type chain_;
     mutable std::mutex lock_;
     mutable Pending pending_;
-    mutable std::map<OTIdentifier, Time> confirming_;
+    mutable UnallocatedMap<OTIdentifier, Time> confirming_;
 
     static auto is_expired(const Proposal& tx) noexcept -> bool
     {

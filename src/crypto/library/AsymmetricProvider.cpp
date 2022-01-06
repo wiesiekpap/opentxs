@@ -13,7 +13,6 @@ extern "C" {
 
 #include <cstddef>
 #include <cstring>
-#include <vector>
 
 #include "internal/otx/common/crypto/Signature.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -30,6 +29,7 @@ extern "C" {
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Sodium.hpp"

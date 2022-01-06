@@ -15,9 +15,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
 #include <shared_mutex>
-#include <vector>
 
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
@@ -27,6 +25,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
@@ -99,34 +98,36 @@ public:
     auto GetBalance(const identifier::Nym& owner, const NodeID& node)
         const noexcept -> Balance;
     auto GetBalance(const crypto::Key& key) const noexcept -> Balance;
-    auto GetOutputs(node::TxoState type) const noexcept -> std::vector<UTXO>;
+    auto GetOutputs(node::TxoState type) const noexcept
+        -> UnallocatedVector<UTXO>;
     auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
-        const noexcept -> std::vector<UTXO>;
+        const noexcept -> UnallocatedVector<UTXO>;
     auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& node,
-        node::TxoState type) const noexcept -> std::vector<UTXO>;
+        node::TxoState type) const noexcept -> UnallocatedVector<UTXO>;
     auto GetOutputs(const crypto::Key& key, node::TxoState type) const noexcept
-        -> std::vector<UTXO>;
-    auto GetTransactions() const noexcept -> std::vector<block::pTxid>;
+        -> UnallocatedVector<UTXO>;
+    auto GetTransactions() const noexcept -> UnallocatedVector<block::pTxid>;
     auto GetTransactions(const identifier::Nym& account) const noexcept
-        -> std::vector<block::pTxid>;
-    auto GetUnconfirmedTransactions() const noexcept -> std::set<block::pTxid>;
-    auto GetUnspentOutputs() const noexcept -> std::vector<UTXO>;
+        -> UnallocatedVector<block::pTxid>;
+    auto GetUnconfirmedTransactions() const noexcept
+        -> UnallocatedSet<block::pTxid>;
+    auto GetUnspentOutputs() const noexcept -> UnallocatedVector<UTXO>;
     auto GetUnspentOutputs(const NodeID& balanceNode) const noexcept
-        -> std::vector<UTXO>;
+        -> UnallocatedVector<UTXO>;
 
     auto AddConfirmedTransaction(
         const AccountID& account,
         const SubchainID& subchain,
         const block::Position& block,
         const std::size_t blockIndex,
-        const std::vector<std::uint32_t> outputIndices,
+        const UnallocatedVector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) noexcept -> bool;
     auto AddMempoolTransaction(
         const AccountID& account,
         const SubchainID& subchain,
-        const std::vector<std::uint32_t> outputIndices,
+        const UnallocatedVector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) const noexcept -> bool;
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
@@ -136,7 +137,7 @@ public:
     auto FinalizeReorg(MDB_txn* tx, const block::Position& pos) noexcept
         -> bool;
     auto GetOutputTags(const block::Outpoint& output) const noexcept
-        -> std::set<node::TxoTag>;
+        -> UnallocatedSet<node::TxoTag>;
     auto GetWalletHeight() const noexcept -> block::Height;
     auto ReserveUTXO(
         const identifier::Nym& spender,

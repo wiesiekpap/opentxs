@@ -7,9 +7,7 @@
 #include "1_Internal.hpp"             // IWYU pragma: associated
 #include "otx/server/Transactor.hpp"  // IWYU pragma: associated
 
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "internal/otx/AccountList.hpp"
@@ -22,6 +20,7 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/server/MainFile.hpp"

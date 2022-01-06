@@ -10,7 +10,6 @@
 #include <functional>
 #include <future>
 #include <memory>
-#include <set>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -24,6 +23,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/client/PaymentTasks.hpp"

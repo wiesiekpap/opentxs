@@ -9,12 +9,12 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/identity/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -41,7 +41,7 @@ public:
     using SerializedType = proto::Credential;
 
     virtual auto asString(const bool asPrivate = false) const
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
     virtual auto CredentialID() const -> const Identifier& = 0;
     virtual auto GetContactData(proto::ContactData& contactData) const
         -> bool = 0;

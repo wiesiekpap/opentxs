@@ -15,7 +15,6 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
@@ -26,6 +25,7 @@
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::factory

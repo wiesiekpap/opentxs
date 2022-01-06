@@ -8,11 +8,11 @@
 #pragma once
 
 #include <irrxml/irrXML.hpp>
-#include <list>
 
 #include "internal/otx/common/crypto/Signature.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace irr
 {
@@ -35,7 +35,7 @@ class String;
 
 namespace opentxs
 {
-using listOfSignatures = std::list<OTSignature>;
+using listOfSignatures = UnallocatedList<OTSignature>;
 
 auto AddBookendsAroundContent(
     String& strOutput,

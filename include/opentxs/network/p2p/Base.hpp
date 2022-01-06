@@ -21,6 +21,7 @@ namespace p2p
 {
 class Acknowledgement;
 class Base;
+class Block;
 class Data;
 class PublishContract;
 class PublishContractReply;

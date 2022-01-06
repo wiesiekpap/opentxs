@@ -17,8 +17,6 @@
 #include <iostream>
 #include <iterator>
 #include <memory>
-#include <set>
-#include <string>
 #include <thread>
 #include <type_traits>
 
@@ -29,6 +27,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/ScopeGuard.hpp"
 
 namespace opentxs::network::zeromq::context
@@ -185,7 +184,7 @@ auto Thread::receive_message(void* socket, Message& message) noexcept -> bool
     return true;
 }
 
-auto Thread::Remove(BatchID id, std::vector<socket::Raw*>&& data) noexcept
+auto Thread::Remove(BatchID id, UnallocatedVector<socket::Raw*>&& data) noexcept
     -> std::future<bool>
 {
     auto p = std::make_shared<std::promise<bool>>();
@@ -193,7 +192,7 @@ auto Thread::Remove(BatchID id, std::vector<socket::Raw*>&& data) noexcept
     auto cb =
         [this, id, sockets = std::move(data), promise = std::move(p)](auto&) {
             const auto set = [&] {
-                auto out = std::set<void*>{};
+                auto out = UnallocatedSet<void*>{};
                 std::transform(
                     sockets.begin(),
                     sockets.end(),

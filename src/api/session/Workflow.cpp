@@ -157,7 +157,7 @@ auto Workflow::ContainsTransfer(const proto::PaymentWorkflow& workflow) -> bool
 }
 
 auto Workflow::ExtractCheque(const proto::PaymentWorkflow& workflow)
-    -> std::string
+    -> UnallocatedCString
 {
     if (false == ContainsCheque(workflow)) {
         LogError()(OT_PRETTY_STATIC(Workflow))("Wrong workflow type").Flush();
@@ -197,7 +197,7 @@ auto Workflow::ExtractPurse(
 }
 
 auto Workflow::ExtractTransfer(const proto::PaymentWorkflow& workflow)
-    -> std::string
+    -> UnallocatedCString
 {
     if (false == ContainsTransfer(workflow)) {
         LogError()(OT_PRETTY_STATIC(Workflow))("Wrong workflow type").Flush();
@@ -484,7 +484,7 @@ auto Workflow::AbortTransfer(
 
     const bool isInternal = isInternalTransfer(
         transfer.GetRealAccountID(), transfer.GetDestinationAcctID());
-    const std::set<PaymentWorkflowType> type{
+    const UnallocatedSet<PaymentWorkflowType> type{
         isInternal ? PaymentWorkflowType::InternalTransfer
                    : PaymentWorkflowType::OutgoingTransfer};
     Lock global(lock_);
@@ -547,7 +547,7 @@ auto Workflow::AcceptTransfer(
     // Ignore this event for internal transfers.
     if (isInternal) { return true; }
 
-    const std::set<PaymentWorkflowType> type{
+    const UnallocatedSet<PaymentWorkflowType> type{
         PaymentWorkflowType::IncomingTransfer};
     Lock global(lock_);
     const auto workflow = get_workflow(global, type, nymID.str(), *transfer);
@@ -586,7 +586,7 @@ auto Workflow::AcknowledgeTransfer(
 
     const bool isInternal = isInternalTransfer(
         transfer.GetRealAccountID(), transfer.GetDestinationAcctID());
-    const std::set<PaymentWorkflowType> type{
+    const UnallocatedSet<PaymentWorkflowType> type{
         isInternal ? PaymentWorkflowType::InternalTransfer
                    : PaymentWorkflowType::OutgoingTransfer};
     Lock global(lock_);
@@ -672,8 +672,8 @@ auto Workflow::AllocateCash(
 
 auto Workflow::add_cheque_event(
     const eLock& lock,
-    const std::string& nymID,
-    const std::string&,
+    const UnallocatedCString& nymID,
+    const UnallocatedCString&,
     proto::PaymentWorkflow& workflow,
     const PaymentWorkflowState newState,
     const proto::PaymentEventType newEventType,
@@ -735,7 +735,7 @@ auto Workflow::add_cheque_event(
 // Only used for ClearCheque
 auto Workflow::add_cheque_event(
     const eLock& lock,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const Identifier& accountID,
     proto::PaymentWorkflow& workflow,
     const PaymentWorkflowState newState,
@@ -767,8 +767,8 @@ auto Workflow::add_cheque_event(
 
 auto Workflow::add_transfer_event(
     const eLock& lock,
-    const std::string& nymID,
-    const std::string& eventNym,
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& eventNym,
     proto::PaymentWorkflow& workflow,
     const PaymentWorkflowState newState,
     const proto::PaymentEventType newEventType,
@@ -814,9 +814,9 @@ auto Workflow::add_transfer_event(
 
 auto Workflow::add_transfer_event(
     const eLock& lock,
-    const std::string& nymID,
-    const std::string& notaryID,
-    const std::string& eventNym,
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& notaryID,
+    const UnallocatedCString& eventNym,
     proto::PaymentWorkflow& workflow,
     const otx::client::PaymentWorkflowState newState,
     const proto::PaymentEventType newEventType,
@@ -1307,7 +1307,7 @@ auto Workflow::ClearTransfer(
     }
 
     const bool isInternal = isInternalTransfer(accountID, destinationAccountID);
-    const std::set<PaymentWorkflowType> type{
+    const UnallocatedSet<PaymentWorkflowType> type{
         isInternal ? PaymentWorkflowType::InternalTransfer
                    : PaymentWorkflowType::OutgoingTransfer};
     Lock global(lock_);
@@ -1329,7 +1329,7 @@ auto Workflow::ClearTransfer(
         lock,
         nymID.str(),
         notaryID.str(),
-        (isInternal ? std::string{""} : depositorNymID->str()),
+        (isInternal ? UnallocatedCString{""} : depositorNymID->str()),
         *workflow,
         PaymentWorkflowState::Accepted,
         proto::PAYMENTEVENTTYPE_ACCEPT,
@@ -1405,7 +1405,7 @@ auto Workflow::CompleteTransfer(
     }
 
     const bool isInternal = isInternalTransfer(accountID, destinationAccountID);
-    const std::set<PaymentWorkflowType> type{
+    const UnallocatedSet<PaymentWorkflowType> type{
         isInternal ? PaymentWorkflowType::InternalTransfer
                    : PaymentWorkflowType::OutgoingTransfer};
     Lock global(lock_);
@@ -1427,7 +1427,7 @@ auto Workflow::CompleteTransfer(
         lock,
         nymID.str(),
         notaryID.str(),
-        (isInternal ? std::string{""} : depositorNymID->str()),
+        (isInternal ? UnallocatedCString{""} : depositorNymID->str()),
         *workflow,
         PaymentWorkflowState::Completed,
         proto::PAYMENTEVENTTYPE_COMPLETE,
@@ -1449,8 +1449,8 @@ auto Workflow::convey_incoming_transfer(
     const identifier::Nym& nymID,
     const identifier::Notary& notaryID,
     const OTTransaction& pending,
-    const std::string& senderNymID,
-    const std::string& recipientNymID,
+    const UnallocatedCString& senderNymID,
+    const UnallocatedCString& recipientNymID,
     const Item& transfer) const -> OTIdentifier
 {
     Lock global(lock_);
@@ -1516,7 +1516,7 @@ auto Workflow::convey_internal_transfer(
     const identifier::Nym& nymID,
     const identifier::Notary& notaryID,
     const OTTransaction& pending,
-    const std::string& senderNymID,
+    const UnallocatedCString& senderNymID,
     const Item& transfer) const -> OTIdentifier
 {
     Lock global(lock_);
@@ -1594,14 +1594,14 @@ auto Workflow::ConveyTransfer(
 
 auto Workflow::create_cheque(
     const Lock& lock,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const opentxs::Cheque& cheque,
     const PaymentWorkflowType workflowType,
     const PaymentWorkflowState workflowState,
     const VersionNumber workflowVersion,
     const VersionNumber sourceVersion,
     const VersionNumber eventVersion,
-    const std::string& party,
+    const UnallocatedCString& party,
     const Identifier& account,
     const Message* message) const
     -> std::pair<OTIdentifier, proto::PaymentWorkflow>
@@ -1612,7 +1612,7 @@ auto Workflow::create_cheque(
         Identifier::Factory(), {}};
     auto& [workflowID, workflow] = output;
     const auto chequeID = Identifier::Factory(cheque);
-    const std::string serialized = String::Factory(cheque)->Get();
+    const UnallocatedCString serialized = String::Factory(cheque)->Get();
     workflowID = Identifier::Random();
     workflow.set_version(workflowVersion);
     workflow.set_id(workflowID->str());
@@ -1676,17 +1676,17 @@ auto Workflow::create_cheque(
 
 auto Workflow::create_transfer(
     const Lock& global,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const Item& transfer,
     const PaymentWorkflowType workflowType,
     const PaymentWorkflowState workflowState,
     const VersionNumber workflowVersion,
     const VersionNumber sourceVersion,
     const VersionNumber eventVersion,
-    const std::string& party,
+    const UnallocatedCString& party,
     const Identifier& account,
-    const std::string& notaryID,
-    const std::string& destinationAccountID) const
+    const UnallocatedCString& notaryID,
+    const UnallocatedCString& destinationAccountID) const
     -> std::pair<OTIdentifier, proto::PaymentWorkflow>
 {
     OT_ASSERT(verify_lock(global))
@@ -1699,7 +1699,7 @@ auto Workflow::create_transfer(
     auto& [workflowID, workflow] = output;
     const auto transferID = Identifier::Factory(transfer);
     LogVerbose()(OT_PRETTY_CLASS())("Transfer ID: ")(transferID).Flush();
-    const std::string serialized = String::Factory(transfer)->Get();
+    const UnallocatedCString serialized = String::Factory(transfer)->Get();
     const auto existing = get_workflow(global, {workflowType}, nymID, transfer);
 
     if (existing) {
@@ -2157,8 +2157,8 @@ auto Workflow::FinishCheque(
 template <typename T>
 auto Workflow::get_workflow(
     const Lock& global,
-    const std::set<PaymentWorkflowType>& types,
-    const std::string& nymID,
+    const UnallocatedSet<PaymentWorkflowType>& types,
+    const UnallocatedCString& nymID,
     const T& source) const -> std::shared_ptr<proto::PaymentWorkflow>
 {
     OT_ASSERT(verify_lock(global));
@@ -2170,8 +2170,8 @@ auto Workflow::get_workflow(
 }
 
 auto Workflow::get_workflow_by_id(
-    const std::string& nymID,
-    const std::string& workflowID) const
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& workflowID) const
     -> std::shared_ptr<proto::PaymentWorkflow>
 {
     auto output = std::make_shared<proto::PaymentWorkflow>();
@@ -2190,9 +2190,9 @@ auto Workflow::get_workflow_by_id(
 }
 
 auto Workflow::get_workflow_by_id(
-    const std::set<PaymentWorkflowType>& types,
-    const std::string& nymID,
-    const std::string& workflowID) const
+    const UnallocatedSet<PaymentWorkflowType>& types,
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& workflowID) const
     -> std::shared_ptr<proto::PaymentWorkflow>
 {
     auto output = get_workflow_by_id(nymID, workflowID);
@@ -2209,9 +2209,9 @@ auto Workflow::get_workflow_by_id(
 }
 
 auto Workflow::get_workflow_by_source(
-    const std::set<PaymentWorkflowType>& types,
-    const std::string& nymID,
-    const std::string& sourceID) const
+    const UnallocatedSet<PaymentWorkflowType>& types,
+    const UnallocatedCString& nymID,
+    const UnallocatedCString& sourceID) const
     -> std::shared_ptr<proto::PaymentWorkflow>
 {
     const auto workflowID =
@@ -2222,8 +2222,8 @@ auto Workflow::get_workflow_by_source(
     return get_workflow_by_id(types, nymID, workflowID);
 }
 
-auto Workflow::get_workflow_lock(Lock& global, const std::string& id) const
-    -> eLock
+auto Workflow::get_workflow_lock(Lock& global, const UnallocatedCString& id)
+    const -> eLock
 {
     OT_ASSERT(verify_lock(global));
 
@@ -2258,7 +2258,7 @@ auto Workflow::ImportCheque(
         return Identifier::Factory(existing->id());
     }
 
-    const std::string party = cheque.GetSenderNymID().str();
+    const UnallocatedCString party = cheque.GetSenderNymID().str();
     static const auto accountID = api_.Factory().Identifier();
     const auto [workflowID, workflow] = create_cheque(
         global,
@@ -2307,7 +2307,7 @@ auto Workflow::InstantiateCheque(
 
             if (false == LoadWorkflow(nym, id, out)) {
                 throw std::runtime_error{
-                    std::string{"Workflow "} + id.str() + " not found"};
+                    UnallocatedCString{"Workflow "} + id.str() + " not found"};
             }
 
             return out;
@@ -2316,7 +2316,7 @@ auto Workflow::InstantiateCheque(
         if (false == ContainsCheque(workflow)) {
 
             throw std::runtime_error{
-                std::string{"Workflow "} + id.str() +
+                UnallocatedCString{"Workflow "} + id.str() +
                 " does not contain a cheque"};
         }
 
@@ -2338,7 +2338,7 @@ auto Workflow::InstantiatePurse(
 
             if (false == LoadWorkflow(nym, id, out)) {
                 throw std::runtime_error{
-                    std::string{"Workflow "} + id.str() + " not found"};
+                    UnallocatedCString{"Workflow "} + id.str() + " not found"};
             }
 
             return out;
@@ -2404,16 +2404,16 @@ auto Workflow::isTransfer(const Item& item) -> bool
 auto Workflow::List(
     const identifier::Nym& nymID,
     const PaymentWorkflowType type,
-    const PaymentWorkflowState state) const -> std::set<OTIdentifier>
+    const PaymentWorkflowState state) const -> UnallocatedSet<OTIdentifier>
 {
     const auto input =
         api_.Storage().PaymentWorkflowsByState(nymID.str(), type, state);
-    std::set<OTIdentifier> output{};
+    UnallocatedSet<OTIdentifier> output{};
     std::transform(
         input.begin(),
         input.end(),
         std::inserter(output, output.end()),
-        [](const std::string& id) -> OTIdentifier {
+        [](const UnallocatedCString& id) -> OTIdentifier {
             return Identifier::Factory(id);
         });
 
@@ -2529,8 +2529,8 @@ auto Workflow::ReceiveCash(
     const Message& message) const -> OTIdentifier
 {
     Lock global(lock_);
-    const std::string serialized = String::Factory(message)->Get();
-    const std::string party = message.m_strNymID->Get();
+    const UnallocatedCString serialized = String::Factory(message)->Get();
+    const UnallocatedCString party = message.m_strNymID->Get();
     auto workflowID = Identifier::Random();
     proto::PaymentWorkflow workflow{};
     workflow.set_version(
@@ -2597,7 +2597,7 @@ auto Workflow::ReceiveCheque(
         return Identifier::Factory(existing->id());
     }
 
-    const std::string party = cheque.GetSenderNymID().str();
+    const UnallocatedCString party = cheque.GetSenderNymID().str();
     static const auto accountID = api_.Factory().Identifier();
     const auto [workflowID, workflow] = create_cheque(
         global,
@@ -2638,7 +2638,7 @@ auto Workflow::ReceiveCheque(
 }
 
 auto Workflow::save_workflow(
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const proto::PaymentWorkflow& workflow) const -> bool
 {
     static const auto id = api_.Factory().Identifier();
@@ -2647,7 +2647,7 @@ auto Workflow::save_workflow(
 }
 
 auto Workflow::save_workflow(
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const Identifier& accountID,
     const proto::PaymentWorkflow& workflow) const -> bool
 {
@@ -2674,7 +2674,7 @@ auto Workflow::save_workflow(
 
 auto Workflow::save_workflow(
     OTIdentifier&& output,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const Identifier& accountID,
     const proto::PaymentWorkflow& workflow) const -> OTIdentifier
 {
@@ -2685,7 +2685,7 @@ auto Workflow::save_workflow(
 
 auto Workflow::save_workflow(
     std::pair<OTIdentifier, proto::PaymentWorkflow>&& output,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const Identifier& accountID,
     const proto::PaymentWorkflow& workflow) const
     -> std::pair<OTIdentifier, proto::PaymentWorkflow>
@@ -2788,7 +2788,7 @@ auto Workflow::SendCheque(
 auto Workflow::WorkflowParty(
     const identifier::Nym& nymID,
     const Identifier& workflowID,
-    const int index) const -> const std::string
+    const int index) const -> const UnallocatedCString
 {
     auto workflow = get_workflow_by_id(nymID.str(), workflowID.str());
 
@@ -2870,15 +2870,15 @@ auto Workflow::update_activity(
 }
 
 void Workflow::update_rpc(
-    const std::string& localNymID,
-    const std::string& remoteNymID,
-    const std::string& accountID,
+    const UnallocatedCString& localNymID,
+    const UnallocatedCString& remoteNymID,
+    const UnallocatedCString& accountID,
     const proto::AccountEventType type,
-    const std::string& workflowID,
+    const UnallocatedCString& workflowID,
     const Amount amount,
     const Amount pending,
     const Time time,
-    const std::string& memo) const
+    const UnallocatedCString& memo) const
 {
     proto::RPCPush push{};
     push.set_version(RPC_PUSH_VERSION);
@@ -2922,16 +2922,16 @@ auto Workflow::validate_recipient(
 
 auto Workflow::WorkflowsByAccount(
     const identifier::Nym& nymID,
-    const Identifier& accountID) const -> std::vector<OTIdentifier>
+    const Identifier& accountID) const -> UnallocatedVector<OTIdentifier>
 {
-    std::vector<OTIdentifier> output{};
+    UnallocatedVector<OTIdentifier> output{};
     const auto workflows =
         api_.Storage().PaymentWorkflowsByAccount(nymID.str(), accountID.str());
     std::transform(
         workflows.begin(),
         workflows.end(),
         std::inserter(output, output.end()),
-        [](const std::string& id) -> OTIdentifier {
+        [](const UnallocatedCString& id) -> OTIdentifier {
             return Identifier::Factory(id);
         });
 
@@ -2974,7 +2974,7 @@ auto Workflow::WriteCheque(const opentxs::Cheque& cheque) const -> OTIdentifier
         }
     }
 
-    const std::string party =
+    const UnallocatedCString party =
         cheque.HasRecipient() ? cheque.GetRecipientNymID().str() : "";
     const auto [workflowID, workflow] = create_cheque(
         global,

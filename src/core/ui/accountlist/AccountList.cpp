@@ -9,12 +9,8 @@
 
 #include <atomic>
 #include <future>
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "core/ui/base/List.hpp"
 #include "internal/api/session/Wallet.hpp"
@@ -43,6 +39,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Blank.hpp"
@@ -183,7 +180,7 @@ auto AccountList::process_account(
 auto AccountList::process_account(
     const Identifier& id,
     const Amount balance,
-    const std::string& name) noexcept -> void
+    const UnallocatedCString& name) noexcept -> void
 {
     auto index = make_blank<AccountListSortKey>::value(Widget::api_);
     auto& [type, notary] = index;
@@ -194,7 +191,7 @@ auto AccountList::process_account(
     custom.emplace_back(new bool{false});
     custom.emplace_back(new Amount{balance});
     custom.emplace_back(new OTUnitID{contract});
-    custom.emplace_back(new std::string{name});
+    custom.emplace_back(new UnallocatedCString{name});
     add_item(id, index, custom);
 }
 
@@ -256,7 +253,7 @@ auto AccountList::process_blockchain_balance(const Message& message) noexcept
     custom.emplace_back(new bool{true});
     custom.emplace_back(new Amount{unconfirmed});
     custom.emplace_back(new blockchain::Type{chain});
-    custom.emplace_back(new std::string{AccountName(chain)});
+    custom.emplace_back(new UnallocatedCString{AccountName(chain)});
     add_item(accountID, index, custom);
 }
 #endif  // OT_BLOCKCHAIN

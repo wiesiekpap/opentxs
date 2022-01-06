@@ -9,7 +9,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/Gatekeeper.hpp"
 
@@ -166,7 +166,7 @@ auto Pipeline::Close() const noexcept -> bool
 
 auto Pipeline::connect(
     SocketID id,
-    const std::string& endpoint,
+    const UnallocatedCString& endpoint,
     std::function<Message(bool)> notify) const noexcept
     -> std::pair<bool, std::future<bool>>
 {
@@ -191,7 +191,7 @@ auto Pipeline::connect(
 }
 
 auto Pipeline::ConnectDealer(
-    const std::string& endpoint,
+    const UnallocatedCString& endpoint,
     std::function<Message(bool)> notify) const noexcept -> bool
 {
     return connect(dealer_.ID(), endpoint, std::move(notify)).first;
@@ -217,7 +217,8 @@ auto Pipeline::ConnectionIDSubscribe() const noexcept -> std::size_t
     return sub_.ID();
 }
 
-auto Pipeline::PullFrom(const std::string& endpoint) const noexcept -> bool
+auto Pipeline::PullFrom(const UnallocatedCString& endpoint) const noexcept
+    -> bool
 {
     return connect(pull_.ID(), endpoint).first;
 }
@@ -244,7 +245,8 @@ auto Pipeline::Send(zeromq::Message&& msg) const noexcept -> bool
     return to_dealer_.Send(std::move(msg));
 }
 
-auto Pipeline::SubscribeTo(const std::string& endpoint) const noexcept -> bool
+auto Pipeline::SubscribeTo(const UnallocatedCString& endpoint) const noexcept
+    -> bool
 {
     return connect(sub_.ID(), endpoint).first;
 }
@@ -280,7 +282,7 @@ auto Pipeline::operator=(Pipeline&& rhs) noexcept -> Pipeline&
 auto Pipeline::Close() const noexcept -> bool { return imp_->Close(); }
 
 auto Pipeline::ConnectDealer(
-    const std::string& endpoint,
+    const UnallocatedCString& endpoint,
     std::function<Message(bool)> notify) const noexcept -> bool
 {
     return imp_->ConnectDealer(endpoint, std::move(notify));
@@ -313,7 +315,8 @@ auto Pipeline::Internal() const noexcept -> const internal::Pipeline&
 
 auto Pipeline::Internal() noexcept -> internal::Pipeline& { return *imp_; }
 
-auto Pipeline::PullFrom(const std::string& endpoint) const noexcept -> bool
+auto Pipeline::PullFrom(const UnallocatedCString& endpoint) const noexcept
+    -> bool
 {
     return imp_->PullFrom(endpoint);
 }
@@ -328,7 +331,8 @@ auto Pipeline::Send(Message&& msg) const noexcept -> bool
     return imp_->Send(std::move(msg));
 }
 
-auto Pipeline::SubscribeTo(const std::string& endpoint) const noexcept -> bool
+auto Pipeline::SubscribeTo(const UnallocatedCString& endpoint) const noexcept
+    -> bool
 {
     return imp_->SubscribeTo(endpoint);
 }

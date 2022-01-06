@@ -6,10 +6,10 @@
 #pragma once
 
 #include <optional>
-#include <vector>
 
 #include "blockchain/node/wallet/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -38,7 +38,7 @@ public:
     auto UpdateProcess(const ProgressBatch& processed) noexcept -> void;
     auto UpdateScan(
         const std::optional<block::Position>& highestClean,
-        const std::vector<block::Position>& dirtyBlocks) noexcept -> void;
+        const UnallocatedVector<block::Position>& dirtyBlocks) noexcept -> void;
 
     Progress(const SubchainStateData& parent) noexcept;
 

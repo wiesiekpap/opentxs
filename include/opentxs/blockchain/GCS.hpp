@@ -8,13 +8,11 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -31,8 +29,8 @@ namespace blockchain
 class OPENTXS_EXPORT GCS
 {
 public:
-    using Targets = std::vector<ReadView>;
-    using Matches = std::vector<Targets::const_iterator>;
+    using Targets = UnallocatedVector<ReadView>;
+    using Matches = UnallocatedVector<Targets::const_iterator>;
 
     /// Serialized filter only, no element count
     virtual auto Compressed() const noexcept -> Space = 0;
@@ -48,9 +46,9 @@ public:
     virtual auto Serialize(AllocateOutput out) const noexcept -> bool = 0;
     virtual auto Test(const Data& target) const noexcept -> bool = 0;
     virtual auto Test(const ReadView target) const noexcept -> bool = 0;
-    virtual auto Test(const std::vector<OTData>& targets) const noexcept
+    virtual auto Test(const UnallocatedVector<OTData>& targets) const noexcept
         -> bool = 0;
-    virtual auto Test(const std::vector<Space>& targets) const noexcept
+    virtual auto Test(const UnallocatedVector<Space>& targets) const noexcept
         -> bool = 0;
 
     virtual ~GCS() = default;

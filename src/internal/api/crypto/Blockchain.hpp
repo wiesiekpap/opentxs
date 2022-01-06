@@ -31,7 +31,7 @@ class Blockchain : virtual public api::crypto::Blockchain
 {
 public:
     virtual auto Contacts() const noexcept -> const api::session::Contacts& = 0;
-    virtual auto KeyEndpoint() const noexcept -> const std::string& = 0;
+    virtual auto KeyEndpoint() const noexcept -> const UnallocatedCString& = 0;
     virtual auto KeyGenerated(const Chain chain) const noexcept -> void = 0;
     auto Internal() const noexcept -> const Blockchain& final { return *this; }
     virtual auto NewNym(const identifier::Nym& id) const noexcept -> void = 0;
@@ -81,7 +81,7 @@ public:
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept -> void = 0;
     virtual auto UpdateElement(
-        std::vector<ReadView>& pubkeyHashes) const noexcept -> void = 0;
+        UnallocatedVector<ReadView>& pubkeyHashes) const noexcept -> void = 0;
 
     virtual auto Init() noexcept -> void = 0;
     auto Internal() noexcept -> Blockchain& final { return *this; }

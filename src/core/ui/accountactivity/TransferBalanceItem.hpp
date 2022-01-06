@@ -6,7 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include "1_Internal.hpp"
 #include "core/ui/accountactivity/BalanceItem.hpp"
@@ -14,6 +13,7 @@
 #include "internal/otx/common/Item.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -59,9 +59,12 @@ public:
     {
         return effective_amount();
     }
-    auto Memo() const noexcept -> std::string final;
-    auto UUID() const noexcept -> std::string final;
-    auto Workflow() const noexcept -> std::string final { return workflow_; }
+    auto Memo() const noexcept -> UnallocatedCString final;
+    auto UUID() const noexcept -> UnallocatedCString final;
+    auto Workflow() const noexcept -> UnallocatedCString final
+    {
+        return workflow_;
+    }
 
     TransferBalanceItem(
         const AccountActivityInternalInterface& parent,

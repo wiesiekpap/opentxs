@@ -8,9 +8,7 @@
 #include "core/ui/qt/DestinationValidator.hpp"  // IWYU pragma: associated
 
 #include <QObject>
-#include <map>
 #include <sstream>
-#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -24,6 +22,7 @@
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::ui
 {
@@ -35,7 +34,7 @@ struct BlockchainDestinationValidator final : public Super {
     {
         strip_invalid(input, true);
 
-        if (0 == input.size()) { reset(std::string{}); }
+        if (0 == input.size()) { reset(UnallocatedCString{}); }
     }
     auto getDetails() const -> QString final { return details_.c_str(); }
     auto validate(QString& input, int&) const -> QValidator::State final
@@ -43,7 +42,7 @@ struct BlockchainDestinationValidator final : public Super {
         fixup(input);
 
         if (0 == input.size()) {
-            reset(std::string{});
+            reset(UnallocatedCString{});
 
             return QValidator::State::Intermediate;
         }
@@ -146,9 +145,9 @@ private:
     DestinationValidator& parent_;
     const api::session::Client& api_;
     const blockchain::Type chain_;
-    mutable std::string details_;
+    mutable UnallocatedCString details_;
 
-    auto reset(std::string&& details) const noexcept -> void
+    auto reset(UnallocatedCString&& details) const noexcept -> void
     {
         details_ = std::move(details);
 

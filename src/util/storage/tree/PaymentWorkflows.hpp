@@ -5,10 +5,7 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
 #include <utility>
 
 #include "Proto.hpp"
@@ -17,6 +14,7 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "serialization/protobuf/StoragePaymentWorkflows.pb.h"
@@ -44,23 +42,25 @@ public:
     using State = std::pair<
         otx::client::PaymentWorkflowType,
         otx::client::PaymentWorkflowState>;
-    using Workflows = std::set<std::string>;
+    using Workflows = UnallocatedSet<UnallocatedCString>;
 
-    auto GetState(const std::string& workflowID) const -> State;
-    auto ListByAccount(const std::string& accountID) const -> Workflows;
+    auto GetState(const UnallocatedCString& workflowID) const -> State;
+    auto ListByAccount(const UnallocatedCString& accountID) const -> Workflows;
     auto ListByState(
         otx::client::PaymentWorkflowType type,
         otx::client::PaymentWorkflowState state) const -> Workflows;
-    auto ListByUnit(const std::string& unitID) const -> Workflows;
+    auto ListByUnit(const UnallocatedCString& unitID) const -> Workflows;
     auto Load(
-        const std::string& id,
+        const UnallocatedCString& id,
         std::shared_ptr<proto::PaymentWorkflow>& output,
         const bool checking) const -> bool;
-    auto LookupBySource(const std::string& sourceID) const -> std::string;
+    auto LookupBySource(const UnallocatedCString& sourceID) const
+        -> UnallocatedCString;
 
-    auto Delete(const std::string& id) -> bool;
-    auto Store(const proto::PaymentWorkflow& data, std::string& plaintext)
-        -> bool;
+    auto Delete(const UnallocatedCString& id) -> bool;
+    auto Store(
+        const proto::PaymentWorkflow& data,
+        UnallocatedCString& plaintext) -> bool;
 
     ~PaymentWorkflows() final = default;
 
@@ -73,31 +73,32 @@ private:
     static constexpr auto hash_version_ = VersionNumber{2};
 
     Workflows archived_;
-    std::map<std::string, std::string> item_workflow_map_;
-    std::map<std::string, Workflows> account_workflow_map_;
-    std::map<std::string, Workflows> unit_workflow_map_;
-    std::map<std::string, State> workflow_state_map_;
-    std::map<otx::client::PaymentWorkflowType, Workflows> type_workflow_map_;
-    std::map<State, Workflows> state_workflow_map_;
+    UnallocatedMap<UnallocatedCString, UnallocatedCString> item_workflow_map_;
+    UnallocatedMap<UnallocatedCString, Workflows> account_workflow_map_;
+    UnallocatedMap<UnallocatedCString, Workflows> unit_workflow_map_;
+    UnallocatedMap<UnallocatedCString, State> workflow_state_map_;
+    UnallocatedMap<otx::client::PaymentWorkflowType, Workflows>
+        type_workflow_map_;
+    UnallocatedMap<State, Workflows> state_workflow_map_;
 
     auto save(const Lock& lock) const -> bool final;
     auto serialize() const -> proto::StoragePaymentWorkflows;
 
     void add_state_index(
         const Lock& lock,
-        const std::string& workflowID,
+        const UnallocatedCString& workflowID,
         otx::client::PaymentWorkflowType type,
         otx::client::PaymentWorkflowState state);
-    void delete_by_value(const std::string& value);
-    void init(const std::string& hash) final;
+    void delete_by_value(const UnallocatedCString& value);
+    void init(const UnallocatedCString& hash) final;
     void reindex(
         const Lock& lock,
-        const std::string& workflowID,
+        const UnallocatedCString& workflowID,
         const otx::client::PaymentWorkflowType type,
         const otx::client::PaymentWorkflowState newState,
         otx::client::PaymentWorkflowState& state);
 
-    PaymentWorkflows(const Driver& storage, const std::string& key);
+    PaymentWorkflows(const Driver& storage, const UnallocatedCString& key);
     PaymentWorkflows() = delete;
     PaymentWorkflows(const PaymentWorkflows&) = delete;
     PaymentWorkflows(PaymentWorkflows&&) = delete;

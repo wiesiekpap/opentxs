@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <string>
-
 #include "Proto.hpp"
 #include "core/contract/UnitDefinition.hpp"
 #include "opentxs/Types.hpp"
@@ -17,6 +15,7 @@
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
@@ -50,8 +49,8 @@ public:
     Security(
         const api::Session& api,
         const Nym_p& nym,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const VersionNumber version,
         const display::Definition& displayDefinition,

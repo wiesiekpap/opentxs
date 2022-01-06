@@ -10,7 +10,6 @@
 #include <robin_hood.h>
 #include <cstdint>
 #include <memory>
-#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <tuple>
@@ -41,6 +40,7 @@
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainAddress.pb.h"
 #include "serialization/protobuf/BlockchainHDAccountData.pb.h"
@@ -211,7 +211,7 @@ auto HD::account_already_exists(const rLock&) const noexcept -> bool
     return 0 < existing.count(id_->str());
 }
 
-auto HD::Name() const noexcept -> std::string
+auto HD::Name() const noexcept -> UnallocatedCString
 {
     auto lock = rLock{lock_};
 

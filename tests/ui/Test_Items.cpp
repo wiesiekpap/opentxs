@@ -7,24 +7,24 @@
 #include <cstdlib>
 #include <functional>
 #include <iosfwd>
-#include <list>
 #include <memory>
 #include <optional>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "core/ui/base/Items.hpp"
 #include "internal/core/ui/UI.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
+
+namespace ot = opentxs;
 
 namespace ottest
 {
-using Key = std::string;
-using ValueType = std::string;
+using Key = ot::UnallocatedCString;
+using ValueType = ot::UnallocatedCString;
 using ID = int;
-using Active = std::vector<ID>;
+using Active = ot::UnallocatedVector<ID>;
 
 struct Value final : public opentxs::ui::internal::Row {
     ValueType data_;
@@ -105,7 +105,7 @@ struct Data {
     Value value_;
 };
 
-using Vector = std::vector<Data>;
+using Vector = ot::UnallocatedVector<Data>;
 
 Type items_{0, false};
 const Vector vector_{

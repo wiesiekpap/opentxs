@@ -5,9 +5,6 @@
 
 #pragma once
 
-#include <list>
-#include <map>
-#include <string>
 #include <utility>
 
 #include "1_Internal.hpp"
@@ -27,6 +24,7 @@
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/core/ui/AccountList.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
@@ -116,7 +114,7 @@ private:
     auto process_account(
         const Identifier& id,
         const Amount balance,
-        const std::string& name) noexcept -> void;
+        const UnallocatedCString& name) noexcept -> void;
     auto process_account(const Message& message) noexcept -> void;
 #if OT_BLOCKCHAIN
     auto process_blockchain_account(const Message& message) noexcept -> void;

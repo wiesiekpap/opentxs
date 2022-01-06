@@ -10,16 +10,12 @@
 #include <atomic>
 #include <functional>
 #include <iterator>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
 #include <stdexcept>
-#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
@@ -61,6 +57,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -71,10 +68,10 @@ namespace opentxs::network::p2p
 class Server::Imp
 {
 public:
-    using Map = std::map<
+    using Map = UnallocatedMap<
         Chain,
         std::tuple<
-            std::string,
+            UnallocatedCString,
             bool,
             std::reference_wrapper<zeromq::socket::Raw>>>;
 
@@ -88,10 +85,10 @@ public:
     mutable std::mutex map_lock_;
     Map map_;
     zeromq::internal::Thread* thread_;
-    std::string sync_endpoint_;
-    std::string sync_public_endpoint_;
-    std::string update_endpoint_;
-    std::string update_public_endpoint_;
+    UnallocatedCString sync_endpoint_;
+    UnallocatedCString sync_public_endpoint_;
+    UnallocatedCString update_endpoint_;
+    UnallocatedCString update_public_endpoint_;
     std::atomic_bool started_;
     std::atomic_bool running_;
     mutable Gatekeeper gate_;
@@ -100,7 +97,7 @@ public:
         : api_(api)
         , zmq_(zmq)
         , batch_(zmq_.Internal().MakeBatch([&] {
-            auto out = std::vector<zeromq::socket::Type>{};
+            auto out = UnallocatedVector<zeromq::socket::Type>{};
             out.emplace_back(zeromq::socket::Type::Router);
             out.emplace_back(zeromq::socket::Type::Publish);
             const auto chains = opentxs::blockchain::DefinedChains().size();
@@ -217,7 +214,7 @@ private:
                 } break;
                 default: {
                     throw std::runtime_error{
-                        std::string{"Unsupported message type "} +
+                        UnallocatedCString{"Unsupported message type "} +
                         opentxs::print(type)};
                 }
             }
@@ -260,7 +257,7 @@ private:
 
                         if (!nym) {
                             throw std::runtime_error{
-                                std::string{"nym "} + nymID->str() +
+                                UnallocatedCString{"nym "} + nymID->str() +
                                 " not found"};
                         }
 
@@ -282,7 +279,7 @@ private:
                     }
                     default: {
                         throw std::runtime_error{
-                            std::string{
+                            UnallocatedCString{
                                 "unsupported or unknown contract type: "} +
                             opentxs::print(type)};
                     }
@@ -331,7 +328,7 @@ private:
                     }
                     default: {
                         throw std::runtime_error{
-                            std::string{
+                            UnallocatedCString{
                                 "unsupported or unknown contract type: "} +
                             opentxs::print(type)};
                     }
@@ -422,7 +419,7 @@ auto Server::Enable(const Chain chain) noexcept -> void
     }
 }
 
-auto Server::Endpoint(const Chain chain) const noexcept -> std::string
+auto Server::Endpoint(const Chain chain) const noexcept -> UnallocatedCString
 {
     try {
 
@@ -434,10 +431,10 @@ auto Server::Endpoint(const Chain chain) const noexcept -> std::string
 }
 
 auto Server::Start(
-    const std::string& sync,
-    const std::string& publicSync,
-    const std::string& update,
-    const std::string& publicUpdate) noexcept -> bool
+    const UnallocatedCString& sync,
+    const UnallocatedCString& publicSync,
+    const UnallocatedCString& update,
+    const UnallocatedCString& publicUpdate) noexcept -> bool
 {
     if (sync.empty() || update.empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid endpoint").Flush();

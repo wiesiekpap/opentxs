@@ -13,7 +13,6 @@
 #include <memory>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/otx/client/OTPayment.hpp"
@@ -22,6 +21,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/client/DepositPayment.hpp"
@@ -39,7 +39,7 @@ PaymentTasks::PaymentTasks(client::internal::StateMachine& parent)
 
 auto PaymentTasks::cleanup() -> bool
 {
-    std::vector<TaskMap::iterator> finished;
+    UnallocatedVector<TaskMap::iterator> finished;
 
     Lock lock(decision_lock_);
 

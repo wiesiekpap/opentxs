@@ -9,13 +9,13 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 #include <tuple>
 
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -45,18 +45,18 @@ public:
     using Endpoint = std::tuple<
         core::AddressType,
         contract::ProtocolVersion,
-        std::string,     // hostname / address
-        std::uint32_t,   // port
-        VersionNumber>;  // version
+        UnallocatedCString,  // hostname / address
+        std::uint32_t,       // port
+        VersionNumber>;      // version
 
     static const VersionNumber DefaultVersion;
 
     virtual auto ConnectInfo(
-        std::string& strHostname,
+        UnallocatedCString& strHostname,
         std::uint32_t& nPort,
         core::AddressType& actual,
         const core::AddressType& preferred) const -> bool = 0;
-    virtual auto EffectiveName() const -> std::string = 0;
+    virtual auto EffectiveName() const -> UnallocatedCString = 0;
     using Signable::Serialize;
     virtual auto Serialize(AllocateOutput destination, bool includeNym = false)
         const -> bool = 0;
@@ -68,7 +68,7 @@ public:
     virtual auto TransportKey(Data& pubkey, const PasswordPrompt& reason) const
         -> OTSecret = 0;
 
-    virtual void InitAlias(const std::string& alias) = 0;
+    virtual void InitAlias(const UnallocatedCString& alias) = 0;
 
     ~Server() override = default;
 

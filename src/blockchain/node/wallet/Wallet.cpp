@@ -48,7 +48,7 @@ auto BlockchainWallet(
     const blockchain::node::internal::WalletDatabase& db,
     const blockchain::node::internal::Mempool& mempool,
     const blockchain::Type chain,
-    const std::string& shutdown)
+    const UnallocatedCString& shutdown)
     -> std::unique_ptr<blockchain::node::internal::Wallet>
 {
     using ReturnType = blockchain::node::implementation::Wallet;
@@ -66,7 +66,7 @@ Wallet::Wallet(
     const node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
     const Type chain,
-    const std::string& shutdown) noexcept
+    const UnallocatedCString& shutdown) noexcept
     : Worker(api, std::chrono::milliseconds(10))
     , parent_(parent)
     , db_(db)
@@ -75,7 +75,7 @@ Wallet::Wallet(
     , task_finished_([this](const Identifier& id, const char* type) {
         auto work = MakeWork(Work::job_finished);
         work.AddFrame(id.data(), id.size());
-        work.AddFrame(std::string(type));
+        work.AddFrame(UnallocatedCString(type));
         pipeline_.Push(std::move(work));
     })
     , enabled_(true)
@@ -120,31 +120,31 @@ auto Wallet::GetBalance(const crypto::Key& key) const noexcept -> Balance
     return db_.GetBalance(key);
 }
 
-auto Wallet::GetOutputs() const noexcept -> std::vector<UTXO>
+auto Wallet::GetOutputs() const noexcept -> UnallocatedVector<UTXO>
 {
     return GetOutputs(TxoState::All);
 }
 
-auto Wallet::GetOutputs(TxoState type) const noexcept -> std::vector<UTXO>
+auto Wallet::GetOutputs(TxoState type) const noexcept -> UnallocatedVector<UTXO>
 {
     return db_.GetOutputs(type);
 }
 
 auto Wallet::GetOutputs(const identifier::Nym& owner) const noexcept
-    -> std::vector<UTXO>
+    -> UnallocatedVector<UTXO>
 {
     return GetOutputs(owner, TxoState::All);
 }
 
 auto Wallet::GetOutputs(const identifier::Nym& owner, TxoState type)
-    const noexcept -> std::vector<UTXO>
+    const noexcept -> UnallocatedVector<UTXO>
 {
     return db_.GetOutputs(owner, type);
 }
 
 auto Wallet::GetOutputs(
     const identifier::Nym& owner,
-    const Identifier& subaccount) const noexcept -> std::vector<UTXO>
+    const Identifier& subaccount) const noexcept -> UnallocatedVector<UTXO>
 {
     return GetOutputs(owner, subaccount, TxoState::All);
 }
@@ -152,19 +152,19 @@ auto Wallet::GetOutputs(
 auto Wallet::GetOutputs(
     const identifier::Nym& owner,
     const Identifier& node,
-    TxoState type) const noexcept -> std::vector<UTXO>
+    TxoState type) const noexcept -> UnallocatedVector<UTXO>
 {
     return db_.GetOutputs(owner, node, type);
 }
 
 auto Wallet::GetOutputs(const crypto::Key& key, TxoState type) const noexcept
-    -> std::vector<UTXO>
+    -> UnallocatedVector<UTXO>
 {
     return db_.GetOutputs(key, type);
 }
 
 auto Wallet::GetTags(const block::Outpoint& output) const noexcept
-    -> std::set<TxoTag>
+    -> UnallocatedSet<TxoTag>
 {
     return db_.GetOutputTags(output);
 }
@@ -205,7 +205,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
         }
     }();
     const auto start = Clock::now();
-    auto type = std::string{};
+    auto type = UnallocatedCString{};
 
     switch (work) {
         case Work::shutdown: {
@@ -338,7 +338,7 @@ auto Wallet::process_job_finished(const zmq::Message& in) noexcept -> void
     OT_ASSERT(2 < body.size());
 
     const auto id = api_.Factory().Identifier(body.at(1));
-    const auto type = std::string{body.at(2).Bytes()};
+    const auto type = UnallocatedCString{body.at(2).Bytes()};
     accounts_.ProcessTaskComplete(id, type.c_str(), enabled_);
 }
 

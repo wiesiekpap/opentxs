@@ -92,7 +92,7 @@ auto Inventory::decode_type(
     return reverse_map_.at(type.value());
 }
 
-auto Inventory::DisplayType(const Type type) noexcept -> std::string
+auto Inventory::DisplayType(const Type type) noexcept -> UnallocatedCString
 {
     if (Type::None == type) {
 

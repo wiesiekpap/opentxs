@@ -6,13 +6,12 @@
 #include "internal/serialization/protobuf/verify/AsymmetricKey.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <map>
-#include <set>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/Ciphertext.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/HDPath.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"

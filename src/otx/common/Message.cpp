@@ -9,9 +9,7 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "internal/api/session/FactoryAPI.hpp"
@@ -33,6 +31,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -186,7 +185,7 @@ const Message::TypeMap Message::message_names_{
     {MessageType::outmail, OUTMAIL},
 };
 
-const std::map<MessageType, MessageType> Message::reply_message_{
+const UnallocatedMap<MessageType, MessageType> Message::reply_message_{
     {MessageType::pingNotary, MessageType::pingNotaryResponse},
     {MessageType::registerNym, MessageType::registerNymResponse},
     {MessageType::unregisterNym, MessageType::unregisterNymResponse},
@@ -280,7 +279,7 @@ auto Message::reply_command(const MessageType& type) -> MessageType
     }
 }
 
-auto Message::Command(const MessageType type) -> std::string
+auto Message::Command(const MessageType type) -> UnallocatedCString
 {
     try {
 
@@ -291,7 +290,7 @@ auto Message::Command(const MessageType type) -> std::string
     }
 }
 
-auto Message::Type(const std::string& type) -> MessageType
+auto Message::Type(const UnallocatedCString& type) -> MessageType
 {
     try {
 
@@ -302,7 +301,7 @@ auto Message::Type(const std::string& type) -> MessageType
     }
 }
 
-auto Message::ReplyCommand(const MessageType type) -> std::string
+auto Message::ReplyCommand(const MessageType type) -> UnallocatedCString
 {
     return Command(reply_command(type));
 }
@@ -419,7 +418,7 @@ void Message::SetAcknowledgments(const otx::context::Base& context)
     SetAcknowledgments(context.AcknowledgedNumbers());
 }
 
-void Message::SetAcknowledgments(const std::set<RequestNumber>& numbers)
+void Message::SetAcknowledgments(const UnallocatedSet<RequestNumber>& numbers)
 {
     m_AcknowledgedReplies.Release();
 
@@ -481,7 +480,7 @@ void Message::UpdateContents(const PasswordPrompt& reason)
         }
     }
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());
@@ -673,7 +672,9 @@ void OTMessageStrategy::processXmlSuccess(
         String::Factory(xml->getAttributeValue("success"))->Compare("true");
 }
 
-void Message::registerStrategy(std::string name, OTMessageStrategy* strategy)
+void Message::registerStrategy(
+    UnallocatedCString name,
+    OTMessageStrategy* strategy)
 {
     messageStrategyManager.registerStrategy(name, strategy);
 }
@@ -1086,9 +1087,10 @@ public:
         auto ascTextExpected = Armored::Factory();
 
         String::Map temp_MapAttributesAuthent;
-        temp_MapAttributesAuthent.insert(std::pair<std::string, std::string>(
-            "type",
-            ""));  // Value should be "RSA" after reading.
+        temp_MapAttributesAuthent.insert(
+            std::pair<UnallocatedCString, UnallocatedCString>(
+                "type",
+                ""));  // Value should be "RSA" after reading.
         // -----------------------------------------------
         if (!LoadEncodedTextFieldByName(
                 xml,
@@ -1108,9 +1110,10 @@ public:
         ascTextExpected->Release();
 
         String::Map temp_MapAttributesEncrypt;
-        temp_MapAttributesEncrypt.insert(std::pair<std::string, std::string>(
-            "type",
-            ""));  // Value should be "RSA" after reading.
+        temp_MapAttributesEncrypt.insert(
+            std::pair<UnallocatedCString, UnallocatedCString>(
+                "type",
+                ""));  // Value should be "RSA" after reading.
         // -----------------------------------------------
         if (!LoadEncodedTextFieldByName(
                 xml,

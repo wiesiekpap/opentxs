@@ -12,7 +12,6 @@
 #include <iterator>
 #include <optional>
 #include <stdexcept>
-#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -28,6 +27,7 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Contact.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainTransaction.pb.h"
 #include "util/Container.hpp"
@@ -56,22 +56,22 @@ Wallet::Wallet(
 
 auto Wallet::AssociateTransaction(
     const Txid& txid,
-    const std::vector<PatternID>& in) const noexcept -> bool
+    const UnallocatedVector<PatternID>& in) const noexcept -> bool
 {
     LogTrace()(OT_PRETTY_CLASS())("Transaction ")(txid.asHex())(
         " is associated with patterns:")
         .Flush();
     // TODO transaction data never changes so indexing should only happen
     // once.
-    auto incoming = std::set<PatternID>{};
+    auto incoming = UnallocatedSet<PatternID>{};
     std::for_each(std::begin(in), std::end(in), [&](auto& pattern) {
         incoming.emplace(pattern);
         LogTrace()("    * ")(pattern).Flush();
     });
     Lock lock(lock_);
     auto& existing = transaction_to_patterns_[txid];
-    auto newElements = std::vector<PatternID>{};
-    auto removedElements = std::vector<PatternID>{};
+    auto newElements = UnallocatedVector<PatternID>{};
+    auto removedElements = UnallocatedVector<PatternID>{};
     std::set_difference(
         std::begin(incoming),
         std::end(incoming),
@@ -147,7 +147,7 @@ auto Wallet::LoadTransaction(const ReadView txid) const noexcept
 }
 
 auto Wallet::LookupContact(const Data& pubkeyHash) const noexcept
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     Lock lock(lock_);
 
@@ -155,9 +155,9 @@ auto Wallet::LookupContact(const Data& pubkeyHash) const noexcept
 }
 
 auto Wallet::LookupTransactions(const PatternID pattern) const noexcept
-    -> std::vector<pTxid>
+    -> UnallocatedVector<pTxid>
 {
-    auto output = std::vector<pTxid>{};
+    auto output = UnallocatedVector<pTxid>{};
 
     try {
         const auto& data = pattern_to_transactions_.at(pattern);
@@ -241,13 +241,13 @@ auto Wallet::StoreTransaction(
 
 auto Wallet::update_contact(
     const Lock& lock,
-    const std::set<OTData>& existing,
-    const std::set<OTData>& incoming,
-    const Identifier& contactID) const noexcept -> std::vector<pTxid>
+    const UnallocatedSet<OTData>& existing,
+    const UnallocatedSet<OTData>& incoming,
+    const Identifier& contactID) const noexcept -> UnallocatedVector<pTxid>
 {
-    auto newAddresses = std::vector<OTData>{};
-    auto removedAddresses = std::vector<OTData>{};
-    auto output = std::vector<pTxid>{};
+    auto newAddresses = UnallocatedVector<OTData>{};
+    auto removedAddresses = UnallocatedVector<OTData>{};
+    auto output = UnallocatedVector<pTxid>{};
     std::set_difference(
         std::begin(incoming),
         std::end(incoming),
@@ -298,9 +298,9 @@ auto Wallet::update_contact(
 }
 
 auto Wallet::UpdateContact(const opentxs::Contact& contact) const noexcept
-    -> std::vector<pTxid>
+    -> UnallocatedVector<pTxid>
 {
-    auto incoming = std::set<OTData>{};
+    auto incoming = UnallocatedSet<OTData>{};
 
     {
         auto data = contact.BlockchainAddresses();
@@ -321,10 +321,10 @@ auto Wallet::UpdateContact(const opentxs::Contact& contact) const noexcept
 
 auto Wallet::UpdateMergedContact(
     const opentxs::Contact& parent,
-    const opentxs::Contact& child) const noexcept -> std::vector<pTxid>
+    const opentxs::Contact& child) const noexcept -> UnallocatedVector<pTxid>
 {
-    auto deleted = std::set<OTData>{};
-    auto incoming = std::set<OTData>{};
+    auto deleted = UnallocatedSet<OTData>{};
+    auto incoming = UnallocatedSet<OTData>{};
 
     {
         auto data = child.BlockchainAddresses();

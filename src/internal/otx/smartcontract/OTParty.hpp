@@ -6,13 +6,12 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
-#include <string>
 
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -75,9 +74,10 @@ namespace opentxs
 class OTParty
 {
 public:
-    using mapOfAccounts = std::map<std::string, SharedAccount>;
-    using mapOfAgents = std::map<std::string, OTAgent*>;
-    using mapOfPartyAccounts = std::map<std::string, OTPartyAccount*>;
+    using mapOfAccounts = UnallocatedMap<UnallocatedCString, SharedAccount>;
+    using mapOfAgents = UnallocatedMap<UnallocatedCString, OTAgent*>;
+    using mapOfPartyAccounts =
+        UnallocatedMap<UnallocatedCString, OTPartyAccount*>;
 
     void CleanupAgents();
     void CleanupAccounts();
@@ -163,14 +163,15 @@ public:
     // There is one of these for each asset account on the party.
     // You need the acct name to look it up.
     //
-    auto GetClosingTransNo(std::string str_for_acct_name) const -> std::int64_t;
+    auto GetClosingTransNo(UnallocatedCString str_for_acct_name) const
+        -> std::int64_t;
     // as used "IN THE SCRIPT."
     //
     auto GetPartyName(bool* pBoolSuccess = nullptr) const
-        -> std::string;  // "sales_director",
-                         // "marketer",
-                         // etc
-    auto SetPartyName(const std::string& str_party_name_input) -> bool;
+        -> UnallocatedCString;  // "sales_director",
+                                // "marketer",
+                                // etc
+    auto SetPartyName(const UnallocatedCString& str_party_name_input) -> bool;
     // ACTUAL PARTY OWNER (Only ONE of these can be true...)
     // Debating whether these two functions should be private. (Should it matter
     // to outsider?)
@@ -182,14 +183,14 @@ public:
     // ACTUAL PARTY OWNER
     //
     // If the party is a Nym, this is the Nym's ID. Otherwise this is false.
-    auto GetNymID(bool* pBoolSuccess = nullptr) const -> std::string;
+    auto GetNymID(bool* pBoolSuccess = nullptr) const -> UnallocatedCString;
 
     // If the party is an Entity, this is the Entity's ID. Otherwise this is
     // false.
-    auto GetEntityID(bool* pBoolSuccess = nullptr) const -> std::string;
+    auto GetEntityID(bool* pBoolSuccess = nullptr) const -> UnallocatedCString;
 
     // If party is a Nym, this is the NymID. Else return EntityID().
-    auto GetPartyID(bool* pBoolSuccess = nullptr) const -> std::string;
+    auto GetPartyID(bool* pBoolSuccess = nullptr) const -> UnallocatedCString;
     // Some agents are passive (voting groups) and cannot behave actively, and
     // so cannot do
     // certain things that only Nyms can do. But they can still act as an agent
@@ -207,13 +208,13 @@ public:
     {
         return static_cast<std::int32_t>(m_mapAgents.size());
     }
-    auto GetAgent(const std::string& str_agent_name) const -> OTAgent*;
+    auto GetAgent(const UnallocatedCString& str_agent_name) const -> OTAgent*;
     auto GetAgentByIndex(std::int32_t nIndex) const -> OTAgent*;
-    auto GetAuthorizingAgentName() const -> const std::string&
+    auto GetAuthorizingAgentName() const -> const UnallocatedCString&
     {
         return m_str_authorizing_agent;
     }
-    void SetAuthorizingAgentName(std::string str_agent_name)
+    void SetAuthorizingAgentName(UnallocatedCString str_agent_name)
     {
         m_str_authorizing_agent = str_agent_name;
     }
@@ -255,18 +256,18 @@ public:
         Account& theAccount,
         std::int64_t lClosingTransNo) -> bool;
 
-    auto RemoveAccount(const std::string str_Name) -> bool;
+    auto RemoveAccount(const UnallocatedCString str_Name) -> bool;
 
     auto GetAccountCount() const -> std::int32_t
     {
         return static_cast<std::int32_t>(m_mapPartyAccounts.size());
     }  // returns total of all accounts owned by this party.
-    auto GetAccountCount(std::string str_agent_name) const
+    auto GetAccountCount(UnallocatedCString str_agent_name) const
         -> std::int32_t;  // Only counts accounts authorized for str_agent_name.
-    auto GetAccount(const std::string& str_acct_name) const
+    auto GetAccount(const UnallocatedCString& str_acct_name) const
         -> OTPartyAccount*;  // Get PartyAcct by name.
     auto GetAccountByIndex(std::int32_t nIndex) -> OTPartyAccount*;  // by index
-    auto GetAccountByAgent(const std::string& str_agent_name)
+    auto GetAccountByAgent(const UnallocatedCString& str_agent_name)
         -> OTPartyAccount*;  // by agent name
     auto GetAccountByID(const Identifier& theAcctID) const
         -> OTPartyAccount*;  // by asset acct id
@@ -306,10 +307,12 @@ public:
     // speak directly
     // to said agent.)
 
-    OTParty(const api::session::Wallet& wallet, const std::string& dataFolder);
     OTParty(
         const api::session::Wallet& wallet,
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder);
+    OTParty(
+        const api::session::Wallet& wallet,
+        const UnallocatedCString& dataFolder,
         const char* szName,
         bool bIsOwnerNym,
         const char* szOwnerID,
@@ -317,28 +320,28 @@ public:
         bool bCreateAgent = false);
     OTParty(
         const api::session::Wallet& wallet,
-        const std::string& dataFolder,
-        std::string str_PartyName,
+        const UnallocatedCString& dataFolder,
+        UnallocatedCString str_PartyName,
         const identity::Nym& theNym,  // Nym is BOTH owner AND agent, when
                                       // using this constructor.
-        std::string str_agent_name,
+        UnallocatedCString str_agent_name,
         Account* pAccount = nullptr,
-        const std::string* pstr_account_name = nullptr,
+        const UnallocatedCString* pstr_account_name = nullptr,
         std::int64_t lClosingTransNo = 0);
 
     virtual ~OTParty();
 
 private:
     const api::session::Wallet& wallet_;
-    const std::string data_folder_;
-    std::string* m_pstr_party_name;
+    const UnallocatedCString data_folder_;
+    UnallocatedCString* m_pstr_party_name;
     // true, is "nym". false, is "entity".
     bool m_bPartyIsNym;
-    std::string m_str_owner_id;           // Nym ID or Entity ID.
-    std::string m_str_authorizing_agent;  // Contains the name of the
-                                          // authorizing
-                                          // agent (the one who supplied the
-                                          // opening Trans#)
+    UnallocatedCString m_str_owner_id;           // Nym ID or Entity ID.
+    UnallocatedCString m_str_authorizing_agent;  // Contains the name of the
+                                                 // authorizing
+                                                 // agent (the one who supplied
+                                                 // the opening Trans#)
 
     mapOfAgents m_mapAgents;                // These are owned.
     mapOfPartyAccounts m_mapPartyAccounts;  // These are owned. Each contains a

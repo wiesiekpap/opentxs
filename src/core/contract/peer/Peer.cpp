@@ -37,7 +37,7 @@ PairEvent::PairEvent(const proto::PairEvent& serialized)
 PairEvent::PairEvent(
     const std::uint32_t version,
     const PairEventType type,
-    const std::string& issuer)
+    const UnallocatedCString& issuer)
     : version_(version)
     , type_(type)
     , issuer_(issuer)

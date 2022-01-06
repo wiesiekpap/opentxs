@@ -8,10 +8,7 @@
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
-#include <list>
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "1_Internal.hpp"
@@ -26,6 +23,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/ui/ContactList.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
@@ -60,7 +58,7 @@ class Identifier;
 
 namespace std
 {
-using CONTACTLISTID = std::pair<bool, std::string>;
+using CONTACTLISTID = std::pair<bool, opentxs::UnallocatedCString>;
 
 template <>
 struct less<CONTACTLISTID> {
@@ -99,9 +97,10 @@ class ContactList final : virtual public internal::ContactList,
 {
 public:
     auto AddContact(
-        const std::string& label,
-        const std::string& paymentCode,
-        const std::string& nymID) const noexcept -> std::string final;
+        const UnallocatedCString& label,
+        const UnallocatedCString& paymentCode,
+        const UnallocatedCString& nymID) const noexcept
+        -> UnallocatedCString final;
     auto ID() const noexcept -> const Identifier& final
     {
         return owner_contact_id_;
@@ -129,18 +128,19 @@ private:
 
         ParsedArgs(
             const api::Session& api,
-            const std::string& purportedID,
-            const std::string& purportedPaymentCode) noexcept;
+            const UnallocatedCString& purportedID,
+            const UnallocatedCString& purportedPaymentCode) noexcept;
 
     private:
         static auto extract_nymid(
             const api::Session& api,
-            const std::string& purportedID,
-            const std::string& purportedPaymentCode) noexcept -> OTNymID;
+            const UnallocatedCString& purportedID,
+            const UnallocatedCString& purportedPaymentCode) noexcept -> OTNymID;
         static auto extract_paymentcode(
             const api::Session& api,
-            const std::string& purportedID,
-            const std::string& purportedPaymentCode) noexcept -> PaymentCode;
+            const UnallocatedCString& purportedID,
+            const UnallocatedCString& purportedPaymentCode) noexcept
+            -> PaymentCode;
     };
 
     const ContactListRowID owner_contact_id_;

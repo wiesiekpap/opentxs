@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "util/storage/tree/Contexts.hpp"  // IWYU pragma: associated
 
-#include <map>
 #include <tuple>
 #include <utility>
 
@@ -17,6 +16,7 @@
 #include "internal/serialization/protobuf/verify/StorageNymList.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/Context.pb.h"
@@ -29,7 +29,7 @@ namespace opentxs
 {
 namespace storage
 {
-Contexts::Contexts(const Driver& storage, const std::string& hash)
+Contexts::Contexts(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {
@@ -39,9 +39,12 @@ Contexts::Contexts(const Driver& storage, const std::string& hash)
     }
 }
 
-auto Contexts::Delete(const std::string& id) -> bool { return delete_item(id); }
+auto Contexts::Delete(const UnallocatedCString& id) -> bool
+{
+    return delete_item(id);
+}
 
-void Contexts::init(const std::string& hash)
+void Contexts::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageNymList> serialized;
     driver_.LoadProto(hash, serialized);
@@ -61,9 +64,9 @@ void Contexts::init(const std::string& hash)
 }
 
 auto Contexts::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     std::shared_ptr<proto::Context>& output,
-    std::string& alias,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     return load_proto<proto::Context>(id, output, alias, checking);
@@ -102,8 +105,9 @@ auto Contexts::serialize() const -> proto::StorageNymList
     return serialized;
 }
 
-auto Contexts::Store(const proto::Context& data, const std::string& alias)
-    -> bool
+auto Contexts::Store(
+    const proto::Context& data,
+    const UnallocatedCString& alias) -> bool
 {
     return store_proto(data, data.remotenym(), alias);
 }

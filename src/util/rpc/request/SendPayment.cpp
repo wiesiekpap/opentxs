@@ -22,10 +22,10 @@ namespace opentxs::rpc::request::implementation
 struct SendPayment final : public Base::Imp {
     const VersionNumber send_payment_version_;
     const rpc::PaymentType payment_type_;
-    const std::string contact_;
-    const std::string source_;
-    const std::string destination_;
-    const std::string memo_;
+    const UnallocatedCString contact_;
+    const UnallocatedCString source_;
+    const UnallocatedCString destination_;
+    const UnallocatedCString memo_;
     const opentxs::Amount amount_;
 
     auto asSendPayment() const noexcept -> const request::SendPayment& final
@@ -56,10 +56,10 @@ struct SendPayment final : public Base::Imp {
         Base::SessionIndex session,
         rpc::PaymentType type,
         opentxs::Amount amount,
-        const std::string& sourceAccount,
-        const std::string& recipientContact,
-        const std::string& destinationAccount,
-        const std::string& memo,
+        const UnallocatedCString& sourceAccount,
+        const UnallocatedCString& recipientContact,
+        const UnallocatedCString& destinationAccount,
+        const UnallocatedCString& memo,
         const Base::AssociateNyms& nyms) noexcept(false)
         : Imp(parent, CommandType::send_payment, version, session, nyms)
         , send_payment_version_(1u)
@@ -103,10 +103,10 @@ namespace opentxs::rpc::request
 SendPayment::SendPayment(
     SessionIndex session,
     rpc::PaymentType type,
-    const std::string& sourceAccount,
-    const std::string& recipientContact,
+    const UnallocatedCString& sourceAccount,
+    const UnallocatedCString& recipientContact,
     opentxs::Amount amount,
-    const std::string& memo,
+    const UnallocatedCString& memo,
     const AssociateNyms& nyms)
     : Base(std::make_unique<implementation::SendPayment>(
           this,
@@ -124,11 +124,11 @@ SendPayment::SendPayment(
 
 SendPayment::SendPayment(
     SessionIndex session,
-    const std::string& sourceAccount,
-    const std::string& recipientContact,
-    const std::string& destinationAccount,
+    const UnallocatedCString& sourceAccount,
+    const UnallocatedCString& recipientContact,
+    const UnallocatedCString& destinationAccount,
     opentxs::Amount amount,
-    const std::string& memo,
+    const UnallocatedCString& memo,
     const AssociateNyms& nyms)
     : Base(std::make_unique<implementation::SendPayment>(
           this,
@@ -146,11 +146,11 @@ SendPayment::SendPayment(
 
 SendPayment::SendPayment(
     SessionIndex session,
-    const std::string& sourceAccount,
-    const std::string& destinationAddress,
+    const UnallocatedCString& sourceAccount,
+    const UnallocatedCString& destinationAddress,
     opentxs::Amount amount,
-    const std::string& recipientContact,
-    const std::string& memo,
+    const UnallocatedCString& recipientContact,
+    const UnallocatedCString& memo,
     const AssociateNyms& nyms)
     : Base(std::make_unique<implementation::SendPayment>(
           this,
@@ -193,12 +193,13 @@ auto SendPayment::Amount() const noexcept -> opentxs::Amount
 
 auto SendPayment::DefaultVersion() noexcept -> VersionNumber { return 3u; }
 
-auto SendPayment::DestinationAccount() const noexcept -> const std::string&
+auto SendPayment::DestinationAccount() const noexcept
+    -> const UnallocatedCString&
 {
     return static_cast<const implementation::SendPayment&>(*imp_).destination_;
 }
 
-auto SendPayment::Memo() const noexcept -> const std::string&
+auto SendPayment::Memo() const noexcept -> const UnallocatedCString&
 {
     return static_cast<const implementation::SendPayment&>(*imp_).memo_;
 }
@@ -208,12 +209,12 @@ auto SendPayment::PaymentType() const noexcept -> rpc::PaymentType
     return static_cast<const implementation::SendPayment&>(*imp_).payment_type_;
 }
 
-auto SendPayment::RecipientContact() const noexcept -> const std::string&
+auto SendPayment::RecipientContact() const noexcept -> const UnallocatedCString&
 {
     return static_cast<const implementation::SendPayment&>(*imp_).contact_;
 }
 
-auto SendPayment::SourceAccount() const noexcept -> const std::string&
+auto SendPayment::SourceAccount() const noexcept -> const UnallocatedCString&
 {
     return static_cast<const implementation::SendPayment&>(*imp_).source_;
 }

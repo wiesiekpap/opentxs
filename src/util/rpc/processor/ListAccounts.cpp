@@ -9,11 +9,7 @@
 
 #include <algorithm>
 #include <iterator>
-#include <list>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "internal/core/Core.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -21,6 +17,7 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Storage.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/rpc/ResponseCode.hpp"
 #include "opentxs/util/rpc/request/Base.hpp"
@@ -56,7 +53,7 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
         const auto serverAndUnit = (!haveNym) && haveServer && haveUnit;
         const auto all = haveNym && haveServer && haveUnit;
         const auto byNymOTX = [&] {
-            auto out = std::set<std::string>{};
+            auto out = UnallocatedSet<UnallocatedCString>{};
             const auto ids = session.Storage().AccountsByOwner(nym);
             std::transform(
                 ids.begin(),
@@ -67,7 +64,7 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
             return out;
         };
         const auto byNymBlockchain = [&] {
-            auto out = std::set<std::string>{};
+            auto out = UnallocatedSet<UnallocatedCString>{};
             const auto ids = session.Crypto().Blockchain().AccountList(nym);
             std::transform(
                 ids.begin(),
@@ -85,7 +82,7 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
             return out;
         };
         const auto byServerOTX = [&] {
-            auto out = std::set<std::string>{};
+            auto out = UnallocatedSet<UnallocatedCString>{};
             const auto ids = session.Storage().AccountsByServer(notary);
             std::transform(
                 ids.begin(),
@@ -96,7 +93,7 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
             return out;
         };
         const auto byServerBlockchain = [&] {
-            auto out = std::set<std::string>{};
+            auto out = UnallocatedSet<UnallocatedCString>{};
             const auto chain = blockchain::Chain(session, notary);
             const auto ids = session.Crypto().Blockchain().AccountList(chain);
             std::transform(
@@ -115,7 +112,7 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
             return out;
         };
         const auto byUnitOTX = [&] {
-            auto out = std::set<std::string>{};
+            auto out = UnallocatedSet<UnallocatedCString>{};
             const auto ids = session.Storage().AccountsByContract(unitID);
             std::transform(
                 ids.begin(),
@@ -126,7 +123,7 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
             return out;
         };
         const auto byUnitBlockchain = [&] {
-            auto out = std::set<std::string>{};
+            auto out = UnallocatedSet<UnallocatedCString>{};
             const auto chain = blockchain::Chain(session, unitID);
             const auto ids = session.Crypto().Blockchain().AccountList(chain);
             std::transform(
@@ -149,7 +146,7 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
             const auto nym = byNym();
             const auto server = byServer();
             const auto unit = byUnit();
-            auto temp = std::set<std::string>{};
+            auto temp = UnallocatedSet<UnallocatedCString>{};
             std::set_intersection(
                 nym.begin(),
                 nym.end(),

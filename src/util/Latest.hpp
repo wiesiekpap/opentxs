@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include <list>
 #include <mutex>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -61,6 +61,6 @@ public:
 private:
     const Compare compare_;
     mutable std::mutex lock_;
-    std::list<Store> versions_;
+    UnallocatedList<Store> versions_;
 };
 }  // namespace opentxs

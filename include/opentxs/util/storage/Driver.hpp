@@ -9,7 +9,8 @@
 
 #include <future>
 #include <memory>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -21,51 +22,53 @@ public:
     virtual auto EmptyBucket(const bool bucket) const -> bool = 0;
 
     virtual auto Load(
-        const std::string& key,
+        const UnallocatedCString& key,
         const bool checking,
-        std::string& value) const -> bool = 0;
+        UnallocatedCString& value) const -> bool = 0;
     virtual auto LoadFromBucket(
-        const std::string& key,
-        std::string& value,
+        const UnallocatedCString& key,
+        UnallocatedCString& value,
         const bool bucket) const -> bool = 0;
 
     virtual auto Store(
         const bool isTransaction,
-        const std::string& key,
-        const std::string& value,
+        const UnallocatedCString& key,
+        const UnallocatedCString& value,
         const bool bucket) const -> bool = 0;
     virtual void Store(
         const bool isTransaction,
-        const std::string& key,
-        const std::string& value,
+        const UnallocatedCString& key,
+        const UnallocatedCString& value,
         const bool bucket,
         std::promise<bool>& promise) const = 0;
     virtual auto Store(
         const bool isTransaction,
-        const std::string& value,
-        std::string& key) const -> bool = 0;
+        const UnallocatedCString& value,
+        UnallocatedCString& key) const -> bool = 0;
 
-    virtual auto Migrate(const std::string& key, const Driver& to) const
+    virtual auto Migrate(const UnallocatedCString& key, const Driver& to) const
         -> bool = 0;
 
-    virtual auto LoadRoot() const -> std::string = 0;
-    virtual auto StoreRoot(const bool commit, const std::string& hash) const
-        -> bool = 0;
+    virtual auto LoadRoot() const -> UnallocatedCString = 0;
+    virtual auto StoreRoot(const bool commit, const UnallocatedCString& hash)
+        const -> bool = 0;
 
     virtual ~Driver() = default;
 
     template <class T>
     auto LoadProto(
-        const std::string& hash,
+        const UnallocatedCString& hash,
         std::shared_ptr<T>& serialized,
         const bool checking = false) const -> bool;
 
     template <class T>
-    auto StoreProto(const T& data, std::string& key, std::string& plaintext)
-        const -> bool;
+    auto StoreProto(
+        const T& data,
+        UnallocatedCString& key,
+        UnallocatedCString& plaintext) const -> bool;
 
     template <class T>
-    auto StoreProto(const T& data, std::string& key) const -> bool;
+    auto StoreProto(const T& data, UnallocatedCString& key) const -> bool;
 
     template <class T>
     auto StoreProto(const T& data) const -> bool;

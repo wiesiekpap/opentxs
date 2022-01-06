@@ -44,12 +44,12 @@ public:
 
     auto Address() const noexcept -> ReadView;
     auto Credentials() const noexcept -> const FrameSection;
-    auto Debug() const noexcept -> std::string;
+    auto Debug() const noexcept -> UnallocatedCString;
     auto Domain() const noexcept -> ReadView;
     auto Identity() const noexcept -> ReadView;
     auto Mechanism() const noexcept -> zap::Mechanism;
     auto RequestID() const noexcept -> ReadView;
-    auto Validate() const noexcept -> std::pair<bool, std::string>;
+    auto Validate() const noexcept -> std::pair<bool, UnallocatedCString>;
     auto Version() const noexcept -> ReadView;
 
     using Message::swap;

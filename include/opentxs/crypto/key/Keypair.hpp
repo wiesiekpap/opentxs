@@ -8,10 +8,10 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <list>
 #include <memory>
 
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -47,7 +47,7 @@ namespace key
 class OPENTXS_EXPORT Keypair
 {
 public:
-    using Keys = std::list<const Asymmetric*>;
+    using Keys = UnallocatedList<const Asymmetric*>;
 
     virtual operator bool() const noexcept = 0;
 

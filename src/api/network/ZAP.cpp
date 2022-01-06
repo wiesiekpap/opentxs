@@ -37,8 +37,9 @@ ZAP::ZAP(const opentxs::network::zeromq::Context& context)
 {
 }
 
-auto ZAP::RegisterDomain(const std::string& domain, const Callback& callback)
-    const -> bool
+auto ZAP::RegisterDomain(
+    const UnallocatedCString& domain,
+    const Callback& callback) const -> bool
 {
     return callback_->SetDomain(domain, callback);
 }

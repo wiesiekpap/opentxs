@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <string>
-
 #include "1_Internal.hpp"
 #include "core/ui/base/Row.hpp"
 #include "internal/core/ui/UI.hpp"
@@ -14,6 +12,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/ui/BlockchainSubchain.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 class QVariant;
@@ -44,8 +43,8 @@ using BlockchainSubchainRow =
 class BlockchainSubchain final : public BlockchainSubchainRow
 {
 public:
-    auto Name() const noexcept -> std::string final;
-    auto Progress() const noexcept -> std::string final;
+    auto Name() const noexcept -> UnallocatedCString final;
+    auto Progress() const noexcept -> UnallocatedCString final;
     auto Type() const noexcept -> blockchain::crypto::Subchain final
     {
         return row_id_;
@@ -60,8 +59,8 @@ public:
     ~BlockchainSubchain() final;
 
 private:
-    std::string name_;
-    std::string progress_;
+    UnallocatedCString name_;
+    UnallocatedCString progress_;
 
     auto qt_data(const int column, const int role, QVariant& out) const noexcept
         -> void final;

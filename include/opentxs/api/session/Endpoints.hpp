@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -44,7 +43,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    virtual auto AccountUpdate() const noexcept -> std::string = 0;
+    virtual auto AccountUpdate() const noexcept -> UnallocatedCString = 0;
 
     /** Blockchain account creation notification
      *
@@ -55,7 +54,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto BlockchainAccountCreated() const noexcept -> std::string = 0;
+    virtual auto BlockchainAccountCreated() const noexcept
+        -> UnallocatedCString = 0;
 
     /** Blockchain balance notifications
      *
@@ -66,7 +66,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto BlockchainBalance() const noexcept -> std::string = 0;
+    virtual auto BlockchainBalance() const noexcept -> UnallocatedCString = 0;
 
     /** Blockchain block available notifications
      *
@@ -77,7 +77,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto BlockchainBlockAvailable() const noexcept -> std::string = 0;
+    virtual auto BlockchainBlockAvailable() const noexcept
+        -> UnallocatedCString = 0;
 
     /** Blockchain block download queue notifications
      *
@@ -89,7 +90,7 @@ public:
      *  This endpoint is active for client sessions only.
      */
     virtual auto BlockchainBlockDownloadQueue() const noexcept
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
 
     /** Blockchain mempool updates
      *
@@ -100,7 +101,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto BlockchainMempool() const noexcept -> std::string = 0;
+    virtual auto BlockchainMempool() const noexcept -> UnallocatedCString = 0;
 
     /** Blockchain filter oracle notifications
      *
@@ -111,7 +112,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto BlockchainNewFilter() const noexcept -> std::string = 0;
+    virtual auto BlockchainNewFilter() const noexcept -> UnallocatedCString = 0;
 
     /** Blockchain peer connection ready
      *
@@ -122,7 +123,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto BlockchainPeer() const noexcept -> std::string = 0;
+    virtual auto BlockchainPeer() const noexcept -> UnallocatedCString = 0;
 
     /** Blockchain peer connection initiated or lost
      *
@@ -133,7 +134,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto BlockchainPeerConnection() const noexcept -> std::string = 0;
+    virtual auto BlockchainPeerConnection() const noexcept
+        -> UnallocatedCString = 0;
 
     /** Blockchain reorg and update notifications
      *
@@ -144,7 +146,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto BlockchainReorg() const noexcept -> std::string = 0;
+    virtual auto BlockchainReorg() const noexcept -> UnallocatedCString = 0;
 
     /** Blockchain wallet scan progress
      *
@@ -155,7 +157,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto BlockchainScanProgress() const noexcept -> std::string = 0;
+    virtual auto BlockchainScanProgress() const noexcept
+        -> UnallocatedCString = 0;
 
     /** Blockchain enabled state change
      *
@@ -166,7 +169,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto BlockchainStateChange() const noexcept -> std::string = 0;
+    virtual auto BlockchainStateChange() const noexcept
+        -> UnallocatedCString = 0;
 
     /** Blockchain wallet sync progress
      *
@@ -177,7 +181,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto BlockchainSyncProgress() const noexcept -> std::string = 0;
+    virtual auto BlockchainSyncProgress() const noexcept
+        -> UnallocatedCString = 0;
 
     /** Blockchain sync server database changes
      *
@@ -189,7 +194,7 @@ public:
      *  This endpoint is active for client sessions only.
      */
     virtual auto BlockchainSyncServerUpdated() const noexcept
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
 
     /** Blockchain transaction notifications (global)
      *
@@ -200,7 +205,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto BlockchainTransactions() const noexcept -> std::string = 0;
+    virtual auto BlockchainTransactions() const noexcept
+        -> UnallocatedCString = 0;
 
     /** Blockchain transaction notifications (per-nym)
      *
@@ -212,7 +218,7 @@ public:
      *  This endpoint is active for client sessions only.
      */
     virtual auto BlockchainTransactions(
-        const identifier::Nym& nym) const noexcept -> std::string = 0;
+        const identifier::Nym& nym) const noexcept -> UnallocatedCString = 0;
 
     /** Blockchain wallet balance updates
      *
@@ -223,7 +229,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto BlockchainWalletUpdated() const noexcept -> std::string = 0;
+    virtual auto BlockchainWalletUpdated() const noexcept
+        -> UnallocatedCString = 0;
 
     /** Connection state notifications
      *
@@ -234,7 +241,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto ConnectionStatus() const noexcept -> std::string = 0;
+    virtual auto ConnectionStatus() const noexcept -> UnallocatedCString = 0;
 
     /** Contact account creation notification
      *
@@ -245,7 +252,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto ContactUpdate() const noexcept -> std::string = 0;
+    virtual auto ContactUpdate() const noexcept -> UnallocatedCString = 0;
 
     /** Search for a nym in the DHT
      *
@@ -256,7 +263,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    virtual auto DhtRequestNym() const noexcept -> std::string = 0;
+    virtual auto DhtRequestNym() const noexcept -> UnallocatedCString = 0;
 
     /** Search for a notary in the DHT
      *
@@ -267,7 +274,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    virtual auto DhtRequestServer() const noexcept -> std::string = 0;
+    virtual auto DhtRequestServer() const noexcept -> UnallocatedCString = 0;
 
     /** Search for a unit definition in the DHT
      *
@@ -278,7 +285,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    virtual auto DhtRequestUnit() const noexcept -> std::string = 0;
+    virtual auto DhtRequestUnit() const noexcept -> UnallocatedCString = 0;
 
     /** Search for a nym on known notaries
      *
@@ -289,7 +296,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto FindNym() const noexcept -> std::string = 0;
+    virtual auto FindNym() const noexcept -> UnallocatedCString = 0;
 
     /** Search for a notary contract on known notaries
      *
@@ -300,7 +307,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto FindServer() const noexcept -> std::string = 0;
+    virtual auto FindServer() const noexcept -> UnallocatedCString = 0;
 
     /** Search for a unit definition on known notaries
      *
@@ -311,7 +318,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto FindUnitDefinition() const noexcept -> std::string = 0;
+    virtual auto FindUnitDefinition() const noexcept -> UnallocatedCString = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const session::internal::Endpoints& = 0;
@@ -325,7 +332,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto IssuerUpdate() const noexcept -> std::string = 0;
+    virtual auto IssuerUpdate() const noexcept -> UnallocatedCString = 0;
 
     /** Contact messagability status
      *
@@ -336,7 +343,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto Messagability() const noexcept -> std::string = 0;
+    virtual auto Messagability() const noexcept -> UnallocatedCString = 0;
 
     /** Message loaded
      *
@@ -347,7 +354,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto MessageLoaded() const noexcept -> std::string = 0;
+    virtual auto MessageLoaded() const noexcept -> UnallocatedCString = 0;
 
     /** Nym created notifications
      *
@@ -358,7 +365,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    virtual auto NymCreated() const noexcept -> std::string = 0;
+    virtual auto NymCreated() const noexcept -> UnallocatedCString = 0;
 
     /** Nym update notifications
      *
@@ -369,7 +376,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    virtual auto NymDownload() const noexcept -> std::string = 0;
+    virtual auto NymDownload() const noexcept -> UnallocatedCString = 0;
 
     /** Node pairing event notification
      *
@@ -381,7 +388,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto PairEvent() const noexcept -> std::string = 0;
+    virtual auto PairEvent() const noexcept -> UnallocatedCString = 0;
 
     /** Peer reply event notification
      *
@@ -394,7 +401,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto PeerReplyUpdate() const noexcept -> std::string = 0;
+    virtual auto PeerReplyUpdate() const noexcept -> UnallocatedCString = 0;
 
     /** Peer request event notification
      *
@@ -407,7 +414,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto PeerRequestUpdate() const noexcept -> std::string = 0;
+    virtual auto PeerRequestUpdate() const noexcept -> UnallocatedCString = 0;
 
     /** Pending bailment notification
      *
@@ -419,7 +426,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto PendingBailment() const noexcept -> std::string = 0;
+    virtual auto PendingBailment() const noexcept -> UnallocatedCString = 0;
 
     /** Server reply notification
      *
@@ -431,7 +438,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto ServerReplyReceived() const noexcept -> std::string = 0;
+    virtual auto ServerReplyReceived() const noexcept -> UnallocatedCString = 0;
 
     /** Server request notification
      *
@@ -443,7 +450,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto ServerRequestSent() const noexcept -> std::string = 0;
+    virtual auto ServerRequestSent() const noexcept -> UnallocatedCString = 0;
 
     /** Server contract update notifications
      *
@@ -454,7 +461,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    virtual auto ServerUpdate() const noexcept -> std::string = 0;
+    virtual auto ServerUpdate() const noexcept -> UnallocatedCString = 0;
 
     /** Notification of context shutdown
      *
@@ -465,7 +472,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    virtual auto Shutdown() const noexcept -> std::string = 0;
+    virtual auto Shutdown() const noexcept -> UnallocatedCString = 0;
 
     /** Background task completion notification
      *
@@ -476,7 +483,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto TaskComplete() const noexcept -> std::string = 0;
+    virtual auto TaskComplete() const noexcept -> UnallocatedCString = 0;
 
     /** Activity thread update notification
      *
@@ -487,8 +494,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto ThreadUpdate(const std::string& thread) const noexcept
-        -> std::string = 0;
+    virtual auto ThreadUpdate(const UnallocatedCString& thread) const noexcept
+        -> UnallocatedCString = 0;
 
     /** Unit definition contract update notifications
      *
@@ -499,7 +506,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    virtual auto UnitUpdate() const noexcept -> std::string = 0;
+    virtual auto UnitUpdate() const noexcept -> UnallocatedCString = 0;
 
     /** UI widget update notification
      *
@@ -510,7 +517,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto WidgetUpdate() const noexcept -> std::string = 0;
+    virtual auto WidgetUpdate() const noexcept -> UnallocatedCString = 0;
 
     /** Account update notification
      *
@@ -521,7 +528,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    virtual auto WorkflowAccountUpdate() const noexcept -> std::string = 0;
+    virtual auto WorkflowAccountUpdate() const noexcept
+        -> UnallocatedCString = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> session::internal::Endpoints& = 0;

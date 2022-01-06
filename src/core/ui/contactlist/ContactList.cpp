@@ -9,9 +9,7 @@
 
 #include <atomic>
 #include <future>
-#include <list>
 #include <memory>
-#include <string>
 #include <type_traits>
 
 #include "core/ui/base/List.hpp"
@@ -31,6 +29,7 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -67,8 +66,8 @@ ContactList::ContactList(
 
 ContactList::ParsedArgs::ParsedArgs(
     const api::Session& api,
-    const std::string& purportedID,
-    const std::string& purportedPaymentCode) noexcept
+    const UnallocatedCString& purportedID,
+    const UnallocatedCString& purportedPaymentCode) noexcept
     : nym_id_(extract_nymid(api, purportedID, purportedPaymentCode))
     , payment_code_(extract_paymentcode(api, purportedID, purportedPaymentCode))
 {
@@ -76,8 +75,8 @@ ContactList::ParsedArgs::ParsedArgs(
 
 auto ContactList::ParsedArgs::extract_nymid(
     const api::Session& api,
-    const std::string& purportedID,
-    const std::string& purportedPaymentCode) noexcept -> OTNymID
+    const UnallocatedCString& purportedID,
+    const UnallocatedCString& purportedPaymentCode) noexcept -> OTNymID
 {
     auto output = api.Factory().NymID();
 
@@ -112,8 +111,8 @@ auto ContactList::ParsedArgs::extract_nymid(
 
 auto ContactList::ParsedArgs::extract_paymentcode(
     const api::Session& api,
-    const std::string& purportedID,
-    const std::string& purportedPaymentCode) noexcept -> PaymentCode
+    const UnallocatedCString& purportedID,
+    const UnallocatedCString& purportedPaymentCode) noexcept -> PaymentCode
 {
     if (false == purportedPaymentCode.empty()) {
         // Case 1: purportedPaymentCode is a payment code
@@ -131,13 +130,13 @@ auto ContactList::ParsedArgs::extract_paymentcode(
 
     // Case 3: not possible to extract a payment code
 
-    return api.Factory().PaymentCode(std::string{});
+    return api.Factory().PaymentCode(UnallocatedCString{});
 }
 
 auto ContactList::AddContact(
-    const std::string& label,
-    const std::string& paymentCode,
-    const std::string& nymID) const noexcept -> std::string
+    const UnallocatedCString& label,
+    const UnallocatedCString& paymentCode,
+    const UnallocatedCString& nymID) const noexcept -> UnallocatedCString
 {
     auto args = ParsedArgs{Widget::api_, nymID, paymentCode};
     const auto contact = Widget::api_.Contacts().NewContact(

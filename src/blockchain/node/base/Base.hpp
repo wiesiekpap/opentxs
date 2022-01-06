@@ -9,12 +9,9 @@
 #include <cstddef>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "blockchain/node/Mempool.hpp"
 #include "core/Shutdown.hpp"
@@ -43,6 +40,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -155,16 +153,17 @@ public:
     {
         return database_.GetBalance(owner);
     }
-    auto GetConfirmations(const std::string& txid) const noexcept
+    auto GetConfirmations(const UnallocatedCString& txid) const noexcept
         -> ChainHeight final;
     auto GetHeight() const noexcept -> ChainHeight final
     {
         return local_chain_height_.load();
     }
     auto GetPeerCount() const noexcept -> std::size_t final;
-    auto GetTransactions() const noexcept -> std::vector<block::pTxid> final;
+    auto GetTransactions() const noexcept
+        -> UnallocatedVector<block::pTxid> final;
     auto GetTransactions(const identifier::Nym& account) const noexcept
-        -> std::vector<block::pTxid> final;
+        -> UnallocatedVector<block::pTxid> final;
     auto GetType() const noexcept -> Type final { return chain_; }
     auto GetVerifiedPeerCount() const noexcept -> std::size_t final;
     auto HeaderOracle() const noexcept -> const node::HeaderOracle& final
@@ -193,23 +192,23 @@ public:
     auto Reorg() const noexcept
         -> const network::zeromq::socket::Publish& final;
     auto RequestBlock(const block::Hash& block) const noexcept -> bool final;
-    auto RequestBlocks(const std::vector<ReadView>& hashes) const noexcept
+    auto RequestBlocks(const UnallocatedVector<ReadView>& hashes) const noexcept
         -> bool final;
     auto SendToAddress(
         const opentxs::identifier::Nym& sender,
-        const std::string& address,
+        const UnallocatedCString& address,
         const Amount amount,
-        const std::string& memo) const noexcept -> PendingOutgoing final;
+        const UnallocatedCString& memo) const noexcept -> PendingOutgoing final;
     auto SendToPaymentCode(
         const opentxs::identifier::Nym& sender,
-        const std::string& recipient,
+        const UnallocatedCString& recipient,
         const Amount amount,
-        const std::string& memo) const noexcept -> PendingOutgoing final;
+        const UnallocatedCString& memo) const noexcept -> PendingOutgoing final;
     auto SendToPaymentCode(
         const opentxs::identifier::Nym& sender,
         const PaymentCode& recipient,
         const Amount amount,
-        const std::string& memo) const noexcept -> PendingOutgoing final;
+        const UnallocatedCString& memo) const noexcept -> PendingOutgoing final;
     auto Submit(network::zeromq::Message&& work) const noexcept -> void final;
     auto SyncTip() const noexcept -> block::Position final;
     auto Track(network::zeromq::Message&& work) const noexcept
@@ -262,8 +261,8 @@ protected:
         const api::Session& api,
         const Type type,
         const node::internal::Config& config,
-        const std::string& seednode,
-        const std::string& syncEndpoint) noexcept;
+        const UnallocatedCString& seednode,
+        const UnallocatedCString& syncEndpoint) noexcept;
 
 private:
     friend Worker<Base, api::Session>;
@@ -299,7 +298,7 @@ private:
     private:
         std::mutex lock_{};
         int counter_{-1};
-        std::map<int, std::promise<void>> map_{};
+        UnallocatedMap<int, std::promise<void>> map_{};
     };
     struct SendPromises {
         auto finish(int index) noexcept -> std::promise<SendOutcome>
@@ -326,11 +325,11 @@ private:
     private:
         std::mutex lock_{};
         int counter_{-1};
-        std::map<int, std::promise<SendOutcome>> map_{};
+        UnallocatedMap<int, std::promise<SendOutcome>> map_{};
     };
 
     const Time start_;
-    const std::string sync_endpoint_;
+    const UnallocatedCString sync_endpoint_;
     std::unique_ptr<base::SyncServer> sync_server_;
     std::unique_ptr<base::SyncClient> sync_client_;
     OTZMQListenCallback sync_cb_;

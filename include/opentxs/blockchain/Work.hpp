@@ -7,8 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -65,8 +64,8 @@ public:
     virtual auto operator+(const blockchain::Work& rhs) const noexcept
         -> OTWork = 0;
 
-    virtual auto asHex() const noexcept -> std::string = 0;
-    virtual auto Decimal() const noexcept -> std::string = 0;
+    virtual auto asHex() const noexcept -> UnallocatedCString = 0;
+    virtual auto Decimal() const noexcept -> UnallocatedCString = 0;
 
     virtual ~Work() = default;
 

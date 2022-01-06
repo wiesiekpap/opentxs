@@ -11,10 +11,8 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "Proto.tpp"
@@ -31,7 +29,6 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/network/p2p/Acknowledgement.hpp"
-#include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/PublishContract.hpp"
@@ -46,6 +43,7 @@
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -124,7 +122,8 @@ auto BlockchainSyncMessage(
                     }
                     default: {
                         throw std::runtime_error{
-                            std::string{"unknown or invalid response type: "} +
+                            UnallocatedCString{
+                                "unknown or invalid response type: "} +
                             opentxs::print(request)};
                     }
                 }
@@ -171,7 +170,7 @@ auto BlockchainSyncMessage(
         }
 
         auto chains = [&] {
-            auto out = std::vector<network::p2p::State>{};
+            auto out = UnallocatedVector<network::p2p::State>{};
 
             for (const auto& state : hello.state()) {
                 auto hash = [&] {
@@ -197,7 +196,7 @@ auto BlockchainSyncMessage(
                 }
 
                 const auto& cfheaderFrame = b.at(2);
-                auto data = std::vector<network::p2p::Block>{};
+                auto data = UnallocatedVector<network::p2p::Block>{};
                 using Chain = opentxs::blockchain::Type;
                 auto chain = std::optional<Chain>{std::nullopt};
                 using FilterType = opentxs::blockchain::filter::Type;
@@ -259,7 +258,8 @@ auto BlockchainSyncMessage(
                 const auto& endpointFrame = b.at(2);
 
                 return BlockchainSyncAcknowledgement_p(
-                    std::move(chains), std::string{endpointFrame.Bytes()});
+                    std::move(chains),
+                    UnallocatedCString{endpointFrame.Bytes()});
             }
             case WorkType::P2PBlockchainSyncRequest: {
 

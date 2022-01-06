@@ -11,13 +11,13 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <set>
 #include <tuple>
 
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -62,24 +62,25 @@ public:
         const Identifier& subaccount) const noexcept -> Balance = 0;
     virtual auto GetBalance(const crypto::Key& key) const noexcept
         -> Balance = 0;
-    virtual auto GetOutputs() const noexcept -> std::vector<UTXO> = 0;
+    virtual auto GetOutputs() const noexcept -> UnallocatedVector<UTXO> = 0;
     virtual auto GetOutputs(TxoState type) const noexcept
-        -> std::vector<UTXO> = 0;
+        -> UnallocatedVector<UTXO> = 0;
     virtual auto GetOutputs(const identifier::Nym& owner) const noexcept
-        -> std::vector<UTXO> = 0;
+        -> UnallocatedVector<UTXO> = 0;
     virtual auto GetOutputs(const identifier::Nym& owner, TxoState type)
-        const noexcept -> std::vector<UTXO> = 0;
+        const noexcept -> UnallocatedVector<UTXO> = 0;
     virtual auto GetOutputs(
         const identifier::Nym& owner,
-        const Identifier& subaccount) const noexcept -> std::vector<UTXO> = 0;
+        const Identifier& subaccount) const noexcept
+        -> UnallocatedVector<UTXO> = 0;
     virtual auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& subaccount,
-        TxoState type) const noexcept -> std::vector<UTXO> = 0;
+        TxoState type) const noexcept -> UnallocatedVector<UTXO> = 0;
     virtual auto GetOutputs(const crypto::Key& key, TxoState type)
-        const noexcept -> std::vector<UTXO> = 0;
+        const noexcept -> UnallocatedVector<UTXO> = 0;
     virtual auto GetTags(const block::Outpoint& output) const noexcept
-        -> std::set<TxoTag> = 0;
+        -> UnallocatedSet<TxoTag> = 0;
     virtual auto Height() const noexcept -> block::Height = 0;
 
     virtual ~Wallet() = default;

@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "ListRow.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -29,7 +28,7 @@ namespace ui
 class OPENTXS_EXPORT UnitListItem : virtual public ListRow
 {
 public:
-    virtual auto Name() const noexcept -> std::string = 0;
+    virtual auto Name() const noexcept -> UnallocatedCString = 0;
     virtual auto Unit() const noexcept -> core::UnitType = 0;
 
     ~UnitListItem() override = default;

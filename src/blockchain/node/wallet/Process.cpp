@@ -59,9 +59,9 @@ auto Process::Cache::FinishBatch(BatchMap::iterator batch) noexcept -> void
     batches_.erase(batch);
 }
 
-auto Process::Cache::Flush() noexcept -> std::vector<BatchMap::iterator>
+auto Process::Cache::Flush() noexcept -> UnallocatedVector<BatchMap::iterator>
 {
-    auto output = std::vector<BatchMap::iterator>{};
+    auto output = UnallocatedVector<BatchMap::iterator>{};
 
     if (auto lock = Lock{lock_, std::defer_lock}; lock.try_lock()) {
         for (auto i{batches_.begin()}, end{batches_.end()}; i != end; ++i) {
@@ -77,7 +77,7 @@ auto Process::Cache::Pop(BlockMap& dest) noexcept -> bool
     const auto& log = LogInsane();
 
     if (auto lock = Lock{lock_, std::defer_lock}; lock.try_lock()) {
-        auto hashes = std::vector<block::pHash>{};
+        auto hashes = UnallocatedVector<block::pHash>{};
         move_nodes(
             downloading_,
             dest,
@@ -137,8 +137,8 @@ auto Process::Cache::download(const Lock& lock) noexcept -> void
     const auto& name = parent_.name_;
     const auto& log = LogTrace();
     const auto start = Clock::now();
-    auto positions = std::vector<block::Position>{};
-    auto jobs = std::vector<Work*>{};
+    auto positions = UnallocatedVector<block::Position>{};
+    auto jobs = UnallocatedVector<Work*>{};
 
     {
         auto count{downloading_.size()};
@@ -178,8 +178,8 @@ auto Process::Cache::download(const Lock& lock) noexcept -> void
 }
 
 auto Process::Cache::Push(
-    std::vector<std::unique_ptr<Batch>>&& batches,
-    std::vector<Work*>&& jobs) noexcept -> void
+    UnallocatedVector<std::unique_ptr<Batch>>&& batches,
+    UnallocatedVector<Work*>&& jobs) noexcept -> void
 {
     const auto& name = parent_.name_;
     const auto& log = LogTrace();
@@ -296,7 +296,7 @@ auto Process::move_nodes(
     OT_ASSERT(moveCondition);
     OT_ASSERT(breakCondition);
 
-    auto move = std::vector<BlockMap::iterator>{};
+    auto move = UnallocatedVector<BlockMap::iterator>{};
 
     for (auto i{from.begin()}; i != from.end(); ++i) {
         if (breakCondition(move.size())) { break; }
@@ -308,7 +308,7 @@ auto Process::move_nodes(
 }
 
 auto Process::move_nodes(
-    std::vector<BlockMap::iterator>& items,
+    UnallocatedVector<BlockMap::iterator>& items,
     BlockMap& from,
     BlockMap& to,
     std::function<void(BlockMap::iterator)> post) noexcept -> void
@@ -358,9 +358,9 @@ auto Process::Reorg(const block::Position& parent) noexcept -> void
 
 auto Process::Request(
     const std::optional<block::Position>& highestClean,
-    const std::vector<block::Position>& blocks,
-    std::vector<std::unique_ptr<Batch>>&& batches,
-    std::vector<Work*>&& jobs) noexcept -> void
+    const UnallocatedVector<block::Position>& blocks,
+    UnallocatedVector<std::unique_ptr<Batch>>&& batches,
+    UnallocatedVector<Work*>&& jobs) noexcept -> void
 {
     const auto& name = parent_.name_;
     const auto& log = LogTrace();

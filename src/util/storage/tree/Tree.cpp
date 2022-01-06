@@ -33,7 +33,7 @@
 
 namespace opentxs::storage
 {
-Tree::Tree(const Driver& storage, const std::string& hash)
+Tree::Tree(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
     , account_root_(Node::BLANK_HASH)
     , contact_root_(Node::BLANK_HASH)
@@ -140,7 +140,7 @@ template <typename T, typename... Args>
 auto Tree::get_child(
     std::mutex& mutex,
     std::unique_ptr<T>& pointer,
-    const std::string& hash,
+    const UnallocatedCString& hash,
     Args&&... params) const -> T*
 {
     Lock lock(mutex);
@@ -164,7 +164,7 @@ template <typename T, typename... Args>
 auto Tree::get_editor(
     std::mutex& mutex,
     std::unique_ptr<T>& pointer,
-    std::string& hash,
+    UnallocatedCString& hash,
     Args&&... params) const -> Editor<T>
 {
     std::function<void(T*, Lock&)> callback = [&](T* in, Lock& lock) -> void {
@@ -175,7 +175,7 @@ auto Tree::get_editor(
         write_lock_, get_child<T>(mutex, pointer, hash, params...), callback);
 }
 
-void Tree::init(const std::string& hash)
+void Tree::init(const UnallocatedCString& hash)
 {
     try {
         auto serialized = std::shared_ptr<proto::StorageItems>{};
@@ -263,7 +263,8 @@ auto Tree::mutable_Credentials() -> Editor<storage::Credentials>
         credential_lock_, credentials_, credential_root_);
 }
 
-auto Tree::mutable_Notary(const std::string& id) -> Editor<storage::Notary>
+auto Tree::mutable_Notary(const UnallocatedCString& id)
+    -> Editor<storage::Notary>
 {
     return get_editor<storage::Notary>(notary_lock_, notary_, notary_root_, id);
 }
@@ -288,14 +289,14 @@ auto Tree::mutable_Units() -> Editor<storage::Units>
     return get_editor<storage::Units>(unit_lock_, units_, unit_root_);
 }
 
-auto Tree::Notary(const std::string& id) const -> const storage::Notary&
+auto Tree::Notary(const UnallocatedCString& id) const -> const storage::Notary&
 {
     return *notary(id);
 }
 
 auto Tree::Nyms() const -> const storage::Nyms& { return *nyms(); }
 
-auto Tree::notary(const std::string& id) const -> storage::Notary*
+auto Tree::notary(const UnallocatedCString& id) const -> storage::Notary*
 {
     return get_child<storage::Notary>(notary_lock_, notary_, notary_root_, id);
 }
@@ -324,7 +325,7 @@ void Tree::save_child(
     T* input,
     const Lock& lock,
     std::mutex& hashLock,
-    std::string& hash) const
+    UnallocatedCString& hash) const
 {
     if (false == verify_write_lock(lock)) {
         LogError()(OT_PRETTY_CLASS())("Lock failure.").Flush();

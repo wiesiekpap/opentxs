@@ -7,16 +7,14 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <map>
-#include <string>
 #include <string_view>
-#include <vector>
 
 #include "opentxs/crypto/Bip39.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -35,8 +33,8 @@ namespace opentxs::crypto::implementation
 class Bip39 final : public opentxs::crypto::Bip39
 {
 public:
-    using WordList = std::vector<const char*>;
-    using Words = std::map<Language, WordList>;
+    using WordList = UnallocatedVector<const char*>;
+    using Words = UnallocatedMap<Language, WordList>;
 
     static const Words words_;
 
@@ -57,8 +55,8 @@ public:
     ~Bip39() final = default;
 
 private:
-    using LongestWords = std::map<Language, std::size_t>;
-    using MnemonicWords = std::vector<std::string>;
+    using LongestWords = UnallocatedMap<Language, std::size_t>;
+    using MnemonicWords = UnallocatedVector<UnallocatedCString>;
 
     static const LongestWords longest_words_;
     static const std::size_t BitsPerWord;
@@ -67,7 +65,7 @@ private:
     static const std::size_t EntropyBitDivisor;
     static const std::size_t HmacIterationCount;
     static const std::size_t HmacOutputSizeBytes;
-    static const std::string PassphrasePrefix;
+    static const UnallocatedCString PassphrasePrefix;
     static const std::size_t ValidMnemonicWordMultiple;
 
     const api::Crypto& crypto_;
@@ -75,7 +73,7 @@ private:
     static auto bitShift(std::size_t theBit) noexcept -> std::byte;
     static auto find_longest_words(const Words& words) noexcept -> LongestWords;
     static auto tokenize(const Language lang, const ReadView words) noexcept(
-        false) -> std::vector<std::size_t>;
+        false) -> UnallocatedVector<std::size_t>;
 
     auto entropy_to_words(
         const Secret& entropy,

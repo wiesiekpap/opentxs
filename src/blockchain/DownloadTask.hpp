@@ -9,15 +9,13 @@
 #include <cstdint>
 #include <functional>
 #include <future>
-#include <map>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
@@ -217,7 +215,7 @@ class Batch
 public:
     using ID = std::int64_t;
     using TaskType = Task<DownloadType, FinishedType, ExtraData>;
-    using Vector = std::vector<std::shared_ptr<TaskType>>;
+    using Vector = UnallocatedVector<std::shared_ptr<TaskType>>;
     using Callback = std::function<void(const Batch&)>;
     using Position = typename TaskType::Position;
 
@@ -322,7 +320,7 @@ public:
     ~Batch() { Finish(); }
 
 private:
-    using Index = std::map<Position, std::size_t>;
+    using Index = UnallocatedMap<Position, std::size_t>;
 
     Callback cb_;
     const Index index_;

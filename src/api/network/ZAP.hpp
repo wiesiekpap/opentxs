@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include <string>
-
 #include "opentxs/api/network/ZAP.hpp"
+
 #include "opentxs/network/zeromq/zap/Callback.hpp"
 #include "opentxs/network/zeromq/zap/Handler.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -29,8 +29,9 @@ namespace opentxs::api::network::imp
 class ZAP final : virtual public api::network::ZAP
 {
 public:
-    auto RegisterDomain(const std::string& domain, const Callback& callback)
-        const -> bool final;
+    auto RegisterDomain(
+        const UnallocatedCString& domain,
+        const Callback& callback) const -> bool final;
     auto SetDefaultPolicy(const Policy policy) const -> bool final;
 
     ~ZAP() final = default;

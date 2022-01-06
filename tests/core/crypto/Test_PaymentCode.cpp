@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 #include <cstdint>
 #include <memory>
-#include <string>
 #include <type_traits>
 
 #include "internal/api/session/Client.hpp"
@@ -28,7 +27,7 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 
@@ -43,8 +42,8 @@ public:
 
     const ot::api::session::Client& client_;
     ot::OTPasswordPrompt reason_;
-    std::string seed, fingerprint, nymID_0, paycode_0, nymID_1, paycode_1,
-        nymID_2, paycode_2, nymID_3, paycode_3;
+    ot::UnallocatedCString seed, fingerprint, nymID_0, paycode_0, nymID_1,
+        paycode_1, nymID_2, paycode_2, nymID_3, paycode_3;
     ot::NymData nymData_0, nymData_1, nymData_2, nymData_3;
     ot::core::UnitType currency = ot::core::UnitType::BCH;
     ot::core::UnitType currency_2 = ot::core::UnitType::BTC;
@@ -211,13 +210,14 @@ TEST_F(Test_PaymentCode, empty_paycode)
 {
     EXPECT_STREQ(paycode_0.c_str(), nymData_0.PaymentCode(currency).c_str());
 
-    ASSERT_FALSE(client_.Factory().PaymentCode(std::string{}).Valid());
+    ASSERT_FALSE(
+        client_.Factory().PaymentCode(ot::UnallocatedCString{}).Valid());
     bool added = nymData_0.AddPaymentCode("", currency, true, true, reason_);
     ASSERT_FALSE(added);
 
     EXPECT_STREQ(paycode_0.c_str(), nymData_0.PaymentCode(currency).c_str());
 
-    std::string invalid_paycode =
+    ot::UnallocatedCString invalid_paycode =
         "XM8TJS2JxQ5ztXUpBBRnpTbcUXbUHy2T1abfrb3KkAAtMEGNbey4oumH7Hc578WgQJhPjB"
         "xteQ5GHHToTYHE3A1w6p7tU6KSoFmWBVbFGjKPisZDbP97";
     ASSERT_FALSE(client_.Factory().PaymentCode(invalid_paycode).Valid());
@@ -251,7 +251,7 @@ TEST_F(Test_PaymentCode, factory)
 
     EXPECT_STREQ(paycode_1.c_str(), factory_0b.asBase58().c_str());
 
-    // Factory 1: std::string
+    // Factory 1: ot::UnallocatedCString
     auto factory_1 = client_.Factory().PaymentCode(paycode_0);
 
     EXPECT_STREQ(paycode_0.c_str(), factory_1.asBase58().c_str());
@@ -295,7 +295,7 @@ TEST_F(Test_PaymentCode, factory)
 TEST_F(Test_PaymentCode, factory_seed_nym)
 {
     if (have_hd_) {
-        std::string seed = client_.Crypto().Seed().DefaultSeed();
+        ot::UnallocatedCString seed = client_.Crypto().Seed().DefaultSeed();
         [[maybe_unused]] std::uint32_t nym_idx = 0;
         [[maybe_unused]] std::uint8_t version = 1;
         [[maybe_unused]] bool bitmessage = false;

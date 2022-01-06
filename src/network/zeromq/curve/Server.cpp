@@ -25,7 +25,7 @@ Server::Server(zeromq::socket::implementation::Socket& socket) noexcept
 {
 }
 
-auto Server::SetDomain(const std::string& domain) const noexcept -> bool
+auto Server::SetDomain(const UnallocatedCString& domain) const noexcept -> bool
 {
     auto set =
         zmq_setsockopt(parent_, ZMQ_ZAP_DOMAIN, domain.data(), domain.size());
@@ -50,7 +50,7 @@ auto Server::SetPrivateKey(const Secret& key) const noexcept -> bool
     return set_private_key(key.data(), key.size());
 }
 
-auto Server::SetPrivateKey(const std::string& z85) const noexcept -> bool
+auto Server::SetPrivateKey(const UnallocatedCString& z85) const noexcept -> bool
 {
     if (CURVE_KEY_Z85_BYTES > z85.size()) {
         LogError()(OT_PRETTY_CLASS())("Invalid private key size (")(z85.size())(

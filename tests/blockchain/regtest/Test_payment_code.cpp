@@ -8,7 +8,6 @@
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <optional>
-#include <string>
 #include <utility>
 
 #include "integration/Helpers.hpp"
@@ -50,6 +49,7 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "paymentcode/VectorsV3.hpp"
@@ -781,7 +781,7 @@ TEST_F(Regtest_payment_code, confirm_send)
     account_list_bob_.expected_ += 0;
     const auto& txid = transactions_.at(1).get();
     const auto extra = [&] {
-        auto output = std::vector<Transaction>{};
+        auto output = ot::UnallocatedVector<Transaction>{};
         const auto pTX = output.emplace_back(
             client_1_.Crypto().Blockchain().LoadTransactionBitcoin(txid));
 
@@ -807,7 +807,7 @@ TEST_F(Regtest_payment_code, second_block)
     const auto& blockchain =
         client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto blockHash = blockchain.HeaderOracle().BestHash(height_);
-    auto expected = std::vector<ot::Space>{};
+    auto expected = ot::UnallocatedVector<ot::Space>{};
 
     ASSERT_FALSE(blockHash->empty());
 

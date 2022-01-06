@@ -13,11 +13,11 @@
 #include <QVariant>
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "core/ui/blockchainselection/BlockchainSelectionItem.hpp"
 #include "internal/core/ui/UI.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::factory
 {

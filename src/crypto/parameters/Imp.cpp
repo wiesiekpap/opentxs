@@ -9,7 +9,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/crypto/key/Factory.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/identity/CredentialType.hpp"
 #include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/SourceType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
 #include "serialization/protobuf/ContactData.pb.h"

@@ -14,14 +14,11 @@
 #include <iosfwd>
 #include <iostream>
 #include <iterator>
-#include <map>
 #include <memory>
-#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "core/Data.hpp"
@@ -49,14 +46,11 @@
 #include "opentxs/core/identifier/Types.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 #include "serialization/protobuf/Identifier.pb.h"
-
-template class opentxs::Pimpl<opentxs::Identifier>;
-template class std::set<opentxs::OTIdentifier>;
-template class std::map<opentxs::OTIdentifier, std::set<opentxs::OTIdentifier>>;
 
 namespace opentxs::factory
 {
@@ -421,14 +415,14 @@ auto Identifier::Factory(const Identifier& rhs) -> OTIdentifier
     );
 }
 
-auto Identifier::Factory(const std::string& rhs) -> OTIdentifier
+auto Identifier::Factory(const UnallocatedCString& rhs) -> OTIdentifier
 {
     auto out = std::make_unique<Imp>(Imp::decode(rhs));
 
     return OTIdentifier(out.release());
 }
 
-auto identifier::Nym::Factory(const std::string& rhs) -> OTNymID
+auto identifier::Nym::Factory(const UnallocatedCString& rhs) -> OTNymID
 {
     auto out = std::make_unique<Imp>(identifier::Type::nym);
     out->SetString(rhs);
@@ -436,7 +430,7 @@ auto identifier::Nym::Factory(const std::string& rhs) -> OTNymID
     return OTNymID(out.release());
 }
 
-auto identifier::Notary::Factory(const std::string& rhs) -> OTNotaryID
+auto identifier::Notary::Factory(const UnallocatedCString& rhs) -> OTNotaryID
 {
     auto out = std::make_unique<Imp>(identifier::Type::notary);
     out->SetString(rhs);
@@ -444,7 +438,8 @@ auto identifier::Notary::Factory(const std::string& rhs) -> OTNotaryID
     return OTNotaryID(out.release());
 }
 
-auto identifier::UnitDefinition::Factory(const std::string& rhs) -> OTUnitID
+auto identifier::UnitDefinition::Factory(const UnallocatedCString& rhs)
+    -> OTUnitID
 {
     auto out = std::make_unique<Imp>(identifier::Type::unitdefinition);
     out->SetString(rhs);
@@ -533,7 +528,7 @@ auto Identifier::Random() -> OTIdentifier
     return output;
 }
 
-auto Identifier::Validate(const std::string& input) -> bool
+auto Identifier::Validate(const UnallocatedCString& input) -> bool
 {
     if (input.empty()) { return false; }
 
@@ -698,7 +693,7 @@ auto Identifier::decode(ReadView in) noexcept -> Decoded
             std::advance(i, prefix);
 
             return Context().Crypto().Encode().IdentifierDecode(
-                std::string{i, in.size() - prefix});
+                UnallocatedCString{i, in.size() - prefix});
         }();
         const auto length = bytes.size();
 
@@ -733,7 +728,7 @@ auto Identifier::decode(ReadView in) noexcept -> Decoded
         }
 
         if (required_payload(algorithm) != length) {
-            const auto error = std::string{"invalid payload ("} +
+            const auto error = UnallocatedCString{"invalid payload ("} +
                                std::to_string(length) + " bytes )";
 
             throw std::runtime_error{error};
@@ -880,7 +875,7 @@ auto Identifier::Serialize(proto::Identifier& out) const noexcept -> bool
         return true;
     }
 
-    out.set_hash(std::string{Bytes()});
+    out.set_hash(UnallocatedCString{Bytes()});
     out.set_algorithm(static_cast<std::uint32_t>(algorithm_));
     out.set_type(static_cast<std::uint32_t>(type_));
 
@@ -919,12 +914,12 @@ auto Identifier::SetString(const String& encoded) -> void
     return SetString(encoded.Bytes());
 }
 
-auto Identifier::SetString(const std::string& encoded) -> void
+auto Identifier::SetString(const UnallocatedCString& encoded) -> void
 {
     return SetString(ReadView{encoded});
 }
 
-auto Identifier::str() const -> std::string { return to_string(); }
+auto Identifier::str() const -> UnallocatedCString { return to_string(); }
 
 auto Identifier::swap(opentxs::Identifier& rhs) -> void
 {
@@ -934,7 +929,7 @@ auto Identifier::swap(opentxs::Identifier& rhs) -> void
     std::swap(type_, input.type_);
 }
 
-auto Identifier::to_string() const noexcept -> std::string
+auto Identifier::to_string() const noexcept -> UnallocatedCString
 {
     if (const auto bytes = hash_bytes(algorithm_), len = size(); len != bytes) {
         if (0u != len) {

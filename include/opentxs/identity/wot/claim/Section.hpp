@@ -11,13 +11,12 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <map>
 #include <memory>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -53,30 +52,31 @@ namespace opentxs::identity::wot::claim
 class OPENTXS_EXPORT Section
 {
 public:
-    using GroupMap = std::map<claim::ClaimType, std::shared_ptr<claim::Group>>;
+    using GroupMap =
+        UnallocatedMap<claim::ClaimType, std::shared_ptr<claim::Group>>;
 
     Section(
         const api::Session& api,
-        const std::string& nym,
+        const UnallocatedCString& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const claim::SectionType section,
         const GroupMap& groups);
     Section(
         const api::Session& api,
-        const std::string& nym,
+        const UnallocatedCString& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const claim::SectionType section,
         const std::shared_ptr<Item>& item);
     OPENTXS_NO_EXPORT Section(
         const api::Session& api,
-        const std::string& nym,
+        const UnallocatedCString& nym,
         const VersionNumber parentVersion,
         const proto::ContactSection& serialized);
     Section(
         const api::Session& api,
-        const std::string& nym,
+        const UnallocatedCString& nym,
         const VersionNumber parentVersion,
         const ReadView& serialized);
     Section(const Section&) noexcept;

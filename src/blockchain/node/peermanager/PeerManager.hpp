@@ -13,13 +13,9 @@
 #include <cstdint>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "core/Worker.hpp"
@@ -42,6 +38,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
@@ -155,9 +152,9 @@ public:
             const node::internal::PeerManager& parent,
             const database::BlockStorage policy,
             const std::atomic<bool>& running,
-            const std::string& shutdown,
+            const UnallocatedCString& shutdown,
             const Type chain,
-            const std::string& seednode,
+            const UnallocatedCString& seednode,
             const std::size_t peerTarget) noexcept;
 
         ~Peers();
@@ -179,26 +176,26 @@ public:
         const network::zeromq::socket::Publish& connected_peers_;
         const database::BlockStorage policy_;
         const std::atomic<bool>& running_;
-        const std::string& shutdown_endpoint_;
+        const UnallocatedCString& shutdown_endpoint_;
         const bool invalid_peer_;
         const OTData localhost_peer_;
         const OTData default_peer_;
-        const std::set<p2p::Service> preferred_services_;
+        const UnallocatedSet<p2p::Service> preferred_services_;
         std::atomic<int> next_id_;
         std::atomic<std::size_t> minimum_peers_;
-        std::map<int, Peer> peers_;
-        std::map<OTIdentifier, int> active_;
+        UnallocatedMap<int, Peer> peers_;
+        UnallocatedMap<OTIdentifier, int> active_;
         std::atomic<std::size_t> count_;
         Addresses connected_;
         std::unique_ptr<IncomingConnectionManager> incoming_zmq_;
         std::unique_ptr<IncomingConnectionManager> incoming_tcp_;
-        std::map<OTIdentifier, Time> attempt_;
+        UnallocatedMap<OTIdentifier, Time> attempt_;
 
         static auto get_preferred_services(
             const node::internal::Config& config) noexcept
-            -> std::set<p2p::Service>;
+            -> UnallocatedSet<p2p::Service>;
         static auto set_default_peer(
-            const std::string node,
+            const UnallocatedCString node,
             const Data& localhost,
             bool& invalidPeer) noexcept -> OTData;
 
@@ -209,7 +206,7 @@ public:
         auto get_peer() const noexcept -> Endpoint;
         auto get_preferred_peer(const p2p::Protocol protocol) const noexcept
             -> Endpoint;
-        auto get_types() const noexcept -> std::set<p2p::Network>;
+        auto get_types() const noexcept -> UnallocatedSet<p2p::Network>;
         auto is_not_connected(const p2p::Address& endpoint) const noexcept
             -> bool;
 
@@ -243,7 +240,7 @@ public:
     }
     auto Connect() noexcept -> bool final;
     auto Disconnect(const int id) const noexcept -> void final;
-    auto Endpoint(const Task type) const noexcept -> std::string final
+    auto Endpoint(const Task type) const noexcept -> UnallocatedCString final
     {
         return jobs_.Endpoint(type);
     }
@@ -261,11 +258,11 @@ public:
     auto LookupIncomingSocket(const int id) const noexcept(false)
         -> opentxs::network::asio::Socket final;
     auto RequestBlock(const block::Hash& block) const noexcept -> bool final;
-    auto RequestBlocks(const std::vector<ReadView>& hashes) const noexcept
+    auto RequestBlocks(const UnallocatedVector<ReadView>& hashes) const noexcept
         -> bool final;
     auto RequestHeaders() const noexcept -> bool final;
-    auto VerifyPeer(const int id, const std::string& address) const noexcept
-        -> void final;
+    auto VerifyPeer(const int id, const UnallocatedCString& address)
+        const noexcept -> void final;
 
     auto Shutdown() noexcept -> std::shared_future<void> final
     {
@@ -285,8 +282,8 @@ public:
         const node::internal::PeerDatabase& database,
         const Type chain,
         const database::BlockStorage policy,
-        const std::string& seednode,
-        const std::string& shutdown) noexcept;
+        const UnallocatedCString& seednode,
+        const UnallocatedCString& shutdown) noexcept;
 
     ~PeerManager() final;
 
@@ -294,7 +291,7 @@ private:
     friend Worker<PeerManager, api::Session>;
 
     struct Jobs {
-        auto Endpoint(const Task type) const noexcept -> std::string;
+        auto Endpoint(const Task type) const noexcept -> UnallocatedCString;
         auto Work(const Task task) const noexcept -> network::zeromq::Message;
 
         auto Dispatch(const Task type) noexcept -> void;
@@ -304,8 +301,8 @@ private:
         Jobs(const api::Session& api) noexcept;
 
     private:
-        using EndpointMap = std::map<Task, std::string>;
-        using SocketMap = std::map<Task, zmq::socket::Sender*>;
+        using EndpointMap = UnallocatedMap<Task, UnallocatedCString>;
+        using SocketMap = UnallocatedMap<Task, zmq::socket::Sender*>;
 
         const zmq::Context& zmq_;
         OTZMQPushSocket getheaders_;
@@ -333,7 +330,7 @@ private:
     mutable Jobs jobs_;
     mutable Peers peers_;
     mutable std::mutex verified_lock_;
-    mutable std::set<int> verified_peers_;
+    mutable UnallocatedSet<int> verified_peers_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
 

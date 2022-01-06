@@ -7,11 +7,10 @@
 
 #include <memory>
 #include <queue>
-#include <string>
-#include <vector>
 
 #include "blockchain/node/wallet/Job.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -41,7 +40,7 @@ class Mempool : public Job
 {
 public:
     using Transaction = std::shared_ptr<const block::bitcoin::Transaction>;
-    using Transactions = std::vector<Transaction>;
+    using Transactions = UnallocatedVector<Transaction>;
 
     auto Queue(Transaction tx) noexcept -> bool;
     auto Queue(Transactions&& transactions) noexcept -> bool;

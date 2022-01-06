@@ -8,16 +8,16 @@
 #include "internal/util/Signals.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {
-const std::map<int, std::function<bool()>> Signals::handler_{
+const UnallocatedMap<int, std::function<bool()>> Signals::handler_{
     {1, &Signals::handle_1},   {2, &Signals::handle_2},
     {3, &Signals::handle_3},   {4, &Signals::handle_4},
     {5, &Signals::handle_5},   {6, &Signals::handle_6},

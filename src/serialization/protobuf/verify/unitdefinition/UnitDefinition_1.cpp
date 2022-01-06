@@ -6,7 +6,6 @@
 #include "internal/serialization/protobuf/verify/UnitDefinition.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "internal/serialization/protobuf/Basic.hpp"
@@ -17,6 +16,7 @@
 #include "internal/serialization/protobuf/verify/Nym.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/Signature.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyContracts.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/BasketParams.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/ContractEnums.pb.h"
 #include "serialization/protobuf/CurrencyParams.pb.h"  // IWYU pragma: keep

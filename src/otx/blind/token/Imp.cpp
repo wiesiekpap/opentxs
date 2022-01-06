@@ -7,8 +7,6 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "otx/blind/token/Imp.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/blind/Types.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -18,6 +16,7 @@
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Token.pb.h"

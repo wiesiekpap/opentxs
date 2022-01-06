@@ -8,12 +8,10 @@
 #include <robin_hood.h>
 #include <cstdint>
 #include <cstring>
-#include <map>
-#include <set>
-#include <string>
 #include <utility>
 
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wlanguage-extension-token"
@@ -29,7 +27,7 @@
 namespace opentxs::proto
 {
 using ContactSectionVersion = std::pair<uint32_t, ContactSectionName>;
-using EnumLang = std::pair<uint32_t, std::string>;
+using EnumLang = std::pair<uint32_t, UnallocatedCString>;
 }  // namespace opentxs::proto
 
 namespace std
@@ -49,17 +47,18 @@ struct hash<opentxs::proto::EnumLang> {
 namespace opentxs::proto
 {
 // A map of allowed section names by ContactData version
-using ContactSectionMap =
-    robin_hood::unordered_flat_map<uint32_t, std::set<ContactSectionName>>;
+using ContactSectionMap = robin_hood::
+    unordered_flat_map<uint32_t, UnallocatedSet<ContactSectionName>>;
 
 // A map of allowed item types by ContactSection version
 using ContactItemMap = robin_hood::
-    unordered_flat_map<ContactSectionVersion, std::set<ContactItemType>>;
+    unordered_flat_map<ContactSectionVersion, UnallocatedSet<ContactItemType>>;
 // A map of allowed item attributes by ContactItem version
-using ItemAttributeMap =
-    robin_hood::unordered_flat_map<uint32_t, std::set<ContactItemAttribute>>;
+using ItemAttributeMap = robin_hood::
+    unordered_flat_map<uint32_t, UnallocatedSet<ContactItemAttribute>>;
 // Maps for converting enum values to human-readable names
-using EnumTranslation = robin_hood::unordered_flat_map<EnumLang, std::string>;
+using EnumTranslation =
+    robin_hood::unordered_flat_map<EnumLang, UnallocatedCString>;
 // A map for storing relationship reciprocities
 using RelationshipReciprocity =
     robin_hood::unordered_flat_map<ContactItemType, ContactItemType>;
@@ -67,7 +66,7 @@ using RelationshipReciprocity =
 auto AllowedSectionNames() noexcept -> const ContactSectionMap&;
 auto AllowedItemTypes() noexcept -> const ContactItemMap&;
 auto AllowedItemAttributes() noexcept -> const ItemAttributeMap&;
-auto AllowedSubtypes() noexcept -> const std::set<ContactSectionName>&;
+auto AllowedSubtypes() noexcept -> const UnallocatedSet<ContactSectionName>&;
 auto ContactSectionNames() noexcept -> const EnumTranslation&;
 auto ContactItemTypes() noexcept -> const EnumTranslation&;
 auto ContactItemAttributes() noexcept -> const EnumTranslation&;

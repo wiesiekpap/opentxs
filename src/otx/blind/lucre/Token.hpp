@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
-#include <string>
 
 #include "Proto.hpp"
 #include "Proto.hpp"
@@ -18,6 +17,7 @@
 #include "opentxs/otx/blind/Token.hpp"
 #include "opentxs/otx/blind/TokenState.hpp"
 #include "opentxs/otx/blind/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 #include "otx/blind/token/Imp.hpp"
@@ -66,7 +66,7 @@ class Lucre final : public Token
 public:
     auto GetSpendable(String& output, const PasswordPrompt& reason) const
         -> bool;
-    auto ID(const PasswordPrompt& reason) const -> std::string final;
+    auto ID(const PasswordPrompt& reason) const -> UnallocatedCString final;
     auto IsSpent(const PasswordPrompt& reason) const -> bool final;
     auto Serialize(proto::Token& out) const noexcept -> bool final;
 

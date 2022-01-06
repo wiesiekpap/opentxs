@@ -75,14 +75,16 @@ enum class Prefix : std::uint8_t {
 };
 
 using Style = crypto::Blockchain::Style;
-using AddressMap = std::map<Prefix, std::string>;
-using AddressReverseMap = std::map<std::string, Prefix>;
+using AddressMap = UnallocatedMap<Prefix, UnallocatedCString>;
+using AddressReverseMap = UnallocatedMap<UnallocatedCString, Prefix>;
 using StylePair = std::pair<Style, opentxs::blockchain::Type>;
 // Style, preferred prefix, additional prefixes
-using StyleMap = std::map<StylePair, std::pair<Prefix, std::set<Prefix>>>;
-using StyleReverseMap = std::map<Prefix, std::set<StylePair>>;
-using HrpMap = std::map<opentxs::blockchain::Type, std::string>;
-using HrpReverseMap = std::map<std::string, opentxs::blockchain::Type>;
+using StyleMap =
+    UnallocatedMap<StylePair, std::pair<Prefix, UnallocatedSet<Prefix>>>;
+using StyleReverseMap = UnallocatedMap<Prefix, UnallocatedSet<StylePair>>;
+using HrpMap = UnallocatedMap<opentxs::blockchain::Type, UnallocatedCString>;
+using HrpReverseMap =
+    UnallocatedMap<UnallocatedCString, opentxs::blockchain::Type>;
 
 auto reverse(const StyleMap& in) noexcept -> StyleReverseMap;
 auto reverse(const StyleMap& in) noexcept -> StyleReverseMap
@@ -191,18 +193,19 @@ auto Blockchain::Imp::Account(
 }
 
 auto Blockchain::Imp::AccountList(const identifier::Nym& nym) const noexcept
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     return wallets_.AccountList(nym);
 }
 
 auto Blockchain::Imp::AccountList(const opentxs::blockchain::Type chain)
-    const noexcept -> std::set<OTIdentifier>
+    const noexcept -> UnallocatedSet<OTIdentifier>
 {
     return wallets_.AccountList(chain);
 }
 
-auto Blockchain::Imp::AccountList() const noexcept -> std::set<OTIdentifier>
+auto Blockchain::Imp::AccountList() const noexcept
+    -> UnallocatedSet<OTIdentifier>
 {
     return wallets_.AccountList();
 }
@@ -210,7 +213,7 @@ auto Blockchain::Imp::AccountList() const noexcept -> std::set<OTIdentifier>
 auto Blockchain::Imp::ActivityDescription(
     const identifier::Nym&,
     const Identifier&,
-    const std::string&) const noexcept -> std::string
+    const UnallocatedCString&) const noexcept -> UnallocatedCString
 {
     return {};
 }
@@ -219,7 +222,7 @@ auto Blockchain::Imp::ActivityDescription(
     const identifier::Nym&,
     const opentxs::blockchain::Type,
     const opentxs::blockchain::block::bitcoin::Transaction&) const noexcept
-    -> std::string
+    -> UnallocatedCString
 {
     return {};
 }
@@ -277,7 +280,7 @@ auto Blockchain::Imp::AssignLabel(
     const Identifier& accountID,
     const Subchain subchain,
     const Bip32Index index,
-    const std::string& label) const noexcept -> bool
+    const UnallocatedCString& label) const noexcept -> bool
 {
     if (false == validate_nym(nymID)) { return false; }
 
@@ -365,7 +368,7 @@ auto Blockchain::Imp::bip44_type(const core::UnitType type) const noexcept
 auto Blockchain::Imp::CalculateAddress(
     const opentxs::blockchain::Type chain,
     const Style format,
-    const Data& pubkey) const noexcept -> std::string
+    const Data& pubkey) const noexcept -> UnallocatedCString
 {
     auto data = api_.Factory().Data();
 
@@ -407,8 +410,8 @@ auto Blockchain::Imp::Confirm(
     }
 }
 
-auto Blockchain::Imp::DecodeAddress(const std::string& encoded) const noexcept
-    -> DecodedAddress
+auto Blockchain::Imp::DecodeAddress(
+    const UnallocatedCString& encoded) const noexcept -> DecodedAddress
 {
     static constexpr auto check =
         [](DecodedAddress& output) -> DecodedAddress& {
@@ -448,8 +451,8 @@ auto Blockchain::Imp::DecodeAddress(const std::string& encoded) const noexcept
     return blank_;
 }
 
-auto Blockchain::Imp::decode_bech23(const std::string& encoded) const noexcept
-    -> std::optional<DecodedAddress>
+auto Blockchain::Imp::decode_bech23(const UnallocatedCString& encoded)
+    const noexcept -> std::optional<DecodedAddress>
 {
     auto output{blank_};
     auto& [data, style, chains, supported] = output;
@@ -519,8 +522,8 @@ auto Blockchain::Imp::decode_bech23(const std::string& encoded) const noexcept
     }
 }
 
-auto Blockchain::Imp::decode_legacy(const std::string& encoded) const noexcept
-    -> std::optional<DecodedAddress>
+auto Blockchain::Imp::decode_legacy(const UnallocatedCString& encoded)
+    const noexcept -> std::optional<DecodedAddress>
 {
     auto output{blank_};
     auto& [data, style, chains, supported] = output;
@@ -575,7 +578,7 @@ auto Blockchain::Imp::decode_legacy(const std::string& encoded) const noexcept
 auto Blockchain::Imp::EncodeAddress(
     const Style style,
     const opentxs::blockchain::Type chain,
-    const Data& data) const noexcept -> std::string
+    const Data& data) const noexcept -> UnallocatedCString
 {
     switch (style) {
         case Style::P2WPKH: {
@@ -639,8 +642,8 @@ auto Blockchain::Imp::get_node(const Identifier& accountID) const
         const auto type = api_.Storage().BlockchainAccountType(nym, id);
 
         if (core::UnitType::Error == type) {
-            const auto error = std::string{"account "} + id + " for nym " +
-                               nym + " does not exist";
+            const auto error = UnallocatedCString{"account "} + id +
+                               " for nym " + nym + " does not exist";
 
             throw std::out_of_range(error);
         }
@@ -681,8 +684,8 @@ auto Blockchain::Imp::HDSubaccount(
     const auto type = api_.Storage().BlockchainAccountType(nym, id);
 
     if (core::UnitType::Error == type) {
-        const auto error =
-            std::string{"HD account "} + id + " for " + nym + " does not exist";
+        const auto error = UnallocatedCString{"HD account "} + id + " for " +
+                           nym + " does not exist";
 
         throw std::out_of_range(error);
     }
@@ -709,7 +712,7 @@ auto Blockchain::Imp::Init() noexcept -> void
 }
 
 auto Blockchain::Imp::init_path(
-    const std::string& root,
+    const UnallocatedCString& root,
     const core::UnitType chain,
     const Bip32Index account,
     const opentxs::blockchain::crypto::HDProtocol standard,
@@ -746,9 +749,9 @@ auto Blockchain::Imp::init_path(
     }
 }
 
-auto Blockchain::Imp::KeyEndpoint() const noexcept -> const std::string&
+auto Blockchain::Imp::KeyEndpoint() const noexcept -> const UnallocatedCString&
 {
-    static const auto blank = std::string{};
+    static const auto blank = UnallocatedCString{};
 
     return blank;
 }
@@ -985,7 +988,7 @@ auto Blockchain::Imp::Owner(const Key& key) const noexcept
 
 auto Blockchain::Imp::p2pkh(
     const opentxs::blockchain::Type chain,
-    const Data& pubkeyHash) const noexcept -> std::string
+    const Data& pubkeyHash) const noexcept -> UnallocatedCString
 {
     try {
         auto preimage = address_prefix(Style::P2PKH, chain);
@@ -1008,7 +1011,7 @@ auto Blockchain::Imp::p2pkh(
 
 auto Blockchain::Imp::p2sh(
     const opentxs::blockchain::Type chain,
-    const Data& pubkeyHash) const noexcept -> std::string
+    const Data& pubkeyHash) const noexcept -> UnallocatedCString
 {
     try {
         auto preimage = address_prefix(Style::P2SH, chain);
@@ -1031,12 +1034,12 @@ auto Blockchain::Imp::p2sh(
 
 auto Blockchain::Imp::p2wpkh(
     const opentxs::blockchain::Type chain,
-    const Data& hash) const noexcept -> std::string
+    const Data& hash) const noexcept -> UnallocatedCString
 {
     try {
         const auto& hrp = hrp_map_.at(chain);
         const auto prog = [&] {
-            auto out = std::vector<std::uint8_t>{};
+            auto out = UnallocatedVector<std::uint8_t>{};
             std::transform(
                 hash.begin(),
                 hash.end(),
@@ -1066,7 +1069,7 @@ auto Blockchain::Imp::PaymentCodeSubaccount(
     const auto type = api_.Storage().Bip47Chain(nymID, accountID);
 
     if (core::UnitType::Error == type) {
-        const auto error = std::string{"Payment code account "} +
+        const auto error = UnallocatedCString{"Payment code account "} +
                            accountID.str() + " for " + nymID.str() +
                            " does not exist";
 
@@ -1287,7 +1290,7 @@ auto Blockchain::Imp::UpdateBalance(
 {
 }
 
-auto Blockchain::Imp::UpdateElement(std::vector<ReadView>&) const noexcept
+auto Blockchain::Imp::UpdateElement(UnallocatedVector<ReadView>&) const noexcept
     -> void
 {
 }

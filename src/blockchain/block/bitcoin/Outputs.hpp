@@ -10,7 +10,6 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <vector>
 
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
 
 namespace opentxs
@@ -39,12 +39,12 @@ namespace opentxs::blockchain::block::bitcoin::implementation
 class Outputs final : public internal::Outputs
 {
 public:
-    using OutputList = std::vector<std::unique_ptr<internal::Output>>;
+    using OutputList = UnallocatedVector<std::unique_ptr<internal::Output>>;
 
-    auto AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
+    auto AssociatedLocalNyms(UnallocatedVector<OTNymID>& output) const noexcept
         -> void final;
     auto AssociatedRemoteContacts(
-        std::vector<OTIdentifier>& output) const noexcept -> void final;
+        UnallocatedVector<OTIdentifier>& output) const noexcept -> void final;
     auto at(const std::size_t position) const noexcept(false)
         -> const value_type& final
     {
@@ -66,13 +66,13 @@ public:
     }
     auto end() const noexcept -> const_iterator final { return cend(); }
     auto ExtractElements(const filter::Type style) const noexcept
-        -> std::vector<Space> final;
+        -> UnallocatedVector<Space> final;
     auto FindMatches(
         const ReadView txid,
         const filter::Type type,
         const ParsedPatterns& elements) const noexcept -> Matches final;
-    auto GetPatterns() const noexcept -> std::vector<PatternID> final;
-    auto Keys() const noexcept -> std::vector<crypto::Key> final;
+    auto GetPatterns() const noexcept -> UnallocatedVector<PatternID> final;
+    auto Keys() const noexcept -> UnallocatedVector<crypto::Key> final;
     auto Internal() const noexcept -> const internal::Outputs& final
     {
         return *this;

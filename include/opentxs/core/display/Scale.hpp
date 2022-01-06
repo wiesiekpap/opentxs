@@ -10,12 +10,11 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -40,20 +39,21 @@ public:
         const Amount& amount,
         const OptionalInt minDecimals = std::nullopt,
         const OptionalInt maxDecimals = std::nullopt) const noexcept(false)
-        -> std::string;
-    auto Import(const std::string& formatted) const noexcept(false) -> Amount;
-    auto Prefix() const noexcept -> std::string;
-    auto Ratios() const noexcept -> const std::vector<Ratio>&;
-    auto Suffix() const noexcept -> std::string;
+        -> UnallocatedCString;
+    auto Import(const UnallocatedCString& formatted) const noexcept(false)
+        -> Amount;
+    auto Prefix() const noexcept -> UnallocatedCString;
+    auto Ratios() const noexcept -> const UnallocatedVector<Ratio>&;
+    auto Suffix() const noexcept -> UnallocatedCString;
 
     virtual auto swap(Scale& rhs) noexcept -> void;
 
     OPENTXS_NO_EXPORT Scale(Imp* imp) noexcept;
     Scale() noexcept;
     Scale(
-        const std::string& prefix,
-        const std::string& suffix,
-        const std::vector<Ratio>& ratios,
+        const UnallocatedCString& prefix,
+        const UnallocatedCString& suffix,
+        const UnallocatedVector<Ratio>& ratios,
         const OptionalInt defaultMinDecimals = std::nullopt,
         const OptionalInt defaultMaxDecimals = std::nullopt) noexcept;
     Scale(const Scale&) noexcept;

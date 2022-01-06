@@ -10,13 +10,9 @@
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
-#include <map>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "blockchain/crypto/Subaccount.hpp"
@@ -31,6 +27,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/BlockchainDeterministicAccountData.pb.h"
@@ -65,7 +62,7 @@ namespace opentxs::blockchain::crypto::implementation
 class Deterministic : virtual public internal::Deterministic, public Subaccount
 {
 public:
-    auto AllowedSubchains() const noexcept -> std::set<Subchain> final;
+    auto AllowedSubchains() const noexcept -> UnallocatedSet<Subchain> final;
     auto Floor(const Subchain type) const noexcept
         -> std::optional<Bip32Index> final;
     auto BalanceElement(const Subchain type, const Bip32Index index) const
@@ -83,7 +80,7 @@ public:
         -> std::optional<Bip32Index> final;
     auto Lookahead() const noexcept -> std::size_t final { return window_; }
     auto Path() const noexcept -> proto::HDPath final { return path_; }
-    auto PathRoot() const noexcept -> const std::string final
+    auto PathRoot() const noexcept -> const UnallocatedCString final
     {
         return path_.root();
     }
@@ -91,14 +88,14 @@ public:
         const Subchain type,
         const PasswordPrompt& reason,
         const Identifier& contact,
-        const std::string& label,
+        const UnallocatedCString& label,
         const Time time) const noexcept -> std::optional<Bip32Index> final;
     auto Reserve(
         const Subchain type,
         const std::size_t batch,
         const PasswordPrompt& reason,
         const Identifier& contact,
-        const std::string& label,
+        const UnallocatedCString& label,
         const Time time) const noexcept -> Batch override;
     auto RootNode(const PasswordPrompt& reason) const noexcept
         -> blockchain::crypto::HDKey override;
@@ -110,7 +107,7 @@ public:
     ~Deterministic() override = default;
 
 protected:
-    using IndexMap = std::map<Subchain, Bip32Index>;
+    using IndexMap = UnallocatedMap<Subchain, Bip32Index>;
     using SerializedType = proto::BlockchainDeterministicAccountData;
 
     struct ChainData {
@@ -168,7 +165,7 @@ protected:
         const Subchain type,
         const PasswordPrompt& reason,
         const Identifier& contact,
-        const std::string& label,
+        const UnallocatedCString& label,
         const Time time,
         Batch& generated) const noexcept -> std::optional<Bip32Index>;
 
@@ -199,7 +196,7 @@ protected:
 
 private:
     using Status = internal::Element::Availability;
-    using Fallback = std::map<Status, std::set<Bip32Index>>;
+    using Fallback = UnallocatedMap<Status, UnallocatedSet<Bip32Index>>;
     using CachedKey = std::pair<std::mutex, blockchain::crypto::HDKey>;
 
     static constexpr auto BlockchainDeterministicAccountDataVersion =
@@ -210,13 +207,13 @@ private:
     static auto extract_contacts(
         const Bip32Index index,
         const AddressMap& map,
-        std::set<OTIdentifier>& contacts) noexcept -> void;
+        UnallocatedSet<OTIdentifier>& contacts) noexcept -> void;
 
     auto accept(
         const rLock& lock,
         const Subchain type,
         const Identifier& contact,
-        const std::string& label,
+        const UnallocatedCString& label,
         const Time time,
         const Bip32Index index,
         Batch& generated,
@@ -226,7 +223,7 @@ private:
         const rLock& lock,
         const Subchain type,
         const Identifier& contact,
-        const std::string& label,
+        const UnallocatedCString& label,
         const Time time,
         const Bip32Index index,
         const PasswordPrompt& reason,
@@ -235,8 +232,8 @@ private:
         Batch& generated) const noexcept(false) -> std::optional<Bip32Index>;
     auto check_activity(
         const rLock& lock,
-        const std::vector<Activity>& unspent,
-        std::set<OTIdentifier>& contacts,
+        const UnallocatedVector<Activity>& unspent,
+        UnallocatedSet<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool final;
     auto check_lookahead(
         const rLock& lock,
@@ -262,7 +259,7 @@ private:
         const Subchain type,
         const Bip32Index index) noexcept(false) -> Element& final;
     virtual auto set_deterministic_contact(
-        std::set<OTIdentifier>&) const noexcept -> void
+        UnallocatedSet<OTIdentifier>&) const noexcept -> void
     {
     }
     auto set_metadata(
@@ -270,7 +267,7 @@ private:
         const Subchain subchain,
         const Bip32Index index,
         const Identifier& contact,
-        const std::string& label) const noexcept -> void;
+        const UnallocatedCString& label) const noexcept -> void;
     auto unconfirm(
         const rLock& lock,
         const Subchain type,

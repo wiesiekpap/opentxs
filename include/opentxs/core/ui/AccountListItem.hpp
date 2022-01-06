@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "ListRow.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -29,14 +28,14 @@ namespace ui
 class OPENTXS_EXPORT AccountListItem : virtual public ListRow
 {
 public:
-    virtual auto AccountID() const noexcept -> std::string = 0;
+    virtual auto AccountID() const noexcept -> UnallocatedCString = 0;
     virtual auto Balance() const noexcept -> Amount = 0;
-    virtual auto ContractID() const noexcept -> std::string = 0;
-    virtual auto DisplayBalance() const noexcept -> std::string = 0;
-    virtual auto DisplayUnit() const noexcept -> std::string = 0;
-    virtual auto Name() const noexcept -> std::string = 0;
-    virtual auto NotaryID() const noexcept -> std::string = 0;
-    virtual auto NotaryName() const noexcept -> std::string = 0;
+    virtual auto ContractID() const noexcept -> UnallocatedCString = 0;
+    virtual auto DisplayBalance() const noexcept -> UnallocatedCString = 0;
+    virtual auto DisplayUnit() const noexcept -> UnallocatedCString = 0;
+    virtual auto Name() const noexcept -> UnallocatedCString = 0;
+    virtual auto NotaryID() const noexcept -> UnallocatedCString = 0;
+    virtual auto NotaryName() const noexcept -> UnallocatedCString = 0;
     virtual auto Type() const noexcept -> AccountType = 0;
     virtual auto Unit() const noexcept -> core::UnitType = 0;
 

@@ -13,7 +13,6 @@
 #include <optional>
 #include <stdexcept>
 #include <tuple>
-#include <vector>
 
 #include "blockchain/DownloadManager.hpp"
 #include "blockchain/DownloadTask.hpp"
@@ -34,6 +33,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/JobCounter.hpp"
@@ -50,7 +50,7 @@ FilterOracle::BlockIndexer::BlockIndexer(
     FilterOracle& parent,
     const blockchain::Type chain,
     const filter::Type type,
-    const std::string& shutdown,
+    const UnallocatedCString& shutdown,
     const NotifyCallback& notify) noexcept
     : BlockDMFilter(
           [&] { return db.FilterTip(type); }(),
@@ -98,7 +98,7 @@ auto FilterOracle::BlockIndexer::batch_size(const std::size_t in) const noexcept
 }
 
 auto FilterOracle::BlockIndexer::calculate_cfheaders(
-    std::vector<BlockIndexerData>& cache) const noexcept -> bool
+    UnallocatedVector<BlockIndexerData>& cache) const noexcept -> bool
 {
     auto failures{0};
 
@@ -304,9 +304,9 @@ auto FilterOracle::BlockIndexer::queue_processing(
 {
     if (0u == data.size()) { return; }
 
-    auto filters = std::vector<internal::FilterDatabase::Filter>{};
-    auto headers = std::vector<internal::FilterDatabase::Header>{};
-    auto cache = std::vector<BlockIndexerData>{};
+    auto filters = UnallocatedVector<internal::FilterDatabase::Filter>{};
+    auto headers = UnallocatedVector<internal::FilterDatabase::Header>{};
+    auto cache = UnallocatedVector<BlockIndexerData>{};
     const auto& tip = data.back();
 
     {

@@ -7,9 +7,7 @@
 #include <cstddef>
 #include <iterator>
 #include <memory>
-#include <set>
 #include <utility>
-#include <vector>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
@@ -27,7 +25,7 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -40,9 +38,9 @@ bool init_{false};
 class Test_Envelope : public ::testing::Test
 {
 public:
-    using Nyms = std::vector<ot::Nym_p>;
-    using Test = std::pair<bool, std::vector<int>>;
-    using Expected = std::vector<Test>;
+    using Nyms = ot::UnallocatedVector<ot::Nym_p>;
+    using Test = std::pair<bool, ot::UnallocatedVector<int>>;
+    using Expected = ot::UnallocatedVector<Test>;
 
     static const bool have_rsa_;
     static const bool have_secp256k1_;

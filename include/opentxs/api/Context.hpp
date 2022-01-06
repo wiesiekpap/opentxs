@@ -9,11 +9,11 @@
 
 #include <chrono>
 #include <functional>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Periodic.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 class QObject;
 
@@ -77,14 +77,15 @@ public:
     /** NOTE You must call PrepareSignalHandling() prior to initializating the
      * context if you intend to use signal handling */
     static auto PrepareSignalHandling() noexcept -> void;
-    static auto SuggestFolder(const std::string& app) noexcept -> std::string;
+    static auto SuggestFolder(const UnallocatedCString& app) noexcept
+        -> UnallocatedCString;
 
     virtual auto Asio() const noexcept -> const network::Asio& = 0;
     /** Throws std::out_of_range if the specified session does not exist. */
     virtual auto ClientSession(const int instance) const noexcept(false)
         -> const api::session::Client& = 0;
     virtual auto ClientSessionCount() const noexcept -> std::size_t = 0;
-    virtual auto Config(const std::string& path) const noexcept
+    virtual auto Config(const UnallocatedCString& path) const noexcept
         -> const api::Settings& = 0;
     virtual auto Crypto() const noexcept -> const api::Crypto& = 0;
     virtual auto Factory() const noexcept -> const api::Factory& = 0;
@@ -98,7 +99,7 @@ public:
     virtual auto NotarySession(const int instance) const noexcept(false)
         -> const session::Notary& = 0;
     virtual auto NotarySessionCount() const noexcept -> std::size_t = 0;
-    virtual auto ProfileId() const noexcept -> std::string = 0;
+    virtual auto ProfileId() const noexcept -> UnallocatedCString = 0;
     OPENTXS_NO_EXPORT virtual auto QtRootObject() const noexcept
         -> QObject* = 0;
     virtual auto RPC(const rpc::request::Base& command) const noexcept
@@ -118,8 +119,8 @@ public:
     virtual auto StartClientSession(
         const Options& args,
         const int instance,
-        const std::string& recoverWords,
-        const std::string& recoverPassphrase) const
+        const UnallocatedCString& recoverWords,
+        const UnallocatedCString& recoverPassphrase) const
         -> const api::session::Client& = 0;
     /** Start up a new server session
      *

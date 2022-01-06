@@ -12,10 +12,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -25,6 +22,7 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -220,7 +218,7 @@ struct AddressVersion {
         -> AddressByteField;
 
     AddressVersion(
-        const std::set<bitcoin::Service>& services,
+        const UnallocatedSet<bitcoin::Service>& services,
         const tcp::endpoint& endpoint) noexcept;
     AddressVersion(
         const blockchain::Type chain,
@@ -229,24 +227,27 @@ struct AddressVersion {
     AddressVersion() noexcept;
 };
 
-using CommandMap = std::map<Command, std::string>;
-using CommandReverseMap = std::map<std::string, Command>;
+using CommandMap = UnallocatedMap<Command, UnallocatedCString>;
+using CommandReverseMap = UnallocatedMap<UnallocatedCString, Command>;
 
-auto BitcoinString(const std::string& in) noexcept -> OTData;
-auto CommandName(const Command command) noexcept -> std::string;
+auto BitcoinString(const UnallocatedCString& in) noexcept -> OTData;
+auto CommandName(const Command command) noexcept -> UnallocatedCString;
 auto GetCommand(const CommandField& bytes) noexcept -> Command;
-auto GetServiceBytes(const std::set<bitcoin::Service>& services) noexcept
+auto GetServiceBytes(const UnallocatedSet<bitcoin::Service>& services) noexcept
     -> BitVector8;
-auto GetServices(const BitVector8 data) noexcept -> std::set<bitcoin::Service>;
+auto GetServices(const BitVector8 data) noexcept
+    -> UnallocatedSet<bitcoin::Service>;
 auto SerializeCommand(const Command command) noexcept -> CommandField;
 auto TranslateServices(
     const blockchain::Type chain,
     const ProtocolVersion version,
-    const std::set<p2p::Service>& input) noexcept -> std::set<bitcoin::Service>;
+    const UnallocatedSet<p2p::Service>& input) noexcept
+    -> UnallocatedSet<bitcoin::Service>;
 auto TranslateServices(
     const blockchain::Type chain,
     const ProtocolVersion version,
-    const std::set<bitcoin::Service>& input) noexcept -> std::set<p2p::Service>;
+    const UnallocatedSet<bitcoin::Service>& input) noexcept
+    -> UnallocatedSet<p2p::Service>;
 
 auto convert_service_bit(BitVector8 value) noexcept -> bitcoin::Service;
 auto convert_service_bit(const bitcoin::Service value) noexcept -> BitVector8;

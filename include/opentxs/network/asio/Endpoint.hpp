@@ -8,9 +8,9 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
 
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -30,13 +30,13 @@ public:
         ipv6 = 2,
     };
 
-    auto GetAddress() const noexcept -> std::string;
+    auto GetAddress() const noexcept -> UnallocatedCString;
     auto GetBytes() const noexcept -> ReadView;
     OPENTXS_NO_EXPORT auto GetInternal() const noexcept -> const Imp&;
-    auto GetMapped() const noexcept -> std::string;
+    auto GetMapped() const noexcept -> UnallocatedCString;
     auto GetPort() const noexcept -> Port;
     auto GetType() const noexcept -> Type;
-    auto str() const noexcept -> std::string;
+    auto str() const noexcept -> UnallocatedCString;
 
     /// throws std::runtime_error for bad params
     Endpoint(Type type, ReadView bytes, Port port) noexcept(false);

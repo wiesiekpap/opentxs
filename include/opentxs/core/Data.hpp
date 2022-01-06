@@ -9,10 +9,9 @@
 
 #include <cstdint>
 #include <functional>
-#include <string>
-#include <vector>
 
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -83,8 +82,9 @@ public:
     static auto Factory(const void* data, std::size_t size)
         -> Pimpl<opentxs::Data>;
     static auto Factory(const Armored& source) -> OTData;
-    static auto Factory(const std::vector<unsigned char>& source) -> OTData;
-    static auto Factory(const std::vector<std::byte>& source) -> OTData;
+    static auto Factory(const UnallocatedVector<unsigned char>& source)
+        -> OTData;
+    static auto Factory(const UnallocatedVector<std::byte>& source) -> OTData;
     static auto Factory(const network::zeromq::Frame& message) -> OTData;
     static auto Factory(const std::uint8_t in) -> OTData;
     /// Bytes will be stored in big endian order
@@ -93,7 +93,7 @@ public:
     static auto Factory(const std::uint32_t in) -> OTData;
     /// Bytes will be stored in big endian order
     static auto Factory(const std::uint64_t in) -> OTData;
-    static auto Factory(const std::string in, const Mode mode) -> OTData;
+    static auto Factory(const UnallocatedCString in, const Mode mode) -> OTData;
 
     virtual auto operator==(const Data& rhs) const noexcept -> bool = 0;
     virtual auto operator!=(const Data& rhs) const noexcept -> bool = 0;
@@ -101,7 +101,7 @@ public:
     virtual auto operator>(const Data& rhs) const noexcept -> bool = 0;
     virtual auto operator<=(const Data& rhs) const noexcept -> bool = 0;
     virtual auto operator>=(const Data& rhs) const noexcept -> bool = 0;
-    virtual auto asHex() const -> std::string = 0;
+    virtual auto asHex() const -> UnallocatedCString = 0;
     virtual auto at(const std::size_t position) const -> const std::byte& = 0;
     virtual auto begin() const -> const_iterator = 0;
     virtual auto Bytes() const noexcept -> ReadView = 0;
@@ -127,7 +127,7 @@ public:
     [[deprecated]] virtual auto IsEmpty() const -> bool = 0;
     virtual auto IsNull() const -> bool = 0;
     virtual auto size() const -> std::size_t = 0;
-    virtual auto str() const -> std::string = 0;
+    virtual auto str() const -> UnallocatedCString = 0;
 
     virtual auto operator+=(const Data& rhs) -> Data& = 0;
     virtual auto operator+=(const std::uint8_t rhs) -> Data& = 0;
@@ -144,7 +144,7 @@ public:
     virtual auto at(const std::size_t position) -> std::byte& = 0;
     virtual auto begin() -> iterator = 0;
     virtual auto data() -> void* = 0;
-    virtual auto DecodeHex(const std::string& hex) -> bool = 0;
+    virtual auto DecodeHex(const UnallocatedCString& hex) -> bool = 0;
     virtual auto Concatenate(const ReadView data) noexcept -> bool = 0;
     virtual auto Concatenate(const void* data, const std::size_t size) noexcept
         -> bool = 0;

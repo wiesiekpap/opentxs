@@ -7,10 +7,9 @@
 
 #pragma once
 
-#include <set>
-
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -67,9 +66,9 @@ auto BlockchainAccountKeys(
     const blockchain::crypto::Wallet& parent,
     const blockchain::crypto::AccountIndex& index,
     const identifier::Nym& id,
-    const std::set<OTIdentifier>& hdAccounts,
-    const std::set<OTIdentifier>& importedAccounts,
-    const std::set<OTIdentifier>& paymentCodeAccounts) noexcept
+    const UnallocatedSet<OTIdentifier>& hdAccounts,
+    const UnallocatedSet<OTIdentifier>& importedAccounts,
+    const UnallocatedSet<OTIdentifier>& paymentCodeAccounts) noexcept
     -> std::unique_ptr<blockchain::crypto::Account>;
 auto BlockchainHDSubaccount(
     const api::Session& api,

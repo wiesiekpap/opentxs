@@ -6,8 +6,8 @@
 #include "internal/serialization/protobuf/verify/BlockchainExternalAddress.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
-#include <string>
 
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/BlockchainEnums.pb.h"
 #include "serialization/protobuf/BlockchainExternalAddress.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
@@ -61,7 +61,7 @@ auto CheckProto_1(const BlockchainExternalAddress& input, const bool silent)
 
     for (const auto& data : input.data()) {
         if ((min > data.size()) || (max < data.size())) {
-            const auto fail = std::string{"invalid data size"};
+            const auto fail = UnallocatedCString{"invalid data size"};
             FAIL_2(fail.c_str(), data.size())
         }
     }

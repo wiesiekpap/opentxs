@@ -5,17 +5,15 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <tuple>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Storage.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/tree/Node.hpp"
@@ -41,18 +39,23 @@ private:
 
     static constexpr auto current_version_ = VersionNumber{3};
 
-    mutable std::map<std::string, std::unique_ptr<storage::Nym>> nyms_;
-    std::set<std::string> local_nyms_{};
+    mutable UnallocatedMap<UnallocatedCString, std::unique_ptr<storage::Nym>>
+        nyms_;
+    UnallocatedSet<UnallocatedCString> local_nyms_{};
 
-    auto nym(const std::string& id) const -> storage::Nym*;
-    auto nym(const Lock& lock, const std::string& id) const -> storage::Nym*;
-    void save(storage::Nym* nym, const Lock& lock, const std::string& id);
+    auto nym(const UnallocatedCString& id) const -> storage::Nym*;
+    auto nym(const Lock& lock, const UnallocatedCString& id) const
+        -> storage::Nym*;
+    void save(
+        storage::Nym* nym,
+        const Lock& lock,
+        const UnallocatedCString& id);
 
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
     auto save(const Lock& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
 
-    Nyms(const Driver& storage, const std::string& hash);
+    Nyms(const Driver& storage, const UnallocatedCString& hash);
     Nyms() = delete;
     Nyms(const Nyms&) = delete;
     Nyms(Nyms&&) = delete;
@@ -60,15 +63,16 @@ private:
     auto operator=(Nyms&&) -> Nyms = delete;
 
 public:
-    auto Exists(const std::string& id) const -> bool;
-    auto LocalNyms() const -> const std::set<std::string>;
+    auto Exists(const UnallocatedCString& id) const -> bool;
+    auto LocalNyms() const -> const UnallocatedSet<UnallocatedCString>;
     void Map(NymLambda lambda) const;
     auto Migrate(const Driver& to) const -> bool final;
-    auto Nym(const std::string& id) const -> const storage::Nym&;
+    auto Nym(const UnallocatedCString& id) const -> const storage::Nym&;
 
-    auto mutable_Nym(const std::string& id) -> Editor<storage::Nym>;
-    auto RelabelThread(const std::string& threadID, const std::string label)
-        -> bool;
+    auto mutable_Nym(const UnallocatedCString& id) -> Editor<storage::Nym>;
+    auto RelabelThread(
+        const UnallocatedCString& threadID,
+        const UnallocatedCString label) -> bool;
     void UpgradeLocalnym();
 
     ~Nyms() final = default;

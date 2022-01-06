@@ -7,12 +7,8 @@
 
 #include <atomic>
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <optional>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "Proto.hpp"
 #include "blockchain/crypto/Deterministic.hpp"
@@ -30,6 +26,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/HDAccount.pb.h"
 
@@ -76,7 +73,7 @@ public:
     {
         return const_cast<HD&>(*this);
     }
-    auto Name() const noexcept -> std::string final;
+    auto Name() const noexcept -> UnallocatedCString final;
     auto PrivateKey(
         const Subchain type,
         const Bip32Index index,
@@ -108,7 +105,7 @@ private:
     VersionNumber version_;
     mutable std::unique_ptr<opentxs::crypto::key::HD> cached_internal_;
     mutable std::unique_ptr<opentxs::crypto::key::HD> cached_external_;
-    mutable std::optional<std::string> name_;
+    mutable std::optional<UnallocatedCString> name_;
 
     auto account_already_exists(const rLock& lock) const noexcept -> bool final;
     auto save(const rLock& lock) const noexcept -> bool final;

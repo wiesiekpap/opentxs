@@ -13,11 +13,9 @@
 #include <memory>
 #include <optional>
 #include <sstream>
-#include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -43,6 +41,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/NymEditor.hpp"
@@ -188,7 +187,7 @@ auto NotificationStateData::process(
 
         if (script.IsNotification(version, code_)) {
             const auto elements = [&] {
-                auto out = std::vector<Space>{};
+                auto out = UnallocatedVector<Space>{};
 
                 for (auto i{0u}; i < 3u; ++i) {
                     const auto view = script.MultisigPubkey(i);

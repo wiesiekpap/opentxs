@@ -7,11 +7,9 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <set>
-#include <string>
-
 #include "opentxs/Types.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -25,11 +23,11 @@ namespace context
 class TransactionStatement
 {
 private:
-    std::string version_;
-    std::string nym_id_;
-    std::string notary_;
-    std::set<TransactionNumber> available_;
-    std::set<TransactionNumber> issued_;
+    UnallocatedCString version_;
+    UnallocatedCString nym_id_;
+    UnallocatedCString notary_;
+    UnallocatedSet<TransactionNumber> available_;
+    UnallocatedSet<TransactionNumber> issued_;
 
     TransactionStatement() = delete;
     TransactionStatement(const TransactionStatement& rhs) = delete;
@@ -40,16 +38,16 @@ private:
 
 public:
     TransactionStatement(
-        const std::string& notary,
-        const std::set<TransactionNumber>& issued,
-        const std::set<TransactionNumber>& available);
+        const UnallocatedCString& notary,
+        const UnallocatedSet<TransactionNumber>& issued,
+        const UnallocatedSet<TransactionNumber>& available);
     TransactionStatement(const String& serialized);
     TransactionStatement(TransactionStatement&& rhs) = default;
 
     explicit operator OTString() const;
 
-    auto Issued() const -> const std::set<TransactionNumber>&;
-    auto Notary() const -> const std::string&;
+    auto Issued() const -> const UnallocatedSet<TransactionNumber>&;
+    auto Notary() const -> const UnallocatedCString&;
 
     void Remove(const TransactionNumber& number);
 

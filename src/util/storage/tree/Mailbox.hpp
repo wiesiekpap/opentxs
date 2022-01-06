@@ -6,10 +6,10 @@
 #pragma once
 
 #include <mutex>
-#include <string>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/tree/Node.hpp"
 
@@ -29,11 +29,11 @@ class Mailbox final : public Node
 private:
     friend Nym;
 
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
 
-    Mailbox(const Driver& storage, const std::string& hash);
+    Mailbox(const Driver& storage, const UnallocatedCString& hash);
     Mailbox() = delete;
     Mailbox(const Mailbox&) = delete;
     Mailbox(Mailbox&&) = delete;
@@ -42,16 +42,16 @@ private:
 
 public:
     auto Load(
-        const std::string& id,
-        std::string& output,
-        std::string& alias,
+        const UnallocatedCString& id,
+        UnallocatedCString& output,
+        UnallocatedCString& alias,
         const bool checking) const -> bool;
 
-    auto Delete(const std::string& id) -> bool;
+    auto Delete(const UnallocatedCString& id) -> bool;
     auto Store(
-        const std::string& id,
-        const std::string& data,
-        const std::string& alias) -> bool;
+        const UnallocatedCString& id,
+        const UnallocatedCString& data,
+        const UnallocatedCString& alias) -> bool;
 
     ~Mailbox() final = default;
 };

@@ -39,7 +39,7 @@ namespace opentxs::rpc::response
 struct Base::Imp {
     const Base* parent_;
     const VersionNumber version_;
-    const std::string cookie_;
+    const UnallocatedCString cookie_;
     const CommandType type_;
     const Responses responses_;
     const SessionIndex session_;
@@ -86,7 +86,7 @@ private:
 
     Imp(const Base* parent,
         VersionNumber version,
-        const std::string& cookie,
+        const UnallocatedCString& cookie,
         const CommandType& type,
         const Responses responses,
         SessionIndex session,

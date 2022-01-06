@@ -7,8 +7,6 @@
 #include <atomic>
 #include <cstddef>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
@@ -17,7 +15,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -28,13 +26,13 @@ namespace ottest
 TEST(Test_Stress, Pub_10000)
 {
     const auto& ot = ot::Context();
-    auto endpoints = std::vector<std::string>{};
-    auto pub = std::vector<ot::OTZMQPublishSocket>{};
+    auto endpoints = ot::UnallocatedVector<ot::UnallocatedCString>{};
+    auto pub = ot::UnallocatedVector<ot::OTZMQPublishSocket>{};
 
     for (auto i{0}; i < 10000; ++i) {
         auto& socket = pub.emplace_back(ot.ZMQ().PublishSocket()).get();
         auto& endpoint = endpoints.emplace_back(
-            std::string{"inproc://Pub_10000/"} + std::to_string(i));
+            ot::UnallocatedCString{"inproc://Pub_10000/"} + std::to_string(i));
 
         EXPECT_TRUE(socket.Start(endpoint));
     }
@@ -43,13 +41,13 @@ TEST(Test_Stress, Pub_10000)
 TEST(Test_Stress, PubSub_100)
 {
     const auto& ot = ot::Context();
-    auto endpoints = std::vector<std::string>{};
-    auto pub = std::vector<ot::OTZMQPublishSocket>{};
+    auto endpoints = ot::UnallocatedVector<ot::UnallocatedCString>{};
+    auto pub = ot::UnallocatedVector<ot::OTZMQPublishSocket>{};
 
     for (auto i{0}; i < 100; ++i) {
         auto& socket = pub.emplace_back(ot.ZMQ().PublishSocket()).get();
         auto& endpoint = endpoints.emplace_back(
-            std::string{"inproc://PubSub_100/"} + std::to_string(i));
+            ot::UnallocatedCString{"inproc://PubSub_100/"} + std::to_string(i));
 
         EXPECT_TRUE(socket.Start(endpoint));
     }

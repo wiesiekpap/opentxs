@@ -9,8 +9,6 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <tuple>
 #include <utility>
 
@@ -28,6 +26,7 @@
 #include "opentxs/core/contract/peer/PeerObject.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -245,7 +244,7 @@ public:
     auto issueBasket(
         otx::context::Server& context,
         const proto::UnitDefinition& basket,
-        const std::string& label) const -> CommandResult;
+        const UnallocatedCString& label) const -> CommandResult;
 
     auto GenerateBasketExchange(
         const identifier::Notary& NOTARY_ID,
@@ -649,7 +648,7 @@ private:
         OTTransaction& serverTransaction,
         Ledger& inbox,
         Amount& amount,
-        std::set<TransactionNumber>& closing) const -> bool;
+        UnallocatedSet<TransactionNumber>& closing) const -> bool;
     auto find_standard(
         const otx::context::Server& context,
         const Item& item,
@@ -657,7 +656,7 @@ private:
         OTTransaction& serverTransaction,
         Ledger& inbox,
         Amount& amount,
-        std::set<TransactionNumber>& closing) const -> bool;
+        UnallocatedSet<TransactionNumber>& closing) const -> bool;
     auto get_or_create_process_inbox(
         const Identifier& accountID,
         otx::context::Server& context,

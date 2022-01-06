@@ -83,7 +83,8 @@ auto Request::Send(zeromq::Message&& request) const noexcept
     return output;
 }
 
-auto Request::SetSocksProxy(const std::string& proxy) const noexcept -> bool
+auto Request::SetSocksProxy(const UnallocatedCString& proxy) const noexcept
+    -> bool
 {
     return set_socks_proxy(proxy);
 }

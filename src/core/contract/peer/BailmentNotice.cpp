@@ -38,7 +38,7 @@ auto Factory::BailmentNotice(
     const identifier::UnitDefinition& unitID,
     const identifier::Notary& serverID,
     const opentxs::Identifier& requestID,
-    const std::string& txid,
+    const UnallocatedCString& txid,
     const Amount& amount,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::request::BailmentNotice>
@@ -111,7 +111,7 @@ BailmentNotice::BailmentNotice(
     const identifier::UnitDefinition& unitID,
     const identifier::Notary& serverID,
     const Identifier& requestID,
-    const std::string& txid,
+    const UnallocatedCString& txid,
     const Amount& amount)
     : Request(
           api,

@@ -9,7 +9,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "internal/otx/common/util/Common.hpp"
 #include "internal/otx/common/util/Tag.hpp"
@@ -17,6 +16,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -24,7 +24,7 @@ namespace opentxs
 {
 void OTVariable::Serialize(Tag& parent, bool bCalculatingID) const
 {
-    std::string str_access(""), str_type("");
+    UnallocatedCString str_access(""), str_type("");
 
     switch (m_Access) {
         // This cannot be changed from inside the
@@ -106,8 +106,8 @@ OTVariable::OTVariable()
 
 // STRING
 OTVariable::OTVariable(
-    const std::string& str_Name,
-    const std::string& str_Value,
+    const UnallocatedCString& str_Name,
+    const UnallocatedCString& str_Value,
     const OTVariable_Access theAccess)
     : m_strName(String::Factory(str_Name.c_str()))
     , m_str_Value(str_Value)
@@ -127,7 +127,7 @@ OTVariable::OTVariable(
 
 // INT
 OTVariable::OTVariable(
-    const std::string& str_Name,
+    const UnallocatedCString& str_Name,
     const std::int32_t nValue,
     const OTVariable_Access theAccess)
     : m_strName(String::Factory(str_Name.c_str()))
@@ -146,7 +146,7 @@ OTVariable::OTVariable(
 
 // BOOL
 OTVariable::OTVariable(
-    const std::string& str_Name,
+    const UnallocatedCString& str_Name,
     const bool bValue,
     const OTVariable_Access theAccess)
     : m_strName(String::Factory(str_Name.c_str()))
@@ -201,7 +201,7 @@ auto OTVariable::SetValue(bool bValue) -> bool
     return true;
 }
 
-auto OTVariable::SetValue(const std::string& str_Value) -> bool
+auto OTVariable::SetValue(const UnallocatedCString& str_Value) -> bool
 {
     if (!IsString()) {
         LogError()(OT_PRETTY_CLASS())("Error: This variable (")(
@@ -296,7 +296,7 @@ void OTVariable::RegisterForExecution(OTScript& theScript)
 {
     SetAsClean();  // so we can check for dirtiness after execution.
 
-    const std::string str_var_name = m_strName->Get();
+    const UnallocatedCString str_var_name = m_strName->Get();
 
     theScript.AddVariable(str_var_name, *this);
 

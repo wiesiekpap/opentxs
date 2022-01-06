@@ -16,7 +16,8 @@ auto OTScriptChai() -> std::shared_ptr<opentxs::OTScript>
     return std::make_shared<opentxs::OTScript>();
 }
 
-auto OTScriptChai(const std::string&) -> std::shared_ptr<opentxs::OTScript>
+auto OTScriptChai(const UnallocatedCString&)
+    -> std::shared_ptr<opentxs::OTScript>
 {
     return std::make_shared<opentxs::OTScript>();
 }

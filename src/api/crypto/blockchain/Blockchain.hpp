@@ -25,16 +25,12 @@
 #include <functional>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
 #include <thread>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
@@ -51,6 +47,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -125,19 +122,20 @@ public:
     auto Account(const identifier::Nym& nymID, const Chain chain) const
         noexcept(false) -> const opentxs::blockchain::crypto::Account& final;
     auto AccountList(const identifier::Nym& nymID) const noexcept
-        -> std::set<OTIdentifier> final;
+        -> UnallocatedSet<OTIdentifier> final;
     auto AccountList(const Chain chain) const noexcept
-        -> std::set<OTIdentifier> final;
-    auto AccountList() const noexcept -> std::set<OTIdentifier> final;
+        -> UnallocatedSet<OTIdentifier> final;
+    auto AccountList() const noexcept -> UnallocatedSet<OTIdentifier> final;
     auto ActivityDescription(
         const identifier::Nym& nym,
         const Identifier& thread,
-        const std::string& threadItemID) const noexcept -> std::string final;
+        const UnallocatedCString& threadItemID) const noexcept
+        -> UnallocatedCString final;
     auto ActivityDescription(
         const identifier::Nym& nym,
         const Chain chain,
         const opentxs::blockchain::block::bitcoin::Transaction& transaction)
-        const noexcept -> std::string final;
+        const noexcept -> UnallocatedCString final;
     auto AssignContact(
         const identifier::Nym& nymID,
         const Identifier& accountID,
@@ -149,26 +147,27 @@ public:
         const Identifier& accountID,
         const Subchain subchain,
         const Bip32Index index,
-        const std::string& label) const noexcept -> bool final;
-    auto AssignTransactionMemo(const std::string& id, const std::string& label)
-        const noexcept -> bool final;
+        const UnallocatedCString& label) const noexcept -> bool final;
+    auto AssignTransactionMemo(
+        const UnallocatedCString& id,
+        const UnallocatedCString& label) const noexcept -> bool final;
     auto CalculateAddress(
         const Chain chain,
         const opentxs::blockchain::crypto::AddressStyle format,
-        const Data& pubkey) const noexcept -> std::string final;
+        const Data& pubkey) const noexcept -> UnallocatedCString final;
     auto Confirm(const Key key, const opentxs::blockchain::block::Txid& tx)
         const noexcept -> bool final;
     auto Contacts() const noexcept -> const api::session::Contacts& final;
-    auto DecodeAddress(const std::string& encoded) const noexcept
+    auto DecodeAddress(const UnallocatedCString& encoded) const noexcept
         -> DecodedAddress final;
     auto EncodeAddress(const Style style, const Chain chain, const Data& data)
-        const noexcept -> std::string final;
+        const noexcept -> UnallocatedCString final;
     auto GetKey(const Key& id) const noexcept(false)
         -> const opentxs::blockchain::crypto::Element& final;
     auto HDSubaccount(const identifier::Nym& nymID, const Identifier& accountID)
         const noexcept(false) -> const opentxs::blockchain::crypto::HD& final;
     auto IndexItem(const ReadView bytes) const noexcept -> PatternID final;
-    auto KeyEndpoint() const noexcept -> const std::string& final;
+    auto KeyEndpoint() const noexcept -> const UnallocatedCString& final;
     auto KeyGenerated(const Chain chain) const noexcept -> void final;
     auto LoadTransactionBitcoin(const TxidHex& id) const noexcept
         -> std::unique_ptr<
@@ -178,7 +177,7 @@ public:
             const opentxs::blockchain::block::bitcoin::Transaction> final;
     auto LookupAccount(const Identifier& id) const noexcept
         -> AccountData final;
-    auto LookupContacts(const std::string& address) const noexcept
+    auto LookupContacts(const UnallocatedCString& address) const noexcept
         -> ContactList final;
     auto LookupContacts(const Data& pubkeyHash) const noexcept
         -> ContactList final;
@@ -244,7 +243,7 @@ public:
         -> void final;
     auto SenderContact(const Key& key) const noexcept -> OTIdentifier final;
     auto SubaccountList(const identifier::Nym& nymID, const Chain chain)
-        const noexcept -> std::set<OTIdentifier> final;
+        const noexcept -> UnallocatedSet<OTIdentifier> final;
     auto UpdateBalance(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept
@@ -254,7 +253,7 @@ public:
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept
         -> void final;
-    auto UpdateElement(std::vector<ReadView>& pubkeyHashes) const noexcept
+    auto UpdateElement(UnallocatedVector<ReadView>& pubkeyHashes) const noexcept
         -> void final;
     auto Unconfirm(
         const Key key,
@@ -270,7 +269,7 @@ public:
         const api::session::Activity& activity,
         const api::session::Contacts& contacts,
         const api::Legacy& legacy,
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const Options& args) noexcept;
 
     ~Blockchain() final;

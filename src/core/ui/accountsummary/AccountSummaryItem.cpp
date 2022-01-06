@@ -54,7 +54,7 @@ AccountSummaryItem::AccountSummaryItem(
 {
 }
 
-auto AccountSummaryItem::DisplayBalance() const noexcept -> std::string
+auto AccountSummaryItem::DisplayBalance() const noexcept -> UnallocatedCString
 {
     if (0 == contract_->Version()) {
         eLock lock(shared_lock_);
@@ -70,7 +70,7 @@ auto AccountSummaryItem::DisplayBalance() const noexcept -> std::string
 
     if (0 < contract_->Version()) {
         const auto& definition = display::GetDefinition(currency_);
-        std::string output = definition.Format(balance_);
+        UnallocatedCString output = definition.Format(balance_);
 
         if (0 < output.size()) { return output; }
 
@@ -93,7 +93,7 @@ auto AccountSummaryItem::load_unit(
     }
 }
 
-auto AccountSummaryItem::Name() const noexcept -> std::string
+auto AccountSummaryItem::Name() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 

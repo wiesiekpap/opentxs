@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -18,11 +17,12 @@ namespace crypto
 class OPENTXS_EXPORT EncodingProvider
 {
 public:
-    virtual std::string Base58CheckEncode(
+    virtual UnallocatedCString Base58CheckEncode(
         const std::uint8_t* inputStart,
         const std::size_t& inputSize) const = 0;
-    virtual bool Base58CheckDecode(const std::string&& input, RawData& output)
-        const = 0;
+    virtual bool Base58CheckDecode(
+        const UnallocatedCString&& input,
+        RawData& output) const = 0;
 
     virtual ~EncodingProvider() = default;
 

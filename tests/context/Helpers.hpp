@@ -9,10 +9,9 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <set>
-#include <string>
 
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Options.hpp"
 
 namespace opentxs
@@ -20,33 +19,35 @@ namespace opentxs
 class Options;
 }  // namespace opentxs
 
+namespace ot = opentxs;
+
 namespace ottest
 {
 struct OptionsData {
-    std::set<std::string> blockchain_bind_ipv4_;
-    std::set<std::string> blockchain_bind_ipv6_;
-    std::set<opentxs::blockchain::Type> blockchain_disabled_chains_;
+    ot::UnallocatedSet<ot::UnallocatedCString> blockchain_bind_ipv4_;
+    ot::UnallocatedSet<ot::UnallocatedCString> blockchain_bind_ipv6_;
+    ot::UnallocatedSet<opentxs::blockchain::Type> blockchain_disabled_chains_;
     int blockchain_storage_level_;
     bool blockchain_sync_server_enabled_;
-    std::set<std::string> blockchain_sync_servers_;
+    ot::UnallocatedSet<ot::UnallocatedCString> blockchain_sync_servers_;
     bool blockchain_wallet_enabled_;
-    std::string home_;
+    ot::UnallocatedCString home_;
     opentxs::Options::ConnectionMode ipv4_connection_mode_;
     opentxs::Options::ConnectionMode ipv6_connection_mode_;
-    std::string log_endpoint_;
+    ot::UnallocatedCString log_endpoint_;
     int log_level_;
     std::size_t mint_key_bytes_;
     bool notary_bind_inproc_;
-    std::string notary_bind_ip_;
+    ot::UnallocatedCString notary_bind_ip_;
     std::uint16_t notary_bind_port_;
-    std::string notary_name_;
-    std::set<std::string> notary_public_eep_;
-    std::set<std::string> notary_public_ipv4_;
-    std::set<std::string> notary_public_ipv6_;
-    std::set<std::string> notary_public_onion_;
+    ot::UnallocatedCString notary_name_;
+    ot::UnallocatedSet<ot::UnallocatedCString> notary_public_eep_;
+    ot::UnallocatedSet<ot::UnallocatedCString> notary_public_ipv4_;
+    ot::UnallocatedSet<ot::UnallocatedCString> notary_public_ipv6_;
+    ot::UnallocatedSet<ot::UnallocatedCString> notary_public_onion_;
     std::uint16_t notary_public_port_;
-    std::string notary_terms_;
-    std::string storage_primary_plugin_;
+    ot::UnallocatedCString notary_terms_;
+    ot::UnallocatedCString storage_primary_plugin_;
     bool test_mode_;
 };
 

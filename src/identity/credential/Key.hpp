@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
-#include <string>
 
 #include "Proto.hpp"
 #include "identity/credential/Base.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 
@@ -130,13 +130,13 @@ protected:
         const VersionNumber version,
         const identity::CredentialRole role,
         const PasswordPrompt& reason,
-        const std::string& masterID,
+        const UnallocatedCString& masterID,
         const bool useProvidedSigningKey = false) noexcept(false);
     Key(const api::Session& api,
         const identity::internal::Authority& owner,
         const identity::Source& source,
         const proto::Credential& serializedCred,
-        const std::string& masterID) noexcept(false);
+        const UnallocatedCString& masterID) noexcept(false);
 
 private:
     static const VersionConversionMap credential_subversion_;

@@ -11,7 +11,6 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <string>
 #include <thread>
 
 #include "api/session/base/Scheduler.hpp"
@@ -37,6 +36,7 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
 #include "util/storage/Config.hpp"
@@ -109,7 +109,7 @@ public:
     {
         return crypto_;
     }
-    auto DataFolder() const noexcept -> const std::string& final
+    auto DataFolder() const noexcept -> const UnallocatedCString& final
     {
         return data_folder_;
     }
@@ -129,7 +129,7 @@ public:
         Secret& secret,
         const PasswordPrompt& reason,
         const bool twice,
-        const std::string& key) const -> bool final;
+        const UnallocatedCString& key) const -> bool final;
     auto Instance() const noexcept -> int final { return instance_; }
     auto Legacy() const noexcept -> const api::Legacy& final;
     auto Lock() const -> std::mutex& final { return master_key_lock_; }
@@ -181,7 +181,7 @@ protected:
         const api::Crypto& crypto,
         const api::Settings& config,
         const opentxs::network::zeromq::Context& zmq,
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const int instance,
         NetworkMaker network,
         std::unique_ptr<api::session::Factory> factory);

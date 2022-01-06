@@ -7,13 +7,12 @@
 #include "1_Internal.hpp"    // IWYU pragma: associated
 #include "util/rpc/RPC.hpp"  // IWYU pragma: associated
 
-#include <set>
 #include <utility>
-#include <vector>
 
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/rpc/ResponseCode.hpp"
 #include "opentxs/util/rpc/request/Base.hpp"

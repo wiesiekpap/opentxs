@@ -4,11 +4,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
-#include <string>
-#include <vector>
 
 #include "Helpers.hpp"
 #include "blockchain/DownloadTask.hpp"
+#include "opentxs/util/Container.hpp"
 
 constexpr auto batchSize{1};
 constexpr auto count_{3};
@@ -16,7 +15,7 @@ auto index_{1};
 auto manager_ = DownloadManager{batchSize, 0, 0};
 const auto AddBlocks = [] {
     manager_.UpdatePosition(manager_.MakePositions(index_, [] {
-        auto output = std::vector<std::string>{};
+        auto output = ot::UnallocatedVector<ot::UnallocatedCString>{};
 
         for (auto i{index_}; i < (index_ + count_); ++i) {
             output.emplace_back(std::to_string(i));

@@ -11,10 +11,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
-#include <string>
 #include <string_view>
 
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -54,7 +54,7 @@ public:
     auto Bytes() const noexcept -> ReadView;
     auto Index() const noexcept -> std::uint32_t;
     auto Txid() const noexcept -> ReadView;
-    auto str() const noexcept -> std::string;
+    auto str() const noexcept -> UnallocatedCString;
 
     Outpoint(const ReadView serialized) noexcept(false);
     Outpoint(const ReadView txid, const std::uint32_t index) noexcept(false);

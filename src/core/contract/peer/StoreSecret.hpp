@@ -5,14 +5,13 @@
 
 #pragma once
 
-#include <string>
-
 #include "Proto.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/PeerEnums.pb.h"
 
@@ -49,8 +48,8 @@ public:
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const SecretType type,
-        const std::string& primary,
-        const std::string& secondary,
+        const UnallocatedCString& primary,
+        const UnallocatedCString& secondary,
         const identifier::Notary& serverID);
     StoreSecret(
         const api::Session& api,
@@ -70,8 +69,8 @@ private:
     static constexpr auto current_version_ = VersionNumber{4};
 
     const SecretType secret_type_;
-    const std::string primary_;
-    const std::string secondary_;
+    const UnallocatedCString primary_;
+    const UnallocatedCString secondary_;
 
     auto clone() const noexcept -> StoreSecret* final
     {

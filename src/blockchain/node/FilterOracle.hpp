@@ -8,19 +8,15 @@
 #include <boost/circular_buffer.hpp>
 #include <atomic>
 #include <chrono>
-#include <deque>
 #include <functional>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <queue>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "core/Worker.hpp"
@@ -38,6 +34,7 @@
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -147,11 +144,11 @@ public:
     auto ProcessBlock(BlockIndexerData& data) const noexcept -> void;
     auto ProcessSyncData(
         const block::Hash& prior,
-        const std::vector<block::pHash>& hashes,
+        const UnallocatedVector<block::pHash>& hashes,
         const network::p2p::Data& data) const noexcept -> void final;
     auto ProcessSyncData(SyncClientFilterData& data) const noexcept -> void;
     auto ProcessSyncData(
-        std::vector<SyncClientFilterData>& cache) const noexcept -> bool;
+        UnallocatedVector<SyncClientFilterData>& cache) const noexcept -> bool;
     auto Tip(const filter::Type type) const noexcept -> block::Position final
     {
         return database_.FilterTip(type);
@@ -169,7 +166,7 @@ public:
         const internal::FilterDatabase& database,
         const blockchain::Type chain,
         const blockchain::filter::Type filter,
-        const std::string& shutdown) noexcept;
+        const UnallocatedCString& shutdown) noexcept;
 
     ~FilterOracle() final;
 
@@ -177,11 +174,11 @@ private:
     friend Worker<FilterOracle, api::Session>;
     friend internal::FilterOracle;
 
-    using FilterHeaderHex = std::string;
-    using FilterHeaderMap = std::map<filter::Type, FilterHeaderHex>;
-    using ChainMap = std::map<block::Height, FilterHeaderMap>;
-    using CheckpointMap = std::map<blockchain::Type, ChainMap>;
-    using OutstandingMap = std::map<int, std::atomic_int>;
+    using FilterHeaderHex = UnallocatedCString;
+    using FilterHeaderMap = UnallocatedMap<filter::Type, FilterHeaderHex>;
+    using ChainMap = UnallocatedMap<block::Height, FilterHeaderMap>;
+    using CheckpointMap = UnallocatedMap<blockchain::Type, ChainMap>;
+    using OutstandingMap = UnallocatedMap<int, std::atomic_int>;
 
     static const CheckpointMap filter_checkpoints_;
 
@@ -199,7 +196,7 @@ private:
     mutable std::unique_ptr<HeaderDownloader> header_downloader_;
     mutable std::unique_ptr<BlockIndexer> block_indexer_;
     mutable Time last_sync_progress_;
-    mutable std::map<filter::Type, block::Position> last_broadcast_;
+    mutable UnallocatedMap<filter::Type, block::Position> last_broadcast_;
     mutable JobCounter outstanding_jobs_;
     std::atomic_bool running_;
 

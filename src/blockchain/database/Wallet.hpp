@@ -12,15 +12,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "blockchain/database/wallet/Output.hpp"
@@ -46,6 +42,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
 #include "util/LMDB.hpp"
@@ -127,12 +124,12 @@ public:
         const Subchain subchain,
         const block::Position& block,
         const std::size_t blockIndex,
-        const std::vector<std::uint32_t> outputIndices,
+        const UnallocatedVector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) const noexcept -> bool;
     auto AddMempoolTransaction(
         const NodeID& balanceNode,
         const Subchain subchain,
-        const std::vector<std::uint32_t> outputIndices,
+        const UnallocatedVector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) const noexcept -> bool;
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
@@ -143,47 +140,49 @@ public:
         const proto::BlockchainTransactionProposal& tx) const noexcept -> bool;
     auto AdvanceTo(const block::Position& pos) const noexcept -> bool;
     auto CancelProposal(const Identifier& id) const noexcept -> bool;
-    auto CompletedProposals() const noexcept -> std::set<OTIdentifier>;
+    auto CompletedProposals() const noexcept -> UnallocatedSet<OTIdentifier>;
     auto FinalizeReorg(
         storage::lmdb::LMDB::Transaction& tx,
         const block::Position& pos) const noexcept -> bool;
-    auto ForgetProposals(const std::set<OTIdentifier>& ids) const noexcept
+    auto ForgetProposals(const UnallocatedSet<OTIdentifier>& ids) const noexcept
         -> bool;
     auto GetBalance() const noexcept -> Balance;
     auto GetBalance(const identifier::Nym& owner) const noexcept -> Balance;
     auto GetBalance(const identifier::Nym& owner, const NodeID& node)
         const noexcept -> Balance;
     auto GetBalance(const crypto::Key& key) const noexcept -> Balance;
-    auto GetOutputs(node::TxoState type) const noexcept -> std::vector<UTXO>;
+    auto GetOutputs(node::TxoState type) const noexcept
+        -> UnallocatedVector<UTXO>;
     auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
-        const noexcept -> std::vector<UTXO>;
+        const noexcept -> UnallocatedVector<UTXO>;
     auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& node,
-        node::TxoState type) const noexcept -> std::vector<UTXO>;
+        node::TxoState type) const noexcept -> UnallocatedVector<UTXO>;
     auto GetOutputs(const crypto::Key& key, node::TxoState type) const noexcept
-        -> std::vector<UTXO>;
+        -> UnallocatedVector<UTXO>;
     auto GetOutputTags(const block::Outpoint& output) const noexcept
-        -> std::set<node::TxoTag>;
+        -> UnallocatedSet<node::TxoTag>;
     auto GetPatterns(const SubchainIndex& index) const noexcept -> Patterns;
     auto GetSubchainID(const NodeID& balanceNode, const Subchain subchain)
         const noexcept -> pSubchainIndex;
-    auto GetTransactions() const noexcept -> std::vector<block::pTxid>;
+    auto GetTransactions() const noexcept -> UnallocatedVector<block::pTxid>;
     auto GetTransactions(const identifier::Nym& account) const noexcept
-        -> std::vector<block::pTxid>;
-    auto GetUnconfirmedTransactions() const noexcept -> std::set<block::pTxid>;
-    auto GetUnspentOutputs() const noexcept -> std::vector<UTXO>;
+        -> UnallocatedVector<block::pTxid>;
+    auto GetUnconfirmedTransactions() const noexcept
+        -> UnallocatedSet<block::pTxid>;
+    auto GetUnspentOutputs() const noexcept -> UnallocatedVector<UTXO>;
     auto GetUnspentOutputs(const NodeID& balanceNode, const Subchain subchain)
-        const noexcept -> std::vector<UTXO>;
+        const noexcept -> UnallocatedVector<UTXO>;
     auto GetUntestedPatterns(const SubchainIndex& index, const ReadView blockID)
         const noexcept -> Patterns;
     auto GetWalletHeight() const noexcept -> block::Height;
     auto LoadProposal(const Identifier& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal>;
     auto LoadProposals() const noexcept
-        -> std::vector<proto::BlockchainTransactionProposal>;
+        -> UnallocatedVector<proto::BlockchainTransactionProposal>;
     auto LookupContact(const Data& pubkeyHash) const noexcept
-        -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
     auto ReorgTo(
         const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
@@ -191,7 +190,7 @@ public:
         const NodeID& balanceNode,
         const Subchain subchain,
         const SubchainIndex& index,
-        const std::vector<block::Position>& reorg) const noexcept -> bool;
+        const UnallocatedVector<block::Position>& reorg) const noexcept -> bool;
     auto ReserveUTXO(
         const identifier::Nym& spender,
         const Identifier& proposal,
@@ -206,7 +205,7 @@ public:
         -> block::Position;
     auto SubchainMatchBlock(
         const SubchainIndex& index,
-        const std::vector<std::pair<ReadView, MatchingIndices>>& results)
+        const UnallocatedVector<std::pair<ReadView, MatchingIndices>>& results)
         const noexcept -> bool;
     auto SubchainSetLastScanned(
         const SubchainIndex& index,

@@ -11,6 +11,6 @@ namespace opentxs
 {
 auto license_lucre(LicenseMap& out) noexcept -> void
 {
-    out.emplace("Lucre", std::string{R"~!~(@LUCRE_LICENSE_TEXT@)~!~"});
+    out.emplace("Lucre", UnallocatedCString{R"~!~(@LUCRE_LICENSE_TEXT@)~!~"});
 }
 }  // namespace opentxs

@@ -15,19 +15,20 @@ namespace opentxs
 {
 using Type = network::p2p::MessageType;
 
-auto print(Type value) noexcept -> std::string
+auto print(Type value) noexcept -> UnallocatedCString
 {
-    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
-        {Type::sync_request, "sync request"},
-        {Type::sync_ack, "sync acknowledgment"},
-        {Type::sync_reply, "sync reply"},
-        {Type::new_block_header, "sync push"},
-        {Type::query, "sync query"},
-        {Type::publish_contract, "publish contract"},
-        {Type::publish_ack, "publish acknowledgment"},
-        {Type::contract_query, "contract query"},
-        {Type::contract, "contract reply"},
-    };
+    static const auto map =
+        robin_hood::unordered_flat_map<Type, UnallocatedCString>{
+            {Type::sync_request, "sync request"},
+            {Type::sync_ack, "sync acknowledgment"},
+            {Type::sync_reply, "sync reply"},
+            {Type::new_block_header, "sync push"},
+            {Type::query, "sync query"},
+            {Type::publish_contract, "publish contract"},
+            {Type::publish_ack, "publish acknowledgment"},
+            {Type::contract_query, "contract query"},
+            {Type::contract, "contract reply"},
+        };
 
     try {
 

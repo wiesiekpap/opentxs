@@ -9,16 +9,15 @@
 #include <cstdlib>
 #include <functional>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <string>
 #include <tuple>
 #include <utility>
 
 #include "Proto.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -48,19 +47,20 @@ class Root;
 
 namespace opentxs::storage
 {
-using keyFunction = std::function<bool(const std::string&)>;
+using keyFunction = std::function<bool(const UnallocatedCString&)>;
 /** A set of metadata associated with a stored object
  *  * string: hash
  *  * string: alias
  *  * uint64: revision
  *  * bool:   private
  */
-using Metadata = std::tuple<std::string, std::string, std::uint64_t, bool>;
+using Metadata =
+    std::tuple<UnallocatedCString, UnallocatedCString, std::uint64_t, bool>;
 /** Maps a logical id to the stored metadata for the object
  *  * string: id of the stored object
  *  * Metadata: metadata for the stored object
  */
-using Index = std::map<std::string, Metadata>;
+using Index = UnallocatedMap<UnallocatedCString, Metadata>;
 
 class Node
 {
@@ -69,9 +69,9 @@ protected:
     auto store_proto(
         const Lock& lock,
         const T& data,
-        const std::string& id,
-        const std::string& alias,
-        std::string& plaintext) -> bool
+        const UnallocatedCString& id,
+        const UnallocatedCString& alias,
+        UnallocatedCString& plaintext) -> bool
     {
         OT_ASSERT(verify_write_lock(lock))
 
@@ -88,9 +88,9 @@ protected:
     template <class T>
     auto store_proto(
         const T& data,
-        const std::string& id,
-        const std::string& alias,
-        std::string& plaintext) -> bool
+        const UnallocatedCString& id,
+        const UnallocatedCString& alias,
+        UnallocatedCString& plaintext) -> bool
     {
         Lock lock(write_lock_);
 
@@ -100,19 +100,19 @@ protected:
     template <class T>
     auto store_proto(
         const T& data,
-        const std::string& id,
-        const std::string& alias) -> bool
+        const UnallocatedCString& id,
+        const UnallocatedCString& alias) -> bool
     {
-        std::string notUsed;
+        UnallocatedCString notUsed;
 
         return store_proto<T>(data, id, alias, notUsed);
     }
 
     template <class T>
     auto load_proto(
-        const std::string& id,
+        const UnallocatedCString& id,
         std::shared_ptr<T>& output,
-        std::string& alias,
+        UnallocatedCString& alias,
         const bool checking) const -> bool
     {
         if (id.empty()) { return false; }
@@ -156,7 +156,7 @@ protected:
 
     template <class T>
     auto check_revision(
-        const std::string& method,
+        const UnallocatedCString& method,
         const std::uint64_t incoming,
         Metadata& metadata) -> bool
     {
@@ -194,32 +194,34 @@ private:
 protected:
     friend storage::Root;
 
-    static const std::string BLANK_HASH;
+    static const UnallocatedCString BLANK_HASH;
 
     const Driver& driver_;
     VersionNumber version_;
     VersionNumber original_version_;
-    mutable std::string root_;
+    mutable UnallocatedCString root_;
     mutable std::mutex write_lock_;
     mutable Index item_map_;
 
-    static auto normalize_hash(const std::string& hash) -> std::string;
+    static auto normalize_hash(const UnallocatedCString& hash)
+        -> UnallocatedCString;
 
-    auto check_hash(const std::string& hash) const -> bool;
+    auto check_hash(const UnallocatedCString& hash) const -> bool;
     auto extract_revision(const proto::Contact& input) const -> std::uint64_t;
     auto extract_revision(const proto::Nym& input) const -> std::uint64_t;
     auto extract_revision(const proto::Seed& input) const -> std::uint64_t;
-    auto get_alias(const std::string& id) const -> std::string;
+    auto get_alias(const UnallocatedCString& id) const -> UnallocatedCString;
     auto load_raw(
-        const std::string& id,
-        std::string& output,
-        std::string& alias,
+        const UnallocatedCString& id,
+        UnallocatedCString& output,
+        UnallocatedCString& alias,
         const bool checking) const -> bool;
-    auto migrate(const std::string& hash, const Driver& to) const -> bool;
+    auto migrate(const UnallocatedCString& hash, const Driver& to) const
+        -> bool;
     virtual auto save(const Lock& lock) const -> bool = 0;
     void serialize_index(
         const VersionNumber version,
-        const std::string& id,
+        const UnallocatedCString& id,
         const Metadata& metadata,
         proto::StorageItemHash& output,
         const proto::StorageHashType type = proto::STORAGEHASH_PROTO) const;
@@ -240,34 +242,36 @@ protected:
             version_ = original_version_;
         }
     }
-    auto delete_item(const std::string& id) -> bool;
-    auto delete_item(const Lock& lock, const std::string& id) -> bool;
-    auto set_alias(const std::string& id, const std::string& alias) -> bool;
+    auto delete_item(const UnallocatedCString& id) -> bool;
+    auto delete_item(const Lock& lock, const UnallocatedCString& id) -> bool;
+    auto set_alias(
+        const UnallocatedCString& id,
+        const UnallocatedCString& alias) -> bool;
     void set_hash(
         const VersionNumber version,
-        const std::string& id,
-        const std::string& hash,
+        const UnallocatedCString& id,
+        const UnallocatedCString& hash,
         proto::StorageItemHash& output,
         const proto::StorageHashType type = proto::STORAGEHASH_PROTO) const;
     auto store_raw(
-        const std::string& data,
-        const std::string& id,
-        const std::string& alias) -> bool;
+        const UnallocatedCString& data,
+        const UnallocatedCString& id,
+        const UnallocatedCString& alias) -> bool;
     auto store_raw(
         const Lock& lock,
-        const std::string& data,
-        const std::string& id,
-        const std::string& alias) -> bool;
+        const UnallocatedCString& data,
+        const UnallocatedCString& id,
+        const UnallocatedCString& alias) -> bool;
     auto verify_write_lock(const Lock& lock) const -> bool;
 
-    virtual void init(const std::string& hash) = 0;
+    virtual void init(const UnallocatedCString& hash) = 0;
 
-    Node(const Driver& storage, const std::string& key);
+    Node(const Driver& storage, const UnallocatedCString& key);
 
 public:
     virtual auto List() const -> ObjectList;
     virtual auto Migrate(const Driver& to) const -> bool;
-    auto Root() const -> std::string;
+    auto Root() const -> UnallocatedCString;
     auto UpgradeLevel() const -> VersionNumber;
 
     virtual ~Node() = default;

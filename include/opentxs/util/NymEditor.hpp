@@ -15,16 +15,13 @@
 #include <functional>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -80,73 +77,74 @@ public:
     NymData(NymData&&);
 
     auto asPublicNym() const -> identity::Nym::Serialized;
-    auto BestEmail() const -> std::string;
-    auto BestPhoneNumber() const -> std::string;
+    auto BestEmail() const -> UnallocatedCString;
+    auto BestPhoneNumber() const -> UnallocatedCString;
     auto BestSocialMediaProfile(
-        const identity::wot::claim::ClaimType type) const -> std::string;
+        const identity::wot::claim::ClaimType type) const -> UnallocatedCString;
     auto Claims() const -> const identity::wot::claim::Data&;
     auto DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
         -> bool;
-    auto EmailAddresses(bool active = true) const -> std::string;
+    auto EmailAddresses(bool active = true) const -> UnallocatedCString;
     auto HaveContract(
         const identifier::UnitDefinition& id,
         const core::UnitType currency,
         const bool primary,
         const bool active) const -> bool;
-    auto Name() const -> std::string;
+    auto Name() const -> UnallocatedCString;
     auto Nym() const -> const identity::Nym&;
-    auto PaymentCode(const core::UnitType currency) const -> std::string;
-    auto PhoneNumbers(bool active = true) const -> std::string;
-    auto PreferredOTServer() const -> std::string;
-    auto PrintContactData() const -> std::string;
+    auto PaymentCode(const core::UnitType currency) const -> UnallocatedCString;
+    auto PhoneNumbers(bool active = true) const -> UnallocatedCString;
+    auto PreferredOTServer() const -> UnallocatedCString;
+    auto PrintContactData() const -> UnallocatedCString;
     auto SocialMediaProfiles(
         const identity::wot::claim::ClaimType type,
-        bool active = true) const -> std::string;
+        bool active = true) const -> UnallocatedCString;
     auto SocialMediaProfileTypes() const
-        -> std::set<identity::wot::claim::ClaimType>;
+        -> UnallocatedSet<identity::wot::claim::ClaimType>;
     auto Type() const -> identity::wot::claim::ClaimType;
     auto Valid() const -> bool;
 
     auto AddChildKeyCredential(
         const Identifier& strMasterID,
         const crypto::Parameters& nymParameters,
-        const PasswordPrompt& reason) -> std::string;
+        const PasswordPrompt& reason) -> UnallocatedCString;
     auto AddClaim(const Claim& claim, const PasswordPrompt& reason) -> bool;
     auto AddContract(
-        const std::string& instrumentDefinitionID,
+        const UnallocatedCString& instrumentDefinitionID,
         const core::UnitType currency,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason) -> bool;
     auto AddEmail(
-        const std::string& value,
+        const UnallocatedCString& value,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason) -> bool;
     auto AddPaymentCode(
-        const std::string& code,
+        const UnallocatedCString& code,
         const core::UnitType currency,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason) -> bool;
     auto AddPhoneNumber(
-        const std::string& value,
+        const UnallocatedCString& value,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason) -> bool;
     auto AddPreferredOTServer(
-        const std::string& id,
+        const UnallocatedCString& id,
         const bool primary,
         const PasswordPrompt& reason) -> bool;
     auto AddSocialMediaProfile(
-        const std::string& value,
+        const UnallocatedCString& value,
         const identity::wot::claim::ClaimType type,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason) -> bool;
     void Release();
-    auto SetCommonName(const std::string& name, const PasswordPrompt& reason)
-        -> bool;
+    auto SetCommonName(
+        const UnallocatedCString& name,
+        const PasswordPrompt& reason) -> bool;
     OPENTXS_NO_EXPORT auto SetContactData(
         const proto::ContactData& data,
         const PasswordPrompt& reason) -> bool;
@@ -154,7 +152,7 @@ public:
         -> bool;
     auto SetScope(
         const identity::wot::claim::ClaimType type,
-        const std::string& name,
+        const UnallocatedCString& name,
         const bool primary,
         const PasswordPrompt& reason) -> bool;
 

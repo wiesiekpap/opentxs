@@ -10,12 +10,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <string>
-#include <vector>
 
 #include "Proto.hpp"
 #include "api/Periodic.hpp"
@@ -35,6 +32,7 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/rpc/request/Base.hpp"
 #include "opentxs/util/rpc/response/Base.hpp"
@@ -102,7 +100,7 @@ public:
     {
         return client_.size();
     }
-    auto Config(const std::string& path) const noexcept
+    auto Config(const UnallocatedCString& path) const noexcept
         -> const api::Settings& final;
     auto Crypto() const noexcept -> const api::Crypto& final;
     auto Factory() const noexcept -> const api::Factory& final;
@@ -117,7 +115,7 @@ public:
     {
         return server_.size();
     }
-    auto ProfileId() const noexcept -> std::string final;
+    auto ProfileId() const noexcept -> UnallocatedCString final;
     auto QtRootObject() const noexcept -> QObject* final;
     auto RPC(const rpc::request::Base& command) const noexcept
         -> std::unique_ptr<rpc::response::Base> final;
@@ -130,8 +128,8 @@ public:
     auto StartClientSession(
         const Options& args,
         const int instance,
-        const std::string& recoverWords,
-        const std::string& recoverPassphrase) const
+        const UnallocatedCString& recoverWords,
+        const UnallocatedCString& recoverPassphrase) const
         -> const api::session::Client& final;
     auto StartNotarySession(const Options& args, const int instance) const
         -> const session::Notary& final;
@@ -153,10 +151,11 @@ public:
     ~Context() final;
 
 private:
-    using ConfigMap = std::map<std::string, std::unique_ptr<api::Settings>>;
+    using ConfigMap =
+        UnallocatedMap<UnallocatedCString, std::unique_ptr<api::Settings>>;
 
     const Options args_;
-    const std::string home_;
+    const UnallocatedCString home_;
     mutable std::mutex config_lock_;
     mutable std::mutex task_list_lock_;
     mutable std::mutex signal_handler_lock_;
@@ -169,14 +168,14 @@ private:
     std::unique_ptr<api::Factory> factory_;
     std::unique_ptr<api::Legacy> legacy_;
     std::unique_ptr<api::network::ZAP> zap_;
-    std::string profile_id_;
+    UnallocatedCString profile_id_;
     mutable ShutdownCallback* shutdown_callback_;
     std::unique_ptr<PasswordCallback> null_callback_;
     std::unique_ptr<PasswordCaller> default_external_password_callback_;
     PasswordCaller* external_password_callback_;
     mutable boost::interprocess::file_lock file_lock_;
-    mutable std::vector<std::unique_ptr<api::session::Notary>> server_;
-    mutable std::vector<std::unique_ptr<api::session::Client>> client_;
+    mutable UnallocatedVector<std::unique_ptr<api::session::Notary>> server_;
+    mutable UnallocatedVector<std::unique_ptr<api::session::Client>> client_;
     std::unique_ptr<rpc::internal::RPC> rpc_;
 
     static auto client_instance(const int count) -> int;

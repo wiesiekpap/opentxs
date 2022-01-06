@@ -29,8 +29,8 @@ Blockchain::Blockchain(Imp* imp) noexcept
 {
 }
 
-auto Blockchain::AddSyncServer(const std::string& endpoint) const noexcept
-    -> bool
+auto Blockchain::AddSyncServer(
+    const UnallocatedCString& endpoint) const noexcept -> bool
 {
     return imp_->AddSyncServer(endpoint);
 }
@@ -40,8 +40,8 @@ auto Blockchain::ConnectedSyncServers() const noexcept -> Endpoints
     return imp_->ConnectedSyncServers();
 }
 
-auto Blockchain::DeleteSyncServer(const std::string& endpoint) const noexcept
-    -> bool
+auto Blockchain::DeleteSyncServer(
+    const UnallocatedCString& endpoint) const noexcept -> bool
 {
     return imp_->DeleteSyncServer(endpoint);
 }
@@ -51,13 +51,13 @@ auto Blockchain::Disable(const Chain type) const noexcept -> bool
     return imp_->Disable(type);
 }
 
-auto Blockchain::Enable(const Chain type, const std::string& seednode)
+auto Blockchain::Enable(const Chain type, const UnallocatedCString& seednode)
     const noexcept -> bool
 {
     return imp_->Enable(type, seednode);
 }
 
-auto Blockchain::EnabledChains() const noexcept -> std::set<Chain>
+auto Blockchain::EnabledChains() const noexcept -> UnallocatedSet<Chain>
 {
     return imp_->EnabledChains();
 }
@@ -78,17 +78,17 @@ auto Blockchain::Internal() const noexcept -> internal::Blockchain&
     return const_cast<Imp&>(*imp_);
 }
 
-auto Blockchain::Start(const Chain type, const std::string& seednode)
+auto Blockchain::Start(const Chain type, const UnallocatedCString& seednode)
     const noexcept -> bool
 {
     return imp_->Start(type, seednode);
 }
 
 auto Blockchain::StartSyncServer(
-    const std::string& syncEndpoint,
-    const std::string& publicSyncEndpoint,
-    const std::string& updateEndpoint,
-    const std::string& publicUpdateEndpoint) const noexcept -> bool
+    const UnallocatedCString& syncEndpoint,
+    const UnallocatedCString& publicSyncEndpoint,
+    const UnallocatedCString& updateEndpoint,
+    const UnallocatedCString& publicUpdateEndpoint) const noexcept -> bool
 {
     return imp_->StartSyncServer(
         syncEndpoint, publicSyncEndpoint, updateEndpoint, publicUpdateEndpoint);

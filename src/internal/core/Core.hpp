@@ -10,9 +10,7 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <map>
 #include <memory>
-#include <string>
 
 #include "internal/otx/common/NymFile.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -20,6 +18,7 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
 #include "serialization/protobuf/ContractEnums.pb.h"
 #include "serialization/protobuf/PeerEnums.pb.h"
@@ -65,7 +64,7 @@ struct NymFile : virtual public opentxs::NymFile {
 
 namespace opentxs::blockchain
 {
-auto AccountName(const Type chain) noexcept -> std::string;
+auto AccountName(const Type chain) noexcept -> UnallocatedCString;
 auto Chain(const api::Session& api, const identifier::Nym& id) noexcept -> Type;
 auto Chain(const api::Session& api, const identifier::Notary& id) noexcept
     -> Type;

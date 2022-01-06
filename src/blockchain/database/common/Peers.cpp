@@ -75,13 +75,13 @@ Peers::Peers(const api::Session& api, storage::lmdb::LMDB& lmdb) noexcept(false)
 auto Peers::Find(
     const Chain chain,
     const Protocol protocol,
-    const std::set<Type> onNetworks,
-    const std::set<Service> withServices) const noexcept -> Address_p
+    const UnallocatedSet<Type> onNetworks,
+    const UnallocatedSet<Service> withServices) const noexcept -> Address_p
 {
     Lock lock(lock_);
 
     try {
-        auto candidates = std::set<std::string>{};
+        auto candidates = UnallocatedSet<UnallocatedCString>{};
         const auto& protocolSet = protocols_.at(protocol);
         const auto& chainSet = chains_.at(chain);
 
@@ -108,7 +108,7 @@ auto Peers::Find(
             return {};
         }
 
-        auto haveServices = std::set<std::string>{};
+        auto haveServices = UnallocatedSet<UnallocatedCString>{};
 
         if (withServices.empty()) {
             haveServices = candidates;
@@ -144,7 +144,7 @@ auto Peers::Find(
                 .Flush();
         }
 
-        auto weighted = std::vector<std::string>{};
+        auto weighted = UnallocatedVector<UnallocatedCString>{};
         const auto now = Clock::now();
 
         for (const auto& id : haveServices) {
@@ -166,7 +166,7 @@ auto Peers::Find(
             weighted.insert(weighted.end(), weight, id);
         }
 
-        std::vector<std::string> output;
+        UnallocatedVector<UnallocatedCString> output;
         const std::size_t count{1};
         std::sample(
             weighted.begin(),
@@ -186,9 +186,9 @@ auto Peers::Find(
     }
 }
 
-auto Peers::Import(std::vector<Address_p> peers) noexcept -> bool
+auto Peers::Import(UnallocatedVector<Address_p> peers) noexcept -> bool
 {
-    auto newPeers = std::vector<Address_p>{};
+    auto newPeers = UnallocatedVector<Address_p>{};
 
     for (auto& peer : peers) {
         if (false == lmdb_.Exists(Table::PeerDetails, peer->ID().str())) {
@@ -203,15 +203,16 @@ auto Peers::Import(std::vector<Address_p> peers) noexcept -> bool
 
 auto Peers::Insert(Address_p pAddress) noexcept -> bool
 {
-    auto peers = std::vector<Address_p>{};
+    auto peers = UnallocatedVector<Address_p>{};
     peers.emplace_back(std::move(pAddress));
     Lock lock(lock_);
 
     return insert(lock, std::move(peers));
 }
 
-auto Peers::insert(const Lock& lock, std::vector<Address_p> peers) noexcept
-    -> bool
+auto Peers::insert(
+    const Lock& lock,
+    UnallocatedVector<Address_p> peers) noexcept -> bool
 {
     auto parentTxn = lmdb_.TransactionRW();
 
@@ -366,7 +367,7 @@ auto Peers::insert(const Lock& lock, std::vector<Address_p> peers) noexcept
     return true;
 }
 
-auto Peers::load_address(const std::string& id) const noexcept(false)
+auto Peers::load_address(const UnallocatedCString& id) const noexcept(false)
     -> Address_p
 {
     auto output = std::optional<Address::SerializedType>{};

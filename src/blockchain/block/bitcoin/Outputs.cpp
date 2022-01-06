@@ -14,15 +14,14 @@
 #include <numeric>
 #include <optional>
 #include <stdexcept>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainTransaction.pb.h"
@@ -31,8 +30,8 @@
 namespace opentxs::factory
 {
 auto BitcoinTransactionOutputs(
-    std::vector<std::unique_ptr<blockchain::block::bitcoin::internal::Output>>&&
-        outputs,
+    UnallocatedVector<std::unique_ptr<
+        blockchain::block::bitcoin::internal::Output>>&& outputs,
     std::optional<std::size_t> size) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Outputs>
 {
@@ -70,8 +69,8 @@ Outputs::Outputs(const Outputs& rhs) noexcept
 {
 }
 
-auto Outputs::AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
-    -> void
+auto Outputs::AssociatedLocalNyms(
+    UnallocatedVector<OTNymID>& output) const noexcept -> void
 {
     std::for_each(
         std::begin(outputs_), std::end(outputs_), [&](const auto& item) {
@@ -80,7 +79,7 @@ auto Outputs::AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
 }
 
 auto Outputs::AssociatedRemoteContacts(
-    std::vector<OTIdentifier>& output) const noexcept -> void
+    UnallocatedVector<OTIdentifier>& output) const noexcept -> void
 {
     std::for_each(
         std::begin(outputs_), std::end(outputs_), [&](const auto& item) {
@@ -116,9 +115,9 @@ auto Outputs::clone(const OutputList& rhs) noexcept -> OutputList
 }
 
 auto Outputs::ExtractElements(const filter::Type style) const noexcept
-    -> std::vector<Space>
+    -> UnallocatedVector<Space>
 {
-    auto output = std::vector<Space>{};
+    auto output = UnallocatedVector<Space>{};
     LogTrace()(OT_PRETTY_CLASS())("processing ")(size())(" outputs").Flush();
 
     for (const auto& txout : *this) {
@@ -172,9 +171,9 @@ auto Outputs::ForTestingOnlyAddKey(
     }
 }
 
-auto Outputs::GetPatterns() const noexcept -> std::vector<PatternID>
+auto Outputs::GetPatterns() const noexcept -> UnallocatedVector<PatternID>
 {
-    auto output = std::vector<PatternID>{};
+    auto output = UnallocatedVector<PatternID>{};
     std::for_each(
         std::begin(outputs_), std::end(outputs_), [&](const auto& txout) {
             const auto patterns = txout->GetPatterns();
@@ -186,9 +185,9 @@ auto Outputs::GetPatterns() const noexcept -> std::vector<PatternID>
     return output;
 }
 
-auto Outputs::Keys() const noexcept -> std::vector<crypto::Key>
+auto Outputs::Keys() const noexcept -> UnallocatedVector<crypto::Key>
 {
-    auto out = std::vector<crypto::Key>{};
+    auto out = UnallocatedVector<crypto::Key>{};
 
     for (const auto& output : *this) {
         auto keys = output.Keys();

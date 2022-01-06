@@ -8,7 +8,6 @@
 #include "core/contract/peer/PeerReply.hpp"  // IWYU pragma: associated
 
 #include <ctime>
-#include <list>
 #include <memory>
 
 #include "internal/api/session/FactoryAPI.hpp"
@@ -29,6 +28,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PeerReply.pb.h"
@@ -53,7 +53,7 @@ Reply::Reply(
     const identifier::Notary& server,
     const PeerRequestType& type,
     const Identifier& request,
-    const std::string& conditions)
+    const UnallocatedCString& conditions)
     : Signable(api, nym, version, conditions, "")
     , initiator_(initiator)
     , recipient_(nym->ID())
@@ -67,7 +67,7 @@ Reply::Reply(
     const api::Session& api,
     const Nym_p& nym,
     const SerializedType& serialized,
-    const std::string& conditions)
+    const UnallocatedCString& conditions)
     : Signable(
           api,
           nym,

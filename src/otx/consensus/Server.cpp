@@ -11,8 +11,6 @@
 #include <atomic>
 #include <functional>
 #include <iterator>
-#include <list>
-#include <map>
 #include <stdexcept>
 #include <type_traits>
 
@@ -98,6 +96,7 @@
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -164,7 +163,7 @@ auto ServerContext(
 
 namespace opentxs::otx::context::implementation
 {
-const std::set<MessageType> Server::do_not_need_request_number_{
+const UnallocatedSet<MessageType> Server::do_not_need_request_number_{
     MessageType::pingNotary,
     MessageType::registerNym,
     MessageType::getRequestNumber,
@@ -626,9 +625,9 @@ auto Server::AcceptIssuedNumbers(
     return accept_issued_number(lock, statement);
 }
 
-auto Server::Accounts() const -> std::vector<OTIdentifier>
+auto Server::Accounts() const -> UnallocatedVector<OTIdentifier>
 {
-    std::vector<OTIdentifier> output{};
+    UnallocatedVector<OTIdentifier> output{};
     const auto serverSet = api_.Storage().AccountsByServer(server_id_);
     const auto nymSet = api_.Storage().AccountsByOwner(nym_->ID());
     std::set_intersection(
@@ -643,7 +642,7 @@ auto Server::Accounts() const -> std::vector<OTIdentifier>
 
 auto Server::add_item_to_payment_inbox(
     const TransactionNumber number,
-    const std::string& payment,
+    const UnallocatedCString& payment,
     const PasswordPrompt& reason) const -> bool
 {
     OT_ASSERT(nym_);
@@ -682,7 +681,7 @@ auto Server::add_item_to_workflow(
     const Lock& lock,
     const api::session::Client& client,
     const Message& transportItem,
-    const std::string& item,
+    const UnallocatedCString& item,
     const PasswordPrompt& reason) const -> bool
 {
     OT_ASSERT(nym_);
@@ -867,7 +866,7 @@ auto Server::AddTentativeNumber(const TransactionNumber& number) -> bool
 
 auto Server::AdminAttempted() const -> bool { return admin_attempted_.get(); }
 
-auto Server::AdminPassword() const -> const std::string&
+auto Server::AdminPassword() const -> const UnallocatedCString&
 {
     Lock lock(lock_);
 
@@ -907,8 +906,8 @@ auto Server::attempt_delivery(
 
                 return out;
             }());
-            static std::set<OTManagedNumber> empty{};
-            std::set<OTManagedNumber>* numbers = numbers_;
+            static UnallocatedSet<OTManagedNumber> empty{};
+            UnallocatedSet<OTManagedNumber>* numbers = numbers_;
 
             if (nullptr == numbers) { numbers = &empty; }
 
@@ -1724,7 +1723,7 @@ auto Server::harvest_unused(
     const auto& nymID = nym_->ID();
     auto available = issued_transaction_numbers_;
     const auto workflows = client.Storage().PaymentWorkflowList(nymID.str());
-    std::set<otx::client::PaymentWorkflowState> keepStates{};
+    UnallocatedSet<otx::client::PaymentWorkflowState> keepStates{};
 
     // Loop through workflows to determine which issued numbers should not be
     // harvested
@@ -2076,7 +2075,7 @@ auto Server::InitializeServerCommand(
 
 auto Server::instantiate_message(
     const api::Session& api,
-    const std::string& serialized) -> std::unique_ptr<opentxs::Message>
+    const UnallocatedCString& serialized) -> std::unique_ptr<opentxs::Message>
 {
     if (serialized.empty()) { return {}; }
 
@@ -2878,7 +2877,7 @@ void Server::process_accept_cron_receipt_reply(
             pData->instrument_definition_id = strInstrumentDefinitionID->Get();
             // The amount of ASSETS moved, this trade.
             pData->amount_sold = [&] {
-                auto buf = std::string{};
+                auto buf = UnallocatedCString{};
                 pServerItem->GetAmount().Serialize(writer(buf));
                 return buf;
             }();
@@ -2889,7 +2888,7 @@ void Server::process_accept_cron_receipt_reply(
                 String::Factory(theTrade->GetCurrencyID());
             pData->currency_id = strCurrencyID->Get();
             pData->currency_paid = [&] {
-                auto buf = std::string{};
+                auto buf = UnallocatedCString{};
                 pServerItem->GetAmount().Serialize(writer(buf));
                 return buf;
             }();
@@ -2902,17 +2901,17 @@ void Server::process_accept_cron_receipt_reply(
 
         // The original offer price. (Might be 0, if it's a market order.)
         pData->offer_price = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             theOffer->GetPriceLimit().Serialize(writer(buf));
             return buf;
         }();
         pData->finished_so_far = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             theOffer->GetFinishedSoFar().Serialize(writer(buf));
             return buf;
         }();
         pData->scale = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lScale.Serialize(writer(buf));
             return buf;
         }();
@@ -3004,7 +3003,7 @@ void Server::process_accept_cron_receipt_reply(
                             (lCurrencyPaid / (lAmountSold / lScale));
 
                         auto strSalePrice = String::Factory();
-                        auto price = std::string{};
+                        auto price = UnallocatedCString{};
                         lSalePrice.Serialize(writer(price));
                         strSalePrice->Format("%s", price.c_str());
 
@@ -4920,7 +4919,7 @@ auto Server::process_register_nym_response(
 auto Server::process_reply(
     const Lock& lock,
     const api::session::Client& client,
-    const std::set<OTManagedNumber>& managed,
+    const UnallocatedSet<OTManagedNumber>& managed,
     const Message& reply,
     const PasswordPrompt& reason) -> bool
 {
@@ -5239,8 +5238,8 @@ void Server::process_response_transaction_cash_deposit(
         return;
     }
 
-    std::set<std::string> spentTokens{};
-    std::vector<blind::Token> keepTokens{};
+    UnallocatedSet<UnallocatedCString> spentTokens{};
+    UnallocatedVector<blind::Token> keepTokens{};
 
     for (const auto& token : purse) { spentTokens.insert(token.ID(reason)); }
 
@@ -5668,7 +5667,7 @@ void Server::process_response_transaction_cron(
                     numlistOutpayment, reason);
             }
 
-            const std::set<std::int64_t> set_receipt_ids{
+            const UnallocatedSet<std::int64_t> set_receipt_ids{
                 thePmntInbox->GetTransactionNums()};
             for (const auto& receipt_id : set_receipt_ids) {
                 auto pPayment = get_instrument_by_receipt_id(
@@ -6471,7 +6470,7 @@ auto Server::Queue(
     std::shared_ptr<Message> message,
     std::shared_ptr<Ledger> inbox,
     std::shared_ptr<Ledger> outbox,
-    std::set<OTManagedNumber>* numbers,
+    UnallocatedSet<OTManagedNumber>* numbers,
     const PasswordPrompt& reason,
     const ExtraArgs& args) -> Server::QueueResult
 {
@@ -6523,7 +6522,7 @@ auto Server::remove_acknowledged_number(const Lock& lock, const Message& reply)
 {
     OT_ASSERT(verify_write_lock(lock));
 
-    std::set<RequestNumber> list{};
+    UnallocatedSet<RequestNumber> list{};
 
     if (false == reply.m_AcknowledgedReplies.Output(list)) { return false; }
 
@@ -6851,7 +6850,7 @@ auto Server::remove_nymbox_item(
                             numlistOutpayment, reason);
                     }
 
-                    const std::set<std::int64_t> set_receipt_ids{
+                    const UnallocatedSet<std::int64_t> set_receipt_ids{
                         paymentInbox->GetTransactionNums()};
 
                     for (const auto& receipt_id : set_receipt_ids) {
@@ -7207,11 +7206,11 @@ void Server::scan_number_set(
 
 auto Server::SendMessage(
     const api::session::Client& client,
-    const std::set<OTManagedNumber>& pending,
+    const UnallocatedSet<OTManagedNumber>& pending,
     otx::context::Server& context,
     const Message& message,
     const PasswordPrompt& reason,
-    const std::string& label,
+    const UnallocatedCString& label,
     const bool resync) -> NetworkReplyMessage
 {
     Lock lock(lock_);
@@ -7287,7 +7286,7 @@ void Server::SetAdminAttempted()
     admin_attempted_->On();
 }
 
-void Server::SetAdminPassword(const std::string& password)
+void Server::SetAdminPassword(const UnallocatedCString& password)
 {
     Lock lock(lock_);
     admin_password_ = password;
@@ -7421,7 +7420,7 @@ auto Server::Statement(
     return generate_statement(lock, adding, without);
 }
 
-auto Server::ShouldRename(const std::string& defaultName) const -> bool
+auto Server::ShouldRename(const UnallocatedCString& defaultName) const -> bool
 {
     try {
         const auto contract = api_.Wallet().Server(server_id_);
@@ -7446,7 +7445,7 @@ auto Server::start(
     const ActionType type,
     std::shared_ptr<Ledger> inbox,
     std::shared_ptr<Ledger> outbox,
-    std::set<OTManagedNumber>* numbers) -> Server::QueueResult
+    UnallocatedSet<OTManagedNumber>* numbers) -> Server::QueueResult
 {
     Lock contextLock(lock_);
     client_.store(&client);

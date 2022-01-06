@@ -11,10 +11,10 @@
 
 #include <future>
 #include <memory>
-#include <vector>
 
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -49,8 +49,8 @@ public:
     using BitcoinBlock = block::bitcoin::Block;
     using BitcoinBlock_p = std::shared_ptr<const BitcoinBlock>;
     using BitcoinBlockFuture = std::shared_future<BitcoinBlock_p>;
-    using BlockHashes = std::vector<block::pHash>;
-    using BitcoinBlockFutures = std::vector<BitcoinBlockFuture>;
+    using BlockHashes = UnallocatedVector<block::pHash>;
+    using BitcoinBlockFutures = UnallocatedVector<BitcoinBlockFuture>;
 
     virtual auto Tip() const noexcept -> block::Position = 0;
     virtual auto DownloadQueue() const noexcept -> std::size_t = 0;

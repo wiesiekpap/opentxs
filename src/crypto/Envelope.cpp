@@ -10,13 +10,10 @@
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
-#include <map>
 #include <numeric>
-#include <set>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
@@ -41,6 +38,7 @@
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/identity/Authority.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"

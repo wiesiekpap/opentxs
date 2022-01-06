@@ -12,10 +12,8 @@
 #include <cstdint>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <optional>
-#include <set>
 
 #include "Proto.hpp"
 #include "core/StateMachine.hpp"
@@ -42,6 +40,7 @@
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 
@@ -188,8 +187,9 @@ private:
         Outbox = 2,
     };
 
-    static const std::map<otx::OperationType, Category> category_;
-    static const std::map<otx::OperationType, std::size_t> transaction_numbers_;
+    static const UnallocatedMap<otx::OperationType, Category> category_;
+    static const UnallocatedMap<otx::OperationType, std::size_t>
+        transaction_numbers_;
 
     const api::session::Client& api_;
     const OTPasswordPrompt reason_;
@@ -221,9 +221,9 @@ private:
     std::shared_ptr<Ledger> inbox_;
     std::shared_ptr<Ledger> outbox_;
     std::optional<blind::Purse> purse_;
-    std::set<OTIdentifier> affected_accounts_;
-    std::set<OTIdentifier> redownload_accounts_;
-    std::set<OTManagedNumber> numbers_;
+    UnallocatedSet<OTIdentifier> affected_accounts_;
+    UnallocatedSet<OTIdentifier> redownload_accounts_;
+    UnallocatedSet<OTManagedNumber> numbers_;
     std::atomic<std::size_t> error_count_;
     OTPeerReply peer_reply_;
     OTPeerRequest peer_request_;

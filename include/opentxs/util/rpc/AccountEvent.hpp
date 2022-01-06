@@ -9,9 +9,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/rpc/Types.hpp"
 
@@ -31,35 +30,35 @@ namespace rpc
 class OPENTXS_EXPORT AccountEvent
 {
 public:
-    auto AccountID() const noexcept -> const std::string&;
+    auto AccountID() const noexcept -> const UnallocatedCString&;
     auto ConfirmedAmount() const noexcept -> Amount;
-    auto ConfirmedAmount_str() const noexcept -> const std::string&;
-    auto ContactID() const noexcept -> const std::string&;
-    auto Memo() const noexcept -> const std::string&;
+    auto ConfirmedAmount_str() const noexcept -> const UnallocatedCString&;
+    auto ContactID() const noexcept -> const UnallocatedCString&;
+    auto Memo() const noexcept -> const UnallocatedCString&;
     auto PendingAmount() const noexcept -> Amount;
-    auto PendingAmount_str() const noexcept -> const std::string&;
+    auto PendingAmount_str() const noexcept -> const UnallocatedCString&;
     OPENTXS_NO_EXPORT auto Serialize(proto::AccountEvent& dest) const noexcept
         -> bool;
     auto State() const noexcept -> int;
     auto Timestamp() const noexcept -> Time;
     auto Type() const noexcept -> AccountEventType;
-    auto UUID() const noexcept -> const std::string&;
-    auto WorkflowID() const noexcept -> const std::string&;
+    auto UUID() const noexcept -> const UnallocatedCString&;
+    auto WorkflowID() const noexcept -> const UnallocatedCString&;
 
     OPENTXS_NO_EXPORT AccountEvent(
         const proto::AccountEvent& serialized) noexcept(false);
     OPENTXS_NO_EXPORT AccountEvent(
-        const std::string& account,
+        const UnallocatedCString& account,
         AccountEventType type,
-        const std::string& contact,
-        const std::string& workflow,
-        const std::string& amountS,
-        const std::string& pendingS,
+        const UnallocatedCString& contact,
+        const UnallocatedCString& workflow,
+        const UnallocatedCString& amountS,
+        const UnallocatedCString& pendingS,
         Amount amount,
         Amount pending,
         opentxs::Time time,
-        const std::string& memo,
-        const std::string& uuid,
+        const UnallocatedCString& memo,
+        const UnallocatedCString& uuid,
         int state) noexcept(false);
     OPENTXS_NO_EXPORT AccountEvent(const AccountEvent&) noexcept;
     OPENTXS_NO_EXPORT AccountEvent(AccountEvent&&) noexcept;

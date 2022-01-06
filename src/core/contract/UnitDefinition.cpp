@@ -9,11 +9,9 @@
 
 #include <algorithm>
 #include <cmath>  // IWYU pragma: keep
-#include <list>
 #include <memory>
 #include <sstream>  // IWYU pragma: keep
 #include <utility>
-#include <vector>
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
@@ -43,6 +41,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -96,15 +95,15 @@ const VersionNumber Unit::MaxVersion{2};
 
 namespace opentxs::contract::implementation
 {
-const std::map<VersionNumber, VersionNumber> Unit::unit_of_account_version_map_{
-    {2, 6}};
+const UnallocatedMap<VersionNumber, VersionNumber>
+    Unit::unit_of_account_version_map_{{2, 6}};
 const Unit::Locale Unit::locale_{};
 
 Unit::Unit(
     const api::Session& api,
     const Nym_p& nym,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const core::UnitType unitOfAccount,
     const VersionNumber version,
     const display::Definition& displayDefinition,
@@ -149,7 +148,7 @@ Unit::Unit(const Unit& rhs)
 }
 
 auto Unit::AddAccountRecord(
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const Account& theAccount) const -> bool
 {
     Lock lock(lock_);
@@ -219,9 +218,10 @@ auto Unit::AddAccountRecord(
         // (it better be, since we loaded the account records file based on the
         // instrument definition ID as its filename...)
         //
-        const std::string& str2 = map_it->second;  // Containing the instrument
-                                                   // definition ID. (Just in
-                                                   // case
+        const UnallocatedCString& str2 =
+            map_it->second;  // Containing the instrument
+                             // definition ID. (Just in
+                             // case
         // someone copied the wrong file here,
         // --------------------------------          // every account should map
         // to the SAME instrument definition id.)
@@ -289,7 +289,7 @@ auto Unit::contract(const Lock& lock) const -> SerializedType
 
 auto Unit::DisplayStatistics(String& strContents) const -> bool
 {
-    std::string type = "error";
+    UnallocatedCString type = "error";
 
     switch (Type()) {
         case contract::UnitType::Currency:
@@ -318,7 +318,7 @@ auto Unit::DisplayStatistics(String& strContents) const -> bool
 }
 
 auto Unit::EraseAccountRecord(
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const Identifier& theAcctID) const -> bool
 {
     Lock lock(lock_);
@@ -416,7 +416,7 @@ auto Unit::get_displayscales(const SerializedType& serialized) const
 
         auto scales = display::Definition::Scales{};
         for (auto& scale : params.scales()) {
-            auto ratios = std::vector<display::Scale::Ratio>{};
+            auto ratios = UnallocatedVector<display::Scale::Ratio>{};
             for (auto& ratio : scale.ratios()) {
                 ratios.emplace_back(std::pair{ratio.base(), ratio.power()});
             }
@@ -546,7 +546,7 @@ auto Unit::Serialize(SerializedType& serialized, bool includeNym) const -> bool
     return true;
 }
 
-auto Unit::SetAlias(const std::string& alias) noexcept -> bool
+auto Unit::SetAlias(const UnallocatedCString& alias) noexcept -> bool
 {
     InitAlias(alias);
     api_.Wallet().SetUnitDefinitionAlias(
@@ -623,7 +623,7 @@ auto Unit::verify_signature(const Lock& lock, const proto::Signature& signature)
 // this list Any "special" accounts, such as basket reserve accounts, or voucher
 // reserve accounts, or cash reserve accounts, are not included on this list.
 auto Unit::VisitAccountRecords(
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     AccountVisitor& visitor,
     const PasswordPrompt& reason) const -> bool
 {
@@ -660,9 +660,9 @@ auto Unit::VisitAccountRecords(
         // scaleable.)
         //
         for (auto& it : theMap) {
-            const std::string& str_acct_id =
+            const UnallocatedCString& str_acct_id =
                 it.first;  // Containing the account ID.
-            const std::string& str_instrument_definition_id =
+            const UnallocatedCString& str_instrument_definition_id =
                 it.second;  // Containing the instrument definition ID. (Just in
                             // case
                             // someone copied the wrong file here...)

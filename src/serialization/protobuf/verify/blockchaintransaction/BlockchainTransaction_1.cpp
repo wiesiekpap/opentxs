@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <limits>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "internal/serialization/protobuf/Basic.hpp"
@@ -18,6 +17,7 @@
 #include "internal/serialization/protobuf/verify/BlockchainTransactionOutput.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/BlockchainTransaction.pb.h"
 #include "serialization/protobuf/BlockchainTransactionInput.pb.h"
 #include "serialization/protobuf/BlockchainTransactionOutput.pb.h"

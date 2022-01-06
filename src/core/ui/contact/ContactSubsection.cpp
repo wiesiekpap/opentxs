@@ -8,7 +8,6 @@
 #include "core/ui/contact/ContactSubsection.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <set>
 #include <thread>
 #include <type_traits>
 
@@ -21,6 +20,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Group.hpp"
 #include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
@@ -72,19 +72,19 @@ auto ContactSubsection::construct_row(
     return factory::ContactItemWidget(*this, api_, id, index, custom);
 }
 
-auto ContactSubsection::Name(const std::string& lang) const noexcept
-    -> std::string
+auto ContactSubsection::Name(const UnallocatedCString& lang) const noexcept
+    -> UnallocatedCString
 {
     return proto::TranslateItemType(translate(row_id_.second), lang);
 }
 
 auto ContactSubsection::process_group(
     const identity::wot::claim::Group& group) noexcept
-    -> std::set<ContactSubsectionRowID>
+    -> UnallocatedSet<ContactSubsectionRowID>
 {
     OT_ASSERT(row_id_.second == group.Type())
 
-    std::set<ContactSubsectionRowID> active{};
+    UnallocatedSet<ContactSubsectionRowID> active{};
 
     for (const auto& [id, claim] : group) {
         OT_ASSERT(claim)

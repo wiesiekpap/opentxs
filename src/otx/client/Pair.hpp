@@ -10,14 +10,10 @@
 #include <functional>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "core/StateMachine.hpp"
@@ -38,6 +34,7 @@
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -104,16 +101,17 @@ public:
     auto AddIssuer(
         const identifier::Nym& localNymID,
         const identifier::Nym& issuerNymID,
-        const std::string& pairingCode) const noexcept -> bool final;
+        const UnallocatedCString& pairingCode) const noexcept -> bool final;
     auto CheckIssuer(
         const identifier::Nym& localNymID,
         const identifier::UnitDefinition& unitDefinitionID) const noexcept
         -> bool final;
     auto IssuerDetails(
         const identifier::Nym& localNymID,
-        const identifier::Nym& issuerNymID) const noexcept -> std::string final;
+        const identifier::Nym& issuerNymID) const noexcept
+        -> UnallocatedCString final;
     auto IssuerList(const identifier::Nym& localNymID, const bool onlyTrusted)
-        const noexcept -> std::set<OTNymID> final
+        const noexcept -> UnallocatedSet<OTNymID> final
     {
         return state_.IssuerList(localNymID, onlyTrusted);
     }
@@ -157,19 +155,21 @@ private:
             Trusted,
             OfferedCurrencies,
             RegisteredAccounts,
-            std::vector<AccountDetails>,
-            std::vector<api::session::OTX::BackgroundTask>,
+            UnallocatedVector<AccountDetails>,
+            UnallocatedVector<api::session::OTX::BackgroundTask>,
             NeedRename>;
-        using StateMap = std::map<IssuerID, Details>;
+        using StateMap = UnallocatedMap<IssuerID, Details>;
 
         static auto count_currencies(
-            const std::vector<AccountDetails>& in) noexcept -> std::size_t;
+            const UnallocatedVector<AccountDetails>& in) noexcept
+            -> std::size_t;
         static auto count_currencies(
             const identity::wot::claim::Section& in) noexcept -> std::size_t;
         static auto get_account(
             const identifier::UnitDefinition& unit,
             const Identifier& account,
-            std::vector<AccountDetails>& details) noexcept -> AccountDetails&;
+            UnallocatedVector<AccountDetails>& details) noexcept
+            -> AccountDetails&;
 
         auto CheckIssuer(const identifier::Nym& id) const noexcept -> bool;
         auto check_state() const noexcept -> bool;
@@ -193,7 +193,7 @@ private:
 
         auto IssuerList(
             const identifier::Nym& localNymID,
-            const bool onlyTrusted) const noexcept -> std::set<OTNymID>;
+            const bool onlyTrusted) const noexcept -> UnallocatedSet<OTNymID>;
 
         State(std::mutex& lock, const api::session::Client& client) noexcept;
 
@@ -201,7 +201,7 @@ private:
         std::mutex& lock_;
         const api::session::Client& client_;
         mutable StateMap state_;
-        std::set<OTNymID> issuers_;
+        UnallocatedSet<OTNymID> issuers_;
     };
 
     const Flag& running_;
@@ -224,7 +224,8 @@ private:
         const identifier::Notary& serverID,
         std::size_t& offered,
         std::size_t& registeredAccounts,
-        std::vector<State::AccountDetails>& accountDetails) const noexcept;
+        UnallocatedVector<State::AccountDetails>& accountDetails)
+        const noexcept;
     void check_connection_info(
         otx::client::Issuer& issuer,
         const identifier::Notary& serverID) const noexcept;

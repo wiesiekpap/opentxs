@@ -7,17 +7,16 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <map>
-#include <set>
 #include <sstream>
 
 #include "Proto.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs::proto
 {
-static const std::map<std::uint32_t, std::set<AsymmetricKeyType>>
+static const UnallocatedMap<std::uint32_t, UnallocatedSet<AsymmetricKeyType>>
     AsymmetricKeyAllowedTypes{
         {1, {AKEYTYPE_LEGACY, AKEYTYPE_SECP256K1, AKEYTYPE_ED25519}},
         {2, {AKEYTYPE_LEGACY, AKEYTYPE_SECP256K1, AKEYTYPE_ED25519}},
@@ -85,7 +84,8 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
     {                                                                          \
         if (input.has_##a() && (0 < input.a().size())) {                       \
             if ((min > input.a().size()) || (max < input.a().size())) {        \
-                const auto fail = std::string("invalid ") + #a + " size";      \
+                const auto fail =                                              \
+                    UnallocatedCString("invalid ") + #a + " size";             \
                 FAIL_2(fail.c_str(), input.a().size())                         \
             }                                                                  \
         }                                                                      \
@@ -102,11 +102,11 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
                     __VA_ARGS__);                                              \
                                                                                \
                 if (false == valid##a) {                                       \
-                    const auto fail = std::string("invalid ") + #a;            \
+                    const auto fail = UnallocatedCString("invalid ") + #a;     \
                     FAIL_1(fail.c_str())                                       \
                 }                                                              \
             } catch (const std::out_of_range&) {                               \
-                const auto fail = std::string("allowed ") + #a +               \
+                const auto fail = UnallocatedCString("allowed ") + #a +        \
                                   " version not defined for version";          \
                 FAIL_2(fail.c_str(), input.version())                          \
             }                                                                  \
@@ -124,11 +124,11 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
                     __VA_ARGS__);                                              \
                                                                                \
                 if (false == valid##a) {                                       \
-                    const auto fail = std::string("invalid ") + #a;            \
+                    const auto fail = UnallocatedCString("invalid ") + #a;     \
                     FAIL_1(fail.c_str())                                       \
                 }                                                              \
             } catch (const std::out_of_range&) {                               \
-                const auto fail = std::string("allowed ") + #a +               \
+                const auto fail = UnallocatedCString("allowed ") + #a +        \
                                   " version not defined for version";          \
                 FAIL_2(fail.c_str(), input.version())                          \
             }                                                                  \
@@ -138,14 +138,15 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
 #define CHECK_EXCLUDED(a)                                                      \
     {                                                                          \
         if (true == input.has_##a()) {                                         \
-            const auto fail = std::string("unexpected ") + #a + " present";    \
+            const auto fail =                                                  \
+                UnallocatedCString("unexpected ") + #a + " present";           \
             FAIL_1(fail.c_str())                                               \
         }                                                                      \
     }
 #define CHECK_EXISTS(a)                                                        \
     {                                                                          \
         if (false == input.has_##a()) {                                        \
-            const auto fail = std::string("missing ") + #a;                    \
+            const auto fail = UnallocatedCString("missing ") + #a;             \
             FAIL_1(fail.c_str())                                               \
         }                                                                      \
     }
@@ -153,7 +154,7 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
 #define CHECK_EXISTS_STRING(a)                                                 \
     {                                                                          \
         if ((false == input.has_##a()) || (0 == input.a().size())) {           \
-            const auto fail = std::string("missing ") + #a;                    \
+            const auto fail = UnallocatedCString("missing ") + #a;             \
             FAIL_1(fail.c_str())                                               \
         }                                                                      \
     }
@@ -166,7 +167,7 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
 #define CHECK_HAVE(a)                                                          \
     {                                                                          \
         if (0 == input.a().size()) {                                           \
-            const auto fail = std::string("missing ") + #a;                    \
+            const auto fail = UnallocatedCString("missing ") + #a;             \
             FAIL_1(fail.c_str())                                               \
         }                                                                      \
     }
@@ -189,12 +190,12 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
             const bool valid##a = 1 == b.at(input.version()).count(input.a()); \
                                                                                \
             if (false == valid##a) {                                           \
-                const auto fail = std::string("invalid ") + #a;                \
+                const auto fail = UnallocatedCString("invalid ") + #a;         \
                 FAIL_2(fail.c_str(), input.a())                                \
             }                                                                  \
         } catch (const std::out_of_range&) {                                   \
-            const auto fail =                                                  \
-                std::string("allowed ") + #a + " not defined for version";     \
+            const auto fail = UnallocatedCString("allowed ") + #a +            \
+                              " not defined for version";                      \
             FAIL_2(fail.c_str(), input.version())                              \
         }                                                                      \
     }
@@ -214,7 +215,8 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
 #define CHECK_NONE(a)                                                          \
     {                                                                          \
         if (0 < input.a().size()) {                                            \
-            const auto fail = std::string("unexpected ") + #a + " present";    \
+            const auto fail =                                                  \
+                UnallocatedCString("unexpected ") + #a + " present";           \
             FAIL_1(fail.c_str())                                               \
         }                                                                      \
     }
@@ -223,7 +225,7 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
     {                                                                          \
         if (b != input.a().size()) {                                           \
             const auto fail =                                                  \
-                std::string("Wrong number of ") + #a + " present ";            \
+                UnallocatedCString("Wrong number of ") + #a + " present ";     \
             FAIL_2(fail.c_str(), input.a().size());                            \
         }                                                                      \
     }
@@ -264,7 +266,7 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
         const bool valid##a = 1 == (input.a() == b);                           \
                                                                                \
         if (false == valid##a) {                                               \
-            const auto fail = std::string("invalid ") + #a;                    \
+            const auto fail = UnallocatedCString("invalid ") + #a;             \
             FAIL_4(fail, input.a(), " expected ", b)                           \
         }                                                                      \
     }
@@ -284,7 +286,8 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
         for (const auto& it : input.a()) {                                     \
             if ((MIN_PLAUSIBLE_IDENTIFIER > it.size()) ||                      \
                 (MAX_PLAUSIBLE_IDENTIFIER < it.size())) {                      \
-                const auto fail = std::string("invalid ") + #a + " size";      \
+                const auto fail =                                              \
+                    UnallocatedCString("invalid ") + #a + " size";             \
                 FAIL_2(fail.c_str(), it.size())                                \
             }                                                                  \
         }                                                                      \
@@ -304,7 +307,8 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
     {                                                                          \
         for (const auto& it : input.a()) {                                     \
             if ((1 > it.size()) || (MAX_VALID_CONTACT_VALUE < it.size())) {    \
-                const auto fail = std::string("invalid ") + #a + " size";      \
+                const auto fail =                                              \
+                    UnallocatedCString("invalid ") + #a + " size";             \
                 FAIL_2(fail.c_str(), it.size())                                \
             }                                                                  \
         }                                                                      \

@@ -6,12 +6,11 @@
 #pragma once
 
 #include <functional>
-#include <map>
 #include <tuple>
-#include <vector>
 
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -30,10 +29,10 @@ class Work;
 namespace opentxs::blockchain::node::wallet
 {
 using Cookie = unsigned long long int;
-using BlockMap = std::map<Cookie, Work*>;
-using Indices = std::vector<Bip32Index>;
+using BlockMap = UnallocatedMap<Cookie, Work*>;
+using Indices = UnallocatedVector<Bip32Index>;
 using Result = std::pair<ReadView, Indices>;
-using Results = std::vector<Result>;
-using ProgressBatch = std::vector<
+using Results = UnallocatedVector<Result>;
+using ProgressBatch = UnallocatedVector<
     std::pair<std::reference_wrapper<const block::Position>, std::size_t>>;
 }  // namespace opentxs::blockchain::node::wallet

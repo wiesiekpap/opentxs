@@ -8,7 +8,6 @@
 #include "crypto/key/asymmetric/rsa/RSA.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "crypto/key/asymmetric/Asymmetric.hpp"
@@ -16,6 +15,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
 #include "serialization/protobuf/Ciphertext.pb.h"
 

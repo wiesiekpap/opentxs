@@ -7,10 +7,7 @@
 #include <atomic>
 #include <future>
 #include <memory>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "integration/Helpers.hpp"
 #include "internal/api/session/Client.hpp"
@@ -59,6 +56,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -206,7 +204,7 @@ public:
 
 ot::OTUnitID Test_Pair::unit_id_{ot::identifier::UnitDefinition::Factory()};
 Callbacks Test_Pair::cb_chris_{chris_.name_};
-const std::string Issuer::new_notary_name_{"Chris's Notary"};
+const ot::UnallocatedCString Issuer::new_notary_name_{"Chris's Notary"};
 Issuer Test_Pair::issuer_data_{};
 
 TEST_F(Test_Pair, init_ot) {}

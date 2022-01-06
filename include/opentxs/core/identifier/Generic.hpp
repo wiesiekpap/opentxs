@@ -8,13 +8,13 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <functional>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Types.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -86,7 +86,7 @@ public:
     static auto Factory() -> opentxs::Pimpl<opentxs::Identifier>;
     static auto Factory(const Identifier& rhs)
         -> opentxs::Pimpl<opentxs::Identifier>;
-    static auto Factory(const std::string& rhs)
+    static auto Factory(const UnallocatedCString& rhs)
         -> opentxs::Pimpl<opentxs::Identifier>;
     static auto Factory(const String& rhs)
         -> opentxs::Pimpl<opentxs::Identifier>;
@@ -101,7 +101,7 @@ public:
     OPENTXS_NO_EXPORT static auto Factory(
         const identity::wot::claim::ClaimType type,
         const proto::HDPath& path) -> opentxs::Pimpl<opentxs::Identifier>;
-    static auto Validate(const std::string& id) -> bool;
+    static auto Validate(const UnallocatedCString& id) -> bool;
 
     using ot_super::operator==;
     virtual auto operator==(const Identifier& rhs) const noexcept -> bool = 0;
@@ -128,7 +128,7 @@ public:
     virtual auto Randomize() -> bool = 0;
     OPENTXS_NO_EXPORT virtual auto Serialize(
         proto::Identifier& out) const noexcept -> bool = 0;
-    virtual void SetString(const std::string& encoded) = 0;
+    virtual void SetString(const UnallocatedCString& encoded) = 0;
     virtual void SetString(const String& encoded) = 0;
     using ot_super::swap;
     virtual void swap(Identifier& rhs) = 0;

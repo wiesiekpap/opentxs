@@ -12,11 +12,11 @@ extern "C" {
 }
 
 #include <memory>
-#include <string>
 
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs::factory

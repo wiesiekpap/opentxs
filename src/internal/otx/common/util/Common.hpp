@@ -5,13 +5,15 @@
 
 #pragma once
 
-#include <string>
-
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
-auto formatBool(bool in) -> std::string;
-auto formatTimestamp(const opentxs::Time in) -> std::string;
-auto getTimestamp() -> std::string;
-auto parseTimestamp(std::string in) -> opentxs::Time;
+namespace opentxs
+{
+auto formatBool(bool in) -> UnallocatedCString;
+auto formatTimestamp(const opentxs::Time in) -> UnallocatedCString;
+auto getTimestamp() -> UnallocatedCString;
+auto parseTimestamp(UnallocatedCString in) -> opentxs::Time;
+}  // namespace opentxs

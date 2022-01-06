@@ -8,7 +8,6 @@
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "internal/otx/Types.hpp"
 #include "internal/otx/common/Contract.hpp"
@@ -20,6 +19,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -92,7 +92,7 @@ public:
 
     static auto GetTypeString(AccountType accountType) -> char const*;
 
-    auto Alias() const -> std::string;
+    auto Alias() const -> UnallocatedCString;
     auto ConsensusHash(
         const otx::context::Base& context,
         Identifier& theOutput,
@@ -138,7 +138,7 @@ public:
     // If you pass the identifier in, the outbox hash is recorded there
     auto SaveOutbox(Ledger& box) -> bool;
     auto SaveOutbox(Ledger& box, Identifier& hash) -> bool;
-    void SetAlias(const std::string& alias);
+    void SetAlias(const UnallocatedCString& alias);
     void SetInboxHash(const Identifier& input);
     void SetOutboxHash(const Identifier& input);
     void SetStashTransNum(const TransactionNumber transNum)
@@ -170,7 +170,7 @@ private:
     // Hash of this account's Outbox, so we don't download it more often than
     // necessary.
     OTIdentifier outboxHash_;
-    std::string alias_;
+    UnallocatedCString alias_;
 
     static auto GenerateNewAccount(
         const api::Session& api,

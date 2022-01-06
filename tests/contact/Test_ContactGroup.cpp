@@ -5,9 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <iterator>
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "1_Internal.hpp"
@@ -20,7 +18,7 @@
 #include "opentxs/identity/wot/claim/Group.hpp"
 #include "opentxs/identity/wot/claim/Item.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 
@@ -32,30 +30,30 @@ public:
     Test_ContactGroup()
         : api_(ot::Context().StartClientSession(0))
         , contactGroup_(
-              std::string("testContactGroupNym1"),
+              ot::UnallocatedCString("testContactGroupNym1"),
               ot::identity::wot::claim::SectionType::Identifier,
               ot::identity::wot::claim::ClaimType::Employee,
               {})
         , primary_(new ot::identity::wot::claim::Item(
               dynamic_cast<const ot::api::session::Client&>(api_),
-              std::string("primaryContactItem"),
+              ot::UnallocatedCString("primaryContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
               ot::identity::wot::claim::SectionType::Identifier,
               ot::identity::wot::claim::ClaimType::Employee,
-              std::string("primaryContactItemValue"),
+              ot::UnallocatedCString("primaryContactItemValue"),
               {ot::identity::wot::claim::Attribute::Primary},
               NULL_START,
               NULL_END,
               ""))
         , active_(new ot::identity::wot::claim::Item(
               dynamic_cast<const ot::api::session::Client&>(api_),
-              std::string("activeContactItem"),
+              ot::UnallocatedCString("activeContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
               ot::identity::wot::claim::SectionType::Identifier,
               ot::identity::wot::claim::ClaimType::Employee,
-              std::string("activeContactItemValue"),
+              ot::UnallocatedCString("activeContactItemValue"),
               {ot::identity::wot::claim::Attribute::Active},
               NULL_START,
               NULL_END,
@@ -75,12 +73,12 @@ TEST_F(Test_ContactGroup, first_constructor)
     const std::shared_ptr<ot::identity::wot::claim::Item> primary2(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("primaryContactItemNym2"),
+            ot::UnallocatedCString("primaryContactItemNym2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::Employee,
-            std::string("primaryContactItemValue2"),
+            ot::UnallocatedCString("primaryContactItemValue2"),
             {ot::identity::wot::claim::Attribute::Primary},
             NULL_START,
             NULL_END,
@@ -91,7 +89,7 @@ TEST_F(Test_ContactGroup, first_constructor)
     map[primary2->ID()] = primary2;
 
     const ot::identity::wot::claim::Group group1(
-        std::string("testContactGroupNym1"),
+        ot::UnallocatedCString("testContactGroupNym1"),
         ot::identity::wot::claim::SectionType::Identifier,
         ot::identity::wot::claim::ClaimType::Employee,
         map);
@@ -112,7 +110,7 @@ TEST_F(Test_ContactGroup, first_constructor_no_items)
 {
     // Test constructing a group with a map containing no items.
     const ot::identity::wot::claim::Group group1(
-        std::string("testContactGroupNym1"),
+        ot::UnallocatedCString("testContactGroupNym1"),
         ot::identity::wot::claim::SectionType::Identifier,
         ot::identity::wot::claim::ClaimType::Employee,
         {});
@@ -124,7 +122,7 @@ TEST_F(Test_ContactGroup, first_constructor_no_items)
 TEST_F(Test_ContactGroup, second_constructor)
 {
     const ot::identity::wot::claim::Group group1(
-        std::string("testContactGroupNym1"),
+        ot::UnallocatedCString("testContactGroupNym1"),
         ot::identity::wot::claim::SectionType::Identifier,
         active_);
 
@@ -137,7 +135,7 @@ TEST_F(Test_ContactGroup, second_constructor)
 TEST_F(Test_ContactGroup, copy_constructor)
 {
     const ot::identity::wot::claim::Group group1(
-        std::string("testContactGroupNym1"),
+        ot::UnallocatedCString("testContactGroupNym1"),
         ot::identity::wot::claim::SectionType::Identifier,
         active_);
 
@@ -174,12 +172,12 @@ TEST_F(Test_ContactGroup, operator_plus)
     const std::shared_ptr<ot::identity::wot::claim::Item> primary2(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("primaryContactItemNym2"),
+            ot::UnallocatedCString("primaryContactItemNym2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::Employee,
-            std::string("primaryContactItemValue2"),
+            ot::UnallocatedCString("primaryContactItemValue2"),
             {ot::identity::wot::claim::Attribute::Primary},
             NULL_START,
             NULL_END,
@@ -285,12 +283,12 @@ TEST_F(Test_ContactGroup, Best_active_and_local)
     const std::shared_ptr<ot::identity::wot::claim::Item> local(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("localContactItemNym"),
+            ot::UnallocatedCString("localContactItemNym"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::Employee,
-            std::string("localContactItemValue"),
+            ot::UnallocatedCString("localContactItemValue"),
             {ot::identity::wot::claim::Attribute::Local},
             NULL_START,
             NULL_END,

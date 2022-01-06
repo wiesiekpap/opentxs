@@ -96,7 +96,7 @@ auto Context::DealerSocket(
         factory::DealerSocket(*this, static_cast<bool>(direction), callback)};
 }
 
-auto Context::MakeBatch(std::vector<socket::Type>&& types) const noexcept
+auto Context::MakeBatch(UnallocatedVector<socket::Type>&& types) const noexcept
     -> internal::Batch&
 {
     return pool_.MakeBatch(std::move(types));
@@ -131,7 +131,7 @@ auto Context::PairSocket(
 
 auto Context::PairSocket(
     const zeromq::ListenCallback& callback,
-    const std::string& endpoint) const noexcept -> OTZMQPairSocket
+    const UnallocatedCString& endpoint) const noexcept -> OTZMQPairSocket
 {
     return OTZMQPairSocket{factory::PairSocket(*this, callback, endpoint)};
 }

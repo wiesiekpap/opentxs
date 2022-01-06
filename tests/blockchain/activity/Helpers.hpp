@@ -12,11 +12,11 @@
 #include <iterator>
 #include <memory>
 #include <regex>
-#include <string>
 
 #include "Basic.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -66,17 +66,17 @@ struct Test_BlockchainActivity : public ::testing::Test {
     using Element = ot::blockchain::crypto::Element;
     using Transaction = ot::blockchain::block::bitcoin::Transaction;
 
-    static const std::string test_transaction_hex_;
-    static const std::string btc_account_id_;
-    static const std::string btc_unit_id_;
-    static const std::string btc_notary_id_;
-    static const std::string nym_1_name_;
-    static const std::string nym_2_name_;
-    static const std::string contact_3_name_;
-    static const std::string contact_4_name_;
-    static const std::string contact_5_name_;
-    static const std::string contact_6_name_;
-    static const std::string contact_7_name_;
+    static const ot::UnallocatedCString test_transaction_hex_;
+    static const ot::UnallocatedCString btc_account_id_;
+    static const ot::UnallocatedCString btc_unit_id_;
+    static const ot::UnallocatedCString btc_notary_id_;
+    static const ot::UnallocatedCString nym_1_name_;
+    static const ot::UnallocatedCString nym_2_name_;
+    static const ot::UnallocatedCString contact_3_name_;
+    static const ot::UnallocatedCString contact_4_name_;
+    static const ot::UnallocatedCString contact_5_name_;
+    static const ot::UnallocatedCString contact_6_name_;
+    static const ot::UnallocatedCString contact_7_name_;
 
     const ot::api::session::Client& api_;
     const ot::OTPasswordPrompt reason_;
@@ -96,13 +96,15 @@ struct Test_BlockchainActivity : public ::testing::Test {
         const ot::Time& time = ot::Clock::now()) const
         -> std::unique_ptr<const Transaction>;
     auto monkey_patch(const Element& first, const Element& second)
-        const noexcept -> std::string;
-    auto monkey_patch(const std::string& first, const std::string& second)
-        const noexcept -> std::string;
+        const noexcept -> ot::UnallocatedCString;
+    auto monkey_patch(
+        const ot::UnallocatedCString& first,
+        const ot::UnallocatedCString& second) const noexcept
+        -> ot::UnallocatedCString;
     auto nym_1_id() const noexcept -> const ot::identifier::Nym&;
     auto nym_2_id() const noexcept -> const ot::identifier::Nym&;
-    auto seed() const noexcept -> const std::string&;
-    auto words() const noexcept -> const std::string&;
+    auto seed() const noexcept -> const ot::UnallocatedCString&;
+    auto words() const noexcept -> const ot::UnallocatedCString&;
 
     Test_BlockchainActivity();
 };

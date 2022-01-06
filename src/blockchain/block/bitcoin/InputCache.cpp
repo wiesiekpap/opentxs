@@ -12,7 +12,6 @@
 #include <iterator>
 #include <optional>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "internal/blockchain/block/Block.hpp"
@@ -22,6 +21,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::blockchain::block::bitcoin::implementation
 {
@@ -49,10 +49,10 @@ auto Input::Cache::associate(const internal::Output& in) noexcept -> bool
     return bool(previous_output_);
 }
 
-auto Input::Cache::keys() const noexcept -> std::vector<crypto::Key>
+auto Input::Cache::keys() const noexcept -> UnallocatedVector<crypto::Key>
 {
     auto lock = rLock{lock_};
-    auto output = std::vector<crypto::Key>{};
+    auto output = UnallocatedVector<crypto::Key>{};
     std::transform(
         std::begin(keys_), std::end(keys_), std::back_inserter(output), [
         ](const auto& key) -> auto { return key; });

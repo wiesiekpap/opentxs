@@ -8,11 +8,11 @@
 #include "util/storage/drivers/multiplex/Multiplex.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <vector>
 
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/storage/drivers/Factory.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Plugin.hpp"
 
@@ -26,7 +26,7 @@ auto Multiplex::init_fs(std::unique_ptr<storage::Plugin>& plugin) -> void
         crypto_, asio_, storage_, config_, primary_bucket_);
 }
 
-auto Multiplex::init_fs_backup(const std::string& dir) -> void
+auto Multiplex::init_fs_backup(const UnallocatedCString& dir) -> void
 {
     backup_plugins_.emplace_back(factory::StorageFSArchive(
         crypto_, asio_, storage_, config_, primary_bucket_, dir, null_));

@@ -14,12 +14,12 @@
 #include <memory>
 #include <mutex>
 #include <utility>
-#include <vector>
 
 #include "internal/blockchain/Params.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
@@ -73,7 +73,7 @@ const OTData AddressVersion::onion_prefix_{
     Data::Factory("0xfd87d87eeb43", Data::Mode::Hex)};
 
 AddressVersion::AddressVersion(
-    const std::set<bitcoin::Service>& services,
+    const UnallocatedSet<bitcoin::Service>& services,
     const tcp::endpoint& endpoint) noexcept
     : services_(GetServiceBytes(services))
     , address_(endpoint.address().to_v6().to_bytes())
@@ -141,7 +141,7 @@ auto AddressVersion::Encode(const Network type, const Data& bytes)
     return output;
 }
 
-auto BitcoinString(const std::string& in) noexcept -> OTData
+auto BitcoinString(const UnallocatedCString& in) noexcept -> OTData
 {
     const auto size = CompactSize(in.size()).Encode();
     auto output = Data::Factory(size.data(), size.size());
@@ -151,7 +151,7 @@ auto BitcoinString(const std::string& in) noexcept -> OTData
     return output;
 }
 
-auto CommandName(const Command command) noexcept -> std::string
+auto CommandName(const Command command) noexcept -> UnallocatedCString
 {
     try {
         return command_map_.at(command);
@@ -184,9 +184,9 @@ auto convert_service_bit(const bitcoin::Service value) noexcept -> BitVector8
 auto GetCommand(const CommandField& bytes) noexcept -> Command
 {
     try {
-        const std::string raw{
+        const UnallocatedCString raw{
             reinterpret_cast<const char*>(bytes.data()), bytes.size()};
-        const auto command = std::string{raw.c_str()};
+        const auto command = UnallocatedCString{raw.c_str()};
 
         return command_reverse_map_.at(command);
     } catch (...) {
@@ -195,7 +195,7 @@ auto GetCommand(const CommandField& bytes) noexcept -> Command
     }
 }
 
-auto GetServiceBytes(const std::set<bitcoin::Service>& services) noexcept
+auto GetServiceBytes(const UnallocatedSet<bitcoin::Service>& services) noexcept
     -> BitVector8
 {
     BitVector8 output{0};
@@ -215,11 +215,11 @@ auto GetServiceBytes(const std::set<bitcoin::Service>& services) noexcept
 __attribute__((no_sanitize("unsigned-integer-overflow")))
 #endif
 auto GetServices(
-    const BitVector8 data) noexcept -> std::set<bitcoin::Service>
+    const BitVector8 data) noexcept -> UnallocatedSet<bitcoin::Service>
 {
     if (0 == data) { return {}; }
 
-    auto output = std::set<bitcoin::Service>{};
+    auto output = UnallocatedSet<bitcoin::Service>{};
     auto mask = BitVector8{1};
 
     for (std::size_t i = 0; i < (8 * sizeof(data)); ++i) {
@@ -257,10 +257,11 @@ auto SerializeCommand(const Command command) noexcept -> CommandField
 auto TranslateServices(
     const blockchain::Type chain,
     [[maybe_unused]] const ProtocolVersion version,
-    const std::set<p2p::Service>& input) noexcept -> std::set<bitcoin::Service>
+    const UnallocatedSet<p2p::Service>& input) noexcept
+    -> UnallocatedSet<bitcoin::Service>
 {
-    using InnerMap = std::map<p2p::Service, bitcoin::Service>;
-    using Map = std::map<blockchain::Type, InnerMap>;
+    using InnerMap = UnallocatedMap<p2p::Service, bitcoin::Service>;
+    using Map = UnallocatedMap<blockchain::Type, InnerMap>;
 
     static std::mutex lock_{};
     static auto cache = Map{};
@@ -284,7 +285,7 @@ auto TranslateServices(
 
     OT_ASSERT(cache.end() != it);
 
-    auto output = std::set<bitcoin::Service>{};
+    auto output = UnallocatedSet<bitcoin::Service>{};
     const auto& map = it->second;
 
     std::for_each(
@@ -303,9 +304,10 @@ auto TranslateServices(
 auto TranslateServices(
     const blockchain::Type chain,
     [[maybe_unused]] const ProtocolVersion version,
-    const std::set<bitcoin::Service>& input) noexcept -> std::set<p2p::Service>
+    const UnallocatedSet<bitcoin::Service>& input) noexcept
+    -> UnallocatedSet<p2p::Service>
 {
-    std::set<p2p::Service> output{};
+    UnallocatedSet<p2p::Service> output{};
     std::for_each(
         std::begin(input),
         std::end(input),

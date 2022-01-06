@@ -12,7 +12,6 @@
 #include <functional>
 #include <iterator>
 #include <stdexcept>
-#include <string>
 
 #include "internal/api/Crypto.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -26,6 +25,7 @@
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/HDIndex.hpp"
@@ -63,7 +63,8 @@ auto Bip32::Imp::ckd_normal(
     std::memcpy(out, &i, sizeof(i));
 }
 
-auto Bip32::Imp::decode(const std::string& serialized) const noexcept -> OTData
+auto Bip32::Imp::decode(const UnallocatedCString& serialized) const noexcept
+    -> OTData
 {
     auto input = crypto_.Encode().IdentifierDecode(serialized);
 
@@ -190,7 +191,7 @@ auto Bip32::Imp::derive_public(
 }
 
 auto Bip32::Imp::DeserializePrivate(
-    const std::string& serialized,
+    const UnallocatedCString& serialized,
     Bip32Network& network,
     Bip32Depth& depth,
     Bip32Fingerprint& parent,
@@ -222,7 +223,7 @@ auto Bip32::Imp::DeserializePrivate(
 }
 
 auto Bip32::Imp::DeserializePublic(
-    const std::string& serialized,
+    const UnallocatedCString& serialized,
     Bip32Network& network,
     Bip32Depth& depth,
     Bip32Fingerprint& parent,
@@ -313,7 +314,7 @@ auto Bip32::Imp::SerializePrivate(
     const Bip32Fingerprint parent,
     const Bip32Index index,
     const Data& chainCode,
-    const Secret& key) const -> std::string
+    const Secret& key) const -> UnallocatedCString
 {
     const auto size = key.size();
 
@@ -341,7 +342,7 @@ auto Bip32::Imp::SerializePublic(
     const Bip32Fingerprint parent,
     const Bip32Index index,
     const Data& chainCode,
-    const Data& key) const -> std::string
+    const Data& key) const -> UnallocatedCString
 {
     auto size = key.size();
 

@@ -5,11 +5,10 @@
 
 #pragma once
 
-#include <string>
-
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "util/storage/drivers/filesystem/Common.hpp"
 
@@ -62,13 +61,13 @@ public:
     ~GarbageCollected() final;
 
 private:
-    auto bucket_name(const bool bucket) const -> std::string;
+    auto bucket_name(const bool bucket) const -> UnallocatedCString;
     auto calculate_path(
-        const std::string& key,
+        const UnallocatedCString& key,
         const bool bucket,
-        std::string& directory) const -> std::string final;
-    void purge(const std::string& path) const;
-    auto root_filename() const -> std::string final;
+        UnallocatedCString& directory) const -> UnallocatedCString final;
+    void purge(const UnallocatedCString& path) const;
+    auto root_filename() const -> UnallocatedCString final;
 
     void Cleanup_GarbageCollected();
     void Init_GarbageCollected();

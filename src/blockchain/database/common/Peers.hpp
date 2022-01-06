@@ -7,12 +7,8 @@
 
 #include <cstring>
 #include <iosfwd>
-#include <map>
 #include <mutex>
-#include <set>
 #include <stdexcept>
-#include <string>
-#include <vector>
 
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
@@ -20,6 +16,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 #include "util/LMDB.hpp"
 
@@ -47,20 +44,24 @@ public:
     auto Find(
         const Chain chain,
         const Protocol protocol,
-        const std::set<Type> onNetworks,
-        const std::set<Service> withServices) const noexcept -> Address_p;
+        const UnallocatedSet<Type> onNetworks,
+        const UnallocatedSet<Service> withServices) const noexcept -> Address_p;
 
-    auto Import(std::vector<Address_p> peers) noexcept -> bool;
+    auto Import(UnallocatedVector<Address_p> peers) noexcept -> bool;
     auto Insert(Address_p address) noexcept -> bool;
 
     Peers(const api::Session& api, storage::lmdb::LMDB& lmdb) noexcept(false);
 
 private:
-    using ChainIndexMap = std::map<Chain, std::set<std::string>>;
-    using ProtocolIndexMap = std::map<Protocol, std::set<std::string>>;
-    using ServiceIndexMap = std::map<Service, std::set<std::string>>;
-    using TypeIndexMap = std::map<Type, std::set<std::string>>;
-    using ConnectedIndexMap = std::map<std::string, Time>;
+    using ChainIndexMap =
+        UnallocatedMap<Chain, UnallocatedSet<UnallocatedCString>>;
+    using ProtocolIndexMap =
+        UnallocatedMap<Protocol, UnallocatedSet<UnallocatedCString>>;
+    using ServiceIndexMap =
+        UnallocatedMap<Service, UnallocatedSet<UnallocatedCString>>;
+    using TypeIndexMap =
+        UnallocatedMap<Type, UnallocatedSet<UnallocatedCString>>;
+    using ConnectedIndexMap = UnallocatedMap<UnallocatedCString, Time>;
 
     const api::Session& api_;
     storage::lmdb::LMDB& lmdb_;
@@ -71,9 +72,10 @@ private:
     TypeIndexMap networks_;
     ConnectedIndexMap connected_;
 
-    auto insert(const Lock& lock, std::vector<Address_p> peers) noexcept
+    auto insert(const Lock& lock, UnallocatedVector<Address_p> peers) noexcept
         -> bool;
-    auto load_address(const std::string& id) const noexcept(false) -> Address_p;
+    auto load_address(const UnallocatedCString& id) const noexcept(false)
+        -> Address_p;
     template <typename Index, typename Map>
     auto read_index(
         const ReadView key,

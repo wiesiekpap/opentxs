@@ -40,7 +40,7 @@ class OPENTXS_EXPORT Request : virtual public curve::Client
 {
 public:
     virtual auto Send(Message&& message) const noexcept -> SendResult = 0;
-    virtual auto SetSocksProxy(const std::string& proxy) const noexcept
+    virtual auto SetSocksProxy(const UnallocatedCString& proxy) const noexcept
         -> bool = 0;
 
     ~Request() override = default;

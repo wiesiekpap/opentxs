@@ -93,7 +93,7 @@ template <typename InterfaceType, typename MessageType>
 auto Bidirectional<InterfaceType, MessageType>::bind(
     void* socket,
     std::mutex& socket_mutex,
-    const std::string& endpoint) const noexcept -> bool
+    const UnallocatedCString& endpoint) const noexcept -> bool
 {
     apply_timeouts(socket, socket_mutex);
 
@@ -104,7 +104,7 @@ template <typename InterfaceType, typename MessageType>
 auto Bidirectional<InterfaceType, MessageType>::connect(
     void* socket,
     std::mutex& socket_mutex,
-    const std::string& endpoint) const noexcept -> bool
+    const UnallocatedCString& endpoint) const noexcept -> bool
 {
     apply_timeouts(socket, socket_mutex);
 

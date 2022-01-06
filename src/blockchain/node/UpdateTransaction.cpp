@@ -8,14 +8,13 @@
 #include "blockchain/node/UpdateTransaction.hpp"  // IWYU pragma: associated
 
 #include <iterator>
-#include <map>
-#include <set>
 #include <tuple>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::node

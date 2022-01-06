@@ -5,11 +5,9 @@
 
 #pragma once
 
-#include <map>
-#include <string>
-
 #include "opentxs/Version.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -27,7 +25,7 @@ class PasswordPrompt;
 class AccountVisitor
 {
 public:
-    using mapOfAccounts = std::map<std::string, const Account*>;
+    using mapOfAccounts = UnallocatedMap<UnallocatedCString, const Account*>;
 
     auto GetNotaryID() const -> const identifier::Notary& { return notaryID_; }
 

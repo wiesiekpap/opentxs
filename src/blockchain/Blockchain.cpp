@@ -14,7 +14,6 @@
 #include <cstring>
 #include <iterator>
 #include <limits>
-#include <map>
 #include <stdexcept>
 #include <string_view>
 #include <thread>
@@ -33,6 +32,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 constexpr auto BITMASK(std::uint64_t n) noexcept -> std::uint64_t
@@ -432,23 +432,24 @@ auto FilterToHeader(
 
 auto GetFilterParams(const filter::Type type) noexcept(false) -> FilterParams
 {
-    static const auto gcs_bits_ = std::map<filter::Type, std::uint8_t>{
+    static const auto gcs_bits_ = UnallocatedMap<filter::Type, std::uint8_t>{
         {filter::Type::Basic_BIP158, 19u},
         {filter::Type::Basic_BCHVariant, 19u},
         {filter::Type::ES, 29u},
     };
-    static const auto gcs_fp_rate_ = std::map<filter::Type, std::uint32_t>{
-        {filter::Type::Basic_BIP158, 784931u},
-        {filter::Type::Basic_BCHVariant, 784931u},
-        {filter::Type::ES, 803769307u},
-    };
+    static const auto gcs_fp_rate_ =
+        UnallocatedMap<filter::Type, std::uint32_t>{
+            {filter::Type::Basic_BIP158, 784931u},
+            {filter::Type::Basic_BCHVariant, 784931u},
+            {filter::Type::ES, 803769307u},
+        };
 
     return {gcs_bits_.at(type), gcs_fp_rate_.at(type)};
 }
 
 auto Grind(const std::function<void()> function) noexcept -> void
 {
-    auto threads = std::vector<std::thread>{};
+    auto threads = UnallocatedVector<std::thread>{};
 
     for (auto i = unsigned{}; i < std::thread::hardware_concurrency(); ++i) {
         threads.emplace_back(function);
@@ -474,7 +475,7 @@ auto Serialize(const block::Position& in) noexcept -> Space
     return output;
 }
 
-auto Ticker(const Type chain) noexcept -> std::string
+auto Ticker(const Type chain) noexcept -> UnallocatedCString
 {
     try {
 
@@ -488,7 +489,7 @@ auto Ticker(const Type chain) noexcept -> std::string
 
 namespace opentxs::blockchain::p2p
 {
-const std::map<Service, std::string> service_name_map_{
+const UnallocatedMap<Service, UnallocatedCString> service_name_map_{
     {Service::None, "none"},
     {Service::Avalanche, "Avalanche"},
     {Service::BitcoinCash, "Bitcoin Cash"},
@@ -505,7 +506,7 @@ const std::map<Service, std::string> service_name_map_{
     {Service::XThinner, "XThinner"},
 };
 
-auto DisplayService(const Service service) noexcept -> std::string
+auto DisplayService(const Service service) noexcept -> UnallocatedCString
 {
     try {
 

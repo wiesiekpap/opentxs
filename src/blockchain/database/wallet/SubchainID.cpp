@@ -11,11 +11,11 @@
 #include <cstring>
 #include <iterator>
 #include <stdexcept>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::database::wallet::db

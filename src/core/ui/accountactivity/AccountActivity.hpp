@@ -7,12 +7,8 @@
 
 #include <atomic>
 #include <functional>
-#include <list>
 #include <mutex>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -32,6 +28,7 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/ui/AccountActivity.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
@@ -119,7 +116,7 @@ class AccountActivity : public AccountActivityList,
                         protected Worker<AccountActivity>
 {
 public:
-    auto AccountID() const noexcept -> std::string final
+    auto AccountID() const noexcept -> UnallocatedCString final
     {
         return account_id_->str();
     }
@@ -140,21 +137,21 @@ public:
     {
         return contract_.get();
     }
-    auto DepositAddress() const noexcept -> std::string override
+    auto DepositAddress() const noexcept -> UnallocatedCString override
     {
         return DepositAddress(blockchain::Type::Unknown);
     }
     auto DepositAddress(const blockchain::Type) const noexcept
-        -> std::string override
+        -> UnallocatedCString override
     {
         return {};
     }
     auto DepositChains() const noexcept
-        -> std::vector<blockchain::Type> override
+        -> UnallocatedVector<blockchain::Type> override
     {
         return {};
     }
-    auto DisplayBalance() const noexcept -> std::string final
+    auto DisplayBalance() const noexcept -> UnallocatedCString final
     {
         sLock lock(shared_lock_);
 
@@ -168,23 +165,23 @@ public:
     auto Send(
         [[maybe_unused]] const Identifier& contact,
         [[maybe_unused]] const Amount& amount,
-        [[maybe_unused]] const std::string& memo) const noexcept
+        [[maybe_unused]] const UnallocatedCString& memo) const noexcept
         -> bool override
     {
         return false;
     }
     auto Send(
         [[maybe_unused]] const Identifier& contact,
-        [[maybe_unused]] const std::string& amount,
-        [[maybe_unused]] const std::string& memo,
+        [[maybe_unused]] const UnallocatedCString& amount,
+        [[maybe_unused]] const UnallocatedCString& memo,
         [[maybe_unused]] Scale scale) const noexcept -> bool override
     {
         return false;
     }
     auto Send(
         [[maybe_unused]] const Identifier& contact,
-        [[maybe_unused]] const std::string& amount,
-        [[maybe_unused]] const std::string& memo,
+        [[maybe_unused]] const UnallocatedCString& amount,
+        [[maybe_unused]] const UnallocatedCString& memo,
         [[maybe_unused]] Scale scale,
         [[maybe_unused]] SendMonitor::Callback cb) const noexcept
         -> int override
@@ -192,25 +189,25 @@ public:
         return false;
     }
     auto Send(
-        [[maybe_unused]] const std::string& address,
+        [[maybe_unused]] const UnallocatedCString& address,
         [[maybe_unused]] const Amount& amount,
-        [[maybe_unused]] const std::string& memo) const noexcept
+        [[maybe_unused]] const UnallocatedCString& memo) const noexcept
         -> bool override
     {
         return false;
     }
     auto Send(
-        [[maybe_unused]] const std::string& address,
-        [[maybe_unused]] const std::string& amount,
-        [[maybe_unused]] const std::string& memo,
+        [[maybe_unused]] const UnallocatedCString& address,
+        [[maybe_unused]] const UnallocatedCString& amount,
+        [[maybe_unused]] const UnallocatedCString& memo,
         [[maybe_unused]] Scale scale) const noexcept -> bool override
     {
         return false;
     }
     auto Send(
-        [[maybe_unused]] const std::string& address,
-        [[maybe_unused]] const std::string& amount,
-        [[maybe_unused]] const std::string& memo,
+        [[maybe_unused]] const UnallocatedCString& address,
+        [[maybe_unused]] const UnallocatedCString& amount,
+        [[maybe_unused]] const UnallocatedCString& memo,
         [[maybe_unused]] Scale scale,
         [[maybe_unused]] SendMonitor::Callback cb) const noexcept
         -> int override
@@ -224,13 +221,13 @@ public:
         return {1, 1};
     }
     auto Type() const noexcept -> AccountType final { return type_; }
-    auto ValidateAddress([[maybe_unused]] const std::string& text)
+    auto ValidateAddress([[maybe_unused]] const UnallocatedCString& text)
         const noexcept -> bool override
     {
         return false;
     }
-    auto ValidateAmount([[maybe_unused]] const std::string& text) const noexcept
-        -> std::string override
+    auto ValidateAmount([[maybe_unused]] const UnallocatedCString& text)
+        const noexcept -> UnallocatedCString override
     {
         return {};
     }
@@ -257,7 +254,7 @@ protected:
     OTServerContract notary_;
 
     virtual auto display_balance(opentxs::Amount value) const noexcept
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
     auto notify_balance(opentxs::Amount balance) const noexcept -> void;
 
     // NOTE only call in final class constructor bodies

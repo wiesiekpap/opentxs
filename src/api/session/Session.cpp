@@ -90,7 +90,7 @@ Session::Session(
     const api::Crypto& crypto,
     const api::Settings& config,
     const opentxs::network::zeromq::Context& zmq,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const int instance,
     NetworkMaker network,
     std::unique_ptr<api::session::Factory> factory)
@@ -155,7 +155,7 @@ auto Session::GetSecret(
     Secret& secret,
     const PasswordPrompt& reason,
     const bool twice,
-    const std::string& key) const -> bool
+    const UnallocatedCString& key) const -> bool
 {
     bump_password_timer(lock);
 
@@ -184,7 +184,8 @@ auto Session::GetSecret(
 
     if ((false == unlocked) && (tries < 3)) {
         auto masterPassword = factory_.Secret(256);
-        const std::string password_key{key.empty() ? parent_.ProfileId() : key};
+        const UnallocatedCString password_key{
+            key.empty() ? parent_.ProfileId() : key};
 
         if (twice) {
             callback.AskTwice(reason, masterPassword, password_key);

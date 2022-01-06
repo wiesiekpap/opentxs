@@ -6,11 +6,8 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <tuple>
 #include <utility>
 
@@ -20,6 +17,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/StorageContacts.pb.h"
 #include "util/storage/tree/Node.hpp"
@@ -43,45 +41,51 @@ namespace opentxs::storage
 class Contacts final : public Node
 {
 public:
-    auto Alias(const std::string& id) const -> std::string;
+    auto Alias(const UnallocatedCString& id) const -> UnallocatedCString;
     auto List() const -> ObjectList final;
     auto Load(
-        const std::string& id,
+        const UnallocatedCString& id,
         std::shared_ptr<proto::Contact>& output,
-        std::string& alias,
+        UnallocatedCString& alias,
         const bool checking) const -> bool;
-    auto NymOwner(std::string nym) const -> std::string;
+    auto NymOwner(UnallocatedCString nym) const -> UnallocatedCString;
     auto Save() const -> bool;
 
-    auto Delete(const std::string& id) -> bool;
-    auto SetAlias(const std::string& id, const std::string& alias) -> bool;
-    auto Store(const proto::Contact& data, const std::string& alias) -> bool;
+    auto Delete(const UnallocatedCString& id) -> bool;
+    auto SetAlias(const UnallocatedCString& id, const UnallocatedCString& alias)
+        -> bool;
+    auto Store(const proto::Contact& data, const UnallocatedCString& alias)
+        -> bool;
 
     ~Contacts() final = default;
 
 private:
     friend Tree;
     using ot_super = Node;
-    using Address = std::pair<identity::wot::claim::ClaimType, std::string>;
+    using Address =
+        std::pair<identity::wot::claim::ClaimType, UnallocatedCString>;
 
     static const VersionNumber CurrentVersion{2};
     static const VersionNumber MergeIndexVersion{1};
     static const VersionNumber NymIndexVersion{1};
 
-    std::map<std::string, std::set<std::string>> merge_;
-    std::map<std::string, std::string> merged_;
-    mutable std::map<std::string, std::string> nym_contact_index_;
+    UnallocatedMap<UnallocatedCString, UnallocatedSet<UnallocatedCString>>
+        merge_;
+    UnallocatedMap<UnallocatedCString, UnallocatedCString> merged_;
+    mutable UnallocatedMap<UnallocatedCString, UnallocatedCString>
+        nym_contact_index_;
 
     void extract_nyms(const Lock& lock, const proto::Contact& data) const;
-    auto nomalize_id(const std::string& input) const -> const std::string&;
+    auto nomalize_id(const UnallocatedCString& input) const
+        -> const UnallocatedCString&;
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageContacts;
 
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
     void reconcile_maps(const Lock& lock, const proto::Contact& data);
     void reverse_merged();
 
-    Contacts(const Driver& storage, const std::string& hash);
+    Contacts(const Driver& storage, const UnallocatedCString& hash);
     Contacts() = delete;
     Contacts(const Contacts&) = delete;
     Contacts(Contacts&&) = delete;

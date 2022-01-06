@@ -8,9 +8,7 @@
 #include "network/zeromq/socket/Subscribe.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>
-#include <map>
 #include <memory>
-#include <set>
 #include <stdexcept>
 #include <utility>
 
@@ -23,6 +21,7 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -91,7 +90,8 @@ void Subscribe::process_incoming(const Lock& lock, Message&& message) noexcept
     }
 }
 
-auto Subscribe::SetSocksProxy(const std::string& proxy) const noexcept -> bool
+auto Subscribe::SetSocksProxy(const UnallocatedCString& proxy) const noexcept
+    -> bool
 {
     return set_socks_proxy(proxy);
 }

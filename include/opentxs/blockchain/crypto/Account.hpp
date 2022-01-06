@@ -10,13 +10,12 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <set>
-
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 
 namespace opentxs
@@ -62,7 +61,7 @@ public:
         using const_iterator = opentxs::iterator::
             Bidirectional<const HDAccounts, const value_type>;
 
-        virtual auto all() const noexcept -> std::set<OTIdentifier> = 0;
+        virtual auto all() const noexcept -> UnallocatedSet<OTIdentifier> = 0;
         /// Throws std::out_of_range for invalid position
         virtual auto at(const std::size_t position) const noexcept(false)
             -> const value_type& = 0;
@@ -83,7 +82,7 @@ public:
         using const_iterator = opentxs::iterator::
             Bidirectional<const ImportedAccounts, const value_type>;
 
-        virtual auto all() const noexcept -> std::set<OTIdentifier> = 0;
+        virtual auto all() const noexcept -> UnallocatedSet<OTIdentifier> = 0;
         /// Throws std::out_of_range for invalid position
         virtual auto at(const std::size_t position) const noexcept(false)
             -> const value_type& = 0;
@@ -104,7 +103,7 @@ public:
         using const_iterator = opentxs::iterator::
             Bidirectional<const PaymentCodeAccounts, const value_type>;
 
-        virtual auto all() const noexcept -> std::set<OTIdentifier> = 0;
+        virtual auto all() const noexcept -> UnallocatedSet<OTIdentifier> = 0;
         /// Throws std::out_of_range for invalid position
         virtual auto at(const std::size_t position) const noexcept(false)
             -> const value_type& = 0;
@@ -133,12 +132,14 @@ public:
     virtual auto GetDepositAddress(
         const AddressStyle style,
         const PasswordPrompt& reason,
-        const std::string& memo = "") const noexcept -> std::string = 0;
+        const UnallocatedCString& memo = "") const noexcept
+        -> UnallocatedCString = 0;
     virtual auto GetDepositAddress(
         const AddressStyle style,
         const Identifier& contact,
         const PasswordPrompt& reason,
-        const std::string& memo = "") const noexcept -> std::string = 0;
+        const UnallocatedCString& memo = "") const noexcept
+        -> UnallocatedCString = 0;
     virtual auto GetImported() const noexcept -> const ImportedAccounts& = 0;
     virtual auto GetPaymentCode() const noexcept
         -> const PaymentCodeAccounts& = 0;

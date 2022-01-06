@@ -8,8 +8,6 @@
 #include <limits>
 #include <memory>
 #include <optional>
-#include <string>
-#include <vector>
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
@@ -32,7 +30,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -40,9 +38,9 @@ namespace ot = opentxs;
 
 namespace ottest
 {
-const auto txid_hex_ = std::string{
+const auto txid_hex_ = ot::UnallocatedCString{
     "b9451ab8cb828275480da016e97368fdfbfbd9e27dd9bd5d3e6d56d8cd14f301"};
-const auto transaction_hex_ = std::string{
+const auto transaction_hex_ = ot::UnallocatedCString{
     "01000000035a19f341c42071f9cec7df37c4853c95d6aecc95e3bf19e3181d30d99552b8c9"
     "000000008a473044022025bca5dc0fe42aca5f07c9b3fe1b3f72113ffbc3522f8d3ebb2457"
     "f5bdf8f9b2022030ff687c00a63e810b21e447d3a57b2749ebea553cab763eb9b99e1b9839"
@@ -60,7 +58,7 @@ const auto transaction_hex_ = std::string{
     "ad473e5cab6dcceaa2d53cf2c82e8e03d95a0e70836bffffffff0240420f00000000001976"
     "a914429e6bd3c9a9ca4be00a4b2b02fd4f5895c1405988ac4083e81c000000001976a914e5"
     "5756cb5395a4b39369d0f1f0a640c12fd867b288ac00000000"};
-const auto mutated_transaction_hex_ = std::string{
+const auto mutated_transaction_hex_ = ot::UnallocatedCString{
     "01000000035a19f341c42071f9cec7df37c4853c95d6aecc95e3bf19e3181d30d99552b8c9"
     "000000008c4d47003044022025bca5dc0fe42aca5f07c9b3fe1b3f72113ffbc3522f8d3ebb"
     "2457f5bdf8f9b2022030ff687c00a63e810b21e447d3a57b2749ebea553cab763eb9b99e1b"
@@ -78,23 +76,23 @@ const auto mutated_transaction_hex_ = std::string{
     "f13fad473e5cab6dcceaa2d53cf2c82e8e03d95a0e70836bffffffff0240420f0000000000"
     "1976a914429e6bd3c9a9ca4be00a4b2b02fd4f5895c1405988ac4083e81c000000001976a9"
     "14e55756cb5395a4b39369d0f1f0a640c12fd867b288ac00000000"};
-const auto outpoint_hex_1_ = std::string{
+const auto outpoint_hex_1_ = ot::UnallocatedCString{
     "5a19f341c42071f9cec7df37c4853c95d6aecc95e3bf19e3181d30d99552b8c900000000"};
-const auto outpoint_hex_2_ = std::string{
+const auto outpoint_hex_2_ = ot::UnallocatedCString{
     "5b72d3f4b6b72b3511bddd9994f28a91cc03212f200f71b91df13e711d58c1da00000000"};
-const auto outpoint_hex_3_ = std::string{
+const auto outpoint_hex_3_ = ot::UnallocatedCString{
     "292e94738851718433a3168e43cab1c6a811e9a0f35b06b6cec60fea9abe0f4301000000"};
-const auto in_hex_1_ = std::string{
+const auto in_hex_1_ = ot::UnallocatedCString{
     "473044022025bca5dc0fe42aca5f07c9b3fe1b3f72113ffbc3522f8d3ebb2457f5bdf8f9b2"
     "022030ff687c00a63e810b21e447d3a57b2749ebea553cab763eb9b99e1b9839653b014104"
     "469f7eb54b90d90106b1a5412b41a23516028e81ad35e0418a4460707ae39a4bf0101b6322"
     "60fb08979aba0ceea576b5400c7cf30b539b055ec4c0b96ab00984"};
-const auto in_hex_2_ = std::string{
+const auto in_hex_2_ = ot::UnallocatedCString{
     "493046022100fbef2589b7c52a3be0fd8dd3624445da9c8930f0e51f6a33d76dc0ca030447"
     "3d0221009ec433ca6a9f16184db46468ff39cafaa9643021e0c66a1de1e6f9a61209279001"
     "4104b27f4de096ac6431eec4b807a0d3db3e9f9be48faab692d5559624acb1faf4334dd440"
     "ebf32a81506b7c49d8cf40e4b3f5c6b6e99fcb6d3e8a298174bd2b348d"};
-const auto in_hex_3_ = std::string{
+const auto in_hex_3_ = ot::UnallocatedCString{
     "4730440220582813f2c2d7cbb84521f81d6c2a1147e5296e90bee05f583b3df108fdac7201"
     "0220232b43a2e596cef59f82c8bfff1a310d85e7beb3e607076ff8966d6d374dc12b014104"
     "a8514ca51137c6d8a4befa476a7521197b886fceafa9f5c2830bea6df62792a6dd46f2b268"

@@ -5,13 +5,8 @@
 
 #pragma once
 
-#include <list>
-#include <map>
 #include <mutex>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -25,6 +20,7 @@
 #include "opentxs/core/ui/Profile.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
@@ -76,39 +72,44 @@ public:
     auto AddClaim(
         const identity::wot::claim::SectionType section,
         const identity::wot::claim::ClaimType type,
-        const std::string& value,
+        const UnallocatedCString& value,
         const bool primary,
         const bool active) const noexcept -> bool final;
     auto AllowedItems(
         const identity::wot::claim::SectionType section,
-        const std::string& lang) const noexcept -> ItemTypeList final;
-    auto AllowedSections(const std::string& lang) const noexcept
+        const UnallocatedCString& lang) const noexcept -> ItemTypeList final;
+    auto AllowedSections(const UnallocatedCString& lang) const noexcept
         -> SectionTypeList final;
     auto ClearCallbacks() const noexcept -> void final;
-    auto Delete(const int section, const int type, const std::string& claimID)
-        const noexcept -> bool final;
-    auto DisplayName() const noexcept -> std::string final;
+    auto Delete(
+        const int section,
+        const int type,
+        const UnallocatedCString& claimID) const noexcept -> bool final;
+    auto DisplayName() const noexcept -> UnallocatedCString final;
     auto NymID() const noexcept -> const identifier::Nym& final
     {
         return primary_id_;
     }
-    auto ID() const noexcept -> std::string final { return primary_id_->str(); }
-    auto PaymentCode() const noexcept -> std::string final;
+    auto ID() const noexcept -> UnallocatedCString final
+    {
+        return primary_id_->str();
+    }
+    auto PaymentCode() const noexcept -> UnallocatedCString final;
     auto SetActive(
         const int section,
         const int type,
-        const std::string& claimID,
+        const UnallocatedCString& claimID,
         const bool active) const noexcept -> bool final;
     auto SetPrimary(
         const int section,
         const int type,
-        const std::string& claimID,
+        const UnallocatedCString& claimID,
         const bool primary) const noexcept -> bool final;
     auto SetValue(
         const int section,
         const int type,
-        const std::string& claimID,
-        const std::string& value) const noexcept -> bool final;
+        const UnallocatedCString& claimID,
+        const UnallocatedCString& value) const noexcept -> bool final;
 
     auto SetCallbacks(Callbacks&& cb) noexcept -> void final;
 
@@ -126,11 +127,13 @@ private:
 
     const ListenerDefinitions listeners_;
     mutable CallbackHolder callbacks_;
-    std::string name_;
-    std::string payment_code_;
+    UnallocatedCString name_;
+    UnallocatedCString payment_code_;
 
-    static const std::set<identity::wot::claim::SectionType> allowed_types_;
-    static const std::map<identity::wot::claim::SectionType, int> sort_keys_;
+    static const UnallocatedSet<identity::wot::claim::SectionType>
+        allowed_types_;
+    static const UnallocatedMap<identity::wot::claim::SectionType, int>
+        sort_keys_;
 
     static auto sort_key(const identity::wot::claim::SectionType type) noexcept
         -> int;
@@ -138,7 +141,7 @@ private:
         const identity::wot::claim::SectionType type) noexcept -> bool;
     static auto nym_name(
         const api::session::Wallet& wallet,
-        const identifier::Nym& nymID) noexcept -> std::string;
+        const identifier::Nym& nymID) noexcept -> UnallocatedCString;
 
     auto construct_row(
         const ProfileRowID& id,

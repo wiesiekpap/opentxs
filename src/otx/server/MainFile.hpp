@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <string>
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -26,9 +26,9 @@ public:
     explicit MainFile(Server& server, const PasswordPrompt& reason);
 
     auto CreateMainFile(
-        const std::string& strContract,
-        const std::string& strNotaryID,
-        const std::string& strNymID) -> bool;
+        const UnallocatedCString& strContract,
+        const UnallocatedCString& strNotaryID,
+        const UnallocatedCString& strNymID) -> bool;
     auto LoadMainFile(bool readOnly = false) -> bool;
     auto LoadServerUserAndContract() -> bool;
     auto SaveMainFile() -> bool;
@@ -36,7 +36,7 @@ public:
 
 private:
     Server& server_;
-    std::string version_;
+    UnallocatedCString version_;
 
     MainFile() = delete;
     MainFile(const MainFile&) = delete;

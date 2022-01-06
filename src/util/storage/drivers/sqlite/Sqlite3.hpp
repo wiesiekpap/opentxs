@@ -13,14 +13,13 @@ extern "C" {
 #include <future>
 #include <iosfwd>
 #include <mutex>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "internal/util/Flag.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "util/storage/Plugin.hpp"
 
@@ -57,11 +56,11 @@ class Sqlite3 final : public virtual implementation::Plugin,
 public:
     auto EmptyBucket(const bool bucket) const -> bool final;
     auto LoadFromBucket(
-        const std::string& key,
-        std::string& value,
+        const UnallocatedCString& key,
+        UnallocatedCString& value,
         const bool bucket) const -> bool final;
-    auto LoadRoot() const -> std::string final;
-    auto StoreRoot(const bool commit, const std::string& hash) const
+    auto LoadRoot() const -> UnallocatedCString final;
+    auto StoreRoot(const bool commit, const UnallocatedCString& hash) const
         -> bool final;
 
     void Cleanup() final;
@@ -79,40 +78,42 @@ public:
 private:
     using ot_super = Plugin;
 
-    std::string folder_;
+    UnallocatedCString folder_;
     mutable std::mutex transaction_lock_;
     mutable OTFlag transaction_bucket_;
-    mutable std::vector<std::pair<const std::string, const std::string>>
+    mutable UnallocatedVector<
+        std::pair<const UnallocatedCString, const UnallocatedCString>>
         pending_;
     sqlite3* db_{nullptr};
 
     auto bind_key(
-        const std::string& source,
-        const std::string& key,
-        const std::size_t start) const -> std::string;
+        const UnallocatedCString& source,
+        const UnallocatedCString& key,
+        const std::size_t start) const -> UnallocatedCString;
     void commit(std::stringstream& sql) const;
-    auto commit_transaction(const std::string& rootHash) const -> bool;
-    auto Create(const std::string& tablename) const -> bool;
-    auto expand_sql(sqlite3_stmt* statement) const -> std::string;
-    auto GetTableName(const bool bucket) const -> std::string;
+    auto commit_transaction(const UnallocatedCString& rootHash) const -> bool;
+    auto Create(const UnallocatedCString& tablename) const -> bool;
+    auto expand_sql(sqlite3_stmt* statement) const -> UnallocatedCString;
+    auto GetTableName(const bool bucket) const -> UnallocatedCString;
     auto Select(
-        const std::string& key,
-        const std::string& tablename,
-        std::string& value) const -> bool;
-    auto Purge(const std::string& tablename) const -> bool;
+        const UnallocatedCString& key,
+        const UnallocatedCString& tablename,
+        UnallocatedCString& value) const -> bool;
+    auto Purge(const UnallocatedCString& tablename) const -> bool;
     void set_data(std::stringstream& sql) const;
-    void set_root(const std::string& rootHash, std::stringstream& sql) const;
+    void set_root(const UnallocatedCString& rootHash, std::stringstream& sql)
+        const;
     void start_transaction(std::stringstream& sql) const;
     void store(
         const bool isTransaction,
-        const std::string& key,
-        const std::string& value,
+        const UnallocatedCString& key,
+        const UnallocatedCString& value,
         const bool bucket,
         std::promise<bool>* promise) const final;
     auto Upsert(
-        const std::string& key,
-        const std::string& tablename,
-        const std::string& value) const -> bool;
+        const UnallocatedCString& key,
+        const UnallocatedCString& tablename,
+        const UnallocatedCString& value) const -> bool;
 
     void Init_Sqlite3();
 

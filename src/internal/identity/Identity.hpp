@@ -44,8 +44,8 @@ struct Nym : virtual public identity::Nym {
         const Mode mode) const -> bool = 0;
     virtual auto WriteCredentials() const -> bool = 0;
 
-    virtual void SetAlias(const std::string& alias) = 0;
-    virtual void SetAliasStartup(const std::string& alias) = 0;
+    virtual void SetAlias(const UnallocatedCString& alias) = 0;
+    virtual void SetAliasStartup(const UnallocatedCString& alias) = 0;
 
     ~Nym() override = default;
 };

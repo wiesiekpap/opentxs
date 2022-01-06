@@ -8,10 +8,7 @@
 #pragma once
 
 #include <atomic>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -28,6 +25,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/ui/AccountActivity.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
@@ -77,11 +75,11 @@ namespace opentxs::ui::implementation
 class CustodialAccountActivity final : public AccountActivity
 {
 public:
-    auto ContractID() const noexcept -> std::string final;
-    auto DisplayUnit() const noexcept -> std::string final;
-    auto Name() const noexcept -> std::string final;
-    auto NotaryID() const noexcept -> std::string final;
-    auto NotaryName() const noexcept -> std::string final;
+    auto ContractID() const noexcept -> UnallocatedCString final;
+    auto DisplayUnit() const noexcept -> UnallocatedCString final;
+    auto Name() const noexcept -> UnallocatedCString final;
+    auto NotaryID() const noexcept -> UnallocatedCString final;
+    auto NotaryName() const noexcept -> UnallocatedCString final;
     auto Unit() const noexcept -> core::UnitType final;
 
     CustodialAccountActivity(
@@ -108,16 +106,16 @@ private:
         shutdown = value(WorkType::Shutdown),
     };
 
-    std::string alias_;
+    UnallocatedCString alias_;
 
     static auto extract_event(
         const proto::PaymentEventType event,
         const proto::PaymentWorkflow& workflow) noexcept -> EventRow;
     static auto extract_rows(const proto::PaymentWorkflow& workflow) noexcept
-        -> std::vector<RowKey>;
+        -> UnallocatedVector<RowKey>;
 
     auto display_balance(opentxs::Amount value) const noexcept
-        -> std::string final;
+        -> UnallocatedCString final;
 
     auto pipeline(const Message& in) noexcept -> void final;
     auto process_balance(const Message& message) noexcept -> void;
@@ -125,7 +123,7 @@ private:
     auto process_notary(const Message& message) noexcept -> void;
     auto process_workflow(
         const Identifier& workflowID,
-        std::set<AccountActivityRowID>& active) noexcept -> void;
+        UnallocatedSet<AccountActivityRowID>& active) noexcept -> void;
     auto process_workflow(const Message& message) noexcept -> void;
     auto process_unit(const Message& message) noexcept -> void;
     auto startup() noexcept -> void final;

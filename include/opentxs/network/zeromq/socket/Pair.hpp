@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/network/zeromq/socket/Sender.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -39,7 +38,7 @@ namespace socket
 class OPENTXS_EXPORT Pair : virtual public socket::Socket, virtual public Sender
 {
 public:
-    virtual auto Endpoint() const noexcept -> const std::string& = 0;
+    virtual auto Endpoint() const noexcept -> const UnallocatedCString& = 0;
 
     ~Pair() override = default;
 

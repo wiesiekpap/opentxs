@@ -54,8 +54,8 @@ PendingSend::PendingSend(
     const ActivityThreadSortKey& sortKey,
     CustomData& custom,
     opentxs::Amount amount,
-    std::string&& display,
-    std::string&& memo) noexcept
+    UnallocatedCString&& display,
+    UnallocatedCString&& memo) noexcept
     : ActivityThreadItem(parent, api, nymID, rowID, sortKey, custom)
     , amount_(amount)
     , display_amount_(std::move(display))
@@ -72,7 +72,7 @@ auto PendingSend::Amount() const noexcept -> opentxs::Amount
     return amount_;
 }
 
-auto PendingSend::DisplayAmount() const noexcept -> std::string
+auto PendingSend::DisplayAmount() const noexcept -> UnallocatedCString
 {
     auto lock = sLock{shared_lock_};
 
@@ -80,15 +80,15 @@ auto PendingSend::DisplayAmount() const noexcept -> std::string
 }
 
 auto PendingSend::extract(CustomData& custom) noexcept
-    -> std::tuple<opentxs::Amount, std::string, std::string>
+    -> std::tuple<opentxs::Amount, UnallocatedCString, UnallocatedCString>
 {
     return std::make_tuple(
         extract_custom<opentxs::Amount>(custom, 5),
-        extract_custom<std::string>(custom, 6),
-        extract_custom<std::string>(custom, 7));
+        extract_custom<UnallocatedCString>(custom, 6),
+        extract_custom<UnallocatedCString>(custom, 7));
 }
 
-auto PendingSend::Memo() const noexcept -> std::string
+auto PendingSend::Memo() const noexcept -> UnallocatedCString
 {
     auto lock = sLock{shared_lock_};
 

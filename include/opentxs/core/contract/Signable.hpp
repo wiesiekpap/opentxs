@@ -7,11 +7,10 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -30,16 +29,16 @@ class OPENTXS_EXPORT Signable
 public:
     using Signature = std::shared_ptr<proto::Signature>;
 
-    virtual auto Alias() const noexcept -> std::string = 0;
+    virtual auto Alias() const noexcept -> UnallocatedCString = 0;
     virtual auto ID() const noexcept -> OTIdentifier = 0;
-    virtual auto Name() const noexcept -> std::string = 0;
+    virtual auto Name() const noexcept -> UnallocatedCString = 0;
     virtual auto Nym() const noexcept -> Nym_p = 0;
-    virtual auto Terms() const noexcept -> const std::string& = 0;
+    virtual auto Terms() const noexcept -> const UnallocatedCString& = 0;
     virtual auto Serialize() const noexcept -> OTData = 0;
     virtual auto Validate() const noexcept -> bool = 0;
     virtual auto Version() const noexcept -> VersionNumber = 0;
 
-    virtual auto SetAlias(const std::string& alias) noexcept -> bool = 0;
+    virtual auto SetAlias(const UnallocatedCString& alias) noexcept -> bool = 0;
 
     virtual ~Signable() = default;
 

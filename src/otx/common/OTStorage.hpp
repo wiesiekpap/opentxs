@@ -7,16 +7,13 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <deque>
 #include <iostream>
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs
@@ -182,8 +179,9 @@ using InstantiateFuncKey = std::pair<PackType, StoredObjectType>;  // Those
 // "protocol buffers", those form the KEY for looking up the LoomAcctPB
 // instantiator.
 using mapOfFunctions =
-    std::map<InstantiateFuncKey, InstantiateFunc*>;  //...basically implementing
-                                                     // my own vtable, eh?
+    UnallocatedMap<InstantiateFuncKey, InstantiateFunc*>;  //...basically
+                                                           // implementing
+                                                           // my own vtable, eh?
 
 // OTDB Namespace PRIVATE MEMBERS
 // this "details" naming is a common C++ idiom for "private" in a namespace.
@@ -264,7 +262,7 @@ protected:
     {
     }
 
-    std::string m_Type;
+    UnallocatedCString m_Type;
 
 public:
     virtual ~Storable() = default;
@@ -293,8 +291,8 @@ protected:
 public:
     virtual ~PackedBuffer() = default;
 
-    virtual bool PackString(const std::string& theString) = 0;
-    virtual bool UnpackString(std::string& theString) = 0;
+    virtual bool PackString(const UnallocatedCString& theString) = 0;
+    virtual bool UnpackString(UnallocatedCString& theString) = 0;
 
     virtual bool ReadFromIStream(
         std::istream& inStream,
@@ -328,8 +326,8 @@ public:
     PackedBuffer* Pack(Storable& inObj);
     bool Unpack(PackedBuffer& inBuf, Storable& outObj);
 
-    PackedBuffer* Pack(const std::string& inObj);
-    bool Unpack(PackedBuffer& inBuf, std::string& outObj);
+    PackedBuffer* Pack(const UnallocatedCString& inObj);
+    bool Unpack(PackedBuffer& inBuf, UnallocatedCString& outObj);
 
     virtual PackedBuffer* CreateBuffer() = 0;
 };
@@ -411,46 +409,46 @@ protected:
     virtual bool onStorePackedBuffer(
         const api::Session& api,
         PackedBuffer& theBuffer,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) = 0;
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) = 0;
 
     virtual bool onQueryPackedBuffer(
         const api::Session& api,
         PackedBuffer& theBuffer,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) = 0;
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) = 0;
 
     virtual bool onStorePlainString(
         const api::Session& api,
-        const std::string& theBuffer,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) = 0;
+        const UnallocatedCString& theBuffer,
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) = 0;
 
     virtual bool onQueryPlainString(
         const api::Session& api,
-        std::string& theBuffer,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) = 0;
+        UnallocatedCString& theBuffer,
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) = 0;
 
     virtual bool onEraseValueByKey(
         const api::Session& api,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) = 0;
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) = 0;
 
 public:
     // Use GetPacker() to access the Packer, throughout duration of this Storage
@@ -469,20 +467,20 @@ public:
     // See if the file is there.
     virtual bool Exists(
         const api::Session& api,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) = 0;
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) = 0;
 
     virtual std::int64_t FormPathString(
         const api::Session& api,
-        std::string& strOutput,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) = 0;
+        UnallocatedCString& strOutput,
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) = 0;
 
     virtual ~Storage()
     {
@@ -494,76 +492,78 @@ public:
 
     bool StoreString(
         const api::Session& api,
-        const std::string& strContents,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr);
+        const UnallocatedCString& strContents,
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr);
 
-    std::string QueryString(
+    UnallocatedCString QueryString(
         const api::Session& api,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr);
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr);
 
     bool StorePlainString(
         const api::Session& api,
-        const std::string& strContents,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr);
+        const UnallocatedCString& strContents,
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr);
 
-    std::string QueryPlainString(
+    UnallocatedCString QueryPlainString(
         const api::Session& api,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr);
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr);
 
     // Store/Retrieve an object. (Storable.)
 
     bool StoreObject(
         const api::Session& api,
         Storable& theContents,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr);
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr);
 
     // Use %newobject OTDB::Storage::QueryObject();
     Storable* QueryObject(
         const api::Session& api,
         const StoredObjectType& theObjectType,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr);
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr);
     // Store/Retrieve a Storable object inside an Armored object.
 
-    std::string EncodeObject(const api::Session& api, Storable& theContents);
+    UnallocatedCString EncodeObject(
+        const api::Session& api,
+        Storable& theContents);
 
     // Use %newobject OTDB::Storage::DecodeObject();
     Storable* DecodeObject(
         const StoredObjectType& theObjectType,
-        const std::string& strInput);
+        const UnallocatedCString& strInput);
 
     // Erase any value based on its location.
 
     bool EraseValueByKey(
         const api::Session& api,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr);
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr);
 
     // Note:
     // Make sure to use: %newobject Factory::createObj();  IN OTAPI.i file!
@@ -606,110 +606,110 @@ Storable* CreateObject(const StoredObjectType eType);
 // Check if the values are good.
 //
 bool CheckStringsExistInOrder(
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr,
     const char* szFuncName = nullptr);
 
 // See if the file is there.
 //
 bool Exists(
     const api::Session& api,
-    const std::string& dataFolder,
-    const std::string strFolder,
-    const std::string oneStr,
-    const std::string twoStr,
-    const std::string threeStr);
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString strFolder,
+    const UnallocatedCString oneStr,
+    const UnallocatedCString twoStr,
+    const UnallocatedCString threeStr);
 
 std::int64_t FormPathString(
     const api::Session& api,
-    std::string& strOutput,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr);
+    UnallocatedCString& strOutput,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr);
 // Store/Retrieve a string.
 //
 bool StoreString(
     const api::Session& api,
-    const std::string& strContents,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr);
+    const UnallocatedCString& strContents,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr);
 
-std::string QueryString(
+UnallocatedCString QueryString(
     const api::Session& api,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr);
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr);
 
 bool StorePlainString(
     const api::Session& api,
-    const std::string& strContents,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr);
+    const UnallocatedCString& strContents,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr);
 
-std::string QueryPlainString(
+UnallocatedCString QueryPlainString(
     const api::Session& api,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr);
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr);
 
 // Store/Retrieve an object. (Storable.)
 //
 bool StoreObject(
     const api::Session& api,
     Storable& theContents,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr);
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr);
 
 // Use %newobject OTDB::Storage::Query();
 Storable* QueryObject(
     const api::Session& api,
     const StoredObjectType theObjectType,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr);
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr);
 
 // Store/Retrieve a Storable object inside an Armored object.
-std::string EncodeObject(const api::Session& api, Storable& theContents);
+UnallocatedCString EncodeObject(const api::Session& api, Storable& theContents);
 
 // Use %newobject OTDB::Storage::DecodeObject();
 Storable* DecodeObject(
     const StoredObjectType theObjectType,
-    const std::string& strInput);
+    const UnallocatedCString& strInput);
 
 // Erase any value based on its location.
 
 bool EraseValueByKey(
     const api::Session& api,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr);
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr);
 
 #define DECLARE_GET_ADD_REMOVE(name)                                           \
                                                                                \
 protected:                                                                     \
-    std::deque<std::shared_ptr<name>> list_##name##s;                          \
+    UnallocatedDeque<std::shared_ptr<name>> list_##name##s;                    \
                                                                                \
 public:                                                                        \
     size_t Get##name##Count();                                                 \
@@ -735,7 +735,7 @@ protected:
     {
         m_Type = "OTDBString";
     }
-    OTDBString(const std::string& rhs)
+    OTDBString(const UnallocatedCString& rhs)
         : Storable()
         , m_string(rhs)
     {
@@ -745,7 +745,7 @@ protected:
 public:
     ~OTDBString() override = default;
 
-    std::string m_string;
+    UnallocatedCString m_string;
 
     DEFINE_OT_DYNAMIC_CAST(OTDBString)
 };
@@ -766,9 +766,9 @@ protected:
 public:
     ~Blob() override = default;
 
-    std::vector<std::uint8_t> m_memBuffer;  // Where the actual binary data is
-                                            // stored,
-                                            // before packing.
+    UnallocatedVector<std::uint8_t> m_memBuffer;  // Where the actual binary
+                                                  // data is stored, before
+                                                  // packing.
 
     DEFINE_OT_DYNAMIC_CAST(Blob)
 };
@@ -791,18 +791,20 @@ protected:
 public:
     ~StringMap() override = default;
 
-    std::map<std::string, std::string> the_map;
+    UnallocatedMap<UnallocatedCString, UnallocatedCString> the_map;
 
-    void SetValue(const std::string& strKey, const std::string& strValue)
+    void SetValue(
+        const UnallocatedCString& strKey,
+        const UnallocatedCString& strValue)
     {
         auto ii = the_map.find(strKey);
         if (ii != the_map.end()) the_map.erase(ii);
         the_map[strKey] = strValue;
     }
 
-    std::string GetValue(const std::string& strKey)
+    UnallocatedCString GetValue(const UnallocatedCString& strKey)
     {
-        std::string ret_val("");
+        UnallocatedCString ret_val("");
         auto ii = the_map.find(strKey);
         if (ii != the_map.end()) ret_val = (*ii).second;
         return ret_val;
@@ -827,7 +829,7 @@ protected:
 public:
     ~Displayable() override = default;
 
-    std::string gui_label;  // The label that appears in the GUI
+    UnallocatedCString gui_label;  // The label that appears in the GUI
 
     DEFINE_OT_DYNAMIC_CAST(Displayable)
 };
@@ -866,45 +868,46 @@ public:
 
     using Displayable::gui_label;  // The label that appears in the GUI
 
-    std::string notary_id;
-    std::string market_id;
+    UnallocatedCString notary_id;
+    UnallocatedCString market_id;
 
-    std::string instrument_definition_id;
-    std::string currency_type_id;
+    UnallocatedCString instrument_definition_id;
+    UnallocatedCString currency_type_id;
 
-    std::string scale;  // the Market scale. (A trade in any particular asset is
-                        // measured in X units of SCALE.)
+    UnallocatedCString scale;  // the Market scale. (A trade in any particular
+                               // asset is measured in X units of SCALE.)
     // IOW, if the scale is 5000 on the gold market, that means "3 units" is
     // 15000 gold
 
-    std::string total_assets;  // total amount of assets available on market for
-                               // purchase.
+    UnallocatedCString total_assets;  // total amount of assets available on
+                                      // market for purchase.
 
-    std::string number_bids;  // number of bids that are currently on the
-                              // market.
-    std::string number_asks;  // number of asks that are currently on the
-                              // market.
+    UnallocatedCString number_bids;  // number of bids that are currently on the
+                                     // market.
+    UnallocatedCString number_asks;  // number of asks that are currently on the
+                                     // market.
 
-    std::string last_sale_price;  // The price at which the most recent trade
-                                  // occurred on this market.
-    std::string current_bid;      // The highest bid currently on the market.
-    std::string current_ask;  // The lowest ask price currently available on the
-                              // market.
+    UnallocatedCString last_sale_price;  // The price at which the most recent
+                                         // trade occurred on this market.
+    UnallocatedCString current_bid;  // The highest bid currently on the market.
+    UnallocatedCString current_ask;  // The lowest ask price currently available
+                                     // on the market.
 
-    std::string volume_trades;  // 24-hour period, number of trades.
+    UnallocatedCString volume_trades;  // 24-hour period, number of trades.
 
-    std::string volume_assets;    // 24-hour volume, amount of assets traded.
-    std::string volume_currency;  // 24-hour volume, amount of currency paid for
-                                  // assets traded.
+    UnallocatedCString volume_assets;    // 24-hour volume, amount of assets
+                                         // traded.
+    UnallocatedCString volume_currency;  // 24-hour volume, amount of currency
+                                         // paid for assets traded.
 
-    std::string recent_highest_bid;  // in a 24hour period, the highest bid to
-                                     // hit the market.
-    std::string recent_lowest_ask;  // in a 24hour period, the lowest ask to hit
-                                    // the market.
+    UnallocatedCString recent_highest_bid;  // in a 24hour period, the highest
+                                            // bid to hit the market.
+    UnallocatedCString recent_lowest_ask;  // in a 24hour period, the lowest ask
+                                           // to hit the market.
 
-    std::string last_sale_date;  // (NEW FIELD) The date on which the most
-                                 // recent
-                                 // trade occurred on this market.
+    UnallocatedCString last_sale_date;  // (NEW FIELD) The date on which the
+                                        // most recent trade occurred on this
+                                        // market.
 
     DEFINE_OT_DYNAMIC_CAST(MarketData)
 };
@@ -952,9 +955,9 @@ public:
 
     using Displayable::gui_label;  // The label that appears in the GUI
 
-    std::string transaction_id;
-    std::string price_per_scale;
-    std::string available_assets;
+    UnallocatedCString transaction_id;
+    UnallocatedCString price_per_scale;
+    UnallocatedCString available_assets;
 
     // Each sale or purchase against (total_assets - finished_so_far) must be in
     // minimum increments.
@@ -964,10 +967,10 @@ public:
     // or greater. CANNOT be zero. Enforce this at class level. You cannot sell
     // something in minimum increments of 0.)
 
-    std::string minimum_increment;
+    UnallocatedCString minimum_increment;
 
-    std::string date;  // (NEW FIELD) The date this offer was added to the
-                       // market.
+    UnallocatedCString date;  // (NEW FIELD) The date this offer was added to
+                              // the market.
 
     DEFINE_OT_DYNAMIC_CAST(OfferDataMarket)
 };
@@ -1068,10 +1071,10 @@ public:
 
     using Displayable::gui_label;  // The label that appears in the GUI
 
-    std::string transaction_id;  // (transaction number for this trade.)
-    std::string date;            // (The date of this trade's execution)
-    std::string price;           // (The price this trade executed at.)
-    std::string amount_sold;     // (Amount of asset sold for that price.)
+    UnallocatedCString transaction_id;  // (transaction number for this trade.)
+    UnallocatedCString date;            // (The date of this trade's execution)
+    UnallocatedCString price;           // (The price this trade executed at.)
+    UnallocatedCString amount_sold;  // (Amount of asset sold for that price.)
 
     DEFINE_OT_DYNAMIC_CAST(TradeDataMarket)
 };
@@ -1131,27 +1134,27 @@ public:
 
     using Displayable::gui_label;  // The label that appears in the GUI
 
-    std::string valid_from;
-    std::string valid_to;
+    UnallocatedCString valid_from;
+    UnallocatedCString valid_to;
 
-    std::string notary_id;
-    std::string instrument_definition_id;  // the instrument definition on
-                                           // offer.
-    std::string asset_acct_id;             // the account where the asset is.
-    std::string currency_type_id;  // the currency being used to purchase the
-                                   // asset.
-    std::string currency_acct_id;  // the account where currency is.
+    UnallocatedCString notary_id;
+    UnallocatedCString instrument_definition_id;  // the instrument definition
+                                                  // on offer.
+    UnallocatedCString asset_acct_id;     // the account where the asset is.
+    UnallocatedCString currency_type_id;  // the currency being used to purchase
+                                          // the asset.
+    UnallocatedCString currency_acct_id;  // the account where currency is.
 
     bool selling;  // true for ask, false for bid.
 
-    std::string scale;  // 1oz market? 100oz market? 10,000oz market? This
-                        // determines size and granularity.
-    std::string price_per_scale;
+    UnallocatedCString scale;  // 1oz market? 100oz market? 10,000oz market?
+                               // This determines size and granularity.
+    UnallocatedCString price_per_scale;
 
-    std::string transaction_id;
+    UnallocatedCString transaction_id;
 
-    std::string total_assets;
-    std::string finished_so_far;
+    UnallocatedCString total_assets;
+    UnallocatedCString finished_so_far;
 
     // Each sale or purchase against (total_assets - finished_so_far) must be in
     // minimum increments.
@@ -1161,16 +1164,17 @@ public:
     // or greater. CANNOT be zero. Enforce this at class level. You cannot sell
     // something in minimum increments of 0.)
 
-    std::string minimum_increment;
+    UnallocatedCString minimum_increment;
 
-    std::string stop_sign;  // If this is a stop order, this will contain '<' or
-                            // '>'.
-    std::string stop_price;  // The price at which the stop order activates
-                             // (less
-                             // than X or greater than X, based on sign.)
+    UnallocatedCString stop_sign;  // If this is a stop order, this will contain
+                                   // '<' or
+                                   // '>'.
+    UnallocatedCString stop_price;  // The price at which the stop order
+                                    // activates (less than X or greater than X,
+                                    // based on sign.)
 
-    std::string date;  // (NEW FIELD) The date on which this offer was added to
-                       // the market.
+    UnallocatedCString date;  // (NEW FIELD) The date on which this offer was
+                              // added to the market.
 
     DEFINE_OT_DYNAMIC_CAST(OfferDataNym)
 };
@@ -1231,33 +1235,37 @@ public:
 
     using Displayable::gui_label;  // The label that appears in the GUI
 
-    std::string transaction_id;  // (transaction number for original offer.)
+    UnallocatedCString transaction_id;  // (transaction number for original
+                                        // offer.)
 
-    std::string completed_count;  // (How many trades have processed for the
-                                  // associated offer? We keep count for each
-                                  // trade.)
-    std::string date;             // (The date of this trade's execution)
-    std::string price;            // (The price this trade executed at.)
-    std::string amount_sold;      // (Amount of asset sold for that price.)
-    std::string updated_id;   // NEW FIELD (Transaction ID for trade receipt.)
-    std::string offer_price;  // NEW FIELD (price limit on the original offer.)
-    std::string finished_so_far;  // NEW FIELD (total amount sold across all
-                                  // trades.)
-    std::string instrument_definition_id;  // NEW FIELD instrument definition id
-                                           // for trade
-    std::string currency_id;               // NEW FIELD currency ID for trade
-    std::string currency_paid;             // NEW FIELD currency paid for trade
+    UnallocatedCString completed_count;  // (How many trades have processed for
+                                         // the associated offer? We keep count
+                                         // for each trade.)
+    UnallocatedCString date;             // (The date of this trade's execution)
+    UnallocatedCString price;            // (The price this trade executed at.)
+    UnallocatedCString amount_sold;  // (Amount of asset sold for that price.)
+    UnallocatedCString updated_id;   // NEW FIELD (Transaction ID for trade
+                                     // receipt.)
+    UnallocatedCString offer_price;  // NEW FIELD (price limit on the original
+                                     // offer.)
+    UnallocatedCString finished_so_far;  // NEW FIELD (total amount sold across
+                                         // all trades.)
+    UnallocatedCString instrument_definition_id;  // NEW FIELD instrument
+                                                  // definition id for trade
+    UnallocatedCString currency_id;    // NEW FIELD currency ID for trade
+    UnallocatedCString currency_paid;  // NEW FIELD currency paid for trade
 
-    std::string asset_acct_id;
-    std::string currency_acct_id;
+    UnallocatedCString asset_acct_id;
+    UnallocatedCString currency_acct_id;
 
-    std::string scale;
+    UnallocatedCString scale;
     bool is_bid;
 
-    std::string asset_receipt;  // FYI TradeDataNym is used on the client side.
-    std::string currency_receipt;  // These variables are set on the client
-                                   // side.
-    std::string final_receipt;
+    UnallocatedCString asset_receipt;  // FYI TradeDataNym is used on the client
+                                       // side.
+    UnallocatedCString currency_receipt;  // These variables are set on the
+                                          // client side.
+    UnallocatedCString final_receipt;
 
     DEFINE_OT_DYNAMIC_CAST(TradeDataNym)
 };
@@ -1304,8 +1312,8 @@ public:
 
     using Displayable::gui_label;  // The label that appears in the GUI
 
-    std::string acct_id;
-    std::string notary_id;
+    UnallocatedCString acct_id;
+    UnallocatedCString notary_id;
 
     DEFINE_OT_DYNAMIC_CAST(Acct)
 };
@@ -1331,7 +1339,7 @@ public:
     using Acct::acct_id;
     using Acct::notary_id;
 
-    std::string bitcoin_acct_name;
+    UnallocatedCString bitcoin_acct_name;
 
     DEFINE_OT_DYNAMIC_CAST(BitcoinAcct)
 };
@@ -1357,8 +1365,8 @@ public:
 
     using Displayable::gui_label;  // The label that appears in the GUI
 
-    std::string notary_id;
-    std::string server_type;
+    UnallocatedCString notary_id;
+    UnallocatedCString server_type;
 
     DEFINE_OT_DYNAMIC_CAST(ServerInfo)
 };
@@ -1385,8 +1393,8 @@ public:
     using ServerInfo::notary_id;    // in base class
     using ServerInfo::server_type;  // in base class
 
-    std::string server_host;
-    std::string server_port;
+    UnallocatedCString server_host;
+    UnallocatedCString server_port;
 
     DEFINE_OT_DYNAMIC_CAST(Server)
 };
@@ -1416,8 +1424,8 @@ public:
     using Server::server_host;  // in base class
     using Server::server_port;  // in base class
 
-    std::string bitcoin_username;
-    std::string bitcoin_password;
+    UnallocatedCString bitcoin_username;
+    UnallocatedCString bitcoin_password;
 
     DEFINE_OT_DYNAMIC_CAST(BitcoinServer)
 };
@@ -1449,11 +1457,11 @@ public:
     using Server::server_host;  // in base class
     using Server::server_port;  // in base class
 
-    std::string ripple_username;
-    std::string ripple_password;
+    UnallocatedCString ripple_username;
+    UnallocatedCString ripple_password;
 
-    std::string namefield_id;
-    std::string passfield_id;
+    UnallocatedCString namefield_id;
+    UnallocatedCString passfield_id;
 
     DEFINE_OT_DYNAMIC_CAST(RippleServer)
 };
@@ -1483,9 +1491,9 @@ public:
     using Server::server_host;  // in base class
     using Server::server_port;  // in base class
 
-    std::string loom_username;
+    UnallocatedCString loom_username;
 
-    std::string namefield_id;
+    UnallocatedCString namefield_id;
 
     DEFINE_OT_DYNAMIC_CAST(LoomServer)
 };
@@ -1512,10 +1520,10 @@ public:
 
     using Displayable::gui_label;  // The label that appears in the GUI
 
-    std::string nym_type;
-    std::string nym_id;
-    std::string public_key;
-    std::string memo;
+    UnallocatedCString nym_type;
+    UnallocatedCString nym_id;
+    UnallocatedCString public_key;
+    UnallocatedCString memo;
 
     DECLARE_GET_ADD_REMOVE(ServerInfo);
 
@@ -1581,13 +1589,13 @@ public:
 
     using Displayable::gui_label;  // The label that appears in the GUI
 
-    std::string server_type;
-    std::string notary_id;
-    std::string instrument_definition_id;
-    std::string acct_id;
-    std::string nym_id;
-    std::string memo;
-    std::string public_key;
+    UnallocatedCString server_type;
+    UnallocatedCString notary_id;
+    UnallocatedCString instrument_definition_id;
+    UnallocatedCString acct_id;
+    UnallocatedCString nym_id;
+    UnallocatedCString memo;
+    UnallocatedCString public_key;
 
     DEFINE_OT_DYNAMIC_CAST(ContactAcct)
 };
@@ -1615,10 +1623,10 @@ public:
 
     using Displayable::gui_label;  // The label that appears in the GUI
 
-    std::string contact_id;
-    std::string email;
-    std::string memo;
-    std::string public_key;
+    UnallocatedCString contact_id;
+    UnallocatedCString email;
+    UnallocatedCString memo;
+    UnallocatedCString public_key;
 
     DECLARE_GET_ADD_REMOVE(ContactNym);
     DECLARE_GET_ADD_REMOVE(ContactAcct);
@@ -1669,34 +1677,34 @@ protected:
     // Confirms if a file exists.  If it exists at path; return length.
     std::int64_t ConstructAndConfirmPath(
         const api::Session& api,
-        std::string& strOutput,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr);
+        UnallocatedCString& strOutput,
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr);
 
 public:
     // Verifies whether path exists AND creates folders where necessary.
     std::int64_t ConstructAndCreatePath(
         const api::Session& api,
-        std::string& strOutput,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr);
+        UnallocatedCString& strOutput,
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr);
 
 private:
     std::int64_t ConstructAndConfirmPathImp(
         const api::Session& api,
         const bool bMakePath,
-        std::string& strOutput,
-        const std::string& dataFolder,
-        const std::string& zeroStr,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr);
+        UnallocatedCString& strOutput,
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& zeroStr,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr);
 
 protected:
     // If you wish to make your own subclass of OTDB::Storage, then use
@@ -1706,64 +1714,64 @@ protected:
     bool onStorePackedBuffer(
         const api::Session& api,
         PackedBuffer& theBuffer,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) override;
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) override;
 
     bool onQueryPackedBuffer(
         const api::Session& api,
         PackedBuffer& theBuffer,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) override;
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) override;
 
     bool onStorePlainString(
         const api::Session& api,
-        const std::string& theBuffer,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) override;
+        const UnallocatedCString& theBuffer,
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) override;
 
     bool onQueryPlainString(
         const api::Session& api,
-        std::string& theBuffer,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) override;
+        UnallocatedCString& theBuffer,
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) override;
 
     bool onEraseValueByKey(
         const api::Session& api,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) override;
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) override;
 
 public:
     bool Exists(
         const api::Session& api,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) override;
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) override;
 
     std::int64_t FormPathString(
         const api::Session& api,
-        std::string& strOutput,
-        const std::string& dataFolder,
-        const std::string& strFolder,
-        const std::string& oneStr,
-        const std::string& twoStr,
-        const std::string& threeStr) override;
+        UnallocatedCString& strOutput,
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& strFolder,
+        const UnallocatedCString& oneStr,
+        const UnallocatedCString& twoStr,
+        const UnallocatedCString& threeStr) override;
 
     static StorageFS* Instantiate() { return new StorageFS; }
 

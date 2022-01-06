@@ -8,7 +8,6 @@
 #pragma once
 
 #include <iosfwd>
-#include <string>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -27,6 +26,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/ui/AccountListItem.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
@@ -75,23 +75,29 @@ using AccountListItemRow =
 class BlockchainAccountListItem final : public AccountListItemRow
 {
 public:
-    auto AccountID() const noexcept -> std::string final
+    auto AccountID() const noexcept -> UnallocatedCString final
     {
         return row_id_->str();
     }
     auto Balance() const noexcept -> Amount final;
-    auto ContractID() const noexcept -> std::string final { return contract_; }
-    auto DisplayBalance() const noexcept -> std::string final
+    auto ContractID() const noexcept -> UnallocatedCString final
+    {
+        return contract_;
+    }
+    auto DisplayBalance() const noexcept -> UnallocatedCString final
     {
         return blockchain::internal::Format(chain_, balance_);
     }
-    auto DisplayUnit() const noexcept -> std::string final
+    auto DisplayUnit() const noexcept -> UnallocatedCString final
     {
         return blockchain::internal::Ticker(chain_);
     }
-    auto Name() const noexcept -> std::string final;
-    auto NotaryID() const noexcept -> std::string final { return notary_; }
-    auto NotaryName() const noexcept -> std::string final
+    auto Name() const noexcept -> UnallocatedCString final;
+    auto NotaryID() const noexcept -> UnallocatedCString final
+    {
+        return notary_;
+    }
+    auto NotaryName() const noexcept -> UnallocatedCString final
     {
         return blockchain::DisplayString(chain_);
     }
@@ -111,10 +117,10 @@ private:
     const AccountType type_;
     const core::UnitType unit_;
     const blockchain::Type chain_;
-    const std::string contract_;
-    const std::string notary_;
+    const UnallocatedCString contract_;
+    const UnallocatedCString notary_;
     Amount balance_;
-    std::string name_;
+    UnallocatedCString name_;
 
     auto qt_data(const int column, const int role, QVariant& out) const noexcept
         -> void final;

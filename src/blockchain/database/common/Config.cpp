@@ -45,8 +45,8 @@ Configuration::Configuration(
 {
 }
 
-auto Configuration::AddSyncServer(const std::string& endpoint) const noexcept
-    -> bool
+auto Configuration::AddSyncServer(
+    const UnallocatedCString& endpoint) const noexcept -> bool
 {
     if (endpoint.empty()) { return false; }
 
@@ -74,8 +74,8 @@ auto Configuration::AddSyncServer(const std::string& endpoint) const noexcept
     return MDB_KEYEXIST == code;
 }
 
-auto Configuration::DeleteSyncServer(const std::string& endpoint) const noexcept
-    -> bool
+auto Configuration::DeleteSyncServer(
+    const UnallocatedCString& endpoint) const noexcept -> bool
 {
     if (endpoint.empty()) { return false; }
 

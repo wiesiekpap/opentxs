@@ -8,13 +8,9 @@
 #include "api/session/Contacts.hpp"  // IWYU pragma: associated
 
 #include <functional>
-#include <list>
-#include <map>
 #include <memory>
-#include <set>
 #include <stdexcept>
 #include <type_traits>
-#include <vector>
 
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/session/Factory.hpp"
@@ -42,6 +38,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -133,7 +130,7 @@ auto Contacts::contact(const rLock& lock, const Identifier& id) const
     return {};
 }
 
-auto Contacts::contact(const rLock& lock, const std::string& label) const
+auto Contacts::contact(const rLock& lock, const UnallocatedCString& label) const
     -> std::shared_ptr<const opentxs::Contact>
 {
     auto contact = std::make_unique<opentxs::Contact>(api_, label);
@@ -192,15 +189,15 @@ auto Contacts::ContactList() const -> ObjectList
     return api_.Storage().ContactList();
 }
 
-auto Contacts::ContactName(const Identifier& id) const -> std::string
+auto Contacts::ContactName(const Identifier& id) const -> UnallocatedCString
 {
     return ContactName(id, core::UnitType::Error);
 }
 
 auto Contacts::ContactName(const Identifier& id, core::UnitType currencyHint)
-    const -> std::string
+    const -> UnallocatedCString
 {
-    auto alias = std::string{};
+    auto alias = UnallocatedCString{};
     const auto fallback = [&](const rLock&) {
         if (false == alias.empty()) { return alias; }
 
@@ -531,7 +528,7 @@ auto Contacts::mutable_Contact(const Identifier& id) const
 
 auto Contacts::new_contact(
     const rLock& lock,
-    const std::string& label,
+    const UnallocatedCString& label,
     const identifier::Nym& nymID,
     const PaymentCode& code) const -> std::shared_ptr<const opentxs::Contact>
 {
@@ -586,7 +583,7 @@ auto Contacts::new_contact(
     return contact(lock, contactID);
 }
 
-auto Contacts::NewContact(const std::string& label) const
+auto Contacts::NewContact(const UnallocatedCString& label) const
     -> std::shared_ptr<const opentxs::Contact>
 {
     auto lock = rLock{lock_};
@@ -595,7 +592,7 @@ auto Contacts::NewContact(const std::string& label) const
 }
 
 auto Contacts::NewContact(
-    const std::string& label,
+    const UnallocatedCString& label,
     const identifier::Nym& nymID,
     const PaymentCode& paymentCode) const
     -> std::shared_ptr<const opentxs::Contact>
@@ -606,8 +603,8 @@ auto Contacts::NewContact(
 }
 
 auto Contacts::NewContactFromAddress(
-    const std::string& address,
-    const std::string& label,
+    const UnallocatedCString& address,
+    const UnallocatedCString& label,
     const opentxs::blockchain::Type currency) const
     -> std::shared_ptr<const opentxs::Contact>
 {
@@ -675,9 +672,9 @@ auto Contacts::NymToContact(const identifier::Nym& nymID) const -> OTIdentifier
     if (false == contactID->empty()) { return contactID; }
 
     // Contact does not yet exist. Create it.
-    std::string label{""};
+    UnallocatedCString label{""};
     auto nym = api_.Wallet().Nym(nymID);
-    auto code = api_.Factory().PaymentCode(std::string{});
+    auto code = api_.Factory().PaymentCode(UnallocatedCString{});
 
     if (nym) {
         label = nym->Claims().Name();
@@ -708,7 +705,7 @@ auto Contacts::obtain_contact(const rLock& lock, const Identifier& id) const
 }
 
 auto Contacts::PaymentCodeToContact(
-    const std::string& serialized,
+    const UnallocatedCString& serialized,
     const opentxs::blockchain::Type currency) const -> OTIdentifier
 {
     static const auto blank = api_.Factory().Identifier();
@@ -879,7 +876,7 @@ auto Contacts::Update(const identity::Nym& nym) const
 
 auto Contacts::update_existing_contact(
     const rLock& lock,
-    const std::string& label,
+    const UnallocatedCString& label,
     const PaymentCode& code,
     const Identifier& contactID) const
     -> std::shared_ptr<const opentxs::Contact>

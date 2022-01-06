@@ -13,10 +13,7 @@
 #include <cstring>
 #include <iosfwd>
 #include <ostream>
-#include <set>
 #include <stdexcept>
-#include <string>
-#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -41,6 +38,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"  // IWYU pragma: keep
@@ -71,7 +69,7 @@ auto OutputCache::load_output_index(
     const MapKeyType& key,
     const DBKeyType dbKey,
     const char* indexName,
-    const std::string& keyName,
+    const UnallocatedCString& keyName,
     MapType& map) noexcept -> Outpoints&
 {
     if (auto it = map.find(key); map.end() != it) { return it->second; }
@@ -440,7 +438,7 @@ auto OutputCache::ChangeState(
     try {
         for (const auto state : all_states()) { GetState(lock, state); }
 
-        auto deleted = std::vector<node::TxoState>{};
+        auto deleted = UnallocatedVector<node::TxoState>{};
 
         for (const auto state : all_states()) {
             if (lmdb_.Delete(
@@ -838,7 +836,7 @@ auto OutputCache::load_nyms() noexcept -> Nyms&
     const auto start = Clock::now();
 #endif  // defined OPENTXS_DETAILED_DEBUG
     auto& set = nym_list_.emplace();
-    auto tested = std::set<ReadView>{};
+    auto tested = UnallocatedSet<ReadView>{};
     lmdb_.Read(
         wallet::nyms_,
         [&](const auto key, const auto bytes) {
@@ -924,7 +922,7 @@ auto OutputCache::load_output(const block::Outpoint& id) noexcept(false)
     LogTrace()(OT_PRETTY_CLASS())("output ")(id.str())(" not found in database")
         .Flush();
 #endif  // defined OPENTXS_DETAILED_DEBUG
-    const auto error = std::string{"output "} + id.str() + " not found";
+    const auto error = UnallocatedCString{"output "} + id.str() + " not found";
 
     throw std::out_of_range{error};
 }
@@ -963,7 +961,7 @@ auto OutputCache::Print(const eLock&) const noexcept -> void
         std::stringstream text_{};
         Amount total_{};
     };
-    auto output = std::map<node::TxoState, Output>{};
+    auto output = UnallocatedMap<node::TxoState, Output>{};
 
     const auto& definition = blockchain::GetDefinition(chain_);
 

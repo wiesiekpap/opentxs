@@ -167,7 +167,7 @@ auto Primary::Path(proto::HDPath& output) const -> bool
     }
 }
 
-auto Primary::Path() const -> std::string
+auto Primary::Path() const -> UnallocatedCString
 {
     return signing_key_->GetPrivateKey().Path();
 }

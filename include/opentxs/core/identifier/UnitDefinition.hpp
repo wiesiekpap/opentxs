@@ -65,7 +65,7 @@ class OPENTXS_EXPORT UnitDefinition : virtual public opentxs::Identifier
 {
 public:
     static auto Factory() -> OTUnitID;
-    static auto Factory(const std::string& rhs) -> OTUnitID;
+    static auto Factory(const UnallocatedCString& rhs) -> OTUnitID;
     static auto Factory(const String& rhs) -> OTUnitID;
 
     ~UnitDefinition() override = default;

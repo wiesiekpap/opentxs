@@ -8,7 +8,8 @@
 #include <chrono>
 #include <cstdint>
 #include <functional>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 #define OT_STORAGE_PRIMARY_PLUGIN_SQLITE "sqlite"
 #define OT_STORAGE_PRIMARY_PLUGIN_LMDB "lmdb"
@@ -32,40 +33,41 @@ class String;
 
 namespace opentxs::storage
 {
-using InsertCB = std::function<void(const std::string&, const std::string&)>;
+using InsertCB =
+    std::function<void(const UnallocatedCString&, const UnallocatedCString&)>;
 
 class Config
 {
 public:
-    static const std::string default_plugin_;
+    static const UnallocatedCString default_plugin_;
 
-    std::string previous_primary_plugin_;
-    std::string primary_plugin_;
+    UnallocatedCString previous_primary_plugin_;
+    UnallocatedCString primary_plugin_;
     bool migrate_plugin_;
 
     bool auto_publish_nyms_;
     bool auto_publish_servers_;
     bool auto_publish_units_;
     std::int64_t gc_interval_;
-    std::string path_;
+    UnallocatedCString path_;
     InsertCB dht_callback_;
 
-    std::string fs_primary_bucket_;
-    std::string fs_secondary_bucket_;
-    std::string fs_root_file_;
-    std::string fs_backup_directory_;
-    std::string fs_encrypted_backup_directory_;
+    UnallocatedCString fs_primary_bucket_;
+    UnallocatedCString fs_secondary_bucket_;
+    UnallocatedCString fs_root_file_;
+    UnallocatedCString fs_backup_directory_;
+    UnallocatedCString fs_encrypted_backup_directory_;
 
-    std::string sqlite3_primary_bucket_;
-    std::string sqlite3_secondary_bucket_;
-    std::string sqlite3_control_table_;
-    std::string sqlite3_root_key_;
-    std::string sqlite3_db_file_;
+    UnallocatedCString sqlite3_primary_bucket_;
+    UnallocatedCString sqlite3_secondary_bucket_;
+    UnallocatedCString sqlite3_control_table_;
+    UnallocatedCString sqlite3_root_key_;
+    UnallocatedCString sqlite3_db_file_;
 
-    std::string lmdb_primary_bucket_;
-    std::string lmdb_secondary_bucket_;
-    std::string lmdb_control_table_;
-    std::string lmdb_root_key_;
+    UnallocatedCString lmdb_primary_bucket_;
+    UnallocatedCString lmdb_secondary_bucket_;
+    UnallocatedCString lmdb_control_table_;
+    UnallocatedCString lmdb_root_key_;
 
     Config(
         const api::Legacy& legacy,

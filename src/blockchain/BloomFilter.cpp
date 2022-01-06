@@ -18,7 +18,6 @@
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
-#include <vector>
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -27,6 +26,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BloomFilter.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -185,7 +185,7 @@ auto BloomFilter::Serialize(AllocateOutput out) const noexcept -> bool
         static constexpr auto fixed =
             sizeof(blockchain::internal::SerializedBloomFilter);
         const auto filter = [&] {
-            auto out = std::vector<std::uint8_t>{};
+            auto out = UnallocatedVector<std::uint8_t>{};
             boost::to_block_range(filter_, std::back_inserter(out));
 
             return out;

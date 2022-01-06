@@ -9,7 +9,6 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <map>
 #include <tuple>
 #include <utility>
 
@@ -18,6 +17,7 @@
 #include "internal/serialization/protobuf/verify/Issuer.hpp"
 #include "internal/serialization/protobuf/verify/StorageIssuers.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/Issuer.pb.h"
 #include "serialization/protobuf/StorageIssuers.pb.h"
@@ -27,7 +27,7 @@
 
 namespace opentxs::storage
 {
-Issuers::Issuers(const Driver& storage, const std::string& hash)
+Issuers::Issuers(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {
@@ -37,9 +37,12 @@ Issuers::Issuers(const Driver& storage, const std::string& hash)
     }
 }
 
-auto Issuers::Delete(const std::string& id) -> bool { return delete_item(id); }
+auto Issuers::Delete(const UnallocatedCString& id) -> bool
+{
+    return delete_item(id);
+}
 
-void Issuers::init(const std::string& hash)
+void Issuers::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageIssuers> serialized;
     driver_.LoadProto(hash, serialized);
@@ -59,9 +62,9 @@ void Issuers::init(const std::string& hash)
 }
 
 auto Issuers::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     std::shared_ptr<proto::Issuer>& output,
-    std::string& alias,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     return load_proto<proto::Issuer>(id, output, alias, checking);
@@ -100,7 +103,8 @@ auto Issuers::serialize() const -> proto::StorageIssuers
     return serialized;
 }
 
-auto Issuers::Store(const proto::Issuer& data, const std::string& alias) -> bool
+auto Issuers::Store(const proto::Issuer& data, const UnallocatedCString& alias)
+    -> bool
 {
     return store_proto(data, data.id(), alias);
 }

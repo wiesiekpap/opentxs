@@ -36,8 +36,8 @@ public:
 
     virtual auto Cheque(
         const identifier::Nym& nym,
-        const std::string& id,
-        const std::string& workflow) const noexcept -> ChequeData = 0;
+        const UnallocatedCString& id,
+        const UnallocatedCString& workflow) const noexcept -> ChequeData = 0;
     auto Internal() const noexcept -> const Activity& final { return *this; }
     using session::Activity::Mail;
     /**   Load a mail object
@@ -64,16 +64,17 @@ public:
         const identifier::Nym& nym,
         const Message& mail,
         const StorageBox box,
-        const PeerObject& text) const noexcept -> std::string = 0;
+        const PeerObject& text) const noexcept -> UnallocatedCString = 0;
     virtual auto Mail(
         const identifier::Nym& nym,
         const Message& mail,
         const StorageBox box,
-        const std::string& text) const noexcept -> std::string = 0;
+        const UnallocatedCString& text) const noexcept
+        -> UnallocatedCString = 0;
     virtual auto Transfer(
         const identifier::Nym& nym,
-        const std::string& id,
-        const std::string& workflow) const noexcept -> TransferData = 0;
+        const UnallocatedCString& id,
+        const UnallocatedCString& workflow) const noexcept -> TransferData = 0;
 
     auto Internal() noexcept -> Activity& final { return *this; }
 

@@ -6,7 +6,6 @@
 #include "internal/serialization/protobuf/verify/VerificationOffer.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "internal/serialization/protobuf/Basic.hpp"
@@ -14,6 +13,7 @@
 #include "internal/serialization/protobuf/verify/Claim.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/Verification.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/Claim.pb.h"
 #include "serialization/protobuf/Verification.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/VerificationOffer.pb.h"

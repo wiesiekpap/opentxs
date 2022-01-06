@@ -11,7 +11,6 @@
 
 #include <chrono>
 #include <cstddef>
-#include <string>
 #include <utility>
 
 #include "opentxs/Types.hpp"
@@ -22,6 +21,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace boost
@@ -60,7 +60,7 @@ public:
     auto operator()() const noexcept -> const Log&;
     auto operator()(const char* in) const noexcept -> const Log&;
     auto operator()(char* in) const noexcept -> const Log&;
-    auto operator()(const std::string& in) const noexcept -> const Log&;
+    auto operator()(const UnallocatedCString& in) const noexcept -> const Log&;
     auto operator()(const std::chrono::nanoseconds& in) const noexcept
         -> const Log&;
     auto operator()(const OTString& in) const noexcept -> const Log&;
@@ -123,5 +123,5 @@ OPENTXS_EXPORT auto LogError() noexcept -> Log&;
 OPENTXS_EXPORT auto LogInsane() noexcept -> Log&;
 OPENTXS_EXPORT auto LogTrace() noexcept -> Log&;
 OPENTXS_EXPORT auto LogVerbose() noexcept -> Log&;
-OPENTXS_EXPORT auto PrintStackTrace() noexcept -> std::string;
+OPENTXS_EXPORT auto PrintStackTrace() noexcept -> UnallocatedCString;
 }  // namespace opentxs

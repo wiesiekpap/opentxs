@@ -9,12 +9,8 @@
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
-#include <list>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <utility>
 
 #include "1_Internal.hpp"
@@ -32,6 +28,7 @@
 #include "opentxs/core/ui/Blockchains.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
@@ -67,7 +64,7 @@ class Message;
 
 namespace std
 {
-using BLOCKCHAINSELECTIONKEY = std::pair<std::string, bool>;
+using BLOCKCHAINSELECTIONKEY = std::pair<opentxs::UnallocatedCString, bool>;
 
 template <>
 struct less<BLOCKCHAINSELECTIONKEY> {
@@ -148,13 +145,13 @@ private:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
-    const std::set<blockchain::Type> filter_;
-    mutable std::map<blockchain::Type, bool> chain_state_;
+    const UnallocatedSet<blockchain::Type> filter_;
+    mutable UnallocatedMap<blockchain::Type, bool> chain_state_;
     mutable std::atomic<std::size_t> enabled_count_;
     mutable Callback enabled_callback_;
 
     static auto filter(const ui::Blockchains type) noexcept
-        -> std::set<blockchain::Type>;
+        -> UnallocatedSet<blockchain::Type>;
 
     auto process_state(const blockchain::Type chain, const bool enabled)
         const noexcept -> void;

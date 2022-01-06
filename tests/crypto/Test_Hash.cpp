@@ -6,11 +6,9 @@
 #include <gtest/gtest.h>
 #include <cstddef>
 #include <cstdint>
-#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
@@ -27,7 +25,7 @@
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -35,53 +33,65 @@ namespace ot = opentxs;
 namespace ottest
 {
 struct Nist {
-    std::string input_{};
-    std::string sha_1_{};
-    std::string sha_2_256_{};
-    std::string sha_2_512_{};
+    ot::UnallocatedCString input_{};
+    ot::UnallocatedCString sha_1_{};
+    ot::UnallocatedCString sha_2_256_{};
+    ot::UnallocatedCString sha_2_512_{};
 };
 
 class Test_Hash : public ::testing::Test
 {
 public:
-    using HMACVector =
-        std::tuple<std::string, std::string, std::string, std::string>;
-    using MurmurVector = std::tuple<std::string, std::uint32_t, std::uint32_t>;
+    using HMACVector = std::tuple<
+        ot::UnallocatedCString,
+        ot::UnallocatedCString,
+        ot::UnallocatedCString,
+        ot::UnallocatedCString>;
+    using MurmurVector =
+        std::tuple<ot::UnallocatedCString, std::uint32_t, std::uint32_t>;
     // password, salt, iterations, bytes, expected hex
-    using PbkdfVector = std::
-        tuple<std::string, std::string, std::size_t, std::size_t, std::string>;
-    using SiphashVector =
-        std::tuple<int, int, std::string, std::string, std::uint64_t>;
+    using PbkdfVector = std::tuple<
+        ot::UnallocatedCString,
+        ot::UnallocatedCString,
+        std::size_t,
+        std::size_t,
+        ot::UnallocatedCString>;
+    using SiphashVector = std::tuple<
+        int,
+        int,
+        ot::UnallocatedCString,
+        ot::UnallocatedCString,
+        std::uint64_t>;
     // input, salt, N, r, p, size, expected hex
     using ScryptVector = std::tuple<
-        std::string,
-        std::string,
+        ot::UnallocatedCString,
+        ot::UnallocatedCString,
         std::uint64_t,
         std::uint32_t,
         std::uint32_t,
         std::size_t,
-        std::string>;
+        ot::UnallocatedCString>;
     // iterations, memory, threads, input, salt, result hex
     using ArgonVector = std::tuple<
         std::uint32_t,
         std::uint32_t,
         std::uint32_t,
-        std::string,
-        std::string,
-        std::string>;
+        ot::UnallocatedCString,
+        ot::UnallocatedCString,
+        ot::UnallocatedCString>;
 
-    static const std::vector<HMACVector> hmac_sha2_;
-    static const std::vector<MurmurVector> murmur_;
-    static const std::vector<PbkdfVector> pbkdf_sha1_;
-    static const std::vector<PbkdfVector> pbkdf_sha256_;
-    static const std::vector<PbkdfVector> pbkdf_sha512_;
-    static const std::vector<ScryptVector> scrypt_rfc7914_;
-    static const std::vector<ScryptVector> scrypt_litecoin_;
-    static const std::vector<Nist> nist_hashes_;
+    static const ot::UnallocatedVector<HMACVector> hmac_sha2_;
+    static const ot::UnallocatedVector<MurmurVector> murmur_;
+    static const ot::UnallocatedVector<PbkdfVector> pbkdf_sha1_;
+    static const ot::UnallocatedVector<PbkdfVector> pbkdf_sha256_;
+    static const ot::UnallocatedVector<PbkdfVector> pbkdf_sha512_;
+    static const ot::UnallocatedVector<ScryptVector> scrypt_rfc7914_;
+    static const ot::UnallocatedVector<ScryptVector> scrypt_litecoin_;
+    static const ot::UnallocatedVector<Nist> nist_hashes_;
     static const Nist nist_one_million_;
     static const Nist nist_one_gigabyte_;
-    static const std::vector<ArgonVector> argon_2i_;
-    static const std::vector<ArgonVector> argon_2id_;
+    static const ot::UnallocatedVector<ArgonVector> argon_2i_;
+    static const ot::UnallocatedVector<ArgonVector> argon_2id_;
 
     const ot::api::Crypto& crypto_;
 
@@ -92,7 +102,7 @@ public:
 };
 
 // https://tools.ietf.org/html/rfc4231
-const std::vector<Test_Hash::HMACVector> Test_Hash::hmac_sha2_{
+const ot::UnallocatedVector<Test_Hash::HMACVector> Test_Hash::hmac_sha2_{
     {"0x0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
      "0x4869205468657265",
      "0xb0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7",
@@ -127,7 +137,7 @@ const std::vector<Test_Hash::HMACVector> Test_Hash::hmac_sha2_{
 };
 
 // https://stackoverflow.com/a/31929528
-const std::vector<Test_Hash::MurmurVector> Test_Hash::murmur_{
+const ot::UnallocatedVector<Test_Hash::MurmurVector> Test_Hash::murmur_{
     {"", 0, 0},
     {"", 1, 1364076727},
     {"", 4294967295, 2180083513},
@@ -144,7 +154,7 @@ const std::vector<Test_Hash::MurmurVector> Test_Hash::murmur_{
 };
 
 // https://tools.ietf.org/html/rfc6070
-const std::vector<Test_Hash::PbkdfVector> Test_Hash::pbkdf_sha1_{
+const ot::UnallocatedVector<Test_Hash::PbkdfVector> Test_Hash::pbkdf_sha1_{
     {"password", "salt", 1, 20, "0x0c60c80f961f0e71f3a9b524af6012062fe037a6"},
     {"password", "salt", 2, 20, "0xea6c014dc72d6f8ccd1ed92ace1d41f0d8de8957"},
     {"password",
@@ -165,7 +175,7 @@ const std::vector<Test_Hash::PbkdfVector> Test_Hash::pbkdf_sha1_{
 };
 
 // https://github.com/Anti-weakpasswords/PBKDF2-Test-Vectors/releases
-const std::vector<Test_Hash::PbkdfVector> Test_Hash::pbkdf_sha256_{
+const ot::UnallocatedVector<Test_Hash::PbkdfVector> Test_Hash::pbkdf_sha256_{
     {"password",
      "salt",
      1,
@@ -195,7 +205,7 @@ const std::vector<Test_Hash::PbkdfVector> Test_Hash::pbkdf_sha256_{
 };
 
 // https://github.com/Anti-weakpasswords/PBKDF2-Test-Vectors/releases
-const std::vector<Test_Hash::PbkdfVector> Test_Hash::pbkdf_sha512_{
+const ot::UnallocatedVector<Test_Hash::PbkdfVector> Test_Hash::pbkdf_sha512_{
     {"password",
      "salt",
      1,
@@ -223,7 +233,7 @@ const std::vector<Test_Hash::PbkdfVector> Test_Hash::pbkdf_sha512_{
 };
 
 // https://tools.ietf.org/html/rfc7914
-const std::vector<Test_Hash::ScryptVector> Test_Hash::scrypt_rfc7914_{
+const ot::UnallocatedVector<Test_Hash::ScryptVector> Test_Hash::scrypt_rfc7914_{
     {"",
      "",
      16,
@@ -259,20 +269,23 @@ const std::vector<Test_Hash::ScryptVector> Test_Hash::scrypt_rfc7914_{
 };
 
 // https://www.litecoin.info/index.php/Block_hashing_algorithm
-const std::vector<Test_Hash::ScryptVector> Test_Hash::scrypt_litecoin_{
-    {"01000000ae178934851bfa0e83ccb6a3fc4bfddff3641e104b6c4680c31509074e699be2b"
-     "d672d8d2199ef37a59678f92443083e3b85edef8b45c71759371f823bab59a97126614f44"
-     "d5001d45920180",
-     "",
-     1024,
-     1,
-     1,
-     32,
-     "01796dae1f78a72dfb09356db6f027cd884ba0201e6365b72aa54b3b00000000"},
-};
+const ot::UnallocatedVector<Test_Hash::ScryptVector>
+    Test_Hash::scrypt_litecoin_{
+        {"01000000ae178934851bfa0e83ccb6a3fc4bfddff3641e104b6c4680c31509074e699"
+         "be2b"
+         "d672d8d2199ef37a59678f92443083e3b85edef8b45c71759371f823bab59a9712661"
+         "4f44"
+         "d5001d45920180",
+         "",
+         1024,
+         1,
+         1,
+         32,
+         "01796dae1f78a72dfb09356db6f027cd884ba0201e6365b72aa54b3b00000000"},
+    };
 
 // https://www.di-mgt.com.au/sha_testvectors.html
-const std::vector<Nist> Test_Hash::nist_hashes_{
+const ot::UnallocatedVector<Nist> Test_Hash::nist_hashes_{
     {"abc",
      "a9993e364706816aba3e25717850c26c9cd0d89d",
      "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
@@ -310,7 +323,7 @@ const Nist Test_Hash::nist_one_gigabyte_{
 // https://github.com/P-H-C/phc-winner-argon2/blob/master/src/test.c
 // Modified salt length and iteration count to correspond to libsodium
 // requirements Checked against https://argon2.online/
-const std::vector<Test_Hash::ArgonVector> Test_Hash::argon_2i_{
+const ot::UnallocatedVector<Test_Hash::ArgonVector> Test_Hash::argon_2i_{
     {4,
      (1 << 16) << 10,  // 65536 KiB
      1,
@@ -357,7 +370,7 @@ const std::vector<Test_Hash::ArgonVector> Test_Hash::argon_2i_{
 // https://github.com/P-H-C/phc-winner-argon2/blob/master/src/test.c
 // Modified salt length to correspond to libsodium requirements
 // Checked against https://argon2.online/
-const std::vector<Test_Hash::ArgonVector> Test_Hash::argon_2id_{
+const ot::UnallocatedVector<Test_Hash::ArgonVector> Test_Hash::argon_2id_{
     {2,
      (1 << 16) << 10,  // 65536 KiB
      1,
@@ -553,7 +566,7 @@ TEST_F(Test_Hash, nist_million_characters)
     auto calculatedSha512 = ot::Data::Factory();
     constexpr auto copies = std::size_t{1000000};
     const auto& character = input.at(0);
-    const std::vector<char> preimage(copies, character);
+    const ot::UnallocatedVector<char> preimage(copies, character);
     const auto view = ot::ReadView{preimage.data(), preimage.size()};
 
     ASSERT_EQ(preimage.size(), copies);
@@ -583,7 +596,7 @@ TEST_F(Test_Hash, nist_gigabyte_string)
     auto calculatedSha512 = ot::Data::Factory();
     constexpr auto copies = std::size_t{16777216u};
     constexpr auto size = std::size_t{1073741824u};
-    auto preimage = std::vector<char>{};
+    auto preimage = ot::UnallocatedVector<char>{};
     preimage.reserve(size);
     const auto start = input.data();
     const auto end = input.data() + input.size();

@@ -6,7 +6,8 @@
 #pragma once
 
 #include <memory>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -15,12 +16,13 @@ class OTScript;
 
 namespace opentxs::factory
 {
-auto OTScript(const std::string& script_type = "")
+auto OTScript(const UnallocatedCString& script_type = "")
     -> std::shared_ptr<opentxs::OTScript>;
 auto OTScript(
-    const std::string& script_type,
-    const std::string& script_contents) -> std::shared_ptr<opentxs::OTScript>;
+    const UnallocatedCString& script_type,
+    const UnallocatedCString& script_contents)
+    -> std::shared_ptr<opentxs::OTScript>;
 auto OTScriptChai() -> std::shared_ptr<opentxs::OTScript>;
-auto OTScriptChai(const std::string& script_contents)
+auto OTScriptChai(const UnallocatedCString& script_contents)
     -> std::shared_ptr<opentxs::OTScript>;
 }  // namespace opentxs::factory

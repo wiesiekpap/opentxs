@@ -41,17 +41,17 @@ namespace crypto
 class OPENTXS_EXPORT Element
 {
 public:
-    using Txids = std::vector<opentxs::blockchain::block::pTxid>;
+    using Txids = UnallocatedVector<opentxs::blockchain::block::pTxid>;
 
     virtual auto Address(const AddressStyle format) const noexcept
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
     virtual auto Confirmed() const noexcept -> Txids = 0;
     virtual auto Contact() const noexcept -> OTIdentifier = 0;
     virtual auto Index() const noexcept -> Bip32Index = 0;
     virtual auto Internal() const noexcept -> internal::Element& = 0;
     virtual auto Key() const noexcept -> ECKey = 0;
     virtual auto KeyID() const noexcept -> crypto::Key = 0;
-    virtual auto Label() const noexcept -> std::string = 0;
+    virtual auto Label() const noexcept -> UnallocatedCString = 0;
     virtual auto LastActivity() const noexcept -> Time = 0;
     virtual auto Parent() const noexcept -> const Subaccount& = 0;
     virtual auto PrivateKey(const PasswordPrompt& reason) const noexcept

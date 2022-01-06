@@ -7,12 +7,9 @@
 #include "1_Internal.hpp"                             // IWYU pragma: associated
 #include "core/ui/accountsummary/AccountSummary.hpp"  // IWYU pragma: associated
 
-#include <map>
 #include <memory>
-#include <set>
 #include <thread>
 #include <utility>
-#include <vector>
 
 #include "core/ui/base/List.hpp"
 #include "internal/api/session/Wallet.hpp"
@@ -28,6 +25,7 @@
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::factory

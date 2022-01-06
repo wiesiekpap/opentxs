@@ -6,7 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/Database.hpp"
@@ -15,6 +14,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -99,6 +99,6 @@ auto BitcoinP2PPeerLegacy(
     const blockchain::database::BlockStorage policy,
     const int id,
     std::unique_ptr<blockchain::p2p::internal::Address> address,
-    const std::string& shutdown)
+    const UnallocatedCString& shutdown)
     -> std::unique_ptr<blockchain::p2p::internal::Peer>;
 }  // namespace opentxs::factory

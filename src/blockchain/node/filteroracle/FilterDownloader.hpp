@@ -69,7 +69,7 @@ public:
         const internal::Network& node,
         const blockchain::Type chain,
         const filter::Type type,
-        const std::string& shutdown,
+        const UnallocatedCString& shutdown,
         const NotifyCallback& notify) noexcept
         : FilterDM(
               [&] { return db.FilterTip(type); }(),
@@ -197,7 +197,7 @@ private:
     {
         if (0 == data.size()) { return; }
 
-        auto filters = std::vector<internal::FilterDatabase::Filter>{};
+        auto filters = UnallocatedVector<internal::FilterDatabase::Filter>{};
 
         for (const auto& task : data) {
             const auto& prior = task->previous_.get();

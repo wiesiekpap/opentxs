@@ -10,8 +10,6 @@
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
-#include <set>
-#include <string>
 
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
@@ -24,6 +22,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Context.pb.h"
 
@@ -55,14 +54,14 @@ class Base : virtual public internal::Base,
              public opentxs::contract::implementation::Signable
 {
 public:
-    auto AcknowledgedNumbers() const -> std::set<RequestNumber> final;
+    auto AcknowledgedNumbers() const -> UnallocatedSet<RequestNumber> final;
     auto AvailableNumbers() const -> std::size_t final;
     auto HaveLocalNymboxHash() const -> bool final;
     auto HaveRemoteNymboxHash() const -> bool final;
-    auto IssuedNumbers() const -> std::set<TransactionNumber> final;
-    auto Name() const noexcept -> std::string final;
+    auto IssuedNumbers() const -> UnallocatedSet<TransactionNumber> final;
+    auto Name() const noexcept -> UnallocatedCString final;
     auto NymboxHashMatch() const -> bool final;
-    auto LegacyDataFolder() const -> std::string final;
+    auto LegacyDataFolder() const -> UnallocatedCString final;
     auto LocalNymboxHash() const -> OTIdentifier final;
     auto Notary() const -> const identifier::Notary& final
     {
@@ -99,7 +98,7 @@ public:
     auto RecoverAvailableNumber(const TransactionNumber& number) -> bool final;
     auto Refresh(proto::Context& out, const PasswordPrompt& reason)
         -> bool final;
-    auto RemoveAcknowledgedNumber(const std::set<RequestNumber>& req)
+    auto RemoveAcknowledgedNumber(const UnallocatedSet<RequestNumber>& req)
         -> bool final;
     auto Reset() -> void final;
     auto SetLocalNymboxHash(const Identifier& hash) -> void final;
@@ -111,10 +110,10 @@ public:
 protected:
     const OTNotaryID server_id_;
     Nym_p remote_nym_;
-    std::set<TransactionNumber> available_transaction_numbers_;
-    std::set<TransactionNumber> issued_transaction_numbers_;
+    UnallocatedSet<TransactionNumber> available_transaction_numbers_;
+    UnallocatedSet<TransactionNumber> issued_transaction_numbers_;
     std::atomic<RequestNumber> request_number_;
-    std::set<RequestNumber> acknowledged_request_numbers_;
+    UnallocatedSet<RequestNumber> acknowledged_request_numbers_;
     OTIdentifier local_nymbox_hash_;
     OTIdentifier remote_nymbox_hash_;
 
@@ -123,7 +122,7 @@ protected:
     auto serialize(const Lock& lock, const otx::ConsensusType type) const
         -> proto::Context;
     virtual auto serialize(const Lock& lock) const -> proto::Context = 0;
-    virtual auto type() const -> std::string = 0;
+    virtual auto type() const -> UnallocatedCString = 0;
     auto validate(const Lock& lock) const -> bool final;
 
     auto add_acknowledged_number(const Lock& lock, const RequestNumber req)
@@ -134,7 +133,7 @@ protected:
         -> bool;
     auto finish_acknowledgements(
         const Lock& lock,
-        const std::set<RequestNumber>& req) -> void;
+        const UnallocatedSet<RequestNumber>& req) -> void;
     auto issue_number(const Lock& lock, const TransactionNumber& number)
         -> bool;
     auto recover_available_number(
@@ -142,7 +141,7 @@ protected:
         const TransactionNumber& number) -> bool;
     auto remove_acknowledged_number(
         const Lock& lock,
-        const std::set<RequestNumber>& req) -> bool;
+        const UnallocatedSet<RequestNumber>& req) -> bool;
     auto save(const Lock& lock, const PasswordPrompt& reason) -> bool;
     auto set_local_nymbox_hash(const Lock& lock, const Identifier& hash)
         -> void;

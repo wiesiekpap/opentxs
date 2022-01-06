@@ -11,7 +11,6 @@
 #include <cerrno>
 #include <cstddef>
 #include <iostream>
-#include <map>
 #include <utility>
 
 #include "internal/network/zeromq/Types.hpp"
@@ -22,6 +21,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::network::zeromq::socket::implementation
 {
@@ -53,7 +53,7 @@ Socket::Socket(
 
 Socket::operator void*() const noexcept { return socket_; }
 
-void Socket::add_endpoint(const std::string& endpoint) const noexcept
+void Socket::add_endpoint(const UnallocatedCString& endpoint) const noexcept
 {
     Lock lock(endpoint_lock_);
     endpoints_.emplace(endpoint);
@@ -103,8 +103,8 @@ auto Socket::apply_timeouts(const Lock& lock) const noexcept -> bool
     return true;
 }
 
-auto Socket::bind(const Lock& lock, const std::string& endpoint) const noexcept
-    -> bool
+auto Socket::bind(const Lock& lock, const UnallocatedCString& endpoint)
+    const noexcept -> bool
 {
     if (false == apply_timeouts(lock)) { return false; }
 
@@ -121,7 +121,7 @@ auto Socket::bind(const Lock& lock, const std::string& endpoint) const noexcept
     return output;
 }
 
-auto Socket::connect(const Lock& lock, const std::string& endpoint)
+auto Socket::connect(const Lock& lock, const UnallocatedCString& endpoint)
     const noexcept -> bool
 {
     if (false == apply_timeouts(lock)) { return false; }
@@ -237,7 +237,8 @@ auto Socket::receive_message(const Lock& lock, Message& message) const noexcept
     return receive_message(lock, socket_, message);
 }
 
-auto Socket::set_socks_proxy(const std::string& proxy) const noexcept -> bool
+auto Socket::set_socks_proxy(const UnallocatedCString& proxy) const noexcept
+    -> bool
 {
     OT_ASSERT(nullptr != socket_);
 
@@ -284,7 +285,7 @@ void Socket::shutdown(const Lock& lock) noexcept
     if (0 == zmq_close(socket_)) { socket_ = nullptr; }
 }
 
-auto Socket::Start(const std::string& endpoint) const noexcept -> bool
+auto Socket::Start(const UnallocatedCString& endpoint) const noexcept -> bool
 {
     SocketCallback cb{
         [&](const Lock& lock) -> bool { return start(lock, endpoint); }};
@@ -292,14 +293,15 @@ auto Socket::Start(const std::string& endpoint) const noexcept -> bool
     return apply_socket(std::move(cb));
 }
 
-auto Socket::StartAsync(const std::string& endpoint) const noexcept -> void
+auto Socket::StartAsync(const UnallocatedCString& endpoint) const noexcept
+    -> void
 {
     Lock lock{endpoint_queue_.lock_};
     endpoint_queue_.queue_.push(endpoint);
 }
 
-auto Socket::start(const Lock& lock, const std::string& endpoint) const noexcept
-    -> bool
+auto Socket::start(const Lock& lock, const UnallocatedCString& endpoint)
+    const noexcept -> bool
 {
     if (Socket::Direction::Connect == direction_) {
 

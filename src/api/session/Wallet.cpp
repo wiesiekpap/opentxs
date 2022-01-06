@@ -163,8 +163,8 @@ auto Wallet::account(
     // avoid creating the same account twice.
     if (pAccount) { return row; }
 
-    std::string serialized{""};
-    std::string alias{""};
+    UnallocatedCString serialized{""};
+    UnallocatedCString alias{""};
     const auto loaded =
         api_.Storage().Load(account.str(), serialized, alias, true);
 
@@ -212,8 +212,8 @@ auto Wallet::Account(const Identifier& accountID) const -> SharedAccount
 }
 
 auto Wallet::account_alias(
-    const std::string& accountID,
-    const std::string& hint) const -> std::string
+    const UnallocatedCString& accountID,
+    const UnallocatedCString& hint) const -> UnallocatedCString
 {
     if (false == hint.empty()) { return hint; }
 
@@ -222,8 +222,8 @@ auto Wallet::account_alias(
 
 auto Wallet::account_factory(
     const Identifier& accountID,
-    const std::string& alias,
-    const std::string& serialized) const -> opentxs::Account*
+    const UnallocatedCString& alias,
+    const UnallocatedCString& serialized) const -> opentxs::Account*
 {
     auto strContract = String::Factory(), strFirstLine = String::Factory();
     const bool bProcessed = DearmorAndTrim(
@@ -334,7 +334,8 @@ auto Wallet::account_factory(
     return pAccount.release();
 }
 
-auto Wallet::AccountPartialMatch(const std::string& hint) const -> OTIdentifier
+auto Wallet::AccountPartialMatch(const UnallocatedCString& hint) const
+    -> OTIdentifier
 {
     const auto list = api_.Storage().AccountList();
 
@@ -559,7 +560,7 @@ auto Wallet::UpdateAccount(
     const Identifier& accountID,
     const otx::context::Server& context,
     const String& serialized,
-    const std::string& label,
+    const UnallocatedCString& label,
     const PasswordPrompt& reason) const -> bool
 {
     Lock mapLock(account_map_lock_);
@@ -714,8 +715,8 @@ auto Wallet::context(
     const identifier::Nym& remoteNymID) const
     -> std::shared_ptr<otx::context::Base>
 {
-    const std::string local = localNymID.str();
-    const std::string remote = remoteNymID.str();
+    const UnallocatedCString local = localNymID.str();
+    const UnallocatedCString remote = remoteNymID.str();
     const ContextID context = {local, remote};
     auto it = context_map_.find(context);
     const bool inMap = (it != context_map_.end());
@@ -895,9 +896,10 @@ auto Wallet::ImportAccount(std::unique_ptr<opentxs::Account>& imported) const
     return false;
 }
 
-auto Wallet::IssuerList(const identifier::Nym& nymID) const -> std::set<OTNymID>
+auto Wallet::IssuerList(const identifier::Nym& nymID) const
+    -> UnallocatedSet<OTNymID>
 {
-    std::set<OTNymID> output{};
+    UnallocatedSet<OTNymID> output{};
     auto list = api_.Storage().IssuerList(nymID.str());
 
     for (const auto& it : list) {
@@ -987,7 +989,7 @@ auto Wallet::issuer(
     return blank;
 }
 
-auto Wallet::IsLocalNym(const std::string& id) const -> bool
+auto Wallet::IsLocalNym(const UnallocatedCString& id) const -> bool
 {
     return api_.Storage().LocalNyms().count(id);
 }
@@ -997,16 +999,16 @@ auto Wallet::LocalNymCount() const -> std::size_t
     return api_.Storage().LocalNyms().size();
 }
 
-auto Wallet::LocalNyms() const -> std::set<OTNymID>
+auto Wallet::LocalNyms() const -> UnallocatedSet<OTNymID>
 {
-    const std::set<std::string> ids = api_.Storage().LocalNyms();
+    const UnallocatedSet<UnallocatedCString> ids = api_.Storage().LocalNyms();
 
-    std::set<OTNymID> nymIds;
+    UnallocatedSet<OTNymID> nymIds;
     std::transform(
         ids.begin(),
         ids.end(),
         std::inserter(nymIds, nymIds.end()),
-        [](std::string nym) -> OTNymID {
+        [](UnallocatedCString nym) -> OTNymID {
             return identifier::Nym::Factory(nym);
         });
 
@@ -1031,7 +1033,7 @@ auto Wallet::Nym(
 
     if (!inMap) {
         auto serialized = proto::Nym{};
-        auto alias = std::string{};
+        auto alias = UnallocatedCString{};
         bool loaded = api_.Storage().Load(id, serialized, alias, true);
 
         if (loaded) {
@@ -1138,7 +1140,7 @@ auto Wallet::Nym(const ReadView& bytes) const -> Nym_p
 auto Wallet::Nym(
     const identity::wot::claim::ClaimType type,
     const PasswordPrompt& reason,
-    const std::string& name) const -> Nym_p
+    const UnallocatedCString& name) const -> Nym_p
 {
     return Nym({}, type, reason, name);
 }
@@ -1146,14 +1148,14 @@ auto Wallet::Nym(
 auto Wallet::Nym(
     const opentxs::crypto::Parameters& parameters,
     const PasswordPrompt& reason,
-    const std::string& name) const -> Nym_p
+    const UnallocatedCString& name) const -> Nym_p
 {
     return Nym(
         parameters, identity::wot::claim::ClaimType::Individual, reason, name);
 }
 
-auto Wallet::Nym(const PasswordPrompt& reason, const std::string& name) const
-    -> Nym_p
+auto Wallet::Nym(const PasswordPrompt& reason, const UnallocatedCString& name)
+    const -> Nym_p
 {
     return Nym({}, identity::wot::claim::ClaimType::Individual, reason, name);
 }
@@ -1162,7 +1164,7 @@ auto Wallet::Nym(
     const opentxs::crypto::Parameters& parameters,
     const identity::wot::claim::ClaimType type,
     const PasswordPrompt& reason,
-    const std::string& name) const -> Nym_p
+    const UnallocatedCString& name) const -> Nym_p
 {
     std::shared_ptr<identity::internal::Nym> pNym(
         opentxs::Factory::Nym(api_, parameters, type, name, reason));
@@ -1220,7 +1222,7 @@ auto Wallet::mutable_Nym(
     const identifier::Nym& id,
     const PasswordPrompt& reason) const -> NymData
 {
-    const std::string nym = id.str();
+    const UnallocatedCString nym = id.str();
     auto exists = Nym(id);
 
     if (false == bool(exists)) {
@@ -1326,7 +1328,7 @@ auto Wallet::nymfile_lock(const identifier::Nym& nymID) const -> std::mutex&
     return output;
 }
 
-auto Wallet::NymByIDPartialMatch(const std::string& hint) const -> Nym_p
+auto Wallet::NymByIDPartialMatch(const UnallocatedCString& hint) const -> Nym_p
 {
     const auto str = api_.Factory().NymID(hint)->str();
 
@@ -1345,7 +1347,7 @@ auto Wallet::NymList() const -> ObjectList { return api_.Storage().NymList(); }
 
 auto Wallet::NymNameByIndex(const std::size_t index, String& name) const -> bool
 {
-    std::set<std::string> nymNames = api_.Storage().LocalNyms();
+    UnallocatedSet<UnallocatedCString> nymNames = api_.Storage().LocalNyms();
 
     if (index < nymNames.size()) {
         std::size_t idx{0};
@@ -1363,7 +1365,7 @@ auto Wallet::NymNameByIndex(const std::size_t index, String& name) const -> bool
     return false;
 }
 
-auto Wallet::peer_lock(const std::string& nymID) const -> std::mutex&
+auto Wallet::peer_lock(const UnallocatedCString& nymID) const -> std::mutex&
 {
     Lock map_lock(peer_map_lock_);
     auto& output = peer_lock_[nymID];
@@ -1502,8 +1504,8 @@ auto Wallet::PeerReplyCreateRollback(
 {
     const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
-    const std::string requestID = request.str();
-    const std::string replyID = reply.str();
+    const UnallocatedCString requestID = request.str();
+    const UnallocatedCString replyID = reply.str();
     auto requestItem = proto::PeerRequest{};
     bool output = true;
     time_t notUsed = 0;
@@ -2014,7 +2016,7 @@ auto Wallet::reverse_unit_map(const UnitNameMap& map) -> Wallet::UnitNameReverse
 
 void Wallet::save(
     const PasswordPrompt& reason,
-    const std::string id,
+    const UnallocatedCString id,
     std::unique_ptr<opentxs::Account>& in,
     eLock&,
     bool success) const
@@ -2026,8 +2028,8 @@ void Wallet::save(
 
     if (false == success) {
         // Reload the last valid state for this Account.
-        std::string serialized{""};
-        std::string alias{""};
+        UnallocatedCString serialized{""};
+        UnallocatedCString alias{""};
         const auto loaded = api_.Storage().Load(id, serialized, alias, false);
 
         OT_ASSERT(loaded)
@@ -2191,8 +2193,9 @@ auto Wallet::SaveCredentialIDs(const identity::Nym& nym) const -> bool
     return true;
 }
 
-auto Wallet::SetNymAlias(const identifier::Nym& id, const std::string& alias)
-    const -> bool
+auto Wallet::SetNymAlias(
+    const identifier::Nym& id,
+    const UnallocatedCString& alias) const -> bool
 {
     Lock mapLock(nym_map_lock_);
     auto& nym = nym_map_[id].second;
@@ -2219,7 +2222,7 @@ auto Wallet::Server(
 
     if (!inMap) {
         auto serialized = proto::ServerContract{};
-        auto alias = std::string{};
+        auto alias = UnallocatedCString{};
         bool loaded = api_.Storage().Load(id, serialized, alias, true);
 
         if (loaded) {
@@ -2394,17 +2397,17 @@ auto Wallet::Server(const ReadView& contract) const -> OTServerContract
 }
 
 auto Wallet::Server(
-    const std::string& nymid,
-    const std::string& name,
-    const std::string& terms,
-    const std::list<contract::Server::Endpoint>& endpoints,
+    const UnallocatedCString& nymid,
+    const UnallocatedCString& name,
+    const UnallocatedCString& terms,
+    const UnallocatedList<contract::Server::Endpoint>& endpoints,
     const opentxs::PasswordPrompt& reason,
     const VersionNumber version) const -> OTServerContract
 {
     auto nym = Nym(identifier::Nym::Factory(nymid));
 
     if (nym) {
-        auto list = std::list<Endpoint>{};
+        auto list = UnallocatedList<Endpoint>{};
         std::transform(
             std::begin(endpoints),
             std::end(endpoints),
@@ -2432,7 +2435,7 @@ auto Wallet::Server(
         LogError()(OT_PRETTY_CLASS())("Error: Nym does not exist.").Flush();
     }
 
-    return Server(identifier::Notary::Factory(std::string{}));
+    return Server(identifier::Notary::Factory(UnallocatedCString{}));
 }
 
 auto Wallet::ServerList() const -> ObjectList
@@ -2492,7 +2495,7 @@ auto Wallet::server_to_nym(Identifier& input) const -> OTNymID
 
 auto Wallet::SetServerAlias(
     const identifier::Notary& id,
-    const std::string& alias) const -> bool
+    const UnallocatedCString& alias) const -> bool
 {
     const bool saved = api_.Storage().SetServerAlias(id, alias);
 
@@ -2515,7 +2518,7 @@ auto Wallet::SetServerAlias(
 
 auto Wallet::SetUnitDefinitionAlias(
     const identifier::UnitDefinition& id,
-    const std::string& alias) const -> bool
+    const UnallocatedCString& alias) const -> bool
 {
     const bool saved = api_.Storage().SetUnitDefinitionAlias(id, alias);
 
@@ -2560,7 +2563,7 @@ auto Wallet::UnitDefinition(
 
     if (!inMap) {
         auto serialized = proto::UnitDefinition{};
-        std::string alias;
+        UnallocatedCString alias;
         bool loaded = api_.Storage().Load(id, serialized, alias, true);
 
         if (loaded) {
@@ -2737,9 +2740,9 @@ auto Wallet::UnitDefinition(const ReadView contract) const -> OTUnitDefinition
 }
 
 auto Wallet::CurrencyContract(
-    const std::string& nymid,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& nymid,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const core::UnitType unitOfAccount,
     const Amount& redemptionIncrement,
     const PasswordPrompt& reason) const -> OTUnitDefinition
@@ -2756,9 +2759,9 @@ auto Wallet::CurrencyContract(
 }
 
 auto Wallet::CurrencyContract(
-    const std::string& nymid,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& nymid,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const core::UnitType unitOfAccount,
     const Amount& redemptionIncrement,
     const display::Definition& displayDefinition,
@@ -2776,9 +2779,9 @@ auto Wallet::CurrencyContract(
 }
 
 auto Wallet::CurrencyContract(
-    const std::string& nymid,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& nymid,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const core::UnitType unitOfAccount,
     const Amount& redemptionIncrement,
     const VersionNumber version,
@@ -2796,16 +2799,16 @@ auto Wallet::CurrencyContract(
 }
 
 auto Wallet::CurrencyContract(
-    const std::string& nymid,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& nymid,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const core::UnitType unitOfAccount,
     const Amount& redemptionIncrement,
     const display::Definition& displayDefinition,
     const VersionNumber version,
     const PasswordPrompt& reason) const -> OTUnitDefinition
 {
-    auto unit = std::string{};
+    auto unit = UnallocatedCString{};
     auto nym = Nym(identifier::Nym::Factory(nymid));
 
     if (nym) {
@@ -2835,16 +2838,16 @@ auto Wallet::CurrencyContract(
 }
 
 auto Wallet::SecurityContract(
-    const std::string& nymid,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& nymid,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const core::UnitType unitOfAccount,
     const PasswordPrompt& reason,
     const display::Definition& displayDefinition,
     const Amount& redemptionIncrement,
     const VersionNumber version) const -> OTUnitDefinition
 {
-    std::string unit;
+    UnallocatedCString unit;
     auto nym = Nym(identifier::Nym::Factory(nymid));
 
     if (nym) {
@@ -2874,7 +2877,7 @@ auto Wallet::SecurityContract(
 }
 
 auto Wallet::LoadCredential(
-    const std::string& id,
+    const UnallocatedCString& id,
     std::shared_ptr<proto::Credential>& credential) const -> bool
 {
     if (false == bool(credential)) {

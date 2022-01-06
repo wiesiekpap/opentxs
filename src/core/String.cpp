@@ -16,9 +16,7 @@ extern "C" {
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <map>
 #include <sstream>
-#include <string>
 #include <utility>
 
 #include "internal/otx/common/Contract.hpp"
@@ -28,6 +26,7 @@ extern "C" {
 #include "internal/util/String.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -78,7 +77,7 @@ auto String::Factory(const char* value) -> OTString
     return OTString(new implementation::String(value));
 }
 
-auto String::Factory(const std::string& value) -> OTString
+auto String::Factory(const UnallocatedCString& value) -> OTString
 {
     return OTString(new implementation::String(value));
 }
@@ -88,9 +87,9 @@ auto String::Factory(const char* value, std::size_t size) -> OTString
     return OTString(new implementation::String(value, size));
 }
 
-auto String::LongToString(const std::int64_t& lNumber) -> std::string
+auto String::LongToString(const std::int64_t& lNumber) -> UnallocatedCString
 {
-    std::string strNumber;
+    UnallocatedCString strNumber;
     std::stringstream strstream;
 
     strstream << lNumber;
@@ -100,15 +99,15 @@ auto String::LongToString(const std::int64_t& lNumber) -> std::string
 }
 
 auto String::replace_chars(
-    const std::string& str,
-    const std::string& charsFrom,
-    const char& charTo) -> std::string
+    const UnallocatedCString& str,
+    const UnallocatedCString& charsFrom,
+    const char& charTo) -> UnallocatedCString
 {
-    std::string l_str(str);
+    UnallocatedCString l_str(str);
     std::size_t found;
 
     found = str.find_first_of(charsFrom);
-    while (found != std::string::npos) {
+    while (found != UnallocatedCString::npos) {
         l_str[found] = charTo;
         found = str.find_first_of(charsFrom, found + 1);
     }
@@ -126,7 +125,7 @@ auto String::safe_strlen(const char* s, std::size_t max) -> std::size_t
     return strnlen(s, max);
 }
 
-auto String::StringToInt(const std::string& strNumber) -> std::int32_t
+auto String::StringToInt(const UnallocatedCString& strNumber) -> std::int32_t
 {
     if (strNumber.size() == 0) return 0;
 
@@ -144,7 +143,7 @@ auto String::StringToInt(const std::string& strNumber) -> std::int32_t
     return ((0 == v) ? 0 : ((sign == '-') ? -v : v));
 }
 
-auto String::StringToLong(const std::string& strNumber) -> std::int64_t
+auto String::StringToLong(const UnallocatedCString& strNumber) -> std::int64_t
 {
     if (strNumber.size() == 0) return 0;
 
@@ -162,7 +161,7 @@ auto String::StringToLong(const std::string& strNumber) -> std::int64_t
     return ((0 == v) ? 0 : ((sign == '-') ? -v : v));
 }
 
-auto String::StringToUint(const std::string& strNumber) -> std::uint32_t
+auto String::StringToUint(const UnallocatedCString& strNumber) -> std::uint32_t
 {
     if (strNumber.size() == 0) return 0;
 
@@ -176,7 +175,7 @@ auto String::StringToUint(const std::string& strNumber) -> std::uint32_t
     return ((0 == v) ? 0 : v);
 }
 
-auto String::StringToUlong(const std::string& strNumber) -> std::uint64_t
+auto String::StringToUlong(const UnallocatedCString& strNumber) -> std::uint64_t
 {
     if (strNumber.size() == 0) return 0;
 
@@ -190,23 +189,23 @@ auto String::StringToUlong(const std::string& strNumber) -> std::uint64_t
     return ((0 == v) ? 0 : v);
 }
 
-auto String::trim(std::string& str) -> std::string&
+auto String::trim(UnallocatedCString& str) -> UnallocatedCString&
 {
-    std::string whitespaces(" \t\f\v\n\r");
+    UnallocatedCString whitespaces(" \t\f\v\n\r");
     std::size_t found = str.find_first_not_of(whitespaces);
 
-    if (found != std::string::npos) { str.erase(0, found); }
+    if (found != UnallocatedCString::npos) { str.erase(0, found); }
 
     found = str.find_last_not_of(whitespaces);
 
-    if (found != std::string::npos) { str.erase(found + 1); }
+    if (found != UnallocatedCString::npos) { str.erase(found + 1); }
 
     return str;
 }
 
-auto String::UlongToString(const std::uint64_t& uNumber) -> std::string
+auto String::UlongToString(const std::uint64_t& uNumber) -> UnallocatedCString
 {
-    std::string strNumber;
+    UnallocatedCString strNumber;
     std::stringstream strstream;
 
     strstream << uNumber;
@@ -218,7 +217,7 @@ auto String::UlongToString(const std::uint64_t& uNumber) -> std::string
 
 namespace opentxs::implementation
 {
-const std::string String::empty_{""};
+const UnallocatedCString String::empty_{""};
 
 String::String()
     : length_(0)
@@ -282,7 +281,7 @@ String::String(const char* new_string, std::size_t sizeLength)
     LowLevelSet(new_string, static_cast<std::uint32_t>(sizeLength));
 }
 
-String::String(const std::string& new_string)
+String::String(const UnallocatedCString& new_string)
     : String()
 {
     LowLevelSet(
@@ -410,7 +409,7 @@ void String::Concatenate(const char* fmt, ...)
     va_list vl;
     va_start(vl, fmt);
 
-    std::string str_output;
+    UnallocatedCString str_output;
 
     const bool bSuccess = opentxs::vformat(fmt, &vl, str_output);
 
@@ -426,7 +425,7 @@ void String::Concatenate(const char* fmt, ...)
 // append a string at the end of the current buffer.
 void String::Concatenate(const opentxs::String& strBuf)
 {
-    std::string str_output;
+    UnallocatedCString str_output;
 
     if ((length_ > 0) && (false == internal_.empty()))
         str_output += internal_.data();
@@ -504,7 +503,7 @@ auto String::DecodeIfArmored(bool bEscapedIsAllowed) -> bool
     // Whether the string is armored or not, (-----BEGIN OT ARMORED)
     // either way, we'll end up with the decoded version in this variable:
     //
-    std::string str_Trim;
+    UnallocatedCString str_Trim;
 
     if (bArmored)  // it's armored, we have to decode it first.
     {
@@ -529,15 +528,17 @@ auto String::DecodeIfArmored(bool bEscapedIsAllowed) -> bool
                 // version.
         {
             String strTemp(ascTemp);  // <=== ascii-decoded here.
-            std::string str_temp(strTemp.Get(), strTemp.GetLength());
-            str_Trim = String::trim(str_temp);  // This is the std::string for
-                                                // the trim process.
+            UnallocatedCString str_temp(strTemp.Get(), strTemp.GetLength());
+            str_Trim =
+                String::trim(str_temp);  // This is the UnallocatedCString for
+                                         // the trim process.
         }
     } else {
-        std::string str_temp(Get(), GetLength());
-        str_Trim = String::trim(str_temp);  // This is the std::string for the
-                                            // trim process. (Wasn't armored,
-                                            // so here we use it as passed in.)
+        UnallocatedCString str_temp(Get(), GetLength());
+        str_Trim =
+            String::trim(str_temp);  // This is the UnallocatedCString for the
+                                     // trim process. (Wasn't armored,
+                                     // so here we use it as passed in.)
     }
 
     // At this point, str_Trim contains the actual contents, whether they
@@ -563,7 +564,7 @@ void String::Format(const char* fmt, ...)
     va_list vl;
     va_start(vl, fmt);
 
-    std::string str_output;
+    UnallocatedCString str_output;
 
     const bool bSuccess = opentxs::vformat(fmt, &vl, str_output);
 
@@ -659,9 +660,9 @@ void String::LowLevelSetStr(const String& strBuf)
 }
 
 auto String::make_string(const char* str, std::uint32_t length)
-    -> std::vector<char>
+    -> UnallocatedVector<char>
 {
-    std::vector<char> output{};
+    UnallocatedVector<char> output{};
 
     if ((nullptr != str) && (0 < length)) {
         auto* it = str;
@@ -834,13 +835,14 @@ void String::swap(opentxs::String& rhs)
 
 auto String::ToInt() const -> std::int32_t
 {
-    const std::string str_number(Get());
+    const UnallocatedCString str_number(Get());
 
     return StringToInt(str_number);
 }
 
 auto String::TokenizeIntoKeyValuePairs(
-    std::map<std::string, std::string>& mapOutput) const -> bool
+    UnallocatedMap<UnallocatedCString, UnallocatedCString>& mapOutput) const
+    -> bool
 {
 #if __has_include(<wordexp.h>)
     return tokenize_enhanced(mapOutput);
@@ -851,21 +853,21 @@ auto String::TokenizeIntoKeyValuePairs(
 
 auto String::ToLong() const -> std::int64_t
 {
-    const std::string str_number(Get());
+    const UnallocatedCString str_number(Get());
 
     return StringToLong(str_number);
 }
 
 auto String::ToUint() const -> std::uint32_t
 {
-    const std::string str_number(Get());
+    const UnallocatedCString str_number(Get());
 
     return StringToUint(str_number);
 }
 
 auto String::ToUlong() const -> std::uint64_t
 {
-    const std::string str_number(Get());
+    const UnallocatedCString str_number(Get());
 
     return StringToUlong(str_number);
 }
@@ -874,7 +876,7 @@ auto String::WriteInto() noexcept -> AllocateOutput
 {
     return [this](const auto size) {
         Release();
-        auto blank = std::vector<char>{};
+        auto blank = UnallocatedVector<char>{};
         blank.assign(size, 5);
         blank.push_back('\0');
         Set(blank.data());

@@ -4,7 +4,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
-#include <string>
 #include <utility>
 
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
@@ -12,6 +11,7 @@
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -21,7 +21,7 @@ namespace ottest
 class Test_ReplyCallback : public ::testing::Test
 {
 public:
-    const std::string testMessage_{"zeromq test message"};
+    const ot::UnallocatedCString testMessage_{"zeromq test message"};
 };
 
 TEST(ReplyCallback, ReplyCallback_Factory)
@@ -40,7 +40,8 @@ TEST_F(Test_ReplyCallback, ReplyCallback_Process)
     auto replyCallback = ot::network::zeromq::ReplyCallback::Factory(
         [this](ot::network::zeromq::Message&& input)
             -> ot::network::zeromq::Message {
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
             EXPECT_EQ(testMessage_, inputString);
 
             auto reply = ot::network::zeromq::reply_to_message(input);
@@ -57,7 +58,8 @@ TEST_F(Test_ReplyCallback, ReplyCallback_Process)
 
     auto message = replyCallback->Process(std::move(testMessage));
 
-    const auto messageString = std::string{message.Body().begin()->Bytes()};
+    const auto messageString =
+        ot::UnallocatedCString{message.Body().begin()->Bytes()};
     ASSERT_EQ(testMessage_, messageString);
 }
 }  // namespace ottest

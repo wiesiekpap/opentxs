@@ -109,7 +109,7 @@ auto Deterministic::accept(
     const rLock& lock,
     const Subchain type,
     const Identifier& contact,
-    const std::string& label,
+    const UnallocatedCString& label,
     const Time time,
     const Bip32Index index,
     Batch& generated,
@@ -125,7 +125,8 @@ auto Deterministic::accept(
     return index;
 }
 
-auto Deterministic::AllowedSubchains() const noexcept -> std::set<Subchain>
+auto Deterministic::AllowedSubchains() const noexcept
+    -> UnallocatedSet<Subchain>
 {
     return {data_.internal_.type_, data_.external_.type_};
 }
@@ -142,7 +143,7 @@ auto Deterministic::check(
     const rLock& lock,
     const Subchain type,
     const Identifier& contact,
-    const std::string& label,
+    const UnallocatedCString& label,
     const Time time,
     const Bip32Index candidate,
     const PasswordPrompt& reason,
@@ -225,8 +226,8 @@ auto Deterministic::check(
 
 auto Deterministic::check_activity(
     const rLock& lock,
-    const std::vector<Activity>& unspent,
-    std::set<OTIdentifier>& contacts,
+    const UnallocatedVector<Activity>& unspent,
+    UnallocatedSet<OTIdentifier>& contacts,
     const PasswordPrompt& reason) const noexcept -> bool
 {
     set_deterministic_contact(contacts);
@@ -333,7 +334,7 @@ auto Deterministic::element(
 auto Deterministic::extract_contacts(
     const Bip32Index index,
     const AddressMap& map,
-    std::set<OTIdentifier>& contacts) noexcept -> void
+    UnallocatedSet<OTIdentifier>& contacts) noexcept -> void
 {
     try {
         auto contact = map.at(index)->Contact();
@@ -524,7 +525,7 @@ auto Deterministic::Reserve(
     const Subchain type,
     const PasswordPrompt& reason,
     const Identifier& contact,
-    const std::string& label,
+    const UnallocatedCString& label,
     const Time time) const noexcept -> std::optional<Bip32Index>
 {
     auto batch = Reserve(type, 1u, reason, contact, label, time);
@@ -539,7 +540,7 @@ auto Deterministic::Reserve(
     const std::size_t batch,
     const PasswordPrompt& reason,
     const Identifier& contact,
-    const std::string& label,
+    const UnallocatedCString& label,
     const Time time) const noexcept -> Batch
 {
     auto output = Batch{};
@@ -572,7 +573,7 @@ auto Deterministic::RootNode(const PasswordPrompt& reason) const noexcept
     if (key) { return key; }
 
     auto fingerprint(path_.root());
-    auto path = std::vector<Bip32Index>{};
+    auto path = UnallocatedVector<Bip32Index>{};
 
     for (const auto& child : path_.child()) { path.emplace_back(child); }
 
@@ -617,7 +618,7 @@ auto Deterministic::set_metadata(
     const Subchain subchain,
     const Bip32Index index,
     const Identifier& contact,
-    const std::string& label) const noexcept -> void
+    const UnallocatedCString& label) const noexcept -> void
 {
     const auto blank = api_.Factory().Identifier();
 
@@ -661,7 +662,7 @@ auto Deterministic::use_next(
     const Subchain type,
     const PasswordPrompt& reason,
     const Identifier& contact,
-    const std::string& label,
+    const UnallocatedCString& label,
     const Time time,
     Batch& generated) const noexcept -> std::optional<Bip32Index>
 {

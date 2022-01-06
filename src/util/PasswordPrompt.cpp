@@ -16,15 +16,16 @@
 
 namespace opentxs
 {
-auto Factory::PasswordPrompt(const api::Session& api, const std::string& text)
-    -> opentxs::PasswordPrompt*
+auto Factory::PasswordPrompt(
+    const api::Session& api,
+    const UnallocatedCString& text) -> opentxs::PasswordPrompt*
 {
     return new opentxs::PasswordPrompt(api, text);
 }
 
 PasswordPrompt::PasswordPrompt(
     const api::Session& api,
-    const std::string& display) noexcept
+    const UnallocatedCString& display) noexcept
     : api_(api)
     , display_(display)
     , password_(api.Factory().Secret(0))

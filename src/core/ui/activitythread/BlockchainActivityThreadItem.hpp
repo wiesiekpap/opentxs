@@ -6,7 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 #include <thread>
 #include <tuple>
 
@@ -16,6 +15,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -52,12 +52,12 @@ public:
     static auto extract(
         const api::session::Client& api,
         const identifier::Nym& nymID,
-        CustomData& custom) noexcept
-        -> std::tuple<OTData, opentxs::Amount, std::string, std::string>;
+        CustomData& custom) noexcept -> std::
+        tuple<OTData, opentxs::Amount, UnallocatedCString, UnallocatedCString>;
 
     auto Amount() const noexcept -> opentxs::Amount final;
-    auto DisplayAmount() const noexcept -> std::string final;
-    auto Memo() const noexcept -> std::string final;
+    auto DisplayAmount() const noexcept -> UnallocatedCString final;
+    auto Memo() const noexcept -> UnallocatedCString final;
 
     BlockchainActivityThreadItem(
         const ActivityThreadInternalInterface& parent,
@@ -68,15 +68,15 @@ public:
         CustomData& custom,
         OTData&& txid,
         opentxs::Amount amount,
-        std::string&& displayAmount,
-        std::string&& memo) noexcept;
+        UnallocatedCString&& displayAmount,
+        UnallocatedCString&& memo) noexcept;
 
     ~BlockchainActivityThreadItem() final = default;
 
 private:
     const OTData txid_;
-    std::string display_amount_;
-    std::string memo_;
+    UnallocatedCString display_amount_;
+    UnallocatedCString memo_;
     opentxs::Amount amount_;
 
     auto reindex(const ActivityThreadSortKey& key, CustomData& custom) noexcept

@@ -7,12 +7,11 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/DeterministicStateData.hpp"  // IWYU pragma: associated
 
-#include <map>
-
 #include "blockchain/node/wallet/Progress.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/ScopeGuard.hpp"
 

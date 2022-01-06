@@ -9,7 +9,6 @@
 #include <chrono>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <mutex>
 #include <stdexcept>
 #include <utility>
@@ -21,6 +20,7 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace zmq = ot::network::zeromq;
@@ -41,7 +41,7 @@ struct Listener::Imp {
         return future.get();
     }
 
-    Imp(const ot::api::Session& api, const std::string& endpoint)
+    Imp(const ot::api::Session& api, const ot::UnallocatedCString& endpoint)
         : lock_()
         , data_()
         , counter_(-1)
@@ -101,7 +101,7 @@ private:
 
     private:
         mutable std::mutex lock_{};
-        std::map<std::size_t, Task> map_{};
+        ot::UnallocatedMap<std::size_t, Task> map_{};
     };
 
     mutable std::mutex lock_;
@@ -116,7 +116,9 @@ private:
     }
 };
 
-Listener::Listener(const ot::api::Session& api, const std::string& endpoint)
+Listener::Listener(
+    const ot::api::Session& api,
+    const ot::UnallocatedCString& endpoint)
     : imp_(std::make_unique<Imp>(api, endpoint))
 {
 }

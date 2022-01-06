@@ -131,8 +131,8 @@ BlockchainImp::BlockchainImp(
 {
 }
 
-auto BlockchainImp::AddSyncServer(const std::string& endpoint) const noexcept
-    -> bool
+auto BlockchainImp::AddSyncServer(
+    const UnallocatedCString& endpoint) const noexcept -> bool
 {
     init_.get();
 
@@ -144,8 +144,8 @@ auto BlockchainImp::ConnectedSyncServers() const noexcept -> Endpoints
     return {};  // TODO
 }
 
-auto BlockchainImp::DeleteSyncServer(const std::string& endpoint) const noexcept
-    -> bool
+auto BlockchainImp::DeleteSyncServer(
+    const UnallocatedCString& endpoint) const noexcept -> bool
 {
     init_.get();
 
@@ -177,7 +177,7 @@ auto BlockchainImp::disable(const Lock& lock, const Chain type) const noexcept
     return false;
 }
 
-auto BlockchainImp::Enable(const Chain type, const std::string& seednode)
+auto BlockchainImp::Enable(const Chain type, const UnallocatedCString& seednode)
     const noexcept -> bool
 {
     auto lock = Lock{lock_};
@@ -188,7 +188,7 @@ auto BlockchainImp::Enable(const Chain type, const std::string& seednode)
 auto BlockchainImp::enable(
     const Lock& lock,
     const Chain type,
-    const std::string& seednode) const noexcept -> bool
+    const UnallocatedCString& seednode) const noexcept -> bool
 {
     if (0 == opentxs::blockchain::SupportedChains().count(type)) {
         LogError()(OT_PRETTY_CLASS())("Unsupported chain").Flush();
@@ -207,9 +207,9 @@ auto BlockchainImp::enable(
     return start(lock, type, seednode);
 }
 
-auto BlockchainImp::EnabledChains() const noexcept -> std::set<Chain>
+auto BlockchainImp::EnabledChains() const noexcept -> UnallocatedSet<Chain>
 {
-    auto out = std::set<Chain>{};
+    auto out = UnallocatedSet<Chain>{};
     init_.get();
     const auto data = [&] {
         auto lock = Lock{lock_};
@@ -295,7 +295,7 @@ auto BlockchainImp::hello(const Lock&, const Chains& chains) const noexcept
 auto BlockchainImp::Init(
     const api::crypto::Blockchain& crypto,
     const api::Legacy& legacy,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const Options& options) noexcept -> void
 {
     crypto_ = &crypto;
@@ -338,12 +338,12 @@ auto BlockchainImp::Init(
         return {};
     }();
     init_promise_.set_value();
-    static const auto defaultServers = std::vector<std::string>{
+    static const auto defaultServers = UnallocatedVector<UnallocatedCString>{
         "tcp://54.39.129.45:8814",
         "tcp://54.38.193.222:8814",
     };
     const auto existing = [&] {
-        auto out = std::set<std::string>{};
+        auto out = UnallocatedSet<UnallocatedCString>{};
         auto v = GetSyncServers();
         std::move(v.begin(), v.end(), std::inserter(out, out.end()));
 
@@ -433,7 +433,7 @@ auto BlockchainImp::Shutdown() noexcept -> void
     Imp::Shutdown();
 }
 
-auto BlockchainImp::Start(const Chain type, const std::string& seednode)
+auto BlockchainImp::Start(const Chain type, const UnallocatedCString& seednode)
     const noexcept -> bool
 {
     auto lock = Lock{lock_};
@@ -444,7 +444,7 @@ auto BlockchainImp::Start(const Chain type, const std::string& seednode)
 auto BlockchainImp::start(
     const Lock& lock,
     const Chain type,
-    const std::string& seednode) const noexcept -> bool
+    const UnallocatedCString& seednode) const noexcept -> bool
 {
     init_.get();
 
@@ -467,7 +467,7 @@ auto BlockchainImp::start(
     switch (
         opentxs::blockchain::params::Data::Chains().at(type).p2p_protocol_) {
         case p2p::Protocol::bitcoin: {
-            auto endpoint = std::string{};
+            auto endpoint = UnallocatedCString{};
 
             if (base_config_->provide_sync_server_) {
                 sync_server_.Enable(type);
@@ -509,10 +509,10 @@ auto BlockchainImp::start(
 }
 
 auto BlockchainImp::StartSyncServer(
-    const std::string& sync,
-    const std::string& publicSync,
-    const std::string& update,
-    const std::string& publicUpdate) const noexcept -> bool
+    const UnallocatedCString& sync,
+    const UnallocatedCString& publicSync,
+    const UnallocatedCString& update,
+    const UnallocatedCString& publicUpdate) const noexcept -> bool
 {
     auto lock = Lock{lock_};
 
@@ -554,7 +554,7 @@ auto BlockchainImp::stop(const Lock& lock, const Chain type) const noexcept
     return true;
 }
 
-auto BlockchainImp::SyncEndpoint() const noexcept -> const std::string&
+auto BlockchainImp::SyncEndpoint() const noexcept -> const UnallocatedCString&
 {
     if (sync_client_) {
 
@@ -567,7 +567,7 @@ auto BlockchainImp::SyncEndpoint() const noexcept -> const std::string&
 
 auto BlockchainImp::UpdatePeer(
     const opentxs::blockchain::Type chain,
-    const std::string& address) const noexcept -> void
+    const UnallocatedCString& address) const noexcept -> void
 {
     auto work = MakeWork(WorkType::BlockchainPeerAdded);
     work.AddFrame(chain);

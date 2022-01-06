@@ -9,10 +9,7 @@
 
 #include <cstdint>
 #include <functional>
-#include <map>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "Proto.tpp"
 #include "internal/api/network/Factory.hpp"
@@ -38,6 +35,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Reply.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -174,7 +172,7 @@ Dht::Dht(
     request_unit_socket_->Start(endpoints.DhtRequestUnit());
 }
 
-auto Dht::Insert(const std::string& key, const std::string& value)
+auto Dht::Insert(const UnallocatedCString& key, const UnallocatedCString& value)
     const noexcept -> void
 {
     node_->Insert(key, value);
@@ -195,7 +193,7 @@ auto Dht::Insert(const proto::UnitDefinition& contract) const noexcept -> void
     node_->Insert(contract.id(), proto::ToString(contract));
 }
 
-auto Dht::GetPublicNym(const std::string& key) const noexcept -> void
+auto Dht::GetPublicNym(const UnallocatedCString& key) const noexcept -> void
 {
     auto lock = sLock{lock_};
     auto it = callback_map_.find(contract::Type::nym);
@@ -212,7 +210,8 @@ auto Dht::GetPublicNym(const std::string& key) const noexcept -> void
     node_->Retrieve(key, gcb);
 }
 
-auto Dht::GetServerContract(const std::string& key) const noexcept -> void
+auto Dht::GetServerContract(const UnallocatedCString& key) const noexcept
+    -> void
 {
     auto lock = sLock{lock_};
     auto it = callback_map_.find(contract::Type::notary);
@@ -229,7 +228,8 @@ auto Dht::GetServerContract(const std::string& key) const noexcept -> void
     node_->Retrieve(key, gcb);
 }
 
-auto Dht::GetUnitDefinition(const std::string& key) const noexcept -> void
+auto Dht::GetUnitDefinition(const UnallocatedCString& key) const noexcept
+    -> void
 {
     auto lock = sLock{lock_};
     auto it = callback_map_.find(contract::Type::unit);
@@ -253,7 +253,7 @@ auto Dht::OpenDHT() const noexcept -> const opentxs::network::OpenDHT&
 
 auto Dht::process_request(
     const zmq::Message& incoming,
-    void (Dht::*get)(const std::string&) const) const noexcept
+    void (Dht::*get)(const UnallocatedCString&) const) const noexcept
     -> opentxs::network::zeromq::Message
 {
     OT_ASSERT(nullptr != get)
@@ -280,11 +280,11 @@ auto Dht::process_request(
 
 auto Dht::ProcessPublicNym(
     const api::Session& api,
-    const std::string key,
+    const UnallocatedCString key,
     const DhtResults& values,
     NotifyCB notifyCB) noexcept -> bool
 {
-    std::string theresult;
+    UnallocatedCString theresult;
     bool foundData = false;
     bool foundValid = false;
 
@@ -334,11 +334,11 @@ auto Dht::ProcessPublicNym(
 
 auto Dht::ProcessServerContract(
     const api::Session& api,
-    const std::string key,
+    const UnallocatedCString key,
     const DhtResults& values,
     NotifyCB notifyCB) noexcept -> bool
 {
-    std::string theresult;
+    UnallocatedCString theresult;
     bool foundData = false;
     bool foundValid = false;
 
@@ -384,11 +384,11 @@ auto Dht::ProcessServerContract(
 
 auto Dht::ProcessUnitDefinition(
     const api::Session& api,
-    const std::string key,
+    const UnallocatedCString key,
     const DhtResults& values,
     NotifyCB notifyCB) noexcept -> bool
 {
-    std::string theresult;
+    UnallocatedCString theresult;
     bool foundData = false;
     bool foundValid = false;
 

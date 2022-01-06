@@ -56,7 +56,7 @@ auto BlockchainAPI(
     const api::session::Activity& activity,
     const api::session::Contacts& contacts,
     const api::Legacy& legacy,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const Options& args) noexcept -> std::shared_ptr<api::crypto::Blockchain>;
 auto CryptoAPI(const api::Settings& settings) noexcept
     -> std::unique_ptr<api::Crypto>;

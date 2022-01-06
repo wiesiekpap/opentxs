@@ -9,15 +9,14 @@
 
 #include <cstdint>
 #include <optional>  // IWYU pragma: keep
-#include <set>
 #include <tuple>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -40,16 +39,18 @@ OPENTXS_EXPORT auto BlockHash(
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool;
-OPENTXS_EXPORT auto DefinedChains() noexcept -> const std::set<Type>&;
-OPENTXS_EXPORT auto DisplayString(const Type type) noexcept -> std::string;
+OPENTXS_EXPORT auto DefinedChains() noexcept -> const UnallocatedSet<Type>&;
+OPENTXS_EXPORT auto DisplayString(const Type type) noexcept
+    -> UnallocatedCString;
 OPENTXS_EXPORT auto FilterHash(
     const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool;
 OPENTXS_EXPORT auto HashToNumber(const api::Session& api, ReadView hex) noexcept
-    -> std::string;
-OPENTXS_EXPORT auto HashToNumber(const Hash& hash) noexcept -> std::string;
+    -> UnallocatedCString;
+OPENTXS_EXPORT auto HashToNumber(const Hash& hash) noexcept
+    -> UnallocatedCString;
 OPENTXS_EXPORT auto HasSegwit(const Type type) noexcept -> bool;
 OPENTXS_EXPORT auto IsTestnet(const Type type) noexcept -> bool;
 OPENTXS_EXPORT auto MerkleHash(
@@ -84,8 +85,9 @@ OPENTXS_EXPORT auto ScriptHashSegwit(
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool;
-OPENTXS_EXPORT auto SupportedChains() noexcept -> const std::set<Type>&;
-OPENTXS_EXPORT auto TickerSymbol(const Type type) noexcept -> std::string;
+OPENTXS_EXPORT auto SupportedChains() noexcept -> const UnallocatedSet<Type>&;
+OPENTXS_EXPORT auto TickerSymbol(const Type type) noexcept
+    -> UnallocatedCString;
 OPENTXS_EXPORT auto TransactionHash(
     const api::Session& api,
     const Type chain,
@@ -302,7 +304,7 @@ struct ScriptElement {
     std::optional<ScriptPushBytes> bytes_{};
     std::optional<ScriptData> data_{};
 };
-using ScriptElements = std::vector<ScriptElement>;
+using ScriptElements = UnallocatedVector<ScriptElement>;
 }  // namespace bitcoin
 
 using Height = std::int64_t;
@@ -330,7 +332,7 @@ using pHeader = pHash;
 using SendOutcome = std::pair<SendResult, block::pTxid>;
 }  // namespace blockchain
 
-auto print(const blockchain::block::Position&) noexcept -> std::string;
+auto print(const blockchain::block::Position&) noexcept -> UnallocatedCString;
 }  // namespace opentxs
 
 namespace std

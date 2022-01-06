@@ -59,7 +59,7 @@ NymData::NymData(const NymData& rhs)
 auto NymData::AddChildKeyCredential(
     const Identifier& strMasterID,
     const crypto::Parameters& nymParameters,
-    const PasswordPrompt& reason) -> std::string
+    const PasswordPrompt& reason) -> UnallocatedCString
 {
     return nym().AddChildKeyCredential(strMasterID, nymParameters, reason);
 }
@@ -76,7 +76,7 @@ auto NymData::DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
 }
 
 auto NymData::AddContract(
-    const std::string& instrumentDefinitionID,
+    const UnallocatedCString& instrumentDefinitionID,
     const core::UnitType currency,
     const bool primary,
     const bool active,
@@ -95,7 +95,7 @@ auto NymData::AddContract(
 }
 
 auto NymData::AddEmail(
-    const std::string& value,
+    const UnallocatedCString& value,
     const bool primary,
     const bool active,
     const PasswordPrompt& reason) -> bool
@@ -104,7 +104,7 @@ auto NymData::AddEmail(
 }
 
 auto NymData::AddPaymentCode(
-    const std::string& code,
+    const UnallocatedCString& code,
     const core::UnitType currency,
     const bool primary,
     const bool active,
@@ -122,7 +122,7 @@ auto NymData::AddPaymentCode(
 }
 
 auto NymData::AddPhoneNumber(
-    const std::string& value,
+    const UnallocatedCString& value,
     const bool primary,
     const bool active,
     const PasswordPrompt& reason) -> bool
@@ -131,7 +131,7 @@ auto NymData::AddPhoneNumber(
 }
 
 auto NymData::AddPreferredOTServer(
-    const std::string& id,
+    const UnallocatedCString& id,
     const bool primary,
     const PasswordPrompt& reason) -> bool
 {
@@ -145,7 +145,7 @@ auto NymData::AddPreferredOTServer(
 }
 
 auto NymData::AddSocialMediaProfile(
-    const std::string& value,
+    const UnallocatedCString& value,
     const identity::wot::claim::ClaimType type,
     const bool primary,
     const bool active,
@@ -161,15 +161,18 @@ auto NymData::asPublicNym() const -> identity::Nym::Serialized
     return serialized;
 }
 
-auto NymData::BestEmail() const -> std::string { return nym().BestEmail(); }
+auto NymData::BestEmail() const -> UnallocatedCString
+{
+    return nym().BestEmail();
+}
 
-auto NymData::BestPhoneNumber() const -> std::string
+auto NymData::BestPhoneNumber() const -> UnallocatedCString
 {
     return nym().BestPhoneNumber();
 }
 
 auto NymData::BestSocialMediaProfile(
-    const identity::wot::claim::ClaimType type) const -> std::string
+    const identity::wot::claim::ClaimType type) const -> UnallocatedCString
 {
     return nym().BestSocialMediaProfile(type);
 }
@@ -184,7 +187,7 @@ auto NymData::data() const -> const identity::wot::claim::Data&
     return nym().Claims();
 }
 
-auto NymData::EmailAddresses(bool active) const -> std::string
+auto NymData::EmailAddresses(bool active) const -> UnallocatedCString
 {
     return nym().EmailAddresses(active);
 }
@@ -218,7 +221,7 @@ auto NymData::HaveContract(
     return false;
 }
 
-auto NymData::Name() const -> std::string { return nym().Name(); }
+auto NymData::Name() const -> UnallocatedCString { return nym().Name(); }
 
 auto NymData::Nym() const -> const identity::Nym& { return nym(); }
 
@@ -236,22 +239,23 @@ auto NymData::nym() const -> const identity::Nym&
     return *nym_;
 }
 
-auto NymData::PaymentCode(const core::UnitType currency) const -> std::string
+auto NymData::PaymentCode(const core::UnitType currency) const
+    -> UnallocatedCString
 {
     return Contact::PaymentCode(data(), currency);
 }
 
-auto NymData::PhoneNumbers(bool active) const -> std::string
+auto NymData::PhoneNumbers(bool active) const -> UnallocatedCString
 {
     return nym().PhoneNumbers(active);
 }
 
-auto NymData::PreferredOTServer() const -> std::string
+auto NymData::PreferredOTServer() const -> UnallocatedCString
 {
     return data().PreferredOTServer()->str();
 }
 
-auto NymData::PrintContactData() const -> std::string
+auto NymData::PrintContactData() const -> UnallocatedCString
 {
     return identity::wot::claim::Data::PrintContactData([&] {
         auto proto = proto::ContactData{};
@@ -281,7 +285,7 @@ void NymData::release()
 }
 
 auto NymData::SetCommonName(
-    const std::string& name,
+    const UnallocatedCString& name,
     const PasswordPrompt& reason) -> bool
 {
     return nym().SetCommonName(name, reason);
@@ -304,7 +308,7 @@ auto NymData::SetContactData(
 
 auto NymData::SetScope(
     const identity::wot::claim::ClaimType type,
-    const std::string& name,
+    const UnallocatedCString& name,
     const bool primary,
     const PasswordPrompt& reason) -> bool
 {
@@ -313,13 +317,13 @@ auto NymData::SetScope(
 
 auto NymData::SocialMediaProfiles(
     const identity::wot::claim::ClaimType type,
-    bool active) const -> std::string
+    bool active) const -> UnallocatedCString
 {
     return nym().SocialMediaProfiles(type, active);
 }
 
 auto NymData::SocialMediaProfileTypes() const
-    -> std::set<identity::wot::claim::ClaimType>
+    -> UnallocatedSet<identity::wot::claim::ClaimType>
 {
     return nym().SocialMediaProfileTypes();
 }

@@ -8,13 +8,12 @@
 #include "internal/otx/blind/Types.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
-#include <set>
-#include <string>
 
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/PurseType.hpp"
 #include "opentxs/otx/blind/TokenState.hpp"
 #include "opentxs/otx/blind/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/CashEnums.pb.h"
 #include "util/Container.hpp"
 
@@ -79,7 +78,7 @@ auto tokenstate_map() noexcept -> const TokenStateMap&
 
 namespace opentxs
 {
-auto print(otx::blind::CashType in) noexcept -> std::string
+auto print(otx::blind::CashType in) noexcept -> UnallocatedCString
 {
     static const auto map =
         robin_hood::unordered_flat_map<otx::blind::CashType, const char*>{
@@ -95,7 +94,8 @@ auto print(otx::blind::CashType in) noexcept -> std::string
     }
 }
 
-auto supported_otx_token_types() noexcept -> std::set<otx::blind::CashType>
+auto supported_otx_token_types() noexcept
+    -> UnallocatedSet<otx::blind::CashType>
 {
     return {otx::blind::CashType::Lucre};
 }

@@ -8,8 +8,6 @@
 #include <cstdint>
 #include <iterator>
 #include <memory>
-#include <set>
-#include <string>
 #include <tuple>
 
 #include "1_Internal.hpp"
@@ -21,7 +19,6 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -33,6 +30,7 @@
 #include "opentxs/identity/wot/claim/Item.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -48,17 +46,20 @@ public:
     ot::OTPasswordPrompt reason_;
     ot::NymData nymData_;
 
-    static std::string ExpectedStringOutput(const std::uint32_t version)
+    static ot::UnallocatedCString ExpectedStringOutput(
+        const std::uint32_t version)
     {
-        return std::string{"Version "} + std::to_string(version) +
-               std::string(" contact data\nSections found: 1\n- Section: "
-                           "Scope, version: ") +
+        return ot::UnallocatedCString{"Version "} + std::to_string(version) +
+               ot::UnallocatedCString(
+                   " contact data\nSections found: 1\n- Section: "
+                   "Scope, version: ") +
                std::to_string(version) +
-               std::string{" containing 1 item(s).\n-- Item type: "
-                           "\"Individual\", value: "
-                           "\"testNym\", start: 0, end: 0, version: "} +
+               ot::UnallocatedCString{
+                   " containing 1 item(s).\n-- Item type: "
+                   "\"Individual\", value: "
+                   "\"testNym\", start: 0, end: 0, version: "} +
                std::to_string(version) +
-               std::string{"\n--- Attributes: Active Primary \n"};
+               ot::UnallocatedCString{"\n--- Attributes: Active Primary \n"};
     }
 
     Test_NymData()
@@ -71,20 +72,20 @@ public:
     }
 };
 
-static const std::string paymentCode{
+static const ot::UnallocatedCString paymentCode{
     "PM8TJKxypQfFUaHfSq59nn82EjdGU4SpHcp2ssa4GxPshtzoFtmnjfoRuHpvLiyASD7itH6auP"
     "C66jekGjnqToqS9ZJWWdf1c9L8x4iaFCQ2Gq5hMEFC"};
 
 TEST_F(Test_NymData, AddClaim)
 {
     ot::Claim claim = std::make_tuple(
-        std::string(""),
+        ot::UnallocatedCString(""),
         ot::translate(ot::identity::wot::claim::SectionType::Contract),
         ot::translate(ot::identity::wot::claim::ClaimType::USD),
-        std::string("claimValue"),
+        ot::UnallocatedCString("claimValue"),
         NULL_START,
         NULL_END,
-        std::set<std::uint32_t>{static_cast<uint32_t>(
+        ot::UnallocatedSet<std::uint32_t>{static_cast<uint32_t>(
             ot::identity::wot::claim::Attribute::Active)});
 
     auto added = nymData_.AddClaim(claim, reason_);
@@ -190,7 +191,7 @@ TEST_F(Test_NymData, BestEmail)
     added = nymData_.AddEmail("email2", false, true, reason_);
     EXPECT_TRUE(added);
 
-    std::string email = nymData_.BestEmail();
+    ot::UnallocatedCString email = nymData_.BestEmail();
     // First email added is made primary.
     EXPECT_STREQ("email1", email.c_str());
 }
@@ -203,7 +204,7 @@ TEST_F(Test_NymData, BestPhoneNumber)
     added = nymData_.AddPhoneNumber("phone2", false, true, reason_);
     EXPECT_TRUE(added);
 
-    std::string phone = nymData_.BestPhoneNumber();
+    ot::UnallocatedCString phone = nymData_.BestPhoneNumber();
     // First phone number added is made primary.
     EXPECT_STREQ("phone1", phone.c_str());
 }
@@ -226,7 +227,7 @@ TEST_F(Test_NymData, BestSocialMediaProfile)
         reason_);
     EXPECT_TRUE(added);
 
-    std::string profile = nymData_.BestSocialMediaProfile(
+    ot::UnallocatedCString profile = nymData_.BestSocialMediaProfile(
         ot::identity::wot::claim::ClaimType::Yahoo);
     // First profile added is made primary.
     EXPECT_STREQ("profile1", profile.c_str());
@@ -238,7 +239,7 @@ TEST_F(Test_NymData, Claims)
     const auto expected =
         ExpectedStringOutput(nymData_.Nym().ContactDataVersion());
 
-    std::string output = contactData;
+    ot::UnallocatedCString output = contactData;
     EXPECT_TRUE(!output.empty());
     EXPECT_STREQ(expected.c_str(), output.c_str());
 }
@@ -246,13 +247,13 @@ TEST_F(Test_NymData, Claims)
 TEST_F(Test_NymData, DeleteClaim)
 {
     ot::Claim claim = std::make_tuple(
-        std::string(""),
+        ot::UnallocatedCString(""),
         ot::translate(ot::identity::wot::claim::SectionType::Contract),
         ot::translate(ot::identity::wot::claim::ClaimType::USD),
-        std::string("claimValue"),
+        ot::UnallocatedCString("claimValue"),
         NULL_START,
         NULL_END,
-        std::set<std::uint32_t>{static_cast<uint32_t>(
+        ot::UnallocatedSet<std::uint32_t>{static_cast<uint32_t>(
             ot::identity::wot::claim::Attribute::Active)});
 
     auto added = nymData_.AddClaim(claim, reason_);
@@ -285,16 +286,16 @@ TEST_F(Test_NymData, EmailAddresses)
 
     auto emails = nymData_.EmailAddresses(false);
     EXPECT_TRUE(
-        emails.find("email1") != std::string::npos &&
-        emails.find("email2") != std::string::npos &&
-        emails.find("email3") != std::string::npos);
+        emails.find("email1") != ot::UnallocatedCString::npos &&
+        emails.find("email2") != ot::UnallocatedCString::npos &&
+        emails.find("email3") != ot::UnallocatedCString::npos);
 
     emails = nymData_.EmailAddresses();
     // First email added is made primary and active.
     EXPECT_TRUE(
-        emails.find("email1") != std::string::npos &&
-        emails.find("email3") != std::string::npos);
-    EXPECT_TRUE(emails.find("email2") == std::string::npos);
+        emails.find("email1") != ot::UnallocatedCString::npos &&
+        emails.find("email3") != ot::UnallocatedCString::npos);
+    EXPECT_TRUE(emails.find("email2") == ot::UnallocatedCString::npos);
 }
 
 TEST_F(Test_NymData, HaveContract)
@@ -396,16 +397,16 @@ TEST_F(Test_NymData, PhoneNumbers)
 
     auto phones = nymData_.PhoneNumbers(false);
     EXPECT_TRUE(
-        phones.find("phone1") != std::string::npos &&
-        phones.find("phone2") != std::string::npos &&
-        phones.find("phone3") != std::string::npos);
+        phones.find("phone1") != ot::UnallocatedCString::npos &&
+        phones.find("phone2") != ot::UnallocatedCString::npos &&
+        phones.find("phone3") != ot::UnallocatedCString::npos);
 
     phones = nymData_.PhoneNumbers();
     // First phone number added is made primary and active.
     EXPECT_TRUE(
-        phones.find("phone1") != std::string::npos &&
-        phones.find("phone3") != std::string::npos);
-    EXPECT_TRUE(phones.find("phone2") == std::string::npos);
+        phones.find("phone1") != ot::UnallocatedCString::npos &&
+        phones.find("phone3") != ot::UnallocatedCString::npos);
+    EXPECT_TRUE(phones.find("phone2") == ot::UnallocatedCString::npos);
 }
 
 TEST_F(Test_NymData, PreferredOTServer)
@@ -445,7 +446,7 @@ TEST_F(Test_NymData, SetContactData)
 {
     const ot::identity::wot::claim::Data contactData(
         dynamic_cast<const ot::api::session::Client&>(client_),
-        std::string("contactData"),
+        ot::UnallocatedCString("contactData"),
         nymData_.Nym().ContactDataVersion(),
         nymData_.Nym().ContactDataVersion(),
         {});
@@ -502,27 +503,27 @@ TEST_F(Test_NymData, SocialMediaProfiles)
     auto profiles = nymData_.SocialMediaProfiles(
         ot::identity::wot::claim::ClaimType::Facebook, false);
     EXPECT_TRUE(
-        profiles.find("profile1") != std::string::npos &&
-        profiles.find("profile2") != std::string::npos &&
-        profiles.find("profile3") != std::string::npos);
+        profiles.find("profile1") != ot::UnallocatedCString::npos &&
+        profiles.find("profile2") != ot::UnallocatedCString::npos &&
+        profiles.find("profile3") != ot::UnallocatedCString::npos);
 
     profiles = nymData_.SocialMediaProfiles(
         ot::identity::wot::claim::ClaimType::Facebook);
     // First profile added is made primary and active.
     EXPECT_TRUE(
-        profiles.find("profile1") != std::string::npos &&
-        profiles.find("profile3") != std::string::npos);
-    EXPECT_TRUE(profiles.find("profile2") == std::string::npos);
+        profiles.find("profile1") != ot::UnallocatedCString::npos &&
+        profiles.find("profile3") != ot::UnallocatedCString::npos);
+    EXPECT_TRUE(profiles.find("profile2") == ot::UnallocatedCString::npos);
 }
 
 TEST_F(Test_NymData, SocialMediaProfileTypes)
 {
-    std::set<ot::proto::ContactItemType> profileTypes =
+    ot::UnallocatedSet<ot::proto::ContactItemType> profileTypes =
         ot::proto::AllowedItemTypes().at(ot::proto::ContactSectionVersion(
             CONTACT_CONTACT_DATA_VERSION,
             ot::translate(ot::identity::wot::claim::SectionType::Profile)));
 
-    std::set<ot::identity::wot::claim::ClaimType> output;
+    ot::UnallocatedSet<ot::identity::wot::claim::ClaimType> output;
     std::transform(
         profileTypes.begin(),
         profileTypes.end(),

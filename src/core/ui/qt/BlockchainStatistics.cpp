@@ -11,10 +11,10 @@
 #include <QVariant>
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "core/ui/blockchainstatistics/BlockchainStatisticsItem.hpp"
 #include "internal/core/ui/UI.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::factory
 {

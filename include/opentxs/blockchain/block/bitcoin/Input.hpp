@@ -10,10 +10,9 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <string>
-#include <vector>
 
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -55,12 +54,13 @@ public:
     virtual auto Coinbase() const noexcept -> Space = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Input& = 0;
-    virtual auto Keys() const noexcept -> std::vector<crypto::Key> = 0;
+    virtual auto Keys() const noexcept -> UnallocatedVector<crypto::Key> = 0;
     virtual auto PreviousOutput() const noexcept -> const Outpoint& = 0;
-    virtual auto Print() const noexcept -> std::string = 0;
+    virtual auto Print() const noexcept -> UnallocatedCString = 0;
     virtual auto Script() const noexcept -> const bitcoin::Script& = 0;
     virtual auto Sequence() const noexcept -> std::uint32_t = 0;
-    virtual auto Witness() const noexcept -> const std::vector<Space>& = 0;
+    virtual auto Witness() const noexcept
+        -> const UnallocatedVector<Space>& = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Input& = 0;
 

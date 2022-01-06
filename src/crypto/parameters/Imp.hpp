@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
-#include <string>
 
 #include "internal/crypto/Parameters.hpp"
 #include "opentxs/core/Data.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/SourceType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -48,7 +48,7 @@ public:
     crypto::Language seed_language_;
     crypto::SeedStrength seed_strength_;
     OTSecret entropy_;
-    std::string seed_;
+    UnallocatedCString seed_;
     Bip32Index nym_;
     Bip32Index credset_;
     Bip32Index cred_index_;

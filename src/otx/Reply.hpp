@@ -6,7 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
@@ -19,6 +18,7 @@
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/ServerReply.pb.h"
 
@@ -79,7 +79,7 @@ private:
     auto GetID(const Lock& lock) const -> OTIdentifier final;
     auto full_version(const Lock& lock) const -> proto::ServerReply;
     auto id_version(const Lock& lock) const -> proto::ServerReply;
-    auto Name() const noexcept -> std::string final { return {}; }
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
     auto Serialize() const noexcept -> OTData final;
     auto serialize(const Lock& lock, proto::ServerReply& output) const -> bool;
     auto signature_version(const Lock& lock) const -> proto::ServerReply;

@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"   // IWYU pragma: associated
 #include "otx/Request.hpp"  // IWYU pragma: associated
 
-#include <list>
 #include <memory>
 
 #include "Proto.hpp"
@@ -28,6 +27,7 @@
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/Request.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Nym.pb.h"

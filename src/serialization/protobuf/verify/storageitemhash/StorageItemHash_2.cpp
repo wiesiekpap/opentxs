@@ -5,8 +5,7 @@
 
 #include "internal/serialization/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: associated
 
-#include <string>
-
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageEnums.pb.h"
 #include "serialization/protobuf/StorageItemHash.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"

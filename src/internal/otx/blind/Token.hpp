@@ -47,7 +47,8 @@ namespace opentxs::otx::blind::internal
 class Token
 {
 public:
-    virtual auto ID(const PasswordPrompt& reason) const -> std::string = 0;
+    virtual auto ID(const PasswordPrompt& reason) const
+        -> UnallocatedCString = 0;
     virtual auto IsSpent(const PasswordPrompt& reason) const -> bool = 0;
     virtual auto Notary() const -> const identifier::Notary& = 0;
     virtual auto Owner() const noexcept -> blind::internal::Purse& = 0;

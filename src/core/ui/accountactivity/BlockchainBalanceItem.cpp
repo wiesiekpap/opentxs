@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <string>
 
 #include "core/ui/accountactivity/BalanceItem.hpp"
 #include "core/ui/base/Widget.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PaymentEvent.pb.h"
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
@@ -38,8 +38,8 @@ BlockchainBalanceItem::BlockchainBalanceItem(
     [[maybe_unused]] const blockchain::Type chain,
     const OTData txid,
     const opentxs::Amount amount,
-    const std::string memo,
-    const std::string text) noexcept
+    const UnallocatedCString memo,
+    const UnallocatedCString text) noexcept
     : BalanceItem(parent, api, rowID, sortKey, custom, nymID, accountID, text)
     , chain_(chain)
     , txid_(txid)
@@ -53,9 +53,9 @@ BlockchainBalanceItem::BlockchainBalanceItem(
 }
 
 auto BlockchainBalanceItem::Contacts() const noexcept
-    -> std::vector<std::string>
+    -> UnallocatedVector<UnallocatedCString>
 {
-    auto output = std::vector<std::string>{};
+    auto output = UnallocatedVector<UnallocatedCString>{};
 
     for (const auto& id : api_.Storage().BlockchainThreadMap(nym_id_, txid_)) {
         if (0 < id->size()) { output.emplace_back(id->str()); }
@@ -64,14 +64,14 @@ auto BlockchainBalanceItem::Contacts() const noexcept
     return output;
 }
 
-auto BlockchainBalanceItem::DisplayAmount() const noexcept -> std::string
+auto BlockchainBalanceItem::DisplayAmount() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 
     return blockchain::internal::Format(chain_, amount_);
 }
 
-auto BlockchainBalanceItem::Memo() const noexcept -> std::string
+auto BlockchainBalanceItem::Memo() const noexcept -> UnallocatedCString
 {
     sLock lock{shared_lock_};
 
@@ -96,7 +96,7 @@ auto BlockchainBalanceItem::reindex(
     const auto txid = extract_custom<OTData>(custom, 5);
     const auto amount = tx.NetBalanceChange(nym_id_);
     const auto memo = tx.Memo();
-    const auto text = extract_custom<std::string>(custom, 4);
+    const auto text = extract_custom<UnallocatedCString>(custom, 4);
     const auto conf = extract_custom<int>(custom, 6);
 
     OT_ASSERT(chain_ == chain);
@@ -125,7 +125,7 @@ auto BlockchainBalanceItem::reindex(
     return output;
 }
 
-auto BlockchainBalanceItem::UUID() const noexcept -> std::string
+auto BlockchainBalanceItem::UUID() const noexcept -> UnallocatedCString
 {
     return blockchain::HashToNumber(txid_);
 }

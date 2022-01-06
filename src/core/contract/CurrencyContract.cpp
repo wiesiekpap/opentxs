@@ -23,8 +23,8 @@ namespace opentxs
 auto Factory::CurrencyContract(
     const api::Session& api,
     const Nym_p& nym,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const core::UnitType unitOfAccount,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason,
@@ -93,8 +93,8 @@ namespace opentxs::contract::unit::implementation
 Currency::Currency(
     const api::Session& api,
     const Nym_p& nym,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const core::UnitType unitOfAccount,
     const VersionNumber version,
     const display::Definition& displayDefinition,

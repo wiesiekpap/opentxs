@@ -13,12 +13,10 @@
 #include <cstdint>
 #include <future>
 #include <memory>
-#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
-#include <vector>
 
 #include "Proto.hpp"
 #include "core/ui/base/List.hpp"
@@ -51,6 +49,7 @@
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -108,9 +107,10 @@ ActivityThread::ActivityThread(
     pipeline_.Push(MakeWork(Work::init));
 }
 
-auto ActivityThread::calculate_display_name() const noexcept -> std::string
+auto ActivityThread::calculate_display_name() const noexcept
+    -> UnallocatedCString
 {
-    auto names = std::set<std::string>{};
+    auto names = UnallocatedSet<UnallocatedCString>{};
 
     for (const auto& contactID : contacts_) {
         names.emplace(Widget::api_.Contacts().ContactName(contactID));
@@ -119,9 +119,10 @@ auto ActivityThread::calculate_display_name() const noexcept -> std::string
     return comma(names);
 }
 
-auto ActivityThread::calculate_participants() const noexcept -> std::string
+auto ActivityThread::calculate_participants() const noexcept
+    -> UnallocatedCString
 {
-    auto ids = std::set<std::string>{};
+    auto ids = UnallocatedSet<UnallocatedCString>{};
 
     for (const auto& id : contacts_) { ids.emplace(id->str()); }
 
@@ -156,8 +157,8 @@ auto ActivityThread::ClearCallbacks() const noexcept -> void
     callbacks_ = std::nullopt;
 }
 
-auto ActivityThread::comma(const std::set<std::string>& list) const noexcept
-    -> std::string
+auto ActivityThread::comma(const UnallocatedSet<UnallocatedCString>& list)
+    const noexcept -> UnallocatedCString
 {
     auto stream = std::ostringstream{};
 
@@ -217,7 +218,7 @@ auto ActivityThread::construct_row(
     }
 }
 
-auto ActivityThread::DisplayName() const noexcept -> std::string
+auto ActivityThread::DisplayName() const noexcept -> UnallocatedCString
 {
     wait_for_startup();
     auto lock = rLock{recursive_lock_};
@@ -225,12 +226,12 @@ auto ActivityThread::DisplayName() const noexcept -> std::string
     return display_name_;
 }
 
-auto ActivityThread::from(bool outgoing) const noexcept -> std::string
+auto ActivityThread::from(bool outgoing) const noexcept -> UnallocatedCString
 {
     return outgoing ? me_ : display_name_;
 }
 
-auto ActivityThread::GetDraft() const noexcept -> std::string
+auto ActivityThread::GetDraft() const noexcept -> UnallocatedCString
 {
     auto lock = rLock{recursive_lock_};
 
@@ -240,7 +241,7 @@ auto ActivityThread::GetDraft() const noexcept -> std::string
 auto ActivityThread::load_contacts(const proto::StorageThread& thread) noexcept
     -> void
 {
-    auto& contacts = const_cast<std::set<OTIdentifier>&>(contacts_);
+    auto& contacts = const_cast<UnallocatedSet<OTIdentifier>&>(contacts_);
 
     for (const auto& id : thread.participant()) {
         contacts.emplace(Widget::api_.Factory().Identifier(id));
@@ -264,11 +265,11 @@ auto ActivityThread::load_thread(const proto::StorageThread& thread) noexcept
 
 auto ActivityThread::new_thread() noexcept -> void
 {
-    auto& contacts = const_cast<std::set<OTIdentifier>&>(contacts_);
+    auto& contacts = const_cast<UnallocatedSet<OTIdentifier>&>(contacts_);
     contacts.emplace(threadID_);
 }
 
-auto ActivityThread::Participants() const noexcept -> std::string
+auto ActivityThread::Participants() const noexcept -> UnallocatedCString
 {
     wait_for_startup();
     auto lock = rLock{recursive_lock_};
@@ -277,9 +278,9 @@ auto ActivityThread::Participants() const noexcept -> std::string
 }
 
 auto ActivityThread::Pay(
-    const std::string& amount,
+    const UnallocatedCString& amount,
     const Identifier& sourceAccount,
-    const std::string& memo,
+    const UnallocatedCString& memo,
     const PaymentType type) const noexcept -> bool
 {
     const auto& unitID = Widget::api_.Storage().AccountContract(sourceAccount);
@@ -316,7 +317,7 @@ auto ActivityThread::Pay(
 auto ActivityThread::Pay(
     const Amount amount,
     const Identifier& sourceAccount,
-    const std::string& memo,
+    const UnallocatedCString& memo,
     const PaymentType type) const noexcept -> bool
 {
     wait_for_startup();
@@ -346,7 +347,7 @@ auto ActivityThread::Pay(
 }
 
 auto ActivityThread::PaymentCode(const core::UnitType currency) const noexcept
-    -> std::string
+    -> UnallocatedCString
 {
     wait_for_startup();
     auto lock = rLock{recursive_lock_};
@@ -467,11 +468,11 @@ auto ActivityThread::process_item(
     const auto key =
         ActivityThreadSortKey{std::chrono::seconds(item.time()), item.index()};
     auto custom = CustomData{
-        new std::string{},
-        new std::string{},
+        new UnallocatedCString{},
+        new UnallocatedCString{},
     };
-    auto& sender = *static_cast<std::string*>(custom.at(0));
-    auto& text = *static_cast<std::string*>(custom.at(1));
+    auto& sender = *static_cast<UnallocatedCString*>(custom.at(0));
+    auto& text = *static_cast<UnallocatedCString*>(custom.at(1));
     auto& loading = *static_cast<bool*>(custom.emplace_back(new bool{false}));
     custom.emplace_back(new bool{false});
     auto& outgoing = *static_cast<bool*>(custom.emplace_back(new bool{false}));
@@ -518,11 +519,11 @@ auto ActivityThread::process_item(
             text = Widget::api_.Crypto().Blockchain().ActivityDescription(
                 primary_id_, chain, tx);
             const auto amount = tx.NetBalanceChange(primary_id_);
-            custom.emplace_back(new std::string{item.txid()});
+            custom.emplace_back(new UnallocatedCString{item.txid()});
             custom.emplace_back(new opentxs::Amount{amount});
-            custom.emplace_back(
-                new std::string{blockchain::internal::Format(chain, amount)});
-            custom.emplace_back(new std::string{tx.Memo()});
+            custom.emplace_back(new UnallocatedCString{
+                blockchain::internal::Format(chain, amount)});
+            custom.emplace_back(new UnallocatedCString{tx.Memo()});
 
             outgoing = (0 > amount);
         } break;
@@ -580,8 +581,8 @@ auto ActivityThread::process_message_loaded(const Message& message) noexcept
     }();
     const auto outgoing{box == StorageBox::MAILOUTBOX};
     auto custom = CustomData{
-        new std::string{from(outgoing)},
-        new std::string{body.at(4).Bytes()},
+        new UnallocatedCString{from(outgoing)},
+        new UnallocatedCString{body.at(4).Bytes()},
         new bool{false},
         new bool{false},
         new bool{outgoing},
@@ -653,7 +654,7 @@ auto ActivityThread::refresh_thread() noexcept -> void
 
     OT_ASSERT(loaded)
 
-    auto active = std::set<ActivityThreadRowID>{};
+    auto active = UnallocatedSet<ActivityThreadRowID>{};
 
     for (const auto& item : thread.item()) {
         try {
@@ -682,7 +683,7 @@ auto ActivityThread::refresh_thread() noexcept -> void
 auto ActivityThread::send_cheque(
     const Amount amount,
     const Identifier& sourceAccount,
-    const std::string& memo) const noexcept -> bool
+    const UnallocatedCString& memo) const noexcept -> bool
 {
     if (false == validate_account(sourceAccount)) { return false; }
 
@@ -694,7 +695,7 @@ auto ActivityThread::send_cheque(
         return false;
     }
 
-    auto displayAmount = std::string{};
+    auto displayAmount = UnallocatedCString{};
 
     try {
         const auto contract = Widget::api_.Wallet().UnitDefinition(
@@ -727,14 +728,14 @@ auto ActivityThread::send_cheque(
     const auto key = ActivityThreadSortKey{Clock::now(), 0};
     static constexpr auto outgoing{true};
     auto custom = CustomData{
-        new std::string{from(outgoing)},
-        new std::string{"Sending cheque"},
+        new UnallocatedCString{from(outgoing)},
+        new UnallocatedCString{"Sending cheque"},
         new bool{false},
         new bool{true},
         new bool{outgoing},
         new Amount{amount},
-        new std::string{displayAmount},
-        new std::string{memo}};
+        new UnallocatedCString{displayAmount},
+        new UnallocatedCString{memo}};
     {
         auto lock = rLock{recursive_lock_};
         const_cast<ActivityThread&>(*this).add_item(id, key, custom);
@@ -777,8 +778,8 @@ auto ActivityThread::SendDraft() const noexcept -> bool
         const ActivityThreadSortKey key{Clock::now(), 0};
         static constexpr auto outgoing{true};
         auto custom = CustomData{
-            new std::string{from(outgoing)},
-            new std::string{draft_},
+            new UnallocatedCString{from(outgoing)},
+            new UnallocatedCString{draft_},
             new bool{false},
             new bool{true},
             new bool{outgoing},
@@ -803,7 +804,8 @@ auto ActivityThread::SetCallbacks(Callbacks&& cb) noexcept -> void
     }
 }
 
-auto ActivityThread::SetDraft(const std::string& draft) const noexcept -> bool
+auto ActivityThread::SetDraft(const UnallocatedCString& draft) const noexcept
+    -> bool
 {
     if (draft.empty()) { return false; }
 
@@ -823,7 +825,7 @@ auto ActivityThread::SetDraft(const std::string& draft) const noexcept -> bool
 
 auto ActivityThread::set_participants() noexcept -> void
 {
-    auto& participants = const_cast<std::string&>(participants_);
+    auto& participants = const_cast<UnallocatedCString&>(participants_);
     participants = calculate_participants();
 }
 
@@ -876,7 +878,7 @@ auto ActivityThread::state_machine() noexcept -> bool
     return again;
 }
 
-auto ActivityThread::ThreadID() const noexcept -> std::string
+auto ActivityThread::ThreadID() const noexcept -> UnallocatedCString
 {
     return threadID_->str();
 }
@@ -925,7 +927,7 @@ auto ActivityThread::update_messagability(Messagability value) noexcept -> bool
 
 auto ActivityThread::update_payment_codes() noexcept -> bool
 {
-    auto map = std::map<core::UnitType, std::string>{};
+    auto map = UnallocatedMap<core::UnitType, UnallocatedCString>{};
 
     if (1 != contacts_.size()) { OT_FAIL; }
 

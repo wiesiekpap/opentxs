@@ -9,8 +9,6 @@
 #include <iosfwd>
 #include <memory>
 #include <new>
-#include <set>
-#include <vector>
 
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
@@ -19,6 +17,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -48,7 +47,7 @@ public:
     {
         return Data::Factory(block_hash_);
     }
-    auto getIndices() const noexcept -> const std::vector<std::size_t>&
+    auto getIndices() const noexcept -> const UnallocatedVector<std::size_t>&
     {
         return txn_indices_;
     }
@@ -57,18 +56,18 @@ public:
         const api::Session& api,
         const blockchain::Type network,
         const Data& block_hash,
-        const std::vector<std::size_t>& txn_indices) noexcept;
+        const UnallocatedVector<std::size_t>& txn_indices) noexcept;
     Getblocktxn(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const Data& block_hash,
-        const std::vector<std::size_t>& txn_indices) noexcept(false);
+        const UnallocatedVector<std::size_t>& txn_indices) noexcept(false);
 
     ~Getblocktxn() final = default;
 
 private:
     const OTData block_hash_;
-    const std::vector<std::size_t> txn_indices_;
+    const UnallocatedVector<std::size_t> txn_indices_;
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;

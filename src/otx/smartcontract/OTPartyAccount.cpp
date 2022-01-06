@@ -9,7 +9,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/common/Account.hpp"
@@ -23,6 +22,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -37,7 +37,7 @@ namespace opentxs
 {
 OTPartyAccount::OTPartyAccount(
     const api::session::Wallet& wallet,
-    const std::string& dataFolder)
+    const UnallocatedCString& dataFolder)
     : wallet_(wallet)
     , data_folder_{dataFolder}
     , m_pForParty(nullptr)
@@ -54,8 +54,8 @@ OTPartyAccount::OTPartyAccount(
 // transaction # provided, for the finalReceipt for that account.
 OTPartyAccount::OTPartyAccount(
     const api::session::Wallet& wallet,
-    const std::string& dataFolder,
-    const std::string& str_account_name,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& str_account_name,
     const String& strAgentName,
     Account& theAccount,
     std::int64_t lClosingTransNo)
@@ -74,7 +74,7 @@ OTPartyAccount::OTPartyAccount(
 
 OTPartyAccount::OTPartyAccount(
     const api::session::Wallet& wallet,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const String& strName,
     const String& strAgentName,
     const String& strAcctID,
@@ -114,7 +114,7 @@ auto OTPartyAccount::GetAuthorizedAgent() -> OTAgent*
         return nullptr;
     }
 
-    const std::string str_agent_name = m_strAgentName->Get();
+    const UnallocatedCString str_agent_name = m_strAgentName->Get();
 
     OTAgent* pAgent = m_pForParty->GetAgent(str_agent_name);
 
@@ -292,7 +292,7 @@ auto OTPartyAccount::DropFinalReceiptToInbox(
     // TODO: When entites and roles are added, this function may change a bit to
     // accommodate them.
 
-    const std::string str_agent_name(m_strAgentName->Get());
+    const UnallocatedCString str_agent_name(m_strAgentName->Get());
 
     OTAgent* pAgent = m_pForParty->GetAgent(str_agent_name);
 
@@ -380,7 +380,7 @@ void OTPartyAccount::Serialize(
 
 void OTPartyAccount::RegisterForExecution(OTScript& theScript)
 {
-    const std::string str_acct_name = m_strName->Get();
+    const UnallocatedCString str_acct_name = m_strName->Get();
     theScript.AddAccount(str_acct_name, *this);
 }
 

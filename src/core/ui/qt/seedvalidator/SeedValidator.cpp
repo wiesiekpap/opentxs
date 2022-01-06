@@ -8,14 +8,13 @@
 #include "opentxs/core/ui/qt/SeedValidator.hpp"  // IWYU pragma: associated
 
 #include <QChar>
-#include <string>
-#include <vector>
 
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::ui
 {

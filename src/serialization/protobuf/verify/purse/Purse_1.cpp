@@ -6,14 +6,13 @@
 #include "internal/serialization/protobuf/verify/Purse.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <set>
-#include <string>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/Envelope.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/SymmetricKey.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/Token.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCash.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/CashEnums.pb.h"
 #include "serialization/protobuf/Purse.pb.h"
@@ -27,13 +26,15 @@ namespace proto
 {
 auto CheckProto_1(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_1(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_1(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     switch (input.type()) {
         case CASHTYPE_LUCRE: {
@@ -44,7 +45,7 @@ auto CheckProto_1(const Purse& input, const bool silent, std::string& value)
         }
     }
 
-    auto allowedStates = std::set<TokenState>{};
+    auto allowedStates = UnallocatedSet<TokenState>{};
     auto validFrom = std::int64_t{Clock::to_time_t(Time::min())};
     auto validTo = std::int64_t{Clock::to_time_t(Time::max())};
 
@@ -106,247 +107,285 @@ auto CheckProto_1(const Purse& input, const bool silent, std::string& value)
 
 auto CheckProto_2(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_2(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_2(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(2)
 }
 
 auto CheckProto_3(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_3(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_3(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(3)
 }
 
 auto CheckProto_4(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_4(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_4(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(4)
 }
 
 auto CheckProto_5(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_5(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_5(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(5)
 }
 
 auto CheckProto_6(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_6(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_6(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(6)
 }
 
 auto CheckProto_7(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_7(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_7(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(7)
 }
 
 auto CheckProto_8(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_8(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_8(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(8)
 }
 
 auto CheckProto_9(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_9(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_9(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(9)
 }
 
 auto CheckProto_10(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_10(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_10(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(10)
 }
 
 auto CheckProto_11(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_11(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_11(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(11)
 }
 
 auto CheckProto_12(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_12(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_12(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(12)
 }
 
 auto CheckProto_13(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_13(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_13(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(13)
 }
 
 auto CheckProto_14(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_14(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_14(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(14)
 }
 
 auto CheckProto_15(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_15(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_15(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(15)
 }
 
 auto CheckProto_16(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_16(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_16(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(16)
 }
 
 auto CheckProto_17(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_17(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_17(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(17)
 }
 
 auto CheckProto_18(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_18(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_18(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(18)
 }
 
 auto CheckProto_19(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_19(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_19(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(19)
 }
 
 auto CheckProto_20(const Purse& input, const bool silent) -> bool
 {
-    std::string value{"0"};
+    UnallocatedCString value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_20(const Purse& input, const bool silent, std::string& value)
-    -> bool
+auto CheckProto_20(
+    const Purse& input,
+    const bool silent,
+    UnallocatedCString& value) -> bool
 {
     UNDEFINED_VERSION(20)
 }

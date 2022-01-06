@@ -14,13 +14,10 @@
 #include <functional>
 #include <iosfwd>
 #include <limits>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <stdexcept>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "2_Factory.hpp"
 #include "internal/api/Crypto.hpp"
@@ -46,6 +43,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/PasswordCallback.hpp"
@@ -71,7 +69,8 @@ namespace opentxs::api
 {
 auto Context::PrepareSignalHandling() noexcept -> void { Signals::Block(); }
 
-auto Context::SuggestFolder(const std::string& app) noexcept -> std::string
+auto Context::SuggestFolder(const UnallocatedCString& app) noexcept
+    -> UnallocatedCString
 {
     return Legacy::SuggestFolder(app);
 }
@@ -140,7 +139,7 @@ auto Context::ClientSession(const int instance) const
     return *output;
 }
 
-auto Context::Config(const std::string& path) const noexcept
+auto Context::Config(const UnallocatedCString& path) const noexcept
     -> const api::Settings&
 {
     std::unique_lock<std::mutex> lock(config_lock_);
@@ -178,7 +177,10 @@ auto Context::GetPasswordCaller() const noexcept -> PasswordCaller&
     return *external_password_callback_;
 }
 
-auto Context::ProfileId() const noexcept -> std::string { return profile_id_; }
+auto Context::ProfileId() const noexcept -> UnallocatedCString
+{
+    return profile_id_;
+}
 
 auto Context::Init() noexcept -> void
 {
@@ -219,7 +221,7 @@ auto Context::Init_Profile() -> void
         existing_profile_id,
         profile_id_exists);
     if (profile_id_exists) {
-        profile_id_ = std::string(existing_profile_id->Get());
+        profile_id_ = UnallocatedCString(existing_profile_id->Get());
     } else {
         const auto new_profile_id(crypto_->Encode().Nonce(20));
         bool new_or_update{true};
@@ -228,7 +230,7 @@ auto Context::Init_Profile() -> void
             String::Factory("profile_id"),
             new_profile_id,
             new_or_update);
-        profile_id_ = std::string(new_profile_id->Get());
+        profile_id_ = UnallocatedCString(new_profile_id->Get());
     }
 }
 
@@ -426,8 +428,9 @@ auto Context::StartClientSession(const int instance) const
 auto Context::StartClientSession(
     const Options& args,
     const int instance,
-    const std::string& recoverWords,
-    const std::string& recoverPassphrase) const -> const api::session::Client&
+    const UnallocatedCString& recoverWords,
+    const UnallocatedCString& recoverPassphrase) const
+    -> const api::session::Client&
 {
     OT_ASSERT(crypto::HaveHDKeys());
 

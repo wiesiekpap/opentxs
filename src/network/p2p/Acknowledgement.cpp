@@ -10,13 +10,13 @@
 #include <memory>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include "internal/network/p2p/Factory.hpp"
 #include "network/p2p/Base.hpp"
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/State.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::factory
 {
@@ -29,7 +29,7 @@ auto BlockchainSyncAcknowledgement() noexcept -> network::p2p::Acknowledgement
 
 auto BlockchainSyncAcknowledgement(
     network::p2p::StateData in,
-    std::string endpoint) noexcept -> network::p2p::Acknowledgement
+    UnallocatedCString endpoint) noexcept -> network::p2p::Acknowledgement
 {
     using ReturnType = network::p2p::Acknowledgement;
 
@@ -40,7 +40,7 @@ auto BlockchainSyncAcknowledgement(
 
 auto BlockchainSyncAcknowledgement_p(
     network::p2p::StateData in,
-    std::string endpoint) noexcept
+    UnallocatedCString endpoint) noexcept
     -> std::unique_ptr<network::p2p::Acknowledgement>
 {
     using ReturnType = network::p2p::Acknowledgement;
@@ -74,7 +74,7 @@ public:
         , parent_(nullptr)
     {
     }
-    Imp(StateData state, std::string endpoint) noexcept
+    Imp(StateData state, UnallocatedCString endpoint) noexcept
         : Base::Imp(
               Base::Imp::default_version_,
               MessageType::sync_ack,
@@ -99,7 +99,7 @@ Acknowledgement::Acknowledgement(Imp* imp) noexcept
     imp_->parent_ = this;
 }
 
-auto Acknowledgement::Endpoint() const noexcept -> const std::string&
+auto Acknowledgement::Endpoint() const noexcept -> const UnallocatedCString&
 {
     return imp_->endpoint_;
 }

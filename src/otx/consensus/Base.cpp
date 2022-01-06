@@ -107,7 +107,7 @@ Base::Base(
     }
 }
 
-auto Base::AcknowledgedNumbers() const -> std::set<RequestNumber>
+auto Base::AcknowledgedNumbers() const -> UnallocatedSet<RequestNumber>
 {
     auto lock = Lock{lock_};
 
@@ -227,12 +227,12 @@ auto Base::contract(const Lock& lock) const -> proto::Context
 // are not on the provided set
 auto Base::finish_acknowledgements(
     const Lock& lock,
-    const std::set<RequestNumber>& req) -> void
+    const UnallocatedSet<RequestNumber>& req) -> void
 {
     OT_ASSERT(verify_write_lock(lock));
 
     clear_signatures(lock);
-    auto toErase = std::set<RequestNumber>{};
+    auto toErase = UnallocatedSet<RequestNumber>{};
 
     for (const auto& number : acknowledged_request_numbers_) {
         if (0 == req.count(number)) { toErase.insert(number); }
@@ -412,14 +412,17 @@ auto Base::issue_number(const Lock& lock, const TransactionNumber& number)
     return output;
 }
 
-auto Base::IssuedNumbers() const -> std::set<TransactionNumber>
+auto Base::IssuedNumbers() const -> UnallocatedSet<TransactionNumber>
 {
     auto lock = Lock{lock_};
 
     return issued_transaction_numbers_;
 }
 
-auto Base::LegacyDataFolder() const -> std::string { return api_.DataFolder(); }
+auto Base::LegacyDataFolder() const -> UnallocatedCString
+{
+    return api_.DataFolder();
+}
 
 auto Base::LocalNymboxHash() const -> OTIdentifier
 {
@@ -436,7 +439,7 @@ auto Base::mutable_Nymfile(const PasswordPrompt& reason)
     return api_.Wallet().Internal().mutable_Nymfile(nym_->ID(), reason);
 }
 
-auto Base::Name() const noexcept -> std::string
+auto Base::Name() const noexcept -> UnallocatedCString
 {
     auto lock = Lock{lock_};
 
@@ -511,7 +514,7 @@ auto Base::RemoteNymboxHash() const -> OTIdentifier
 
 auto Base::remove_acknowledged_number(
     const Lock& lock,
-    const std::set<RequestNumber>& req) -> bool
+    const UnallocatedSet<RequestNumber>& req) -> bool
 {
     OT_ASSERT(verify_write_lock(lock));
 
@@ -525,7 +528,8 @@ auto Base::remove_acknowledged_number(
     return (0 < removed);
 }
 
-auto Base::RemoveAcknowledgedNumber(const std::set<RequestNumber>& req) -> bool
+auto Base::RemoveAcknowledgedNumber(const UnallocatedSet<RequestNumber>& req)
+    -> bool
 {
     auto lock = Lock{lock_};
 

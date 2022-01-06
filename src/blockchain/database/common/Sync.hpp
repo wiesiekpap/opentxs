@@ -11,13 +11,10 @@
 #include <cstring>
 #include <iosfwd>
 #include <iterator>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
 #include <stdexcept>
-#include <string>
-#include <vector>
 
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
@@ -29,6 +26,7 @@
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
@@ -65,7 +63,7 @@ public:
     using Height = opentxs::blockchain::block::Height;
     using Block = opentxs::network::p2p::Block;
     using Message = opentxs::network::p2p::Data;
-    using Items = std::vector<Block>;
+    using Items = UnallocatedVector<Block>;
 
     auto Load(const Chain chain, const Height height, Message& output)
         const noexcept -> bool;
@@ -77,7 +75,7 @@ public:
     Sync(
         const api::Session& api,
         storage::lmdb::LMDB& lmdb,
-        const std::string& path) noexcept(false);
+        const UnallocatedCString& path) noexcept(false);
 
     ~Sync();
 

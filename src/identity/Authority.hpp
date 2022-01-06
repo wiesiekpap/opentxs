@@ -6,10 +6,7 @@
 #pragma once
 
 #include <cstdint>
-#include <list>
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "Proto.hpp"
@@ -35,6 +32,7 @@
 #include "opentxs/identity/credential/Key.hpp"
 #include "opentxs/identity/credential/Primary.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 
@@ -183,7 +181,7 @@ public:
 
     auto AddChildKeyCredential(
         const crypto::Parameters& parameters,
-        const PasswordPrompt& reason) -> std::string final;
+        const PasswordPrompt& reason) -> UnallocatedCString final;
     auto AddVerificationCredential(
         const proto::VerificationSet& verificationSet,
         const PasswordPrompt& reason) -> bool final;
@@ -191,9 +189,9 @@ public:
         const proto::ContactData& contactData,
         const PasswordPrompt& reason) -> bool final;
     void RevokeContactCredentials(
-        std::list<std::string>& contactCredentialIDs) final;
+        UnallocatedList<UnallocatedCString>& contactCredentialIDs) final;
     void RevokeVerificationCredentials(
-        std::list<std::string>& verificationCredentialIDs) final;
+        UnallocatedList<UnallocatedCString>& verificationCredentialIDs) final;
     auto WriteCredentials() const -> bool final;
 
     ~Authority() final = default;
@@ -202,16 +200,17 @@ private:
     friend opentxs::Factory;
     friend internal::Authority;
 
-    using ContactCredentialMap =
-        std::map<OTIdentifier, std::unique_ptr<credential::internal::Contact>>;
+    using ContactCredentialMap = UnallocatedMap<
+        OTIdentifier,
+        std::unique_ptr<credential::internal::Contact>>;
     using KeyCredentialMap = std::
         map<OTIdentifier, std::unique_ptr<credential::internal::Secondary>>;
     using KeyCredentialItem = std::
         pair<OTIdentifier, std::unique_ptr<credential::internal::Secondary>>;
     using VerificationCredentialMap = std::
         map<OTIdentifier, std::unique_ptr<credential::internal::Verification>>;
-    using mapOfCredentials =
-        std::map<std::string, std::unique_ptr<credential::internal::Base>>;
+    using mapOfCredentials = std::
+        map<UnallocatedCString, std::unique_ptr<credential::internal::Base>>;
 
     static const VersionConversionMap authority_to_contact_;
     static const VersionConversionMap authority_to_primary_;
@@ -231,7 +230,7 @@ private:
     proto::KeyMode mode_{proto::KEYMODE_ERROR};
 
     static auto is_revoked(
-        const std::string& id,
+        const UnallocatedCString& id,
         const String::List* plistRevokedIDs) -> bool;
     static auto create_child_credential(
         const api::Session& api,
@@ -280,7 +279,8 @@ private:
         const credential::Base::SerializedType& serialized,
         const proto::KeyMode mode,
         const proto::CredentialRole role,
-        std::map<OTIdentifier, std::unique_ptr<Type>>& map) noexcept(false);
+        UnallocatedMap<OTIdentifier, std::unique_ptr<Type>>&
+            map) noexcept(false);
     static auto load_master(
         const api::Session& api,
         identity::internal::Authority& owner,
@@ -297,7 +297,7 @@ private:
         const Serialized& serialized,
         const proto::KeyMode mode,
         const proto::CredentialRole role) noexcept(false)
-        -> std::map<OTIdentifier, std::unique_ptr<Type>>;
+        -> UnallocatedMap<OTIdentifier, std::unique_ptr<Type>>;
 
     auto get_keypair(
         const crypto::key::asymmetric::Algorithm type,
@@ -305,7 +305,7 @@ private:
         const String::List* plistRevokedIDs) const
         -> const crypto::key::Keypair&;
     auto get_secondary_credential(
-        const std::string& strSubID,
+        const UnallocatedCString& strSubID,
         const String::List* plistRevokedIDs = nullptr) const
         -> const credential::Base*;
 

@@ -11,9 +11,7 @@
 #include <irrxml/irrXML.hpp>
 #include <chrono>
 #include <cstdint>
-#include <deque>
 #include <memory>
-#include <string>
 
 #include "internal/otx/Types.hpp"
 #include "internal/otx/common/Contract.hpp"
@@ -24,6 +22,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -132,7 +131,7 @@ public:
         -> std::unique_ptr<OTCronItem>;  // Client-side only.
     static auto EraseActiveCronReceipt(
         const api::Session& api,
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const TransactionNumber& lTransactionNum,
         const identifier::Nym& nymID,
         const identifier::Notary& notaryID) -> bool;  // Client-side only.
@@ -140,7 +139,7 @@ public:
         const api::Session& api,
         NumList& output,  // Client-side
                           // only.
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const identifier::Nym& nymID,
         const identifier::Notary& notaryID) -> bool;
     inline void SetCreationDate(const Time CREATION_DATE)
@@ -208,7 +207,7 @@ public:
         const identity::Nym& theCancelerNym,
         const PasswordPrompt& reason) -> bool;
 
-    // These are for     std::deque<std::int64_t> m_dequeClosingNumbers;
+    // These are for     UnallocatedDeque<std::int64_t> m_dequeClosingNumbers;
     // They are numbers used for CLOSING a transaction. (finalReceipt.)
     auto GetClosingTransactionNoAt(std::uint32_t nIndex) const -> std::int64_t;
     auto GetCountClosingNumbers() const -> std::int32_t;
@@ -228,10 +227,10 @@ public:
     auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
 protected:
-    std::deque<std::int64_t> m_dequeClosingNumbers;  // Numbers used for
-                                                     // CLOSING a
-                                                     // transaction.
-                                                     // (finalReceipt.)
+    UnallocatedDeque<std::int64_t> m_dequeClosingNumbers;  // Numbers used for
+                                                           // CLOSING a
+                                                           // transaction.
+                                                           // (finalReceipt.)
     OTNymID m_pCancelerNymID;
 
     bool m_bCanceled{false};  // This defaults to false. But if someone

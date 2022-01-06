@@ -12,12 +12,9 @@
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <string>
 #include <tuple>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/otx/common/Message.hpp"
@@ -33,6 +30,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/rpc/Types.hpp"
 #include "opentxs/util/rpc/request/Base.hpp"
 #include "opentxs/util/rpc/response/Base.hpp"
@@ -108,7 +106,7 @@ public:
 private:
     using Args = const ::google::protobuf::RepeatedPtrField<
         ::opentxs::proto::APIArgument>;
-    using TaskID = std::string;
+    using TaskID = UnallocatedCString;
     using Future = api::session::OTX::Future;
     using Result = api::session::OTX::Result;
     using Finish =
@@ -117,7 +115,7 @@ private:
 
     const api::Context& ot_;
     mutable std::mutex task_lock_;
-    mutable std::map<TaskID, TaskData> queued_tasks_;
+    mutable UnallocatedMap<TaskID, TaskData> queued_tasks_;
     const OTZMQListenCallback task_callback_;
     const OTZMQListenCallback push_callback_;
     const OTZMQPullSocket push_receiver_;
@@ -131,14 +129,14 @@ private:
         proto::TaskComplete& output,
         proto::RPCResponseCode code);
     static void add_output_identifier(
-        const std::string& id,
+        const UnallocatedCString& id,
         proto::RPCResponse& output);
     static void add_output_identifier(
-        const std::string& id,
+        const UnallocatedCString& id,
         proto::TaskComplete& output);
     static void add_output_task(
         proto::RPCResponse& output,
-        const std::string& taskid);
+        const UnallocatedCString& taskid);
     static auto get_account_event_type(
         StorageBox storagebox,
         Amount amount) noexcept -> rpc::AccountEventType;
@@ -210,13 +208,13 @@ private:
         const request::Base& base,
         const std::size_t index,
         const Identifier& accountID,
-        std::vector<AccountData>& balances,
+        UnallocatedVector<AccountData>& balances,
         response::Base::Responses& codes) const noexcept -> void;
     auto get_account_balance_custodial(
         const api::Session& api,
         const std::size_t index,
         const Identifier& accountID,
-        std::vector<AccountData>& balances,
+        UnallocatedVector<AccountData>& balances,
         response::Base::Responses& codes) const noexcept -> void;
     auto get_compatible_accounts(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
@@ -282,16 +280,16 @@ private:
         -> proto::RPCResponse;
     [[deprecated]] auto queue_task(
         const identifier::Nym& nymID,
-        const std::string taskID,
+        const UnallocatedCString taskID,
         Finish&& finish,
         Future&& future,
         proto::RPCResponse& output) const -> void;
     auto queue_task(
         const api::Session& api,
         const identifier::Nym& nymID,
-        const std::string taskID,
+        const UnallocatedCString taskID,
         Finish&& finish,
-        Future&& future) const noexcept -> std::string;
+        Future&& future) const noexcept -> UnallocatedCString;
     auto register_nym(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto rename_account(const proto::RPCCommand& command) const

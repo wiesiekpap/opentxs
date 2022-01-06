@@ -23,8 +23,8 @@ namespace opentxs
 auto operator==(const ProtobufType& lhs, const ProtobufType& rhs) noexcept
     -> bool
 {
-    auto sLeft = std::string{};
-    auto sRight = std::string{};
+    auto sLeft = UnallocatedCString{};
+    auto sRight = UnallocatedCString{};
     lhs.SerializeToString(&sLeft);
     rhs.SerializeToString(&sRight);
 
@@ -34,9 +34,9 @@ auto operator==(const ProtobufType& lhs, const ProtobufType& rhs) noexcept
 
 namespace opentxs::proto
 {
-auto ToString(const ProtobufType& input) -> std::string
+auto ToString(const ProtobufType& input) -> UnallocatedCString
 {
-    auto output = std::string{};
+    auto output = UnallocatedCString{};
 
     if (write(input, writer(output))) { return output; }
 

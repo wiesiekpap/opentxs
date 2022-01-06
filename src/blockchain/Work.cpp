@@ -11,7 +11,6 @@
 #include <iterator>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -19,12 +18,13 @@
 #include "opentxs/blockchain/NumericHash.hpp"
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
-auto Work(const std::string& hex) -> blockchain::Work*
+auto Work(const UnallocatedCString& hex) -> blockchain::Work*
 {
     using ReturnType = blockchain::implementation::Work;
     using ValueType = ReturnType::Type;
@@ -191,9 +191,9 @@ auto Work::operator+(const blockchain::Work& rhs) const noexcept -> OTWork
     return OTWork{new Work{data_ + input.data_}};
 }
 
-auto Work::asHex() const noexcept -> std::string
+auto Work::asHex() const noexcept -> UnallocatedCString
 {
-    std::vector<unsigned char> bytes;
+    UnallocatedVector<unsigned char> bytes;
 
     try {
         // Export as big endian

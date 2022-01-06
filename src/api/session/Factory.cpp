@@ -143,7 +143,7 @@ auto Factory::Armored() const -> OTArmored
     return OTArmored{opentxs::Factory::Armored()};
 }
 
-auto Factory::Armored(const std::string& input) const -> OTArmored
+auto Factory::Armored(const UnallocatedCString& input) const -> OTArmored
 {
     return OTArmored{opentxs::Factory::Armored(String::Factory(input.c_str()))};
 }
@@ -168,8 +168,9 @@ auto Factory::Armored(const ProtobufType& input) const -> OTArmored
     return OTArmored{opentxs::Factory::Armored(Data(input))};
 }
 
-auto Factory::Armored(const ProtobufType& input, const std::string& header)
-    const -> OTString
+auto Factory::Armored(
+    const ProtobufType& input,
+    const UnallocatedCString& header) const -> OTString
 {
     auto armored = Armored(Data(input));
     auto output = String::Factory();
@@ -211,7 +212,7 @@ auto Factory::BailmentNotice(
     const identifier::UnitDefinition& unitID,
     const identifier::Notary& serverID,
     const opentxs::Identifier& requestID,
-    const std::string& txid,
+    const UnallocatedCString& txid,
     const Amount& amount,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTBailmentNotice
@@ -253,7 +254,7 @@ auto Factory::BailmentReply(
     const identifier::Nym& initiator,
     const opentxs::Identifier& request,
     const identifier::Notary& server,
-    const std::string& terms,
+    const UnallocatedCString& terms,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTBailmentReply
 {
@@ -337,8 +338,8 @@ auto Factory::Basket(std::int32_t nCount, const Amount& lMinimumTransferAmount)
 
 auto Factory::BasketContract(
     const Nym_p& nym,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const std::uint64_t weight,
     const core::UnitType unitOfAccount,
     const VersionNumber version,
@@ -380,7 +381,7 @@ auto Factory::BasketContract(
 #if OT_BLOCKCHAIN
 auto Factory::BitcoinScriptNullData(
     const opentxs::blockchain::Type chain,
-    const std::vector<ReadView>& data) const noexcept
+    const UnallocatedVector<ReadView>& data) const noexcept
     -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Script>
 {
     namespace b = opentxs::blockchain;
@@ -402,8 +403,8 @@ auto Factory::BitcoinScriptP2MS(
     const opentxs::blockchain::Type chain,
     const std::uint8_t M,
     const std::uint8_t N,
-    const std::vector<const opentxs::crypto::key::EllipticCurve*>& publicKeys)
-    const noexcept
+    const UnallocatedVector<const opentxs::crypto::key::EllipticCurve*>&
+        publicKeys) const noexcept
     -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Script>
 {
     namespace b = opentxs::blockchain;
@@ -583,7 +584,7 @@ auto Factory::BlockchainAddress(
     const std::uint16_t port,
     const opentxs::blockchain::Type chain,
     const Time lastConnected,
-    const std::set<opentxs::blockchain::p2p::Service>& services,
+    const UnallocatedSet<opentxs::blockchain::p2p::Service>& services,
     const bool incoming) const -> OTBlockchainAddress
 {
     return OTBlockchainAddress{factory::BlockchainAddress(
@@ -667,10 +668,10 @@ auto Factory::ConnectionReply(
     const opentxs::Identifier& request,
     const identifier::Notary& server,
     const bool ack,
-    const std::string& url,
-    const std::string& login,
-    const std::string& password,
-    const std::string& key,
+    const UnallocatedCString& url,
+    const UnallocatedCString& login,
+    const UnallocatedCString& password,
+    const UnallocatedCString& key,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTConnectionReply
 {
@@ -883,8 +884,8 @@ auto Factory::CronItem(const String& strCronItem) const
 
 auto Factory::CurrencyContract(
     const Nym_p& nym,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const core::UnitType unitOfAccount,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason,
@@ -956,18 +957,19 @@ auto Factory::Data(const std::uint32_t input) const -> OTData
     return Data::Factory(input);
 }
 
-auto Factory::Data(const std::string& input, const StringStyle mode) const
-    -> OTData
+auto Factory::Data(const UnallocatedCString& input, const StringStyle mode)
+    const -> OTData
 {
     return Data::Factory(input, static_cast<Data::Mode>(mode));
 }
 
-auto Factory::Data(const std::vector<unsigned char>& input) const -> OTData
+auto Factory::Data(const UnallocatedVector<unsigned char>& input) const
+    -> OTData
 {
     return Data::Factory(input);
 }
 
-auto Factory::Data(const std::vector<std::byte>& input) const -> OTData
+auto Factory::Data(const UnallocatedVector<std::byte>& input) const -> OTData
 {
     return Data::Factory(input);
 }
@@ -1017,7 +1019,8 @@ auto Factory::Identifier() const -> OTIdentifier
     return Identifier::Factory();
 }
 
-auto Factory::Identifier(const std::string& serialized) const -> OTIdentifier
+auto Factory::Identifier(const UnallocatedCString& serialized) const
+    -> OTIdentifier
 {
     return Identifier::Factory(serialized);
 }
@@ -1114,7 +1117,7 @@ auto Factory::instantiate_secp256k1(
     }
 }
 
-auto Factory::Item(const std::string& serialized) const
+auto Factory::Item(const UnallocatedCString& serialized) const
     -> std::unique_ptr<opentxs::Item>
 {
     return Item(String::Factory(serialized));
@@ -1333,7 +1336,7 @@ auto Factory::Keypair(const proto::AsymmetricKey& serializedPubkey) const
 }
 
 auto Factory::Keypair(
-    const std::string& fingerprint,
+    const UnallocatedCString& fingerprint,
     const Bip32Index nym,
     const Bip32Index credset,
     const Bip32Index credindex,
@@ -1361,7 +1364,7 @@ auto Factory::Keypair(
         }
     }
 
-    const auto path = std::vector<Bip32Index>{
+    const auto path = UnallocatedVector<Bip32Index>{
         HDIndex{Bip43Purpose::NYM, Bip32Child::HARDENED},
         HDIndex{nym, Bip32Child::HARDENED},
         HDIndex{credset, Bip32Child::HARDENED},
@@ -1551,7 +1554,7 @@ auto Factory::Mint(
 
 auto Factory::NymID() const -> OTNymID { return identifier::Nym::Factory(); }
 
-auto Factory::NymID(const std::string& serialized) const -> OTNymID
+auto Factory::NymID(const UnallocatedCString& serialized) const -> OTNymID
 {
     return identifier::Nym::Factory(serialized);
 }
@@ -1587,7 +1590,8 @@ auto Factory::NymID(const opentxs::Identifier& in) const noexcept -> OTNymID
     return out;
 }
 
-auto Factory::NymIDFromPaymentCode(const std::string& input) const -> OTNymID
+auto Factory::NymIDFromPaymentCode(const UnallocatedCString& input) const
+    -> OTNymID
 {
     const auto code = PaymentCode(input);
 
@@ -1622,7 +1626,7 @@ auto Factory::OutbailmentReply(
     const identifier::Nym& initiator,
     const opentxs::Identifier& request,
     const identifier::Notary& server,
-    const std::string& terms,
+    const UnallocatedCString& terms,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTOutbailmentReply
 {
@@ -1656,7 +1660,7 @@ auto Factory::OutbailmentRequest(
     const identifier::UnitDefinition& unit,
     const identifier::Notary& server,
     const Amount& amount,
-    const std::string& terms,
+    const UnallocatedCString& terms,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTOutbailmentRequest
 {
@@ -1684,7 +1688,8 @@ auto Factory::OutbailmentRequest(
     }
 }
 
-auto Factory::PasswordPrompt(const std::string& text) const -> OTPasswordPrompt
+auto Factory::PasswordPrompt(const UnallocatedCString& text) const
+    -> OTPasswordPrompt
 {
     return OTPasswordPrompt{opentxs::Factory::PasswordPrompt(api_, text)};
 }
@@ -1717,7 +1722,7 @@ auto Factory::Payment(
     return payment;
 }
 
-auto Factory::PaymentCode(const std::string& base58) const noexcept
+auto Factory::PaymentCode(const UnallocatedCString& base58) const noexcept
     -> opentxs::PaymentCode
 {
     return factory::PaymentCode(api_, base58);
@@ -1736,7 +1741,7 @@ auto Factory::PaymentCode(const ReadView& serialized) const noexcept
 }
 
 auto Factory::PaymentCode(
-    const std::string& seed,
+    const UnallocatedCString& seed,
     const Bip32Index nym,
     const std::uint8_t version,
     const opentxs::PasswordPrompt& reason,
@@ -1799,7 +1804,7 @@ auto Factory::PaymentPlan(
 
 auto Factory::PeerObject(
     [[maybe_unused]] const Nym_p& senderNym,
-    [[maybe_unused]] const std::string& message) const
+    [[maybe_unused]] const UnallocatedCString& message) const
     -> std::unique_ptr<opentxs::PeerObject>
 {
     LogError()(OT_PRETTY_CLASS())(
@@ -1811,7 +1816,7 @@ auto Factory::PeerObject(
 
 auto Factory::PeerObject(
     [[maybe_unused]] const Nym_p& senderNym,
-    [[maybe_unused]] const std::string& payment,
+    [[maybe_unused]] const UnallocatedCString& payment,
     [[maybe_unused]] const bool isPayment) const
     -> std::unique_ptr<opentxs::PeerObject>
 {
@@ -2123,8 +2128,8 @@ auto Factory::Scriptable(const String& strInput) const
 
 auto Factory::SecurityContract(
     const Nym_p& nym,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const core::UnitType unitOfAccount,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason,
@@ -2174,7 +2179,7 @@ auto Factory::ServerID() const -> OTNotaryID
     return identifier::Notary::Factory();
 }
 
-auto Factory::ServerID(const std::string& serialized) const -> OTNotaryID
+auto Factory::ServerID(const UnallocatedCString& serialized) const -> OTNotaryID
 {
     return identifier::Notary::Factory(serialized);
 }
@@ -2280,8 +2285,8 @@ auto Factory::StoreSecret(
     const Nym_p& nym,
     const identifier::Nym& recipient,
     const contract::peer::SecretType type,
-    const std::string& primary,
-    const std::string& secondary,
+    const UnallocatedCString& primary,
+    const UnallocatedCString& secondary,
     const identifier::Notary& server,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTStoreSecret
@@ -2643,7 +2648,7 @@ auto Factory::UnitID() const -> OTUnitID
     return identifier::UnitDefinition::Factory();
 }
 
-auto Factory::UnitID(const std::string& serialized) const -> OTUnitID
+auto Factory::UnitID(const UnallocatedCString& serialized) const -> OTUnitID
 {
     return identifier::UnitDefinition::Factory(serialized);
 }

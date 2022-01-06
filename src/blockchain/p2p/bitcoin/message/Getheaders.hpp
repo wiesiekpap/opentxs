@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <iosfwd>
 #include <memory>
-#include <vector>
 
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
@@ -19,6 +18,7 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -69,20 +69,20 @@ public:
         const api::Session& api,
         const blockchain::Type network,
         const bitcoin::ProtocolVersionUnsigned version,
-        std::vector<block::pHash>&& hashes,
+        UnallocatedVector<block::pHash>&& hashes,
         block::pHash&& stop) noexcept;
     Getheaders(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const bitcoin::ProtocolVersionUnsigned version,
-        std::vector<block::pHash>&& hashes,
+        UnallocatedVector<block::pHash>&& hashes,
         block::pHash&& stop) noexcept;
 
     ~Getheaders() final = default;
 
 private:
     const bitcoin::ProtocolVersionUnsigned version_;
-    const std::vector<block::pHash> payload_;
+    const UnallocatedVector<block::pHash> payload_;
     const block::pHash stop_;
 
     using implementation::Message::payload;

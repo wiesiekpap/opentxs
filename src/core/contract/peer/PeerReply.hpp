@@ -6,7 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include "core/contract/Signable.hpp"
 #include "opentxs/Types.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -73,12 +73,18 @@ public:
     auto asConnection() const noexcept -> const reply::Connection& override;
     auto asOutbailment() const noexcept -> const reply::Outbailment& override;
 
-    auto Alias() const noexcept -> std::string final { return Name(); }
-    auto Name() const noexcept -> std::string final { return id_->str(); }
+    auto Alias() const noexcept -> UnallocatedCString final { return Name(); }
+    auto Name() const noexcept -> UnallocatedCString final
+    {
+        return id_->str();
+    }
     auto Serialize() const noexcept -> OTData final;
     auto Serialize(SerializedType&) const -> bool override;
     auto Server() const -> const identifier::Notary& final { return server_; }
-    auto SetAlias(const std::string&) noexcept -> bool final { return false; }
+    auto SetAlias(const UnallocatedCString&) noexcept -> bool final
+    {
+        return false;
+    }
     auto Type() const -> PeerRequestType final { return type_; }
 
     ~Reply() override = default;
@@ -97,12 +103,12 @@ protected:
         const identifier::Notary& server,
         const PeerRequestType& type,
         const Identifier& request,
-        const std::string& conditions = {});
+        const UnallocatedCString& conditions = {});
     Reply(
         const api::Session& api,
         const Nym_p& nym,
         const SerializedType& serialized,
-        const std::string& conditions = {});
+        const UnallocatedCString& conditions = {});
     Reply(const Reply&) noexcept;
 
 private:

@@ -7,11 +7,11 @@
 
 #include <cstdint>
 #include <memory>
-#include <vector>
 
 #include "internal/otx/common/Message.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -111,7 +111,7 @@ private:
         const identity::Nym& nym_;
         ReplyMessage& reply_;
         Ledger& ledger_;
-        std::vector<std::shared_ptr<OTTransaction>> response_;
+        UnallocatedVector<std::shared_ptr<OTTransaction>> response_;
     };
 
     Server& server_;

@@ -6,9 +6,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <memory>
-#include <string>
 #include <string_view>
-#include <vector>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
@@ -39,6 +37,7 @@
 #include "opentxs/crypto/key/HD.hpp"             // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "paymentcode/VectorsV3.hpp"
@@ -46,9 +45,9 @@
 namespace ottest
 {
 const ot::Nym_p nym_{};
-const std::string seed_id_{};
+const ot::UnallocatedCString seed_id_{};
 using Pubkey = ot::Space;
-using ExpectedKeys = std::vector<Pubkey>;
+using ExpectedKeys = ot::UnallocatedVector<Pubkey>;
 const ExpectedKeys external_{};
 const ExpectedKeys internal_{};
 
@@ -72,7 +71,7 @@ protected:
                 const auto words =
                     api_.Factory().SecretFromText(GetVectors3().alice_.words_);
                 const auto phrase = api_.Factory().Secret(0);
-                const_cast<std::string&>(seed_id_) =
+                const_cast<ot::UnallocatedCString&>(seed_id_) =
                     api_.Crypto().Seed().ImportSeed(
                         words,
                         phrase,
@@ -123,7 +122,7 @@ TEST_F(Test_BIP44, generate_expected_keys)
     auto& external = const_cast<ExpectedKeys&>(external_);
     internal.reserve(count_);
     external.reserve(count_);
-    using Path = std::vector<ot::Bip32Index>;
+    using Path = ot::UnallocatedVector<ot::Bip32Index>;
     const auto MakePath = [&](auto change, auto index) -> Path {
         constexpr auto hard =
             static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED);

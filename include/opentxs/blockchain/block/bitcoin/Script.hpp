@@ -9,11 +9,11 @@
 
 #include <cstdint>
 #include <optional>
-#include <string>
 #include <tuple>
 
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 
 namespace opentxs
@@ -76,9 +76,9 @@ public:
     virtual auto cend() const noexcept -> const_iterator = 0;
     virtual auto end() const noexcept -> const_iterator = 0;
     virtual auto ExtractElements(const filter::Type style) const noexcept
-        -> std::vector<Space> = 0;
+        -> UnallocatedVector<Space> = 0;
     virtual auto ExtractPatterns(const api::Session& api) const noexcept
-        -> std::vector<PatternID> = 0;
+        -> UnallocatedVector<PatternID> = 0;
     virtual auto IsNotification(
         const std::uint8_t version,
         const PaymentCode& recipient) const noexcept -> bool = 0;
@@ -89,7 +89,7 @@ public:
         -> std::optional<ReadView> = 0;
     /// Value only present for Multisig patterns
     virtual auto N() const noexcept -> std::optional<std::uint8_t> = 0;
-    virtual auto Print() const noexcept -> std::string = 0;
+    virtual auto Print() const noexcept -> UnallocatedCString = 0;
     /// Value only present for PayToPubkey and PayToTaproot patterns
     virtual auto Pubkey() const noexcept -> std::optional<ReadView> = 0;
     /// Value only present for PayToPubkeyHash and PayToWitnessPubkeyHash

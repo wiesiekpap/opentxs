@@ -8,11 +8,11 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <set>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/otx/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -49,8 +49,8 @@ namespace context
 class OPENTXS_EXPORT Base : virtual public opentxs::contract::Signable
 {
 public:
-    using TransactionNumbers = std::set<TransactionNumber>;
-    using RequestNumbers = std::set<RequestNumber>;
+    using TransactionNumbers = UnallocatedSet<TransactionNumber>;
+    using RequestNumbers = UnallocatedSet<RequestNumber>;
 
     virtual auto AcknowledgedNumbers() const -> RequestNumbers = 0;
     virtual auto AvailableNumbers() const -> std::size_t = 0;
@@ -59,7 +59,7 @@ public:
     virtual auto IssuedNumbers() const -> TransactionNumbers = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Base& = 0;
-    virtual auto LegacyDataFolder() const -> std::string = 0;
+    virtual auto LegacyDataFolder() const -> UnallocatedCString = 0;
     virtual auto LocalNymboxHash() const -> OTIdentifier = 0;
     virtual auto Notary() const -> const identifier::Notary& = 0;
     virtual auto NymboxHashMatch() const -> bool = 0;

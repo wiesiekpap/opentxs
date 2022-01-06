@@ -38,7 +38,7 @@ namespace opentxs::identity::wot::claim
 {
 static auto extract_sections(
     const api::Session& api,
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const VersionNumber targetVersion,
     const proto::ContactData& serialized) -> Data::SectionMap
 {
@@ -63,11 +63,11 @@ struct Data::Imp {
 
     const api::Session& api_;
     const VersionNumber version_{0};
-    const std::string nym_{};
+    const UnallocatedCString nym_{};
     const SectionMap sections_{};
 
     Imp(const api::Session& api,
-        const std::string& nym,
+        const UnallocatedCString& nym,
         const VersionNumber version,
         const VersionNumber targetVersion,
         const SectionMap& sections)
@@ -111,7 +111,7 @@ struct Data::Imp {
 
 Data::Data(
     const api::Session& api,
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const VersionNumber version,
     const VersionNumber targetVersion,
     const SectionMap& sections)
@@ -128,7 +128,7 @@ Data::Data(const Data& rhs)
 
 Data::Data(
     const api::Session& api,
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const VersionNumber targetVersion,
     const proto::ContactData& serialized)
     : Data(
@@ -142,7 +142,7 @@ Data::Data(
 
 Data::Data(
     const api::Session& api,
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const VersionNumber targetVersion,
     const ReadView& serialized)
     : Data(
@@ -188,7 +188,7 @@ auto Data::operator+(const Data& rhs) const -> Data
     return Data(imp_->api_, imp_->nym_, version, version, map);
 }
 
-Data::operator std::string() const
+Data::operator UnallocatedCString() const
 {
     return PrintContactData([&] {
         auto proto = proto::ContactData{};
@@ -199,7 +199,7 @@ Data::operator std::string() const
 }
 
 auto Data::AddContract(
-    const std::string& instrumentDefinitionID,
+    const UnallocatedCString& instrumentDefinitionID,
     const core::UnitType currency,
     const bool primary,
     const bool active) const -> Data
@@ -210,7 +210,7 @@ auto Data::AddContract(
 
     if (group) { needPrimary = group->Primary().empty(); }
 
-    std::set<claim::Attribute> attrib{};
+    UnallocatedSet<claim::Attribute> attrib{};
 
     if (active || primary || needPrimary) {
         attrib.emplace(claim::Attribute::Active);
@@ -240,7 +240,7 @@ auto Data::AddContract(
 }
 
 auto Data::AddEmail(
-    const std::string& value,
+    const UnallocatedCString& value,
     const bool primary,
     const bool active) const -> Data
 {
@@ -251,7 +251,7 @@ auto Data::AddEmail(
 
     if (group) { needPrimary = group->Primary().empty(); }
 
-    std::set<claim::Attribute> attrib{};
+    UnallocatedSet<claim::Attribute> attrib{};
 
     if (active || primary || needPrimary) {
         attrib.emplace(claim::Attribute::Active);
@@ -324,7 +324,7 @@ auto Data::AddItem(const std::shared_ptr<Item>& item) const -> Data
 }
 
 auto Data::AddPaymentCode(
-    const std::string& code,
+    const UnallocatedCString& code,
     const core::UnitType currency,
     const bool primary,
     const bool active) const -> Data
@@ -336,7 +336,7 @@ auto Data::AddPaymentCode(
     if (group) { needPrimary = group->Primary().empty(); }
 
     const auto attrib = [&] {
-        auto out = std::set<claim::Attribute>{};
+        auto out = UnallocatedSet<claim::Attribute>{};
 
         if (active || primary || needPrimary) {
             out.emplace(claim::Attribute::Active);
@@ -376,7 +376,7 @@ auto Data::AddPaymentCode(
 }
 
 auto Data::AddPhoneNumber(
-    const std::string& value,
+    const UnallocatedCString& value,
     const bool primary,
     const bool active) const -> Data
 {
@@ -387,7 +387,7 @@ auto Data::AddPhoneNumber(
 
     if (group) { needPrimary = group->Primary().empty(); }
 
-    std::set<claim::Attribute> attrib{};
+    UnallocatedSet<claim::Attribute> attrib{};
 
     if (active || primary || needPrimary) {
         attrib.emplace(claim::Attribute::Active);
@@ -426,7 +426,7 @@ auto Data::AddPreferredOTServer(const Identifier& id, const bool primary) const
 
     if (group) { needPrimary = group->Primary().empty(); }
 
-    std::set<claim::Attribute> attrib{claim::Attribute::Active};
+    UnallocatedSet<claim::Attribute> attrib{claim::Attribute::Active};
 
     if (primary || needPrimary) { attrib.emplace(claim::Attribute::Primary); }
 
@@ -452,7 +452,7 @@ auto Data::AddPreferredOTServer(const Identifier& id, const bool primary) const
 }
 
 auto Data::AddSocialMediaProfile(
-    const std::string& value,
+    const UnallocatedCString& value,
     const claim::ClaimType type,
     const bool primary,
     const bool active) const -> Data
@@ -468,7 +468,7 @@ auto Data::AddSocialMediaProfile(
         if (group) { needPrimary = group->Primary().empty(); }
     }
 
-    std::set<claim::Attribute> attrib{};
+    UnallocatedSet<claim::Attribute> attrib{};
 
     if (active || primary || needPrimary) {
         attrib.emplace(claim::Attribute::Active);
@@ -625,9 +625,9 @@ auto Data::begin() const -> Data::SectionMap::const_iterator
     return imp_->sections_.begin();
 }
 
-auto Data::BestEmail() const -> std::string
+auto Data::BestEmail() const -> UnallocatedCString
 {
-    std::string bestEmail;
+    UnallocatedCString bestEmail;
 
     auto group =
         Group(claim::SectionType::Communication, claim::ClaimType::Email);
@@ -641,9 +641,9 @@ auto Data::BestEmail() const -> std::string
     return bestEmail;
 }
 
-auto Data::BestPhoneNumber() const -> std::string
+auto Data::BestPhoneNumber() const -> UnallocatedCString
 {
-    std::string bestEmail;
+    UnallocatedCString bestEmail;
 
     auto group =
         Group(claim::SectionType::Communication, claim::ClaimType::Phone);
@@ -658,9 +658,9 @@ auto Data::BestPhoneNumber() const -> std::string
 }
 
 auto Data::BestSocialMediaProfile(const claim::ClaimType type) const
-    -> std::string
+    -> UnallocatedCString
 {
-    std::string bestProfile;
+    UnallocatedCString bestProfile;
 
     auto group = Group(claim::SectionType::Profile, type);
     if (group) {
@@ -688,9 +688,9 @@ auto Data::Claim(const Identifier& item) const -> std::shared_ptr<Item>
 }
 
 auto Data::Contracts(const core::UnitType currency, const bool onlyActive) const
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
-    std::set<OTIdentifier> output{};
+    UnallocatedSet<OTIdentifier> output{};
     const claim::SectionType section{claim::SectionType::Contract};
     auto group = Group(section, UnitToClaim(currency));
 
@@ -739,7 +739,7 @@ auto Data::Delete(const Identifier& id) const -> Data
     return Data(imp_->api_, imp_->nym_, imp_->version_, imp_->version_, map);
 }
 
-auto Data::EmailAddresses(bool active) const -> std::string
+auto Data::EmailAddresses(bool active) const -> UnallocatedCString
 {
     std::ostringstream stream;
 
@@ -757,7 +757,7 @@ auto Data::EmailAddresses(bool active) const -> std::string
         }
     }
 
-    std::string output = stream.str();
+    UnallocatedCString output = stream.str();
 
     if (0 < output.size()) { output.erase(output.size() - 1, 1); }
 
@@ -795,7 +795,7 @@ auto Data::HaveClaim(const Identifier& item) const -> bool
 auto Data::HaveClaim(
     const claim::SectionType section,
     const claim::ClaimType type,
-    const std::string& value) const -> bool
+    const UnallocatedCString& value) const -> bool
 {
     auto group = Group(section, type);
 
@@ -812,7 +812,7 @@ auto Data::HaveClaim(
     return false;
 }
 
-auto Data::Name() const -> std::string
+auto Data::Name() const -> UnallocatedCString
 {
     auto group = imp_->scope().second;
 
@@ -825,7 +825,7 @@ auto Data::Name() const -> std::string
     return claim->Value();
 }
 
-auto Data::PhoneNumbers(bool active) const -> std::string
+auto Data::PhoneNumbers(bool active) const -> UnallocatedCString
 {
     std::ostringstream stream;
 
@@ -843,7 +843,7 @@ auto Data::PhoneNumbers(bool active) const -> std::string
         }
     }
 
-    std::string output = stream.str();
+    UnallocatedCString output = stream.str();
 
     if (0 < output.size()) { output.erase(output.size() - 1, 1); }
 
@@ -864,7 +864,8 @@ auto Data::PreferredOTServer() const -> OTNotaryID
     return identifier::Notary::Factory(claim->Value());
 }
 
-auto Data::PrintContactData(const proto::ContactData& data) -> std::string
+auto Data::PrintContactData(const proto::ContactData& data)
+    -> UnallocatedCString
 {
     std::stringstream output;
     output << "Version " << data.version() << " contact data" << std::endl;
@@ -906,11 +907,11 @@ auto Data::Section(const claim::SectionType section) const
     return it->second;
 }
 
-auto Data::SetCommonName(const std::string& name) const -> Data
+auto Data::SetCommonName(const UnallocatedCString& name) const -> Data
 {
     const claim::SectionType section{claim::SectionType::Identifier};
     const claim::ClaimType type{claim::ClaimType::Commonname};
-    std::set<claim::Attribute> attrib{
+    UnallocatedSet<claim::Attribute> attrib{
         claim::Attribute::Active, claim::Attribute::Primary};
 
     auto item = std::make_shared<Item>(
@@ -931,7 +932,8 @@ auto Data::SetCommonName(const std::string& name) const -> Data
     return AddItem(item);
 }
 
-auto Data::SetName(const std::string& name, const bool primary) const -> Data
+auto Data::SetName(const UnallocatedCString& name, const bool primary) const
+    -> Data
 {
     const Imp::Scope& scopeInfo = imp_->scope();
 
@@ -940,7 +942,7 @@ auto Data::SetName(const std::string& name, const bool primary) const -> Data
     const claim::SectionType section{claim::SectionType::Scope};
     const claim::ClaimType type = scopeInfo.first;
 
-    std::set<claim::Attribute> attrib{claim::Attribute::Active};
+    UnallocatedSet<claim::Attribute> attrib{claim::Attribute::Active};
 
     if (primary) { attrib.emplace(claim::Attribute::Primary); }
 
@@ -962,8 +964,8 @@ auto Data::SetName(const std::string& name, const bool primary) const -> Data
     return AddItem(item);
 }
 
-auto Data::SetScope(const claim::ClaimType type, const std::string& name) const
-    -> Data
+auto Data::SetScope(const claim::ClaimType type, const UnallocatedCString& name)
+    const -> Data
 {
     OT_ASSERT(type);
 
@@ -972,7 +974,7 @@ auto Data::SetScope(const claim::ClaimType type, const std::string& name) const
     if (claim::ClaimType::Unknown == imp_->scope().first) {
         auto mapCopy = imp_->sections_;
         mapCopy.erase(section);
-        std::set<claim::Attribute> attrib{
+        UnallocatedSet<claim::Attribute> attrib{
             claim::Attribute::Active, claim::Attribute::Primary};
 
         auto version = proto::RequiredVersion(
@@ -1038,7 +1040,7 @@ auto Data::Serialize(proto::ContactData& output, const bool withID) const
 }
 
 auto Data::SocialMediaProfiles(const claim::ClaimType type, bool active) const
-    -> std::string
+    -> UnallocatedCString
 {
     std::ostringstream stream;
 
@@ -1055,21 +1057,22 @@ auto Data::SocialMediaProfiles(const claim::ClaimType type, bool active) const
         }
     }
 
-    std::string output = stream.str();
+    UnallocatedCString output = stream.str();
 
     if (0 < output.size()) { output.erase(output.size() - 1, 1); }
 
     return output;
 }
 
-auto Data::SocialMediaProfileTypes() const -> const std::set<claim::ClaimType>
+auto Data::SocialMediaProfileTypes() const
+    -> const UnallocatedSet<claim::ClaimType>
 {
     try {
         auto profiletypes =
             proto::AllowedItemTypes().at(proto::ContactSectionVersion(
                 CONTACT_CONTACT_DATA_VERSION, proto::CONTACTSECTION_PROFILE));
 
-        std::set<claim::ClaimType> output;
+        UnallocatedSet<claim::ClaimType> output;
         std::transform(
             profiletypes.begin(),
             profiletypes.end(),

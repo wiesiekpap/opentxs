@@ -13,12 +13,12 @@
 #include <functional>
 #include <iostream>
 #include <stdexcept>
-#include <string>
 #include <thread>
 
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/context/Thread.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::network::zeromq::context
 {
@@ -55,7 +55,7 @@ auto Pool::get(BatchID id) noexcept -> Thread&
     return threads_.at(id % count_);
 }
 
-auto Pool::MakeBatch(std::vector<socket::Type>&& types) noexcept
+auto Pool::MakeBatch(UnallocatedVector<socket::Type>&& types) noexcept
     -> internal::Batch&
 {
     auto id = GetBatchID();
@@ -120,7 +120,7 @@ auto Pool::Stop(BatchID id) noexcept -> std::future<bool>
 {
     try {
         auto sockets = [&] {
-            auto out = std::vector<socket::Raw*>{};
+            auto out = UnallocatedVector<socket::Raw*>{};
             auto lock = Lock{index_lock_};
 
             for (const auto& sID : batch_index_.at(id)) {

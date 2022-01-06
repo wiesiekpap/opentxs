@@ -9,10 +9,10 @@
 
 #include <chrono>
 #include <memory>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -44,12 +44,14 @@ public:
     virtual auto Running() const -> const Flag& = 0;
     virtual void RefreshConfig() const = 0;
     virtual auto SendTimeout() const -> std::chrono::seconds = 0;
-    virtual auto Server(const std::string& id) const
+    virtual auto Server(const UnallocatedCString& id) const
         -> opentxs::network::ServerConnection& = 0;
-    virtual auto SetSocksProxy(const std::string& proxy) const -> bool = 0;
-    virtual auto SocksProxy() const -> std::string = 0;
-    virtual auto SocksProxy(std::string& proxy) const -> bool = 0;
-    virtual auto Status(const std::string& server) const -> ConnectionState = 0;
+    virtual auto SetSocksProxy(const UnallocatedCString& proxy) const
+        -> bool = 0;
+    virtual auto SocksProxy() const -> UnallocatedCString = 0;
+    virtual auto SocksProxy(UnallocatedCString& proxy) const -> bool = 0;
+    virtual auto Status(const UnallocatedCString& server) const
+        -> ConnectionState = 0;
 
     OPENTXS_NO_EXPORT virtual ~ZMQ() = default;
 

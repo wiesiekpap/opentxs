@@ -69,6 +69,7 @@ target_include_directories(
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Bytes.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/Container.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Iterator.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Log.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Numbers.hpp"

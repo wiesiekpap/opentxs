@@ -33,7 +33,7 @@ namespace opentxs::storage
 {
 PaymentWorkflows::PaymentWorkflows(
     const Driver& storage,
-    const std::string& hash)
+    const UnallocatedCString& hash)
     : Node(storage, hash)
     , archived_()
     , item_workflow_map_()
@@ -52,7 +52,7 @@ PaymentWorkflows::PaymentWorkflows(
 
 void PaymentWorkflows::add_state_index(
     const Lock& lock,
-    const std::string& workflowID,
+    const UnallocatedCString& workflowID,
     otx::client::PaymentWorkflowType type,
     otx::client::PaymentWorkflowState state)
 {
@@ -67,7 +67,7 @@ void PaymentWorkflows::add_state_index(
     state_workflow_map_[key].emplace(workflowID);
 }
 
-auto PaymentWorkflows::Delete(const std::string& id) -> bool
+auto PaymentWorkflows::Delete(const UnallocatedCString& id) -> bool
 {
     Lock lock(write_lock_);
     delete_by_value(id);
@@ -76,7 +76,7 @@ auto PaymentWorkflows::Delete(const std::string& id) -> bool
     return delete_item(id);
 }
 
-void PaymentWorkflows::delete_by_value(const std::string& value)
+void PaymentWorkflows::delete_by_value(const UnallocatedCString& value)
 {
     auto it = item_workflow_map_.begin();
 
@@ -89,7 +89,7 @@ void PaymentWorkflows::delete_by_value(const std::string& value)
     }
 }
 
-auto PaymentWorkflows::GetState(const std::string& workflowID) const
+auto PaymentWorkflows::GetState(const UnallocatedCString& workflowID) const
     -> PaymentWorkflows::State
 {
     State output{
@@ -110,7 +110,7 @@ auto PaymentWorkflows::GetState(const std::string& workflowID) const
     return output;
 }
 
-void PaymentWorkflows::init(const std::string& hash)
+void PaymentWorkflows::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StoragePaymentWorkflows> serialized;
     driver_.LoadProto(hash, serialized);
@@ -152,7 +152,7 @@ void PaymentWorkflows::init(const std::string& hash)
     }
 }
 
-auto PaymentWorkflows::ListByAccount(const std::string& accountID) const
+auto PaymentWorkflows::ListByAccount(const UnallocatedCString& accountID) const
     -> PaymentWorkflows::Workflows
 {
     Lock lock(write_lock_);
@@ -163,7 +163,7 @@ auto PaymentWorkflows::ListByAccount(const std::string& accountID) const
     return it->second;
 }
 
-auto PaymentWorkflows::ListByUnit(const std::string& accountID) const
+auto PaymentWorkflows::ListByUnit(const UnallocatedCString& accountID) const
     -> PaymentWorkflows::Workflows
 {
     Lock lock(write_lock_);
@@ -188,17 +188,17 @@ auto PaymentWorkflows::ListByState(
 }
 
 auto PaymentWorkflows::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     std::shared_ptr<proto::PaymentWorkflow>& output,
     const bool checking) const -> bool
 {
-    std::string alias;
+    UnallocatedCString alias;
 
     return load_proto<proto::PaymentWorkflow>(id, output, alias, checking);
 }
 
-auto PaymentWorkflows::LookupBySource(const std::string& sourceID) const
-    -> std::string
+auto PaymentWorkflows::LookupBySource(const UnallocatedCString& sourceID) const
+    -> UnallocatedCString
 {
     Lock lock(write_lock_);
     const auto it = item_workflow_map_.find(sourceID);
@@ -210,7 +210,7 @@ auto PaymentWorkflows::LookupBySource(const std::string& sourceID) const
 
 void PaymentWorkflows::reindex(
     const Lock& lock,
-    const std::string& workflowID,
+    const UnallocatedCString& workflowID,
     const otx::client::PaymentWorkflowType type,
     const otx::client::PaymentWorkflowState newState,
     otx::client::PaymentWorkflowState& state)
@@ -325,10 +325,10 @@ auto PaymentWorkflows::serialize() const -> proto::StoragePaymentWorkflows
 
 auto PaymentWorkflows::Store(
     const proto::PaymentWorkflow& data,
-    std::string& plaintext) -> bool
+    UnallocatedCString& plaintext) -> bool
 {
     Lock lock(write_lock_);
-    std::string alias;
+    UnallocatedCString alias;
     const auto& id = data.id();
     delete_by_value(id);
 

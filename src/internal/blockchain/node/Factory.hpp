@@ -6,10 +6,10 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -84,14 +84,14 @@ auto BlockchainFilterOracle(
     const blockchain::node::internal::FilterDatabase& database,
     const blockchain::Type chain,
     const blockchain::filter::Type filter,
-    const std::string& shutdown) noexcept
+    const UnallocatedCString& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::FilterOracle>;
 auto BlockchainNetworkBitcoin(
     const api::Session& api,
     const blockchain::Type type,
     const blockchain::node::internal::Config& config,
-    const std::string& seednode,
-    const std::string& syncEndpoint) noexcept
+    const UnallocatedCString& seednode,
+    const UnallocatedCString& syncEndpoint) noexcept
     -> std::unique_ptr<blockchain::node::internal::Network>;
 auto BlockchainPeerManager(
     const api::Session& api,
@@ -104,8 +104,8 @@ auto BlockchainPeerManager(
     const blockchain::node::internal::PeerDatabase& database,
     const blockchain::Type type,
     const blockchain::database::BlockStorage policy,
-    const std::string& seednode,
-    const std::string& shutdown) noexcept
+    const UnallocatedCString& seednode,
+    const UnallocatedCString& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::PeerManager>;
 auto BlockchainWallet(
     const api::Session& api,
@@ -113,7 +113,7 @@ auto BlockchainWallet(
     const blockchain::node::internal::WalletDatabase& db,
     const blockchain::node::internal::Mempool& mempool,
     const blockchain::Type chain,
-    const std::string& shutdown)
+    const UnallocatedCString& shutdown)
     -> std::unique_ptr<blockchain::node::internal::Wallet>;
 auto BlockOracle(
     const api::Session& api,
@@ -121,7 +121,7 @@ auto BlockOracle(
     const blockchain::node::HeaderOracle& header,
     const blockchain::node::internal::BlockDatabase& db,
     const blockchain::Type chain,
-    const std::string& shutdown) noexcept
+    const UnallocatedCString& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::BlockOracle>;
 auto HeaderOracle(
     const api::Session& api,

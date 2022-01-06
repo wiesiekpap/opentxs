@@ -63,7 +63,7 @@ Key::Key(
     const VersionNumber version,
     const identity::CredentialRole role,
     const PasswordPrompt& reason,
-    const std::string& masterID,
+    const UnallocatedCString& masterID,
     const bool useProvided) noexcept(false)
     : credential::implementation::Base(
           api,
@@ -97,7 +97,7 @@ Key::Key(
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const proto::Credential& serialized,
-    const std::string& masterID) noexcept(false)
+    const UnallocatedCString& masterID) noexcept(false)
     : credential::implementation::Base(
           api,
           parent,
@@ -411,7 +411,9 @@ auto Key::SelfSign(
             serialize(lock, AS_PUBLIC, WITHOUT_SIGNATURES);
         auto& signature = *publicVersion->add_signature();
         havePublicSig = Sign(
-            [&]() -> std::string { return proto::ToString(*publicVersion); },
+            [&]() -> UnallocatedCString {
+                return proto::ToString(*publicVersion);
+            },
             crypto::SignatureRole::PublicCredential,
             signature,
             reason,
@@ -429,7 +431,9 @@ auto Key::SelfSign(
     auto privateVersion = serialize(lock, AS_PRIVATE, WITHOUT_SIGNATURES);
     auto& signature = *privateVersion->add_signature();
     const bool havePrivateSig = Sign(
-        [&]() -> std::string { return proto::ToString(*privateVersion); },
+        [&]() -> UnallocatedCString {
+            return proto::ToString(*privateVersion);
+        },
         crypto::SignatureRole::PrivateCredential,
         signature,
         reason,

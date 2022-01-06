@@ -33,9 +33,9 @@ Plugin::Plugin(
 }
 
 auto Plugin::Load(
-    const std::string& key,
+    const UnallocatedCString& key,
     const bool checking,
-    std::string& value) const -> bool
+    UnallocatedCString& value) const -> bool
 {
     if (key.empty()) {
         if (!checking) {
@@ -72,12 +72,12 @@ auto Plugin::Load(
     return valid;
 }
 
-auto Plugin::Migrate(const std::string& key, const storage::Driver& to) const
-    -> bool
+auto Plugin::Migrate(const UnallocatedCString& key, const storage::Driver& to)
+    const -> bool
 {
     if (key.empty()) { return false; }
 
-    std::string value;
+    UnallocatedCString value;
     const bool targetBucket{current_bucket_};
     auto sourceBucket = targetBucket;
 
@@ -111,8 +111,8 @@ auto Plugin::Migrate(const std::string& key, const storage::Driver& to) const
 
 auto Plugin::Store(
     const bool isTransaction,
-    const std::string& key,
-    const std::string& value,
+    const UnallocatedCString& key,
+    const UnallocatedCString& value,
     const bool bucket) const -> bool
 {
     std::promise<bool> promise;
@@ -124,8 +124,8 @@ auto Plugin::Store(
 
 void Plugin::Store(
     const bool isTransaction,
-    const std::string& key,
-    const std::string& value,
+    const UnallocatedCString& key,
+    const UnallocatedCString& value,
     const bool bucket,
     std::promise<bool>& promise) const
 {
@@ -139,8 +139,8 @@ void Plugin::Store(
 
 auto Plugin::Store(
     const bool isTransaction,
-    const std::string& value,
-    std::string& key) const -> bool
+    const UnallocatedCString& value,
+    UnallocatedCString& key) const -> bool
 {
     const bool bucket{current_bucket_};
     const auto hashed =

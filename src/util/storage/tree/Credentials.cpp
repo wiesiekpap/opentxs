@@ -9,7 +9,6 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <map>
 #include <tuple>
 #include <utility>
 
@@ -20,6 +19,7 @@
 #include "internal/serialization/protobuf/verify/StorageCredentials.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/Credential.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
@@ -32,7 +32,7 @@ namespace opentxs
 {
 namespace storage
 {
-Credentials::Credentials(const Driver& storage, const std::string& hash)
+Credentials::Credentials(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {
@@ -42,7 +42,8 @@ Credentials::Credentials(const Driver& storage, const std::string& hash)
     }
 }
 
-auto Credentials::Alias(const std::string& id) const -> std::string
+auto Credentials::Alias(const UnallocatedCString& id) const
+    -> UnallocatedCString
 {
     return get_alias(id);
 }
@@ -82,12 +83,12 @@ auto Credentials::check_existing(const bool incoming, Metadata& metadata) const
     return !isPrivate;
 }
 
-auto Credentials::Delete(const std::string& id) -> bool
+auto Credentials::Delete(const UnallocatedCString& id) -> bool
 {
     return delete_item(id);
 }
 
-void Credentials::init(const std::string& hash)
+void Credentials::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageCredentials> serialized;
     driver_.LoadProto(hash, serialized);
@@ -107,7 +108,7 @@ void Credentials::init(const std::string& hash)
 }
 
 auto Credentials::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     std::shared_ptr<proto::Credential>& cred,
     const bool checking) const -> bool
 {
@@ -169,18 +170,20 @@ auto Credentials::serialize() const -> proto::StorageCredentials
     return serialized;
 }
 
-auto Credentials::SetAlias(const std::string& id, const std::string& alias)
-    -> bool
+auto Credentials::SetAlias(
+    const UnallocatedCString& id,
+    const UnallocatedCString& alias) -> bool
 {
     return set_alias(id, alias);
 }
 
-auto Credentials::Store(const proto::Credential& cred, const std::string& alias)
-    -> bool
+auto Credentials::Store(
+    const proto::Credential& cred,
+    const UnallocatedCString& alias) -> bool
 {
     std::unique_lock<std::mutex> lock(write_lock_);
 
-    const std::string id = cred.id();
+    const UnallocatedCString id = cred.id();
     const bool existingKey = (item_map_.end() != item_map_.find(id));
     const bool incomingPrivate = (proto::KEYMODE_PRIVATE == cred.mode());
     const bool incomingPublic = (proto::KEYMODE_PUBLIC == cred.mode());

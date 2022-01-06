@@ -6,11 +6,11 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include "internal/api/network/Blockchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -35,15 +35,15 @@ class Server
 public:
     using Chain = opentxs::blockchain::Type;
 
-    auto Endpoint(const Chain chain) const noexcept -> std::string;
+    auto Endpoint(const Chain chain) const noexcept -> UnallocatedCString;
 
     auto Disable(const Chain chain) noexcept -> void;
     auto Enable(const Chain chain) noexcept -> void;
     auto Start(
-        const std::string& sync,
-        const std::string& publicSync,
-        const std::string& update,
-        const std::string& publicUpdate) noexcept -> bool;
+        const UnallocatedCString& sync,
+        const UnallocatedCString& publicSync,
+        const UnallocatedCString& update,
+        const UnallocatedCString& publicUpdate) noexcept -> bool;
 
     Server(const api::Session& api, const zeromq::Context& zmq) noexcept;
 

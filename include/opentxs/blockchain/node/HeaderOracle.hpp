@@ -8,12 +8,10 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <set>
-#include <string>
 #include <tuple>
-#include <vector>
 
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -43,8 +41,8 @@ namespace node
 class OPENTXS_EXPORT HeaderOracle
 {
 public:
-    using Hashes = std::vector<block::pHash>;
-    using Positions = std::vector<block::Position>;
+    using Hashes = UnallocatedVector<block::pHash>;
+    using Positions = UnallocatedVector<block::Position>;
 
     /// Throws std::out_of_range for invalid type
     static auto GenesisBlockHash(const blockchain::Type type)
@@ -147,14 +145,15 @@ public:
     virtual auto LoadHeader(const block::Hash& hash) const noexcept
         -> std::unique_ptr<block::Header> = 0;
     virtual auto RecentHashes() const noexcept -> Hashes = 0;
-    virtual auto Siblings() const noexcept -> std::set<block::pHash> = 0;
+    virtual auto Siblings() const noexcept -> UnallocatedSet<block::pHash> = 0;
 
     virtual auto AddCheckpoint(
         const block::Height position,
         const block::Hash& requiredHash) noexcept -> bool = 0;
     virtual auto AddHeader(std::unique_ptr<block::Header>) noexcept -> bool = 0;
     virtual auto AddHeaders(
-        std::vector<std::unique_ptr<block::Header>>&) noexcept -> bool = 0;
+        UnallocatedVector<std::unique_ptr<block::Header>>&) noexcept
+        -> bool = 0;
     virtual auto DeleteCheckpoint() noexcept -> bool = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept

@@ -11,12 +11,12 @@
 #include <cstdint>
 #include <exception>
 #include <limits>
-#include <string>
 #include <string_view>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace be = boost::endian;
@@ -199,7 +199,7 @@ struct Amount::Imp {
 
     auto Serialize(const AllocateOutput dest) const noexcept -> bool
     {
-        auto amount = std::string{};
+        auto amount = UnallocatedCString{};
 
         try {
             amount = amount_.str();

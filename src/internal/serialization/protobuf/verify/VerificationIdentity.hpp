@@ -6,11 +6,10 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
-#include <string>
 
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -24,7 +23,7 @@ namespace opentxs
 {
 namespace proto
 {
-using VerificationNymMap = std::map<std::string, std::uint64_t>;
+using VerificationNymMap = UnallocatedMap<UnallocatedCString, std::uint64_t>;
 
 auto CheckProto_1(
     const VerificationIdentity& verificationIdentity,

@@ -14,10 +14,8 @@
 #include <functional>
 #include <future>
 #include <iterator>
-#include <map>
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -80,6 +78,7 @@
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -308,55 +307,57 @@ auto Factory::Operation(
 
 namespace opentxs::otx::client::implementation
 {
-const std::map<otx::OperationType, Operation::Category> Operation::category_{
-    {otx::OperationType::AddClaim, Category::Basic},
-    {otx::OperationType::CheckNym, Category::Basic},
-    {otx::OperationType::ConveyPayment, Category::Basic},
-    {otx::OperationType::DepositCash, Category::Transaction},
-    {otx::OperationType::DepositCheque, Category::Transaction},
-    {otx::OperationType::DownloadContract, Category::Basic},
-    {otx::OperationType::DownloadMint, Category::Basic},
-    {otx::OperationType::GetTransactionNumbers, Category::NymboxPre},
-    {otx::OperationType::IssueUnitDefinition, Category::CreateAccount},
-    {otx::OperationType::PublishNym, Category::Basic},
-    {otx::OperationType::PublishServer, Category::Basic},
-    {otx::OperationType::PublishUnit, Category::Basic},
-    {otx::OperationType::RefreshAccount, Category::UpdateAccount},
-    {otx::OperationType::RegisterAccount, Category::CreateAccount},
-    {otx::OperationType::RegisterNym, Category::NymboxPost},
-    {otx::OperationType::RequestAdmin, Category::Basic},
-    {otx::OperationType::SendCash, Category::Basic},
-    {otx::OperationType::SendMessage, Category::Basic},
-    {otx::OperationType::SendPeerReply, Category::Basic},
-    {otx::OperationType::SendPeerRequest, Category::Basic},
-    {otx::OperationType::SendTransfer, Category::Transaction},
-    {otx::OperationType::WithdrawCash, Category::Transaction},
-};
+const UnallocatedMap<otx::OperationType, Operation::Category>
+    Operation::category_{
+        {otx::OperationType::AddClaim, Category::Basic},
+        {otx::OperationType::CheckNym, Category::Basic},
+        {otx::OperationType::ConveyPayment, Category::Basic},
+        {otx::OperationType::DepositCash, Category::Transaction},
+        {otx::OperationType::DepositCheque, Category::Transaction},
+        {otx::OperationType::DownloadContract, Category::Basic},
+        {otx::OperationType::DownloadMint, Category::Basic},
+        {otx::OperationType::GetTransactionNumbers, Category::NymboxPre},
+        {otx::OperationType::IssueUnitDefinition, Category::CreateAccount},
+        {otx::OperationType::PublishNym, Category::Basic},
+        {otx::OperationType::PublishServer, Category::Basic},
+        {otx::OperationType::PublishUnit, Category::Basic},
+        {otx::OperationType::RefreshAccount, Category::UpdateAccount},
+        {otx::OperationType::RegisterAccount, Category::CreateAccount},
+        {otx::OperationType::RegisterNym, Category::NymboxPost},
+        {otx::OperationType::RequestAdmin, Category::Basic},
+        {otx::OperationType::SendCash, Category::Basic},
+        {otx::OperationType::SendMessage, Category::Basic},
+        {otx::OperationType::SendPeerReply, Category::Basic},
+        {otx::OperationType::SendPeerRequest, Category::Basic},
+        {otx::OperationType::SendTransfer, Category::Transaction},
+        {otx::OperationType::WithdrawCash, Category::Transaction},
+    };
 
-const std::map<otx::OperationType, std::size_t> Operation::transaction_numbers_{
-    {otx::OperationType::AddClaim, 0},
-    {otx::OperationType::CheckNym, 0},
-    {otx::OperationType::ConveyPayment, 0},
-    {otx::OperationType::DepositCash, 2},
-    {otx::OperationType::DepositCheque, 2},
-    {otx::OperationType::DownloadContract, 0},
-    {otx::OperationType::DownloadMint, 0},
-    {otx::OperationType::GetTransactionNumbers, 0},
-    {otx::OperationType::IssueUnitDefinition, 0},
-    {otx::OperationType::PublishNym, 0},
-    {otx::OperationType::PublishServer, 0},
-    {otx::OperationType::PublishUnit, 0},
-    {otx::OperationType::RefreshAccount, 1},
-    {otx::OperationType::RegisterAccount, 0},
-    {otx::OperationType::RegisterNym, 0},
-    {otx::OperationType::RequestAdmin, 0},
-    {otx::OperationType::SendCash, 0},
-    {otx::OperationType::SendMessage, 0},
-    {otx::OperationType::SendPeerReply, 0},
-    {otx::OperationType::SendPeerRequest, 0},
-    {otx::OperationType::SendTransfer, 2},
-    {otx::OperationType::WithdrawCash, 2},
-};
+const UnallocatedMap<otx::OperationType, std::size_t>
+    Operation::transaction_numbers_{
+        {otx::OperationType::AddClaim, 0},
+        {otx::OperationType::CheckNym, 0},
+        {otx::OperationType::ConveyPayment, 0},
+        {otx::OperationType::DepositCash, 2},
+        {otx::OperationType::DepositCheque, 2},
+        {otx::OperationType::DownloadContract, 0},
+        {otx::OperationType::DownloadMint, 0},
+        {otx::OperationType::GetTransactionNumbers, 0},
+        {otx::OperationType::IssueUnitDefinition, 0},
+        {otx::OperationType::PublishNym, 0},
+        {otx::OperationType::PublishServer, 0},
+        {otx::OperationType::PublishUnit, 0},
+        {otx::OperationType::RefreshAccount, 1},
+        {otx::OperationType::RegisterAccount, 0},
+        {otx::OperationType::RegisterNym, 0},
+        {otx::OperationType::RequestAdmin, 0},
+        {otx::OperationType::SendCash, 0},
+        {otx::OperationType::SendMessage, 0},
+        {otx::OperationType::SendPeerReply, 0},
+        {otx::OperationType::SendPeerRequest, 0},
+        {otx::OperationType::SendTransfer, 2},
+        {otx::OperationType::WithdrawCash, 2},
+    };
 
 Operation::Operation(
     const api::session::Client& api,
@@ -1070,7 +1071,7 @@ auto Operation::construct_send_nym_object(
 
     {
         auto copy = api_.Factory().Envelope(senderCopy);
-        auto plaintext = std::string{};
+        auto plaintext = UnallocatedCString{};
 
         // FIXME removing this line causes the sender to be unable to decrypt
         // this message later on. WTF is happening?

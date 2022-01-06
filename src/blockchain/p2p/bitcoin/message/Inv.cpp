@@ -13,7 +13,6 @@
 #include <iterator>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include "blockchain/bitcoin/Inventory.hpp"
 #include "blockchain/p2p/bitcoin/Header.hpp"
@@ -23,6 +22,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::factory
@@ -64,7 +64,7 @@ auto BitcoinP2PInv(
         return nullptr;
     }
 
-    std::vector<blockchain::bitcoin::Inventory> items{};
+    UnallocatedVector<blockchain::bitcoin::Inventory> items{};
 
     if (count > 0) {
         for (std::size_t i{0}; i < count; ++i) {
@@ -89,7 +89,7 @@ auto BitcoinP2PInv(
 auto BitcoinP2PInv(
     const api::Session& api,
     const blockchain::Type network,
-    std::vector<blockchain::bitcoin::Inventory>&& payload)
+    UnallocatedVector<blockchain::bitcoin::Inventory>&& payload)
     -> blockchain::p2p::bitcoin::message::internal::Inv*
 {
     namespace bitcoin = blockchain::p2p::bitcoin;
@@ -104,7 +104,7 @@ namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 Inv::Inv(
     const api::Session& api,
     const blockchain::Type network,
-    std::vector<value_type>&& payload) noexcept
+    UnallocatedVector<value_type>&& payload) noexcept
     : Message(api, network, bitcoin::Command::inv)
     , payload_(std::move(payload))
 {
@@ -114,7 +114,7 @@ Inv::Inv(
 Inv::Inv(
     const api::Session& api,
     std::unique_ptr<Header> header,
-    std::vector<value_type>&& payload) noexcept
+    UnallocatedVector<value_type>&& payload) noexcept
     : Message(api, std::move(header))
     , payload_(std::move(payload))
 {

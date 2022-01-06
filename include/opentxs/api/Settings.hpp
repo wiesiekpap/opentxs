@@ -8,7 +8,8 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -103,13 +104,13 @@ public:
         const String& strSection,
         const String& strKey,
         const String& strDefault,
-        std::string& out_strResult,
+        UnallocatedCString& out_strResult,
         bool& out_bIsNew) const -> bool = 0;
     virtual auto CheckSet_str(
         const String& strSection,
         const String& strKey,
         const String& strDefault,
-        std::string& out_strResult,
+        UnallocatedCString& out_strResult,
         bool& out_bIsNew,
         const String& strComment) const -> bool = 0;
     virtual auto CheckSet_str(

@@ -9,9 +9,7 @@
 
 #include <algorithm>
 #include <iterator>
-#include <map>
 #include <mutex>
-#include <set>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
@@ -37,6 +35,7 @@
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/ScopeGuard.hpp"
@@ -149,7 +148,7 @@ struct BalanceOracle::Imp {
     }
 
 private:
-    using Subscribers = std::set<OTData>;
+    using Subscribers = UnallocatedSet<OTData>;
 
     const api::Session& api_;
     const zmq::Context& zmq_;
@@ -157,8 +156,9 @@ private:
     OTZMQRouterSocket socket_;
     OTZMQPublishSocket publisher_;
     mutable std::mutex lock_;
-    mutable std::map<Chain, Subscribers> subscribers_;
-    mutable std::map<Chain, std::map<OTNymID, Subscribers>> nym_subscribers_;
+    mutable UnallocatedMap<Chain, Subscribers> subscribers_;
+    mutable UnallocatedMap<Chain, UnallocatedMap<OTNymID, Subscribers>>
+        nym_subscribers_;
 
     auto cb(opentxs::network::zeromq::Message&& in) noexcept -> void
     {

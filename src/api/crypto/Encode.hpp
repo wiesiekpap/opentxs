@@ -8,13 +8,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
-#include <string>
 
 #include "internal/api/crypto/Encode.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -37,22 +37,29 @@ namespace opentxs::api::crypto::imp
 class Encode final : public internal::Encode
 {
 public:
-    auto DataEncode(const std::string& input) const -> std::string final;
-    auto DataEncode(const Data& input) const -> std::string final;
-    auto DataDecode(const std::string& input) const -> std::string final;
-    auto IdentifierEncode(const Data& input) const -> std::string final;
-    auto IdentifierDecode(const std::string& input) const -> std::string final;
-    auto IsBase62(const std::string& str) const -> bool final;
+    auto DataEncode(const UnallocatedCString& input) const
+        -> UnallocatedCString final;
+    auto DataEncode(const Data& input) const -> UnallocatedCString final;
+    auto DataDecode(const UnallocatedCString& input) const
+        -> UnallocatedCString final;
+    auto IdentifierEncode(const Data& input) const -> UnallocatedCString final;
+    auto IdentifierDecode(const UnallocatedCString& input) const
+        -> UnallocatedCString final;
+    auto IsBase62(const UnallocatedCString& str) const -> bool final;
     auto Nonce(const std::uint32_t size) const -> OTString final;
     auto Nonce(const std::uint32_t size, Data& rawOutput) const
         -> OTString final;
-    auto RandomFilename() const -> std::string final;
-    auto SanatizeBase58(const std::string& input) const -> std::string final;
-    auto SanatizeBase64(const std::string& input) const -> std::string final;
-    auto Z85Encode(const Data& input) const -> std::string final;
-    auto Z85Encode(const std::string& input) const -> std::string final;
+    auto RandomFilename() const -> UnallocatedCString final;
+    auto SanatizeBase58(const UnallocatedCString& input) const
+        -> UnallocatedCString final;
+    auto SanatizeBase64(const UnallocatedCString& input) const
+        -> UnallocatedCString final;
+    auto Z85Encode(const Data& input) const -> UnallocatedCString final;
+    auto Z85Encode(const UnallocatedCString& input) const
+        -> UnallocatedCString final;
     auto Z85Decode(const Data& input) const -> OTData final;
-    auto Z85Decode(const std::string& input) const -> std::string final;
+    auto Z85Decode(const UnallocatedCString& input) const
+        -> UnallocatedCString final;
 
     Encode(const api::Crypto& crypto) noexcept;
 
@@ -65,12 +72,14 @@ private:
 
     auto Base64Encode(
         const std::uint8_t* inputStart,
-        const std::size_t& inputSize) const -> std::string;
-    auto Base64Decode(const std::string&& input, RawData& output) const -> bool;
-    auto BreakLines(const std::string& input) const -> std::string;
-    auto IdentifierEncode(const Secret& input) const -> std::string;
+        const std::size_t& inputSize) const -> UnallocatedCString;
+    auto Base64Decode(const UnallocatedCString&& input, RawData& output) const
+        -> bool;
+    auto BreakLines(const UnallocatedCString& input) const
+        -> UnallocatedCString;
+    auto IdentifierEncode(const Secret& input) const -> UnallocatedCString;
     auto IdentifierEncode(const void* data, const std::size_t size) const
-        -> std::string;
+        -> UnallocatedCString;
 
     Encode() = delete;
     Encode(const Encode&) = delete;

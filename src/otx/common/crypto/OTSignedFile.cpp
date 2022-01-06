@@ -9,7 +9,6 @@
 
 #include <cstdint>
 #include <cstring>
-#include <string>
 
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/StringXML.hpp"
@@ -19,6 +18,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -130,7 +130,7 @@ void OTSignedFile::UpdateContents(const PasswordPrompt& reason)
         tag.add_tag("filePayload", ascPayload->Get());
     }
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());

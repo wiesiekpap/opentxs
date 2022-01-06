@@ -9,9 +9,7 @@
 
 #include <cstdint>
 #include <locale>
-#include <map>
 #include <optional>
-#include <string>
 
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
@@ -26,6 +24,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -52,20 +51,23 @@ class Unit : virtual public contract::Unit,
              public opentxs::contract::implementation::Signable
 {
 public:
-    static const std::map<VersionNumber, VersionNumber>
+    static const UnallocatedMap<VersionNumber, VersionNumber>
         unit_of_account_version_map_;
 
     static auto GetID(const api::Session& api, const SerializedType& contract)
         -> OTIdentifier;
 
     auto AddAccountRecord(
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const Account& theAccount) const -> bool override;
     auto DisplayStatistics(String& strContents) const -> bool override;
     auto EraseAccountRecord(
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const Identifier& theAcctID) const -> bool override;
-    auto Name() const noexcept -> std::string override { return short_name_; }
+    auto Name() const noexcept -> UnallocatedCString override
+    {
+        return short_name_;
+    }
     auto Serialize() const noexcept -> OTData override;
     auto Serialize(AllocateOutput destination, bool includeNym = false) const
         -> bool override;
@@ -77,15 +79,15 @@ public:
         return unit_of_account_;
     }
     auto VisitAccountRecords(
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         AccountVisitor& visitor,
         const PasswordPrompt& reason) const -> bool override;
 
-    void InitAlias(const std::string& alias) final
+    void InitAlias(const UnallocatedCString& alias) final
     {
         contract::implementation::Signable::SetAlias(alias);
     }
-    auto SetAlias(const std::string& alias) noexcept -> bool override;
+    auto SetAlias(const UnallocatedCString& alias) noexcept -> bool override;
 
     ~Unit() override = default;
 
@@ -102,8 +104,8 @@ protected:
     Unit(
         const api::Session& api,
         const Nym_p& nym,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const VersionNumber version,
         const display::Definition& displayDefinition,
@@ -124,7 +126,7 @@ private:
 
     std::optional<display::Definition> display_definition_;
     const Amount redemption_increment_;
-    const std::string short_name_;
+    const UnallocatedCString short_name_;
 
     auto contract(const Lock& lock) const -> SerializedType;
     auto GetID(const Lock& lock) const -> OTIdentifier override;

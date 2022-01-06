@@ -18,8 +18,8 @@
 #define PROTO_NAME "token"
 
 #include <algorithm>
-#include <set>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -29,8 +29,8 @@ auto CheckProto_1(
     const Token& input,
     const bool silent,
     const CashType type,
-    const std::set<TokenState>& state,
-    std::string& totalValue,
+    const UnallocatedSet<TokenState>& state,
+    UnallocatedCString& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool
 {
@@ -89,8 +89,8 @@ auto CheckProto_2(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -101,8 +101,8 @@ auto CheckProto_3(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -113,8 +113,8 @@ auto CheckProto_4(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -125,8 +125,8 @@ auto CheckProto_5(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -137,8 +137,8 @@ auto CheckProto_6(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -149,8 +149,8 @@ auto CheckProto_7(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -161,8 +161,8 @@ auto CheckProto_8(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -173,8 +173,8 @@ auto CheckProto_9(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -185,8 +185,8 @@ auto CheckProto_10(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -197,8 +197,8 @@ auto CheckProto_11(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -209,8 +209,8 @@ auto CheckProto_12(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -221,8 +221,8 @@ auto CheckProto_13(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -233,8 +233,8 @@ auto CheckProto_14(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -245,8 +245,8 @@ auto CheckProto_15(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -257,8 +257,8 @@ auto CheckProto_16(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -269,8 +269,8 @@ auto CheckProto_17(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -281,8 +281,8 @@ auto CheckProto_18(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -293,8 +293,8 @@ auto CheckProto_19(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -305,8 +305,8 @@ auto CheckProto_20(
     const Token& input,
     const bool silent,
     const CashType,
-    const std::set<TokenState>&,
-    std::string&,
+    const UnallocatedSet<TokenState>&,
+    UnallocatedCString&,
     std::int64_t&,
     std::int64_t&) -> bool
 {

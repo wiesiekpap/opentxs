@@ -5,10 +5,7 @@
 
 #pragma once
 
-#include <map>
 #include <ostream>
-#include <string>
-#include <vector>
 
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/curve/Server.hpp"
@@ -18,6 +15,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -44,7 +42,8 @@ class Router final : public Bidirectional<zeromq::socket::Router>,
                      public zeromq::curve::implementation::Server
 {
 public:
-    auto SetSocksProxy(const std::string& proxy) const noexcept -> bool final
+    auto SetSocksProxy(const UnallocatedCString& proxy) const noexcept
+        -> bool final
     {
         return set_socks_proxy(proxy);
     }

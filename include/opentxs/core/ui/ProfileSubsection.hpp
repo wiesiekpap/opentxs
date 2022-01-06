@@ -7,10 +7,9 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/core/ui/List.hpp"
 #include "opentxs/core/ui/ListRow.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -32,22 +31,25 @@ class OPENTXS_EXPORT ProfileSubsection : virtual public List,
 {
 public:
     virtual auto AddItem(
-        const std::string& value,
+        const UnallocatedCString& value,
         const bool primary,
         const bool active) const noexcept -> bool = 0;
-    virtual auto Delete(const std::string& claimID) const noexcept -> bool = 0;
+    virtual auto Delete(const UnallocatedCString& claimID) const noexcept
+        -> bool = 0;
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ProfileItem> = 0;
-    virtual auto Name(const std::string& lang) const noexcept
-        -> std::string = 0;
+    virtual auto Name(const UnallocatedCString& lang) const noexcept
+        -> UnallocatedCString = 0;
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ProfileItem> = 0;
-    virtual auto SetActive(const std::string& claimID, const bool active)
+    virtual auto SetActive(const UnallocatedCString& claimID, const bool active)
         const noexcept -> bool = 0;
-    virtual auto SetPrimary(const std::string& claimID, const bool primary)
-        const noexcept -> bool = 0;
-    virtual auto SetValue(const std::string& claimID, const std::string& value)
-        const noexcept -> bool = 0;
+    virtual auto SetPrimary(
+        const UnallocatedCString& claimID,
+        const bool primary) const noexcept -> bool = 0;
+    virtual auto SetValue(
+        const UnallocatedCString& claimID,
+        const UnallocatedCString& value) const noexcept -> bool = 0;
     virtual auto Type() const noexcept -> identity::wot::claim::ClaimType = 0;
 
     ~ProfileSubsection() override = default;

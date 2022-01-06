@@ -8,18 +8,16 @@
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 extern "C" {
 typedef struct MDB_env MDB_env;
@@ -35,9 +33,9 @@ using ReadCallback =
     std::function<bool(const ReadView key, const ReadView value)>;
 using Result = std::pair<bool, int>;
 using Table = int;
-using Databases = std::map<Table, MDB_dbi>;
-using TablesToInit = std::vector<std::pair<Table, unsigned int>>;
-using TableNames = std::map<Table, const std::string>;
+using Databases = UnallocatedMap<Table, MDB_dbi>;
+using TablesToInit = UnallocatedVector<std::pair<Table, unsigned int>>;
+using TableNames = UnallocatedMap<Table, const UnallocatedCString>;
 using UpdateCallback = std::function<Space(const ReadView data)>;
 
 class LMDB
@@ -115,7 +113,7 @@ public:
         const Table table,
         const ReadCallback cb,
         MDB_txn& tx,
-        const std::string& message) const noexcept -> bool;
+        const UnallocatedCString& message) const noexcept -> bool;
     auto ReadFrom(
         const Table table,
         const ReadView key,
@@ -150,7 +148,7 @@ public:
 
     LMDB(
         const TableNames& names,
-        const std::string& folder,
+        const UnallocatedCString& folder,
         const TablesToInit init,
         const Flags flags = 0,
         const std::size_t extraTables = 0)

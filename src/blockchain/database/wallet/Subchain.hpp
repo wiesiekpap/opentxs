@@ -9,7 +9,6 @@
 #include <mutex>
 #include <optional>
 #include <utility>
-#include <vector>
 
 #include "blockchain/database/wallet/Types.hpp"
 #include "internal/blockchain/database/Database.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
@@ -79,7 +79,7 @@ public:
         -> block::Position;
     auto SubchainMatchBlock(
         const SubchainIndex& index,
-        const std::vector<std::pair<ReadView, MatchingIndices>>& results)
+        const UnallocatedVector<std::pair<ReadView, MatchingIndices>>& results)
         const noexcept -> bool;
     auto SubchainSetLastScanned(
         const SubchainIndex& subchain,

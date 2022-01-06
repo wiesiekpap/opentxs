@@ -6,9 +6,7 @@
 #include <gtest/gtest.h>
 #include <atomic>
 #include <future>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "integration/Helpers.hpp"
 #include "opentxs/OT.hpp"
@@ -22,6 +20,7 @@
 #include "opentxs/core/ui/ContactList.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/util/Container.hpp"
 #include "ui/Helpers.hpp"
 
 namespace opentxs

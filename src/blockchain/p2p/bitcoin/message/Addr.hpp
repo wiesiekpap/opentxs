@@ -9,7 +9,6 @@
 #include <iosfwd>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -63,7 +63,7 @@ public:
     };
 
     using pAddress = std::unique_ptr<blockchain::p2p::internal::Address>;
-    using AddressVector = std::vector<pAddress>;
+    using AddressVector = UnallocatedVector<pAddress>;
 
     static auto ExtractAddress(AddressByteField in) noexcept
         -> std::pair<p2p::Network, OTData>;

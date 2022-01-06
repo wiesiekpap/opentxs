@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <stdexcept>
 #include <type_traits>
-#include <vector>
 
 #include "blockchain/node/wallet/Rescan.hpp"
 #include "blockchain/node/wallet/Scan.hpp"
@@ -20,6 +19,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

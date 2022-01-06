@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "core/contract/peer/PeerRequest.hpp"  // IWYU pragma: associated
 
-#include <list>
 #include <memory>
 
 #include "internal/api/session/FactoryAPI.hpp"
@@ -26,6 +25,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PeerRequest.pb.h"
@@ -49,7 +49,7 @@ Request::Request(
     const identifier::Nym& recipient,
     const identifier::Notary& server,
     const PeerRequestType& type,
-    const std::string& conditions)
+    const UnallocatedCString& conditions)
     : Signable(api, nym, version, conditions, "")
     , initiator_(nym->ID())
     , recipient_(recipient)
@@ -63,7 +63,7 @@ Request::Request(
     const api::Session& api,
     const Nym_p& nym,
     const SerializedType& serialized,
-    const std::string& conditions)
+    const UnallocatedCString& conditions)
     : Signable(
           api,
           nym,

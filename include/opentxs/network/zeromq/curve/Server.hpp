@@ -25,10 +25,10 @@ namespace curve
 class OPENTXS_EXPORT Server : virtual public socket::Socket
 {
 public:
-    virtual auto SetDomain(const std::string& domain) const noexcept
+    virtual auto SetDomain(const UnallocatedCString& domain) const noexcept
         -> bool = 0;
     virtual auto SetPrivateKey(const Secret& key) const noexcept -> bool = 0;
-    virtual auto SetPrivateKey(const std::string& z85) const noexcept
+    virtual auto SetPrivateKey(const UnallocatedCString& z85) const noexcept
         -> bool = 0;
 
     ~Server() override = default;

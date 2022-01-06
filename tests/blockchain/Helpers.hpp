@@ -13,7 +13,6 @@
 #include <functional>
 #include <iosfwd>
 #include <memory>
-#include <string>
 
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -44,11 +44,11 @@ namespace ot = opentxs;
 namespace ottest
 {
 struct FilterVector {
-    std::string filter_hex_{};
-    std::string header_hex_{};
+    ot::UnallocatedCString filter_hex_{};
+    ot::UnallocatedCString header_hex_{};
 };
 struct ChainVector {
-    std::string genesis_block_hex_{};
+    ot::UnallocatedCString genesis_block_hex_{};
     boost::container::flat_map<ot::blockchain::filter::Type, FilterVector>
         filters_{};
 };
@@ -57,7 +57,9 @@ struct Listener {
 
     auto get(std::size_t index) noexcept(false) -> const Message&;
 
-    Listener(const ot::api::Session& api, const std::string& endpoint);
+    Listener(
+        const ot::api::Session& api,
+        const ot::UnallocatedCString& endpoint);
 
     ~Listener();
 

@@ -4,7 +4,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
-#include <string>
 
 #include "internal/api/session/FactoryAPI.hpp"
 #include "opentxs/OT.hpp"
@@ -12,7 +11,7 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/Identifier.pb.h"
 
 namespace ot = opentxs;

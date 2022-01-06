@@ -10,12 +10,8 @@
 #include <cstddef>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
 #include <type_traits>
-#include <vector>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
@@ -30,6 +26,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -98,11 +95,11 @@ public:
         const node::internal::BlockOracle& block,
         const node::internal::PeerManager& manager,
         const database::BlockStorage policy,
-        const std::string& shutdown,
+        const UnallocatedCString& shutdown,
         const int id,
         std::unique_ptr<internal::Address> address,
         const bool relay = true,
-        const std::set<p2p::Service>& localServices = {},
+        const UnallocatedSet<p2p::Service>& localServices = {},
         const ProtocolVersion protocol = 0) noexcept;
 
     ~Peer() final;
@@ -145,14 +142,14 @@ private:
         Time start_{};
     };
 
-    static const std::map<Command, CommandFunction> command_map_;
+    static const UnallocatedMap<Command, CommandFunction> command_map_;
     static const ProtocolVersion default_protocol_version_{70015};
-    static const std::string user_agent_;
+    static const UnallocatedCString user_agent_;
 
     const node::HeaderOracle& headers_;
     std::atomic<ProtocolVersion> protocol_;
     const Nonce nonce_;
-    const std::set<p2p::Service> local_services_;
+    const UnallocatedSet<p2p::Service> local_services_;
     std::atomic<bool> relay_;
     Request get_headers_;
 
@@ -160,11 +157,13 @@ private:
         const ProtocolVersion version,
         const blockchain::Type network,
         const database::BlockStorage policy,
-        const std::set<p2p::Service>& input) noexcept -> std::set<p2p::Service>;
+        const UnallocatedSet<p2p::Service>& input) noexcept
+        -> UnallocatedSet<p2p::Service>;
     static auto nonce(const api::Session& api) noexcept -> Nonce;
 
     auto broadcast_inv(
-        std::vector<blockchain::bitcoin::Inventory>&& inv) noexcept -> void;
+        UnallocatedVector<blockchain::bitcoin::Inventory>&& inv) noexcept
+        -> void;
     auto get_body_size(const zmq::Frame& header) const noexcept
         -> std::size_t final;
 
@@ -187,7 +186,7 @@ private:
     auto request_headers(const block::Hash& hash) noexcept -> void;
     auto request_mempool() noexcept -> void final;
     auto request_transactions(
-        std::vector<blockchain::bitcoin::Inventory>&&) noexcept -> void;
+        UnallocatedVector<blockchain::bitcoin::Inventory>&&) noexcept -> void;
     auto start_handshake() noexcept -> void final;
 
     auto process_addr(

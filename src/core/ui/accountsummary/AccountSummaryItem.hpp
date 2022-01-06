@@ -8,7 +8,6 @@
 #pragma once
 
 #include <atomic>
-#include <string>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -22,6 +21,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/ui/AccountSummaryItem.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 class QVariant;
@@ -63,7 +63,7 @@ using AccountSummaryItemRow =
 class AccountSummaryItem final : public AccountSummaryItemRow
 {
 public:
-    auto AccountID() const noexcept -> std::string final
+    auto AccountID() const noexcept -> UnallocatedCString final
     {
         return account_id_.str();
     }
@@ -72,8 +72,8 @@ public:
         sLock lock(shared_lock_);
         return balance_;
     }
-    auto DisplayBalance() const noexcept -> std::string final;
-    auto Name() const noexcept -> std::string final;
+    auto DisplayBalance() const noexcept -> UnallocatedCString final;
+    auto Name() const noexcept -> UnallocatedCString final;
 
     AccountSummaryItem(
         const IssuerItemInternalInterface& parent,

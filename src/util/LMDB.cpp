@@ -317,7 +317,7 @@ struct LMDB::Imp {
         const Table table,
         const ReadCallback cb,
         MDB_txn& tx,
-        const std::string& message) const noexcept -> bool
+        const UnallocatedCString& message) const noexcept -> bool
     {
         auto dbi = MDB_dbi{};
 
@@ -484,7 +484,7 @@ struct LMDB::Imp {
     }
 
     Imp(const TableNames& names,
-        const std::string& folder,
+        const UnallocatedCString& folder,
         const TablesToInit init,
         const Flags flags,
         const std::size_t extraTables) noexcept
@@ -512,8 +512,9 @@ struct LMDB::Imp {
     }
 
 private:
-    using NewKey = std::tuple<Table, Mode, std::string, std::string>;
-    using Pending = std::vector<NewKey>;
+    using NewKey =
+        std::tuple<Table, Mode, UnallocatedCString, UnallocatedCString>;
+    using Pending = UnallocatedVector<NewKey>;
 
     const TableNames& names_;
     mutable MDB_env* env_;
@@ -545,7 +546,7 @@ private:
     }
 
     auto init_environment(
-        const std::string& folder,
+        const UnallocatedCString& folder,
         const std::size_t tables,
         const Flags flags) noexcept -> void
     {
@@ -584,7 +585,7 @@ private:
 
 LMDB::LMDB(
     const TableNames& names,
-    const std::string& folder,
+    const UnallocatedCString& folder,
     const TablesToInit init,
     const Flags flags,
     const std::size_t extraTables) noexcept
@@ -746,7 +747,7 @@ auto LMDB::ReadAndDelete(
     const Table table,
     const ReadCallback cb,
     MDB_txn& tx,
-    const std::string& message) const noexcept -> bool
+    const UnallocatedCString& message) const noexcept -> bool
 {
     return imp_->ReadAndDelete(table, cb, tx, message);
 }

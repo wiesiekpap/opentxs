@@ -5,14 +5,13 @@
 
 #pragma once
 
-#include <string>
-
 #include "1_Internal.hpp"
 #include "core/ui/base/Row.hpp"
 #include "internal/core/ui/UI.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/ui/ContactListItem.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 class QVariant;
@@ -52,10 +51,10 @@ using ContactListItemRow =
 class ContactListItem : public ContactListItemRow
 {
 public:
-    auto ContactID() const noexcept -> std::string final;
-    auto DisplayName() const noexcept -> std::string final;
-    auto ImageURI() const noexcept -> std::string final;
-    auto Section() const noexcept -> std::string final;
+    auto ContactID() const noexcept -> UnallocatedCString final;
+    auto DisplayName() const noexcept -> UnallocatedCString final;
+    auto ImageURI() const noexcept -> UnallocatedCString final;
+    auto Section() const noexcept -> UnallocatedCString final;
 
     ContactListItem(
         const ContactListInternalInterface& parent,
@@ -67,7 +66,7 @@ public:
 protected:
     ContactListSortKey key_;
 
-    auto translate_section(const Lock&) const noexcept -> std::string;
+    auto translate_section(const Lock&) const noexcept -> UnallocatedCString;
 
     using ContactListItemRow::reindex;
     auto qt_data(const int column, const int role, QVariant& out) const noexcept
@@ -80,10 +79,11 @@ protected:
         CustomData&) noexcept -> bool;
 
 private:
-    std::string section_;
+    UnallocatedCString section_;
 
-    auto calculate_section() const noexcept -> std::string;
-    virtual auto calculate_section(const Lock&) const noexcept -> std::string;
+    auto calculate_section() const noexcept -> UnallocatedCString;
+    virtual auto calculate_section(const Lock&) const noexcept
+        -> UnallocatedCString;
 
     ContactListItem() = delete;
     ContactListItem(const ContactListItem&) = delete;

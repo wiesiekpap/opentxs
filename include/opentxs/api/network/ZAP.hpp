@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/network/zeromq/zap/Callback.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::api::network
 {
@@ -30,7 +29,7 @@ public:
      *   \return True if the domain is valid and not already registered
      */
     virtual auto RegisterDomain(
-        const std::string& domain,
+        const UnallocatedCString& domain,
         const Callback& callback) const -> bool = 0;
 
     /** Configure ZAP policy for unhandled domains

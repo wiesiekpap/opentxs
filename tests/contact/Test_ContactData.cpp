@@ -6,8 +6,6 @@
 #include <gtest/gtest.h>
 #include <cstdint>
 #include <memory>
-#include <set>
-#include <string>
 #include <tuple>
 #include <utility>
 
@@ -18,7 +16,6 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -31,6 +28,7 @@
 #include "opentxs/identity/wot/claim/Section.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -44,18 +42,18 @@ public:
         : api_(ot::Context().StartClientSession(0))
         , contactData_(
               dynamic_cast<const ot::api::session::Client&>(api_),
-              std::string("contactDataNym"),
+              ot::UnallocatedCString("contactDataNym"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
               {})
         , activeContactItem_(new ot::identity::wot::claim::Item(
               dynamic_cast<const ot::api::session::Client&>(api_),
-              std::string("activeContactItem"),
+              ot::UnallocatedCString("activeContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
               ot::identity::wot::claim::SectionType::Identifier,
               ot::identity::wot::claim::ClaimType::Employee,
-              std::string("activeContactItemValue"),
+              ot::UnallocatedCString("activeContactItemValue"),
               {ot::identity::wot::claim::Attribute::Active},
               NULL_START,
               NULL_END,
@@ -69,13 +67,13 @@ public:
 
     using CallbackType1 = ot::identity::wot::claim::Data (*)(
         const ot::identity::wot::claim::Data&,
-        const std::string&,
+        const ot::UnallocatedCString&,
         const ot::core::UnitType,
         const bool,
         const bool);
     using CallbackType2 = ot::identity::wot::claim::Data (*)(
         const ot::identity::wot::claim::Data&,
-        const std::string&,
+        const ot::UnallocatedCString&,
         const bool,
         const bool);
 
@@ -95,13 +93,13 @@ public:
 
 ot::identity::wot::claim::Data add_contract(
     const ot::identity::wot::claim::Data& data,
-    const std::string& id,
+    const ot::UnallocatedCString& id,
     const ot::core::UnitType type,
     const bool active,
     const bool primary);
 ot::identity::wot::claim::Data add_contract(
     const ot::identity::wot::claim::Data& data,
-    const std::string& id,
+    const ot::UnallocatedCString& id,
     const ot::core::UnitType type,
     const bool active,
     const bool primary)
@@ -111,12 +109,12 @@ ot::identity::wot::claim::Data add_contract(
 
 ot::identity::wot::claim::Data add_email(
     const ot::identity::wot::claim::Data& data,
-    const std::string& id,
+    const ot::UnallocatedCString& id,
     const bool active,
     const bool primary);
 ot::identity::wot::claim::Data add_email(
     const ot::identity::wot::claim::Data& data,
-    const std::string& id,
+    const ot::UnallocatedCString& id,
     const bool active,
     const bool primary)
 {
@@ -125,13 +123,13 @@ ot::identity::wot::claim::Data add_email(
 
 ot::identity::wot::claim::Data add_payment_code(
     const ot::identity::wot::claim::Data& data,
-    const std::string& id,
+    const ot::UnallocatedCString& id,
     const ot::core::UnitType type,
     const bool active,
     const bool primary);
 ot::identity::wot::claim::Data add_payment_code(
     const ot::identity::wot::claim::Data& data,
-    const std::string& id,
+    const ot::UnallocatedCString& id,
     const ot::core::UnitType type,
     const bool active,
     const bool primary)
@@ -141,12 +139,12 @@ ot::identity::wot::claim::Data add_payment_code(
 
 ot::identity::wot::claim::Data add_phone_number(
     const ot::identity::wot::claim::Data& data,
-    const std::string& id,
+    const ot::UnallocatedCString& id,
     const bool active,
     const bool primary);
 ot::identity::wot::claim::Data add_phone_number(
     const ot::identity::wot::claim::Data& data,
-    const std::string& id,
+    const ot::UnallocatedCString& id,
     const bool active,
     const bool primary)
 {
@@ -179,7 +177,7 @@ void Test_ContactData::testAddItemMethod(
 
     const ot::identity::wot::claim::Data data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym1"),
+        ot::UnallocatedCString("contactDataNym1"),
         version,
         version,
         ot::identity::wot::claim::Data::SectionMap{{sectionName, section1}});
@@ -327,7 +325,7 @@ void Test_ContactData::testAddItemMethod2(
 
     const ot::identity::wot::claim::Data data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym1"),
+        ot::UnallocatedCString("contactDataNym1"),
         version,
         version,
         ot::identity::wot::claim::Data::SectionMap{{sectionName, section1}});
@@ -384,7 +382,7 @@ void Test_ContactData::testAddItemMethod2(
 
     const ot::identity::wot::claim::Data data4(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym4"),
+        ot::UnallocatedCString("contactDataNym4"),
         version,
         version,
         ot::identity::wot::claim::Data::SectionMap{{sectionName, section2}});
@@ -427,15 +425,17 @@ void Test_ContactData::testAddItemMethod2(
     ASSERT_TRUE(contactItem4->isActive());
 }
 
-static const std::string expectedStringOutput =
-    std::string{"Version "} + std::to_string(CONTACT_CONTACT_DATA_VERSION) +
-    std::string(
+static const ot::UnallocatedCString expectedStringOutput =
+    ot::UnallocatedCString{"Version "} +
+    std::to_string(CONTACT_CONTACT_DATA_VERSION) +
+    ot::UnallocatedCString(
         " contact data\nSections found: 1\n- Section: Identifier, version: ") +
     std::to_string(CONTACT_CONTACT_DATA_VERSION) +
-    std::string{" containing 1 item(s).\n-- Item type: \"employee of\", value: "
-                "\"activeContactItemValue\", start: 0, end: 0, version: "} +
+    ot::UnallocatedCString{
+        " containing 1 item(s).\n-- Item type: \"employee of\", value: "
+        "\"activeContactItemValue\", start: 0, end: 0, version: "} +
     std::to_string(CONTACT_CONTACT_DATA_VERSION) +
-    std::string{"\n--- Attributes: Active \n"};
+    ot::UnallocatedCString{"\n--- Attributes: Active \n"};
 
 TEST_F(Test_ContactData, first_constructor)
 {
@@ -453,7 +453,7 @@ TEST_F(Test_ContactData, first_constructor)
 
     const ot::identity::wot::claim::Data contactData(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym"),
+        ot::UnallocatedCString("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         map);
@@ -476,7 +476,7 @@ TEST_F(Test_ContactData, first_constructor_no_sections)
 {
     const ot::identity::wot::claim::Data contactData(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym"),
+        ot::UnallocatedCString("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         {});
@@ -487,7 +487,7 @@ TEST_F(Test_ContactData, first_constructor_different_versions)
 {
     const ot::identity::wot::claim::Data contactData(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym"),
+        ot::UnallocatedCString("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION - 1,  // previous version
         CONTACT_CONTACT_DATA_VERSION,
         {});
@@ -510,7 +510,7 @@ TEST_F(Test_ContactData, copy_constructor)
 
     const ot::identity::wot::claim::Data contactData(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym"),
+        ot::UnallocatedCString("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         map);
@@ -541,12 +541,12 @@ TEST_F(Test_ContactData, operator_plus)
     const auto& contactItem2 = std::shared_ptr<ot::identity::wot::claim::Item>(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("contactItem2"),
+            ot::UnallocatedCString("contactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::Employee,
-            std::string("contactItemValue2"),
+            ot::UnallocatedCString("contactItemValue2"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -570,7 +570,7 @@ TEST_F(Test_ContactData, operator_plus)
 
     const ot::identity::wot::claim::Data data2(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym2"),
+        ot::UnallocatedCString("contactDataNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         ot::identity::wot::claim::Data::SectionMap{
@@ -605,12 +605,12 @@ TEST_F(Test_ContactData, operator_plus)
     const auto& contactItem4 = std::shared_ptr<ot::identity::wot::claim::Item>(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("contactItem4"),
+            ot::UnallocatedCString("contactItem4"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Address,
             ot::identity::wot::claim::ClaimType::Physical,
-            std::string("contactItemValue4"),
+            ot::UnallocatedCString("contactItemValue4"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -634,7 +634,7 @@ TEST_F(Test_ContactData, operator_plus)
 
     const ot::identity::wot::claim::Data data4(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym4"),
+        ot::UnallocatedCString("contactDataNym4"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         ot::identity::wot::claim::Data::SectionMap{
@@ -693,7 +693,7 @@ TEST_F(Test_ContactData, operator_plus_different_version)
     // rhs version less than lhs
     const ot::identity::wot::claim::Data contactData2(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym"),
+        ot::UnallocatedCString("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION - 1,
         CONTACT_CONTACT_DATA_VERSION - 1,
         {});
@@ -711,7 +711,7 @@ TEST_F(Test_ContactData, operator_plus_different_version)
 TEST_F(Test_ContactData, operator_string)
 {
     const auto& data1 = contactData_.AddItem(activeContactItem_);
-    const std::string dataString = data1;
+    const ot::UnallocatedCString dataString = data1;
     ASSERT_EQ(expectedStringOutput, dataString);
 }
 
@@ -811,7 +811,7 @@ TEST_F(Test_ContactData, AddEmail)
 //{
 //    testAddItemMethod2(
 //        std::mem_fn<ot::identity::wot::claim::ContactData(
-//            const std::string&, const bool, const bool) const>(
+//            const ot::UnallocatedCString&, const bool, const bool) const>(
 //            &ot::identity::wot::claim::ContactData::AddEmail),
 //        ot::identity::wot::claim::ContactSectionName::Communication,
 //        ot::identity::wot::claim::ClaimType::Email,
@@ -824,13 +824,13 @@ TEST_F(Test_ContactData, AddEmail)
 TEST_F(Test_ContactData, AddItem_claim)
 {
     ot::Claim claim = std::make_tuple(
-        std::string(""),
+        ot::UnallocatedCString(""),
         ot::translate(ot::identity::wot::claim::SectionType::Contract),
         ot::translate(ot::identity::wot::claim::ClaimType::USD),
-        std::string("contactItemValue"),
+        ot::UnallocatedCString("contactItemValue"),
         NULL_START,
         NULL_END,
-        std::set<std::uint32_t>{static_cast<uint32_t>(
+        ot::UnallocatedSet<std::uint32_t>{static_cast<uint32_t>(
             ot::identity::wot::claim::Attribute::Active)});
     const auto& data1 = contactData_.AddItem(claim);
     // Verify the section was added.
@@ -871,7 +871,7 @@ TEST_F(Test_ContactData, AddItem_claim_different_versions)
 
     const ot::identity::wot::claim::Data data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym1"),
+        ot::UnallocatedCString("contactDataNym1"),
         3,  // version of CONTACTSECTION_CONTRACT section before CITEMTYPE_BCH
             // was added
         3,
@@ -879,13 +879,13 @@ TEST_F(Test_ContactData, AddItem_claim_different_versions)
             {ot::identity::wot::claim::SectionType::Contract, section1}});
 
     ot::Claim claim = std::make_tuple(
-        std::string(""),
+        ot::UnallocatedCString(""),
         ot::translate(ot::identity::wot::claim::SectionType::Contract),
         ot::translate(ot::identity::wot::claim::ClaimType::BCH),
-        std::string("contactItemValue"),
+        ot::UnallocatedCString("contactItemValue"),
         NULL_START,
         NULL_END,
-        std::set<std::uint32_t>{static_cast<uint32_t>(
+        ot::UnallocatedSet<std::uint32_t>{static_cast<uint32_t>(
             ot::identity::wot::claim::Attribute::Active)});
 
     const auto& data2 = data1.AddItem(claim);
@@ -917,12 +917,12 @@ TEST_F(Test_ContactData, AddItem_item)
     const auto& contactItem2 = std::shared_ptr<ot::identity::wot::claim::Item>(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("contactItem2"),
+            ot::UnallocatedCString("contactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::Employee,
-            std::string("contactItemValue2"),
+            ot::UnallocatedCString("contactItemValue2"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -963,7 +963,7 @@ TEST_F(Test_ContactData, AddItem_item_different_versions)
 
     const ot::identity::wot::claim::Data data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym1"),
+        ot::UnallocatedCString("contactDataNym1"),
         3,  // version of CONTACTSECTION_CONTRACT section before CITEMTYPE_BCH
             // was added
         3,
@@ -973,12 +973,12 @@ TEST_F(Test_ContactData, AddItem_item_different_versions)
     const auto& contactItem1 = std::shared_ptr<ot::identity::wot::claim::Item>(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("contactItem1"),
+            ot::UnallocatedCString("contactItem1"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Contract,
             ot::identity::wot::claim::ClaimType::BCH,
-            std::string("contactItemValue1"),
+            ot::UnallocatedCString("contactItemValue1"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -1021,7 +1021,7 @@ TEST_F(Test_ContactData, AddPhoneNumber)
 //{
 //    testAddItemMethod2(
 //        std::mem_fn<ot::identity::wot::claim::ContactData(
-//            const std::string&, const bool, const bool) const>(
+//            const ot::UnallocatedCString&, const bool, const bool) const>(
 //            &ot::identity::wot::claim::ContactData::AddPhoneNumber),
 //        ot::identity::wot::claim::ContactSectionName::Communication,
 //        ot::identity::wot::claim::ClaimType::Phone,
@@ -1053,7 +1053,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
 
     const ot::identity::wot::claim::Data data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym1"),
+        ot::UnallocatedCString("contactDataNym1"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         ot::identity::wot::claim::Data::SectionMap{
@@ -1067,7 +1067,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
             ot::identity::wot::claim::ClaimType::Opentxs,
             NULL_START,
             NULL_END,
-            std::string("serverID1"),
+            ot::UnallocatedCString("serverID1"),
             "")));
     const auto& data2 = data1.AddPreferredOTServer(serverIdentifier1, false);
 
@@ -1095,7 +1095,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
             ot::identity::wot::claim::ClaimType::Opentxs,
             NULL_START,
             NULL_END,
-            std::string("serverID2"),
+            ot::UnallocatedCString("serverID2"),
             "")));
     const auto& data3 = data2.AddPreferredOTServer(serverIdentifier2, false);
 
@@ -1123,7 +1123,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
             ot::identity::wot::claim::ClaimType::Opentxs,
             NULL_START,
             NULL_END,
-            std::string("serverID3"),
+            ot::UnallocatedCString("serverID3"),
             "")));
     const auto& data4 =
         contactData_.AddPreferredOTServer(serverIdentifier3, false);
@@ -1158,7 +1158,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
             ot::identity::wot::claim::ClaimType::Opentxs,
             NULL_START,
             NULL_END,
-            std::string("serverID4"),
+            ot::UnallocatedCString("serverID4"),
             "")));
     const auto& data5 = data4.AddPreferredOTServer(serverIdentifier4, true);
 
@@ -1383,7 +1383,7 @@ TEST_F(Test_ContactData, AddSocialMediaProfile)
 //    // Add a profile to the CONTACTSECTION_PROFILE section.
 //    testAddItemMethod3(
 //        std::mem_fn<ot::identity::wot::claim::ContactData(
-//            const std::string&,
+//            const ot::UnallocatedCString&,
 //            const ot::proto::ContactSectionName,
 //            const ot::identity::wot::claim::,
 //            const bool,
@@ -1542,12 +1542,12 @@ TEST_F(Test_ContactData, Delete)
     const auto& contactItem2 = std::shared_ptr<ot::identity::wot::claim::Item>(
         new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
-            std::string("contactItem2"),
+            ot::UnallocatedCString("contactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
             ot::identity::wot::claim::ClaimType::Employee,
-            std::string("contactItemValue2"),
+            ot::UnallocatedCString("contactItemValue2"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
@@ -1583,15 +1583,15 @@ TEST_F(Test_ContactData, EmailAddresses)
 
     auto emails = data4.EmailAddresses(false);
     ASSERT_TRUE(
-        emails.find("email1") != std::string::npos &&
-        emails.find("email2") != std::string::npos &&
-        emails.find("email3") != std::string::npos);
+        emails.find("email1") != ot::UnallocatedCString::npos &&
+        emails.find("email2") != ot::UnallocatedCString::npos &&
+        emails.find("email3") != ot::UnallocatedCString::npos);
 
     emails = data4.EmailAddresses();
     ASSERT_TRUE(
-        emails.find("email1") != std::string::npos &&
-        emails.find("email2") != std::string::npos);
-    ASSERT_TRUE(emails.find("email3") == std::string::npos);
+        emails.find("email1") != ot::UnallocatedCString::npos &&
+        emails.find("email2") != ot::UnallocatedCString::npos);
+    ASSERT_TRUE(emails.find("email3") == ot::UnallocatedCString::npos);
 }
 
 TEST_F(Test_ContactData, Group_found)
@@ -1666,7 +1666,7 @@ TEST_F(Test_ContactData, Name)
 
     const ot::identity::wot::claim::Data data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym1"),
+        ot::UnallocatedCString("contactDataNym1"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         ot::identity::wot::claim::Data::SectionMap{
@@ -1690,15 +1690,16 @@ TEST_F(Test_ContactData, PhoneNumbers)
 
     auto phonenumbers = data4.PhoneNumbers(false);
     ASSERT_TRUE(
-        phonenumbers.find("phonenumber1") != std::string::npos &&
-        phonenumbers.find("phonenumber2") != std::string::npos &&
-        phonenumbers.find("phonenumber3") != std::string::npos);
+        phonenumbers.find("phonenumber1") != ot::UnallocatedCString::npos &&
+        phonenumbers.find("phonenumber2") != ot::UnallocatedCString::npos &&
+        phonenumbers.find("phonenumber3") != ot::UnallocatedCString::npos);
 
     phonenumbers = data4.PhoneNumbers();
     ASSERT_TRUE(
-        phonenumbers.find("phonenumber1") != std::string::npos &&
-        phonenumbers.find("phonenumber2") != std::string::npos);
-    ASSERT_TRUE(phonenumbers.find("phonenumber3") == std::string::npos);
+        phonenumbers.find("phonenumber1") != ot::UnallocatedCString::npos &&
+        phonenumbers.find("phonenumber2") != ot::UnallocatedCString::npos);
+    ASSERT_TRUE(
+        phonenumbers.find("phonenumber3") == ot::UnallocatedCString::npos);
 }
 
 TEST_F(Test_ContactData, PreferredOTServer)
@@ -1727,7 +1728,7 @@ TEST_F(Test_ContactData, PreferredOTServer)
 
     const ot::identity::wot::claim::Data data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("contactDataNym1"),
+        ot::UnallocatedCString("contactDataNym1"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         ot::identity::wot::claim::Data::SectionMap{
@@ -1745,7 +1746,7 @@ TEST_F(Test_ContactData, PreferredOTServer)
             ot::identity::wot::claim::ClaimType::Opentxs,
             NULL_START,
             NULL_END,
-            std::string("serverID2"),
+            ot::UnallocatedCString("serverID2"),
             "")));
     const auto& data2 =
         contactData_.AddPreferredOTServer(serverIdentifier2, true);
@@ -1776,7 +1777,7 @@ TEST_F(Test_ContactData, SetCommonName)
             ot::identity::wot::claim::ClaimType::Commonname,
             NULL_START,
             NULL_END,
-            std::string("commonName"),
+            ot::UnallocatedCString("commonName"),
             "")));
     const auto& commonNameItem = data1.Claim(identifier);
     ASSERT_NE(nullptr, commonNameItem);
@@ -1800,7 +1801,7 @@ TEST_F(Test_ContactData, SetName)
             ot::identity::wot::claim::ClaimType::Individual,
             NULL_START,
             NULL_END,
-            std::string("secondName"),
+            ot::UnallocatedCString("secondName"),
             "")));
     const auto& scopeItem1 = data2.Claim(identifier1);
     ASSERT_NE(nullptr, scopeItem1);
@@ -1818,7 +1819,7 @@ TEST_F(Test_ContactData, SetName)
             ot::identity::wot::claim::ClaimType::Individual,
             NULL_START,
             NULL_END,
-            std::string("thirdName"),
+            ot::UnallocatedCString("thirdName"),
             "")));
     const auto& contactItem2 = data3.Claim(identifier2);
     ASSERT_NE(nullptr, contactItem2);
@@ -1839,7 +1840,7 @@ TEST_F(Test_ContactData, SetScope)
             ot::identity::wot::claim::ClaimType::Organization,
             NULL_START,
             NULL_END,
-            std::string("organizationScope"),
+            ot::UnallocatedCString("organizationScope"),
             "")));
     const auto& scopeItem1 = data1.Claim(identifier1);
     ASSERT_NE(nullptr, scopeItem1);
@@ -1858,7 +1859,7 @@ TEST_F(Test_ContactData, SetScope)
             ot::identity::wot::claim::ClaimType::Business,
             NULL_START,
             NULL_END,
-            std::string("businessScope"),
+            ot::UnallocatedCString("businessScope"),
             "")));
     ASSERT_FALSE(data2.Claim(identifier2));
     // Verify the scope wasn't changed.
@@ -1872,7 +1873,7 @@ TEST_F(Test_ContactData, SetScope_different_versions)
 {
     const ot::identity::wot::claim::Data data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("dataNym1"),
+        ot::UnallocatedCString("dataNym1"),
         3,  // version of CONTACTSECTION_SCOPE section before CITEMTYPE_BOT
             // was added
         3,
@@ -1905,8 +1906,8 @@ TEST_F(Test_ContactData, SocialMediaProfiles)
     auto profiles = data4.SocialMediaProfiles(
         ot::identity::wot::claim::ClaimType::Facebook, false);
     ASSERT_TRUE(
-        profiles.find("facebook1") != std::string::npos &&
-        profiles.find("facebook2") != std::string::npos);
+        profiles.find("facebook1") != ot::UnallocatedCString::npos &&
+        profiles.find("facebook2") != ot::UnallocatedCString::npos);
 
     profiles = data4.SocialMediaProfiles(
         ot::identity::wot::claim::ClaimType::Linkedin, false);
@@ -1915,8 +1916,8 @@ TEST_F(Test_ContactData, SocialMediaProfiles)
     profiles = data4.SocialMediaProfiles(
         ot::identity::wot::claim::ClaimType::Facebook);
     ASSERT_STREQ("facebook1", profiles.c_str());
-    ASSERT_TRUE(profiles.find("facebook2") == std::string::npos);
-    ASSERT_TRUE(profiles.find("linkedin1") == std::string::npos);
+    ASSERT_TRUE(profiles.find("facebook2") == ot::UnallocatedCString::npos);
+    ASSERT_TRUE(profiles.find("linkedin1") == ot::UnallocatedCString::npos);
 }
 
 TEST_F(Test_ContactData, Type)

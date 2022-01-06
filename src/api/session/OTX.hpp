@@ -13,11 +13,8 @@
 #include <functional>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -47,6 +44,7 @@
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Time.hpp"
 #include "otx/client/StateMachine.hpp"
@@ -80,6 +78,17 @@ class Message;
 }  // namespace zeromq
 }  // namespace network
 
+namespace otx
+{
+namespace client
+{
+namespace implementation
+{
+class StateMachine;
+}  // namespace implementation
+}  // namespace client
+}  // namespace otx
+
 class OTClient;
 }  // namespace opentxs
 
@@ -93,7 +102,7 @@ public:
         const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
         const Identifier& requestID,
-        const std::string& instructions,
+        const UnallocatedCString& instructions,
         const SetID setID) const -> BackgroundTask final;
     auto AcknowledgeNotice(
         const identifier::Nym& localNymID,
@@ -107,7 +116,7 @@ public:
         const identifier::Notary& serverID,
         const identifier::Nym& recipientID,
         const Identifier& requestID,
-        const std::string& details,
+        const UnallocatedCString& details,
         const SetID setID) const -> BackgroundTask final;
     auto AcknowledgeConnection(
         const identifier::Nym& localNymID,
@@ -115,10 +124,10 @@ public:
         const identifier::Nym& recipientID,
         const Identifier& requestID,
         const bool ack,
-        const std::string& url,
-        const std::string& login,
-        const std::string& password,
-        const std::string& key,
+        const UnallocatedCString& url,
+        const UnallocatedCString& login,
+        const UnallocatedCString& password,
+        const UnallocatedCString& key,
         const SetID setID) const -> BackgroundTask final;
     auto AutoProcessInboxEnabled() const -> bool final
     {
@@ -146,7 +155,8 @@ public:
         -> std::size_t final;
     auto DepositCheques(
         const identifier::Nym& nymID,
-        const std::set<OTIdentifier>& chequeIDs) const -> std::size_t final;
+        const UnallocatedSet<OTIdentifier>& chequeIDs) const
+        -> std::size_t final;
     auto DepositPayment(
         const identifier::Nym& recipientNymID,
         const std::shared_ptr<const OTPayment>& payment) const
@@ -197,7 +207,7 @@ public:
         const identifier::Nym& targetNymID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Amount amount,
-        const std::string& message,
+        const UnallocatedCString& message,
         const SetID setID) const -> BackgroundTask final;
     auto InitiateRequestConnection(
         const identifier::Nym& localNymID,
@@ -210,8 +220,8 @@ public:
         const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
         const contract::peer::SecretType& type,
-        const std::string& primary,
-        const std::string& secondary,
+        const UnallocatedCString& primary,
+        const UnallocatedCString& secondary,
         const SetID setID) const -> BackgroundTask final;
     auto IntroductionServer() const -> const identifier::Notary& final;
     auto IssueUnitDefinition(
@@ -219,11 +229,11 @@ public:
         const identifier::Notary& serverID,
         const identifier::UnitDefinition& unitID,
         const core::UnitType advertise,
-        const std::string& label) const -> BackgroundTask final;
+        const UnallocatedCString& label) const -> BackgroundTask final;
     auto MessageContact(
         const identifier::Nym& senderNymID,
         const Identifier& contactID,
-        const std::string& message,
+        const UnallocatedCString& message,
         const SetID setID) const -> BackgroundTask final;
     auto MessageStatus(const TaskID taskID) const
         -> std::pair<ThreadStatus, MessageID> final;
@@ -233,7 +243,7 @@ public:
         const identifier::Nym& targetNymID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Identifier& requestID,
-        const std::string& txid,
+        const UnallocatedCString& txid,
         const Amount amount,
         const SetID setID) const -> BackgroundTask final;
     auto PayContact(
@@ -258,7 +268,7 @@ public:
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const identifier::UnitDefinition& unitID,
-        const std::string& label) const -> BackgroundTask final;
+        const UnallocatedCString& label) const -> BackgroundTask final;
     auto RegisterNym(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
@@ -276,7 +286,7 @@ public:
         const Identifier& sourceAccountID,
         const Identifier& recipientContactID,
         const Amount value,
-        const std::string& memo,
+        const UnallocatedCString& memo,
         const Time validFrom,
         const Time validTo) const -> BackgroundTask final;
     auto SendExternalTransfer(
@@ -285,14 +295,14 @@ public:
         const Identifier& sourceAccountID,
         const Identifier& targetAccountID,
         const Amount& value,
-        const std::string& memo) const -> BackgroundTask final;
+        const UnallocatedCString& memo) const -> BackgroundTask final;
     auto SendTransfer(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const Identifier& sourceAccountID,
         const Identifier& targetAccountID,
         const Amount& value,
-        const std::string& memo) const -> BackgroundTask final;
+        const UnallocatedCString& memo) const -> BackgroundTask final;
     void StartIntroductionServer(const identifier::Nym& localNymID) const final;
     auto Status(const TaskID taskID) const -> ThreadStatus final;
     auto WithdrawCash(
@@ -309,7 +319,7 @@ public:
 
 private:
     using TaskStatusMap =
-        std::map<TaskID, std::pair<ThreadStatus, std::promise<Result>>>;
+        UnallocatedMap<TaskID, std::pair<ThreadStatus, std::promise<Result>>>;
     using ContextID = std::pair<OTNymID, OTNotaryID>;
 
     ContextLockCallback lock_callback_;
@@ -319,16 +329,17 @@ private:
     mutable std::mutex nym_fetch_lock_{};
     mutable std::mutex task_status_lock_{};
     mutable std::atomic<std::uint64_t> refresh_counter_{0};
-    mutable std::map<ContextID, otx::client::implementation::StateMachine>
+    mutable UnallocatedMap<ContextID, otx::client::implementation::StateMachine>
         operations_;
-    mutable std::map<OTIdentifier, UniqueQueue<OTNymID>> server_nym_fetch_;
+    mutable UnallocatedMap<OTIdentifier, UniqueQueue<OTNymID>>
+        server_nym_fetch_;
     UniqueQueue<otx::client::CheckNymTask> missing_nyms_;
     UniqueQueue<otx::client::CheckNymTask> outdated_nyms_;
     UniqueQueue<OTNotaryID> missing_servers_;
     UniqueQueue<OTUnitID> missing_unit_definitions_;
     mutable std::unique_ptr<OTNotaryID> introduction_server_id_;
     mutable TaskStatusMap task_status_;
-    mutable std::map<TaskID, MessageID> task_message_id_;
+    mutable UnallocatedMap<TaskID, MessageID> task_message_id_;
     OTZMQListenCallback account_subscriber_callback_;
     OTZMQSubscribeSocket account_subscriber_;
     OTZMQListenCallback notification_listener_callback_;
@@ -415,7 +426,7 @@ private:
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const identifier::UnitDefinition& unitID,
-        const std::string& label) const -> BackgroundTask;
+        const UnallocatedCString& label) const -> BackgroundTask;
     auto set_contact(
         const identifier::Nym& nymID,
         const identifier::Notary& serverID) const -> void;

@@ -7,9 +7,7 @@
 #include "1_Internal.hpp"         // IWYU pragma: associated
 #include "api/crypto/Config.hpp"  // IWYU pragma: associated
 
-#include <map>
 #include <memory>
-#include <string>
 
 #include "internal/api/crypto/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -17,6 +15,7 @@
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 #ifdef __APPLE__
@@ -58,7 +57,7 @@ auto HaveSupport(opentxs::crypto::key::symmetric::Algorithm val) noexcept
     -> bool
 {
     using Type = opentxs::crypto::key::symmetric::Algorithm;
-    static const auto map = std::map<Type, bool>{
+    static const auto map = UnallocatedMap<Type, bool>{
         {Type::Error, false},
         {Type::ChaCha20Poly1305, true},
     };
@@ -128,7 +127,7 @@ auto Config::GetSetAll() const -> bool
 }
 
 auto Config::GetSetValue(
-    const std::string& strKeyName,
+    const UnallocatedCString& strKeyName,
     const std::int32_t nDefaultValue,
     std::int32_t& out_nValue) const -> bool
 

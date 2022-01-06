@@ -6,8 +6,6 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <optional>
-#include <string>
-#include <vector>
 
 #include "Helpers.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
@@ -28,11 +26,12 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 
 using Subchain = ot::blockchain::crypto::Subchain;
 
-std::string txid_{};
+ot::UnallocatedCString txid_{};
 ot::Bip32Index first_index_{};
 ot::Bip32Index second_index_{};
 

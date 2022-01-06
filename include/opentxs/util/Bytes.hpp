@@ -12,11 +12,11 @@
 #include <functional>
 #include <memory>
 #include <mutex>
-#include <string>
 #include <string_view>
 #include <tuple>
 #include <utility>
-#include <vector>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -140,7 +140,7 @@ private:
 };
 
 using AllocateOutput = std::function<WritableView(const std::size_t)>;
-using Space = std::vector<std::byte>;
+using Space = UnallocatedVector<std::byte>;
 
 OPENTXS_EXPORT auto copy(const ReadView in, const AllocateOutput out) noexcept
     -> bool;
@@ -152,12 +152,13 @@ OPENTXS_EXPORT auto preallocated(const std::size_t size, void* out) noexcept
     -> AllocateOutput;
 OPENTXS_EXPORT auto reader(const WritableView& in) noexcept -> ReadView;
 OPENTXS_EXPORT auto reader(const Space& in) noexcept -> ReadView;
-OPENTXS_EXPORT auto reader(const std::vector<std::uint8_t>& in) noexcept
+OPENTXS_EXPORT auto reader(const UnallocatedVector<std::uint8_t>& in) noexcept
     -> ReadView;
 OPENTXS_EXPORT auto space(const std::size_t size) noexcept -> Space;
 OPENTXS_EXPORT auto space(const ReadView bytes) noexcept -> Space;
 OPENTXS_EXPORT auto valid(const ReadView view) noexcept -> bool;
-OPENTXS_EXPORT auto writer(std::string& in) noexcept -> AllocateOutput;
-OPENTXS_EXPORT auto writer(std::string* protobuf) noexcept -> AllocateOutput;
+OPENTXS_EXPORT auto writer(UnallocatedCString& in) noexcept -> AllocateOutput;
+OPENTXS_EXPORT auto writer(UnallocatedCString* protobuf) noexcept
+    -> AllocateOutput;
 OPENTXS_EXPORT auto writer(Space& in) noexcept -> AllocateOutput;
 }  // namespace opentxs

@@ -326,7 +326,7 @@ public:
         const identifier::UnitDefinition& unitID,
         const identifier::Notary& serverID,
         const opentxs::Identifier& requestID,
-        const std::string& txid,
+        const UnallocatedCString& txid,
         const Amount& amount,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::request::BailmentNotice>;
@@ -341,7 +341,7 @@ public:
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
         const identifier::Notary& server,
-        const std::string& terms,
+        const UnallocatedCString& terms,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::reply::Bailment>;
     static auto BailmentReply(
@@ -365,8 +365,8 @@ public:
     static auto BasketContract(
         const api::Session& api,
         const Nym_p& nym,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const std::uint64_t weight,
         const core::UnitType unitOfAccount,
         const VersionNumber version,
@@ -388,10 +388,10 @@ public:
         const opentxs::Identifier& request,
         const identifier::Notary& server,
         const bool ack,
-        const std::string& url,
-        const std::string& login,
-        const std::string& password,
-        const std::string& key,
+        const UnallocatedCString& url,
+        const UnallocatedCString& login,
+        const UnallocatedCString& password,
+        const UnallocatedCString& key,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::reply::Connection>;
     static auto ConnectionReply(
@@ -450,8 +450,8 @@ public:
     static auto CurrencyContract(
         const api::Session& api,
         const Nym_p& nym,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason,
@@ -493,16 +493,16 @@ public:
         const api::Session& api,
         const crypto::Parameters& nymParameters,
         const identity::wot::claim::ClaimType type,
-        const std::string name,
+        const UnallocatedCString name,
         const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*;
     static auto Nym(
         const api::Session& api,
         const proto::Nym& serialized,
-        const std::string& alias) -> identity::internal::Nym*;
+        const UnallocatedCString& alias) -> identity::internal::Nym*;
     static auto Nym(
         const api::Session& api,
         const ReadView& serialized,
-        const std::string& alias) -> identity::internal::Nym*;
+        const UnallocatedCString& alias) -> identity::internal::Nym*;
     static auto NymFile(
         const api::Session& api,
         Nym_p targetNym,
@@ -526,7 +526,7 @@ public:
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
         const identifier::Notary& server,
-        const std::string& terms,
+        const UnallocatedCString& terms,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::reply::Outbailment>;
     static auto OutBailmentReply(
@@ -541,7 +541,7 @@ public:
         const identifier::UnitDefinition& unitID,
         const identifier::Notary& serverID,
         const Amount& amount,
-        const std::string& terms,
+        const UnallocatedCString& terms,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::request::Outbailment>;
     static auto OutbailmentRequest(
@@ -549,8 +549,9 @@ public:
         const Nym_p& nym,
         const proto::PeerRequest& serialized) noexcept
         -> std::shared_ptr<contract::peer::request::Outbailment>;
-    static auto PasswordPrompt(const api::Session& api, const std::string& text)
-        -> opentxs::PasswordPrompt*;
+    static auto PasswordPrompt(
+        const api::Session& api,
+        const UnallocatedCString& text) -> opentxs::PasswordPrompt*;
     static auto PrimaryCredential(
         const api::Session& api,
         identity::internal::Authority& parent,
@@ -585,8 +586,8 @@ public:
     static auto SecurityContract(
         const api::Session& api,
         const Nym_p& nym,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason,
@@ -603,9 +604,9 @@ public:
     static auto ServerContract(
         const api::Session& api,
         const Nym_p& nym,
-        const std::list<Endpoint>& endpoints,
-        const std::string& terms,
-        const std::string& name,
+        const UnallocatedList<Endpoint>& endpoints,
+        const UnallocatedCString& terms,
+        const UnallocatedCString& name,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::unique_ptr<contract::Server>;
@@ -619,8 +620,8 @@ public:
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const contract::peer::SecretType type,
-        const std::string& primary,
-        const std::string& secondary,
+        const UnallocatedCString& primary,
+        const UnallocatedCString& secondary,
         const identifier::Notary& server,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::request::StoreSecret>;

@@ -9,12 +9,9 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iterator>
-#include <map>
 #include <memory>
-#include <string>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -36,6 +33,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -45,21 +43,21 @@ namespace ottest
 const auto params_ = ot::blockchain::internal::GetFilterParams(
     ot::blockchain::filter::Type::Basic_BIP158);
 using Hash = ot::OTData;
-auto stress_test_ = std::vector<Hash>{};
+auto stress_test_ = ot::UnallocatedVector<Hash>{};
 
 class Test_Filters : public ::testing::Test
 {
 public:
     struct TestData {
-        std::string block_hash_;
-        std::string block_;
-        std::vector<std::string> previous_;
-        std::vector<std::string> outputs_;
-        std::string previous_header_;
-        std::string filter_;
-        std::string header_;
+        ot::UnallocatedCString block_hash_;
+        ot::UnallocatedCString block_;
+        ot::UnallocatedVector<ot::UnallocatedCString> previous_;
+        ot::UnallocatedVector<ot::UnallocatedCString> outputs_;
+        ot::UnallocatedCString previous_header_;
+        ot::UnallocatedCString filter_;
+        ot::UnallocatedCString header_;
     };
-    using TestMap = std::map<ot::blockchain::block::Height, TestData>;
+    using TestMap = ot::UnallocatedMap<ot::blockchain::block::Height, TestData>;
 
     static const TestMap gcs_;
 
@@ -70,7 +68,7 @@ public:
         const auto& vector = gcs_.at(0);
         const auto block =
             api_.Factory().Data(vector.block_hash_, ot::StringStyle::Hex);
-        auto elements = std::vector<ot::OTData>{};
+        auto elements = ot::UnallocatedVector<ot::OTData>{};
 
         for (const auto& element : vector.previous_) {
             elements.emplace_back(
@@ -233,10 +231,10 @@ const Test_Filters::TestMap Test_Filters::gcs_{
 
 TEST_F(Test_Filters, bloom_filter)
 {
-    std::string s1("blah");
-    std::string s2("foo");
-    std::string s3("justus");
-    std::string s4("fellowtraveler");
+    ot::UnallocatedCString s1("blah");
+    ot::UnallocatedCString s2("foo");
+    ot::UnallocatedCString s3("justus");
+    ot::UnallocatedCString s4("fellowtraveler");
 
     const auto object1(ot::Data::Factory(s1.data(), s1.length()));
     const auto object2(ot::Data::Factory(s2.data(), s2.length()));
@@ -344,7 +342,7 @@ TEST_F(Test_Filters, bitstreams)
 
 TEST_F(Test_Filters, golomb_coding)
 {
-    const auto elements = std::vector<std::uint64_t>{2, 3, 5, 8, 13};
+    const auto elements = ot::UnallocatedVector<std::uint64_t>{2, 3, 5, 8, 13};
     const auto N = static_cast<std::uint32_t>(elements.size());
     const auto P = std::uint8_t{19};
     const auto encoded = ot::gcs::GolombEncode(P, elements);
@@ -362,12 +360,12 @@ TEST_F(Test_Filters, golomb_coding)
 
 TEST_F(Test_Filters, gcs)
 {
-    const auto s1 = std::string{"blah"};
-    const auto s2 = std::string{"foo"};
-    const auto s3 = std::string{"justus"};
-    const auto s4 = std::string{"fellowtraveler"};
-    const auto s5 = std::string{"islajames"};
-    const auto s6 = std::string{"timewaitsfornoman"};
+    const auto s1 = ot::UnallocatedCString{"blah"};
+    const auto s2 = ot::UnallocatedCString{"foo"};
+    const auto s3 = ot::UnallocatedCString{"justus"};
+    const auto s4 = ot::UnallocatedCString{"fellowtraveler"};
+    const auto s5 = ot::UnallocatedCString{"islajames"};
+    const auto s6 = ot::UnallocatedCString{"timewaitsfornoman"};
     const auto object1(ot::Data::Factory(s1.data(), s1.length()));
     const auto object2(ot::Data::Factory(s2.data(), s2.length()));
     const auto object3(ot::Data::Factory(s3.data(), s3.length()));
@@ -376,9 +374,9 @@ TEST_F(Test_Filters, gcs)
     const auto object6(ot::Data::Factory(s6.data(), s6.length()));
 
     auto includedElements =
-        std::vector<ot::OTData>{object1, object2, object3, object4};
-    auto excludedElements = std::vector<ot::OTData>{object5, object6};
-    auto key = std::string{"0123456789abcdef"};
+        ot::UnallocatedVector<ot::OTData>{object1, object2, object3, object4};
+    auto excludedElements = ot::UnallocatedVector<ot::OTData>{object5, object6};
+    auto key = ot::UnallocatedCString{"0123456789abcdef"};
     auto pGcs = ot::factory::GCS(
         api_, params_.first, params_.second, key, includedElements);
 
@@ -395,7 +393,7 @@ TEST_F(Test_Filters, gcs)
     EXPECT_TRUE(gcs.Test(includedElements));
     EXPECT_FALSE(gcs.Test(excludedElements));
 
-    const auto partial = std::vector<ot::ReadView>{
+    const auto partial = ot::UnallocatedVector<ot::ReadView>{
         object1->Bytes(), object4->Bytes(), object5->Bytes(), object6->Bytes()};
     const auto matches = gcs.Match(partial);
 

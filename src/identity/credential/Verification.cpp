@@ -9,7 +9,6 @@
 
 #include <memory>
 #include <stdexcept>
-#include <string>
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
@@ -27,6 +26,7 @@
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/credential/Verification.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/Credential.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
@@ -100,7 +100,7 @@ auto Verification::SigningForm(const proto::Verification& item)
 // static
 auto Verification::VerificationID(
     const api::Session& api,
-    const proto::Verification& item) -> std::string
+    const proto::Verification& item) -> UnallocatedCString
 {
     return api.Factory().InternalSession().Identifier(item)->str();
 }

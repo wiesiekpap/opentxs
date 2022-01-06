@@ -10,7 +10,6 @@
 #include <array>
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "blockchain/block/Header.hpp"
 #include "internal/blockchain/block/Block.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -67,8 +67,8 @@ public:
 
         BitcoinFormat(
             const std::int32_t version,
-            const std::string& previous,
-            const std::string& merkle,
+            const UnallocatedCString& previous,
+            const UnallocatedCString& merkle,
             const std::uint32_t time,
             const std::uint32_t nbits,
             const std::uint32_t nonce) noexcept(false);
@@ -110,7 +110,7 @@ public:
     }
     auto Nonce() const noexcept -> std::uint32_t final { return nonce_; }
     auto nBits() const noexcept -> std::uint32_t final { return nbits_; }
-    auto Print() const noexcept -> std::string final;
+    auto Print() const noexcept -> UnallocatedCString final;
     auto Serialize(SerializedType& out) const noexcept -> bool final;
     auto Serialize(
         const AllocateOutput destination,

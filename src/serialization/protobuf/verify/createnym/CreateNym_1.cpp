@@ -5,12 +5,11 @@
 
 #include "internal/serialization/protobuf/verify/CreateNym.hpp"  // IWYU pragma: associated
 
-#include <set>
-
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Contact.hpp"
 #include "internal/serialization/protobuf/verify/AddClaim.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyRPC.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/CreateNym.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 

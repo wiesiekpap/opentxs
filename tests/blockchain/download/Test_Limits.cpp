@@ -5,11 +5,10 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "Helpers.hpp"
 #include "blockchain/DownloadTask.hpp"
+#include "opentxs/util/Container.hpp"
 
 constexpr auto batchSize{3};
 auto manager_ = DownloadManager{batchSize, 10, 5};
@@ -33,7 +32,7 @@ TEST(Test_DownloadManager, attempt_excessive_queue)
     EXPECT_EQ(manager_.state_machine_triggers_, 0);
 
     manager_.UpdatePosition(manager_.MakePositions(1, [] {
-        auto output = std::vector<std::string>{};
+        auto output = ot::UnallocatedVector<ot::UnallocatedCString>{};
 
         for (auto i{1}; i < 21; ++i) { output.emplace_back(std::to_string(i)); }
 

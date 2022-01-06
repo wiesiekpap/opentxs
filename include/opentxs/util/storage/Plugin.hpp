@@ -7,8 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 
 namespace opentxs
@@ -19,8 +18,8 @@ class Plugin : public virtual Driver
 {
 public:
     auto EmptyBucket(const bool bucket) const -> bool override = 0;
-    auto LoadRoot() const -> std::string override = 0;
-    auto StoreRoot(const bool commit, const std::string& hash) const
+    auto LoadRoot() const -> UnallocatedCString override = 0;
+    auto StoreRoot(const bool commit, const UnallocatedCString& hash) const
         -> bool override = 0;
 
     ~Plugin() override = default;

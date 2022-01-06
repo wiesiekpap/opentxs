@@ -5,12 +5,12 @@
 
 #pragma once
 
-#include <string>
-
 #include "internal/api/Log.hpp"
+
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -30,7 +30,7 @@ class Log final : virtual public api::internal::Log
 {
 public:
     Log(const opentxs::network::zeromq::Context& zmq,
-        const std::string& endpoint);
+        const UnallocatedCString& endpoint);
 
     ~Log() final = default;
 
@@ -43,13 +43,13 @@ private:
     auto callback(opentxs::network::zeromq::Message&& message) noexcept -> void;
     void print(
         const int level,
-        const std::string& text,
-        const std::string& thread);
+        const UnallocatedCString& text,
+        const UnallocatedCString& thread);
 #ifdef ANDROID
     void print_android(
         const int level,
-        const std::string& text,
-        const std::string& thread);
+        const UnallocatedCString& text,
+        const UnallocatedCString& thread);
 #endif
 
     Log() = delete;

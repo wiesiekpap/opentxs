@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <ostream>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "internal/serialization/protobuf/Basic.hpp"
@@ -21,6 +20,7 @@
 #include "internal/serialization/protobuf/verify/VerificationSet.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/ChildCredentialParameters.pb.h"
 #include "serialization/protobuf/ContactData.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/Credential.pb.h"
@@ -309,7 +309,7 @@ auto CheckProto_1(
     }
 
     if (withSigs) {
-        std::string masterID = input.childdata().masterid();
+        UnallocatedCString masterID = input.childdata().masterid();
 
         if (expectedSigCount != input.signature_size()) {
             std::stringstream ss;

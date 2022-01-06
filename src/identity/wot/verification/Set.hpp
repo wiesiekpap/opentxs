@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
 
 #include "internal/identity/wot/verification/Verification.hpp"
@@ -16,6 +15,7 @@
 #include "opentxs/identity/wot/verification/Group.hpp"
 #include "opentxs/identity/wot/verification/Item.hpp"
 #include "opentxs/identity/wot/verification/Set.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/VerificationGroup.pb.h"
@@ -97,7 +97,7 @@ private:
     const OTNymID nym_id_;
     GroupPointer internal_;
     GroupPointer external_;
-    std::map<OTIdentifier, bool> map_;
+    UnallocatedMap<OTIdentifier, bool> map_;
 
     static auto instantiate(
         internal::Set& parent,

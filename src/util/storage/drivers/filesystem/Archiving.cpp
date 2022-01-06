@@ -34,7 +34,7 @@ auto StorageFSArchive(
     const api::session::Storage& parent,
     const storage::Config& config,
     const Flag& bucket,
-    const std::string& folder,
+    const UnallocatedCString& folder,
     crypto::key::Symmetric& key) noexcept -> std::unique_ptr<storage::Plugin>
 {
     using ReturnType = storage::driver::filesystem::Archiving;
@@ -52,7 +52,7 @@ Archiving::Archiving(
     const api::session::Storage& storage,
     const storage::Config& config,
     const Flag& bucket,
-    const std::string& folder,
+    const UnallocatedCString& folder,
     crypto::key::Symmetric& key)
     : ot_super(crypto, asio, storage, config, folder, bucket)
     , encryption_key_(key)
@@ -62,13 +62,13 @@ Archiving::Archiving(
 }
 
 auto Archiving::calculate_path(
-    const std::string& key,
+    const UnallocatedCString& key,
     const bool,
-    std::string& directory) const -> std::string
+    UnallocatedCString& directory) const -> UnallocatedCString
 {
     directory = folder_;
     auto& level1 = folder_;
-    std::string level2{};
+    UnallocatedCString level2{};
 
     if (4 < key.size()) {
         directory += path_seperator_;
@@ -122,7 +122,8 @@ void Archiving::Init_Archiving()
     if (boost::filesystem::create_directory(folder_, ec)) { ready_->On(); }
 }
 
-auto Archiving::prepare_read(const std::string& input) const -> std::string
+auto Archiving::prepare_read(const UnallocatedCString& input) const
+    -> UnallocatedCString
 {
     if (false == encrypted_) { return input; }
 
@@ -130,7 +131,7 @@ auto Archiving::prepare_read(const std::string& input) const -> std::string
 
     OT_ASSERT(encryption_key_);
 
-    std::string output{};
+    UnallocatedCString output{};
     auto reason =
         encryption_key_.api().Factory().PasswordPrompt("Storage read");
 
@@ -141,7 +142,8 @@ auto Archiving::prepare_read(const std::string& input) const -> std::string
     return output;
 }
 
-auto Archiving::prepare_write(const std::string& plaintext) const -> std::string
+auto Archiving::prepare_write(const UnallocatedCString& plaintext) const
+    -> UnallocatedCString
 {
     if (false == encrypted_) { return plaintext; }
 
@@ -160,7 +162,7 @@ auto Archiving::prepare_write(const std::string& plaintext) const -> std::string
     return proto::ToString(ciphertext);
 }
 
-auto Archiving::root_filename() const -> std::string
+auto Archiving::root_filename() const -> UnallocatedCString
 {
     return folder_ + path_seperator_ + config_.fs_root_file_ +
            ROOT_FILE_EXTENSION;

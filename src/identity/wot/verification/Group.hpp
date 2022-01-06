@@ -7,9 +7,7 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <map>
 #include <memory>
-#include <vector>
 
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "opentxs/Types.hpp"
@@ -18,6 +16,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/verification/Group.hpp"
 #include "opentxs/identity/wot/verification/Item.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -105,13 +104,13 @@ public:
 private:
     friend opentxs::Factory;
 
-    using Vector = std::vector<std::unique_ptr<internal::Nym>>;
+    using Vector = UnallocatedVector<std::unique_ptr<internal::Nym>>;
 
     internal::Set& parent_;
     const VersionNumber version_;
     const bool external_;
     Vector nyms_;
-    std::map<OTIdentifier, OTNymID> map_;
+    UnallocatedMap<OTIdentifier, OTNymID> map_;
 
     static auto instantiate(
         internal::Group& parent,

@@ -12,7 +12,6 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
-#include <map>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -23,6 +22,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::factory
@@ -124,7 +124,7 @@ auto Header::BitcoinFormat::Network() const noexcept -> blockchain::Type
 {
     static const auto build = []() -> auto
     {
-        auto output = std::map<std::uint32_t, blockchain::Type>{};
+        auto output = UnallocatedMap<std::uint32_t, blockchain::Type>{};
 
         for (const auto& [chain, data] : params::Data::Chains()) {
             if (0 != data.p2p_magic_bits_) {

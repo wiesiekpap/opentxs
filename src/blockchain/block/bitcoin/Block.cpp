@@ -16,15 +16,11 @@
 #include <functional>
 #include <iosfwd>
 #include <iterator>
-#include <map>
 #include <numeric>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
-#include <string>
-#include <string_view>
 #include <type_traits>
-#include <vector>
 
 #include "blockchain/block/Block.hpp"
 #include "blockchain/block/bitcoin/BlockParser.hpp"
@@ -40,6 +36,7 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
@@ -53,7 +50,7 @@ auto BitcoinBlock(
     const opentxs::blockchain::block::Header& previous,
     const Transaction_p pGen,
     const std::uint32_t nBits,
-    const std::vector<Transaction_p>& extra,
+    const UnallocatedVector<Transaction_p>& extra,
     const std::int32_t version,
     const AbortFunction abort) noexcept
     -> std::shared_ptr<const opentxs::blockchain::block::bitcoin::Block>
@@ -360,8 +357,8 @@ auto Block::calculate_merkle_value(
 
     if (1 == txids.size()) { return api.Factory().Data(txids.at(0)); }
 
-    auto a = std::vector<Hash>{};
-    auto b = std::vector<Hash>{};
+    auto a = UnallocatedVector<Hash>{};
+    auto b = UnallocatedVector<Hash>{};
     a.reserve(txids.size());
     b.reserve(txids.size());
     auto counter{0};
@@ -396,9 +393,9 @@ auto Block::calculate_size() const noexcept -> CalculatedSize
 }
 
 auto Block::ExtractElements(const filter::Type style) const noexcept
-    -> std::vector<Space>
+    -> UnallocatedVector<Space>
 {
-    auto output = std::vector<Space>{};
+    auto output = UnallocatedVector<Space>{};
     LogTrace()(OT_PRETTY_CLASS())("processing ")(transactions_.size())(
         " transactions")
         .Flush();
@@ -460,7 +457,7 @@ auto Block::get_or_calculate_size() const noexcept -> CalculatedSize
     return size_.value();
 }
 
-auto Block::Print() const noexcept -> std::string
+auto Block::Print() const noexcept -> UnallocatedCString
 {
     auto out = std::stringstream{};
     out << "header" << '\n' << header_.Print();

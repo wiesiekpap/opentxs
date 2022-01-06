@@ -23,12 +23,12 @@ namespace opentxs::factory
 auto PeerObject(
     const api::Session& api,
     const Nym_p& senderNym,
-    const std::string& message) noexcept
+    const UnallocatedCString& message) noexcept
     -> std::unique_ptr<opentxs::PeerObject>;
 auto PeerObject(
     const api::Session& api,
     const Nym_p& senderNym,
-    const std::string& payment,
+    const UnallocatedCString& payment,
     const bool isPayment) noexcept -> std::unique_ptr<opentxs::PeerObject>;
 auto PeerObject(
     const api::Session& api,

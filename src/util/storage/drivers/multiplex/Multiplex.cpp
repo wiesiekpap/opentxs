@@ -12,13 +12,13 @@
 #include <limits>
 #include <memory>
 #include <stdexcept>
-#include <vector>
 
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/storage/drivers/Factory.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/storage/Plugin.hpp"
@@ -63,14 +63,14 @@ Multiplex::Multiplex(
     Init_Multiplex();
 }
 
-auto Multiplex::BestRoot(bool& primaryOutOfSync) -> std::string
+auto Multiplex::BestRoot(bool& primaryOutOfSync) -> UnallocatedCString
 {
     OT_ASSERT(primary_plugin_);
 
-    const std::string originalHash = primary_plugin_->LoadRoot();
+    const UnallocatedCString originalHash = primary_plugin_->LoadRoot();
     std::shared_ptr<storage::Root> bestRoot{nullptr};
     std::shared_ptr<storage::Root> localRoot{nullptr};
-    std::string bestHash{originalHash};
+    UnallocatedCString bestHash{originalHash};
     std::uint64_t bestVersion{0};
     auto bucket = Flag::Factory(false);
 
@@ -89,7 +89,7 @@ auto Multiplex::BestRoot(bool& primaryOutOfSync) -> std::string
     for (const auto& plugin : backup_plugins_) {
         OT_ASSERT(plugin);
 
-        std::string rootHash = plugin->LoadRoot();
+        UnallocatedCString rootHash = plugin->LoadRoot();
         std::uint64_t localVersion{0};
 
         try {
@@ -141,7 +141,7 @@ auto Multiplex::EmptyBucket(const bool bucket) const -> bool
 }
 
 void Multiplex::init(
-    const std::string& primary,
+    const UnallocatedCString& primary,
     std::unique_ptr<storage::Plugin>& plugin)
 {
     if (OT_STORAGE_PRIMARY_PLUGIN_MEMDB == primary) {
@@ -193,9 +193,9 @@ void Multiplex::InitEncryptedBackup(
 }
 
 auto Multiplex::Load(
-    const std::string& key,
+    const UnallocatedCString& key,
     const bool checking,
-    std::string& value) const -> bool
+    UnallocatedCString& value) const -> bool
 {
     OT_ASSERT(primary_plugin_);
 
@@ -238,8 +238,8 @@ auto Multiplex::Load(
 }
 
 auto Multiplex::LoadFromBucket(
-    const std::string& key,
-    std::string& value,
+    const UnallocatedCString& key,
+    UnallocatedCString& value,
     const bool bucket) const -> bool
 {
     OT_ASSERT(primary_plugin_);
@@ -255,11 +255,11 @@ auto Multiplex::LoadFromBucket(
     return false;
 }
 
-auto Multiplex::LoadRoot() const -> std::string
+auto Multiplex::LoadRoot() const -> UnallocatedCString
 {
     OT_ASSERT(primary_plugin_);
 
-    std::string root = primary_plugin_->LoadRoot();
+    UnallocatedCString root = primary_plugin_->LoadRoot();
 
     if (false == root.empty()) { return root; }
 
@@ -274,8 +274,9 @@ auto Multiplex::LoadRoot() const -> std::string
     return root;
 }
 
-auto Multiplex::Migrate(const std::string& key, const storage::Driver& to) const
-    -> bool
+auto Multiplex::Migrate(
+    const UnallocatedCString& key,
+    const storage::Driver& to) const -> bool
 {
     OT_ASSERT(primary_plugin_);
 
@@ -290,7 +291,9 @@ auto Multiplex::Migrate(const std::string& key, const storage::Driver& to) const
     return false;
 }
 
-void Multiplex::migrate_primary(const std::string& from, const std::string& to)
+void Multiplex::migrate_primary(
+    const UnallocatedCString& from,
+    const UnallocatedCString& to)
 {
     auto& old = primary_plugin_;
 
@@ -303,7 +306,7 @@ void Multiplex::migrate_primary(const std::string& from, const std::string& to)
 
     OT_ASSERT(newPlugin);
 
-    const std::string rootHash = old->LoadRoot();
+    const UnallocatedCString rootHash = old->LoadRoot();
     std::shared_ptr<storage::Root> root{nullptr};
     auto bucket = Flag::Factory(false);
     root.reset(new storage::Root(
@@ -344,14 +347,14 @@ auto Multiplex::Primary() -> storage::Driver&
 
 auto Multiplex::Store(
     const bool isTransaction,
-    const std::string& key,
-    const std::string& value,
+    const UnallocatedCString& key,
+    const UnallocatedCString& value,
     const bool bucket) const -> bool
 {
     OT_ASSERT(primary_plugin_);
 
-    std::vector<std::promise<bool>> promises{};
-    std::vector<std::future<bool>> futures{};
+    UnallocatedVector<std::promise<bool>> promises{};
+    UnallocatedVector<std::future<bool>> futures{};
     promises.push_back(std::promise<bool>());
     auto& primaryPromise = promises.back();
     futures.push_back(primaryPromise.get_future());
@@ -375,8 +378,8 @@ auto Multiplex::Store(
 
 void Multiplex::Store(
     const bool,
-    const std::string&,
-    const std::string&,
+    const UnallocatedCString&,
+    const UnallocatedCString&,
     const bool,
     std::promise<bool>&) const
 {
@@ -387,8 +390,8 @@ void Multiplex::Store(
 
 auto Multiplex::Store(
     const bool isTransaction,
-    const std::string& key,
-    std::string& value) const -> bool
+    const UnallocatedCString& key,
+    UnallocatedCString& value) const -> bool
 {
     OT_ASSERT(primary_plugin_);
 
@@ -403,8 +406,8 @@ auto Multiplex::Store(
     return output;
 }
 
-auto Multiplex::StoreRoot(const bool commit, const std::string& hash) const
-    -> bool
+auto Multiplex::StoreRoot(const bool commit, const UnallocatedCString& hash)
+    const -> bool
 {
     OT_ASSERT(primary_plugin_);
 
@@ -418,7 +421,7 @@ auto Multiplex::StoreRoot(const bool commit, const std::string& hash) const
 }
 
 void Multiplex::SynchronizePlugins(
-    const std::string& hash,
+    const UnallocatedCString& hash,
     const storage::Root& root,
     const bool syncPrimary)
 {

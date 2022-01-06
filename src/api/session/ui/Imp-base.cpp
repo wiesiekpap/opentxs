@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"               // IWYU pragma: associated
 #include "api/session/ui/Imp-base.hpp"  // IWYU pragma: associated
 
-#include <map>
 #include <memory>
 #include <tuple>
 
@@ -21,6 +20,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/ui/Blockchains.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::api::session::imp
 {

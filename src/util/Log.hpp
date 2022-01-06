@@ -7,10 +7,8 @@
 
 #include <atomic>
 #include <cstddef>
-#include <map>
 #include <mutex>
 #include <sstream>
-#include <string>
 #include <thread>
 #include <tuple>
 #include <utility>
@@ -25,6 +23,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 #include "util/Gatekeeper.hpp"
@@ -42,7 +41,7 @@ namespace opentxs
 struct Log::Imp final : public internal::Log {
     struct Logger {
         using Source = std::pair<OTZMQPushSocket, std::stringstream>;
-        using SourceMap = std::map<int, Source>;
+        using SourceMap = UnallocatedMap<int, Source>;
 
         std::atomic_int verbosity_{-1};
         std::atomic_int index_{-1};
@@ -74,7 +73,7 @@ private:
     const int level_;
     opentxs::Log& parent_;
 
-    static auto get_buffer(std::string& id) noexcept -> Logger::Source&;
+    static auto get_buffer(UnallocatedCString& id) noexcept -> Logger::Source&;
 
     auto send(const bool terminate) const noexcept -> void;
 

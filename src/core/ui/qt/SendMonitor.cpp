@@ -11,9 +11,7 @@
 #include <atomic>
 #include <chrono>
 #include <future>
-#include <list>
 #include <mutex>
-#include <string>
 #include <thread>
 #include <tuple>
 #include <type_traits>
@@ -21,6 +19,7 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 #include "util/ScopeGuard.hpp"
 
@@ -74,7 +73,7 @@ private:
 
     mutable std::mutex lock_;
     Key counter_;
-    std::list<Data> queue_;
+    UnallocatedList<Data> queue_;
     std::atomic_bool running_;
     std::promise<void> promise_;
     std::shared_future<void> future_;

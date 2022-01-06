@@ -10,12 +10,11 @@
 #include <limits>
 #include <memory>
 #include <sstream>  // IWYU pragma: keep
-#include <string>
-#include <vector>
 
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/storage/drivers/Factory.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/storage/Config.hpp"
 
@@ -53,9 +52,9 @@ Sqlite3::Sqlite3(
 }
 
 auto Sqlite3::bind_key(
-    const std::string& source,
-    const std::string& key,
-    const std::size_t start) const -> std::string
+    const UnallocatedCString& source,
+    const UnallocatedCString& key,
+    const std::size_t start) const -> UnallocatedCString
 {
     OT_ASSERT(std::numeric_limits<int>::max() >= key.size());
     OT_ASSERT(std::numeric_limits<int>::max() >= start);
@@ -83,7 +82,8 @@ void Sqlite3::commit(std::stringstream& sql) const
     sql << "COMMIT TRANSACTION;";
 }
 
-auto Sqlite3::commit_transaction(const std::string& rootHash) const -> bool
+auto Sqlite3::commit_transaction(const UnallocatedCString& rootHash) const
+    -> bool
 {
     Lock lock(transaction_lock_);
     std::stringstream sql{};
@@ -99,11 +99,12 @@ auto Sqlite3::commit_transaction(const std::string& rootHash) const -> bool
         sqlite3_exec(db_, sql.str().c_str(), nullptr, nullptr, nullptr));
 }
 
-auto Sqlite3::Create(const std::string& tablename) const -> bool
+auto Sqlite3::Create(const UnallocatedCString& tablename) const -> bool
 {
-    const std::string createTable = "create table if not exists ";
-    const std::string tableFormat = " (k text PRIMARY KEY, v BLOB);";
-    const std::string sql = createTable + "`" + tablename + "`" + tableFormat;
+    const UnallocatedCString createTable = "create table if not exists ";
+    const UnallocatedCString tableFormat = " (k text PRIMARY KEY, v BLOB);";
+    const UnallocatedCString sql =
+        createTable + "`" + tablename + "`" + tableFormat;
 
     return (
         SQLITE_OK == sqlite3_exec(db_, sql.c_str(), nullptr, nullptr, nullptr));
@@ -114,16 +115,16 @@ auto Sqlite3::EmptyBucket(const bool bucket) const -> bool
     return Purge(GetTableName(bucket));
 }
 
-auto Sqlite3::expand_sql(sqlite3_stmt* statement) const -> std::string
+auto Sqlite3::expand_sql(sqlite3_stmt* statement) const -> UnallocatedCString
 {
     const auto sql = sqlite3_expanded_sql(statement);
-    const std::string output{sql};
+    const UnallocatedCString output{sql};
     sqlite3_free(sql);
 
     return output;
 }
 
-auto Sqlite3::GetTableName(const bool bucket) const -> std::string
+auto Sqlite3::GetTableName(const bool bucket) const -> UnallocatedCString
 {
     return bucket ? config_.sqlite3_secondary_bucket_
                   : config_.sqlite3_primary_bucket_;
@@ -131,7 +132,8 @@ auto Sqlite3::GetTableName(const bool bucket) const -> std::string
 
 void Sqlite3::Init_Sqlite3()
 {
-    const std::string filename = folder_ + "/" + config_.sqlite3_db_file_;
+    const UnallocatedCString filename =
+        folder_ + "/" + config_.sqlite3_db_file_;
 
     if (SQLITE_OK ==
         sqlite3_open_v2(
@@ -152,16 +154,16 @@ void Sqlite3::Init_Sqlite3()
 }
 
 auto Sqlite3::LoadFromBucket(
-    const std::string& key,
-    std::string& value,
+    const UnallocatedCString& key,
+    UnallocatedCString& value,
     const bool bucket) const -> bool
 {
     return Select(key, GetTableName(bucket), value);
 }
 
-auto Sqlite3::LoadRoot() const -> std::string
+auto Sqlite3::LoadRoot() const -> UnallocatedCString
 {
-    std::string value{""};
+    UnallocatedCString value{""};
 
     if (Select(
             config_.sqlite3_root_key_, config_.sqlite3_control_table_, value)) {
@@ -172,9 +174,9 @@ auto Sqlite3::LoadRoot() const -> std::string
     return "";
 }
 
-auto Sqlite3::Purge(const std::string& tablename) const -> bool
+auto Sqlite3::Purge(const UnallocatedCString& tablename) const -> bool
 {
-    const std::string sql = "DROP TABLE `" + tablename + "`;";
+    const UnallocatedCString sql = "DROP TABLE `" + tablename + "`;";
 
     if (SQLITE_OK ==
         sqlite3_exec(db_, sql.c_str(), nullptr, nullptr, nullptr)) {
@@ -185,12 +187,12 @@ auto Sqlite3::Purge(const std::string& tablename) const -> bool
 }
 
 auto Sqlite3::Select(
-    const std::string& key,
-    const std::string& tablename,
-    std::string& value) const -> bool
+    const UnallocatedCString& key,
+    const UnallocatedCString& tablename,
+    UnallocatedCString& value) const -> bool
 {
     sqlite3_stmt* statement{nullptr};
-    const std::string query =
+    const UnallocatedCString query =
         "SELECT v FROM '" + tablename + "' WHERE k GLOB ?1;";
     const auto sql = bind_key(query, key, 1);
     sqlite3_prepare_v2(db_, sql.c_str(), -1, &statement, nullptr);
@@ -237,7 +239,7 @@ void Sqlite3::set_data(std::stringstream& sql) const
 
     sqlite3_stmt* data{nullptr};
     std::stringstream dataSQL{};
-    const std::string tablename{GetTableName(transaction_bucket_.get())};
+    const UnallocatedCString tablename{GetTableName(transaction_bucket_.get())};
     dataSQL << "INSERT OR REPLACE INTO '" << tablename << "' (k, v) VALUES ";
     auto counter{0};
     const auto size = static_cast<int>(pending_.size());
@@ -286,8 +288,9 @@ void Sqlite3::set_data(std::stringstream& sql) const
     sqlite3_finalize(data);
 }
 
-void Sqlite3::set_root(const std::string& rootHash, std::stringstream& sql)
-    const
+void Sqlite3::set_root(
+    const UnallocatedCString& rootHash,
+    std::stringstream& sql) const
 {
     OT_ASSERT(
         std::numeric_limits<int>::max() >= config_.sqlite3_root_key_.size());
@@ -327,8 +330,8 @@ void Sqlite3::start_transaction(std::stringstream& sql) const
 
 void Sqlite3::store(
     const bool isTransaction,
-    const std::string& key,
-    const std::string& value,
+    const UnallocatedCString& key,
+    const UnallocatedCString& value,
     const bool bucket,
     std::promise<bool>* promise) const
 {
@@ -344,7 +347,7 @@ void Sqlite3::store(
     }
 }
 
-auto Sqlite3::StoreRoot(const bool commit, const std::string& hash) const
+auto Sqlite3::StoreRoot(const bool commit, const UnallocatedCString& hash) const
     -> bool
 {
     if (commit) {
@@ -358,15 +361,15 @@ auto Sqlite3::StoreRoot(const bool commit, const std::string& hash) const
 }
 
 auto Sqlite3::Upsert(
-    const std::string& key,
-    const std::string& tablename,
-    const std::string& value) const -> bool
+    const UnallocatedCString& key,
+    const UnallocatedCString& tablename,
+    const UnallocatedCString& value) const -> bool
 {
     OT_ASSERT(std::numeric_limits<int>::max() >= key.size());
     OT_ASSERT(std::numeric_limits<int>::max() >= value.size());
 
     sqlite3_stmt* statement;
-    const std::string query =
+    const UnallocatedCString query =
         "insert or replace into `" + tablename + "` (k, v) values (?1, ?2);";
 
     sqlite3_prepare_v2(db_, query.c_str(), -1, &statement, nullptr);

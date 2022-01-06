@@ -7,10 +7,9 @@
 
 #include <algorithm>
 #include <functional>
-#include <list>
-#include <map>
 #include <optional>
 
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs
@@ -35,16 +34,16 @@ public:
         RowID id_;
         RowPointer item_;
     };
-    using Data = std::list<Row>;
+    using Data = UnallocatedList<Row>;
     using Iterator = typename Data::iterator;
-    using Index = std::map<RowID, Iterator>;
+    using Index = UnallocatedMap<RowID, Iterator>;
     using Insert = std::pair<Iterator, internal::Row*>;
     using Position = std::pair<Iterator, std::size_t>;
     using Move = std::pair<Insert, Insert>;
 
-    auto active() const noexcept -> std::vector<RowID>
+    auto active() const noexcept -> UnallocatedVector<RowID>
     {
-        auto output = std::vector<RowID>{};
+        auto output = UnallocatedVector<RowID>{};
         output.reserve(index_.size());
         std::transform(
             index_.begin(), index_.end(), std::back_inserter(output), [

@@ -9,9 +9,7 @@
 
 #include <algorithm>
 #include <optional>
-#include <set>
 #include <stdexcept>
-#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -40,6 +38,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -54,9 +53,9 @@ auto BlockchainAccountKeys(
     const blockchain::crypto::Wallet& parent,
     const blockchain::crypto::AccountIndex& index,
     const identifier::Nym& id,
-    const std::set<OTIdentifier>& hd,
-    const std::set<OTIdentifier>& imported,
-    const std::set<OTIdentifier>& pc) noexcept
+    const UnallocatedSet<OTIdentifier>& hd,
+    const UnallocatedSet<OTIdentifier>& imported,
+    const UnallocatedSet<OTIdentifier>& pc) noexcept
     -> std::unique_ptr<blockchain::crypto::Account>
 {
     using ReturnType = blockchain::crypto::implementation::Account;
@@ -114,7 +113,7 @@ Account::Account(
 }
 
 auto Account::NodeIndex::Add(
-    const std::string& id,
+    const UnallocatedCString& id,
     crypto::Subaccount* node) noexcept -> void
 {
     OT_ASSERT(nullptr != node);
@@ -123,7 +122,7 @@ auto Account::NodeIndex::Add(
     index_[id] = node;
 }
 
-auto Account::NodeIndex::Find(const std::string& id) const noexcept
+auto Account::NodeIndex::Find(const UnallocatedCString& id) const noexcept
     -> crypto::Subaccount*
 {
     Lock lock(lock_);
@@ -138,18 +137,19 @@ auto Account::NodeIndex::Find(const std::string& id) const noexcept
 }
 
 auto Account::AssociateTransaction(
-    const std::vector<Activity>& unspent,
-    const std::vector<Activity>& spent,
-    std::set<OTIdentifier>& contacts,
+    const UnallocatedVector<Activity>& unspent,
+    const UnallocatedVector<Activity>& spent,
+    UnallocatedSet<OTIdentifier>& contacts,
     const PasswordPrompt& reason) const noexcept -> bool
 {
-    using ActivityVector = std::vector<Activity>;
+    using ActivityVector = UnallocatedVector<Activity>;
     using ActivityPair = std::pair<ActivityVector, ActivityVector>;
-    using ActivityMap = std::map<std::string, ActivityPair>;
+    using ActivityMap = UnallocatedMap<UnallocatedCString, ActivityPair>;
 
     Lock lock(lock_);
     auto sorted = ActivityMap{};
-    auto outputs = std::map<std::string, std::map<std::size_t, int>>{};
+    auto outputs =
+        UnallocatedMap<UnallocatedCString, UnallocatedMap<std::size_t, int>>{};
 
     for (const auto& [coin, key, amount] : unspent) {
         const auto& [transaction, output] = coin;
@@ -210,8 +210,9 @@ auto Account::AssociateTransaction(
     return true;
 }
 
-auto Account::ClaimAccountID(const std::string& id, crypto::Subaccount* node)
-    const noexcept -> void
+auto Account::ClaimAccountID(
+    const UnallocatedCString& id,
+    crypto::Subaccount* node) const noexcept -> void
 {
     node_index_.Add(id, node);
     account_index_.Register(AccountID(), nym_id_, chain_);
@@ -220,7 +221,7 @@ auto Account::ClaimAccountID(const std::string& id, crypto::Subaccount* node)
 auto Account::find_next_element(
     Subchain subchain,
     const Identifier& contact,
-    const std::string& label,
+    const UnallocatedCString& label,
     const PasswordPrompt& reason) const noexcept(false) -> const Element&
 {
     // TODO Add a mechanism for setting a default subaccount in case more than
@@ -281,7 +282,7 @@ auto Account::GetNextDepositKey(const PasswordPrompt& reason) const
 auto Account::GetDepositAddress(
     const blockchain::crypto::AddressStyle style,
     const PasswordPrompt& reason,
-    const std::string& memo) const noexcept -> std::string
+    const UnallocatedCString& memo) const noexcept -> UnallocatedCString
 {
     static const auto blank = api_.Factory().Identifier();
 
@@ -292,7 +293,7 @@ auto Account::GetDepositAddress(
     const blockchain::crypto::AddressStyle style,
     const Identifier& contact,
     const PasswordPrompt& reason,
-    const std::string& memo) const noexcept -> std::string
+    const UnallocatedCString& memo) const noexcept -> UnallocatedCString
 {
     const auto& element =
         find_next_element(Subchain::External, contact, memo, reason);

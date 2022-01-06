@@ -10,7 +10,6 @@
 #include <functional>
 #include <memory>
 #include <mutex>
-#include <string>
 
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
@@ -109,7 +109,7 @@ public:
         const crypto::SignatureRole role,
         const crypto::HashType hash) const -> proto::Signature;
     auto Params() const noexcept -> ReadView override { return {}; }
-    auto Path() const noexcept -> const std::string override;
+    auto Path() const noexcept -> const UnallocatedCString override;
     auto Path(proto::HDPath& output) const noexcept -> bool override;
     auto PrivateKey(const PasswordPrompt& reason) const noexcept
         -> ReadView final;

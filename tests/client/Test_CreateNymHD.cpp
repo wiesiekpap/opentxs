@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 #include <cassert>
 #include <memory>
-#include <string>
 
 #include "internal/api/session/Client.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
@@ -22,7 +21,7 @@
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -44,11 +43,11 @@ public:
 
     const ot::api::session::Client& api_;
     ot::OTPasswordPrompt reason_;
-    std::string SeedA_;
-    std::string SeedB_;
-    std::string SeedC_;
-    std::string SeedD_;
-    std::string Alice, Bob;
+    ot::UnallocatedCString SeedA_;
+    ot::UnallocatedCString SeedB_;
+    ot::UnallocatedCString SeedC_;
+    ot::UnallocatedCString SeedD_;
+    ot::UnallocatedCString Alice, Bob;
 
     Test_CreateNymHD()
         : api_(ot::Context().StartClientSession(0))

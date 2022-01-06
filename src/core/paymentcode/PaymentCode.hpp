@@ -11,10 +11,8 @@
 #include <cstdint>
 #include <cstring>
 #include <memory>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "internal/core/PaymentCode.hpp"
 #include "internal/crypto/key/Null.hpp"
@@ -29,6 +27,7 @@
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -78,7 +77,7 @@ public:
     virtual operator const opentxs::crypto::key::Asymmetric&()
         const noexcept = 0;
 
-    virtual auto asBase58() const noexcept -> std::string = 0;
+    virtual auto asBase58() const noexcept -> UnallocatedCString = 0;
     virtual auto Blind(
         const opentxs::PaymentCode& recipient,
         const crypto::key::EllipticCurve& privateKey,
@@ -93,13 +92,14 @@ public:
     virtual auto clone() const noexcept -> Imp* = 0;
     virtual auto DecodeNotificationElements(
         const std::uint8_t version,
-        const std::vector<Space>& elements,
+        const UnallocatedVector<Space>& elements,
         const PasswordPrompt& reason) const noexcept
         -> opentxs::PaymentCode = 0;
     virtual auto GenerateNotificationElements(
         const opentxs::PaymentCode& recipient,
         const crypto::key::EllipticCurve& privateKey,
-        const PasswordPrompt& reason) const noexcept -> std::vector<Space> = 0;
+        const PasswordPrompt& reason) const noexcept
+        -> UnallocatedVector<Space> = 0;
     virtual auto ID() const noexcept -> const identifier::Nym& = 0;
     virtual auto Incoming(
         const opentxs::PaymentCode& sender,
@@ -171,7 +171,7 @@ public:
         return {};
     }
 
-    auto asBase58() const noexcept -> std::string final { return {}; }
+    auto asBase58() const noexcept -> UnallocatedCString final { return {}; }
     auto Blind(
         const opentxs::PaymentCode&,
         const crypto::key::EllipticCurve&,
@@ -192,7 +192,7 @@ public:
     auto clone() const noexcept -> PaymentCode* final { return {}; }
     auto DecodeNotificationElements(
         const std::uint8_t,
-        const std::vector<Space>&,
+        const UnallocatedVector<Space>&,
         const PasswordPrompt&) const noexcept -> opentxs::PaymentCode final
     {
         return std::make_unique<PaymentCode>().release();
@@ -200,7 +200,7 @@ public:
     auto GenerateNotificationElements(
         const opentxs::PaymentCode&,
         const crypto::key::EllipticCurve&,
-        const PasswordPrompt&) const noexcept -> std::vector<Space> final
+        const PasswordPrompt&) const noexcept -> UnallocatedVector<Space> final
     {
         return {};
     }
@@ -283,7 +283,7 @@ public:
     auto Version() const noexcept -> VersionNumber final { return {}; }
 
     auto AddPrivateKeys(
-        std::string&,
+        UnallocatedCString&,
         const Bip32Index,
         const PasswordPrompt&) noexcept -> bool final
     {

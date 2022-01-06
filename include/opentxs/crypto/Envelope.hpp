@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <set>
-
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -36,7 +35,7 @@ namespace crypto
 class OPENTXS_EXPORT Envelope
 {
 public:
-    using Recipients = std::set<Nym_p>;
+    using Recipients = UnallocatedSet<Nym_p>;
     using SerializedType = proto::Envelope;
 
     virtual auto Armored(opentxs::Armored& ciphertext) const noexcept

@@ -8,7 +8,8 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -55,7 +56,7 @@ enum class Service : std::uint8_t {
 };
 
 OPENTXS_EXPORT auto DisplayService(const Service service) noexcept
-    -> std::string;
+    -> UnallocatedCString;
 }  // namespace p2p
 }  // namespace blockchain
 }  // namespace opentxs

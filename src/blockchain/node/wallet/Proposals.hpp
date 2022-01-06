@@ -11,20 +11,15 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
-#include <deque>
 #include <functional>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <queue>
-#include <set>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "blockchain/node/wallet/Account.hpp"
@@ -48,6 +43,7 @@
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
 #include "serialization/protobuf/BlockchainTransactionProposal.pb.h"

@@ -38,9 +38,9 @@ class OPENTXS_EXPORT Basket : virtual public contract::Unit
 {
 public:
     // account number, weight
-    using Subcontract = std::pair<std::string, std::uint64_t>;
+    using Subcontract = std::pair<UnallocatedCString, std::uint64_t>;
     // unit definition id, subcontract
-    using Subcontracts = std::map<std::string, Subcontract>;
+    using Subcontracts = UnallocatedMap<UnallocatedCString, Subcontract>;
 
     static auto CalculateBasketID(
         const api::Session& api,

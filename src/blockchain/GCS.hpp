@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <optional>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
@@ -16,6 +15,7 @@
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/GCS.pb.h"
 
@@ -47,8 +47,10 @@ public:
     auto Serialize(AllocateOutput out) const noexcept -> bool final;
     auto Test(const Data& target) const noexcept -> bool final;
     auto Test(const ReadView target) const noexcept -> bool final;
-    auto Test(const std::vector<OTData>& targets) const noexcept -> bool final;
-    auto Test(const std::vector<Space>& targets) const noexcept -> bool final;
+    auto Test(const UnallocatedVector<OTData>& targets) const noexcept
+        -> bool final;
+    auto Test(const UnallocatedVector<Space>& targets) const noexcept
+        -> bool final;
 
     GCS(const api::Session& api,
         const std::uint8_t bits,
@@ -61,13 +63,13 @@ public:
         const std::uint8_t bits,
         const std::uint32_t fpRate,
         const ReadView key,
-        const std::vector<ReadView>& elements)
+        const UnallocatedVector<ReadView>& elements)
     noexcept(false);
 
     ~GCS() final = default;
 
 private:
-    using Elements = std::vector<std::uint64_t>;
+    using Elements = UnallocatedVector<std::uint64_t>;
 
     const VersionNumber version_;
     const api::Session& api_;
@@ -78,20 +80,20 @@ private:
     const OTData compressed_;
     const OTData key_;
 
-    static auto transform(const std::vector<OTData>& in) noexcept
-        -> std::vector<ReadView>;
-    static auto transform(const std::vector<Space>& in) noexcept
-        -> std::vector<ReadView>;
+    static auto transform(const UnallocatedVector<OTData>& in) noexcept
+        -> UnallocatedVector<ReadView>;
+    static auto transform(const UnallocatedVector<Space>& in) noexcept
+        -> UnallocatedVector<ReadView>;
 
     auto decompress() const noexcept -> const Elements&;
-    auto hashed_set_construct(const std::vector<OTData>& elements)
-        const noexcept -> std::vector<std::uint64_t>;
-    auto hashed_set_construct(const std::vector<Space>& elements) const noexcept
-        -> std::vector<std::uint64_t>;
-    auto hashed_set_construct(const std::vector<ReadView>& elements)
-        const noexcept -> std::vector<std::uint64_t>;
-    auto test(const std::vector<std::uint64_t>& targetHashes) const noexcept
-        -> bool;
+    auto hashed_set_construct(const UnallocatedVector<OTData>& elements)
+        const noexcept -> UnallocatedVector<std::uint64_t>;
+    auto hashed_set_construct(const UnallocatedVector<Space>& elements)
+        const noexcept -> UnallocatedVector<std::uint64_t>;
+    auto hashed_set_construct(const UnallocatedVector<ReadView>& elements)
+        const noexcept -> UnallocatedVector<std::uint64_t>;
+    auto test(const UnallocatedVector<std::uint64_t>& targetHashes)
+        const noexcept -> bool;
     auto hash_to_range(const ReadView in) const noexcept -> std::uint64_t;
 
     GCS() = delete;

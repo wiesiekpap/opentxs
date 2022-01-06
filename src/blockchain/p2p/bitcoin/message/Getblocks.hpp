@@ -10,9 +10,7 @@
 #include <cstring>
 #include <iosfwd>
 #include <memory>
-#include <set>
 #include <stdexcept>
-#include <vector>
 
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
@@ -22,6 +20,7 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -50,11 +49,11 @@ class Getblocks final : public implementation::Message
 public:
     struct Raw {
         ProtocolVersionField version_;
-        std::vector<BlockHeaderHashField> header_hashes_;
+        UnallocatedVector<BlockHeaderHashField> header_hashes_;
         BlockHeaderHashField stop_hash_;
 
         Raw(ProtocolVersionUnsigned version,
-            const std::vector<OTData>& header_hashes,
+            const UnallocatedVector<OTData>& header_hashes,
             const Data& stop_hash) noexcept(false)
             : version_(version)
             , header_hashes_()
@@ -85,7 +84,7 @@ public:
         }
     };
 
-    auto getHashes() const noexcept -> const std::vector<OTData>&
+    auto getHashes() const noexcept -> const UnallocatedVector<OTData>&
     {
         return header_hashes_;
     }
@@ -108,20 +107,20 @@ public:
         const api::Session& api,
         const blockchain::Type network,
         const bitcoin::ProtocolVersionUnsigned version,
-        const std::vector<OTData>& header_hashes,
+        const UnallocatedVector<OTData>& header_hashes,
         const Data& stop_hash) noexcept;
     Getblocks(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const bitcoin::ProtocolVersionUnsigned version,
-        const std::vector<OTData>& header_hashes,
+        const UnallocatedVector<OTData>& header_hashes,
         const Data& stop_hash) noexcept(false);
 
     ~Getblocks() final = default;
 
 private:
     const bitcoin::ProtocolVersionUnsigned version_;
-    const std::vector<OTData> header_hashes_;
+    const UnallocatedVector<OTData> header_hashes_;
     const OTData stop_hash_;
 
     Getblocks(const Getblocks&) = delete;

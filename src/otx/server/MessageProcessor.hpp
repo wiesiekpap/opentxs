@@ -7,11 +7,9 @@
 
 #include <atomic>
 #include <cstddef>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
-#include <string>
 #include <thread>
 #include <utility>
 
@@ -29,6 +27,7 @@
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/ServerRequest.pb.h"
 
 namespace opentxs
@@ -115,7 +114,7 @@ private:
     mutable std::mutex counter_lock_;
     mutable int drop_incoming_;
     mutable int drop_outgoing_;
-    std::map<OTNymID, ConnectionData> active_connections_;
+    UnallocatedMap<OTNymID, ConnectionData> active_connections_;
     mutable std::shared_mutex connection_map_lock_;
 
     static auto get_connection(
@@ -143,8 +142,8 @@ private:
         const bool tagged,
         network::zeromq::Message&& incoming) noexcept -> void;
     auto process_message(
-        const std::string& messageString,
-        std::string& reply) noexcept -> bool;
+        const UnallocatedCString& messageString,
+        UnallocatedCString& reply) noexcept -> bool;
     auto process_notification(network::zeromq::Message&& incoming) noexcept
         -> void;
     auto process_proto(

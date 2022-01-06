@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "util/storage/tree/Bip47Channels.hpp"  // IWYU pragma: associated
 
-#include <list>
 #include <mutex>
 #include <stdexcept>
 #include <tuple>
@@ -22,6 +21,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/storage/Driver.hpp"
@@ -39,7 +39,9 @@
 
 namespace opentxs::storage
 {
-Bip47Channels::Bip47Channels(const Driver& storage, const std::string& hash)
+Bip47Channels::Bip47Channels(
+    const Driver& storage,
+    const UnallocatedCString& hash)
     : Node(storage, hash)
     , index_lock_()
     , channel_data_()
@@ -65,7 +67,7 @@ auto Bip47Channels::ChannelsByChain(const core::UnitType chain) const
     return extract_set(chain, chain_index_);
 }
 
-auto Bip47Channels::Delete(const std::string& id) -> bool
+auto Bip47Channels::Delete(const UnallocatedCString& id) -> bool
 {
     return delete_item(id);
 }
@@ -110,7 +112,7 @@ auto Bip47Channels::index(
     chain_index_[chain].emplace(id);
 }
 
-auto Bip47Channels::init(const std::string& hash) -> void
+auto Bip47Channels::init(const UnallocatedCString& hash) -> void
 {
     auto proto = std::shared_ptr<proto::StorageBip47Contexts>{};
     driver_.LoadProto(hash, proto);
@@ -146,7 +148,7 @@ auto Bip47Channels::Load(
     std::shared_ptr<proto::Bip47Channel>& output,
     const bool checking) const -> bool
 {
-    std::string alias{""};
+    UnallocatedCString alias{""};
 
     return load_proto<proto::Bip47Channel>(id.str(), output, alias, checking);
 }

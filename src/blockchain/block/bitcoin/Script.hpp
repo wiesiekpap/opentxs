@@ -9,8 +9,6 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
-#include <string>
-#include <vector>
 
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Types.hpp"
@@ -21,6 +19,7 @@
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -68,19 +67,19 @@ public:
     }
     auto end() const noexcept -> const_iterator final { return cend(); }
     auto ExtractElements(const filter::Type style) const noexcept
-        -> std::vector<Space> final;
+        -> UnallocatedVector<Space> final;
     auto ExtractPatterns(const api::Session& api) const noexcept
-        -> std::vector<PatternID> final;
+        -> UnallocatedVector<PatternID> final;
     auto IsNotification(
         const std::uint8_t version,
         const PaymentCode& recipient) const noexcept -> bool final;
     auto LikelyPubkeyHashes(const api::Session& api) const noexcept
-        -> std::vector<OTData> final;
+        -> UnallocatedVector<OTData> final;
     auto M() const noexcept -> std::optional<std::uint8_t> final;
     auto MultisigPubkey(const std::size_t position) const noexcept
         -> std::optional<ReadView> final;
     auto N() const noexcept -> std::optional<std::uint8_t> final;
-    auto Print() const noexcept -> std::string final;
+    auto Print() const noexcept -> UnallocatedCString final;
     auto Pubkey() const noexcept -> std::optional<ReadView> final;
     auto PubkeyHash() const noexcept -> std::optional<ReadView> final;
     auto RedeemScript() const noexcept

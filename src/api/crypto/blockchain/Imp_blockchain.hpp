@@ -12,15 +12,11 @@
 #include <functional>
 #include <iosfwd>
 #include <iterator>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <thread>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "api/crypto/blockchain/BalanceOracle.hpp"
 #include "api/crypto/blockchain/Blockchain.hpp"
@@ -45,6 +41,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -122,16 +119,18 @@ struct BlockchainImp final : public Blockchain::Imp {
     auto ActivityDescription(
         const identifier::Nym& nym,
         const Identifier& thread,
-        const std::string& threadItemID) const noexcept -> std::string final;
+        const UnallocatedCString& threadItemID) const noexcept
+        -> UnallocatedCString final;
     auto ActivityDescription(
         const identifier::Nym& nym,
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::block::bitcoin::Transaction& transaction)
-        const noexcept -> std::string final;
-    auto AssignTransactionMemo(const TxidHex& id, const std::string& label)
-        const noexcept -> bool final;
+        const noexcept -> UnallocatedCString final;
+    auto AssignTransactionMemo(
+        const TxidHex& id,
+        const UnallocatedCString& label) const noexcept -> bool final;
     auto IndexItem(const ReadView bytes) const noexcept -> PatternID final;
-    auto KeyEndpoint() const noexcept -> const std::string& final;
+    auto KeyEndpoint() const noexcept -> const UnallocatedCString& final;
     auto KeyGenerated(const opentxs::blockchain::Type chain) const noexcept
         -> void final;
     auto LoadTransactionBitcoin(const TxidHex& txid) const noexcept
@@ -170,7 +169,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept
         -> void final;
-    auto UpdateElement(std::vector<ReadView>& pubkeyHashes) const noexcept
+    auto UpdateElement(UnallocatedVector<ReadView>& pubkeyHashes) const noexcept
         -> void final;
 
     BlockchainImp(
@@ -178,7 +177,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         const api::session::Activity& activity,
         const api::session::Contacts& contacts,
         const api::Legacy& legacy,
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const Options& args,
         api::crypto::Blockchain& parent) noexcept;
 
@@ -186,7 +185,7 @@ struct BlockchainImp final : public Blockchain::Imp {
 
 private:
     const api::session::Activity& activity_;
-    const std::string key_generated_endpoint_;
+    const UnallocatedCString key_generated_endpoint_;
     OTZMQPublishSocket transaction_updates_;
     OTZMQPublishSocket key_updates_;
     OTZMQPublishSocket scan_updates_;
@@ -195,10 +194,10 @@ private:
 
     auto broadcast_update_signal(const Txid& txid) const noexcept -> void
     {
-        broadcast_update_signal(std::vector<pTxid>{txid});
+        broadcast_update_signal(UnallocatedVector<pTxid>{txid});
     }
     auto broadcast_update_signal(
-        const std::vector<pTxid>& transactions) const noexcept -> void;
+        const UnallocatedVector<pTxid>& transactions) const noexcept -> void;
     auto broadcast_update_signal(
         const opentxs::blockchain::block::bitcoin::Transaction& tx)
         const noexcept -> void;

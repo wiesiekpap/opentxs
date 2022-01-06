@@ -77,8 +77,8 @@ public:
         const node::internal::Network& node,
         const blockchain::Type chain,
         const filter::Type type,
-        const std::string& shutdown,
-        const std::string& publishEndpoint) noexcept
+        const UnallocatedCString& shutdown,
+        const UnallocatedCString& publishEndpoint) noexcept
         : SyncDM(
               [&] { return db.SyncTip(); }(),
               [&] {
@@ -128,7 +128,7 @@ private:
     const blockchain::Type chain_;
     const filter::Type type_;
     const int linger_;
-    const std::string endpoint_;
+    const UnallocatedCString endpoint_;
     Socket socket_;
     mutable std::mutex zmq_lock_;
     std::atomic_bool zmq_running_;
@@ -345,7 +345,7 @@ private:
         if (0 == data.size()) { return; }
 
         const auto& tip = data.back();
-        auto items = std::vector<network::p2p::Block>{};
+        auto items = UnallocatedVector<network::p2p::Block>{};
         auto previousFilterHeader = api_.Factory().Data();
 
         for (const auto& task : data) {
@@ -355,7 +355,7 @@ private:
 
                 if (false == bool(pHeader)) {
                     throw std::runtime_error(
-                        std::string{"failed to load block header "} +
+                        UnallocatedCString{"failed to load block header "} +
                         task->position_.second->asHex());
                 }
 
@@ -367,8 +367,9 @@ private:
 
                     if (previousFilterHeader->empty()) {
                         throw std::runtime_error(
-                            std::string{"failed to previous filter header for "
-                                        "block  "} +
+                            UnallocatedCString{
+                                "failed to previous filter header for "
+                                "block  "} +
                             task->position_.second->asHex());
                     }
                 }
@@ -377,7 +378,7 @@ private:
 
                 if (false == bool(pGCS)) {
                     throw std::runtime_error(
-                        std::string{"failed to load gcs for block "} +
+                        UnallocatedCString{"failed to load gcs for block "} +
                         task->position_.second->asHex());
                 }
 
@@ -435,7 +436,7 @@ private:
     auto zmq_thread() noexcept -> void
     {
         auto poll = [&] {
-            auto output = std::vector<::zmq_pollitem_t>{};
+            auto output = UnallocatedVector<::zmq_pollitem_t>{};
 
             {
                 auto& item = output.emplace_back();

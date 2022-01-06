@@ -5,8 +5,7 @@
 
 #pragma once
 
-#include <string>
-
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordCallback.hpp"
 
 namespace opentxs
@@ -26,10 +25,14 @@ namespace opentxs::implementation
 class NullCallback final : virtual public PasswordCallback
 {
 public:
-    auto runOne(const char* display, Secret& output, const std::string& key)
-        const -> void final;
-    auto runTwo(const char* display, Secret& output, const std::string& key)
-        const -> void final;
+    auto runOne(
+        const char* display,
+        Secret& output,
+        const UnallocatedCString& key) const -> void final;
+    auto runTwo(
+        const char* display,
+        Secret& output,
+        const UnallocatedCString& key) const -> void final;
 
     NullCallback() = default;
 

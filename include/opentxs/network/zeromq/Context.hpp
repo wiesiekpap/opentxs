@@ -8,7 +8,6 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
 
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Pair.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace google
@@ -82,7 +82,8 @@ public:
         const socket::Pair& peer) const noexcept -> Pimpl<socket::Pair> = 0;
     virtual auto PairSocket(
         const ListenCallback& callback,
-        const std::string& endpoint) const noexcept -> Pimpl<socket::Pair> = 0;
+        const UnallocatedCString& endpoint) const noexcept
+        -> Pimpl<socket::Pair> = 0;
     virtual auto Pipeline(
         const api::Session& api,
         std::function<void(zeromq::Message&&)> callback) const noexcept

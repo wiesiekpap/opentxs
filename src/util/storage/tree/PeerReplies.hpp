@@ -7,10 +7,10 @@
 
 #include <memory>
 #include <mutex>
-#include <string>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/tree/Node.hpp"
 
@@ -35,11 +35,11 @@ class PeerReplies final : public Node
 private:
     friend Nym;
 
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
 
-    PeerReplies(const Driver& storage, const std::string& hash);
+    PeerReplies(const Driver& storage, const UnallocatedCString& hash);
     PeerReplies() = delete;
     PeerReplies(const PeerReplies&) = delete;
     PeerReplies(PeerReplies&&) = delete;
@@ -48,11 +48,11 @@ private:
 
 public:
     auto Load(
-        const std::string& id,
+        const UnallocatedCString& id,
         std::shared_ptr<proto::PeerReply>& output,
         const bool checking) const -> bool;
 
-    auto Delete(const std::string& id) -> bool;
+    auto Delete(const UnallocatedCString& id) -> bool;
     auto Store(const proto::PeerReply& data) -> bool;
 
     ~PeerReplies() final = default;

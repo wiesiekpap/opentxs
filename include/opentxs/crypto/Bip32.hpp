@@ -9,9 +9,7 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 #include <tuple>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -19,6 +17,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -47,15 +46,16 @@ namespace opentxs
 {
 namespace crypto
 {
-auto Print(const proto::HDPath& node) noexcept -> std::string;
-auto Print(const proto::HDPath& node, bool showSeedID) noexcept -> std::string;
+auto Print(const proto::HDPath& node) noexcept -> UnallocatedCString;
+auto Print(const proto::HDPath& node, bool showSeedID) noexcept
+    -> UnallocatedCString;
 
 class OPENTXS_EXPORT Bip32
 {
 public:
     struct Imp;
 
-    using Path = std::vector<Bip32Index>;
+    using Path = UnallocatedVector<Bip32Index>;
     using Key = std::tuple<OTSecret, OTSecret, OTData, Path, Bip32Fingerprint>;
 
     auto DeriveKey(
@@ -73,7 +73,7 @@ public:
         const Path& pathAppend,
         const PasswordPrompt& reason) const noexcept(false) -> Key;
     auto DeserializePrivate(
-        const std::string& serialized,
+        const UnallocatedCString& serialized,
         Bip32Network& network,
         Bip32Depth& depth,
         Bip32Fingerprint& parent,
@@ -81,7 +81,7 @@ public:
         Data& chainCode,
         Secret& key) const -> bool;
     auto DeserializePublic(
-        const std::string& serialized,
+        const UnallocatedCString& serialized,
         Bip32Network& network,
         Bip32Depth& depth,
         Bip32Fingerprint& parent,
@@ -95,14 +95,14 @@ public:
         const Bip32Fingerprint parent,
         const Bip32Index index,
         const Data& chainCode,
-        const Secret& key) const -> std::string;
+        const Secret& key) const -> UnallocatedCString;
     auto SerializePublic(
         const Bip32Network network,
         const Bip32Depth depth,
         const Bip32Fingerprint parent,
         const Bip32Index index,
         const Data& chainCode,
-        const Data& key) const -> std::string;
+        const Data& key) const -> UnallocatedCString;
 
     OPENTXS_NO_EXPORT auto Internal() noexcept -> internal::Bip32&;
 

@@ -5,12 +5,11 @@
 
 #include <gtest/gtest.h>
 #include <zmq.h>
-#include <string>
 
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -21,7 +20,7 @@ namespace ottest
 class Frame : public ::testing::Test
 {
 protected:
-    const std::string test_string_{"testString"};
+    const ot::UnallocatedCString test_string_{"testString"};
     ot::network::zeromq::Message message_{};
 };
 
@@ -44,7 +43,7 @@ TEST_F(Frame, Factory2)
 TEST_F(Frame, operator_string)
 {
     auto& frame = message_.AddFrame(test_string_);
-    const auto text = std::string{frame.Bytes()};
+    const auto text = ot::UnallocatedCString{frame.Bytes()};
 
     EXPECT_EQ(text, test_string_);
 }

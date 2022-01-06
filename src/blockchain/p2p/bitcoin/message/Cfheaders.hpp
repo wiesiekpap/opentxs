@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <iosfwd>
 #include <memory>
-#include <vector>
 
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
@@ -19,6 +18,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -76,14 +76,14 @@ public:
         const filter::Type type,
         const block::Hash& stop,
         const ReadView previousHeader,
-        const std::vector<filter::pHash>& headers) noexcept(false);
+        const UnallocatedVector<filter::pHash>& headers) noexcept(false);
     Cfheaders(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const filter::Type type,
         const block::Hash& stop,
         const filter::Header& previous,
-        const std::vector<filter::pHash>& headers) noexcept(false);
+        const UnallocatedVector<filter::pHash>& headers) noexcept(false);
 
     ~Cfheaders() final = default;
 
@@ -91,7 +91,7 @@ private:
     const filter::Type type_;
     const block::pHash stop_;
     const filter::pHeader previous_;
-    const std::vector<filter::pHash> payload_;
+    const UnallocatedVector<filter::pHash> payload_;
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;

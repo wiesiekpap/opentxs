@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <list>
-#include <map>
 #include <utility>
 
 #include "1_Internal.hpp"
@@ -24,6 +22,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/ui/PayableList.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"

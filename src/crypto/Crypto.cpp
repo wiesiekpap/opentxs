@@ -8,21 +8,22 @@
 #include "opentxs/crypto/Types.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
-#include <string>
 
 #include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
-auto print(crypto::SeedStyle type) noexcept -> std::string
+auto print(crypto::SeedStyle type) noexcept -> UnallocatedCString
 {
     using Type = crypto::SeedStyle;
-    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
-        {Type::Error, "invalid"},
-        {Type::BIP32, "BIP-32"},
-        {Type::BIP39, "BIP-39"},
-        {Type::PKT, "pktwallet"},
-    };
+    static const auto map =
+        robin_hood::unordered_flat_map<Type, UnallocatedCString>{
+            {Type::Error, "invalid"},
+            {Type::BIP32, "BIP-32"},
+            {Type::BIP39, "BIP-39"},
+            {Type::PKT, "pktwallet"},
+        };
 
     try {
 

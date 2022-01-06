@@ -9,8 +9,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <set>
-#include <string>
 #include <string_view>
 
 #include "internal/api/Legacy.hpp"
@@ -37,6 +35,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -140,7 +139,7 @@ auto Account::GetTypeString(AccountType accountType) -> char const*
     return __TypeStringsAccount[index];
 }
 
-auto Account::Alias() const -> std::string { return alias_; }
+auto Account::Alias() const -> UnallocatedCString { return alias_; }
 
 auto Account::ConsensusHash(
     const otx::context::Base& context,
@@ -516,7 +515,7 @@ auto Account::Debit(const Amount& amount) -> bool
     // and it means that we now allow <0 debits on normal accounts,
     // AS LONG AS the result is a HIGHER BALANCE  :-)
     else {
-        auto amount = std::string{};
+        auto amount = UnallocatedCString{};
         newBalance.Serialize(writer(amount));
         balanceAmount_->Format("%s", amount.c_str());
         balanceDate_->Set(String::Factory(getTimestamp()));
@@ -558,7 +557,7 @@ auto Account::Credit(const Amount& amount) -> bool
     // and it means that we now allow <0 credits on normal accounts,
     // AS LONG AS the result is a HIGHER BALANCE  :-)
     else {
-        auto amount = std::string{};
+        auto amount = UnallocatedCString{};
         newBalance.Serialize(writer(amount));
         balanceAmount_->Format("%s", amount.c_str());
         balanceDate_->Set(String::Factory(getTimestamp()));
@@ -933,7 +932,7 @@ void Account::UpdateContents(const PasswordPrompt& reason)
             "THIS ACCOUNT HAS BEEN MARKED FOR DELETION AT ITS OWN REQUEST");
     }
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());
@@ -1046,7 +1045,7 @@ auto Account::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         const Amount amount{balanceAmount_->Get()};
 
         balanceDate_->Set(String::Factory(formatTimestamp(date)));
-        auto balance = std::string{};
+        auto balance = UnallocatedCString{};
         amount.Serialize(writer(balance));
         balanceAmount_->Format("%s", balance.c_str());
 
@@ -1169,7 +1168,7 @@ void Account::Release()
     OTTransactionType::Release();
 }
 
-void Account::SetAlias(const std::string& alias) { alias_ = alias; }
+void Account::SetAlias(const UnallocatedCString& alias) { alias_ = alias; }
 
 Account::~Account() { Release_Account(); }
 }  // namespace opentxs

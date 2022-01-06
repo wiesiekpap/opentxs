@@ -8,10 +8,10 @@
 #include "internal/blockchain/database/common/Common.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
-#include <set>
 
 #include "internal/blockchain/Params.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::blockchain::database::common
 {
@@ -37,10 +37,10 @@ auto ChainToSyncTable(const Chain chain) noexcept(false) -> int
     return map.at(chain).first;
 }
 
-auto SyncTables() noexcept -> const std::vector<SyncTableData>&
+auto SyncTables() noexcept -> const UnallocatedVector<SyncTableData>&
 {
     static const auto map = [] {
-        auto output = std::vector<SyncTableData>{};
+        auto output = UnallocatedVector<SyncTableData>{};
 
         for (const auto& [key, value] : sync_map_()) {
             output.emplace_back(value);

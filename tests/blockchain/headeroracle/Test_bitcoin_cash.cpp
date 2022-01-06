@@ -5,10 +5,8 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "Helpers.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -19,10 +17,11 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-std::vector<std::unique_ptr<bb::Header>> headers_btc_{};
-std::vector<std::unique_ptr<bb::Header>> headers_bch_{};
+ot::UnallocatedVector<std::unique_ptr<bb::Header>> headers_btc_{};
+ot::UnallocatedVector<std::unique_ptr<bb::Header>> headers_bch_{};
 
 namespace ottest
 {

@@ -7,11 +7,8 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
-#include <set>
 #include <shared_mutex>
-#include <string>
 #include <tuple>
 
 #include "Proto.hpp"
@@ -19,6 +16,7 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageBip47Contexts.pb.h"
 #include "util/storage/tree/Node.hpp"
 
@@ -44,7 +42,7 @@ namespace opentxs::storage
 class Bip47Channels final : public Node
 {
 public:
-    using ChannelList = std::set<OTIdentifier>;
+    using ChannelList = UnallocatedSet<OTIdentifier>;
 
     auto Chain(const Identifier& channelID) const -> core::UnitType;
     auto ChannelsByChain(const core::UnitType chain) const -> ChannelList;
@@ -53,7 +51,7 @@ public:
         std::shared_ptr<proto::Bip47Channel>& output,
         const bool checking) const -> bool;
 
-    auto Delete(const std::string& id) -> bool;
+    auto Delete(const UnallocatedCString& id) -> bool;
     auto Store(const Identifier& channelID, const proto::Bip47Channel& data)
         -> bool;
 
@@ -65,8 +63,8 @@ private:
     /** chain */
     using ChannelData = core::UnitType;
     /** channel id, channel data */
-    using ChannelIndex = std::map<OTIdentifier, ChannelData>;
-    using ChainIndex = std::map<core::UnitType, ChannelList>;
+    using ChannelIndex = UnallocatedMap<OTIdentifier, ChannelData>;
+    using ChainIndex = UnallocatedMap<core::UnitType, ChannelList>;
 
     mutable std::shared_mutex index_lock_;
     ChannelIndex channel_data_;
@@ -82,12 +80,12 @@ private:
         const eLock& lock,
         const Identifier& id,
         const proto::Bip47Channel& data) -> void;
-    auto init(const std::string& hash) -> void final;
+    auto init(const UnallocatedCString& hash) -> void final;
     auto repair_indices() noexcept -> void;
     auto save(const Lock& lock) const -> bool final;
     auto serialize() const -> proto::StorageBip47Contexts;
 
-    Bip47Channels(const Driver& storage, const std::string& hash);
+    Bip47Channels(const Driver& storage, const UnallocatedCString& hash);
     Bip47Channels() = delete;
     Bip47Channels(const Bip47Channels&) = delete;
     Bip47Channels(Bip47Channels&&) = delete;

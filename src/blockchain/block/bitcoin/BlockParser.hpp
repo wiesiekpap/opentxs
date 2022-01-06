@@ -14,16 +14,13 @@
 #include <functional>
 #include <iterator>
 #include <limits>
-#include <map>
 #include <memory>
 #include <numeric>
 #include <optional>
 #include <stdexcept>
-#include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "blockchain/block/Block.hpp"
 #include "blockchain/block/bitcoin/Block.hpp"
@@ -40,6 +37,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"

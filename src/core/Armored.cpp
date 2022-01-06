@@ -16,7 +16,6 @@
 #include <limits>
 #include <sstream>  // IWYU pragma: keep
 #include <stdexcept>
-#include <string>
 
 #include "2_Factory.hpp"
 #include "core/String.hpp"
@@ -28,6 +27,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/Envelope.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -57,14 +57,14 @@ auto Armored::Factory(const opentxs::String& value) -> OTArmored
 auto Armored::LoadFromString(
     Armored& ascArmor,
     const String& strInput,
-    std::string str_bookend) -> bool
+    UnallocatedCString str_bookend) -> bool
 {
 
     if (strInput.Contains(String::Factory(str_bookend)))  // YES there are
                                                           // bookends around
                                                           // this.
     {
-        const std::string str_escaped("- " + str_bookend);
+        const UnallocatedCString str_escaped("- " + str_bookend);
 
         const bool bEscaped = strInput.Contains(String::Factory(str_escaped));
 
@@ -181,8 +181,9 @@ auto Armored::clone() const -> Armored* { return new Armored(*this); }
 /** Compress a STL string using zlib with given compression level and return
  * the binary data. */
 auto Armored::compress_string(
-    const std::string& str,
-    std::int32_t compressionlevel = Z_BEST_COMPRESSION) const -> std::string
+    const UnallocatedCString& str,
+    std::int32_t compressionlevel = Z_BEST_COMPRESSION) const
+    -> UnallocatedCString
 {
     z_stream zs;  // z_stream is zlib's control structure
     memset(&zs, 0, sizeof(zs));
@@ -195,7 +196,7 @@ auto Armored::compress_string(
 
     std::int32_t ret;
     char outbuffer[32768];
-    std::string outstring;
+    UnallocatedCString outstring;
 
     // retrieve the compressed bytes blockwise
     do {
@@ -222,7 +223,8 @@ auto Armored::compress_string(
 }
 
 /** Decompress an STL string using zlib and return the original data. */
-auto Armored::decompress_string(const std::string& str) const -> std::string
+auto Armored::decompress_string(const UnallocatedCString& str) const
+    -> UnallocatedCString
 {
     z_stream zs;  // z_stream is zlib's control structure
     memset(&zs, 0, sizeof(zs));
@@ -235,7 +237,7 @@ auto Armored::decompress_string(const std::string& str) const -> std::string
 
     std::int32_t ret;
     char outbuffer[32768];
-    std::string outstring;
+    UnallocatedCString outstring;
 
     // get the decompressed bytes blockwise using repeated calls to inflate
     do {
@@ -269,8 +271,8 @@ auto Armored::GetData(opentxs::Data& theData, bool bLineBreaks) const -> bool
 
     if (GetLength() < 1) return true;
 
-    auto decoded =
-        Context().Crypto().Encode().DataDecode(std::string(Get(), GetLength()));
+    auto decoded = Context().Crypto().Encode().DataDecode(
+        UnallocatedCString(Get(), GetLength()));
 
     theData.Assign(decoded.c_str(), decoded.size());
 
@@ -285,7 +287,8 @@ auto Armored::GetString(opentxs::String& strData, bool bLineBreaks) const
 
     if (GetLength() < 1) { return true; }
 
-    std::string str_decoded = Context().Crypto().Encode().DataDecode(Get());
+    UnallocatedCString str_decoded =
+        Context().Crypto().Encode().DataDecode(Get());
 
     if (str_decoded.empty()) {
         LogError()(OT_PRETTY_CLASS())("Base58CheckDecode failed.").Flush();
@@ -293,7 +296,7 @@ auto Armored::GetString(opentxs::String& strData, bool bLineBreaks) const
         return false;
     }
 
-    auto str_uncompressed = std::string{};
+    auto str_uncompressed = UnallocatedCString{};
 
     try {
         str_uncompressed = decompress_string(str_decoded);
@@ -320,7 +323,7 @@ auto Armored::LoadFrom_ifstream(std::ifstream& fin) -> bool
     std::stringstream buffer;
     buffer << fin.rdbuf();
 
-    std::string contents(buffer.str());
+    UnallocatedCString contents(buffer.str());
 
     auto theString = String::Factory();
     theString->Set(contents.c_str());
@@ -328,7 +331,7 @@ auto Armored::LoadFrom_ifstream(std::ifstream& fin) -> bool
     return LoadFromString(theString);
 }
 
-auto Armored::LoadFromExactPath(const std::string& filename) -> bool
+auto Armored::LoadFromExactPath(const UnallocatedCString& filename) -> bool
 {
     std::ifstream fin(filename.c_str(), std::ios::binary);
 
@@ -344,13 +347,13 @@ auto Armored::LoadFromExactPath(const std::string& filename) -> bool
 auto Armored::LoadFromString(
     opentxs::String& theStr,  // input
     bool bEscaped,
-    const std::string str_override) -> bool
+    const UnallocatedCString str_override) -> bool
 {
     // Should never be 0 size, as default is "-----BEGIN"
     // But if you want to load a private key, try "-----BEGIN ENCRYPTED PRIVATE"
     // instead.
     // *smile*
-    const std::string str_end_line =
+    const UnallocatedCString str_end_line =
         "-----END";  // Someday maybe allow parameterized option for this.
 
     const std::int32_t nBufSize = 2100;   // todo: hardcoding
@@ -377,7 +380,7 @@ auto Armored::LoadFromString(
     do {
         bIsEOF = !(theStr.sgets(buffer1, nBufSize2));  // 2048
 
-        std::string line = buffer1;
+        UnallocatedCString line = buffer1;
         const char* pBuf = line.c_str();
 
         // It's not a blank line.
@@ -399,7 +402,7 @@ auto Armored::LoadFromString(
                 // Try passing "-----BEGIN ENCRYPTED PRIVATE" instead of going
                 // with the default.)
                 //
-                if (line.find(str_override) != std::string::npos &&
+                if (line.find(str_override) != UnallocatedCString::npos &&
                     line.at(0) == '-' && line.at(2) == '-' &&
                     line.at(3) == '-' &&
                     (bEscaped ? (line.at(1) == ' ') : (line.at(1) == '-'))) {
@@ -417,7 +420,7 @@ auto Armored::LoadFromString(
             else if (
                 bContentMode &&
                 // str_end_line is "-----END"
-                (line.find(str_end_line) != std::string::npos)) {
+                (line.find(str_end_line) != UnallocatedCString::npos)) {
                 //                otErr << "Finished reading ascii-armored
                 // contents.\n";
                 //                otErr << "Finished reading ascii-armored
@@ -490,7 +493,7 @@ auto Armored::SetData(const opentxs::Data& theData, bool) -> bool
 auto Armored::SaveTo_ofstream(std::ofstream& fout) -> bool
 {
     auto strOutput = String::Factory();
-    std::string str_type("DATA");  // -----BEGIN OT ARMORED DATA-----
+    UnallocatedCString str_type("DATA");  // -----BEGIN OT ARMORED DATA-----
 
     if (WriteArmoredString(strOutput, str_type) && strOutput->Exists()) {
         // WRITE IT TO THE FILE
@@ -510,7 +513,7 @@ auto Armored::SaveTo_ofstream(std::ofstream& fout) -> bool
     return false;
 }
 
-auto Armored::SaveToExactPath(const std::string& filename) -> bool
+auto Armored::SaveToExactPath(const UnallocatedCString& filename) -> bool
 {
     std::ofstream fout(filename.c_str(), std::ios::out | std::ios::binary);
 
@@ -532,7 +535,7 @@ auto Armored::SetString(
 
     if (strData.GetLength() < 1) return true;
 
-    std::string str_compressed = compress_string(strData.Get());
+    UnallocatedCString str_compressed = compress_string(strData.Get());
 
     // "Success"
     if (str_compressed.size() == 0) {
@@ -558,9 +561,10 @@ auto Armored::SetString(
 
 auto Armored::WriteArmoredString(
     opentxs::String& strOutput,
-    const std::string str_type,  // for "-----BEGIN OT LEDGER-----", str_type
-                                 // would contain "LEDGER" There's no default,
-                                 // to force you to enter the right string.
+    const UnallocatedCString str_type,  // for "-----BEGIN OT LEDGER-----",
+                                        // str_type would contain "LEDGER"
+                                        // There's no default, to force you to
+                                        // enter the right string.
     bool bEscaped) const -> bool
 {
     const char* szEscape = "- ";

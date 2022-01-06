@@ -51,24 +51,24 @@ public:
         -> OTIdentifier = 0;
     virtual auto ContactList() const -> ObjectList = 0;
     virtual auto ContactName(const Identifier& contactID) const
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
     virtual auto ContactName(
         const Identifier& contactID,
-        core::UnitType currencyHint) const -> std::string = 0;
+        core::UnitType currencyHint) const -> UnallocatedCString = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Contacts& = 0;
     virtual auto Merge(const Identifier& parent, const Identifier& child) const
         -> std::shared_ptr<const opentxs::Contact> = 0;
-    virtual auto NewContact(const std::string& label) const
+    virtual auto NewContact(const UnallocatedCString& label) const
         -> std::shared_ptr<const opentxs::Contact> = 0;
     virtual auto NewContact(
-        const std::string& label,
+        const UnallocatedCString& label,
         const identifier::Nym& nymID,
         const PaymentCode& paymentCode) const
         -> std::shared_ptr<const opentxs::Contact> = 0;
     virtual auto NewContactFromAddress(
-        const std::string& address,
-        const std::string& label,
+        const UnallocatedCString& address,
+        const UnallocatedCString& label,
         const opentxs::blockchain::Type currency) const
         -> std::shared_ptr<const opentxs::Contact> = 0;
     /** Returns an existing contact ID if it exists, or creates a new one */
@@ -79,7 +79,7 @@ public:
         const PaymentCode& code,
         const opentxs::blockchain::Type currency) const -> OTIdentifier = 0;
     virtual auto PaymentCodeToContact(
-        const std::string& code,
+        const UnallocatedCString& code,
         const opentxs::blockchain::Type currency) const -> OTIdentifier = 0;
     virtual auto Update(const identity::Nym& nym) const
         -> std::shared_ptr<const opentxs::Contact> = 0;

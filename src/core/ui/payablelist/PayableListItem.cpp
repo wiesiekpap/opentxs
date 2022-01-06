@@ -23,7 +23,7 @@ auto PayableListItem(
     const api::session::Client& api,
     const ui::implementation::PayableListRowID& rowID,
     const ui::implementation::PayableListSortKey& key,
-    const std::string& paymentcode,
+    const UnallocatedCString& paymentcode,
     const core::UnitType& currency) noexcept
     -> std::shared_ptr<ui::implementation::PayableListRowInternal>
 {
@@ -41,7 +41,7 @@ PayableListItem::PayableListItem(
     const api::session::Client& api,
     const PayableListRowID& rowID,
     const PayableListSortKey& key,
-    const std::string& paymentcode,
+    const UnallocatedCString& paymentcode,
     const core::UnitType& currency) noexcept
     : ot_super(parent, api, rowID, key)
     , payment_code_(paymentcode)
@@ -49,7 +49,7 @@ PayableListItem::PayableListItem(
 {
 }
 
-auto PayableListItem::PaymentCode() const noexcept -> std::string
+auto PayableListItem::PaymentCode() const noexcept -> UnallocatedCString
 {
     Lock lock{lock_};
 

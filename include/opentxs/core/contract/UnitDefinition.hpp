@@ -8,11 +8,11 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
 
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -48,11 +48,11 @@ public:
     static const VersionNumber MaxVersion;
 
     virtual auto AddAccountRecord(
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const Account& theAccount) const -> bool = 0;
     virtual auto DisplayStatistics(String& strContents) const -> bool = 0;
     virtual auto EraseAccountRecord(
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const Identifier& theAcctID) const -> bool = 0;
     using Signable::Serialize;
     OPENTXS_NO_EXPORT virtual auto Serialize(
@@ -63,11 +63,11 @@ public:
     virtual auto Type() const -> contract::UnitType = 0;
     virtual auto UnitOfAccount() const -> core::UnitType = 0;
     virtual auto VisitAccountRecords(
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         AccountVisitor& visitor,
         const PasswordPrompt& reason) const -> bool = 0;
 
-    virtual void InitAlias(const std::string& alias) = 0;
+    virtual void InitAlias(const UnallocatedCString& alias) = 0;
 
     ~Unit() override = default;
 

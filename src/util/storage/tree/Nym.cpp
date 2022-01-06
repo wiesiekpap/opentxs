@@ -53,7 +53,7 @@ void Nym::_save(
     storage::Threads* input,
     const Lock& lock,
     std::mutex& mutex,
-    std::string& root)
+    UnallocatedCString& root)
 {
     OT_ASSERT(mail_inbox_);
     OT_ASSERT(mail_outbox_);
@@ -78,9 +78,9 @@ void Nym::_save(
 
 Nym::Nym(
     const Driver& storage,
-    const std::string& id,
-    const std::string& hash,
-    const std::string& alias)
+    const UnallocatedCString& id,
+    const UnallocatedCString& hash,
+    const UnallocatedCString& alias)
     : Node(storage, hash)
     , alias_(alias)
     , nymid_(id)
@@ -146,7 +146,7 @@ Nym::Nym(
     }
 }
 
-auto Nym::Alias() const -> std::string { return alias_; }
+auto Nym::Alias() const -> UnallocatedCString { return alias_; }
 
 auto Nym::bip47() const -> storage::Bip47Channels*
 {
@@ -159,7 +159,7 @@ auto Nym::Bip47Channels() const -> const storage::Bip47Channels&
 }
 
 auto Nym::BlockchainAccountList(const core::UnitType type) const
-    -> std::set<std::string>
+    -> UnallocatedSet<UnallocatedCString>
 {
     Lock lock(blockchain_lock_);
 
@@ -170,7 +170,7 @@ auto Nym::BlockchainAccountList(const core::UnitType type) const
     return it->second;
 }
 
-auto Nym::BlockchainAccountType(const std::string& accountID) const
+auto Nym::BlockchainAccountType(const UnallocatedCString& accountID) const
     -> core::UnitType
 {
     Lock lock(blockchain_lock_);
@@ -188,7 +188,7 @@ template <typename T, typename... Args>
 auto Nym::construct(
     std::mutex& mutex,
     std::unique_ptr<T>& pointer,
-    const std::string& root,
+    const UnallocatedCString& root,
     Args&&... params) const -> T*
 {
     Lock lock(mutex);
@@ -216,8 +216,10 @@ auto Nym::contexts() const -> storage::Contexts*
 auto Nym::Contexts() const -> const storage::Contexts& { return *contexts(); }
 
 template <typename T>
-auto Nym::editor(std::string& root, std::mutex& mutex, T* (Nym::*get)() const)
-    -> Editor<T>
+auto Nym::editor(
+    UnallocatedCString& root,
+    std::mutex& mutex,
+    T* (Nym::*get)() const) -> Editor<T>
 {
     std::function<void(T*, Lock&)> callback = [&](T* in, Lock& lock) -> void {
         this->_save(in, lock, mutex, root);
@@ -274,7 +276,7 @@ auto Nym::IncomingReplyBox() const -> const PeerReplies&
     return *incoming_reply_box();
 }
 
-void Nym::init(const std::string& hash)
+void Nym::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageNym> serialized;
     driver_.LoadProto(hash, serialized);
@@ -377,7 +379,7 @@ auto Nym::issuers() const -> storage::Issuers*
 auto Nym::Issuers() const -> const storage::Issuers& { return *issuers(); }
 
 auto Nym::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     std::shared_ptr<proto::HDAccount>& output,
     const bool checking) const -> bool
 {
@@ -400,7 +402,7 @@ auto Nym::Load(
 
 auto Nym::Load(
     std::shared_ptr<proto::Nym>& output,
-    std::string& alias,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     Lock lock(write_lock_);
@@ -661,7 +663,7 @@ void Nym::_save(
     O* input,
     const Lock& lock,
     std::mutex& mutex,
-    std::string& root)
+    UnallocatedCString& root)
 {
     if (!verify_write_lock(lock)) {
         LogError()(OT_PRETTY_CLASS())("Lock failure.").Flush();
@@ -792,7 +794,7 @@ auto Nym::serialize() const -> proto::StorageNym
     return serialized;
 }
 
-auto Nym::SetAlias(const std::string& alias) -> bool
+auto Nym::SetAlias(const UnallocatedCString& alias) -> bool
 {
     Lock lock(write_lock_);
 
@@ -847,8 +849,8 @@ auto Nym::Store(const core::UnitType type, const proto::HDAccount& data) -> bool
 
 auto Nym::Store(
     const proto::Nym& data,
-    const std::string& alias,
-    std::string& plaintext) -> bool
+    const UnallocatedCString& alias,
+    UnallocatedCString& plaintext) -> bool
 {
     Lock lock(write_lock_);
 
@@ -902,7 +904,7 @@ auto Nym::Store(const proto::Purse& purse) -> bool
     const PurseID id{
         identifier::Notary::Factory(purse.notary()),
         identifier::UnitDefinition::Factory(purse.mint())};
-    std::string hash{};
+    UnallocatedCString hash{};
     const auto output = driver_.StoreProto(purse, hash);
 
     if (false == output) { return output; }

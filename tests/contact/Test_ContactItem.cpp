@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 #include <cstdint>
 #include <ctime>
-#include <string>
 
 #include "1_Internal.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
@@ -14,7 +13,6 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
 #include "opentxs/identity/wot/claim/Attribute.hpp"
@@ -22,6 +20,7 @@
 #include "opentxs/identity/wot/claim/Item.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 
@@ -34,12 +33,12 @@ public:
         : api_(ot::Context().StartClientSession(0))
         , contactItem_(
               dynamic_cast<const ot::api::session::Client&>(api_),
-              std::string("testNym"),
+              ot::UnallocatedCString("testNym"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
               ot::identity::wot::claim::SectionType::Identifier,
               ot::identity::wot::claim::ClaimType::Employee,
-              std::string("testValue"),
+              ot::UnallocatedCString("testValue"),
               {ot::identity::wot::claim::Attribute::Active},
               NULL_START,
               NULL_END,
@@ -55,12 +54,12 @@ TEST_F(Test_ContactItem, first_constructor)
 {
     const ot::identity::wot::claim::Item contactItem1(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("testContactItemNym"),
+        ot::UnallocatedCString("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         ot::identity::wot::claim::SectionType::Identifier,
         ot::identity::wot::claim::ClaimType::Employee,
-        std::string("testValue"),
+        ot::UnallocatedCString("testValue"),
         {ot::identity::wot::claim::Attribute::Active},
         NULL_START,
         NULL_END,
@@ -96,12 +95,12 @@ TEST_F(Test_ContactItem, first_constructor_different_versions)
 {
     const ot::identity::wot::claim::Item contactItem1(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("testContactItemNym"),
+        ot::UnallocatedCString("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION - 1,  // previous version
         CONTACT_CONTACT_DATA_VERSION,
         ot::identity::wot::claim::SectionType::Identifier,
         ot::identity::wot::claim::ClaimType::Employee,
-        std::string("testValue"),
+        ot::UnallocatedCString("testValue"),
         {ot::identity::wot::claim::Attribute::Active},
         NULL_START,
         NULL_END,
@@ -113,7 +112,7 @@ TEST_F(Test_ContactItem, second_constructor)
 {
     const ot::identity::wot::claim::Item contactItem1(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("testContactItemNym"),
+        ot::UnallocatedCString("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         ot::Claim(
@@ -178,12 +177,12 @@ TEST_F(Test_ContactItem, operator_equal_false)
 {
     ot::identity::wot::claim::Item contactItem2(
         dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("testNym2"),
+        ot::UnallocatedCString("testNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         ot::identity::wot::claim::SectionType::Identifier,
         ot::identity::wot::claim::ClaimType::Employee,
-        std::string("testValue2"),
+        ot::UnallocatedCString("testValue2"),
         {ot::identity::wot::claim::Attribute::Active},
         NULL_START,
         NULL_END,

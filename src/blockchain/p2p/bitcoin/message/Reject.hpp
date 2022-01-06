@@ -6,8 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <set>
-#include <string>
 
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
@@ -16,6 +14,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -41,9 +40,15 @@ namespace opentxs::blockchain::p2p::bitcoin::message
 class Reject final : public implementation::Message
 {
 public:
-    auto getMessage() const noexcept -> const std::string& { return message_; }
+    auto getMessage() const noexcept -> const UnallocatedCString&
+    {
+        return message_;
+    }
     auto getRejectCode() const noexcept -> bitcoin::RejectCode { return code_; }
-    auto getReason() const noexcept -> const std::string& { return reason_; }
+    auto getReason() const noexcept -> const UnallocatedCString&
+    {
+        return reason_;
+    }
     auto getExtraData() const noexcept -> OTData
     {
         return Data::Factory(extra_);
@@ -52,24 +57,24 @@ public:
     Reject(
         const api::Session& api,
         const blockchain::Type network,
-        const std::string& message,
+        const UnallocatedCString& message,
         const bitcoin::RejectCode code,
-        const std::string& reason,
+        const UnallocatedCString& reason,
         const Data& extra) noexcept;
     Reject(
         const api::Session& api,
         std::unique_ptr<Header> header,
-        const std::string& message,
+        const UnallocatedCString& message,
         const bitcoin::RejectCode code,
-        const std::string& reason,
+        const UnallocatedCString& reason,
         const Data& extra) noexcept(false);
 
     ~Reject() final = default;
 
 private:
-    const std::string message_;
+    const UnallocatedCString message_;
     const bitcoin::RejectCode code_{};
-    const std::string reason_;
+    const UnallocatedCString reason_;
     const OTData extra_;
 
     using implementation::Message::payload;

@@ -10,10 +10,10 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <vector>
 
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/otx/client/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -152,12 +152,12 @@ public:
     OPENTXS_NO_EXPORT static auto ContainsTransfer(
         const proto::PaymentWorkflow& workflow) -> bool;
     OPENTXS_NO_EXPORT static auto ExtractCheque(
-        const proto::PaymentWorkflow& workflow) -> std::string;
+        const proto::PaymentWorkflow& workflow) -> UnallocatedCString;
     OPENTXS_NO_EXPORT static auto ExtractPurse(
         const proto::PaymentWorkflow& workflow,
         proto::Purse& out) -> bool;
     OPENTXS_NO_EXPORT static auto ExtractTransfer(
-        const proto::PaymentWorkflow& workflow) -> std::string;
+        const proto::PaymentWorkflow& workflow) -> UnallocatedCString;
     OPENTXS_NO_EXPORT static auto InstantiateCheque(
         const api::Session& api,
         const proto::PaymentWorkflow& workflow) -> Cheque;
@@ -258,7 +258,7 @@ public:
         const identifier::Nym& nymID,
         const otx::client::PaymentWorkflowType type,
         const otx::client::PaymentWorkflowState state) const
-        -> std::set<OTIdentifier> = 0;
+        -> UnallocatedSet<OTIdentifier> = 0;
     virtual auto LoadCheque(
         const identifier::Nym& nymID,
         const Identifier& chequeID) const -> Cheque = 0;
@@ -299,7 +299,7 @@ public:
     virtual auto WorkflowParty(
         const identifier::Nym& nymID,
         const Identifier& workflowID,
-        const int index) const -> const std::string = 0;
+        const int index) const -> const UnallocatedCString = 0;
     virtual auto WorkflowPartySize(
         const identifier::Nym& nymID,
         const Identifier& workflowID,
@@ -315,7 +315,8 @@ public:
     /** Get a list of workflow IDs relevant to a specified account */
     virtual auto WorkflowsByAccount(
         const identifier::Nym& nymID,
-        const Identifier& accountID) const -> std::vector<OTIdentifier> = 0;
+        const Identifier& accountID) const
+        -> UnallocatedVector<OTIdentifier> = 0;
     /** Create a new outgoing cheque workflow */
     virtual auto WriteCheque(const opentxs::Cheque& cheque) const
         -> OTIdentifier = 0;

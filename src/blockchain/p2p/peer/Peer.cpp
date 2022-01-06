@@ -38,7 +38,7 @@ Peer::Peer(
     const node::internal::BlockOracle& block,
     const node::internal::PeerManager& manager,
     const int id,
-    const std::string& shutdown,
+    const UnallocatedCString& shutdown,
     const std::size_t headerSize,
     const std::size_t bodySize,
     std::unique_ptr<internal::Address> address) noexcept
@@ -412,7 +412,7 @@ auto Peer::process_mempool(const zmq::Message& message) noexcept -> void
 
     if (body.at(1).as<Type>() != chain_) { return; }
 
-    const auto hash = std::string{body.at(2).Bytes()};
+    const auto hash = UnallocatedCString{body.at(2).Bytes()};
 
     if (0 < known_transactions_.count(hash)) { return; }
 
@@ -570,7 +570,8 @@ auto Peer::state_machine() noexcept -> bool
 
                 if (disconnect) {
                     throw std::runtime_error{
-                        std::string{"failure to complete handshake within "} +
+                        UnallocatedCString{
+                            "failure to complete handshake within "} +
                         std::to_string(timeout.count()) +
                         " seconds (incoming)"};
                 }
@@ -586,7 +587,8 @@ auto Peer::state_machine() noexcept -> bool
 
                 if (disconnect) {
                     throw std::runtime_error{
-                        std::string{"failure to complete handshake within "} +
+                        UnallocatedCString{
+                            "failure to complete handshake within "} +
                         std::to_string(timeout.count()) +
                         " seconds (outgoing)"};
                 }
@@ -601,8 +603,9 @@ auto Peer::state_machine() noexcept -> bool
 
                 if (disconnect) {
                     throw std::runtime_error{
-                        std::string{"failure to respond to checkpoint requests "
-                                    "within "} +
+                        UnallocatedCString{
+                            "failure to respond to checkpoint requests "
+                            "within "} +
                         std::to_string(timeout.count()) + " seconds"};
                 }
             } break;
@@ -740,7 +743,7 @@ auto Peer::update_address_activity() noexcept -> void
 }
 
 auto Peer::update_address_services(
-    const std::set<p2p::Service>& services) noexcept -> void
+    const UnallocatedSet<p2p::Service>& services) noexcept -> void
 {
     manager_.Database().AddOrUpdate(address_.UpdateServices(services));
 }

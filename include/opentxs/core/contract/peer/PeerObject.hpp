@@ -9,11 +9,11 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -42,10 +42,10 @@ class OPENTXS_EXPORT PeerObject
 {
 public:
     virtual auto Message() const noexcept
-        -> const std::unique_ptr<std::string>& = 0;
+        -> const std::unique_ptr<UnallocatedCString>& = 0;
     virtual auto Nym() const noexcept -> const Nym_p& = 0;
     virtual auto Payment() const noexcept
-        -> const std::unique_ptr<std::string>& = 0;
+        -> const std::unique_ptr<UnallocatedCString>& = 0;
     virtual auto Purse() const noexcept -> const otx::blind::Purse& = 0;
     virtual auto Request() const noexcept -> const OTPeerRequest = 0;
     virtual auto Reply() const noexcept -> const OTPeerReply = 0;
@@ -54,8 +54,8 @@ public:
     virtual auto Type() const noexcept -> contract::peer::PeerObjectType = 0;
     virtual auto Validate() const noexcept -> bool = 0;
 
-    virtual auto Message() noexcept -> std::unique_ptr<std::string>& = 0;
-    virtual auto Payment() noexcept -> std::unique_ptr<std::string>& = 0;
+    virtual auto Message() noexcept -> std::unique_ptr<UnallocatedCString>& = 0;
+    virtual auto Payment() noexcept -> std::unique_ptr<UnallocatedCString>& = 0;
     virtual auto Purse() noexcept -> otx::blind::Purse& = 0;
 
     virtual ~PeerObject() = default;

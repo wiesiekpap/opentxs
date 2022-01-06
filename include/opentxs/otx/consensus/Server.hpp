@@ -87,10 +87,10 @@ public:
     using SendFuture = std::future<DeliveryResult>;
     using QueueResult = std::unique_ptr<SendFuture>;
     // account label, resync nym
-    using ExtraArgs = std::pair<std::string, bool>;
+    using ExtraArgs = std::pair<UnallocatedCString, bool>;
 
-    virtual auto Accounts() const -> std::vector<OTIdentifier> = 0;
-    virtual auto AdminPassword() const -> const std::string& = 0;
+    virtual auto Accounts() const -> UnallocatedVector<OTIdentifier> = 0;
+    virtual auto AdminPassword() const -> const UnallocatedCString& = 0;
     virtual auto AdminAttempted() const -> bool = 0;
     virtual auto FinalizeServerCommand(
         Message& command,
@@ -105,7 +105,7 @@ public:
         -> const otx::blind::Purse& = 0;
     virtual auto Revision() const -> std::uint64_t = 0;
     virtual auto ShouldRename(
-        const std::string& defaultName = "localhost") const -> bool = 0;
+        const UnallocatedCString& defaultName = "localhost") const -> bool = 0;
     virtual auto StaleNym() const -> bool = 0;
     virtual auto Statement(
         const OTTransaction& owner,
@@ -149,7 +149,7 @@ public:
         std::shared_ptr<Message> message,
         std::shared_ptr<Ledger> inbox,
         std::shared_ptr<Ledger> outbox,
-        std::set<OTManagedNumber>* numbers,
+        UnallocatedSet<OTManagedNumber>* numbers,
         const PasswordPrompt& reason,
         const ExtraArgs& args = ExtraArgs{}) -> QueueResult = 0;
     virtual auto RefreshNymbox(
@@ -161,14 +161,14 @@ public:
     virtual auto Resync(const proto::Context& serialized) -> bool = 0;
     [[deprecated]] virtual auto SendMessage(
         const api::session::Client& client,
-        const std::set<OTManagedNumber>& pending,
+        const UnallocatedSet<OTManagedNumber>& pending,
         Server& context,
         const Message& message,
         const PasswordPrompt& reason,
-        const std::string& label = "",
+        const UnallocatedCString& label = "",
         const bool resync = false) -> NetworkReplyMessage = 0;
     virtual void SetAdminAttempted() = 0;
-    virtual void SetAdminPassword(const std::string& password) = 0;
+    virtual void SetAdminPassword(const UnallocatedCString& password) = 0;
     virtual void SetAdminSuccess() = 0;
     virtual auto SetHighest(const TransactionNumber& highest) -> bool = 0;
     virtual void SetPush(const bool enabled) = 0;

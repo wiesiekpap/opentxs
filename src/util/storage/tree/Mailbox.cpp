@@ -9,7 +9,6 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <tuple>
 #include <utility>
@@ -18,6 +17,7 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/StorageNymList.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/StorageEnums.pb.h"
 #include "serialization/protobuf/StorageItemHash.pb.h"
@@ -29,7 +29,7 @@ namespace opentxs
 {
 namespace storage
 {
-Mailbox::Mailbox(const Driver& storage, const std::string& hash)
+Mailbox::Mailbox(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {
@@ -39,9 +39,12 @@ Mailbox::Mailbox(const Driver& storage, const std::string& hash)
     }
 }
 
-auto Mailbox::Delete(const std::string& id) -> bool { return delete_item(id); }
+auto Mailbox::Delete(const UnallocatedCString& id) -> bool
+{
+    return delete_item(id);
+}
 
-void Mailbox::init(const std::string& hash)
+void Mailbox::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageNymList> serialized;
     driver_.LoadProto(hash, serialized);
@@ -61,9 +64,9 @@ void Mailbox::init(const std::string& hash)
 }
 
 auto Mailbox::Load(
-    const std::string& id,
-    std::string& output,
-    std::string& alias,
+    const UnallocatedCString& id,
+    UnallocatedCString& output,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     return load_raw(id, output, alias, checking);
@@ -107,9 +110,9 @@ auto Mailbox::serialize() const -> proto::StorageNymList
 }
 
 auto Mailbox::Store(
-    const std::string& id,
-    const std::string& data,
-    const std::string& alias) -> bool
+    const UnallocatedCString& id,
+    const UnallocatedCString& data,
+    const UnallocatedCString& alias) -> bool
 {
     return store_raw(data, id, alias);
 }

@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <optional>
 #include <queue>
-#include <string>
 #include <tuple>
 #include <utility>
 
@@ -19,6 +18,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {

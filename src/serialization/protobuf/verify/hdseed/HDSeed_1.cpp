@@ -5,8 +5,7 @@
 
 #include "internal/serialization/protobuf/verify/HDSeed.hpp"  // IWYU pragma: associated
 
-#include <string>
-
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/HDSeed.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 

@@ -26,7 +26,7 @@ namespace opentxs::storage
 Root::Root(
     const api::network::Asio& asio,
     const Driver& storage,
-    const std::string& hash,
+    const UnallocatedCString& hash,
     const std::int64_t interval,
     Flag& bucket)
     : ot_super(storage, hash)
@@ -54,7 +54,7 @@ void Root::blank(const VersionNumber version)
 
 void Root::cleanup() const { gc_.Cleanup(); }
 
-void Root::init(const std::string& hash)
+void Root::init(const UnallocatedCString& hash)
 {
     auto data = std::shared_ptr<proto::StorageRoot>{};
 

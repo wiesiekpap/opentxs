@@ -9,19 +9,17 @@
 
 #include <algorithm>
 #include <iterator>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -82,7 +80,7 @@ struct Progress::Imp {
     }
     auto UpdateScan(
         const std::optional<block::Position>& highestClean,
-        const std::vector<block::Position>& in) noexcept -> void
+        const UnallocatedVector<block::Position>& in) noexcept -> void
     {
         auto lock = Lock{lock_};
         std::copy(
@@ -115,13 +113,13 @@ struct Progress::Imp {
     ~Imp() = default;
 
 private:
-    using Map = std::map<block::Position, long long int>;
+    using Map = UnallocatedMap<block::Position, long long int>;
 
     const SubchainStateData& parent_;
     mutable std::mutex lock_;
     std::optional<block::Position> last_reported_;
     std::optional<block::Position> highest_clean_;
-    std::set<block::Position> dirty_blocks_;
+    UnallocatedSet<block::Position> dirty_blocks_;
 
     auto lowest_dirty(const Lock&) const noexcept
         -> std::optional<block::Position>
@@ -219,7 +217,7 @@ auto Progress::UpdateProcess(const ProgressBatch& processed) noexcept -> void
 
 auto Progress::UpdateScan(
     const std::optional<block::Position>& highestClean,
-    const std::vector<block::Position>& dirtyBlocks) noexcept -> void
+    const UnallocatedVector<block::Position>& dirtyBlocks) noexcept -> void
 {
     imp_->UpdateScan(highestClean, dirtyBlocks);
 }

@@ -10,20 +10,25 @@
 #include "opentxs/network/p2p/Base.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/State.hpp"
 #include "opentxs/network/p2p/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace opentxs
 {
 namespace network
 {
+namespace p2p
+{
+class Block;
+class State;
+}  // namespace p2p
+
 namespace zeromq
 {
 class Message;
@@ -44,9 +49,9 @@ public:
 
     const VersionNumber version_;
     const MessageType type_;
-    const std::vector<State> state_;
-    const std::string endpoint_;
-    const std::vector<Block> blocks_;
+    const UnallocatedVector<State> state_;
+    const UnallocatedCString endpoint_;
+    const UnallocatedVector<Block> blocks_;
 
     static auto translate(const LocalType in) noexcept -> RemoteType;
     static auto translate(const RemoteType in) noexcept -> LocalType;
@@ -66,9 +71,9 @@ public:
 
     Imp(VersionNumber version,
         MessageType type,
-        std::vector<State> state,
-        std::string endpoint,
-        std::vector<Block> blocks) noexcept;
+        UnallocatedVector<State> state,
+        UnallocatedCString endpoint,
+        UnallocatedVector<Block> blocks) noexcept;
     Imp(const MessageType type) noexcept;
     Imp() noexcept;
 

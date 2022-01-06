@@ -9,7 +9,6 @@
 
 #include <cinttypes>
 #include <cstdint>
-#include <deque>
 #include <memory>
 
 #include "internal/api/Legacy.hpp"
@@ -36,6 +35,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -209,7 +209,7 @@ auto OTCronItem::LoadActiveCronReceipt(
 auto OTCronItem::GetActiveCronTransNums(
     const api::Session& api,
     NumList& output,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const identifier::Nym& nymID,
     const identifier::Notary& notaryID) -> bool
 {
@@ -263,7 +263,7 @@ auto OTCronItem::GetActiveCronTransNums(
 // Client-side only.
 auto OTCronItem::EraseActiveCronReceipt(
     const api::Session& api,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const TransactionNumber& lTransactionNum,
     const identifier::Nym& nymID,
     const identifier::Notary& notaryID) -> bool

@@ -10,7 +10,6 @@
 #include <cstdint>
 #include <cstring>
 #include <memory>
-#include <string>
 
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/otx/Types.hpp"
@@ -36,6 +35,7 @@
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -173,7 +173,7 @@ auto Item::VerifyTransactionStatement(
     const OTTransaction& transaction,
     const bool real) const -> bool
 {
-    const std::set<TransactionNumber> empty;
+    const UnallocatedSet<TransactionNumber> empty;
 
     return VerifyTransactionStatement(context, transaction, empty, real);
 }
@@ -181,7 +181,7 @@ auto Item::VerifyTransactionStatement(
 auto Item::VerifyTransactionStatement(
     const otx::context::Client& context,
     const OTTransaction& TARGET_TRANSACTION,
-    const std::set<TransactionNumber> newNumbers,
+    const UnallocatedSet<TransactionNumber> newNumbers,
     const bool bIsRealTransaction) const -> bool
 {
     if (GetType() != itemType::transactionStatement) {
@@ -198,7 +198,7 @@ auto Item::VerifyTransactionStatement(
     // THE TRANSACTION IS PROCESSED.)
     const auto NOTARY_ID = String::Factory(GetPurportedNotaryID());
     const TransactionNumber itemNumber = GetTransactionNum();
-    std::set<TransactionNumber> excluded;
+    UnallocatedSet<TransactionNumber> excluded;
 
     // Sometimes my "transaction number" is 0 since we're accepting numbers from
     // the Nymbox (which is done by message, not transaction.) In such cases,
@@ -284,7 +284,7 @@ auto Item::VerifyBalanceStatement(
     const Ledger& THE_OUTBOX,
     const Account& THE_ACCOUNT,
     const OTTransaction& TARGET_TRANSACTION,
-    const std::set<TransactionNumber>& excluded,
+    const UnallocatedSet<TransactionNumber>& excluded,
     const PasswordPrompt& reason,
     TransactionNumber outboxNum) const
     -> bool  // Only used in the case of transfer,
@@ -295,7 +295,7 @@ auto Item::VerifyBalanceStatement(
              // trans# successfully, only in that
              // special case.
 {
-    std::set<TransactionNumber> removed(excluded);
+    UnallocatedSet<TransactionNumber> removed(excluded);
 
     if (GetType() != itemType::balanceStatement) {
         LogConsole()(OT_PRETTY_CLASS())("Wrong item type.").Flush();
@@ -719,7 +719,7 @@ auto Item::VerifyBalanceStatement(
     }
 
     otx::context::TransactionStatement statement(serialized);
-    std::set<TransactionNumber> added;
+    UnallocatedSet<TransactionNumber> added;
 
     return context.Verify(statement, removed, added);
 }
@@ -1428,7 +1428,7 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             if (strTotalList->Exists())
                 m_Numlist.Add(strTotalList);  // (Comma-separated list of
                                               // numbers now becomes
-                                              // std::set<std::int64_t>.)
+                                              // UnallocatedSet<std::int64_t>.)
         }
 
         const auto ACCOUNT_ID = api_.Factory().Identifier(strAcctFromID);
@@ -1908,7 +1908,7 @@ void Item::UpdateContents(const PasswordPrompt& reason)  // Before transmission
     tag.add_attribute("toAccountID", strToAcctID->Get());
     tag.add_attribute("inReferenceTo", std::to_string(GetReferenceToNum()));
     tag.add_attribute("amount", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         m_lAmount.Serialize(writer(buf));
         return buf;
     }());
@@ -1975,7 +1975,7 @@ void Item::UpdateContents(const PasswordPrompt& reason)  // Before transmission
                 "type",
                 receiptType->Exists() ? receiptType->Get() : "error_state");
             tagReport->add_attribute("adjustment", [&] {
-                auto buf = std::string{};
+                auto buf = UnallocatedCString{};
                 pItem->GetAmount().Serialize(writer(buf));
                 return buf;
             }());
@@ -2004,7 +2004,7 @@ void Item::UpdateContents(const PasswordPrompt& reason)  // Before transmission
         }
     }
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());

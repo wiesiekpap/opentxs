@@ -14,20 +14,15 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
-#include <deque>
 #include <functional>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <queue>
-#include <set>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "blockchain/node/wallet/Account.hpp"
@@ -55,6 +50,7 @@
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
 #include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
@@ -113,22 +109,23 @@ public:
     auto GetBalance(const identifier::Nym& owner, const Identifier& subaccount)
         const noexcept -> Balance final;
     auto GetBalance(const crypto::Key& key) const noexcept -> Balance final;
-    auto GetOutputs() const noexcept -> std::vector<UTXO> final;
-    auto GetOutputs(TxoState type) const noexcept -> std::vector<UTXO> final;
+    auto GetOutputs() const noexcept -> UnallocatedVector<UTXO> final;
+    auto GetOutputs(TxoState type) const noexcept
+        -> UnallocatedVector<UTXO> final;
     auto GetOutputs(const identifier::Nym& owner) const noexcept
-        -> std::vector<UTXO> final;
+        -> UnallocatedVector<UTXO> final;
     auto GetOutputs(const identifier::Nym& owner, TxoState type) const noexcept
-        -> std::vector<UTXO> final;
+        -> UnallocatedVector<UTXO> final;
     auto GetOutputs(const identifier::Nym& owner, const Identifier& subaccount)
-        const noexcept -> std::vector<UTXO> final;
+        const noexcept -> UnallocatedVector<UTXO> final;
     auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& subaccount,
-        TxoState type) const noexcept -> std::vector<UTXO> final;
+        TxoState type) const noexcept -> UnallocatedVector<UTXO> final;
     auto GetOutputs(const crypto::Key& key, TxoState type) const noexcept
-        -> std::vector<UTXO> final;
+        -> UnallocatedVector<UTXO> final;
     auto GetTags(const block::Outpoint& output) const noexcept
-        -> std::set<TxoTag> final;
+        -> UnallocatedSet<TxoTag> final;
     auto Height() const noexcept -> block::Height final;
 
     auto Init() noexcept -> void final;
@@ -143,7 +140,7 @@ public:
         const node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const Type chain,
-        const std::string& shutdown) noexcept;
+        const UnallocatedCString& shutdown) noexcept;
 
     ~Wallet() final;
 

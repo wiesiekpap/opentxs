@@ -6,8 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <set>
-#include <string>
 
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -21,6 +19,7 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -55,8 +54,8 @@ public:
 
         BitcoinFormat_1(
             const bitcoin::ProtocolVersion version,
-            const std::set<bitcoin::Service>& localServices,
-            const std::set<bitcoin::Service>& remoteServices,
+            const UnallocatedSet<bitcoin::Service>& localServices,
+            const UnallocatedSet<bitcoin::Service>& remoteServices,
             const tcp::endpoint& remoteAddress,
             const Time time) noexcept;
         BitcoinFormat_1() noexcept;
@@ -67,7 +66,7 @@ public:
         NonceField nonce_{};
 
         BitcoinFormat_106(
-            const std::set<bitcoin::Service>& localServices,
+            const UnallocatedSet<bitcoin::Service>& localServices,
             const tcp::endpoint localAddress,
             const bitcoin::Nonce nonce) noexcept;
         BitcoinFormat_106() noexcept;
@@ -86,7 +85,7 @@ public:
         return local_address_;
     }
     auto LocalServices() const noexcept
-        -> std::set<blockchain::p2p::Service> final
+        -> UnallocatedSet<blockchain::p2p::Service> final
     {
         return local_services_;
     }
@@ -101,11 +100,11 @@ public:
         return remote_address_;
     }
     auto RemoteServices() const noexcept
-        -> std::set<blockchain::p2p::Service> final
+        -> UnallocatedSet<blockchain::p2p::Service> final
     {
         return remote_services_;
     }
-    auto UserAgent() const noexcept -> const std::string& final
+    auto UserAgent() const noexcept -> const UnallocatedCString& final
     {
         return user_agent_;
     }
@@ -116,11 +115,11 @@ public:
         const bitcoin::ProtocolVersion version,
         const tcp::endpoint localAddress,
         const tcp::endpoint remoteAddress,
-        const std::set<blockchain::p2p::Service>& services,
-        const std::set<blockchain::p2p::Service>& localServices,
-        const std::set<blockchain::p2p::Service>& remoteServices,
+        const UnallocatedSet<blockchain::p2p::Service>& services,
+        const UnallocatedSet<blockchain::p2p::Service>& localServices,
+        const UnallocatedSet<blockchain::p2p::Service>& remoteServices,
         const bitcoin::Nonce nonce,
-        const std::string& userAgent,
+        const UnallocatedCString& userAgent,
         const block::Height height,
         const bool relay,
         const Time time = Clock::now()) noexcept;
@@ -130,11 +129,11 @@ public:
         const bitcoin::ProtocolVersion version,
         const tcp::endpoint localAddress,
         const tcp::endpoint remoteAddress,
-        const std::set<blockchain::p2p::Service>& services,
-        const std::set<blockchain::p2p::Service>& localServices,
-        const std::set<blockchain::p2p::Service>& remoteServices,
+        const UnallocatedSet<blockchain::p2p::Service>& services,
+        const UnallocatedSet<blockchain::p2p::Service>& localServices,
+        const UnallocatedSet<blockchain::p2p::Service>& remoteServices,
         const bitcoin::Nonce nonce,
-        const std::string& userAgent,
+        const UnallocatedCString& userAgent,
         const block::Height height,
         const bool relay,
         const Time time = Clock::now()) noexcept;
@@ -145,11 +144,11 @@ private:
     const bitcoin::ProtocolVersion version_;
     const tcp::endpoint local_address_;
     const tcp::endpoint remote_address_;
-    const std::set<blockchain::p2p::Service> services_;
-    const std::set<blockchain::p2p::Service> local_services_;
-    const std::set<blockchain::p2p::Service> remote_services_;
+    const UnallocatedSet<blockchain::p2p::Service> services_;
+    const UnallocatedSet<blockchain::p2p::Service> local_services_;
+    const UnallocatedSet<blockchain::p2p::Service> remote_services_;
     const bitcoin::Nonce nonce_;
-    const std::string user_agent_;
+    const UnallocatedCString user_agent_;
     const block::Height height_;
     const bool relay_;
     const Time timestamp_;

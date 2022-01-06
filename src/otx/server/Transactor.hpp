@@ -6,14 +6,13 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
 #include <memory>
-#include <string>
 
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/AccountList.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -95,7 +94,7 @@ public:
 private:
     friend MainFile;
 
-    using BasketsMap = std::map<std::string, std::string>;
+    using BasketsMap = UnallocatedMap<UnallocatedCString, UnallocatedCString>;
 
     Server& server_;
     const PasswordPrompt& reason_;

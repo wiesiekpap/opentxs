@@ -19,7 +19,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
-#include <string>
 #include <string_view>
 
 #include "opentxs/Types.hpp"
@@ -28,6 +27,7 @@
 #include "opentxs/crypto/key/Types.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -84,7 +84,7 @@ public:
     auto Nym() const noexcept -> Bip32Index;
     auto nymParameterType() const noexcept -> ParameterType;
     auto PaymentCodeVersion() const noexcept -> std::uint8_t;
-    auto Seed() const noexcept -> std::string;
+    auto Seed() const noexcept -> UnallocatedCString;
     auto SeedLanguage() const noexcept -> Language;
     auto SeedStrength() const noexcept -> crypto::SeedStrength;
     auto SeedStyle() const noexcept -> crypto::SeedStyle;
@@ -102,7 +102,7 @@ public:
     auto SetNym(const Bip32Index path) noexcept -> void;
     auto SetDHParams(const ReadView bytes) noexcept -> void;
     auto SetPaymentCodeVersion(const std::uint8_t version) noexcept -> void;
-    auto SetSeed(const std::string& seed) noexcept -> void;
+    auto SetSeed(const UnallocatedCString& seed) noexcept -> void;
     auto SetSeedLanguage(const Language lang) noexcept -> void;
     auto SetSeedStrength(const crypto::SeedStrength value) noexcept -> void;
     auto SetSeedStyle(const crypto::SeedStyle type) noexcept -> void;
@@ -121,7 +121,7 @@ public:
         const std::uint8_t pcVersion = 0) noexcept;
     Parameters(const std::int32_t keySize) noexcept;
     Parameters(
-        const std::string& seedID,
+        const UnallocatedCString& seedID,
         const int index,
         const std::uint8_t pcVersion = 0) noexcept;
     Parameters(const Parameters& rhs) noexcept;

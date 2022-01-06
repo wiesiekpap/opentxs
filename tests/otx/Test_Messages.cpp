@@ -5,7 +5,6 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <string>
 
 #include "internal/api/session/Client.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
@@ -30,7 +29,7 @@
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -44,8 +43,8 @@ bool init_{false};
 class Test_Messages : public ::testing::Test
 {
 public:
-    static const std::string SeedA_;
-    static const std::string Alice_;
+    static const ot::UnallocatedCString SeedA_;
+    static const ot::UnallocatedCString Alice_;
     static const ot::OTNymID alice_nym_id_;
 
     const ot::api::session::Client& client_;
@@ -80,14 +79,14 @@ public:
 
     void init()
     {
-        const_cast<std::string&>(SeedA_) =
+        const_cast<ot::UnallocatedCString&>(SeedA_) =
             client_.InternalClient().Exec().Wallet_ImportSeed(
                 "spike nominee miss inquiry fee nothing belt list other "
                 "daughter leave valley twelve gossip paper",
                 "");
         const_cast<ot::OTNymID&>(alice_nym_id_) =
             client_.Wallet().Nym({SeedA_, 0}, reason_c_, "Alice")->ID();
-        const_cast<std::string&>(Alice_) = alice_nym_id_->str();
+        const_cast<ot::UnallocatedCString&>(Alice_) = alice_nym_id_->str();
 
         OT_ASSERT(false == server_id_.empty());
 
@@ -97,8 +96,8 @@ public:
     }
 };
 
-const std::string Test_Messages::SeedA_{""};
-const std::string Test_Messages::Alice_{""};
+const ot::UnallocatedCString Test_Messages::SeedA_{""};
+const ot::UnallocatedCString Test_Messages::Alice_{""};
 const ot::OTNymID Test_Messages::alice_nym_id_{ot::identifier::Nym::Factory()};
 
 TEST_F(Test_Messages, activateRequest)
@@ -149,7 +148,7 @@ TEST_F(Test_Messages, activateRequest)
 
 TEST_F(Test_Messages, pushReply)
 {
-    const std::string payload{"TEST PAYLOAD"};
+    const ot::UnallocatedCString payload{"TEST PAYLOAD"};
     const ot::otx::ServerReplyType type{ot::otx::ServerReplyType::Push};
     auto replyID = ot::Identifier::Factory();
     const auto server = server_.Wallet().Nym(server_.NymID());

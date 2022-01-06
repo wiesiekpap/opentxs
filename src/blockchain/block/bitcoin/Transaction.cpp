@@ -12,7 +12,6 @@
 #include <cstring>
 #include <iterator>
 #include <limits>
-#include <map>
 #include <numeric>
 #include <sstream>
 #include <stdexcept>
@@ -40,6 +39,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -130,10 +130,10 @@ auto BitcoinTransaction(
             api.Factory().Data(reader(raw.txid_)),
             api.Factory().Data(reader(raw.wtxid_)),
             time,
-            std::string{},
+            UnallocatedCString{},
             std::move(inputs),
             std::move(outputs),
-            std::vector<blockchain::Type>{chain},
+            UnallocatedVector<blockchain::Type>{chain},
             make_blank<blockchain::block::Position>::value(api));
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
@@ -154,7 +154,7 @@ auto BitcoinTransaction(
 
     try {
         auto inputBytes = std::size_t{};
-        auto instantiatedInputs = std::vector<
+        auto instantiatedInputs = UnallocatedVector<
             std::unique_ptr<blockchain::block::bitcoin::internal::Input>>{};
         {
             auto counter = int{0};
@@ -165,7 +165,7 @@ auto BitcoinTransaction(
                 const auto& input = inputs.at(i);
                 const auto& op = input.outpoint_;
                 const auto& seq = input.sequence_;
-                auto witness = std::vector<Space>{};
+                auto witness = UnallocatedVector<Space>{};
 
                 if (0 < parsed.witnesses_.size()) {
                     const auto& encodedWitness = parsed.witnesses_.at(i);
@@ -197,7 +197,7 @@ auto BitcoinTransaction(
         }
 
         auto outputBytes = std::size_t{};
-        auto instantiatedOutputs = std::vector<
+        auto instantiatedOutputs = UnallocatedVector<
             std::unique_ptr<blockchain::block::bitcoin::internal::Output>>{};
         {
             instantiatedOutputs.reserve(parsed.outputs_.size());
@@ -234,12 +234,12 @@ auto BitcoinTransaction(
             api.Factory().Data(parsed.txid_),
             api.Factory().Data(parsed.wtxid_),
             time,
-            std::string{},
+            UnallocatedCString{},
             factory::BitcoinTransactionInputs(
                 std::move(instantiatedInputs), inputBytes),
             factory::BitcoinTransactionOutputs(
                 std::move(instantiatedOutputs), outputBytes),
-            std::vector<blockchain::Type>{chain},
+            UnallocatedVector<blockchain::Type>{chain},
             make_blank<blockchain::block::Position>::value(api),
             [&]() -> std::optional<std::size_t> {
                 if (std::numeric_limits<std::size_t>::max() == position) {
@@ -263,7 +263,7 @@ auto BitcoinTransaction(
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Transaction>
 {
     using ReturnType = blockchain::block::bitcoin::implementation::Transaction;
-    auto chains = std::vector<blockchain::Type>{};
+    auto chains = UnallocatedVector<blockchain::Type>{};
     std::transform(
         std::begin(in.chain()),
         std::end(in.chain()),
@@ -282,11 +282,11 @@ auto BitcoinTransaction(
     const auto& chain = chains.at(0);
 
     try {
-        auto inputs = std::vector<
+        auto inputs = UnallocatedVector<
             std::unique_ptr<blockchain::block::bitcoin::internal::Input>>{};
 
         {
-            auto map = std::map<
+            auto map = UnallocatedMap<
                 std::uint32_t,
                 std::unique_ptr<blockchain::block::bitcoin::internal::Input>>{};
 
@@ -306,11 +306,11 @@ auto BitcoinTransaction(
                 ](auto& in) -> auto { return std::move(in.second); });
         }
 
-        auto outputs = std::vector<
+        auto outputs = UnallocatedVector<
             std::unique_ptr<blockchain::block::bitcoin::internal::Output>>{};
 
         {
-            auto map = std::map<
+            auto map = UnallocatedMap<
                 std::uint32_t,
                 std::unique_ptr<
                     blockchain::block::bitcoin::internal::Output>>{};
@@ -380,10 +380,10 @@ Transaction::Transaction(
     const pTxid&& txid,
     const pTxid&& wtxid,
     const Time& time,
-    const std::string& memo,
+    const UnallocatedCString& memo,
     std::unique_ptr<internal::Inputs> inputs,
     std::unique_ptr<internal::Outputs> outputs,
-    std::vector<blockchain::Type>&& chains,
+    UnallocatedVector<blockchain::Type>&& chains,
     block::Position&& minedPosition,
     std::optional<std::size_t>&& position) noexcept(false)
     : api_(api)
@@ -424,9 +424,10 @@ Transaction::Transaction(const Transaction& rhs) noexcept
 {
 }
 
-auto Transaction::AssociatedLocalNyms() const noexcept -> std::vector<OTNymID>
+auto Transaction::AssociatedLocalNyms() const noexcept
+    -> UnallocatedVector<OTNymID>
 {
-    auto output = std::vector<OTNymID>{};
+    auto output = UnallocatedVector<OTNymID>{};
     inputs_->AssociatedLocalNyms(output);
     outputs_->AssociatedLocalNyms(output);
     dedup(output);
@@ -436,9 +437,10 @@ auto Transaction::AssociatedLocalNyms() const noexcept -> std::vector<OTNymID>
 
 auto Transaction::AssociatedRemoteContacts(
     const api::session::Contacts& contacts,
-    const identifier::Nym& nym) const noexcept -> std::vector<OTIdentifier>
+    const identifier::Nym& nym) const noexcept
+    -> UnallocatedVector<OTIdentifier>
 {
-    auto output = std::vector<OTIdentifier>{};
+    auto output = UnallocatedVector<OTIdentifier>{};
     inputs_->AssociatedRemoteContacts(output);
     outputs_->AssociatedRemoteContacts(output);
     dedup(output);
@@ -468,8 +470,8 @@ auto Transaction::calculate_witness_size(const Space& in) noexcept
     return blockchain::bitcoin::CompactSize{in.size()}.Total();
 }
 
-auto Transaction::calculate_witness_size(const std::vector<Space>& in) noexcept
-    -> std::size_t
+auto Transaction::calculate_witness_size(
+    const UnallocatedVector<Space>& in) noexcept -> std::size_t
 {
     const auto cs = blockchain::bitcoin::CompactSize{in.size()};
 
@@ -510,7 +512,7 @@ auto Transaction::IDNormalized() const noexcept -> const Identifier&
 }
 
 auto Transaction::ExtractElements(const filter::Type style) const noexcept
-    -> std::vector<Space>
+    -> UnallocatedVector<Space>
 {
     auto output = inputs_->ExtractElements(style);
     LogTrace()(OT_PRETTY_CLASS())("extracted ")(output.size())(
@@ -565,7 +567,7 @@ auto Transaction::FindMatches(
     return output;
 }
 
-auto Transaction::GetPatterns() const noexcept -> std::vector<PatternID>
+auto Transaction::GetPatterns() const noexcept -> UnallocatedVector<PatternID>
 {
     auto output = inputs_->GetPatterns();
     const auto oPatterns = outputs_->GetPatterns();
@@ -610,7 +612,7 @@ auto Transaction::GetPreimageBTC(
     return output;
 }
 
-auto Transaction::Keys() const noexcept -> std::vector<crypto::Key>
+auto Transaction::Keys() const noexcept -> UnallocatedVector<crypto::Key>
 {
     auto out = inputs_->Keys();
     auto keys = outputs_->Keys();
@@ -620,7 +622,7 @@ auto Transaction::Keys() const noexcept -> std::vector<crypto::Key>
     return out;
 }
 
-auto Transaction::Memo() const noexcept -> std::string
+auto Transaction::Memo() const noexcept -> UnallocatedCString
 {
     if (auto memo = cache_.memo(); false == memo.empty()) { return memo; }
 
@@ -664,7 +666,7 @@ auto Transaction::NetBalanceChange(const identifier::Nym& nym) const noexcept
     return inputs_->NetBalanceChange(nym) + outputs_->NetBalanceChange(nym);
 }
 
-auto Transaction::Print() const noexcept -> std::string
+auto Transaction::Print() const noexcept -> UnallocatedCString
 {
     auto out = std::stringstream{};
     out << "  version: " << std::to_string(version_) << '\n';

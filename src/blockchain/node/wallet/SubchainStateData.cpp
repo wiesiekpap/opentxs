@@ -8,9 +8,7 @@
 #include "blockchain/node/wallet/SubchainStateData.hpp"  // IWYU pragma: associated
 
 #include <chrono>
-#include <map>
 #include <memory>
-#include <set>
 #include <type_traits>
 #include <utility>
 
@@ -35,6 +33,7 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -81,7 +80,7 @@ SubchainStateData::SubchainStateData(
     OT_ASSERT(false == id_->empty());
 }
 
-auto SubchainStateData::describe() const noexcept -> std::string
+auto SubchainStateData::describe() const noexcept -> UnallocatedCString
 {
     auto out = type();
     out << " account ";
@@ -213,7 +212,7 @@ auto SubchainStateData::get_block_targets(const block::Hash& id, Tested& tested)
 // NOTE: this version is for matching before a block is downloaded
 auto SubchainStateData::get_targets(
     const Patterns& elements,
-    const std::vector<WalletDatabase::UTXO>& utxos,
+    const UnallocatedVector<WalletDatabase::UTXO>& utxos,
     Targets& targets) const noexcept -> void
 {
     targets.reserve(elements.size() + utxos.size());
@@ -239,7 +238,7 @@ auto SubchainStateData::get_targets(
 // NOTE: this version is for matching after a block is downloaded
 auto SubchainStateData::get_targets(
     const Patterns& elements,
-    const std::vector<WalletDatabase::UTXO>& utxos,
+    const UnallocatedVector<WalletDatabase::UTXO>& utxos,
     Targets& targets,
     Patterns& outpoints,
     Tested& tested) const noexcept -> void
@@ -289,7 +288,7 @@ auto SubchainStateData::index_element(
 
 auto SubchainStateData::init() noexcept -> void
 {
-    const_cast<std::string&>(name_) = describe();
+    const_cast<UnallocatedCString&>(name_) = describe();
     const auto& mempool = node_.Mempool();
     const auto txids = mempool.Dump();
     auto transactions = Transactions{};
@@ -447,10 +446,10 @@ auto SubchainStateData::Shutdown() noexcept -> void
     process_.Shutdown();
 }
 
-auto SubchainStateData::supported_scripts(
-    const crypto::Element& element) const noexcept -> std::vector<ScriptForm>
+auto SubchainStateData::supported_scripts(const crypto::Element& element)
+    const noexcept -> UnallocatedVector<ScriptForm>
 {
-    auto out = std::vector<ScriptForm>{};
+    auto out = UnallocatedVector<ScriptForm>{};
     const auto chain = node_.Chain();
     using Type = ScriptForm::Type;
     out.emplace_back(api_, element, chain, Type::PayToPubkey);
@@ -461,7 +460,7 @@ auto SubchainStateData::supported_scripts(
 }
 
 auto SubchainStateData::translate(
-    const std::vector<WalletDatabase::UTXO>& utxos,
+    const UnallocatedVector<WalletDatabase::UTXO>& utxos,
     Patterns& outpoints) const noexcept -> void
 {
     for (const auto& [outpoint, output] : utxos) {

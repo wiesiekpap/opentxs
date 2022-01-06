@@ -11,11 +11,8 @@
 #include <cstddef>
 #include <functional>
 #include <iterator>
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "Helpers.hpp"
 #include "bip158/Bip158.hpp"
@@ -43,6 +40,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
@@ -51,11 +49,11 @@ struct Test_BitcoinBlock : public ::testing::Test {
     const ot::api::session::Client& api_;
 
     auto CompareElements(
-        const std::vector<ot::OTData>& input,
-        std::vector<std::string> expected) const -> bool
+        const ot::UnallocatedVector<ot::OTData>& input,
+        ot::UnallocatedVector<ot::UnallocatedCString> expected) const -> bool
     {
-        auto inputHex = std::vector<std::string>{};
-        auto difference = std::vector<std::string>{};
+        auto inputHex = ot::UnallocatedVector<ot::UnallocatedCString>{};
+        auto difference = ot::UnallocatedVector<ot::UnallocatedCString>{};
         std::transform(
             std::begin(input), std::end(input), std::back_inserter(inputHex), [
             ](const auto& in) -> auto { return in->asHex(); });
@@ -112,9 +110,9 @@ struct Test_BitcoinBlock : public ::testing::Test {
         const Bip158Vector& vector,
         const ot::blockchain::block::Block& block,
         const std::size_t encodedElements) const noexcept
-        -> std::vector<ot::OTData>
+        -> ot::UnallocatedVector<ot::OTData>
     {
-        auto output = std::vector<ot::OTData>{};
+        auto output = ot::UnallocatedVector<ot::OTData>{};
 
         for (const auto& bytes : block.Internal().ExtractElements(
                  ot::blockchain::filter::Type::Basic_BIP158)) {

@@ -11,7 +11,8 @@
 #include <cstring>
 #include <iterator>
 #include <stdexcept>
-#include <vector>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::blockchain::database::wallet::db
 {

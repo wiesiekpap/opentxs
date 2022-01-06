@@ -48,7 +48,7 @@ auto activity_thread_send_message(const User& user, const User& remote) noexcept
 auto activity_thread_send_message(
     const User& user,
     const User& remote,
-    const std::string& messasge) noexcept -> bool
+    const ot::UnallocatedCString& messasge) noexcept -> bool
 {
     const auto& widget = user.api_->UI().ActivityThread(
         user.nym_id_, user.Contact(remote.name_));
@@ -63,10 +63,10 @@ auto activity_thread_send_message(
 
 auto check_blockchain_subaccounts(
     const ot::ui::BlockchainSubaccountSource& widget,
-    const std::vector<BlockchainSubaccountData>& v) noexcept -> bool;
+    const ot::UnallocatedVector<BlockchainSubaccountData>& v) noexcept -> bool;
 auto check_blockchain_subchains(
     const ot::ui::BlockchainSubaccount& widget,
-    const std::vector<BlockchainSubchainData>& v) noexcept -> bool;
+    const ot::UnallocatedVector<BlockchainSubchainData>& v) noexcept -> bool;
 
 auto check_account_activity(
     const User& user,
@@ -452,7 +452,7 @@ auto check_blockchain_selection(
 
 auto check_blockchain_subaccounts(
     const ot::ui::BlockchainSubaccountSource& widget,
-    const std::vector<BlockchainSubaccountData>& v) noexcept -> bool
+    const ot::UnallocatedVector<BlockchainSubaccountData>& v) noexcept -> bool
 {
     auto output{true};
     auto row = widget.First();
@@ -495,7 +495,7 @@ auto check_blockchain_subaccounts(
 
 auto check_blockchain_subchains(
     const ot::ui::BlockchainSubaccount& widget,
-    const std::vector<BlockchainSubchainData>& v) noexcept -> bool
+    const ot::UnallocatedVector<BlockchainSubchainData>& v) noexcept -> bool
 {
     auto output{true};
     auto row = widget.First();
@@ -667,16 +667,16 @@ auto check_messagable_list(
 
 auto contact_list_add_contact(
     const User& user,
-    const std::string& label,
-    const std::string& paymentCode,
-    const std::string& nymID) noexcept -> std::string
+    const ot::UnallocatedCString& label,
+    const ot::UnallocatedCString& paymentCode,
+    const ot::UnallocatedCString& nymID) noexcept -> ot::UnallocatedCString
 {
     const auto& widget = user.api_->UI().ContactList(user.nym_id_);
 
     return widget.AddContact(label, paymentCode, nymID);
 }
 
-auto make_cb(Counter& counter, const std::string name) noexcept
+auto make_cb(Counter& counter, const ot::UnallocatedCString name) noexcept
     -> std::function<void()>
 {
     return [&counter, name]() {

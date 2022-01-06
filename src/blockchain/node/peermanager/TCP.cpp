@@ -7,11 +7,9 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "IncomingConnectionManager.hpp"  // IWYU pragma: associated
 
-#include <map>
 #include <mutex>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/Types.hpp"
@@ -25,6 +23,7 @@
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -131,8 +130,8 @@ public:
 private:
     const api::Session& api_;
     mutable std::mutex lock_;
-    mutable std::vector<opentxs::network::asio::Endpoint> listeners_;
-    mutable std::map<int, opentxs::network::asio::Socket> sockets_;
+    mutable UnallocatedVector<opentxs::network::asio::Endpoint> listeners_;
+    mutable UnallocatedMap<int, opentxs::network::asio::Socket> sockets_;
 
     auto accept(
         p2p::Network type,

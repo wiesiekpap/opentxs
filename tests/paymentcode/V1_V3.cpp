@@ -7,8 +7,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "Helpers.hpp"
 #include "VectorsV3.hpp"
@@ -23,6 +21,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -260,7 +259,7 @@ TEST_F(Test_PaymentCode_v1_v3, blind_alice)
         EXPECT_EQ(v1, v2);
     }
 
-    using Elements = std::vector<ot::Space>;
+    using Elements = ot::UnallocatedVector<ot::Space>;
     {
         const auto alice = bob_pc_secret_.DecodeNotificationElements(
             alice_version_, Elements{A, F, G}, reason_);

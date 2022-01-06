@@ -5,10 +5,7 @@
 
 #pragma once
 
-#include <map>
 #include <ostream>
-#include <string>
-#include <vector>
 
 #include "network/zeromq/socket/Bidirectional.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
@@ -16,6 +13,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Pair.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -40,8 +38,8 @@ namespace opentxs::network::zeromq::socket::implementation
 class Pair final : public Bidirectional<zeromq::socket::Pair>
 {
 public:
-    auto Endpoint() const noexcept -> const std::string& final;
-    auto Start(const std::string& endpoint) const noexcept -> bool final
+    auto Endpoint() const noexcept -> const UnallocatedCString& final;
+    auto Start(const UnallocatedCString& endpoint) const noexcept -> bool final
     {
         return false;
     }
@@ -49,7 +47,7 @@ public:
     Pair(
         const zeromq::Context& context,
         const zeromq::ListenCallback& callback,
-        const std::string& endpoint,
+        const UnallocatedCString& endpoint,
         const Socket::Direction direction,
         const bool startThread) noexcept;
     Pair(
@@ -63,13 +61,13 @@ public:
     Pair(
         const zeromq::Context& context,
         const zeromq::ListenCallback& callback,
-        const std::string& endpoint) noexcept;
+        const UnallocatedCString& endpoint) noexcept;
 
     ~Pair() final;
 
 private:
     const ListenCallback& callback_;
-    const std::string endpoint_;
+    const UnallocatedCString endpoint_;
 
     auto clone() const noexcept -> Pair* final;
     auto have_callback() const noexcept -> bool final;

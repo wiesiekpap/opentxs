@@ -6,13 +6,13 @@
 #pragma once
 
 #include <mutex>
-#include <vector>
 
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -42,16 +42,16 @@ class Batch
 {
 public:
     const BatchID id_;
-    std::vector<OTZMQListenCallback> listen_callbacks_;
-    std::vector<OTZMQReplyCallback> reply_callbacks_;
-    std::vector<socket::Raw> sockets_;
+    UnallocatedVector<OTZMQListenCallback> listen_callbacks_;
+    UnallocatedVector<OTZMQReplyCallback> reply_callbacks_;
+    UnallocatedVector<socket::Raw> sockets_;
 
     auto ClearCallbacks() noexcept -> void;
 
     Batch(
         const BatchID id,
         const zeromq::Context& context,
-        std::vector<socket::Type>&& types) noexcept;
+        UnallocatedVector<socket::Type>&& types) noexcept;
 
     ~Batch();
 

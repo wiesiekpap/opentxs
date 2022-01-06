@@ -9,13 +9,9 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "api/crypto/blockchain/AccountCache.hpp"
 #include "api/crypto/blockchain/Blockchain.hpp"
@@ -41,6 +37,7 @@
 #include "opentxs/network/p2p/State.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -102,6 +99,7 @@ namespace network
 namespace p2p
 {
 class Data;
+class State;
 }  // namespace p2p
 
 namespace zeromq
@@ -128,26 +126,27 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::api::crypto::imp
 {
 struct Blockchain::Imp {
-    using IDLock = std::map<OTIdentifier, std::mutex>;
+    using IDLock = UnallocatedMap<OTIdentifier, std::mutex>;
 
     auto Account(
         const identifier::Nym& nymID,
         const opentxs::blockchain::Type chain) const noexcept(false)
         -> const opentxs::blockchain::crypto::Account&;
     auto AccountList(const identifier::Nym& nymID) const noexcept
-        -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
     auto AccountList(const opentxs::blockchain::Type chain) const noexcept
-        -> std::set<OTIdentifier>;
-    auto AccountList() const noexcept -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
+    auto AccountList() const noexcept -> UnallocatedSet<OTIdentifier>;
     virtual auto ActivityDescription(
         const identifier::Nym& nym,
         const Identifier& thread,
-        const std::string& threadItemID) const noexcept -> std::string;
+        const UnallocatedCString& threadItemID) const noexcept
+        -> UnallocatedCString;
     virtual auto ActivityDescription(
         const identifier::Nym& nym,
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::block::bitcoin::Transaction& transaction)
-        const noexcept -> std::string;
+        const noexcept -> UnallocatedCString;
     auto address_prefix(
         const Style style,
         const opentxs::blockchain::Type chain) const noexcept(false) -> OTData;
@@ -162,36 +161,36 @@ struct Blockchain::Imp {
         const Identifier& accountID,
         const Subchain subchain,
         const Bip32Index index,
-        const std::string& label) const noexcept -> bool;
+        const UnallocatedCString& label) const noexcept -> bool;
     virtual auto AssignTransactionMemo(
         const TxidHex& id,
-        const std::string& label) const noexcept -> bool
+        const UnallocatedCString& label) const noexcept -> bool
     {
         return false;
     }
     auto CalculateAddress(
         const opentxs::blockchain::Type chain,
         const Style format,
-        const Data& pubkey) const noexcept -> std::string;
+        const Data& pubkey) const noexcept -> UnallocatedCString;
     auto Confirm(const Key key, const opentxs::blockchain::block::Txid& tx)
         const noexcept -> bool;
     auto Contacts() const noexcept -> const api::session::Contacts&
     {
         return contacts_;
     }
-    auto DecodeAddress(const std::string& encoded) const noexcept
+    auto DecodeAddress(const UnallocatedCString& encoded) const noexcept
         -> DecodedAddress;
     auto EncodeAddress(
         const Style style,
         const opentxs::blockchain::Type chain,
-        const Data& data) const noexcept -> std::string;
+        const Data& data) const noexcept -> UnallocatedCString;
     auto GetKey(const Key& id) const noexcept(false)
         -> const opentxs::blockchain::crypto::Element&;
     auto HDSubaccount(const identifier::Nym& nymID, const Identifier& accountID)
         const noexcept(false) -> const opentxs::blockchain::crypto::HD&;
-    using SyncState = std::vector<opentxs::network::p2p::State>;
+    using SyncState = UnallocatedVector<opentxs::network::p2p::State>;
     virtual auto IndexItem(const ReadView bytes) const noexcept -> PatternID;
-    virtual auto KeyEndpoint() const noexcept -> const std::string&;
+    virtual auto KeyEndpoint() const noexcept -> const UnallocatedCString&;
     virtual auto KeyGenerated(
         const opentxs::blockchain::Type chain) const noexcept -> void;
     virtual auto LoadTransactionBitcoin(const TxidHex& txid) const noexcept
@@ -259,7 +258,7 @@ struct Blockchain::Imp {
     auto SubaccountList(
         const identifier::Nym& nymID,
         const opentxs::blockchain::Type chain) const noexcept
-        -> std::set<OTIdentifier>
+        -> UnallocatedSet<OTIdentifier>
     {
         return accounts_.List(nymID, chain);
     }
@@ -275,7 +274,7 @@ struct Blockchain::Imp {
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept -> void;
     virtual auto UpdateElement(
-        std::vector<ReadView>& pubkeyHashes) const noexcept -> void;
+        UnallocatedVector<ReadView>& pubkeyHashes) const noexcept -> void;
     auto Wallet(const opentxs::blockchain::Type chain) const noexcept(false)
         -> const opentxs::blockchain::crypto::Wallet&;
 
@@ -297,14 +296,14 @@ protected:
     mutable blockchain::Wallets wallets_;
 
     auto bip44_type(const core::UnitType type) const noexcept -> Bip44Type;
-    auto decode_bech23(const std::string& encoded) const noexcept
+    auto decode_bech23(const UnallocatedCString& encoded) const noexcept
         -> std::optional<DecodedAddress>;
-    auto decode_legacy(const std::string& encoded) const noexcept
+    auto decode_legacy(const UnallocatedCString& encoded) const noexcept
         -> std::optional<DecodedAddress>;
     auto get_node(const Identifier& accountID) const noexcept(false)
         -> opentxs::blockchain::crypto::Subaccount&;
     auto init_path(
-        const std::string& root,
+        const UnallocatedCString& root,
         const core::UnitType chain,
         const Bip32Index account,
         const opentxs::blockchain::crypto::HDProtocol standard,
@@ -318,11 +317,11 @@ protected:
         const opentxs::blockchain::Type chain,
         const PasswordPrompt& reason) const noexcept -> OTIdentifier;
     auto p2pkh(const opentxs::blockchain::Type chain, const Data& pubkeyHash)
-        const noexcept -> std::string;
+        const noexcept -> UnallocatedCString;
     auto p2sh(const opentxs::blockchain::Type chain, const Data& scriptHash)
-        const noexcept -> std::string;
+        const noexcept -> UnallocatedCString;
     auto p2wpkh(const opentxs::blockchain::Type chain, const Data& pubkeyHash)
-        const noexcept -> std::string;
+        const noexcept -> UnallocatedCString;
     auto nym_mutex(const identifier::Nym& nym) const noexcept -> std::mutex&;
     auto validate_nym(const identifier::Nym& nymID) const noexcept -> bool;
 

@@ -8,7 +8,6 @@
 #pragma once
 
 #include <iosfwd>
-#include <string>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -22,6 +21,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/ui/UnitListItem.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
@@ -64,7 +64,7 @@ using UnitListItemRow =
 class UnitListItem final : public UnitListItemRow
 {
 public:
-    auto Name() const noexcept -> std::string final { return name_; }
+    auto Name() const noexcept -> UnallocatedCString final { return name_; }
     auto Unit() const noexcept -> core::UnitType final { return row_id_; }
 
     UnitListItem(

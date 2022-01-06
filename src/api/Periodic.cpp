@@ -9,11 +9,11 @@
 
 #include <atomic>
 #include <chrono>
-#include <map>
 #include <tuple>
 #include <utility>
 
 #include "internal/util/Flag.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::api::imp
 {

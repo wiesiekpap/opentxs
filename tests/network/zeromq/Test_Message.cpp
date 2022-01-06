@@ -6,14 +6,13 @@
 #include <gtest/gtest.h>
 #include <cstddef>
 #include <iterator>
-#include <string>
 
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 
@@ -46,7 +45,7 @@ TEST(Message, AddFrame_Data)
     ASSERT_NE(nullptr, message.data());
     ASSERT_EQ(message.size(), 10);
 
-    auto messageString = std::string{message.Bytes()};
+    auto messageString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("testString", messageString.c_str());
 }
 
@@ -59,7 +58,7 @@ TEST(Message, AddFrame_string)
     ASSERT_NE(nullptr, message.data());
     ASSERT_EQ(message.size(), 10);
 
-    auto messageString = std::string{message.Bytes()};
+    auto messageString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("testString", messageString.c_str());
 }
 
@@ -72,7 +71,7 @@ TEST(Message, at)
     multipartMessage.AddFrame("msg3");
 
     auto& message = multipartMessage.at(0);
-    auto messageString = std::string{message.Bytes()};
+    auto messageString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("msg1", messageString.c_str());
 
     ot::network::zeromq::Frame& message2 = multipartMessage.at(1);
@@ -93,7 +92,7 @@ TEST(Message, at_const)
     multipartMessage.AddFrame("msg3");
 
     const auto& message = multipartMessage.at(0);
-    auto messageString = std::string{message.Bytes()};
+    auto messageString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("msg1", messageString.c_str());
 
     const ot::network::zeromq::Frame& message2 = multipartMessage.at(1);
@@ -140,7 +139,7 @@ TEST(Message, Body)
     ASSERT_EQ(bodySection.size(), 2);
 
     const auto& message = bodySection.at(1);
-    auto msgString = std::string{message.Bytes()};
+    auto msgString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("msg4", msgString.c_str());
 }
 
@@ -155,7 +154,7 @@ TEST(Message, Body_at)
     multipartMessage.AddFrame("msg4");
 
     const auto& message = multipartMessage.Body_at(1);
-    auto msgString = std::string{message.Bytes()};
+    auto msgString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("msg4", msgString.c_str());
 }
 
@@ -293,7 +292,7 @@ TEST(Message, Header)
     ASSERT_EQ(headerSection.size(), 2);
 
     const auto& message = headerSection.at(1);
-    auto msgString = std::string{message.Bytes()};
+    auto msgString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("msg2", msgString.c_str());
 }
 
@@ -308,7 +307,7 @@ TEST(Message, Header_at)
     multipartMessage.AddFrame("msg4");
 
     const auto& message = multipartMessage.Header_at(1);
-    auto msgString = std::string{message.Bytes()};
+    auto msgString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("msg2", msgString.c_str());
 }
 

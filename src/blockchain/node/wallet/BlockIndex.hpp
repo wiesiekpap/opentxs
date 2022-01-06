@@ -5,9 +5,8 @@
 
 #pragma once
 
-#include <vector>
-
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -16,8 +15,8 @@ class BlockIndex
 public:
     auto Query(const block::Hash& block) const noexcept -> bool;
 
-    auto Add(const std::vector<block::Position>& blocks) noexcept -> void;
-    auto Forget(const std::vector<block::pHash>& blocks) noexcept -> void;
+    auto Add(const UnallocatedVector<block::Position>& blocks) noexcept -> void;
+    auto Forget(const UnallocatedVector<block::pHash>& blocks) noexcept -> void;
 
     BlockIndex() noexcept;
 

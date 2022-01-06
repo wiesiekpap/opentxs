@@ -6,12 +6,11 @@
 #include "internal/serialization/protobuf/verify/ServerContext.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <map>
-#include <set>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/PendingCommand.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyConsensus.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/ConsensusEnums.pb.h"
 #include "serialization/protobuf/ServerContext.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"

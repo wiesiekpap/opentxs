@@ -10,12 +10,12 @@
 #include <atomic>
 #include <future>
 #include <ios>
-#include <string>
 
 #include "internal/util/Flag.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/storage/Plugin.hpp"
 
 namespace boost
@@ -59,11 +59,11 @@ private:
 
 public:
     auto LoadFromBucket(
-        const std::string& key,
-        std::string& value,
+        const UnallocatedCString& key,
+        UnallocatedCString& value,
         const bool bucket) const -> bool override;
-    auto LoadRoot() const -> std::string override;
-    auto StoreRoot(const bool commit, const std::string& hash) const
+    auto LoadRoot() const -> UnallocatedCString override;
+    auto StoreRoot(const bool commit, const UnallocatedCString& hash) const
         -> bool override;
 
     void Cleanup() override;
@@ -71,18 +71,18 @@ public:
     ~Common() override;
 
 protected:
-    const std::string folder_;
-    const std::string path_seperator_;
+    const UnallocatedCString folder_;
+    const UnallocatedCString path_seperator_;
     OTFlag ready_;
 
-    auto sync(const std::string& path) const -> bool;
+    auto sync(const UnallocatedCString& path) const -> bool;
 
     Common(
         const api::Crypto& crypto,
         const api::network::Asio& asio,
         const api::session::Storage& storage,
         const storage::Config& config,
-        const std::string& folder,
+        const UnallocatedCString& folder,
         const Flag& bucket);
 
 private:
@@ -90,25 +90,28 @@ private:
         boost::iostreams::stream<boost::iostreams::file_descriptor_sink>;
 
     virtual auto calculate_path(
-        const std::string& key,
+        const UnallocatedCString& key,
         const bool bucket,
-        std::string& directory) const -> std::string = 0;
-    virtual auto prepare_read(const std::string& input) const -> std::string;
-    virtual auto prepare_write(const std::string& input) const -> std::string;
-    auto read_file(const std::string& filename) const -> std::string;
-    virtual auto root_filename() const -> std::string = 0;
+        UnallocatedCString& directory) const -> UnallocatedCString = 0;
+    virtual auto prepare_read(const UnallocatedCString& input) const
+        -> UnallocatedCString;
+    virtual auto prepare_write(const UnallocatedCString& input) const
+        -> UnallocatedCString;
+    auto read_file(const UnallocatedCString& filename) const
+        -> UnallocatedCString;
+    virtual auto root_filename() const -> UnallocatedCString = 0;
     void store(
         const bool isTransaction,
-        const std::string& key,
-        const std::string& value,
+        const UnallocatedCString& key,
+        const UnallocatedCString& value,
         const bool bucket,
         std::promise<bool>* promise) const override;
     auto sync(File& file) const -> bool;
     auto sync(int fd) const -> bool;
     auto write_file(
-        const std::string& directory,
-        const std::string& filename,
-        const std::string& contents) const -> bool;
+        const UnallocatedCString& directory,
+        const UnallocatedCString& filename,
+        const UnallocatedCString& contents) const -> bool;
 
     void Cleanup_Common();
     void Init_Common();

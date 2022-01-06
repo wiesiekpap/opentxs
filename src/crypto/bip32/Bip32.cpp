@@ -9,12 +9,12 @@
 
 #include <memory>
 #include <sstream>
-#include <string>
 #include <utility>
 
 #include "crypto/bip32/Imp.hpp"
 #include "internal/crypto/Factory.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 #include "util/HDIndex.hpp"
 
@@ -28,12 +28,13 @@ class Crypto;
 
 namespace opentxs::crypto
 {
-auto Print(const proto::HDPath& node) noexcept -> std::string
+auto Print(const proto::HDPath& node) noexcept -> UnallocatedCString
 {
     return Print(node, true);
 }
 
-auto Print(const proto::HDPath& node, bool showSeedID) noexcept -> std::string
+auto Print(const proto::HDPath& node, bool showSeedID) noexcept
+    -> UnallocatedCString
 {
     auto output = std::stringstream{};
 
@@ -104,7 +105,7 @@ auto Bip32::DerivePublicKey(
 }
 
 auto Bip32::DeserializePrivate(
-    const std::string& serialized,
+    const UnallocatedCString& serialized,
     Bip32Network& network,
     Bip32Depth& depth,
     Bip32Fingerprint& parent,
@@ -117,7 +118,7 @@ auto Bip32::DeserializePrivate(
 }
 
 auto Bip32::DeserializePublic(
-    const std::string& serialized,
+    const UnallocatedCString& serialized,
     Bip32Network& network,
     Bip32Depth& depth,
     Bip32Fingerprint& parent,
@@ -142,7 +143,7 @@ auto Bip32::SerializePrivate(
     const Bip32Fingerprint parent,
     const Bip32Index index,
     const Data& chainCode,
-    const Secret& key) const -> std::string
+    const Secret& key) const -> UnallocatedCString
 {
     return imp_->SerializePrivate(
         network, depth, parent, index, chainCode, key);
@@ -154,7 +155,7 @@ auto Bip32::SerializePublic(
     const Bip32Fingerprint parent,
     const Bip32Index index,
     const Data& chainCode,
-    const Data& key) const -> std::string
+    const Data& key) const -> UnallocatedCString
 {
     return imp_->SerializePublic(network, depth, parent, index, chainCode, key);
 }

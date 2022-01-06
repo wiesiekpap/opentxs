@@ -11,12 +11,9 @@
 #include <cstring>
 #include <iosfwd>
 #include <iterator>
-#include <map>
 #include <mutex>
 #include <shared_mutex>
 #include <stdexcept>
-#include <string>
-#include <vector>
 
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
@@ -29,6 +26,7 @@
 #include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
@@ -61,10 +59,12 @@ namespace opentxs::blockchain::database::common
 class Configuration
 {
 public:
-    using Endpoints = std::vector<std::string>;
+    using Endpoints = UnallocatedVector<UnallocatedCString>;
 
-    auto AddSyncServer(const std::string& endpoint) const noexcept -> bool;
-    auto DeleteSyncServer(const std::string& endpoint) const noexcept -> bool;
+    auto AddSyncServer(const UnallocatedCString& endpoint) const noexcept
+        -> bool;
+    auto DeleteSyncServer(const UnallocatedCString& endpoint) const noexcept
+        -> bool;
     auto GetSyncServers() const noexcept -> Endpoints;
 
     Configuration(const api::Session& api, storage::lmdb::LMDB& lmdb) noexcept;

@@ -7,11 +7,10 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
 #include <string_view>
-#include <vector>
 
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -30,7 +29,7 @@ namespace crypto
 class OPENTXS_EXPORT Bip39
 {
 public:
-    using Suggestions = std::vector<std::string>;
+    using Suggestions = UnallocatedVector<UnallocatedCString>;
 
     virtual auto GetSuggestions(
         const Language lang,

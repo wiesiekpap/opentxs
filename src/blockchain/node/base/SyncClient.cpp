@@ -17,7 +17,6 @@
 #include <stdexcept>
 #include <thread>
 #include <utility>
-#include <vector>
 
 #include "api/network/blockchain/SyncClient.hpp"
 #include "core/Worker.hpp"
@@ -43,6 +42,7 @@
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -57,7 +57,7 @@ namespace opentxs::blockchain::node::base
 struct SyncClient::Imp {
     enum class State { Init, Sync, Run };
 
-    const std::string endpoint_;
+    const UnallocatedCString endpoint_;
     std::atomic<State> state_;
 
     Imp(const api::Session& api, const Type chain) noexcept
@@ -517,7 +517,7 @@ SyncClient::SyncClient(const api::Session& api, const Type chain) noexcept
 {
 }
 
-auto SyncClient::Endpoint() const noexcept -> const std::string&
+auto SyncClient::Endpoint() const noexcept -> const UnallocatedCString&
 {
     return imp_->endpoint_;
 }

@@ -14,12 +14,9 @@
 
 #include <atomic>
 #include <functional>
-#include <map>
 #include <optional>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "Basic.hpp"
 #include "opentxs/Types.hpp"
@@ -29,6 +26,7 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/ui/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -58,54 +56,58 @@ struct AccountActivityRow {
     ot::StorageBox type_{};
     int polarity_{};
     ot::Amount amount_{};
-    std::string display_amount_{};
-    std::vector<std::string> contacts_{};
-    std::string memo_{};
-    std::string workflow_{};
-    std::string text_{};
-    std::string uuid_{};
+    ot::UnallocatedCString display_amount_{};
+    ot::UnallocatedVector<ot::UnallocatedCString> contacts_{};
+    ot::UnallocatedCString memo_{};
+    ot::UnallocatedCString workflow_{};
+    ot::UnallocatedCString text_{};
+    ot::UnallocatedCString uuid_{};
     std::optional<ot::Time> timestamp_{};
     int confirmations_{};
 };
 
 struct AccountActivityData {
     ot::AccountType type_;
-    std::string id_{};
-    std::string name_{};
+    ot::UnallocatedCString id_{};
+    ot::UnallocatedCString name_{};
     ot::core::UnitType unit_;
-    std::string contract_id_{};
-    std::string contract_name_{};
-    std::string notary_id_{};
-    std::string notary_name_{};
+    ot::UnallocatedCString contract_id_{};
+    ot::UnallocatedCString contract_name_{};
+    ot::UnallocatedCString notary_id_{};
+    ot::UnallocatedCString notary_name_{};
     int polarity_{};
     ot::Amount balance_{};
-    std::string display_balance_{};
-    std::string default_deposit_address_{};
-    std::map<ot::blockchain::Type, std::string> deposit_addresses_{};
-    std::vector<ot::blockchain::Type> deposit_chains_{};
+    ot::UnallocatedCString display_balance_{};
+    ot::UnallocatedCString default_deposit_address_{};
+    ot::UnallocatedMap<ot::blockchain::Type, ot::UnallocatedCString>
+        deposit_addresses_{};
+    ot::UnallocatedVector<ot::blockchain::Type> deposit_chains_{};
     double sync_{};
     std::pair<int, int> progress_{};
-    std::vector<std::pair<std::string, bool>> addresses_to_validate_{};
-    std::vector<std::pair<std::string, std::string>> amounts_to_validate_{};
-    std::vector<AccountActivityRow> rows_{};
+    ot::UnallocatedVector<std::pair<ot::UnallocatedCString, bool>>
+        addresses_to_validate_{};
+    ot::UnallocatedVector<
+        std::pair<ot::UnallocatedCString, ot::UnallocatedCString>>
+        amounts_to_validate_{};
+    ot::UnallocatedVector<AccountActivityRow> rows_{};
 };
 
 struct AccountListRow {
-    std::string account_id_{};
-    std::string contract_id_{};
-    std::string display_unit_{};
-    std::string name_{};
-    std::string notary_id_{};
-    std::string notary_name_{};
+    ot::UnallocatedCString account_id_{};
+    ot::UnallocatedCString contract_id_{};
+    ot::UnallocatedCString display_unit_{};
+    ot::UnallocatedCString name_{};
+    ot::UnallocatedCString notary_id_{};
+    ot::UnallocatedCString notary_name_{};
     ot::AccountType type_{};
     ot::core::UnitType unit_{};
     int polarity_{};
     ot::Amount balance_{};
-    std::string display_balance_{};
+    ot::UnallocatedCString display_balance_{};
 };
 
 struct AccountListData {
-    std::vector<AccountListRow> rows_{};
+    ot::UnallocatedVector<AccountListRow> rows_{};
 };
 
 struct ActivityThreadRow {
@@ -114,69 +116,70 @@ struct ActivityThreadRow {
     bool outgoing_{};
     int polarity_{};
     ot::Amount amount_{};
-    std::string display_amount_{};
-    std::string from_{};
-    std::string text_{};
-    std::string memo_{};
+    ot::UnallocatedCString display_amount_{};
+    ot::UnallocatedCString from_{};
+    ot::UnallocatedCString text_{};
+    ot::UnallocatedCString memo_{};
     ot::StorageBox type_{};
     std::optional<ot::Time> timestamp_{};
 };
 
 struct ActivityThreadData {
     bool can_message_{};
-    std::string thread_id_{};
-    std::string display_name_{};
-    std::string draft_{};
-    std::string participants_{};
-    std::map<ot::core::UnitType, std::string> payment_codes_{};
-    std::vector<ActivityThreadRow> rows_{};
+    ot::UnallocatedCString thread_id_{};
+    ot::UnallocatedCString display_name_{};
+    ot::UnallocatedCString draft_{};
+    ot::UnallocatedCString participants_{};
+    ot::UnallocatedMap<ot::core::UnitType, ot::UnallocatedCString>
+        payment_codes_{};
+    ot::UnallocatedVector<ActivityThreadRow> rows_{};
 };
 
 struct BlockchainSelectionRow {
-    std::string name_{};
+    ot::UnallocatedCString name_{};
     bool enabled_{};
     bool testnet_{};
     ot::blockchain::Type type_{};
 };
 
 struct BlockchainSelectionData {
-    std::vector<BlockchainSelectionRow> rows_{};
+    ot::UnallocatedVector<BlockchainSelectionRow> rows_{};
 };
 
 struct BlockchainSubchainData {
-    std::string name_;
+    ot::UnallocatedCString name_;
     ot::blockchain::crypto::Subchain type_;
 };
 
 struct BlockchainSubaccountData {
-    std::string name_;
-    std::string id_;
-    std::vector<BlockchainSubchainData> rows_;
+    ot::UnallocatedCString name_;
+    ot::UnallocatedCString id_;
+    ot::UnallocatedVector<BlockchainSubchainData> rows_;
 };
 
 struct BlockchainSubaccountSourceData {
-    std::string name_;
-    std::string id_;
+    ot::UnallocatedCString name_;
+    ot::UnallocatedCString id_;
     ot::blockchain::crypto::SubaccountType type_;
-    std::vector<BlockchainSubaccountData> rows_;
+    ot::UnallocatedVector<BlockchainSubaccountData> rows_;
 };
 
 struct BlockchainAccountStatusData {
-    std::string owner_;
+    ot::UnallocatedCString owner_;
     ot::blockchain::Type chain_;
-    std::vector<BlockchainSubaccountSourceData> rows_;
+    ot::UnallocatedVector<BlockchainSubaccountSourceData> rows_;
 };
 
 struct ContactListRow {
     bool check_contact_id_{};
-    std::string contact_id_index_{};
-    std::string name_{};
-    std::string section_{};
-    std::string image_{};
+    ot::UnallocatedCString contact_id_index_{};
+    ot::UnallocatedCString name_{};
+    ot::UnallocatedCString section_{};
+    ot::UnallocatedCString image_{};
 };
 
 struct ContactListData {
-    std::vector<ContactListRow> rows_{};
+    ot::UnallocatedVector<ContactListRow> rows_{};
 };
 
 auto activity_thread_send_message(
@@ -185,7 +188,7 @@ auto activity_thread_send_message(
 auto activity_thread_send_message(
     const User& user,
     const User& contact,
-    const std::string& messasge) noexcept -> bool;
+    const ot::UnallocatedCString& messasge) noexcept -> bool;
 
 auto check_account_activity(
     const User& user,
@@ -246,9 +249,9 @@ auto check_messagable_list_qt(
 
 auto contact_list_add_contact(
     const User& user,
-    const std::string& label,
-    const std::string& paymentCode,
-    const std::string& nymID) noexcept -> std::string;
+    const ot::UnallocatedCString& label,
+    const ot::UnallocatedCString& paymentCode,
+    const ot::UnallocatedCString& nymID) noexcept -> ot::UnallocatedCString;
 
 auto init_account_activity(
     const User& user,
@@ -262,7 +265,7 @@ auto init_activity_thread(
 auto init_contact_list(const User& user, Counter& counter) noexcept -> void;
 auto init_messagable_list(const User& user, Counter& counter) noexcept -> void;
 
-auto make_cb(Counter& counter, const std::string name) noexcept
+auto make_cb(Counter& counter, const ot::UnallocatedCString name) noexcept
     -> std::function<void()>;
 
 auto wait_for_counter(Counter& data, const bool hard = true) noexcept -> bool;

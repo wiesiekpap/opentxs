@@ -64,9 +64,10 @@ using DownloadUnitDefinitionTask = OTUnitID;
 using GetTransactionNumbersTask = OT_GetTransactionNumbersType;
 /** IssueUnitDefinitionTask: unit definition id, account label, claim */
 using IssueUnitDefinitionTask =
-    std::tuple<OTUnitID, std::string, core::UnitType>;
+    std::tuple<OTUnitID, UnallocatedCString, core::UnitType>;
 /** MessageTask: recipientID, message */
-using MessageTask = std::tuple<OTNymID, std::string, std::shared_ptr<SetID>>;
+using MessageTask =
+    std::tuple<OTNymID, UnallocatedCString, std::shared_ptr<SetID>>;
 /** PayCashTask: recipientID, workflow ID */
 using PayCashTask = std::pair<OTNymID, OTIdentifier>;
 /** PaymentTask: recipientID, payment */
@@ -78,17 +79,17 @@ using PeerRequestTask = std::pair<OTNymID, OTPeerRequest>;
 using ProcessInboxTask = OTIdentifier;
 using PublishServerContractTask = std::pair<OTNotaryID, bool>;
 /** RegisterAccountTask: account label, unit definition id */
-using RegisterAccountTask = std::pair<std::string, OTUnitID>;
+using RegisterAccountTask = std::pair<UnallocatedCString, OTUnitID>;
 using RegisterNymTask = bool;
 /** SendChequeTask: sourceAccountID, targetNymID, value, memo, validFrom,
  * validTo
  */
 using SendChequeTask =
-    std::tuple<OTIdentifier, OTNymID, Amount, std::string, Time, Time>;
+    std::tuple<OTIdentifier, OTNymID, Amount, UnallocatedCString, Time, Time>;
 /** SendTransferTask: source account, destination account, amount, memo
  */
 using SendTransferTask =
-    std::tuple<OTIdentifier, OTIdentifier, Amount, std::string>;
+    std::tuple<OTIdentifier, OTIdentifier, Amount, UnallocatedCString>;
 /** WithdrawCashTask: Account ID, amount*/
 using WithdrawCashTask = std::pair<OTIdentifier, Amount>;
 }  // namespace opentxs::otx::client

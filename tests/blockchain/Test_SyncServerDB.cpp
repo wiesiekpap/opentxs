@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "Helpers.hpp"
 #include "opentxs/OT.hpp"
@@ -21,7 +19,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace ot = opentxs;
@@ -31,7 +29,7 @@ namespace ottest
 class SyncServerDB : public ::testing::Test
 {
 protected:
-    using Endpoints = std::vector<std::string>;
+    using Endpoints = ot::UnallocatedVector<ot::UnallocatedCString>;
 
     static constexpr auto first_server_{"tcp://example.com:1"};
     static constexpr auto second_server_{"tcp://example.com:2"};
@@ -43,7 +41,7 @@ protected:
 
     static auto count(
         const Endpoints& endpoints,
-        const std::string& value) noexcept -> std::size_t
+        const ot::UnallocatedCString& value) noexcept -> std::size_t
     {
         return std::count(endpoints.begin(), endpoints.end(), value);
     }

@@ -6,11 +6,10 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
-#include <set>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -21,8 +20,8 @@ auto ContextAllowedClient() noexcept -> const VersionMap&;
 auto ContextAllowedSignature() noexcept -> const VersionMap&;
 auto ServerContextAllowedPendingCommand() noexcept -> const VersionMap&;
 auto ServerContextAllowedState() noexcept
-    -> const std::map<std::uint32_t, std::set<int>>&;
+    -> const UnallocatedMap<std::uint32_t, UnallocatedSet<int>>&;
 auto ServerContextAllowedStatus() noexcept
-    -> const std::map<std::uint32_t, std::set<int>>&;
+    -> const UnallocatedMap<std::uint32_t, UnallocatedSet<int>>&;
 }  // namespace proto
 }  // namespace opentxs

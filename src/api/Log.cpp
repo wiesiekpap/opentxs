@@ -35,7 +35,7 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::factory
 {
-auto Log(const zmq::Context& zmq, const std::string& endpoint) noexcept
+auto Log(const zmq::Context& zmq, const UnallocatedCString& endpoint) noexcept
     -> std::unique_ptr<api::internal::Log>
 {
     using ReturnType = api::imp::Log;
@@ -47,7 +47,7 @@ auto Log(const zmq::Context& zmq, const std::string& endpoint) noexcept
 
 namespace opentxs::api::imp
 {
-Log::Log(const zmq::Context& zmq, const std::string& endpoint)
+Log::Log(const zmq::Context& zmq, const UnallocatedCString& endpoint)
     : callback_(opentxs::network::zeromq::ListenCallback::Factory(
           [&](auto&& msg) -> void { callback(std::move(msg)); }))
     , socket_(zmq.PullSocket(callback_, zmq::socket::Socket::Direction::Bind))
@@ -69,8 +69,8 @@ auto Log::callback(zmq::Message&& message) noexcept -> void
     if (message.Body().size() < 3) { return; }
 
     const auto& levelFrame = message.Body_at(0);
-    const auto text = std::string{message.Body_at(1).Bytes()};
-    const auto id = std::string{message.Body_at(2).Bytes()};
+    const auto text = UnallocatedCString{message.Body_at(1).Bytes()};
+    const auto id = UnallocatedCString{message.Body_at(2).Bytes()};
 
     try {
         const auto level = levelFrame.as<int>();
@@ -98,8 +98,8 @@ auto Log::callback(zmq::Message&& message) noexcept -> void
 
 void Log::print(
     const int level,
-    const std::string& text,
-    const std::string& thread)
+    const UnallocatedCString& text,
+    const UnallocatedCString& thread)
 {
     if (false == text.empty()) {
         std::cerr << "(" << thread << ") ";
@@ -111,8 +111,8 @@ void Log::print(
 #ifdef ANDROID
 void Log::print_android(
     const int level,
-    const std::string& text,
-    const std::string& thread)
+    const UnallocatedCString& text,
+    const UnallocatedCString& thread)
 {
     switch (level) {
         case 0:

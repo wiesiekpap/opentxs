@@ -6,11 +6,10 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
-#include <string>
 
 #include "internal/otx/smartcontract/OTVariable.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -19,16 +18,16 @@ class OTScript;
 class OTScriptable;
 class Tag;
 
-using mapOfCallbacks = std::map<std::string, std::string>;
-using mapOfClauses = std::map<std::string, OTClause*>;
-using mapOfVariables = std::map<std::string, OTVariable*>;
+using mapOfCallbacks = UnallocatedMap<UnallocatedCString, UnallocatedCString>;
+using mapOfClauses = UnallocatedMap<UnallocatedCString, OTClause*>;
+using mapOfVariables = UnallocatedMap<UnallocatedCString, OTVariable*>;
 
 // First is the name of some standard OT hook, like OnActivate, and Second is
 // name of clause.
 // It's a multimap because you might have 6 or 7 clauses that all trigger on the
 // same hook.
 //
-using mapOfHooks = std::multimap<std::string, std::string>;
+using mapOfHooks = UnallocatedMultimap<UnallocatedCString, UnallocatedCString>;
 
 // A section of law, including its own clauses (scripts). A bylaw is kind of
 // like an OT script "program", so it makes sense to be able to collect them,
@@ -61,65 +60,68 @@ public:
     auto GetLanguage() const -> const char*;
     auto AddVariable(OTVariable& theVariable) -> bool;
     auto AddVariable(
-        std::string str_Name,
-        std::string str_Value,
+        UnallocatedCString str_Name,
+        UnallocatedCString str_Value,
         OTVariable::OTVariable_Access theAccess = OTVariable::Var_Persistent)
         -> bool;
     auto AddVariable(
-        std::string str_Name,
+        UnallocatedCString str_Name,
         std::int32_t nValue,
         OTVariable::OTVariable_Access theAccess = OTVariable::Var_Persistent)
         -> bool;
     auto AddVariable(
-        std::string str_Name,
+        UnallocatedCString str_Name,
         bool bValue,
         OTVariable::OTVariable_Access theAccess = OTVariable::Var_Persistent)
         -> bool;
     auto AddClause(OTClause& theClause) -> bool;
     auto AddClause(const char* szName, const char* szCode) -> bool;
     auto AddHook(
-        std::string str_HookName,
-        std::string str_ClauseName) -> bool;  // name of hook such
-                                              // as cron_process or
-                                              // hook_activate, and
-                                              // name of clause,
-                                              // such as sectionA
-                                              // (corresponding to
-                                              // an actual script
-                                              // in the clauses
-                                              // map.)
+        UnallocatedCString str_HookName,
+        UnallocatedCString str_ClauseName) -> bool;  // name of hook such
+                                                     // as cron_process or
+                                                     // hook_activate, and
+                                                     // name of clause,
+                                                     // such as sectionA
+                                                     // (corresponding to
+                                                     // an actual script
+                                                     // in the clauses
+                                                     // map.)
     auto AddCallback(
-        std::string str_CallbackName,
-        std::string str_ClauseName) -> bool;  // name of
-                                              // callback such
-                                              // as
+        UnallocatedCString str_CallbackName,
+        UnallocatedCString str_ClauseName) -> bool;  // name of
+                                                     // callback such
+                                                     // as
     // callback_party_may_execute_clause,
     // and name of clause, such as
     // custom_party_may_execute_clause
     // (corresponding to an actual script
     // in the clauses map.)
 
-    auto RemoveVariable(std::string str_Name) -> bool;
-    auto RemoveClause(std::string str_Name) -> bool;
-    auto RemoveHook(std::string str_Name, std::string str_ClauseName) -> bool;
-    auto RemoveCallback(std::string str_Name) -> bool;
+    auto RemoveVariable(UnallocatedCString str_Name) -> bool;
+    auto RemoveClause(UnallocatedCString str_Name) -> bool;
+    auto RemoveHook(
+        UnallocatedCString str_Name,
+        UnallocatedCString str_ClauseName) -> bool;
+    auto RemoveCallback(UnallocatedCString str_Name) -> bool;
 
-    auto UpdateClause(std::string str_Name, std::string str_Code) -> bool;
+    auto UpdateClause(UnallocatedCString str_Name, UnallocatedCString str_Code)
+        -> bool;
 
-    auto GetVariable(std::string str_Name) -> OTVariable*;  // not a
-                                                            // reference,
-                                                            // so you can
-                                                            // pass in
-                                                            // char *.
-                                                            // Maybe
-                                                            // that's
-                                                            // bad? todo:
-                                                            // research
-                                                            // that.
-    auto GetClause(std::string str_Name) const -> OTClause*;
-    auto GetCallback(std::string str_CallbackName) -> OTClause*;
+    auto GetVariable(UnallocatedCString str_Name) -> OTVariable*;  // not a
+                                                                   // reference,
+                                                                   // so you can
+                                                                   // pass in
+                                                                   // char *.
+                                                                   // Maybe
+                                                                   // that's
+                                                                   // bad? todo:
+                                                                   // research
+                                                                   // that.
+    auto GetClause(UnallocatedCString str_Name) const -> OTClause*;
+    auto GetCallback(UnallocatedCString str_CallbackName) -> OTClause*;
     auto GetHooks(
-        std::string str_HookName,
+        UnallocatedCString str_HookName,
         mapOfClauses& theResults) -> bool;  // Look up all clauses
                                             // matching a specific hook.
     auto GetVariableCount() const -> std::int32_t
@@ -142,8 +144,9 @@ public:
     auto GetClauseByIndex(std::int32_t nIndex) -> OTClause*;
     auto GetCallbackByIndex(std::int32_t nIndex) -> OTClause*;
     auto GetHookByIndex(std::int32_t nIndex) -> OTClause*;
-    auto GetCallbackNameByIndex(std::int32_t nIndex) -> const std::string;
-    auto GetHookNameByIndex(std::int32_t nIndex) -> const std::string;
+    auto GetCallbackNameByIndex(std::int32_t nIndex)
+        -> const UnallocatedCString;
+    auto GetHookNameByIndex(std::int32_t nIndex) -> const UnallocatedCString;
     void RegisterVariablesForExecution(OTScript& theScript);
     auto IsDirty() const -> bool;  // So you can tell if any of the
                                    // persistent or important variables

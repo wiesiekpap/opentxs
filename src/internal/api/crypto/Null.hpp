@@ -35,22 +35,23 @@ public:
         throw std::runtime_error{""};
     }
     auto AccountList(const identifier::Nym&) const noexcept
-        -> std::set<OTIdentifier> final
+        -> UnallocatedSet<OTIdentifier> final
     {
         return {};
     }
-    auto AccountList(const Chain) const noexcept -> std::set<OTIdentifier> final
+    auto AccountList(const Chain) const noexcept
+        -> UnallocatedSet<OTIdentifier> final
     {
         return {};
     }
-    auto AccountList() const noexcept -> std::set<OTIdentifier> final
+    auto AccountList() const noexcept -> UnallocatedSet<OTIdentifier> final
     {
         return {};
     }
     auto ActivityDescription(
         const identifier::Nym&,
         const Identifier& thread,
-        const std::string&) const noexcept -> std::string final
+        const UnallocatedCString&) const noexcept -> UnallocatedCString final
     {
         return {};
     }
@@ -58,7 +59,7 @@ public:
         const identifier::Nym&,
         const Chain,
         const opentxs::blockchain::block::bitcoin::Transaction&) const noexcept
-        -> std::string final
+        -> UnallocatedCString final
     {
         return {};
     }
@@ -76,11 +77,11 @@ public:
         const Identifier&,
         const Subchain,
         const Bip32Index,
-        const std::string&) const noexcept -> bool final
+        const UnallocatedCString&) const noexcept -> bool final
     {
         return {};
     }
-    auto AssignTransactionMemo(const TxidHex&, const std::string&)
+    auto AssignTransactionMemo(const TxidHex&, const UnallocatedCString&)
         const noexcept -> bool final
     {
         return {};
@@ -88,7 +89,7 @@ public:
     auto CalculateAddress(
         const opentxs::blockchain::Type,
         const opentxs::blockchain::crypto::AddressStyle,
-        const Data&) const noexcept -> std::string final
+        const Data&) const noexcept -> UnallocatedCString final
     {
         return {};
     }
@@ -101,7 +102,7 @@ public:
     {
         OT_FAIL;  // TODO return a blank object
     }
-    auto DecodeAddress(const std::string&) const noexcept
+    auto DecodeAddress(const UnallocatedCString&) const noexcept
         -> DecodedAddress final
     {
         static const auto data = OTData{id_.get()};
@@ -109,7 +110,7 @@ public:
         return {data, {}, {}, {}};
     }
     auto EncodeAddress(const Style, const Chain, const Data&) const noexcept
-        -> std::string final
+        -> UnallocatedCString final
     {
         return {};
     }
@@ -127,9 +128,9 @@ public:
     {
         return {};
     }
-    auto KeyEndpoint() const noexcept -> const std::string& final
+    auto KeyEndpoint() const noexcept -> const UnallocatedCString& final
     {
-        static const auto null = std::string{};
+        static const auto null = UnallocatedCString{};
 
         return null;
     }
@@ -149,7 +150,8 @@ public:
     {
         return {{}, {id_}};
     }
-    auto LookupContacts(const std::string&) const noexcept -> ContactList final
+    auto LookupContacts(const UnallocatedCString&) const noexcept
+        -> ContactList final
     {
         return {};
     }
@@ -260,7 +262,7 @@ public:
         return {id_.get()};
     }
     auto SubaccountList(const identifier::Nym&, const Chain) const noexcept
-        -> std::set<OTIdentifier> final
+        -> UnallocatedSet<OTIdentifier> final
     {
         return {};
     }
@@ -282,7 +284,10 @@ public:
         const opentxs::blockchain::Balance) const noexcept -> void final
     {
     }
-    auto UpdateElement(std::vector<ReadView>&) const noexcept -> void final {}
+    auto UpdateElement(UnallocatedVector<ReadView>&) const noexcept
+        -> void final
+    {
+    }
     auto Wallet(const Chain) const noexcept(false)
         -> const opentxs::blockchain::crypto::Wallet& final
     {

@@ -9,15 +9,14 @@
 
 #include <cstdint>
 #include <memory>
-#include <set>
 #include <stdexcept>
-#include <string>
 #include <string_view>
 #include <utility>
 
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainP2PChainState.pb.h"

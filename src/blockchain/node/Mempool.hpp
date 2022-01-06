@@ -8,13 +8,11 @@
 #pragma once
 
 #include <memory>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -67,12 +65,12 @@ namespace opentxs::blockchain::node
 class Mempool final : public internal::Mempool
 {
 public:
-    auto Dump() const noexcept -> std::set<std::string> final;
+    auto Dump() const noexcept -> UnallocatedSet<UnallocatedCString> final;
     auto Query(ReadView txid) const noexcept
         -> std::shared_ptr<const block::bitcoin::Transaction> final;
     auto Submit(ReadView txid) const noexcept -> bool final;
-    auto Submit(const std::vector<ReadView>& txids) const noexcept
-        -> std::vector<bool> final;
+    auto Submit(const UnallocatedVector<ReadView>& txids) const noexcept
+        -> UnallocatedVector<bool> final;
     auto Submit(std::unique_ptr<const block::bitcoin::Transaction> tx)
         const noexcept -> void final;
 

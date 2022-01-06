@@ -8,9 +8,9 @@
 #include "opentxs/core/ui/qt/Profile.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
 
 #include "internal/core/ui/UI.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::factory
 {
@@ -41,8 +41,10 @@ ProfileQt::ProfileQt(internal::Profile& parent) noexcept
     if (nullptr != internal_) { internal_->SetColumnCount(nullptr, 1); }
 
     imp_->parent_.SetCallbacks(
-        {[this](std::string name) { emit displayNameChanged(name.c_str()); },
-         [this](std::string paymentCode) {
+        {[this](UnallocatedCString name) {
+             emit displayNameChanged(name.c_str());
+         },
+         [this](UnallocatedCString paymentCode) {
              emit paymentCodeChanged(paymentCode.c_str());
          }});
 }

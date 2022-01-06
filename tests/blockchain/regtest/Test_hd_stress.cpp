@@ -10,10 +10,7 @@
 #include <array>
 #include <chrono>
 #include <cstdint>
-#include <deque>
 #include <iostream>
-#include <set>
-#include <string>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
@@ -48,6 +45,7 @@
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -67,7 +65,7 @@ class Regtest_stress : public Regtest_fixture_normal
 {
 protected:
     using Subchain = ot::blockchain::crypto::Subchain;
-    using Transactions = std::deque<ot::blockchain::block::pTxid>;
+    using Transactions = ot::UnallocatedDeque<ot::blockchain::block::pTxid>;
 
     static ot::Nym_p alice_p_;
     static ot::Nym_p bob_p_;
@@ -83,19 +81,20 @@ protected:
     const ot::Identifier& expected_account_bob_;
     const ot::identifier::Notary& expected_notary_;
     const ot::identifier::UnitDefinition& expected_unit_;
-    const std::string expected_display_unit_;
-    const std::string expected_account_name_;
-    const std::string expected_notary_name_;
-    const std::string memo_outgoing_;
+    const ot::UnallocatedCString expected_display_unit_;
+    const ot::UnallocatedCString expected_account_name_;
+    const ot::UnallocatedCString expected_notary_name_;
+    const ot::UnallocatedCString memo_outgoing_;
     const ot::AccountType expected_account_type_;
     const ot::core::UnitType expected_unit_type_;
     const Generator mine_to_alice_;
     ScanListener& listener_alice_;
     ScanListener& listener_bob_;
 
-    auto GetAddresses() noexcept -> std::vector<std::string>
+    auto GetAddresses() noexcept
+        -> ot::UnallocatedVector<ot::UnallocatedCString>
     {
-        auto output = std::vector<std::string>{};
+        auto output = ot::UnallocatedVector<ot::UnallocatedCString>{};
         output.reserve(tx_per_block_);
         const auto reason = client_2_.Factory().PasswordPrompt(__func__);
         const auto& bob = client_2_.Crypto()
@@ -227,10 +226,11 @@ protected:
                 height,
                 [&] {
                     namespace c = std::chrono;
-                    auto output = std::vector<OutputBuilder>{};
+                    auto output = ot::UnallocatedVector<OutputBuilder>{};
                     const auto reason =
                         client_1_.Factory().PasswordPrompt(__func__);
-                    const auto keys = std::set<ot::blockchain::crypto::Key>{};
+                    const auto keys =
+                        ot::UnallocatedSet<ot::blockchain::crypto::Key>{};
                     const auto target = [] {
                         if (first_block_) {
                             first_block_ = false;
@@ -424,8 +424,8 @@ TEST_F(Regtest_stress, generate_transactions)
     const auto stop = previous + blocks_;
     auto future1 =
         listener_bob_.get_future(bob_account_, Subchain::External, stop);
-    auto transactions =
-        std::vector<ot::OTData>{tx_per_block_, client_1_.Factory().Data()};
+    auto transactions = ot::UnallocatedVector<ot::OTData>{
+        tx_per_block_, client_1_.Factory().Data()};
     using Future = ot::blockchain::node::Manager::PendingOutgoing;
     auto futures = std::array<Future, tx_per_block_>{};
 
@@ -478,7 +478,7 @@ TEST_F(Regtest_stress, generate_transactions)
                          c::duration_cast<c::seconds>(sigs - init).count())
                   << " sec to sign and broadcast transactions\n";
         const auto extra = [&] {
-            auto output = std::vector<Transaction>{};
+            auto output = ot::UnallocatedVector<Transaction>{};
 
             for (const auto& txid : transactions) {
                 const auto& pTX = output.emplace_back(

@@ -12,13 +12,12 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/rpc/Types.hpp"
 
@@ -56,13 +55,13 @@ class OPENTXS_EXPORT Base
 {
 public:
     using SessionIndex = int;
-    using Identifiers = std::vector<std::string>;
+    using Identifiers = UnallocatedVector<UnallocatedCString>;
     using RequestIndex = std::uint32_t;
     using Status = std::pair<RequestIndex, ResponseCode>;
-    using Responses = std::vector<Status>;
-    using TaskID = std::string;
+    using Responses = UnallocatedVector<Status>;
+    using TaskID = UnallocatedCString;
     using Queued = std::pair<RequestIndex, TaskID>;
-    using Tasks = std::vector<Queued>;
+    using Tasks = UnallocatedVector<Queued>;
 
     struct Imp;
 
@@ -71,7 +70,7 @@ public:
     auto asListAccounts() const noexcept -> const ListAccounts&;
     auto asListNyms() const noexcept -> const ListNyms&;
     auto asSendPayment() const noexcept -> const SendPayment&;
-    auto Cookie() const noexcept -> const std::string&;
+    auto Cookie() const noexcept -> const UnallocatedCString&;
     auto ResponseCodes() const noexcept -> const Responses&;
     auto Serialize(AllocateOutput dest) const noexcept -> bool;
     OPENTXS_NO_EXPORT auto Serialize(proto::RPCResponse& dest) const noexcept

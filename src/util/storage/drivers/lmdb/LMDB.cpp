@@ -8,11 +8,11 @@
 #include "util/storage/drivers/lmdb/LMDB.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/storage/drivers/Factory.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
 #include "util/storage/Config.hpp"
@@ -79,8 +79,8 @@ void LMDB::Init_LMDB()
 }
 
 auto LMDB::LoadFromBucket(
-    const std::string& key,
-    std::string& value,
+    const UnallocatedCString& key,
+    UnallocatedCString& value,
     const bool bucket) const -> bool
 {
     value = {};
@@ -90,9 +90,9 @@ auto LMDB::LoadFromBucket(
     return false == value.empty();
 }
 
-auto LMDB::LoadRoot() const -> std::string
+auto LMDB::LoadRoot() const -> UnallocatedCString
 {
-    auto output = std::string{};
+    auto output = UnallocatedCString{};
     lmdb_.Load(
         Table::Control, config_.lmdb_root_key_, [&](const auto data) -> void {
             output = data;
@@ -103,8 +103,8 @@ auto LMDB::LoadRoot() const -> std::string
 
 void LMDB::store(
     const bool isTransaction,
-    const std::string& key,
-    const std::string& value,
+    const UnallocatedCString& key,
+    const UnallocatedCString& value,
     const bool bucket,
     std::promise<bool>* promise) const
 {
@@ -117,7 +117,8 @@ void LMDB::store(
     }
 }
 
-auto LMDB::StoreRoot(const bool commit, const std::string& hash) const -> bool
+auto LMDB::StoreRoot(const bool commit, const UnallocatedCString& hash) const
+    -> bool
 {
     if (commit) {
         if (lmdb_.Queue(Table::Control, config_.lmdb_root_key_, hash)) {

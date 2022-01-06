@@ -7,10 +7,9 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/core/ui/List.hpp"
 #include "opentxs/core/ui/ListRow.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -32,10 +31,10 @@ class OPENTXS_EXPORT IssuerItem : virtual public List, virtual public ListRow
 {
 public:
     virtual auto ConnectionState() const noexcept -> bool = 0;
-    virtual auto Debug() const noexcept -> std::string = 0;
+    virtual auto Debug() const noexcept -> UnallocatedCString = 0;
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem> = 0;
-    virtual auto Name() const noexcept -> std::string = 0;
+    virtual auto Name() const noexcept -> UnallocatedCString = 0;
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem> = 0;
     virtual auto Trusted() const noexcept -> bool = 0;

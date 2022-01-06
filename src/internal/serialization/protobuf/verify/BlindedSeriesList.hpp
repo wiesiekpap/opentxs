@@ -5,9 +5,8 @@
 
 #pragma once
 
-#include <string>
-
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -24,82 +23,82 @@ namespace proto
 auto CheckProto_1(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_2(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_3(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_4(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_5(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_6(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_7(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_8(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_9(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_10(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_11(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_12(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_13(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_14(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_15(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_16(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_17(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_18(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_19(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 auto CheckProto_20(
     const BlindedSeriesList& input,
     const bool silent,
-    const std::string& notary) -> bool;
+    const UnallocatedCString& notary) -> bool;
 }  // namespace proto
 }  // namespace opentxs

@@ -12,12 +12,11 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <map>
 #include <memory>
-#include <string>
 
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -43,15 +42,15 @@ namespace opentxs::identity::wot::claim
 class OPENTXS_EXPORT Group
 {
 public:
-    using ItemMap = std::map<OTIdentifier, std::shared_ptr<claim::Item>>;
+    using ItemMap = UnallocatedMap<OTIdentifier, std::shared_ptr<claim::Item>>;
 
     Group(
-        const std::string& nym,
+        const UnallocatedCString& nym,
         const claim::SectionType section,
         const claim::ClaimType type,
         const ItemMap& items);
     Group(
-        const std::string& nym,
+        const UnallocatedCString& nym,
         const claim::SectionType section,
         const std::shared_ptr<Item>& item);
     Group(const Group&) noexcept;

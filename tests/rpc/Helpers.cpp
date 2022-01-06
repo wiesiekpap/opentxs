@@ -9,7 +9,6 @@
 #include <chrono>
 #include <future>
 #include <iterator>
-#include <list>
 #include <mutex>
 #include <utility>
 
@@ -47,6 +46,7 @@
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -66,7 +66,7 @@ namespace ottest
 {
 auto verify_account_balance(
     const int index,
-    const std::string& account,
+    const ot::UnallocatedCString& account,
     const ot::Amount required) noexcept -> bool;
 auto verify_response_codes(
     const ot::rpc::response::Base::Responses& codes,
@@ -148,7 +148,7 @@ auto check_account_list_rpc(
     const auto& ids = response.AccountIDs();
     const auto goodCodes = verify_response_codes(codes, 1);
     const auto required = [&] {
-        auto out = std::vector<std::string>{};
+        auto out = ot::UnallocatedVector<ot::UnallocatedCString>{};
         out.reserve(expected.rows_.size());
 
         for (const auto& row : expected.rows_) {
@@ -176,7 +176,7 @@ auto check_account_list_rpc(
 
 auto verify_account_balance(
     const int index,
-    const std::string& account,
+    const ot::UnallocatedCString& account,
     const ot::Amount required) noexcept -> bool
 {
     auto output{true};
@@ -283,7 +283,7 @@ private:
     const ot::OTZMQListenCallback cb_;
     const ot::OTZMQSubscribeSocket socket_;
     mutable std::mutex lock_;
-    std::list<ot::network::zeromq::Message> received_;
+    ot::UnallocatedList<ot::network::zeromq::Message> received_;
 
     auto cb(zmq::Message&& in) noexcept -> void
     {
@@ -340,8 +340,8 @@ auto RPC_fixture::Cleanup() noexcept -> void
 
 auto RPC_fixture::CreateNym(
     const ot::api::session::Client& api,
-    const std::string& name,
-    const std::string& seed,
+    const ot::UnallocatedCString& name,
+    const ot::UnallocatedCString& seed,
     int index) const noexcept -> const User&
 {
     static auto counter = int{-1};
@@ -370,7 +370,7 @@ auto RPC_fixture::CreateNym(
 auto RPC_fixture::DepositCheques(
     const ot::api::session::Client& api,
     const ot::api::session::Notary& server,
-    const std::string& nym) const noexcept -> std::size_t
+    const ot::UnallocatedCString& nym) const noexcept -> std::size_t
 {
     return DepositCheques(api, server, api.Factory().NymID(nym));
 }
@@ -399,7 +399,8 @@ auto RPC_fixture::DepositCheques(
 
 auto RPC_fixture::ImportBip39(
     const ot::api::Session& api,
-    const std::string& words) const noexcept -> std::string
+    const ot::UnallocatedCString& words) const noexcept
+    -> ot::UnallocatedCString
 {
     using SeedLang = ot::crypto::Language;
     using SeedStyle = ot::crypto::SeedStyle;
@@ -441,8 +442,8 @@ auto RPC_fixture::init_maps(int instance) const noexcept -> void
 
 auto RPC_fixture::InitAccountActivityCounter(
     const ot::api::session::Client& api,
-    const std::string& nym,
-    const std::string& account,
+    const ot::UnallocatedCString& nym,
+    const ot::UnallocatedCString& account,
     Counter& counter) const noexcept -> void
 {
     InitAccountActivityCounter(api, api.Factory().NymID(nym), account, counter);
@@ -450,7 +451,7 @@ auto RPC_fixture::InitAccountActivityCounter(
 
 auto RPC_fixture::InitAccountActivityCounter(
     const User& nym,
-    const std::string& account,
+    const ot::UnallocatedCString& account,
     Counter& counter) const noexcept -> void
 {
     InitAccountActivityCounter(*nym.api_, nym.nym_id_, account, counter);
@@ -459,24 +460,25 @@ auto RPC_fixture::InitAccountActivityCounter(
 auto RPC_fixture::InitAccountActivityCounter(
     const ot::api::session::Client& api,
     const ot::identifier::Nym& nym,
-    const std::string& account,
+    const ot::UnallocatedCString& account,
     Counter& counter) const noexcept -> void
 {
     api.UI().AccountActivity(
         nym,
         api.Factory().Identifier(account),
-        make_cb(counter, std::string{u8"account activity "} + account));
+        make_cb(
+            counter, ot::UnallocatedCString{u8"account activity "} + account));
 }
 
 auto RPC_fixture::IssueUnit(
     const ot::api::session::Client& api,
     const ot::api::session::Notary& server,
-    const std::string& issuer,
-    const std::string& shortname,
-    const std::string& terms,
+    const ot::UnallocatedCString& issuer,
+    const ot::UnallocatedCString& shortname,
+    const ot::UnallocatedCString& terms,
     ot::core::UnitType unitOfAccount,
     const ot::display::Definition& displayDefinition) const noexcept
-    -> std::string
+    -> ot::UnallocatedCString
 {
     return IssueUnit(
         api,
@@ -491,11 +493,11 @@ auto RPC_fixture::IssueUnit(
 auto RPC_fixture::IssueUnit(
     const ot::api::session::Notary& server,
     const User& issuer,
-    const std::string& shortname,
-    const std::string& terms,
+    const ot::UnallocatedCString& shortname,
+    const ot::UnallocatedCString& terms,
     ot::core::UnitType unitOfAccount,
     const ot::display::Definition& displayDefinition) const noexcept
-    -> std::string
+    -> ot::UnallocatedCString
 {
     return IssueUnit(
         *issuer.api_,
@@ -511,11 +513,11 @@ auto RPC_fixture::IssueUnit(
     const ot::api::session::Client& api,
     const ot::api::session::Notary& server,
     const ot::identifier::Nym& nymID,
-    const std::string& shortname,
-    const std::string& terms,
+    const ot::UnallocatedCString& shortname,
+    const ot::UnallocatedCString& terms,
     ot::core::UnitType unitOfAccount,
     const ot::display::Definition& displayDefinition) const noexcept
-    -> std::string
+    -> ot::UnallocatedCString
 {
     const auto& serverID = server.ID();
     const auto reason = api.Factory().PasswordPrompt(__func__);
@@ -562,7 +564,7 @@ auto RPC_fixture::RefreshAccount(
 
 auto RPC_fixture::RefreshAccount(
     const ot::api::session::Client& api,
-    const std::vector<std::string> nyms,
+    const ot::UnallocatedVector<ot::UnallocatedCString> nyms,
     const ot::identifier::Notary& server) const noexcept -> void
 {
     api.OTX().Refresh();
@@ -574,7 +576,7 @@ auto RPC_fixture::RefreshAccount(
 
 auto RPC_fixture::RefreshAccount(
     const ot::api::session::Client& api,
-    const std::vector<const User*> nyms,
+    const ot::UnallocatedVector<const User*> nyms,
     const ot::identifier::Notary& server) const noexcept -> void
 {
     api.OTX().Refresh();
@@ -589,9 +591,10 @@ auto RPC_fixture::RefreshAccount(
 auto RPC_fixture::RegisterAccount(
     const ot::api::session::Client& api,
     const ot::api::session::Notary& server,
-    const std::string& nym,
-    const std::string& unit,
-    const std::string& label) const noexcept -> std::string
+    const ot::UnallocatedCString& nym,
+    const ot::UnallocatedCString& unit,
+    const ot::UnallocatedCString& label) const noexcept
+    -> ot::UnallocatedCString
 {
     return RegisterAccount(api, server, api.Factory().NymID(nym), unit, label);
 }
@@ -599,8 +602,9 @@ auto RPC_fixture::RegisterAccount(
 auto RPC_fixture::RegisterAccount(
     const ot::api::session::Notary& server,
     const User& nym,
-    const std::string& unit,
-    const std::string& label) const noexcept -> std::string
+    const ot::UnallocatedCString& unit,
+    const ot::UnallocatedCString& label) const noexcept
+    -> ot::UnallocatedCString
 {
     return RegisterAccount(*nym.api_, server, nym.nym_id_, unit, label);
 }
@@ -609,8 +613,9 @@ auto RPC_fixture::RegisterAccount(
     const ot::api::session::Client& api,
     const ot::api::session::Notary& server,
     const ot::identifier::Nym& nymID,
-    const std::string& unit,
-    const std::string& label) const noexcept -> std::string
+    const ot::UnallocatedCString& unit,
+    const ot::UnallocatedCString& label) const noexcept
+    -> ot::UnallocatedCString
 {
     const auto& serverID = server.ID();
     const auto unitID = api.Factory().UnitID(unit);
@@ -633,7 +638,7 @@ auto RPC_fixture::RegisterAccount(
 auto RPC_fixture::RegisterNym(
     const ot::api::session::Client& api,
     const ot::api::session::Notary& server,
-    const std::string& nymID) const noexcept -> bool
+    const ot::UnallocatedCString& nymID) const noexcept -> bool
 {
     return RegisterNym(api, server, api.Factory().NymID(nymID));
 }
@@ -667,10 +672,10 @@ auto RPC_fixture::RegisterNym(
 auto RPC_fixture::SendCheque(
     const ot::api::session::Client& api,
     const ot::api::session::Notary& server,
-    const std::string& nym,
-    const std::string& account,
-    const std::string& contact,
-    const std::string& memo,
+    const ot::UnallocatedCString& nym,
+    const ot::UnallocatedCString& account,
+    const ot::UnallocatedCString& contact,
+    const ot::UnallocatedCString& memo,
     Amount amount) const noexcept -> bool
 {
     return SendCheque(
@@ -680,9 +685,9 @@ auto RPC_fixture::SendCheque(
 auto RPC_fixture::SendCheque(
     const ot::api::session::Notary& server,
     const User& nym,
-    const std::string& account,
-    const std::string& contact,
-    const std::string& memo,
+    const ot::UnallocatedCString& account,
+    const ot::UnallocatedCString& contact,
+    const ot::UnallocatedCString& memo,
     Amount amount) const noexcept -> bool
 {
     return SendCheque(
@@ -693,9 +698,9 @@ auto RPC_fixture::SendCheque(
     const ot::api::session::Client& api,
     const ot::api::session::Notary& server,
     const ot::identifier::Nym& nymID,
-    const std::string& account,
-    const std::string& contact,
-    const std::string& memo,
+    const ot::UnallocatedCString& account,
+    const ot::UnallocatedCString& contact,
+    const ot::UnallocatedCString& memo,
     Amount amount) const noexcept -> bool
 {
     const auto& serverID = server.ID();
@@ -718,10 +723,10 @@ auto RPC_fixture::SendCheque(
 auto RPC_fixture::SendTransfer(
     const ot::api::session::Client& api,
     const ot::api::session::Notary& server,
-    const std::string& sender,
-    const std::string& fromAccount,
-    const std::string& toAccount,
-    const std::string& memo,
+    const ot::UnallocatedCString& sender,
+    const ot::UnallocatedCString& fromAccount,
+    const ot::UnallocatedCString& toAccount,
+    const ot::UnallocatedCString& memo,
     Amount amount) const noexcept -> bool
 {
     return SendTransfer(
@@ -737,9 +742,9 @@ auto RPC_fixture::SendTransfer(
 auto RPC_fixture::SendTransfer(
     const ot::api::session::Notary& server,
     const User& sender,
-    const std::string& fromAccount,
-    const std::string& toAccount,
-    const std::string& memo,
+    const ot::UnallocatedCString& fromAccount,
+    const ot::UnallocatedCString& toAccount,
+    const ot::UnallocatedCString& memo,
     Amount amount) const noexcept -> bool
 {
     return SendTransfer(
@@ -756,9 +761,9 @@ auto RPC_fixture::SendTransfer(
     const ot::api::session::Client& api,
     const ot::api::session::Notary& server,
     const ot::identifier::Nym& nymID,
-    const std::string& fromAccount,
-    const std::string& toAccount,
-    const std::string& memo,
+    const ot::UnallocatedCString& fromAccount,
+    const ot::UnallocatedCString& toAccount,
+    const ot::UnallocatedCString& memo,
     Amount amount) const noexcept -> bool
 {
     const auto& serverID = server.ID();

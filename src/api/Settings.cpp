@@ -43,7 +43,7 @@ auto StringFill(
     std::int32_t iLength,
     const char* szAppend) -> bool
 {
-    std::string strString(szString);
+    UnallocatedCString strString(szString);
 
     if (nullptr != szAppend) strString.append(szAppend);
 
@@ -638,7 +638,7 @@ auto Settings::CheckSet_str(
     const String& strComment) const -> bool
 {
     rLock lock(lock_);
-    std::string temp = out_strResult.Get();
+    UnallocatedCString temp = out_strResult.Get();
     bool success = CheckSet_str(
         strSection, strKey, strDefault, temp, out_bIsNew, strComment);
     out_strResult.Set(String::Factory(temp));
@@ -650,7 +650,7 @@ auto Settings::CheckSet_str(
     const String& strSection,
     const String& strKey,
     const String& strDefault,
-    std::string& out_strResult,
+    UnallocatedCString& out_strResult,
     bool& out_bIsNew) const -> bool
 {
     return CheckSet_str(
@@ -661,7 +661,7 @@ auto Settings::CheckSet_str(
     const String& strSection,
     const String& strKey,
     const String& strDefault,
-    std::string& out_strResult,
+    UnallocatedCString& out_strResult,
     bool& out_bIsNew,
     const String& strComment) const -> bool
 {

@@ -6,12 +6,12 @@
 #pragma once
 
 #include <functional>
-#include <map>
 #include <memory>
 #include <thread>
 
 #include "internal/util/Flag.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -27,7 +27,7 @@ public:
     ~Signals();
 
 private:
-    static const std::map<int, std::function<bool()>> handler_;
+    static const UnallocatedMap<int, std::function<bool()>> handler_;
 
     const Flag& running_;
     std::unique_ptr<std::thread> thread_{nullptr};

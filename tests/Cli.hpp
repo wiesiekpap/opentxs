@@ -28,7 +28,8 @@ class ArgumentParser
 public:
     bool show_help_;
 
-    auto help(const ot::Options& args) const noexcept -> const std::string&
+    auto help(const ot::Options& args) const noexcept
+        -> const ot::UnallocatedCString&
     {
         static const auto text = [&] {
             auto out = std::stringstream{};

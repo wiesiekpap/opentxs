@@ -8,13 +8,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
-#include <string>
 
 #include "Proto.hpp"
 #include "internal/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -89,7 +89,7 @@ public:
         const std::size_t bytes,
         Data& output) const noexcept -> bool final;
     auto PKCS5_PBKDF2_HMAC(
-        const std::string& input,
+        const UnallocatedCString& input,
         const Data& salt,
         const std::size_t iterations,
         const opentxs::crypto::HashType hashType,

@@ -7,7 +7,6 @@
 #include <atomic>
 #include <chrono>
 #include <future>
-#include <string>
 #include <utility>
 
 #include "opentxs/OT.hpp"
@@ -21,7 +20,7 @@
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -33,9 +32,9 @@ class Test_PushSubscribe : public ::testing::Test
 {
 public:
     const zmq::Context& context_;
-    const std::string testMessage_;
-    const std::string endpoint_1_;
-    const std::string endpoint_2_;
+    const ot::UnallocatedCString testMessage_;
+    const ot::UnallocatedCString endpoint_1_;
+    const ot::UnallocatedCString endpoint_2_;
     std::atomic<int> counter_1_;
     std::atomic<int> counter_2_;
     std::atomic<int> counter_3_;
@@ -63,8 +62,8 @@ TEST_F(Test_PushSubscribe, Push_Subscribe)
             EXPECT_GT(body.size(), 0);
 
             if (0 < body.size()) {
-                const auto compare =
-                    testMessage_.compare(std::string{body.at(0).Bytes()});
+                const auto compare = testMessage_.compare(
+                    ot::UnallocatedCString{body.at(0).Bytes()});
 
                 EXPECT_EQ(compare, 0);
 
@@ -92,8 +91,8 @@ TEST_F(Test_PushSubscribe, Push_Subscribe)
 
 TEST_F(Test_PushSubscribe, Push_Publish_Subscribe)
 {
-    const std::string message1{"1"};
-    const std::string message2{"2"};
+    const ot::UnallocatedCString message1{"1"};
+    const ot::UnallocatedCString message2{"2"};
     auto promise1 = std::promise<void>{};
     auto promise2 = std::promise<void>{};
     auto promise3 = std::promise<void>{};
@@ -105,7 +104,8 @@ TEST_F(Test_PushSubscribe, Push_Publish_Subscribe)
     auto callback1 = zmq::ListenCallback::Factory([&](auto&& input) {
         ++counter_1_;
 
-        if (0 == message1.compare(std::string{input.Body_at(0).Bytes()})) {
+        if (0 == message1.compare(
+                     ot::UnallocatedCString{input.Body_at(0).Bytes()})) {
             promise1.set_value();
         } else {
             promise4.set_value();
@@ -114,7 +114,8 @@ TEST_F(Test_PushSubscribe, Push_Publish_Subscribe)
     auto callback2 = zmq::ListenCallback::Factory([&](auto&& input) {
         ++counter_2_;
 
-        if (0 == message1.compare(std::string{input.Body_at(0).Bytes()})) {
+        if (0 == message1.compare(
+                     ot::UnallocatedCString{input.Body_at(0).Bytes()})) {
             promise2.set_value();
         } else {
             promise4.set_value();
@@ -123,7 +124,8 @@ TEST_F(Test_PushSubscribe, Push_Publish_Subscribe)
     auto callback3 = zmq::ListenCallback::Factory([&](auto&& input) {
         ++counter_3_;
 
-        if (0 == message1.compare(std::string{input.Body_at(0).Bytes()})) {
+        if (0 == message1.compare(
+                     ot::UnallocatedCString{input.Body_at(0).Bytes()})) {
             promise3.set_value();
         } else {
             promise4.set_value();

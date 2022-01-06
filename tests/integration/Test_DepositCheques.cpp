@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 #include <future>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "internal/api/session/Client.hpp"
@@ -44,6 +43,7 @@
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -68,9 +68,9 @@ class Test_DepositCheques : public ::testing::Test
 {
 public:
     static const bool have_hd_;
-    static const std::string SeedA_;
-    static const std::string SeedB_;
-    static const std::string SeedC_;
+    static const ot::UnallocatedCString SeedA_;
+    static const ot::UnallocatedCString SeedB_;
+    static const ot::UnallocatedCString SeedC_;
     static const ot::OTNymID alice_nym_id_;
     static const ot::OTNymID bob_nym_id_;
     static const ot::OTNymID issuer_nym_id_;
@@ -84,9 +84,9 @@ public:
     static const ot::api::session::Client* alice_;
     static const ot::api::session::Client* bob_;
 
-    static std::string alice_payment_code_;
-    static std::string bob_payment_code_;
-    static std::string issuer_payment_code_;
+    static ot::UnallocatedCString alice_payment_code_;
+    static ot::UnallocatedCString bob_payment_code_;
+    static ot::UnallocatedCString issuer_payment_code_;
 
     static ot::OTUnitID unit_id_;
     static ot::OTIdentifier alice_account_id_;
@@ -122,18 +122,18 @@ public:
 
     void init()
     {
-        const_cast<std::string&>(SeedA_) =
+        const_cast<ot::UnallocatedCString&>(SeedA_) =
             alice_client_.InternalClient().Exec().Wallet_ImportSeed(
                 "spike nominee miss inquiry fee nothing belt list other "
                 "daughter leave valley twelve gossip paper",
                 "");
-        const_cast<std::string&>(SeedB_) =
+        const_cast<ot::UnallocatedCString&>(SeedB_) =
             bob_client_.InternalClient().Exec().Wallet_ImportSeed(
                 "trim thunder unveil reduce crop cradle zone inquiry "
                 "anchor skate property fringe obey butter text tank drama "
                 "palm guilt pudding laundry stay axis prosper",
                 "");
-        const_cast<std::string&>(SeedC_) =
+        const_cast<ot::UnallocatedCString&>(SeedC_) =
             issuer_client_.InternalClient().Exec().Wallet_ImportSeed(
                 "abandon abandon abandon abandon abandon abandon abandon "
                 "abandon abandon abandon abandon about",
@@ -165,9 +165,9 @@ const bool Test_DepositCheques::have_hd_{
         ot::crypto::key::asymmetric::Algorithm::Secp256k1)
 
 };
-const std::string Test_DepositCheques::SeedA_{""};
-const std::string Test_DepositCheques::SeedB_{""};
-const std::string Test_DepositCheques::SeedC_{""};
+const ot::UnallocatedCString Test_DepositCheques::SeedA_{""};
+const ot::UnallocatedCString Test_DepositCheques::SeedB_{""};
+const ot::UnallocatedCString Test_DepositCheques::SeedC_{""};
 const ot::OTNymID Test_DepositCheques::alice_nym_id_{
     ot::identifier::Nym::Factory()};
 const ot::OTNymID Test_DepositCheques::bob_nym_id_{
@@ -188,9 +188,9 @@ ot::OTIdentifier Test_DepositCheques::contact_id_issuer_bob_{
     ot::Identifier::Factory()};
 const ot::api::session::Client* Test_DepositCheques::alice_{nullptr};
 const ot::api::session::Client* Test_DepositCheques::bob_{nullptr};
-std::string Test_DepositCheques::alice_payment_code_;
-std::string Test_DepositCheques::bob_payment_code_;
-std::string Test_DepositCheques::issuer_payment_code_;
+ot::UnallocatedCString Test_DepositCheques::alice_payment_code_;
+ot::UnallocatedCString Test_DepositCheques::bob_payment_code_;
+ot::UnallocatedCString Test_DepositCheques::issuer_payment_code_;
 ot::OTUnitID Test_DepositCheques::unit_id_{
     ot::identifier::UnitDefinition::Factory()};
 ot::OTIdentifier Test_DepositCheques::alice_account_id_{

@@ -8,7 +8,8 @@
 #include "util/license/License.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -1510,7 +1511,7 @@ auto license_argon(LicenseMap& out) noexcept -> void
 
     out.emplace(
         "argon2",
-        std::string{
+        UnallocatedCString{
             reinterpret_cast<const char*>(deps_argon2_LICENSE),
             deps_argon2_LICENSE_len});
 }

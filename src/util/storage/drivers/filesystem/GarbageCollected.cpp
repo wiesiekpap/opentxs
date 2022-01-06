@@ -48,15 +48,16 @@ GarbageCollected::GarbageCollected(
     Init_GarbageCollected();
 }
 
-auto GarbageCollected::bucket_name(const bool bucket) const -> std::string
+auto GarbageCollected::bucket_name(const bool bucket) const
+    -> UnallocatedCString
 {
     return bucket ? config_.fs_secondary_bucket_ : config_.fs_primary_bucket_;
 }
 
 auto GarbageCollected::calculate_path(
-    const std::string& key,
+    const UnallocatedCString& key,
     const bool bucket,
-    std::string& directory) const -> std::string
+    UnallocatedCString& directory) const -> UnallocatedCString
 {
     directory = folder_ + path_seperator_ + bucket_name(bucket);
 
@@ -77,13 +78,13 @@ void GarbageCollected::Cleanup_GarbageCollected()
 auto GarbageCollected::EmptyBucket(const bool bucket) const -> bool
 {
     const auto oldDirectory = [&] {
-        auto out = std::string{};
+        auto out = UnallocatedCString{};
         calculate_path("", bucket, out);
 
         return out;
     }();
-    const std::string random = crypto_.Encode().RandomFilename();
-    const std::string newName = folder_ + path_seperator_ + random;
+    const UnallocatedCString random = crypto_.Encode().RandomFilename();
+    const UnallocatedCString newName = folder_ + path_seperator_ + random;
 
     if (0 != std::rename(oldDirectory.c_str(), newName.c_str())) {
         return false;
@@ -103,14 +104,14 @@ void GarbageCollected::Init_GarbageCollected()
     ready_->On();
 }
 
-void GarbageCollected::purge(const std::string& path) const
+void GarbageCollected::purge(const UnallocatedCString& path) const
 {
     if (path.empty()) { return; }
 
     boost::filesystem::remove_all(path);
 }
 
-auto GarbageCollected::root_filename() const -> std::string
+auto GarbageCollected::root_filename() const -> UnallocatedCString
 {
     OT_ASSERT(false == folder_.empty());
     OT_ASSERT(false == path_seperator_.empty());

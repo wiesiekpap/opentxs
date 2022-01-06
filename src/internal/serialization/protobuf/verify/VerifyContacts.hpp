@@ -7,12 +7,12 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <string>
 #include <utility>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Contact.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -49,13 +49,13 @@ auto ValidContactItemAttribute(
 
 auto TranslateSectionName(
     const std::uint32_t enumValue,
-    const std::string& lang = "en") -> std::string;
+    const UnallocatedCString& lang = "en") -> UnallocatedCString;
 auto TranslateItemType(
     const std::uint32_t enumValue,
-    const std::string& lang = "en") -> std::string;
+    const UnallocatedCString& lang = "en") -> UnallocatedCString;
 auto TranslateItemAttributes(
     const std::uint32_t enumValue,
-    const std::string& lang = "en") -> std::string;
+    const UnallocatedCString& lang = "en") -> UnallocatedCString;
 auto ReciprocalRelationship(const std::uint32_t relationship) -> std::uint32_t;
 auto CheckCombination(
     const ContactSectionName section,

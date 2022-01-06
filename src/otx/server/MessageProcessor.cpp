@@ -14,9 +14,7 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "Proto.tpp"
 #include "internal/api/session/Endpoints.hpp"
@@ -52,6 +50,7 @@
 #include "opentxs/otx/Reply.hpp"
 #include "opentxs/otx/Request.hpp"
 #include "opentxs/otx/ServerReplyType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -218,7 +217,7 @@ auto MessageProcessor::init(
                 endpoint << api_.InternalNotary().InprocEndpoint();
                 endpoint << ':';
             } else {
-                endpoint << std::string("tcp://*:");
+                endpoint << UnallocatedCString("tcp://*:");
             }
 
             endpoint << std::to_string(port);
@@ -258,12 +257,12 @@ auto MessageProcessor::process_backend(
     const bool tagged,
     zmq::Message&& incoming) noexcept -> network::zeromq::Message
 {
-    auto reply = std::string{};
+    auto reply = UnallocatedCString{};
     const auto error = [&] {
         // ProcessCron and process_backend must not run simultaneously
         auto lock = Lock{lock_};
         const auto request = [&] {
-            auto out = std::string{};
+            auto out = UnallocatedCString{};
             const auto body = incoming.Body();
 
             if (0u < body.size()) { out = body.at(0).Bytes(); }
@@ -415,8 +414,8 @@ auto MessageProcessor::process_legacy(
 }
 
 auto MessageProcessor::process_message(
-    const std::string& messageString,
-    std::string& reply) noexcept -> bool
+    const UnallocatedCString& messageString,
+    UnallocatedCString& reply) noexcept -> bool
 {
     if (messageString.size() < 1) { return true; }
 
@@ -492,8 +491,8 @@ auto MessageProcessor::process_notification(zmq::Message&& incoming) noexcept
         return;
     }
 
-    const auto nymID =
-        identifier::Nym::Factory(std::string{incoming.Body().at(0).Bytes()});
+    const auto nymID = identifier::Nym::Factory(
+        UnallocatedCString{incoming.Body().at(0).Bytes()});
     const auto& data = query_connection(nymID);
     const auto& [connection, oldFormat] = data;
 

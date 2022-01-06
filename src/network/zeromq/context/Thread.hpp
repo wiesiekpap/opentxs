@@ -8,20 +8,19 @@
 #pragma once
 
 #include <atomic>
-#include <deque>
 #include <future>
 #include <mutex>
 #include <queue>
 #include <thread>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Thread.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/Gatekeeper.hpp"
 
 struct zmq_pollitem_t;
@@ -56,7 +55,7 @@ public:
     auto Add(BatchID id, StartArgs&& args) noexcept -> bool;
     auto Modify(SocketID socket, ModifyCallback cb) noexcept
         -> AsyncResult final;
-    auto Remove(BatchID id, std::vector<socket::Raw*>&& sockets) noexcept
+    auto Remove(BatchID id, UnallocatedVector<socket::Raw*>&& sockets) noexcept
         -> std::future<bool>;
     auto Shutdown() noexcept -> void;
 
@@ -71,8 +70,8 @@ private:
         std::thread handle_{};
     };
     struct Items {
-        using ItemVector = std::vector<zmq_pollitem_t>;
-        using DataVector = std::vector<ReceiveCallback>;
+        using ItemVector = UnallocatedVector<zmq_pollitem_t>;
+        using DataVector = UnallocatedVector<ReceiveCallback>;
 
         ItemVector items_{};
         DataVector data_{};

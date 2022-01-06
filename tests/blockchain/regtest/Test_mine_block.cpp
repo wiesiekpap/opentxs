@@ -7,9 +7,6 @@
 
 #include <gtest/gtest.h>
 #include <chrono>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
@@ -26,6 +23,7 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -53,9 +51,9 @@ TEST_F(Regtest_fixture_single, generate_block)
         test_chain_,
         previousHeader->Height() + 1,
         [&] {
-            auto output = std::vector<OutputBuilder>{};
-            const auto text = std::string{"null"};
-            const auto keys = std::set<ot::blockchain::crypto::Key>{};
+            auto output = ot::UnallocatedVector<OutputBuilder>{};
+            const auto text = ot::UnallocatedCString{"null"};
+            const auto keys = ot::UnallocatedSet<ot::blockchain::crypto::Key>{};
             output.emplace_back(
                 5000000000,
                 miner_.Factory().BitcoinScriptNullData(test_chain_, {text}),

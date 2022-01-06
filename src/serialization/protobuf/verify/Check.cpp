@@ -10,9 +10,8 @@
 #else
 #include <iostream>
 #endif
-#include <string>
-
 #include "internal/serialization/protobuf/Check.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::proto
 {
@@ -37,7 +36,7 @@ void PrintErrorMessage(
 void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
-    const std::string& error) noexcept
+    const UnallocatedCString& error) noexcept
 {
     std::stringstream out{};
     out << "Verify version " << version << " " << proto << " failed: " << error
@@ -61,7 +60,7 @@ void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
     const char* error,
-    const std::string& value) noexcept
+    const UnallocatedCString& value) noexcept
 {
     std::stringstream out{};
     out << "Verify version " << version << " " << proto << " failed: " << error

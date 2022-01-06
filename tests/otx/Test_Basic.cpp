@@ -10,12 +10,8 @@
 #include <cstddef>
 #include <future>
 #include <iostream>
-#include <list>
-#include <map>
 #include <memory>
-#include <set>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "2_Factory.hpp"
@@ -89,6 +85,7 @@
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
@@ -128,35 +125,36 @@ class Test_Basic : public ::testing::Test
 {
 public:
     struct matchID {
-        matchID(const std::string& id)
+        matchID(const ot::UnallocatedCString& id)
             : id_{id}
         {
         }
 
-        bool operator()(const std::pair<std::string, std::string>& id)
+        bool operator()(
+            const std::pair<ot::UnallocatedCString, ot::UnallocatedCString>& id)
         {
             return id.first == id_;
         }
 
-        const std::string id_;
+        const ot::UnallocatedCString id_;
     };
 
     static ot::RequestNumber alice_counter_;
     static ot::RequestNumber bob_counter_;
-    static const std::string SeedA_;
-    static const std::string SeedB_;
+    static const ot::UnallocatedCString SeedA_;
+    static const ot::UnallocatedCString SeedB_;
     static const ot::OTNymID alice_nym_id_;
     static const ot::OTNymID bob_nym_id_;
     static ot::TransactionNumber cheque_transaction_number_;
-    static std::string bob_account_1_id_;
-    static std::string bob_account_2_id_;
-    static std::string outgoing_cheque_workflow_id_;
-    static std::string incoming_cheque_workflow_id_;
-    static std::string outgoing_transfer_workflow_id_;
-    static std::string incoming_transfer_workflow_id_;
-    static std::string internal_transfer_workflow_id_;
-    static const std::string unit_id_1_;
-    static const std::string unit_id_2_;
+    static ot::UnallocatedCString bob_account_1_id_;
+    static ot::UnallocatedCString bob_account_2_id_;
+    static ot::UnallocatedCString outgoing_cheque_workflow_id_;
+    static ot::UnallocatedCString incoming_cheque_workflow_id_;
+    static ot::UnallocatedCString outgoing_transfer_workflow_id_;
+    static ot::UnallocatedCString incoming_transfer_workflow_id_;
+    static ot::UnallocatedCString internal_transfer_workflow_id_;
+    static const ot::UnallocatedCString unit_id_1_;
+    static const ot::UnallocatedCString unit_id_2_;
     static std::unique_ptr<ot::otx::client::internal::Operation>
         alice_state_machine_;
     static std::unique_ptr<ot::otx::client::internal::Operation>
@@ -203,7 +201,9 @@ public:
         if (false == init_) { init(); }
     }
 
-    static bool find_id(const std::string& id, const ot::ObjectList& list)
+    static bool find_id(
+        const ot::UnallocatedCString& id,
+        const ot::ObjectList& list)
     {
         matchID matchid(id);
 
@@ -212,7 +212,7 @@ public:
 
     static ot::OTUnitDefinition load_unit(
         const ot::api::Session& api,
-        const std::string& id) noexcept
+        const ot::UnallocatedCString& id) noexcept
     {
         try {
             return api.Wallet().UnitDefinition(api.Factory().UnitID(id));
@@ -275,12 +275,12 @@ public:
         client_1_.InternalClient().Pair().Stop().get();
         client_2_.OTX().DisableAutoaccept();
         client_2_.InternalClient().Pair().Stop().get();
-        const_cast<std::string&>(SeedA_) =
+        const_cast<ot::UnallocatedCString&>(SeedA_) =
             client_1_.InternalClient().Exec().Wallet_ImportSeed(
                 "spike nominee miss inquiry fee nothing belt list other "
                 "daughter leave valley twelve gossip paper",
                 "");
-        const_cast<std::string&>(SeedB_) =
+        const_cast<ot::UnallocatedCString&>(SeedB_) =
             client_2_.InternalClient().Exec().Wallet_ImportSeed(
                 "trim thunder unveil reduce crop cradle zone inquiry "
                 "anchor skate property fringe obey butter text tank drama "
@@ -327,7 +327,8 @@ public:
             throw std::runtime_error("Failed to create unit definition 1");
         }
 
-        const_cast<std::string&>(unit_id_1_) = asset_contract_1_->ID()->str();
+        const_cast<ot::UnallocatedCString&>(unit_id_1_) =
+            asset_contract_1_->ID()->str();
     }
 
     void create_unit_definition_2()
@@ -346,7 +347,8 @@ public:
             throw std::runtime_error("Failed to create unit definition 2");
         }
 
-        const_cast<std::string&>(unit_id_2_) = asset_contract_2_->ID()->str();
+        const_cast<ot::UnallocatedCString&>(unit_id_2_) =
+            asset_contract_2_->ID()->str();
     }
 
     ot::OTIdentifier find_issuer_account()
@@ -1104,20 +1106,20 @@ public:
 
 ot::RequestNumber Test_Basic::alice_counter_{0};
 ot::RequestNumber Test_Basic::bob_counter_{0};
-const std::string Test_Basic::SeedA_{""};
-const std::string Test_Basic::SeedB_{""};
+const ot::UnallocatedCString Test_Basic::SeedA_{""};
+const ot::UnallocatedCString Test_Basic::SeedB_{""};
 const ot::OTNymID Test_Basic::alice_nym_id_{ot::identifier::Nym::Factory()};
 const ot::OTNymID Test_Basic::bob_nym_id_{ot::identifier::Nym::Factory()};
 ot::TransactionNumber Test_Basic::cheque_transaction_number_{0};
-std::string Test_Basic::bob_account_1_id_{""};
-std::string Test_Basic::bob_account_2_id_{""};
-std::string Test_Basic::outgoing_cheque_workflow_id_{};
-std::string Test_Basic::incoming_cheque_workflow_id_{};
-std::string Test_Basic::outgoing_transfer_workflow_id_{};
-std::string Test_Basic::incoming_transfer_workflow_id_{};
-std::string Test_Basic::internal_transfer_workflow_id_{};
-const std::string Test_Basic::unit_id_1_{};
-const std::string Test_Basic::unit_id_2_{};
+ot::UnallocatedCString Test_Basic::bob_account_1_id_{""};
+ot::UnallocatedCString Test_Basic::bob_account_2_id_{""};
+ot::UnallocatedCString Test_Basic::outgoing_cheque_workflow_id_{};
+ot::UnallocatedCString Test_Basic::incoming_cheque_workflow_id_{};
+ot::UnallocatedCString Test_Basic::outgoing_transfer_workflow_id_{};
+ot::UnallocatedCString Test_Basic::incoming_transfer_workflow_id_{};
+ot::UnallocatedCString Test_Basic::internal_transfer_workflow_id_{};
+const ot::UnallocatedCString Test_Basic::unit_id_1_{};
+const ot::UnallocatedCString Test_Basic::unit_id_2_{};
 std::unique_ptr<ot::otx::client::internal::Operation>
     Test_Basic::alice_state_machine_{nullptr};
 std::unique_ptr<ot::otx::client::internal::Operation>
@@ -2735,7 +2737,7 @@ TEST_F(Test_Basic, send_internal_transfer)
         serverAccount.get().GetBalance());
 
     std::size_t count{0}, tries{100};
-    std::set<std::string> workflows{};
+    ot::UnallocatedSet<ot::UnallocatedCString> workflows{};
     while (0 == count) {
         // The state change from ACKNOWLEDGED to CONVEYED occurs
         // asynchronously due to server push notifications so the order in

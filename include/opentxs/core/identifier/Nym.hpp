@@ -65,7 +65,7 @@ class OPENTXS_EXPORT Nym : virtual public opentxs::Identifier
 {
 public:
     static auto Factory() -> OTNymID;
-    static auto Factory(const std::string& rhs) -> OTNymID;
+    static auto Factory(const UnallocatedCString& rhs) -> OTNymID;
     static auto Factory(const String& rhs) -> OTNymID;
     static auto Factory(const identity::Nym& nym) -> OTNymID;
 

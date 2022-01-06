@@ -8,13 +8,13 @@
 #include <zmq.h>
 #include <memory>
 #include <mutex>
-#include <string>
 
 #include "network/zeromq/socket/Receiver.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Sender.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -51,7 +51,7 @@ private:
     static constexpr auto callback_wait_milliseconds_{50};
 
     const bool bidirectional_start_thread_;
-    const std::string endpoint_;
+    const UnallocatedCString endpoint_;
     RawSocket push_socket_;
     RawSocket pull_socket_;
     mutable int linger_;
@@ -64,11 +64,11 @@ private:
     auto bind(
         void* socket,
         std::mutex& socket_mutex,
-        const std::string& endpoint) const noexcept -> bool;
+        const UnallocatedCString& endpoint) const noexcept -> bool;
     auto connect(
         void* socket,
         std::mutex& socket_mutex,
-        const std::string& endpoint) const noexcept -> bool;
+        const UnallocatedCString& endpoint) const noexcept -> bool;
 
     auto process_pull_socket(const Lock& lock) noexcept -> bool;
     auto process_receiver_socket(const Lock& lock) noexcept -> bool;

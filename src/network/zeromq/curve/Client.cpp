@@ -23,9 +23,9 @@
 namespace opentxs::network::zeromq
 {
 auto curve::Client::RandomKeypair() noexcept
-    -> std::pair<std::string, std::string>
+    -> std::pair<UnallocatedCString, UnallocatedCString>
 {
-    std::pair<std::string, std::string> output{};
+    std::pair<UnallocatedCString, UnallocatedCString> output{};
     auto& [privKey, pubKey] = output;
 
     std::array<char, CURVE_KEY_Z85_BYTES + 1> secretKey{};
@@ -54,9 +54,9 @@ Client::Client(socket::implementation::Socket& socket) noexcept
 }
 
 auto Client::SetKeysZ85(
-    const std::string& serverPublic,
-    const std::string& clientPrivate,
-    const std::string& clientPublic) const noexcept -> bool
+    const UnallocatedCString& serverPublic,
+    const UnallocatedCString& clientPrivate,
+    const UnallocatedCString& clientPublic) const noexcept -> bool
 {
     if (CURVE_KEY_Z85_BYTES > serverPublic.size()) {
         LogError()(OT_PRETTY_CLASS())("Invalid server key size (")(
@@ -126,8 +126,8 @@ auto Client::set_local_keys() const noexcept -> bool
 }
 
 auto Client::set_local_keys(
-    const std::string& privateKey,
-    const std::string& publicKey) const noexcept -> bool
+    const UnallocatedCString& privateKey,
+    const UnallocatedCString& publicKey) const noexcept -> bool
 {
     OT_ASSERT(nullptr != parent_);
 

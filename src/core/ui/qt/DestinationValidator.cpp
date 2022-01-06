@@ -9,11 +9,11 @@
 
 #include <algorithm>
 #include <cctype>
-#include <string>
 
 #include "core/ui/qt/DestinationValidator.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::ui
 {

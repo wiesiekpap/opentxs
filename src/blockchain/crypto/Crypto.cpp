@@ -29,7 +29,7 @@ auto blockchain_thread_item_id(
     const opentxs::blockchain::Type chain,
     const Data& txid) noexcept -> OTIdentifier
 {
-    auto preimage = std::string{};
+    auto preimage = UnallocatedCString{};
     const auto hashed = crypto.Hash().HMAC(
         crypto::HashType::Sha256,
         ReadView{reinterpret_cast<const char*>(&chain), sizeof(chain)},
@@ -86,16 +86,17 @@ auto preimage(const blockchain::crypto::Key& in) noexcept -> Space
 
     return out;
 }
-auto print(blockchain::crypto::HDProtocol value) noexcept -> std::string
+auto print(blockchain::crypto::HDProtocol value) noexcept -> UnallocatedCString
 {
     using Proto = blockchain::crypto::HDProtocol;
-    static const auto map = robin_hood::unordered_flat_map<Proto, std::string>{
-        {Proto::BIP_32, "BIP-32"},
-        {Proto::BIP_44, "BIP-44"},
-        {Proto::BIP_49, "BIP-49"},
-        {Proto::BIP_84, "BIP-84"},
-        {Proto::Error, "invalid"},
-    };
+    static const auto map =
+        robin_hood::unordered_flat_map<Proto, UnallocatedCString>{
+            {Proto::BIP_32, "BIP-32"},
+            {Proto::BIP_44, "BIP-44"},
+            {Proto::BIP_49, "BIP-49"},
+            {Proto::BIP_84, "BIP-84"},
+            {Proto::Error, "invalid"},
+        };
 
     try {
 
@@ -106,11 +107,11 @@ auto print(blockchain::crypto::HDProtocol value) noexcept -> std::string
     }
 }
 
-auto print(blockchain::crypto::Subchain value) noexcept -> std::string
+auto print(blockchain::crypto::Subchain value) noexcept -> UnallocatedCString
 {
     using Subchain = blockchain::crypto::Subchain;
     static const auto map =
-        robin_hood::unordered_flat_map<Subchain, std::string>{
+        robin_hood::unordered_flat_map<Subchain, UnallocatedCString>{
             {Subchain::Internal, "internal"},
             {Subchain::External, "external"},
             {Subchain::Incoming, "incoming"},
@@ -128,7 +129,7 @@ auto print(blockchain::crypto::Subchain value) noexcept -> std::string
     }
 }
 
-auto print(const blockchain::crypto::Key& key) noexcept -> std::string
+auto print(const blockchain::crypto::Key& key) noexcept -> UnallocatedCString
 {
     const auto& [account, subchain, index] = key;
 
