@@ -86,7 +86,7 @@ TEST_F(RPC_fixture, preconditions)
             issuer,
             "Mt Gox USD",
             "YOLO",
-            ot::core::UnitType::USD,
+            ot::core::UnitType::Usd,
             {u8"USD", {{u8"dollers", {u8"$", u8"", {{10, 0}}, 2, 3}}}});
 
         EXPECT_FALSE(unit.empty());

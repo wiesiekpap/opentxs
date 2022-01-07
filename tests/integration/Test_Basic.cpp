@@ -85,7 +85,7 @@ class Notary;
 #define UNIT_DEFINITION_CONTRACT_NAME "Mt Gox USD"
 #define UNIT_DEFINITION_TERMS "YOLO"
 #define UNIT_DEFINITION_TLA "USD"
-#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::USD
+#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::Usd
 #define CHEQUE_AMOUNT_1 100
 #define CHEQUE_AMOUNT_2 75
 #define CHEQUE_MEMO "memo"
@@ -207,15 +207,15 @@ TEST_F(Integration, instantiate_ui_objects)
         alex_.nym_id_, make_cb(account_list_alex_, "alex account list"));
     api_alex_.UI().AccountSummary(
         alex_.nym_id_,
-        ot::core::UnitType::BCH,
+        ot::core::UnitType::Bch,
         make_cb(account_summary_bch_alex_, "alex account summary (BCH)"));
     api_alex_.UI().AccountSummary(
         alex_.nym_id_,
-        ot::core::UnitType::BTC,
+        ot::core::UnitType::Btc,
         make_cb(account_summary_btc_alex_, "alex account summary (BTC)"));
     api_alex_.UI().AccountSummary(
         alex_.nym_id_,
-        ot::core::UnitType::USD,
+        ot::core::UnitType::Usd,
         make_cb(account_summary_usd_alex_, "alex account summary (USD)"));
     api_alex_.UI().ActivitySummary(
         alex_.nym_id_,
@@ -226,11 +226,11 @@ TEST_F(Integration, instantiate_ui_objects)
         alex_.nym_id_, make_cb(messagable_list_alex_, "alex messagable list"));
     api_alex_.UI().PayableList(
         alex_.nym_id_,
-        ot::core::UnitType::BCH,
+        ot::core::UnitType::Bch,
         make_cb(payable_list_bch_alex_, "alex payable list (BCH)"));
     api_alex_.UI().PayableList(
         alex_.nym_id_,
-        ot::core::UnitType::BTC,
+        ot::core::UnitType::Btc,
         make_cb(payable_list_btc_alex_, "alex payable list (BTC)"));
     api_alex_.UI().Profile(
         alex_.nym_id_, make_cb(profile_alex_, "alex profile"));
@@ -239,15 +239,15 @@ TEST_F(Integration, instantiate_ui_objects)
         bob_.nym_id_, make_cb(account_list_bob_, "bob account list"));
     api_bob_.UI().AccountSummary(
         bob_.nym_id_,
-        ot::core::UnitType::BCH,
+        ot::core::UnitType::Bch,
         make_cb(account_summary_bch_bob_, "bob account summary (BCH)"));
     api_bob_.UI().AccountSummary(
         bob_.nym_id_,
-        ot::core::UnitType::BTC,
+        ot::core::UnitType::Btc,
         make_cb(account_summary_btc_bob_, "bob account summary (BTC)"));
     api_bob_.UI().AccountSummary(
         bob_.nym_id_,
-        ot::core::UnitType::USD,
+        ot::core::UnitType::Usd,
         make_cb(account_summary_usd_bob_, "bob account summary (USD)"));
     api_bob_.UI().ActivitySummary(
         bob_.nym_id_, make_cb(activity_summary_bob_, "bob activity summary"));
@@ -257,11 +257,11 @@ TEST_F(Integration, instantiate_ui_objects)
         bob_.nym_id_, make_cb(messagable_list_bob_, "bob messagable list"));
     api_bob_.UI().PayableList(
         bob_.nym_id_,
-        ot::core::UnitType::BCH,
+        ot::core::UnitType::Bch,
         make_cb(payable_list_bch_bob_, "bob payable list (BCH)"));
     api_bob_.UI().PayableList(
         bob_.nym_id_,
-        ot::core::UnitType::BTC,
+        ot::core::UnitType::Btc,
         make_cb(payable_list_btc_bob_, "bob payable list (BTC)"));
     api_bob_.UI().Profile(bob_.nym_id_, make_cb(profile_bob_, "bob profile"));
 }
@@ -281,7 +281,7 @@ TEST_F(Integration, account_summary_bch_alex_0)
     ASSERT_TRUE(wait_for_counter(account_summary_bch_alex_));
 
     const auto& widget =
-        alex_.api_->UI().AccountSummary(alex_.nym_id_, ot::core::UnitType::BCH);
+        alex_.api_->UI().AccountSummary(alex_.nym_id_, ot::core::UnitType::Bch);
     auto row = widget.First();
 
     EXPECT_FALSE(row->Valid());
@@ -292,7 +292,7 @@ TEST_F(Integration, account_summary_btc_alex_0)
     ASSERT_TRUE(wait_for_counter(account_summary_btc_alex_));
 
     const auto& widget =
-        alex_.api_->UI().AccountSummary(alex_.nym_id_, ot::core::UnitType::BTC);
+        alex_.api_->UI().AccountSummary(alex_.nym_id_, ot::core::UnitType::Btc);
     auto row = widget.First();
 
     EXPECT_FALSE(row->Valid());
@@ -303,7 +303,7 @@ TEST_F(Integration, account_summary_usd_alex_0)
     ASSERT_TRUE(wait_for_counter(account_summary_usd_alex_));
 
     const auto& widget =
-        alex_.api_->UI().AccountSummary(alex_.nym_id_, ot::core::UnitType::USD);
+        alex_.api_->UI().AccountSummary(alex_.nym_id_, ot::core::UnitType::Usd);
     auto row = widget.First();
 
     EXPECT_FALSE(row->Valid());
@@ -353,7 +353,7 @@ TEST_F(Integration, payable_list_bch_alex_0)
     ASSERT_TRUE(wait_for_counter(payable_list_bch_alex_));
 
     const auto& widget =
-        alex_.api_->UI().PayableList(alex_.nym_id_, ot::core::UnitType::BCH);
+        alex_.api_->UI().PayableList(alex_.nym_id_, ot::core::UnitType::Bch);
     auto row = widget.First();
 
     EXPECT_FALSE(row->Valid());
@@ -364,7 +364,7 @@ TEST_F(Integration, payable_list_btc_alex_0)
     ASSERT_TRUE(wait_for_counter(payable_list_btc_alex_));
 
     const auto& widget =
-        alex_.api_->UI().PayableList(alex_.nym_id_, ot::core::UnitType::BTC);
+        alex_.api_->UI().PayableList(alex_.nym_id_, ot::core::UnitType::Btc);
     auto row = widget.First();
 
     if (have_hd_) {
@@ -408,7 +408,7 @@ TEST_F(Integration, account_summary_bch_bob_0)
     ASSERT_TRUE(wait_for_counter(account_summary_bch_bob_));
 
     const auto& widget =
-        bob_.api_->UI().AccountSummary(bob_.nym_id_, ot::core::UnitType::BCH);
+        bob_.api_->UI().AccountSummary(bob_.nym_id_, ot::core::UnitType::Bch);
     auto row = widget.First();
 
     EXPECT_FALSE(row->Valid());
@@ -419,7 +419,7 @@ TEST_F(Integration, account_summary_btc_bob_0)
     ASSERT_TRUE(wait_for_counter(account_summary_btc_bob_));
 
     const auto& widget =
-        bob_.api_->UI().AccountSummary(bob_.nym_id_, ot::core::UnitType::BTC);
+        bob_.api_->UI().AccountSummary(bob_.nym_id_, ot::core::UnitType::Btc);
     auto row = widget.First();
 
     EXPECT_FALSE(row->Valid());
@@ -430,7 +430,7 @@ TEST_F(Integration, account_summary_usd_bob_0)
     ASSERT_TRUE(wait_for_counter(account_summary_usd_bob_));
 
     const auto& widget =
-        bob_.api_->UI().AccountSummary(bob_.nym_id_, ot::core::UnitType::USD);
+        bob_.api_->UI().AccountSummary(bob_.nym_id_, ot::core::UnitType::Usd);
     auto row = widget.First();
 
     EXPECT_FALSE(row->Valid());
@@ -480,7 +480,7 @@ TEST_F(Integration, payable_list_bch_bob_0)
     ASSERT_TRUE(wait_for_counter(payable_list_bch_bob_));
 
     const auto& widget =
-        bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::BCH);
+        bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::Bch);
     auto row = widget.First();
 
     EXPECT_FALSE(row->Valid());
@@ -491,7 +491,7 @@ TEST_F(Integration, payable_list_btc_bob_0)
     ASSERT_TRUE(wait_for_counter(payable_list_btc_bob_));
 
     const auto& widget =
-        bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::BTC);
+        bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::Btc);
     auto row = widget.First();
 
     if (have_hd_) {
@@ -558,47 +558,47 @@ TEST_F(Integration, payment_codes)
 
         alex.AddPaymentCode(
             alex_.payment_code_,
-            ot::core::UnitType::BTC,
+            ot::core::UnitType::Btc,
             true,
             true,
             alex_.Reason());
         bob.AddPaymentCode(
             bob_.payment_code_,
-            ot::core::UnitType::BTC,
+            ot::core::UnitType::Btc,
             true,
             true,
             bob_.Reason());
         issuer.AddPaymentCode(
             issuer_.payment_code_,
-            ot::core::UnitType::BTC,
+            ot::core::UnitType::Btc,
             true,
             true,
             issuer_.Reason());
         alex.AddPaymentCode(
             alex_.payment_code_,
-            ot::core::UnitType::BCH,
+            ot::core::UnitType::Bch,
             true,
             true,
             alex_.Reason());
         bob.AddPaymentCode(
             bob_.payment_code_,
-            ot::core::UnitType::BCH,
+            ot::core::UnitType::Bch,
             true,
             true,
             bob_.Reason());
         issuer.AddPaymentCode(
             issuer_.payment_code_,
-            ot::core::UnitType::BCH,
+            ot::core::UnitType::Bch,
             true,
             true,
             issuer_.Reason());
 
-        EXPECT_FALSE(alex.PaymentCode(ot::core::UnitType::BTC).empty());
-        EXPECT_FALSE(bob.PaymentCode(ot::core::UnitType::BTC).empty());
-        EXPECT_FALSE(issuer.PaymentCode(ot::core::UnitType::BTC).empty());
-        EXPECT_FALSE(alex.PaymentCode(ot::core::UnitType::BCH).empty());
-        EXPECT_FALSE(bob.PaymentCode(ot::core::UnitType::BCH).empty());
-        EXPECT_FALSE(issuer.PaymentCode(ot::core::UnitType::BCH).empty());
+        EXPECT_FALSE(alex.PaymentCode(ot::core::UnitType::Btc).empty());
+        EXPECT_FALSE(bob.PaymentCode(ot::core::UnitType::Btc).empty());
+        EXPECT_FALSE(issuer.PaymentCode(ot::core::UnitType::Btc).empty());
+        EXPECT_FALSE(alex.PaymentCode(ot::core::UnitType::Bch).empty());
+        EXPECT_FALSE(bob.PaymentCode(ot::core::UnitType::Bch).empty());
+        EXPECT_FALSE(issuer.PaymentCode(ot::core::UnitType::Bch).empty());
     }
 
     alex.Release();
@@ -697,7 +697,7 @@ TEST_F(Integration, payable_list_bch_alex_1)
         ASSERT_TRUE(wait_for_counter(payable_list_bch_alex_));
 
         const auto& widget = alex_.api_->UI().PayableList(
-            alex_.nym_id_, ot::core::UnitType::BCH);
+            alex_.nym_id_, ot::core::UnitType::Bch);
         auto row = widget.First();
 
         ASSERT_TRUE(row->Valid());
@@ -712,7 +712,7 @@ TEST_F(Integration, payable_list_btc_alex_1)
         ASSERT_TRUE(wait_for_counter(payable_list_btc_alex_));
 
         const auto& widget = alex_.api_->UI().PayableList(
-            alex_.nym_id_, ot::core::UnitType::BTC);
+            alex_.nym_id_, ot::core::UnitType::Btc);
         auto row = widget.First();
 
         ASSERT_TRUE(row->Valid());
@@ -901,7 +901,7 @@ TEST_F(Integration, payable_list_bch_alex_2)
         ASSERT_TRUE(wait_for_counter(payable_list_bch_alex_));
 
         const auto& widget = alex_.api_->UI().PayableList(
-            alex_.nym_id_, ot::core::UnitType::BCH);
+            alex_.nym_id_, ot::core::UnitType::Bch);
         auto row = widget.First();
 
         ASSERT_TRUE(row->Valid());
@@ -921,7 +921,7 @@ TEST_F(Integration, payable_list_bch_bob_1)
         ASSERT_TRUE(wait_for_counter(payable_list_bch_bob_));
 
         const auto& widget =
-            bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::BTC);
+            bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::Btc);
         auto row = widget.First();
 
         ASSERT_TRUE(row->Valid());
@@ -941,7 +941,7 @@ TEST_F(Integration, payable_list_btc_bob_1)
         ASSERT_TRUE(wait_for_counter(payable_list_btc_bob_));
 
         const auto& widget =
-            bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::BCH);
+            bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::Bch);
         auto row = widget.First();
 
         ASSERT_TRUE(row->Valid());
@@ -1146,7 +1146,7 @@ TEST_F(Integration, payable_list_bch_bob_2)
         ASSERT_TRUE(wait_for_counter(payable_list_bch_bob_));
 
         const auto& widget =
-            bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::BTC);
+            bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::Btc);
         auto row = widget.First();
 
         ASSERT_TRUE(row->Valid());
@@ -1187,7 +1187,7 @@ TEST_F(Integration, issue_dollars)
     }
 
     auto task = api_issuer_.OTX().IssueUnitDefinition(
-        issuer_.nym_id_, server_1_.id_, unit_id_, ot::core::UnitType::USD);
+        issuer_.nym_id_, server_1_.id_, unit_id_, ot::core::UnitType::Usd);
     auto& [taskID, future] = task;
     const auto result = future.get();
 
@@ -1215,7 +1215,7 @@ TEST_F(Integration, issue_dollars)
 
         const auto& section = *pSection;
         const auto pGroup =
-            section.Group(ot::identity::wot::claim::ClaimType::USD);
+            section.Group(ot::identity::wot::claim::ClaimType::Usd);
 
         ASSERT_TRUE(pGroup);
 
@@ -1359,7 +1359,7 @@ TEST_F(Integration, payable_list_bch_alex_3)
         ASSERT_TRUE(wait_for_counter(payable_list_bch_alex_));
 
         const auto& widget = alex_.api_->UI().PayableList(
-            alex_.nym_id_, ot::core::UnitType::BCH);
+            alex_.nym_id_, ot::core::UnitType::Bch);
         auto row = widget.First();
 
         ASSERT_TRUE(row->Valid());
@@ -1384,7 +1384,7 @@ TEST_F(Integration, payable_list_btc_alex_2)
         ASSERT_TRUE(wait_for_counter(payable_list_bch_alex_));
 
         const auto& widget = alex_.api_->UI().PayableList(
-            alex_.nym_id_, ot::core::UnitType::BTC);
+            alex_.nym_id_, ot::core::UnitType::Btc);
         auto row = widget.First();
 
         ASSERT_TRUE(row->Valid());
@@ -1417,7 +1417,7 @@ TEST_F(Integration, issuer_claims)
     ASSERT_TRUE(pSection);
 
     const auto& section = *pSection;
-    const auto pGroup = section.Group(ot::identity::wot::claim::ClaimType::USD);
+    const auto pGroup = section.Group(ot::identity::wot::claim::ClaimType::Usd);
 
     ASSERT_TRUE(pGroup);
 
@@ -1479,7 +1479,7 @@ TEST_F(Integration, account_list_alex_1)
     EXPECT_EQ(server_1_.id_->str(), row->NotaryID());
     EXPECT_EQ(server_1_.Contract()->EffectiveName(), row->NotaryName());
     EXPECT_EQ(ot::AccountType::Custodial, row->Type());
-    EXPECT_EQ(ot::core::UnitType::USD, row->Unit());
+    EXPECT_EQ(ot::core::UnitType::Usd, row->Unit());
 }
 
 TEST_F(Integration, activity_thread_issuer_alex_0)

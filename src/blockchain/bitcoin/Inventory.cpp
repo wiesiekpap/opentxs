@@ -42,7 +42,8 @@ Inventory::Inventory(const Type type, const Hash& hash) noexcept
     static_assert(size() == sizeof(BitcoinFormat));
 }
 
-Inventory::Inventory(const void* payload, const std::size_t size) noexcept
+Inventory::Inventory(const void* payload, const std::size_t size) noexcept(
+    false)
     : type_(decode_type(payload, size))
     , hash_(decode_hash(payload, size))
 {
@@ -89,7 +90,18 @@ auto Inventory::decode_type(
 
     std::memcpy(&type, payload, sizeof(type));
 
-    return reverse_map_.at(type.value());
+    auto inventorytype = Inventory::Type{};
+    try {
+        inventorytype = reverse_map_.at(type.value());
+    } catch (std::out_of_range&) {
+        LogError()("Inventory::decode_type: unknown payload type")(
+            " InventoryTypeField: ")(std::to_string(type.value()))
+            .Flush();
+
+        std::rethrow_exception(std::current_exception());
+    }
+
+    return inventorytype;
 }
 
 auto Inventory::DisplayType(const Type type) noexcept -> UnallocatedCString

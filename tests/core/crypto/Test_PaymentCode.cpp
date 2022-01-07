@@ -45,8 +45,8 @@ public:
     ot::UnallocatedCString seed, fingerprint, nymID_0, paycode_0, nymID_1,
         paycode_1, nymID_2, paycode_2, nymID_3, paycode_3;
     ot::NymData nymData_0, nymData_1, nymData_2, nymData_3;
-    ot::core::UnitType currency = ot::core::UnitType::BCH;
-    ot::core::UnitType currency_2 = ot::core::UnitType::BTC;
+    ot::core::UnitType currency = ot::core::UnitType::Bch;
+    ot::core::UnitType currency_2 = ot::core::UnitType::Btc;
 
     /* Is evaluated every test, therefore indexes are fixed to 0,1,2,3 */
     Test_PaymentCode()

@@ -324,7 +324,7 @@ void Test_Rpc_Async::setup()
         "GTD",
         2,
         "gcent",
-        ot::core::UnitType::USD,
+        ot::core::UnitType::Usd,
         reasonS);
     unit_definition_id_ =
         ot::identifier::UnitDefinition::Factory(unit_definition->ID()->str());

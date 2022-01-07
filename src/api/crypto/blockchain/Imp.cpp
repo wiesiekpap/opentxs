@@ -317,45 +317,45 @@ auto Blockchain::Imp::bip44_type(const core::UnitType type) const noexcept
     -> Bip44Type
 {
     switch (type) {
-        case core::UnitType::BTC: {
+        case core::UnitType::Btc: {
 
             return Bip44Type::BITCOIN;
         }
-        case core::UnitType::LTC: {
+        case core::UnitType::Ltc: {
 
             return Bip44Type::LITECOIN;
         }
-        case core::UnitType::DOGE: {
+        case core::UnitType::Doge: {
 
             return Bip44Type::DOGECOIN;
         }
-        case core::UnitType::DASH: {
+        case core::UnitType::Dash: {
 
             return Bip44Type::DASH;
         }
-        case core::UnitType::BCH: {
+        case core::UnitType::Bch: {
 
             return Bip44Type::BITCOINCASH;
         }
-        case core::UnitType::PKT: {
+        case core::UnitType::Pkt: {
 
             return Bip44Type::PKT;
         }
-        case core::UnitType::TNBCH:
-        case core::UnitType::TNBTC:
-        case core::UnitType::TNXRP:
-        case core::UnitType::TNLTX:
-        case core::UnitType::TNXEM:
-        case core::UnitType::TNDASH:
-        case core::UnitType::TNMAID:
-        case core::UnitType::TNLSK:
-        case core::UnitType::TNDOGE:
-        case core::UnitType::TNXMR:
-        case core::UnitType::TNWAVES:
-        case core::UnitType::TNNXT:
-        case core::UnitType::TNSC:
-        case core::UnitType::TNSTEEM:
-        case core::UnitType::TNPKT:
+        case core::UnitType::Tnbch:
+        case core::UnitType::Tnbtc:
+        case core::UnitType::Tnxrp:
+        case core::UnitType::Tnltx:
+        case core::UnitType::Tnxem:
+        case core::UnitType::Tndash:
+        case core::UnitType::Tnmaid:
+        case core::UnitType::Tnlsk:
+        case core::UnitType::Tndoge:
+        case core::UnitType::Tnxmr:
+        case core::UnitType::Tnwaves:
+        case core::UnitType::Tnnxt:
+        case core::UnitType::Tnsc:
+        case core::UnitType::Tnsteem:
+        case core::UnitType::Tnpkt:
         case core::UnitType::Regtest: {
             return Bip44Type::TESTNET;
         }

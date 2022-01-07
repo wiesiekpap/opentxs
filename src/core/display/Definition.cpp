@@ -119,7 +119,7 @@ auto GetDefinition(core::UnitType in) noexcept -> const Definition&
 {
     static const auto defaultDefinition = Definition{};
     static const auto map = DefinitionMap{
-        {core::UnitType::BTC,
+        {core::UnitType::Btc,
          {u8"BTC",
           {
               {u8"BTC", {"", u8"₿", {{10, 8}}, 0, 8}},
@@ -128,7 +128,7 @@ auto GetDefinition(core::UnitType in) noexcept -> const Definition&
               {u8"μBTC", {"", u8"μBTC", {{10, 2}}, 0, 2}},
               {u8"satoshi", {"", u8"satoshis", {{10, 0}}, 0, 0}},
           }}},
-        {core::UnitType::TNBTC,
+        {core::UnitType::Tnbtc,
          {u8"BTC",
           {
               {u8"BTC", {"", u8"tBTC", {{10, 8}}, 0, 8}},
@@ -137,7 +137,7 @@ auto GetDefinition(core::UnitType in) noexcept -> const Definition&
               {u8"μBTC", {"", u8"μBTC", {{10, 2}}, 0, 2}},
               {u8"satoshi", {"", u8"satoshis", {{10, 0}}, 0, 0}},
           }}},
-        {core::UnitType::BCH,
+        {core::UnitType::Bch,
          {u8"BCH",
           {
               {u8"BCH", {"", u8"BCH", {{10, 8}}, 0, 8}},
@@ -146,7 +146,7 @@ auto GetDefinition(core::UnitType in) noexcept -> const Definition&
               {u8"μBCH", {"", u8"μBCH", {{10, 2}}, 0, 2}},
               {u8"satoshi", {"", u8"satoshis", {{10, 0}}, 0, 0}},
           }}},
-        {core::UnitType::TNBCH,
+        {core::UnitType::Tnbch,
          {u8"BCH",
           {
               {u8"BCH", {"", u8"tBCH", {{10, 8}}, 0, 8}},
@@ -155,9 +155,9 @@ auto GetDefinition(core::UnitType in) noexcept -> const Definition&
               {u8"μBCH", {"", u8"μBCH", {{10, 2}}, 0, 2}},
               {u8"satoshi", {"", u8"satoshis", {{10, 0}}, 0, 0}},
           }}},
-        {core::UnitType::ETH, {}},               // TODO
-        {core::UnitType::Ethereum_Ropsten, {}},  // TODO
-        {core::UnitType::LTC,
+        {core::UnitType::Eth, {}},               // TODO
+        {core::UnitType::Ethereum_ropsten, {}},  // TODO
+        {core::UnitType::Ltc,
          {u8"LTC",
           {
               {u8"LTC", {"", u8"Ł", {{10, 8}}, 0, 6}},
@@ -165,7 +165,7 @@ auto GetDefinition(core::UnitType in) noexcept -> const Definition&
               {u8"μLTC", {"", u8"μŁ", {{10, 2}}, 0, 0}},
               {u8"photons", {"", u8"photons", {{10, 2}}, 0, 0}},
           }}},
-        {core::UnitType::TNLTX,
+        {core::UnitType::Tnltx,
          {u8"LTC",
           {
               {u8"LTC", {"", u8"Ł", {{10, 8}}, 0, 6}},
@@ -173,7 +173,7 @@ auto GetDefinition(core::UnitType in) noexcept -> const Definition&
               {u8"μLTC", {"", u8"μŁ", {{10, 2}}, 0, 0}},
               {u8"photons", {"", u8"photons", {{10, 2}}, 0, 0}},
           }}},
-        {core::UnitType::PKT,
+        {core::UnitType::Pkt,
          {u8"PKT",
           {
               {u8"PKT", {"", u8"PKT", {{2, 30}}, 0, 11}},
@@ -182,7 +182,7 @@ auto GetDefinition(core::UnitType in) noexcept -> const Definition&
               {u8"nPKT", {"", u8"nPKT", {{2, 30}, {10, -9}}, 0, 2}},
               {u8"pack", {"", u8"pack", {{10, 0}}, 0, 0}},
           }}},
-        {core::UnitType::TNPKT,
+        {core::UnitType::Tnpkt,
          {u8"PKT",
           {
               {u8"PKT", {"", u8"PKT", {{2, 30}}, 0, 11}},
@@ -196,7 +196,7 @@ auto GetDefinition(core::UnitType in) noexcept -> const Definition&
           {
               {u8"Unit", {"", u8"units", {{10, 8}}, 0, 8}},
           }}},
-        {core::UnitType::USD,
+        {core::UnitType::Usd,
          {u8"USD",
           {
               {u8"dollars", {u8"$", u8"", {{10, 0}}, 2, 3}},

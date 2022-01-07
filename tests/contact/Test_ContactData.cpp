@@ -162,7 +162,7 @@ void Test_ContactData::testAddItemMethod(
         new ot::identity::wot::claim::Group(
             "contactGroup1",
             sectionName,
-            ot::identity::wot::claim::ClaimType::BCH,
+            ot::identity::wot::claim::ClaimType::Bch,
             {}));
 
     const auto& section1 = std::shared_ptr<ot::identity::wot::claim::Section>(
@@ -173,7 +173,7 @@ void Test_ContactData::testAddItemMethod(
             version,
             sectionName,
             ot::identity::wot::claim::Section::GroupMap{
-                {ot::identity::wot::claim::ClaimType::BCH, group1}}));
+                {ot::identity::wot::claim::ClaimType::Bch, group1}}));
 
     const ot::identity::wot::claim::Data data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
@@ -185,7 +185,7 @@ void Test_ContactData::testAddItemMethod(
     const auto& data2 = contactDataMethod(
         data1,
         "instrumentDefinitionID1",
-        ot::core::UnitType::BCH,
+        ot::core::UnitType::Bch,
         false,
         false);
 
@@ -200,7 +200,7 @@ void Test_ContactData::testAddItemMethod(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactDataNym1",
             sectionName,
-            ot::identity::wot::claim::ClaimType::BCH,
+            ot::identity::wot::claim::ClaimType::Bch,
             NULL_START,
             NULL_END,
             "instrumentDefinitionID1",
@@ -213,7 +213,7 @@ void Test_ContactData::testAddItemMethod(
     const auto& data3 = contactDataMethod(
         data2,
         "instrumentDefinitionID2",
-        ot::core::UnitType::BCH,
+        ot::core::UnitType::Bch,
         false,
         false);
 
@@ -223,7 +223,7 @@ void Test_ContactData::testAddItemMethod(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactDataNym1",
             sectionName,
-            ot::identity::wot::claim::ClaimType::BCH,
+            ot::identity::wot::claim::ClaimType::Bch,
             NULL_START,
             NULL_END,
             "instrumentDefinitionID2",
@@ -236,21 +236,21 @@ void Test_ContactData::testAddItemMethod(
     const auto& data4 = contactDataMethod(
         data3,
         "instrumentDefinitionID3",
-        ot::core::UnitType::EUR,
+        ot::core::UnitType::Eur,
         false,
         false);
 
     // Verify the group was created.
     ASSERT_NE(
         nullptr,
-        data4.Group(sectionName, ot::identity::wot::claim::ClaimType::EUR));
+        data4.Group(sectionName, ot::identity::wot::claim::ClaimType::Eur));
     // Verify that the item was made primary.
     const ot::OTIdentifier identifier3(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactDataNym1",
             sectionName,
-            ot::identity::wot::claim::ClaimType::EUR,
+            ot::identity::wot::claim::ClaimType::Eur,
             NULL_START,
             NULL_END,
             "instrumentDefinitionID3",
@@ -261,19 +261,19 @@ void Test_ContactData::testAddItemMethod(
 
     // Add an active contact.
     const auto& data5 = contactDataMethod(
-        data4, "instrumentDefinitionID4", ot::core::UnitType::USD, false, true);
+        data4, "instrumentDefinitionID4", ot::core::UnitType::Usd, false, true);
 
     // Verify the group was created.
     ASSERT_NE(
         nullptr,
-        data5.Group(sectionName, ot::identity::wot::claim::ClaimType::USD));
+        data5.Group(sectionName, ot::identity::wot::claim::ClaimType::Usd));
     // Verify that the item was made active.
     const ot::OTIdentifier identifier4(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactDataNym1",
             sectionName,
-            ot::identity::wot::claim::ClaimType::USD,
+            ot::identity::wot::claim::ClaimType::Usd,
             NULL_START,
             NULL_END,
             "instrumentDefinitionID4",
@@ -284,7 +284,7 @@ void Test_ContactData::testAddItemMethod(
 
     // Add a primary contact.
     const auto& data6 = contactDataMethod(
-        data5, "instrumentDefinitionID5", ot::core::UnitType::USD, true, false);
+        data5, "instrumentDefinitionID5", ot::core::UnitType::Usd, true, false);
 
     // Verify that the item was made primary.
     const ot::OTIdentifier identifier5(
@@ -292,7 +292,7 @@ void Test_ContactData::testAddItemMethod(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactDataNym1",
             sectionName,
-            ot::identity::wot::claim::ClaimType::USD,
+            ot::identity::wot::claim::ClaimType::Usd,
             NULL_START,
             NULL_END,
             "instrumentDefinitionID5",
@@ -826,7 +826,7 @@ TEST_F(Test_ContactData, AddItem_claim)
     ot::Claim claim = std::make_tuple(
         ot::UnallocatedCString(""),
         ot::translate(ot::identity::wot::claim::SectionType::Contract),
-        ot::translate(ot::identity::wot::claim::ClaimType::USD),
+        ot::translate(ot::identity::wot::claim::ClaimType::Usd),
         ot::UnallocatedCString("contactItemValue"),
         NULL_START,
         NULL_END,
@@ -842,10 +842,10 @@ TEST_F(Test_ContactData, AddItem_claim)
         nullptr,
         data1.Group(
             ot::identity::wot::claim::SectionType::Contract,
-            ot::identity::wot::claim::ClaimType::USD));
+            ot::identity::wot::claim::ClaimType::Usd));
     ASSERT_TRUE(data1.HaveClaim(
         ot::identity::wot::claim::SectionType::Contract,
-        ot::identity::wot::claim::ClaimType::USD,
+        ot::identity::wot::claim::ClaimType::Usd,
         "contactItemValue"));
 }
 
@@ -855,7 +855,7 @@ TEST_F(Test_ContactData, AddItem_claim_different_versions)
         new ot::identity::wot::claim::Group(
             "contactGroup1",
             ot::identity::wot::claim::SectionType::Contract,
-            ot::identity::wot::claim::ClaimType::BCH,
+            ot::identity::wot::claim::ClaimType::Bch,
             {}));
 
     const auto& section1 = std::shared_ptr<ot::identity::wot::claim::Section>(
@@ -867,7 +867,7 @@ TEST_F(Test_ContactData, AddItem_claim_different_versions)
             3,
             ot::identity::wot::claim::SectionType::Contract,
             ot::identity::wot::claim::Section::GroupMap{
-                {ot::identity::wot::claim::ClaimType::BCH, group1}}));
+                {ot::identity::wot::claim::ClaimType::Bch, group1}}));
 
     const ot::identity::wot::claim::Data data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
@@ -881,7 +881,7 @@ TEST_F(Test_ContactData, AddItem_claim_different_versions)
     ot::Claim claim = std::make_tuple(
         ot::UnallocatedCString(""),
         ot::translate(ot::identity::wot::claim::SectionType::Contract),
-        ot::translate(ot::identity::wot::claim::ClaimType::BCH),
+        ot::translate(ot::identity::wot::claim::ClaimType::Bch),
         ot::UnallocatedCString("contactItemValue"),
         NULL_START,
         NULL_END,
@@ -947,7 +947,7 @@ TEST_F(Test_ContactData, AddItem_item_different_versions)
         new ot::identity::wot::claim::Group(
             "contactGroup1",
             ot::identity::wot::claim::SectionType::Contract,
-            ot::identity::wot::claim::ClaimType::BCH,
+            ot::identity::wot::claim::ClaimType::Bch,
             {}));
 
     const auto& section1 = std::shared_ptr<ot::identity::wot::claim::Section>(
@@ -959,7 +959,7 @@ TEST_F(Test_ContactData, AddItem_item_different_versions)
             3,
             ot::identity::wot::claim::SectionType::Contract,
             ot::identity::wot::claim::Section::GroupMap{
-                {ot::identity::wot::claim::ClaimType::BCH, group1}}));
+                {ot::identity::wot::claim::ClaimType::Bch, group1}}));
 
     const ot::identity::wot::claim::Data data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
@@ -977,7 +977,7 @@ TEST_F(Test_ContactData, AddItem_item_different_versions)
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Contract,
-            ot::identity::wot::claim::ClaimType::BCH,
+            ot::identity::wot::claim::ClaimType::Bch,
             ot::UnallocatedCString("contactItemValue1"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
@@ -1521,18 +1521,18 @@ TEST_F(Test_ContactData, Claim_not_found)
 TEST_F(Test_ContactData, Contracts)
 {
     const auto& data1 = contactData_.AddContract(
-        "instrumentDefinitionID1", ot::core::UnitType::USD, false, false);
-    const auto& contracts = data1.Contracts(ot::core::UnitType::USD, false);
+        "instrumentDefinitionID1", ot::core::UnitType::Usd, false, false);
+    const auto& contracts = data1.Contracts(ot::core::UnitType::Usd, false);
     ASSERT_EQ(1, contracts.size());
 }
 
 TEST_F(Test_ContactData, Contracts_onlyactive)
 {
     const auto& data1 = contactData_.AddContract(
-        "instrumentDefinitionID1", ot::core::UnitType::USD, false, true);
+        "instrumentDefinitionID1", ot::core::UnitType::Usd, false, true);
     const auto& data2 = data1.AddContract(
-        "instrumentDefinitionID2", ot::core::UnitType::USD, false, false);
-    const auto& contracts = data2.Contracts(ot::core::UnitType::USD, true);
+        "instrumentDefinitionID2", ot::core::UnitType::Usd, false, false);
+    const auto& contracts = data2.Contracts(ot::core::UnitType::Usd, true);
     ASSERT_EQ(1, contracts.size());
 }
 
@@ -1880,7 +1880,7 @@ TEST_F(Test_ContactData, SetScope_different_versions)
         {});
 
     const auto& data2 =
-        data1.SetScope(ot::identity::wot::claim::ClaimType::BOT, "botScope");
+        data1.SetScope(ot::identity::wot::claim::ClaimType::Bot, "botScope");
 
     ASSERT_EQ(4, data2.Version());
 }

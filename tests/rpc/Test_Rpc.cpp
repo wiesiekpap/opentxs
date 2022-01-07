@@ -812,7 +812,7 @@ TEST_F(Test_Rpc, Create_Unit_Definition)
     def->set_tla("GTD");
     def->set_power(2);
     def->set_terms("Google Test Dollars");
-    def->set_unitofaccount(translate(identity::wot::claim::ClaimType::USD));
+    def->set_unitofaccount(translate(identity::wot::claim::ClaimType::Usd));
     auto response = ot_.RPC(command);
 
     EXPECT_TRUE(proto::Validate(response, VERBOSE));

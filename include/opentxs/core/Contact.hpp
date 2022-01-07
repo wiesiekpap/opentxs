@@ -99,9 +99,9 @@ public:
     auto LastUpdated() const -> std::time_t;
     auto Nyms(const bool includeInactive = false) const
         -> UnallocatedVector<OTNymID>;
-    auto PaymentCode(const core::UnitType currency = core::UnitType::BTC) const
+    auto PaymentCode(const core::UnitType currency = core::UnitType::Btc) const
         -> UnallocatedCString;
-    auto PaymentCodes(const core::UnitType currency = core::UnitType::BTC) const
+    auto PaymentCodes(const core::UnitType currency = core::UnitType::Btc) const
         -> UnallocatedVector<UnallocatedCString>;
     auto PhoneNumbers(bool active = true) const -> UnallocatedCString;
     auto Print() const -> UnallocatedCString;
@@ -129,7 +129,7 @@ public:
     auto AddPaymentCode(
         const opentxs::PaymentCode& code,
         const bool primary,
-        const core::UnitType currency = core::UnitType::BTC,
+        const core::UnitType currency = core::UnitType::Btc,
         const bool active = true) -> bool;
     auto AddPhoneNumber(
         const UnallocatedCString& value,
