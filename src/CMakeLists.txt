@@ -244,6 +244,14 @@ if(OT_PCH)
       <mach-o/dyld.h>
     )
   endif()
+
+  if(NOT ANDROID)
+    target_precompile_headers(
+      opentxs-common
+      PUBLIC
+      "$<$<COMPILE_LANGUAGE:CXX>:<memory_resource$<ANGLE-R>>"
+    )
+  endif()
 endif()
 
 set(OPENTXS_QT_PUBLIC_HEADERS "")

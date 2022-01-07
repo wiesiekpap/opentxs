@@ -58,6 +58,8 @@ auto Configuration::AddSyncServer(
         MDB_NODUPDATA);
 
     if (success) {
+        LogDetail()(OT_PRETTY_CLASS())("successfully added endpoint ")(endpoint)
+            .Flush();
         static const auto value = bool{true};
         socket_->Send([&] {
             auto work =

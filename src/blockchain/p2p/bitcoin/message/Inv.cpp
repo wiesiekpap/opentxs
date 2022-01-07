@@ -37,53 +37,50 @@ auto BitcoinP2PInv(
     namespace bitcoin = blockchain::p2p::bitcoin::message;
     using ReturnType = bitcoin::implementation::Inv;
 
-    if (false == bool(pHeader)) {
-        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
-
-        return nullptr;
-    }
-
-    auto expectedSize = sizeof(std::byte);
-
-    if (expectedSize > size) {
-        LogError()("opentxs::factory::")(__func__)(
-            ": Size below minimum for Inv 1")
-            .Flush();
-
-        return nullptr;
-    }
-
-    auto* it{static_cast<const std::byte*>(payload)};
-    std::size_t count{0};
-    const bool haveCount =
-        network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);
-
-    if (false == haveCount) {
-        LogError()(__func__)(": CompactSize incomplete").Flush();
-
-        return nullptr;
-    }
-
-    UnallocatedVector<blockchain::bitcoin::Inventory> items{};
-
-    if (count > 0) {
-        for (std::size_t i{0}; i < count; ++i) {
-            expectedSize += ReturnType::value_type::EncodedSize;
-
-            if (expectedSize > size) {
-                LogError()("opentxs::factory::")(__func__)(
-                    ": Inventory entries incomplete at entry index ")(i)
-                    .Flush();
-
-                return nullptr;
-            }
-
-            items.emplace_back(it, ReturnType::value_type::EncodedSize);
-            it += ReturnType::value_type::EncodedSize;
+    try {
+        if (false == bool(pHeader)) {
+            throw std::runtime_error{"Invalid header"};
         }
-    }
 
-    return new ReturnType(api, std::move(pHeader), std::move(items));
+        auto expectedSize = sizeof(std::byte);
+
+        if (expectedSize > size) {
+            throw std::runtime_error{"Size below minimum for Inv 1"};
+        }
+
+        auto* it{static_cast<const std::byte*>(payload)};
+        std::size_t count{0};
+        const bool haveCount = network::blockchain::bitcoin::DecodeSize(
+            it, expectedSize, size, count);
+
+        if (false == haveCount) {
+            throw std::runtime_error{"CompactSize incomplete"};
+        }
+
+        UnallocatedVector<blockchain::bitcoin::Inventory> items{};
+
+        if (count > 0) {
+            for (std::size_t i{0}; i < count; ++i) {
+                expectedSize += ReturnType::value_type::EncodedSize;
+
+                if (expectedSize > size) {
+                    throw std::runtime_error{
+                        UnallocatedCString{
+                            "Inventory entries incomplete at entry index "} +
+                        std::to_string(i)};
+                }
+
+                items.emplace_back(it, ReturnType::value_type::EncodedSize);
+                it += ReturnType::value_type::EncodedSize;
+            }
+        }
+
+        return new ReturnType(api, std::move(pHeader), std::move(items));
+    } catch (const std::exception& e) {
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+
+        return nullptr;
+    }
 }
 
 auto BitcoinP2PInv(
