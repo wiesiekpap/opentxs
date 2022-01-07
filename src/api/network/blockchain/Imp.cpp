@@ -319,9 +319,11 @@ auto BlockchainImp::Init(
                 output.provide_sync_server_ = true;
                 output.disable_wallet_ = true;
             }
-        } else {
+        } else if (sync || (false == options.TestMode())) {
             output.use_sync_server_ = true;
-            output.download_cfilters_ = false;
+
+        } else {
+            output.download_cfilters_ = true;
         }
 
         output.disable_wallet_ = !options.BlockchainWalletEnabled();
