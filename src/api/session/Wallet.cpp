@@ -2334,11 +2334,17 @@ auto Wallet::Server(const proto::ServerContract& contract) const
 
     const auto serverID = api_.Factory().ServerID(contract.id());
 
-    if (serverID->empty()) { throw std::runtime_error("Invalid server id"); }
+    if (serverID->empty()) {
+        throw std::runtime_error(
+            "Attempting to load notary contract with empty notary ID");
+    }
 
     const auto nymID = identifier::Nym::Factory(contract.nymid());
 
-    if (nymID->empty()) { throw std::runtime_error("Invalid nym ID"); }
+    if (nymID->empty()) {
+        throw std::runtime_error(
+            "Attempting to load notary contract with empty nym ID");
+    }
 
     find_nym_->Send([&] {
         auto work =
@@ -2351,7 +2357,7 @@ auto Wallet::Server(const proto::ServerContract& contract) const
 
     if (!nym && contract.has_publicnym()) { nym = Nym(contract.publicnym()); }
 
-    if (!nym) { throw std::runtime_error("Invalid nym"); }
+    if (!nym) { throw std::runtime_error("Unable to load notary nym"); }
 
     auto candidate = std::unique_ptr<contract::Server>{
         opentxs::Factory::ServerContract(api_, nym, contract)};

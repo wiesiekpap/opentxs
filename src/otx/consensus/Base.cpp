@@ -147,9 +147,9 @@ auto Base::calculate_id(
     const Nym_p& client,
     const Nym_p& server) noexcept(false) -> OTIdentifier
 {
-    if (false == (client && server)) {
-        throw std::runtime_error("Invalid nym");
-    }
+    if (!client) { throw std::runtime_error("Invalid client nym"); }
+
+    if (!server) { throw std::runtime_error("Invalid notary nym"); }
 
     auto preimage = api.Factory().Data();
     preimage->Assign(client->ID());

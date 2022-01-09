@@ -186,7 +186,9 @@ auto Blockchain::Imp::Account(
     -> const opentxs::blockchain::crypto::Account&
 {
     if (false == validate_nym(nymID)) {
-        throw std::runtime_error("Invalid nym");
+        throw std::runtime_error(
+            UnallocatedCString{"Unable to load "} + DisplayString(chain) +
+            " account for nym (" + nymID.str() + ')');
     }
 
     return Wallet(chain).Account(nymID);
