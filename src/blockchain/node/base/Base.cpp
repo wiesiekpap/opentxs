@@ -867,7 +867,8 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
             rc = SendResult::InvalidSenderNym;
 
             throw std::runtime_error{
-                UnallocatedCString{"Invalid nym "} + nymID->str()};
+                UnallocatedCString{"Unable to load recipient nym ("} +
+                nymID->str() + ')'};
         }
 
         const auto& nym = *pNym;
