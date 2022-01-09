@@ -21,6 +21,7 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
@@ -238,8 +239,8 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
     OT_ASSERT(4 < body.size());
 
     const auto chain = body.at(1).as<blockchain::Type>();
-    const auto confirmed = Amount{body.at(2)};
-    const auto unconfirmed = Amount{body.at(3)};
+    const auto confirmed = factory::Amount(body.at(2));
+    const auto unconfirmed = factory::Amount(body.at(3));
     const auto nym = Widget::api_.Factory().NymID(body.at(4));
 
     OT_ASSERT(chain_ == chain);

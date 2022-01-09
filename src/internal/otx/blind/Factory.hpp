@@ -84,7 +84,7 @@ auto Purse(
     const otx::context::Server&,
     const otx::blind::CashType type,
     const otx::blind::Mint& mint,
-    const Amount& totalValue,
+    const opentxs::Amount& totalValue,
     const opentxs::PasswordPrompt& reason) noexcept -> otx::blind::Purse;
 auto Purse(
     const api::Session& api,
@@ -93,7 +93,7 @@ auto Purse(
     const identity::Nym& serverNym,
     const otx::blind::CashType type,
     const otx::blind::Mint& mint,
-    const Amount& totalValue,
+    const opentxs::Amount& totalValue,
     const opentxs::PasswordPrompt& reason) noexcept -> otx::blind::Purse;
 auto Purse(
     const api::Session& api,

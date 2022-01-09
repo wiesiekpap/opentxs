@@ -16,6 +16,7 @@
 
 #include "Proto.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -170,7 +171,7 @@ auto Subaccount::convert(const proto::BlockchainActivity& in) noexcept
     auto& [account, chain, index] = key;
     txid = in.txid();
     out = in.output();
-    value = Amount{in.amount()};
+    value = factory::Amount(in.amount());
     account = in.account();
     chain = static_cast<Subchain>(in.subchain());
     index = in.index();

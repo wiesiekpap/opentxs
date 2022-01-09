@@ -26,7 +26,7 @@ namespace opentxs::display
 class Scale
 {
 public:
-    struct Imp;
+    class Imp;
 
     /// A ratio should express the quantity of smallest values (from Amount)
     /// which represent a scale unit.
@@ -42,6 +42,7 @@ public:
         -> UnallocatedCString;
     auto Import(const UnallocatedCString& formatted) const noexcept(false)
         -> Amount;
+    auto MaximumDecimals() const noexcept -> std::uint8_t;
     auto Prefix() const noexcept -> UnallocatedCString;
     auto Ratios() const noexcept -> const UnallocatedVector<Ratio>&;
     auto Suffix() const noexcept -> UnallocatedCString;

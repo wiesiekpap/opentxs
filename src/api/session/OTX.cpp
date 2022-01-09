@@ -23,6 +23,7 @@
 #include "internal/api/session/Factory.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/client/obsolete/OT_API.hpp"
 #include "internal/otx/common/Account.hpp"
@@ -1620,7 +1621,7 @@ void OTX::process_account(const zmq::Message& message) const
     OT_ASSERT(2 < body.size())
 
     const auto accountID = api_.Factory().Identifier(body.at(1));
-    const auto balance = Amount{body.at(2)};
+    const auto balance = factory::Amount(body.at(2));
     LogVerbose()(OT_PRETTY_CLASS())("Account ")(accountID)(" balance: ")(
         balance)
         .Flush();

@@ -12,6 +12,7 @@
 #include <memory>
 #include <utility>
 
+#include "internal/core/Factory.hpp"
 #include "internal/rpc/RPC.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -123,8 +124,8 @@ AccountData::AccountData(const proto::AccountData& in) noexcept(false)
                in.issuer(),
                in.balanceformatted(),
                in.pendingbalanceformatted(),
-               Amount{in.balance()},
-               Amount{in.pendingbalance()},
+               factory::Amount(in.balance()),
+               factory::Amount(in.pendingbalance()),
                translate(in.type()))
                .release())
 {

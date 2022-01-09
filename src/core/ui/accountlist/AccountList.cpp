@@ -15,6 +15,7 @@
 #include "core/ui/base/List.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Core.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/otx/common/Account.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -203,7 +204,7 @@ auto AccountList::process_account(const Message& message) noexcept -> void
 
     const auto accountID = Widget::api_.Factory().Identifier(body.at(1));
     const auto balance = body.at(2).Bytes();
-    process_account(accountID, balance);
+    process_account(accountID, factory::Amount(balance));
 }
 
 #if OT_BLOCKCHAIN
@@ -239,8 +240,8 @@ auto AccountList::process_blockchain_balance(const Message& message) noexcept
     OT_ASSERT(3 < body.size());
 
     const auto chain = body.at(1).as<blockchain::Type>();
-    [[maybe_unused]] const auto confirmed = Amount{body.at(2)};
-    const auto unconfirmed = Amount{body.at(3)};
+    [[maybe_unused]] const auto confirmed = factory::Amount(body.at(2));
+    const auto unconfirmed = factory::Amount(body.at(3));
     const auto& accountID = Widget::api_.Crypto()
                                 .Blockchain()
                                 .Account(primary_id_, chain)

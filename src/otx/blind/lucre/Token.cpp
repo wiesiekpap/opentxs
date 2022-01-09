@@ -20,6 +20,7 @@ extern "C" {
 
 #include "crypto/library/openssl/BIO.hpp"
 #include "crypto/library/openssl/OpenSSL.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/blind/Token.hpp"
@@ -167,7 +168,7 @@ Lucre::Lucre(
           in.lucre().version(),
           translate(in.state()),
           in.series(),
-          Amount{in.denomination()},
+          factory::Amount(in.denomination()),
           Clock::from_time_t(in.validfrom()),
           Clock::from_time_t(in.validto()),
           String::Factory(),

@@ -69,7 +69,7 @@ struct AmountValidator::Imp {
     }
     auto setMinDecimals(int min) -> bool
     {
-        const auto old = max_.exchange(min);
+        const auto old = min_.exchange(min);
 
         return old != min;
     }

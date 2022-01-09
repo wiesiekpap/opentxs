@@ -81,6 +81,11 @@ auto Scale::Import(const UnallocatedCString& formatted) const noexcept(false)
     return imp_->Import(formatted);
 }
 
+auto Scale::MaximumDecimals() const noexcept -> std::uint8_t
+{
+    return imp_->MaximumDecimals();
+}
+
 auto Scale::Prefix() const noexcept -> UnallocatedCString
 {
     return imp_->prefix_;

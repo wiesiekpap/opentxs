@@ -11,9 +11,9 @@
 #include <cstdint>
 #include <exception>
 
-#include "core/Amount.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/core/Amount.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "internal/otx/common/Cheque.hpp"
@@ -272,8 +272,7 @@ OTAPI_Func::OTAPI_Func(
             nTransNumsNeeded_ = 1;
             accountID_ = nymID2;
             try {
-                transactionNumber_ =
-                    int64val.Internal().extract_int<std::int64_t>();
+                transactionNumber_ = int64val.Internal().ExtractInt64();
             } catch (const std::exception& e) {
                 LogConsole()(OT_PRETTY_CLASS())(
                     "Error setting transaction number. ")(e.what())

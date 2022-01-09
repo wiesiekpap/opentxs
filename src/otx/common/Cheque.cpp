@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "internal/core/Factory.hpp"
 #include "internal/otx/common/StringXML.hpp"
 #include "internal/otx/common/XML.hpp"
 #include "internal/otx/common/util/Common.hpp"
@@ -139,7 +140,7 @@ auto Cheque::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         m_bHasRemitter = strHasRemitter->Compare("true");
 
         m_strVersion = String::Factory(xml->getAttributeValue("version"));
-        m_lAmount = Amount{xml->getAttributeValue("amount")};
+        m_lAmount = factory::Amount(xml->getAttributeValue("amount"));
 
         SetTransactionNum(
             String::StringToLong(xml->getAttributeValue("transactionNum")));

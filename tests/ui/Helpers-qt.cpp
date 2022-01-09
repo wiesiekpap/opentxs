@@ -12,6 +12,7 @@
 #include <QObject>
 #include <QString>
 #include <QStringList>
+#include <QValidator>
 #include <QVariant>
 #include <algorithm>
 #include <chrono>
@@ -28,6 +29,7 @@
 #include "opentxs/core/ui/qt/AccountActivity.hpp"
 #include "opentxs/core/ui/qt/AccountList.hpp"
 #include "opentxs/core/ui/qt/ActivityThread.hpp"
+#include "opentxs/core/ui/qt/AmountValidator.hpp"
 #include "opentxs/core/ui/qt/BlockchainAccountStatus.hpp"
 #include "opentxs/core/ui/qt/BlockchainSelection.hpp"
 #include "opentxs/core/ui/qt/ContactList.hpp"
@@ -141,6 +143,17 @@ auto check_account_activity_qt(
         output &= (validated.toStdString() == valid);
 
         EXPECT_EQ(validated.toStdString(), valid);
+    }
+
+    const auto& amountValidator = *model.getAmountValidator();
+    auto pos = 0;
+    for (auto [input, valid] : expected.amounts_to_validate_) {
+        auto inputString = QString{input.c_str()};
+        const auto validated = amountValidator.validate(inputString, pos);
+        output &= (validated == QValidator::State::Acceptable);
+
+        EXPECT_EQ(validated, QValidator::State::Acceptable);
+        EXPECT_EQ(inputString.toStdString(), valid);
     }
 
     output &= (model.accountID().toStdString() == expected.id_);

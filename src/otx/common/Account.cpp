@@ -9,11 +9,11 @@
 
 #include <cstdint>
 #include <memory>
-#include <string_view>
 
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/otx/Types.hpp"
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/Helpers.hpp"
@@ -494,7 +494,7 @@ auto Account::SaveAccount() -> bool
 // credited somewhere else)
 auto Account::Debit(const Amount& amount) -> bool
 {
-    const Amount oldBalance{balanceAmount_->Get()};
+    const auto oldBalance = factory::Amount(balanceAmount_->Get());
     // The MINUS here is the big difference between Debit and Credit
     const auto newBalance{oldBalance - amount};
 
@@ -527,7 +527,7 @@ auto Account::Debit(const Amount& amount) -> bool
 // debited somewhere else)
 auto Account::Credit(const Amount& amount) -> bool
 {
-    const Amount oldBalance{balanceAmount_->Get()};
+    const auto oldBalance = factory::Amount(balanceAmount_->Get());
     // The PLUS here is the big difference between Debit and Credit.
     const auto newBalance{oldBalance + amount};
 
@@ -793,8 +793,13 @@ auto Account::GenerateNewAccount(
 
 auto Account::GetBalance() const -> Amount
 {
-    if (balanceAmount_->Exists()) { return Amount{balanceAmount_->Get()}; }
-    return Amount{};
+    if (balanceAmount_->Exists()) {
+
+        return factory::Amount(balanceAmount_->Get());
+    } else {
+
+        return Amount{};
+    }
 }
 
 auto Account::DisplayStatistics(String& contents) const -> bool
@@ -1042,7 +1047,7 @@ auto Account::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         // (Just an easy way to keep the data clean.)
 
         const auto date = parseTimestamp((balanceDate_->Get()));
-        const Amount amount{balanceAmount_->Get()};
+        const auto amount = factory::Amount(balanceAmount_->Get());
 
         balanceDate_->Set(String::Factory(formatTimestamp(date)));
         auto balance = UnallocatedCString{};

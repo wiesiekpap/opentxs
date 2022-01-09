@@ -22,6 +22,7 @@
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/core/Amount.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Contacts.hpp"
@@ -105,7 +106,7 @@ auto BitcoinTransaction(
         raw.outputs_.emplace_back();
         auto& out = *raw.outputs_.rbegin();
         try {
-            output.Value().SerializeBitcoin(
+            output.Value().Internal().SerializeBitcoin(
                 preallocated(sizeof(out.value_), &out.value_));
         } catch (const std::exception& e) {
             LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
@@ -209,7 +210,7 @@ auto BitcoinTransaction(
                         api,
                         chain,
                         counter++,
-                        Amount{output.value_.value()},
+                        opentxs::Amount{output.value_.value()},
                         output.cs_,
                         reader(output.script_)));
                 outputBytes += output.size();

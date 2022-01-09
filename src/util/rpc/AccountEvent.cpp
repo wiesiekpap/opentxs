@@ -12,6 +12,7 @@
 #include <memory>
 #include <utility>
 
+#include "internal/core/Factory.hpp"
 #include "internal/rpc/RPC.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -147,8 +148,8 @@ AccountEvent::AccountEvent(const proto::AccountEvent& in) noexcept(false)
                in.workflow(),
                in.amountformatted(),
                in.pendingamountformatted(),
-               Amount{in.amount()},
-               Amount{in.pendingamount()},
+               factory::Amount(in.amount()),
+               factory::Amount(in.pendingamount()),
                Clock::from_time_t(in.timestamp()),
                in.memo(),
                in.uuid(),

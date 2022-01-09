@@ -12,9 +12,9 @@
 #include <exception>
 #include <memory>
 
-#include "core/Amount.hpp"
 #include "core/ui/accountsummary/AccountSummaryItem.hpp"
 #include "core/ui/accountsummary/IssuerItem.hpp"
+#include "internal/core/Amount.hpp"
 #include "internal/core/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -83,7 +83,7 @@ auto AccountSummaryItem::qt_data(
         } break;
         case AccountSummaryQt::BalanceRole: {
             try {
-                out = Balance().Internal().extract_int<unsigned long long>();
+                out = qlonglong{Balance().Internal().ExtractInt64()};
             } catch (const std::exception& e) {
                 LogError()(OT_PRETTY_CLASS())("Error getting balance.")(
                     e.what())
