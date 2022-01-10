@@ -245,7 +245,13 @@ if(OT_PCH)
     )
   endif()
 
-  if(NOT ANDROID)
+  if(APPLE OR ANDROID)
+    target_precompile_headers(
+      opentxs-common
+      PUBLIC
+      "$<$<COMPILE_LANGUAGE:CXX>:<experimental/memory_resource$<ANGLE-R>>"
+    )
+  else()
     target_precompile_headers(
       opentxs-common
       PUBLIC
