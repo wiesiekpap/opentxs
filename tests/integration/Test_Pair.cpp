@@ -39,9 +39,6 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/core/ui/AccountSummary.hpp"
-#include "opentxs/core/ui/AccountSummaryItem.hpp"
-#include "opentxs/core/ui/IssuerItem.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/Data.hpp"
@@ -49,6 +46,9 @@
 #include "opentxs/identity/wot/claim/Item.hpp"
 #include "opentxs/identity/wot/claim/Section.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
+#include "opentxs/interface/ui/AccountSummary.hpp"
+#include "opentxs/interface/ui/AccountSummaryItem.hpp"
+#include "opentxs/interface/ui/IssuerItem.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -77,7 +77,7 @@ class Notary;
 #define UNIT_DEFINITION_CONTRACT_NAME "Mt Gox USD"
 #define UNIT_DEFINITION_TERMS "YOLO"
 #define UNIT_DEFINITION_TLA "USD"
-#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::Usd
+#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::UnitType::Usd
 
 namespace ottest
 {
@@ -214,7 +214,7 @@ TEST_F(Test_Pair, init_ui)
     account_summary_.expected_ = 0;
     api_chris_.UI().AccountSummary(
         chris_.nym_id_,
-        ot::core::UnitType::Usd,
+        ot::UnitType::Usd,
         make_cb(account_summary_, "account summary USD"));
 }
 
@@ -222,8 +222,8 @@ TEST_F(Test_Pair, initial_state)
 {
     ASSERT_TRUE(wait_for_counter(account_summary_));
 
-    const auto& widget = chris_.api_->UI().AccountSummary(
-        chris_.nym_id_, ot::core::UnitType::Usd);
+    const auto& widget =
+        chris_.api_->UI().AccountSummary(chris_.nym_id_, ot::UnitType::Usd);
     auto row = widget.First();
 
     EXPECT_FALSE(row->Valid());
@@ -256,7 +256,7 @@ TEST_F(Test_Pair, issue_dollars)
     }
 
     auto task = api_issuer_.OTX().IssueUnitDefinition(
-        issuer_.nym_id_, server_1_.id_, unit_id_, ot::core::UnitType::Usd);
+        issuer_.nym_id_, server_1_.id_, unit_id_, ot::UnitType::Usd);
     auto& [taskID, future] = task;
     const auto result = future.get();
 
@@ -318,8 +318,7 @@ TEST_F(Test_Pair, pair_untrusted)
 
         const auto& issuer = *pIssuer;
 
-        EXPECT_EQ(
-            1, issuer.AccountList(ot::core::UnitType::Usd, unit_id_).size());
+        EXPECT_EQ(1, issuer.AccountList(ot::UnitType::Usd, unit_id_).size());
         EXPECT_FALSE(issuer.BailmentInitiated(unit_id_));
         EXPECT_EQ(3, issuer.BailmentInstructions(api_chris_, unit_id_).size());
         EXPECT_EQ(
@@ -388,8 +387,8 @@ TEST_F(Test_Pair, pair_untrusted_state)
 {
     ASSERT_TRUE(wait_for_counter(account_summary_));
 
-    const auto& widget = chris_.api_->UI().AccountSummary(
-        chris_.nym_id_, ot::core::UnitType::Usd);
+    const auto& widget =
+        chris_.api_->UI().AccountSummary(chris_.nym_id_, ot::UnitType::Usd);
     auto row = widget.First();
 
     ASSERT_TRUE(row->Valid());
@@ -430,8 +429,7 @@ TEST_F(Test_Pair, pair_trusted)
 
         const auto& issuer = *pIssuer;
 
-        EXPECT_EQ(
-            1, issuer.AccountList(ot::core::UnitType::Usd, unit_id_).size());
+        EXPECT_EQ(1, issuer.AccountList(ot::UnitType::Usd, unit_id_).size());
         EXPECT_FALSE(issuer.BailmentInitiated(unit_id_));
         EXPECT_EQ(3, issuer.BailmentInstructions(api_chris_, unit_id_).size());
         EXPECT_EQ(
@@ -505,8 +503,8 @@ TEST_F(Test_Pair, pair_trusted_state)
 {
     ASSERT_TRUE(wait_for_counter(account_summary_));
 
-    const auto& widget = chris_.api_->UI().AccountSummary(
-        chris_.nym_id_, ot::core::UnitType::Usd);
+    const auto& widget =
+        chris_.api_->UI().AccountSummary(chris_.nym_id_, ot::UnitType::Usd);
     auto row = widget.First();
 
     ASSERT_TRUE(row->Valid());

@@ -49,8 +49,8 @@ public:
     auto ConnectInfo(
         UnallocatedCString& strHostname,
         std::uint32_t& nPort,
-        core::AddressType& actual,
-        const core::AddressType& preferred) const -> bool final;
+        AddressType& actual,
+        const AddressType& preferred) const -> bool final;
     auto EffectiveName() const -> UnallocatedCString final;
     auto Name() const noexcept -> UnallocatedCString final { return name_; }
     auto Serialize() const noexcept -> OTData final;

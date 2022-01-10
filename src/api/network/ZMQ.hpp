@@ -38,7 +38,7 @@ class ZMQ final : virtual public opentxs::api::network::ZMQ
 {
 public:
     auto Context() const -> const opentxs::network::zeromq::Context& final;
-    auto DefaultAddressType() const -> core::AddressType final;
+    auto DefaultAddressType() const -> AddressType final;
     auto KeepAlive() const -> std::chrono::seconds final;
     void KeepAlive(const std::chrono::seconds duration) const final;
     auto Linger() const -> std::chrono::seconds final;

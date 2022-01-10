@@ -583,7 +583,7 @@ public:
         const UnallocatedCString& nymid,
         const UnallocatedCString& shortname,
         const UnallocatedCString& terms,
-        const core::UnitType unitOfAccount,
+        const UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const PasswordPrompt& reason) const noexcept(false)
         -> OTUnitDefinition = 0;
@@ -591,7 +591,7 @@ public:
         const UnallocatedCString& nymid,
         const UnallocatedCString& shortname,
         const UnallocatedCString& terms,
-        const core::UnitType unitOfAccount,
+        const UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const display::Definition& displayDefinition,
         const PasswordPrompt& reason) const noexcept(false)
@@ -600,7 +600,7 @@ public:
         const UnallocatedCString& nymid,
         const UnallocatedCString& shortname,
         const UnallocatedCString& terms,
-        const core::UnitType unitOfAccount,
+        const UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const VersionNumber version,
         const PasswordPrompt& reason) const noexcept(false)
@@ -609,7 +609,7 @@ public:
         const UnallocatedCString& nymid,
         const UnallocatedCString& shortname,
         const UnallocatedCString& terms,
-        const core::UnitType unitOfAccount,
+        const UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const display::Definition& displayDefinition,
         const VersionNumber version,
@@ -628,7 +628,7 @@ public:
         const UnallocatedCString& nymid,
         const UnallocatedCString& shortname,
         const UnallocatedCString& terms,
-        const core::UnitType unitOfAccount,
+        const UnitType unitOfAccount,
         const PasswordPrompt& reason,
         const display::Definition& displayDefinition,
         const Amount& redemptionIncrement,
@@ -636,8 +636,7 @@ public:
         noexcept(false) -> OTUnitDefinition = 0;
 
     virtual auto CurrencyTypeBasedOnUnitType(
-        const identifier::UnitDefinition& contractID) const
-        -> core::UnitType = 0;
+        const identifier::UnitDefinition& contractID) const -> UnitType = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const session::internal::Wallet& = 0;

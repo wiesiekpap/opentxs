@@ -331,7 +331,7 @@ TEST_F(Regtest_fixture_sync, make_contracts)
         alex_.nym_id_->str(),
         "Example notary",
         "Don't use",
-        {{ot::core::AddressType::Inproc,
+        {{ot::AddressType::Inproc,
           ot::contract::ProtocolVersion::Legacy,
           "inproc://lol_nope",
           80,
@@ -346,7 +346,7 @@ TEST_F(Regtest_fixture_sync, make_contracts)
         alex_.nym_id_->str(),
         "My Dollars",
         "Example only",
-        ot::core::UnitType::Usd,
+        ot::UnitType::Usd,
         ot::unsigned_amount(0, 1, 100),
         reason));
 

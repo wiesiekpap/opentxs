@@ -26,19 +26,21 @@
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/ui/qt/AccountActivity.hpp"
-#include "opentxs/core/ui/qt/AccountList.hpp"
-#include "opentxs/core/ui/qt/ActivityThread.hpp"
-#include "opentxs/core/ui/qt/AmountValidator.hpp"
-#include "opentxs/core/ui/qt/BlockchainAccountStatus.hpp"
-#include "opentxs/core/ui/qt/BlockchainSelection.hpp"
-#include "opentxs/core/ui/qt/ContactList.hpp"
-#include "opentxs/core/ui/qt/MessagableList.hpp"
+#include "opentxs/interface/qt/AccountActivity.hpp"
+#include "opentxs/interface/qt/AccountList.hpp"
+#include "opentxs/interface/qt/AccountTree.hpp"
+#include "opentxs/interface/qt/ActivityThread.hpp"
+#include "opentxs/interface/qt/AmountValidator.hpp"
+#include "opentxs/interface/qt/BlockchainAccountStatus.hpp"
+#include "opentxs/interface/qt/BlockchainSelection.hpp"
+#include "opentxs/interface/qt/ContactList.hpp"
+#include "opentxs/interface/qt/MessagableList.hpp"
 
 namespace ottest
 {
 constexpr auto account_activity_columns_{6};
 constexpr auto account_list_columns_{4};
+constexpr auto account_tree_columns_{1};
 constexpr auto activity_thread_columns_{7};
 constexpr auto blockchain_account_status_columns_{1};
 constexpr auto blockchain_selection_columns_{1};
@@ -53,7 +55,17 @@ auto check_row(
 auto check_row(
     const QAbstractItemModel& model,
     const QModelIndex& parent,
+    const AccountCurrencyData& expected,
+    const int row) noexcept -> bool;
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
     const AccountListRow& expected,
+    const int row) noexcept -> bool;
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const AccountTreeRow& expected,
     const int row) noexcept -> bool;
 auto check_row(
     const QAbstractItemModel& model,
@@ -194,6 +206,32 @@ auto check_account_list_qt(
     const AccountListData& expected) noexcept -> bool
 {
     const auto* pModel = user.api_->UI().AccountListQt(user.nym_id_);
+
+    EXPECT_NE(pModel, nullptr);
+
+    if (nullptr == pModel) { return false; }
+
+    const auto& model = *pModel;
+    auto output = check_qt_common(model);
+    auto parent = QModelIndex{};
+    const auto vCount = expected.rows_.size();
+
+    if (0u == vCount) { return output; }
+
+    auto it{expected.rows_.begin()};
+
+    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+        output &= check_row(model, parent, *it, static_cast<int>(i));
+    }
+
+    return output;
+}
+
+auto check_account_tree_qt(
+    const User& user,
+    const AccountTreeData& expected) noexcept -> bool
+{
+    const auto* pModel = user.api_->UI().AccountTreeQt(user.nym_id_);
 
     EXPECT_NE(pModel, nullptr);
 
@@ -539,6 +577,64 @@ auto check_row(
 auto check_row(
     const QAbstractItemModel& model,
     const QModelIndex& parent,
+    const AccountCurrencyData& expected,
+    const int row) noexcept -> bool
+{
+    using Model = ot::ui::AccountTreeQt;
+    auto output{true};
+
+    for (auto column{0}; column < account_tree_columns_; ++column) {
+        const auto exists = model.hasIndex(row, column, parent);
+        output &= exists;
+
+        EXPECT_TRUE(exists);
+
+        if (false == exists) { continue; }
+
+        const auto vCount = expected.rows_.size();
+        const auto index = model.index(row, column, parent);
+        const auto name = model.data(index, Model::NameRole);
+        const auto unit = model.data(index, Model::UnitRole);
+        const auto display = model.data(index, Qt::DisplayRole);
+
+        switch (column) {
+            case Model::NameColumn: {
+                output &= (display == name);
+
+                EXPECT_EQ(display, name);
+            } break;
+            default: {
+                output &= false;
+
+                EXPECT_TRUE(false);
+            }
+        }
+
+        output &= (name.toString().toStdString() == expected.name_);
+        output &= (static_cast<ot::UnitType>(unit.toInt()) == expected.type_);
+        output &= (model.columnCount(index) == account_tree_columns_);
+        output &= (static_cast<std::size_t>(model.rowCount(index)) == vCount);
+
+        EXPECT_EQ(name.toString().toStdString(), expected.name_);
+        EXPECT_EQ(static_cast<ot::UnitType>(unit.toInt()), expected.type_);
+        EXPECT_EQ(model.columnCount(index), account_tree_columns_);
+        EXPECT_EQ(model.rowCount(index), vCount);
+
+        if (0u == vCount) { return output; }
+
+        auto it{expected.rows_.begin()};
+
+        for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+            output &= check_row(model, index, *it, static_cast<int>(i));
+        }
+    }
+
+    return output;
+}
+
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
     const AccountListRow& expected,
     const int row) noexcept -> bool
 {
@@ -599,8 +695,7 @@ auto check_row(
         output &= (notaryID.toString().toStdString() == expected.notary_id_);
         output &=
             (notaryName.toString().toStdString() == expected.notary_name_);
-        output &=
-            (static_cast<ot::core::UnitType>(unit.toInt()) == expected.unit_);
+        output &= (static_cast<ot::UnitType>(unit.toInt()) == expected.unit_);
         output &= (unitName.toString().toStdString() == expected.display_unit_);
         output &= (accountID.toString().toStdString() == expected.account_id_);
         output &=
@@ -613,8 +708,7 @@ auto check_row(
         EXPECT_EQ(name.toString().toStdString(), expected.name_);
         EXPECT_EQ(notaryID.toString().toStdString(), expected.notary_id_);
         EXPECT_EQ(notaryName.toString().toStdString(), expected.notary_name_);
-        EXPECT_EQ(
-            static_cast<ot::core::UnitType>(unit.toInt()), expected.unit_);
+        EXPECT_EQ(static_cast<ot::UnitType>(unit.toInt()), expected.unit_);
         EXPECT_EQ(unitName.toString().toStdString(), expected.display_unit_);
         EXPECT_EQ(accountID.toString().toStdString(), expected.account_id_);
         EXPECT_EQ(balance.toString().toStdString(), expected.display_balance_);
@@ -622,6 +716,81 @@ auto check_row(
         EXPECT_EQ(static_cast<ot::AccountType>(type.toInt()), expected.type_);
         EXPECT_EQ(contract.toString().toStdString(), expected.contract_id_);
         EXPECT_EQ(model.columnCount(index), account_list_columns_);
+        EXPECT_EQ(model.rowCount(index), vCount);
+    }
+
+    return output;
+}
+
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const AccountTreeRow& expected,
+    const int row) noexcept -> bool
+{
+    using Model = ot::ui::AccountTreeQt;
+    auto output{true};
+
+    for (auto column{0}; column < account_tree_columns_; ++column) {
+        const auto exists = model.hasIndex(row, column, parent);
+        output &= exists;
+
+        EXPECT_TRUE(exists);
+
+        if (false == exists) { continue; }
+
+        const auto vCount = 0;
+        const auto index = model.index(row, column, parent);
+        const auto name = model.data(index, Model::NameRole);
+        const auto notaryID = model.data(index, Model::NotaryIDRole);
+        const auto notaryName = model.data(index, Model::NotaryNameRole);
+        const auto unit = model.data(index, Model::UnitRole);
+        const auto unitName = model.data(index, Model::UnitNameRole);
+        const auto accountID = model.data(index, Model::AccountIDRole);
+        const auto balance = model.data(index, Model::BalanceRole);
+        const auto polarity = model.data(index, Model::PolarityRole);
+        const auto type = model.data(index, Model::AccountTypeRole);
+        const auto contract = model.data(index, Model::ContractIdRole);
+        const auto display = model.data(index, Qt::DisplayRole);
+
+        switch (column) {
+            case Model::NameColumn: {
+                output &= (display == name);
+
+                EXPECT_EQ(display, name);
+            } break;
+            default: {
+                output &= false;
+
+                EXPECT_TRUE(false);
+            }
+        }
+
+        output &= (name.toString().toStdString() == expected.name_);
+        output &= (notaryID.toString().toStdString() == expected.notary_id_);
+        output &=
+            (notaryName.toString().toStdString() == expected.notary_name_);
+        output &= (static_cast<ot::UnitType>(unit.toInt()) == expected.unit_);
+        output &= (unitName.toString().toStdString() == expected.display_unit_);
+        output &= (accountID.toString().toStdString() == expected.account_id_);
+        output &=
+            (balance.toString().toStdString() == expected.display_balance_);
+        output &= (polarity.toInt() == expected.polarity_);
+        output &=
+            (static_cast<ot::AccountType>(type.toInt()) == expected.type_);
+        output &= (contract.toString().toStdString() == expected.contract_id_);
+
+        EXPECT_EQ(name.toString().toStdString(), expected.name_);
+        EXPECT_EQ(notaryID.toString().toStdString(), expected.notary_id_);
+        EXPECT_EQ(notaryName.toString().toStdString(), expected.notary_name_);
+        EXPECT_EQ(static_cast<ot::UnitType>(unit.toInt()), expected.unit_);
+        EXPECT_EQ(unitName.toString().toStdString(), expected.display_unit_);
+        EXPECT_EQ(accountID.toString().toStdString(), expected.account_id_);
+        EXPECT_EQ(balance.toString().toStdString(), expected.display_balance_);
+        EXPECT_EQ(polarity.toInt(), expected.polarity_);
+        EXPECT_EQ(static_cast<ot::AccountType>(type.toInt()), expected.type_);
+        EXPECT_EQ(contract.toString().toStdString(), expected.contract_id_);
+        EXPECT_EQ(model.columnCount(index), account_tree_columns_);
         EXPECT_EQ(model.rowCount(index), vCount);
     }
 

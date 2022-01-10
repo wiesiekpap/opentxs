@@ -15,7 +15,7 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/ui/qt/AccountActivity.hpp"
+#include "opentxs/interface/qt/AccountActivity.hpp"
 #include "paymentcode/VectorsV3.hpp"
 #include "rpc/Helpers.hpp"
 
@@ -30,7 +30,7 @@ class Test_AmountValidator : public RPC_fixture
 {
 public:
     struct ChainAmounts {
-        ot::core::UnitType unittype_;
+        ot::UnitType unittype_;
         std::vector<std::pair<ot::UnallocatedCString, ot::UnallocatedCString>>
             amounts_;
         std::vector<std::pair<ot::UnallocatedCString, ot::UnallocatedCString>>
@@ -73,13 +73,13 @@ TEST_F(Test_AmountValidator, decimals)
 
     const auto& issuer = users_.at(0);
 
-    const auto& def = ot::display::GetDefinition(ot::core::UnitType::Regtest);
+    const auto& def = ot::display::GetDefinition(ot::UnitType::Regtest);
     const auto unit = IssueUnit(
         server,
         issuer,
         "decimals-" + def.ShortName(),
         "Test",
-        ot::core::UnitType::Regtest,
+        ot::UnitType::Regtest,
         def);
 
     EXPECT_FALSE(unit.empty());
@@ -126,13 +126,13 @@ TEST_F(Test_AmountValidator, fixup)
 
     const auto& issuer = users_.at(0);
 
-    const auto& def = ot::display::GetDefinition(ot::core::UnitType::Regtest);
+    const auto& def = ot::display::GetDefinition(ot::UnitType::Regtest);
     const auto unit = IssueUnit(
         server,
         issuer,
         "fixup-" + def.ShortName(),
         "Test",
-        ot::core::UnitType::Regtest,
+        ot::UnitType::Regtest,
         def);
 
     EXPECT_FALSE(unit.empty());
@@ -158,13 +158,13 @@ TEST_F(Test_AmountValidator, revise)
 
     const auto& issuer = users_.at(0);
 
-    const auto& def = ot::display::GetDefinition(ot::core::UnitType::Bch);
+    const auto& def = ot::display::GetDefinition(ot::UnitType::Bch);
     const auto unit = IssueUnit(
         server,
         issuer,
         "revise-" + def.ShortName(),
         "Test",
-        ot::core::UnitType::Bch,
+        ot::UnitType::Bch,
         def);
 
     EXPECT_FALSE(unit.empty());
@@ -211,13 +211,13 @@ TEST_F(Test_AmountValidator, scale)
 
     const auto& issuer = users_.at(0);
 
-    const auto& def = ot::display::GetDefinition(ot::core::UnitType::Bch);
+    const auto& def = ot::display::GetDefinition(ot::UnitType::Bch);
     const auto unit = IssueUnit(
         server,
         issuer,
         "scale-" + def.ShortName(),
         "Test",
-        ot::core::UnitType::Bch,
+        ot::UnitType::Bch,
         def);
 
     EXPECT_FALSE(unit.empty());
@@ -280,7 +280,7 @@ TEST_F(Test_AmountValidator, scale)
 TEST_F(Test_AmountValidator, validate)
 {
     static const auto chains = std::vector<ChainAmounts>{
-        {ot::core::UnitType::Btc,
+        {ot::UnitType::Btc,
          {{u8"0", u8"0 ₿"},
           {u8"1", u8"1 ₿"},
           {u8"10", u8"10 ₿"},
@@ -304,7 +304,7 @@ TEST_F(Test_AmountValidator, validate)
               u8"000000000000000000000000000000000000000 ₿"},
              {u8"1.2.3", u8"1.23 ₿"},
          }},
-        {ot::core::UnitType::Ltc,
+        {ot::UnitType::Ltc,
          {{u8"0", u8"0 Ł"},
           {u8"1", u8"1 Ł"},
           {u8"10", u8"10 Ł"},
@@ -328,7 +328,7 @@ TEST_F(Test_AmountValidator, validate)
               u8"000000000000000000000000000000000000000 Ł"},
              {u8"1.2.3", u8"1.23 Ł"},
          }},
-        {ot::core::UnitType::Pkt,
+        {ot::UnitType::Pkt,
          {{u8"0", u8"0 PKT"},
           {u8"1", u8"1 PKT"},
           {u8"10", u8"10 PKT"},
@@ -352,7 +352,7 @@ TEST_F(Test_AmountValidator, validate)
               u8"000000000000000000000000000000000000000 PKT"},
              {u8"1.2.3", u8"1.23 PKT"},
          }},
-        {ot::core::UnitType::Usd,
+        {ot::UnitType::Usd,
          {{u8"0", u8"$0.00"},
           {u8"1", u8"$1.00"},
           {u8"10", u8"$10.00"},

@@ -52,9 +52,8 @@ public:
     virtual auto ContactList() const -> ObjectList = 0;
     virtual auto ContactName(const Identifier& contactID) const
         -> UnallocatedCString = 0;
-    virtual auto ContactName(
-        const Identifier& contactID,
-        core::UnitType currencyHint) const -> UnallocatedCString = 0;
+    virtual auto ContactName(const Identifier& contactID, UnitType currencyHint)
+        const -> UnallocatedCString = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Contacts& = 0;
     virtual auto Merge(const Identifier& parent, const Identifier& child) const

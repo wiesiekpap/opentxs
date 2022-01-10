@@ -283,7 +283,7 @@ void Server::CreateMainFile(bool& mainFileExists)
             manager_.Instance())
             .Flush();
         endpoints.emplace_back(
-            core::AddressType::Inproc,
+            AddressType::Inproc,
             contract::ProtocolVersion::Legacy,
             manager_.InternalNotary().InprocEndpoint(),
             publicPort,
@@ -296,7 +296,7 @@ void Server::CreateMainFile(bool& mainFileExists)
 
             LogConsole()("* Adding ipv4 endpoint: ")(hostname).Flush();
             endpoints.emplace_back(
-                core::AddressType::IPV4,
+                AddressType::IPV4,
                 contract::ProtocolVersion::Legacy,
                 hostname,
                 publicPort,
@@ -308,7 +308,7 @@ void Server::CreateMainFile(bool& mainFileExists)
 
             LogConsole()("* Adding ipv6 endpoint: ")(hostname).Flush();
             endpoints.emplace_back(
-                core::AddressType::IPV6,
+                AddressType::IPV6,
                 contract::ProtocolVersion::Legacy,
                 hostname,
                 publicPort,
@@ -320,7 +320,7 @@ void Server::CreateMainFile(bool& mainFileExists)
 
             LogConsole()("* Adding onion endpoint: ")(hostname).Flush();
             endpoints.emplace_back(
-                core::AddressType::Onion,
+                AddressType::Onion2,
                 contract::ProtocolVersion::Legacy,
                 hostname,
                 publicPort,
@@ -332,7 +332,7 @@ void Server::CreateMainFile(bool& mainFileExists)
 
             LogConsole()("* Adding eep endpoint: ")(hostname).Flush();
             endpoints.emplace_back(
-                core::AddressType::EEP,
+                AddressType::EEP,
                 contract::ProtocolVersion::Legacy,
                 hostname,
                 publicPort,
@@ -343,7 +343,7 @@ void Server::CreateMainFile(bool& mainFileExists)
             LogConsole()("* Adding default endpoint: ")(DEFAULT_EXTERNAL_IP)
                 .Flush();
             endpoints.emplace_back(
-                core::AddressType::IPV4,
+                AddressType::IPV4,
                 contract::ProtocolVersion::Legacy,
                 DEFAULT_EXTERNAL_IP,
                 publicPort,
@@ -384,7 +384,7 @@ void Server::CreateMainFile(bool& mainFileExists)
     UnallocatedCString strNotaryID{};
     UnallocatedCString strHostname{};
     std::uint32_t nPort{0};
-    core::AddressType type{};
+    AddressType type{};
 
     if (!contract->ConnectInfo(strHostname, nPort, type, type)) {
         LogConsole()(OT_PRETTY_CLASS())(
@@ -876,7 +876,7 @@ auto Server::DropMessageToNymbox(
 }
 
 auto Server::GetConnectInfo(
-    core::AddressType& type,
+    AddressType& type,
     UnallocatedCString& strHostname,
     std::uint32_t& nPort) const -> bool
 {

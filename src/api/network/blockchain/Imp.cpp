@@ -8,7 +8,6 @@
 #include "api/network/blockchain/Imp.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <chrono>
 #include <cstdint>
 #include <iterator>
 #include <utility>
@@ -33,7 +32,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace opentxs::api::network

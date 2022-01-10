@@ -149,7 +149,7 @@ auto ServerConnection::async_socket(const Lock& lock) const -> OTZMQDealerSocket
     return output;
 }
 
-auto ServerConnection::ChangeAddressType(const core::AddressType type) -> bool
+auto ServerConnection::ChangeAddressType(const AddressType type) -> bool
 {
     Lock lock(lock_);
     address_type_ = type;
@@ -186,7 +186,7 @@ auto ServerConnection::endpoint() const -> UnallocatedCString
 {
     std::uint32_t port{0};
     UnallocatedCString hostname{""};
-    core::AddressType type{};
+    AddressType type{};
     const auto have =
         remote_contract_->ConnectInfo(hostname, port, type, address_type_);
 
@@ -205,13 +205,13 @@ auto ServerConnection::endpoint() const -> UnallocatedCString
 }
 
 auto ServerConnection::form_endpoint(
-    core::AddressType type,
+    AddressType type,
     UnallocatedCString hostname,
     std::uint32_t port) const -> UnallocatedCString
 {
     auto output = std::stringstream{};
 
-    if (core::AddressType::Inproc == type) {
+    if (AddressType::Inproc == type) {
         output << hostname;
     } else {
         output << "tcp://";

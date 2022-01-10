@@ -111,8 +111,8 @@ public:
     virtual auto CompareID(const identifier::Nym& rhs) const -> bool = 0;
     virtual auto ContactCredentialVersion() const -> VersionNumber = 0;
     virtual auto ContactDataVersion() const -> VersionNumber = 0;
-    virtual auto Contracts(const core::UnitType currency, const bool onlyActive)
-        const -> UnallocatedSet<OTIdentifier> = 0;
+    virtual auto Contracts(const UnitType currency, const bool onlyActive) const
+        -> UnallocatedSet<OTIdentifier> = 0;
     virtual auto EmailAddresses(bool active = true) const
         -> UnallocatedCString = 0;
     virtual auto EncryptionTargets() const noexcept -> NymKeys = 0;
@@ -211,7 +211,7 @@ public:
         -> bool = 0;
     virtual auto AddContract(
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const core::UnitType currency,
+        const UnitType currency,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active = true) -> bool = 0;
@@ -222,7 +222,7 @@ public:
         const bool active) -> bool = 0;
     virtual auto AddPaymentCode(
         const opentxs::PaymentCode& code,
-        const core::UnitType currency,
+        const UnitType currency,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active = true) -> bool = 0;

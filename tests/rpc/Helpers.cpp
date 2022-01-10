@@ -32,6 +32,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -39,6 +40,16 @@
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/interface/rpc/AccountData.hpp"
+#include "opentxs/interface/rpc/AccountEvent.hpp"
+#include "opentxs/interface/rpc/ResponseCode.hpp"
+#include "opentxs/interface/rpc/request/GetAccountActivity.hpp"
+#include "opentxs/interface/rpc/request/GetAccountBalance.hpp"
+#include "opentxs/interface/rpc/request/ListAccounts.hpp"
+#include "opentxs/interface/rpc/response/Base.hpp"
+#include "opentxs/interface/rpc/response/GetAccountActivity.hpp"
+#include "opentxs/interface/rpc/response/GetAccountBalance.hpp"
+#include "opentxs/interface/rpc/response/ListAccounts.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
@@ -50,188 +61,15 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
-#include "opentxs/util/rpc/AccountData.hpp"
-#include "opentxs/util/rpc/AccountEvent.hpp"
-#include "opentxs/util/rpc/ResponseCode.hpp"
-#include "opentxs/util/rpc/request/GetAccountActivity.hpp"
-#include "opentxs/util/rpc/request/GetAccountBalance.hpp"
-#include "opentxs/util/rpc/request/ListAccounts.hpp"
-#include "opentxs/util/rpc/response/Base.hpp"
-#include "opentxs/util/rpc/response/GetAccountActivity.hpp"
-#include "opentxs/util/rpc/response/GetAccountBalance.hpp"
-#include "opentxs/util/rpc/response/ListAccounts.hpp"
 #include "ui/Helpers.hpp"
 
 namespace ottest
 {
-auto verify_account_balance(
-    const int index,
-    const ot::UnallocatedCString& account,
-    const ot::Amount required) noexcept -> bool;
-auto verify_response_codes(
-    const ot::rpc::response::Base::Responses& codes,
-    const std::size_t count,
-    const ot::rpc::ResponseCode required =
-        ot::rpc::ResponseCode::success) noexcept -> bool;
-
 RPC_fixture::SeedMap RPC_fixture::seed_map_{};
 RPC_fixture::LocalNymMap RPC_fixture::local_nym_map_{};
 RPC_fixture::IssuedUnits RPC_fixture::created_units_{};
 RPC_fixture::AccountMap RPC_fixture::registered_accounts_{};
 RPC_fixture::UserIndex RPC_fixture::users_{};
-
-auto check_account_activity_rpc(
-    const User& user,
-    const ot::Identifier& account,
-    const AccountActivityData& expected) noexcept -> bool
-{
-    auto output{true};
-    const auto& api = *user.api_;
-    const auto index{api.Instance()};
-    const auto command =
-        ot::rpc::request::GetAccountActivity{index, {account.str()}};
-    const auto base = ot::Context().RPC(command);
-    const auto& response = base->asGetAccountActivity();
-    const auto& codes = response.ResponseCodes();
-    const auto& events = response.Activity();
-    const auto vCount = expected.rows_.size();
-    const auto goodCodes = verify_response_codes(
-        codes,
-        1,
-        (0 == vCount) ? ot::rpc::ResponseCode::none
-                      : ot::rpc::ResponseCode::success);
-    output &= verify_account_balance(index, account.str(), expected.balance_);
-    output &= goodCodes;
-    output &= (events.size() == vCount);
-
-    EXPECT_EQ(events.size(), vCount);
-
-    auto v{expected.rows_.begin()};
-    auto t{events.begin()};
-
-    for (; (v != expected.rows_.end()) && (t != events.end()); ++v, ++t) {
-        const auto& event = *t;
-        const auto& required = *v;
-
-        // TODO event.ContactID()
-        // TODO event.State()
-        // TODO event.Type()
-        output &= (event.AccountID() == expected.id_);
-        output &= (event.ConfirmedAmount() == required.amount_);
-        output &= (event.Memo() == required.memo_);
-        output &= (event.PendingAmount() == required.amount_);
-        output &= (event.UUID() == required.uuid_);
-        output &= (event.WorkflowID() == required.workflow_);
-
-        EXPECT_EQ(event.AccountID(), expected.id_);
-        EXPECT_EQ(event.ConfirmedAmount(), required.amount_);
-        EXPECT_EQ(event.Memo(), required.memo_);
-        EXPECT_EQ(event.PendingAmount(), required.amount_);
-        EXPECT_EQ(event.UUID(), required.uuid_);
-        EXPECT_EQ(event.WorkflowID(), required.workflow_);
-    }
-
-    return output;
-}
-
-auto check_account_list_rpc(
-    const User& user,
-    const AccountListData& expected) noexcept -> bool
-{
-    auto output{true};
-    const auto& api = *user.api_;
-    const auto index{api.Instance()};
-    const auto command = ot::rpc::request::ListAccounts{index};
-    const auto base = ot::Context().RPC(command);
-    const auto& response = base->asListAccounts();
-    const auto& codes = response.ResponseCodes();
-    const auto& ids = response.AccountIDs();
-    const auto goodCodes = verify_response_codes(codes, 1);
-    const auto required = [&] {
-        auto out = ot::UnallocatedVector<ot::UnallocatedCString>{};
-        out.reserve(expected.rows_.size());
-
-        for (const auto& row : expected.rows_) {
-            out.emplace_back(row.account_id_);
-        }
-
-        std::sort(out.begin(), out.end());
-
-        return out;
-    }();
-    const auto got = [&] {
-        auto out{ids};
-        std::sort(out.begin(), out.end());
-
-        return out;
-    }();
-    output &= goodCodes;
-    output &= (got == required);
-
-    EXPECT_TRUE(goodCodes);
-    EXPECT_EQ(got, required);
-
-    return output;
-}
-
-auto verify_account_balance(
-    const int index,
-    const ot::UnallocatedCString& account,
-    const ot::Amount required) noexcept -> bool
-{
-    auto output{true};
-    const auto command = ot::rpc::request::GetAccountBalance{index, {account}};
-    const auto base = ot::Context().RPC(command);
-    const auto& response = base->asGetAccountBalance();
-    const auto& codes = response.ResponseCodes();
-    const auto& data = response.Balances();
-    const auto goodCodes = verify_response_codes(codes, 1);
-    output &= goodCodes;
-    output &= (data.size() == 1);
-
-    EXPECT_TRUE(goodCodes);
-    EXPECT_EQ(data.size(), 1);
-
-    if (0 < data.size()) {
-        const auto& item = data.front();
-
-        // TODO item.ConfirmedBalance()
-        // TODO item.ID()
-        // TODO item.Issuer()
-        // TODO item.Name()
-        // TODO item.Owner()
-        // TODO item.Type()
-        // TODO item.Unit()
-
-        output &= (item.PendingBalance() == required);
-
-        EXPECT_EQ(item.PendingBalance(), required);
-    }
-
-    return output;
-}
-
-auto verify_response_codes(
-    const ot::rpc::response::Base::Responses& codes,
-    const std::size_t count,
-    const ot::rpc::ResponseCode required) noexcept -> bool
-{
-    auto output{true};
-    output &= (codes.size() == count);
-
-    EXPECT_EQ(codes.size(), count);
-
-    for (auto i = std::size_t{}; i < codes.size(); ++i) {
-        const auto& code = codes.at(i);
-        output &= (code.first == i);
-        output &= (code.second == required);
-
-        EXPECT_EQ(code.first, i);
-        EXPECT_EQ(code.second, required);
-    }
-
-    return output;
-}
 
 struct RPCPushCounter::Imp {
     auto at(std::size_t index) const -> const zmq::Message&
@@ -470,13 +308,31 @@ auto RPC_fixture::InitAccountActivityCounter(
             counter, ot::UnallocatedCString{u8"account activity "} + account));
 }
 
+auto RPC_fixture::InitAccountTreeCounter(const User& nym, Counter& counter)
+    const noexcept -> void
+{
+    InitAccountTreeCounter(*nym.api_, nym.nym_id_, counter);
+}
+
+auto RPC_fixture::InitAccountTreeCounter(
+    const ot::api::session::Client& api,
+    const ot::identifier::Nym& nym,
+    Counter& counter) const noexcept -> void
+{
+    api.UI().AccountTree(
+        nym,
+        make_cb(
+            counter,
+            ot::UnallocatedCString{u8"account tree for "} + nym.str()));
+}
+
 auto RPC_fixture::IssueUnit(
     const ot::api::session::Client& api,
     const ot::api::session::Notary& server,
     const ot::UnallocatedCString& issuer,
     const ot::UnallocatedCString& shortname,
     const ot::UnallocatedCString& terms,
-    ot::core::UnitType unitOfAccount,
+    ot::UnitType unitOfAccount,
     const ot::display::Definition& displayDefinition) const noexcept
     -> ot::UnallocatedCString
 {
@@ -491,11 +347,29 @@ auto RPC_fixture::IssueUnit(
 }
 
 auto RPC_fixture::IssueUnit(
+    const ot::api::session::Client& api,
+    const ot::api::session::Notary& server,
+    const ot::UnallocatedCString& issuer,
+    const ot::UnallocatedCString& shortname,
+    const ot::UnallocatedCString& terms,
+    ot::UnitType unitOfAccount) const noexcept -> ot::UnallocatedCString
+{
+    return IssueUnit(
+        api,
+        server,
+        api.Factory().NymID(issuer),
+        shortname,
+        terms,
+        unitOfAccount,
+        ot::display::GetDefinition(unitOfAccount));
+}
+
+auto RPC_fixture::IssueUnit(
     const ot::api::session::Notary& server,
     const User& issuer,
     const ot::UnallocatedCString& shortname,
     const ot::UnallocatedCString& terms,
-    ot::core::UnitType unitOfAccount,
+    ot::UnitType unitOfAccount,
     const ot::display::Definition& displayDefinition) const noexcept
     -> ot::UnallocatedCString
 {
@@ -510,12 +384,47 @@ auto RPC_fixture::IssueUnit(
 }
 
 auto RPC_fixture::IssueUnit(
+    const ot::api::session::Notary& server,
+    const User& issuer,
+    const ot::UnallocatedCString& shortname,
+    const ot::UnallocatedCString& terms,
+    ot::UnitType unitOfAccount) const noexcept -> ot::UnallocatedCString
+{
+    return IssueUnit(
+        *issuer.api_,
+        server,
+        issuer.nym_id_,
+        shortname,
+        terms,
+        unitOfAccount,
+        ot::display::GetDefinition(unitOfAccount));
+}
+
+auto RPC_fixture::IssueUnit(
     const ot::api::session::Client& api,
     const ot::api::session::Notary& server,
     const ot::identifier::Nym& nymID,
     const ot::UnallocatedCString& shortname,
     const ot::UnallocatedCString& terms,
-    ot::core::UnitType unitOfAccount,
+    ot::UnitType unitOfAccount) const noexcept -> ot::UnallocatedCString
+{
+    return IssueUnit(
+        api,
+        server,
+        nymID,
+        shortname,
+        terms,
+        unitOfAccount,
+        ot::display::GetDefinition(unitOfAccount));
+}
+
+auto RPC_fixture::IssueUnit(
+    const ot::api::session::Client& api,
+    const ot::api::session::Notary& server,
+    const ot::identifier::Nym& nymID,
+    const ot::UnallocatedCString& shortname,
+    const ot::UnallocatedCString& terms,
+    ot::UnitType unitOfAccount,
     const ot::display::Definition& displayDefinition) const noexcept
     -> ot::UnallocatedCString
 {
@@ -535,7 +444,7 @@ auto RPC_fixture::IssueUnit(
     const auto& output = created_units_.emplace_back(contract->ID()->str());
     const auto unitID = api.Factory().UnitID(output);
     auto [taskID, future] = api.OTX().IssueUnitDefinition(
-        nymID, serverID, unitID, unitOfAccount, "issuer");
+        nymID, serverID, unitID, unitOfAccount, "issuer account");
 
     if (0 == taskID) { return {}; }
 

@@ -85,7 +85,7 @@ public:
 
     auto AddContract(
         const UnallocatedCString& instrumentDefinitionID,
-        const core::UnitType currency,
+        const UnitType currency,
         const bool primary,
         const bool active) const -> Data;
     auto AddEmail(
@@ -96,7 +96,7 @@ public:
     auto AddItem(const std::shared_ptr<Item>& item) const -> Data;
     auto AddPaymentCode(
         const UnallocatedCString& code,
-        const core::UnitType currency,
+        const UnitType currency,
         const bool primary,
         const bool active) const -> Data;
     auto AddPhoneNumber(
@@ -116,7 +116,7 @@ public:
     auto BestSocialMediaProfile(const claim::ClaimType type) const
         -> UnallocatedCString;
     auto Claim(const Identifier& item) const -> std::shared_ptr<Item>;
-    auto Contracts(const core::UnitType currency, const bool onlyActive) const
+    auto Contracts(const UnitType currency, const bool onlyActive) const
         -> UnallocatedSet<OTIdentifier>;
     auto Delete(const Identifier& id) const -> Data;
     auto EmailAddresses(bool active = true) const -> UnallocatedCString;

@@ -39,7 +39,7 @@ auto Factory::BasketContract(
     const UnallocatedCString& shortname,
     const UnallocatedCString& terms,
     const std::uint64_t weight,
-    const core::UnitType unitOfAccount,
+    const opentxs::UnitType unitOfAccount,
     const VersionNumber version,
     const display::Definition& displayDefinition,
     const Amount& redemptionIncrement) noexcept
@@ -155,7 +155,7 @@ Basket::Basket(
     const UnallocatedCString& shortname,
     const UnallocatedCString& terms,
     const std::uint64_t weight,
-    const core::UnitType unitOfAccount,
+    const opentxs::UnitType unitOfAccount,
     const VersionNumber version,
     const display::Definition& displayDefinition,
     const Amount& redemptionIncrement)

@@ -660,7 +660,7 @@ auto StateMachine::issue_unit_definition(
 
         DO_OPERATION(IssueUnitDefinition, serialized, args);
 
-        if (success && (core::UnitType::Error != advertise)) {
+        if (success && (UnitType::Error != advertise)) {
             OT_ASSERT(result.second);
 
             const auto& reply = *result.second;

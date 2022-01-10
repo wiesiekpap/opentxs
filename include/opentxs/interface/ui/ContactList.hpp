@@ -1,0 +1,48 @@
+// Copyright (c) 2010-2022 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#pragma once
+
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
+#include "opentxs/interface/ui/List.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
+
+namespace opentxs
+{
+namespace ui
+{
+class ContactList;
+class ContactListItem;
+}  // namespace ui
+}  // namespace opentxs
+
+namespace opentxs::ui
+{
+class OPENTXS_EXPORT ContactList : virtual public List
+{
+public:
+    virtual auto AddContact(
+        const UnallocatedCString& label,
+        const UnallocatedCString& paymentCode = "",
+        const UnallocatedCString& nymID = "") const noexcept
+        -> UnallocatedCString = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ContactListItem> = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ContactListItem> = 0;
+
+    OPENTXS_NO_EXPORT ~ContactList() override = default;
+
+protected:
+    ContactList() noexcept = default;
+
+private:
+    ContactList(const ContactList&) = delete;
+    ContactList(ContactList&&) = delete;
+    auto operator=(const ContactList&) -> ContactList& = delete;
+    auto operator=(ContactList&&) -> ContactList& = delete;
+};
+}  // namespace opentxs::ui

@@ -16,22 +16,25 @@
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/ui/AccountActivity.hpp"
-#include "opentxs/core/ui/AccountList.hpp"
-#include "opentxs/core/ui/AccountListItem.hpp"
-#include "opentxs/core/ui/ActivityThread.hpp"
-#include "opentxs/core/ui/ActivityThreadItem.hpp"
-#include "opentxs/core/ui/BalanceItem.hpp"
-#include "opentxs/core/ui/BlockchainAccountStatus.hpp"
-#include "opentxs/core/ui/BlockchainSelection.hpp"
-#include "opentxs/core/ui/BlockchainSelectionItem.hpp"
-#include "opentxs/core/ui/BlockchainSubaccount.hpp"
-#include "opentxs/core/ui/BlockchainSubaccountSource.hpp"
-#include "opentxs/core/ui/BlockchainSubchain.hpp"
-#include "opentxs/core/ui/Blockchains.hpp"
-#include "opentxs/core/ui/ContactList.hpp"
-#include "opentxs/core/ui/ContactListItem.hpp"
-#include "opentxs/core/ui/MessagableList.hpp"
+#include "opentxs/interface/ui/AccountActivity.hpp"
+#include "opentxs/interface/ui/AccountCurrency.hpp"
+#include "opentxs/interface/ui/AccountList.hpp"
+#include "opentxs/interface/ui/AccountListItem.hpp"
+#include "opentxs/interface/ui/AccountTree.hpp"
+#include "opentxs/interface/ui/AccountTreeItem.hpp"
+#include "opentxs/interface/ui/ActivityThread.hpp"
+#include "opentxs/interface/ui/ActivityThreadItem.hpp"
+#include "opentxs/interface/ui/BalanceItem.hpp"
+#include "opentxs/interface/ui/BlockchainAccountStatus.hpp"
+#include "opentxs/interface/ui/BlockchainSelection.hpp"
+#include "opentxs/interface/ui/BlockchainSelectionItem.hpp"
+#include "opentxs/interface/ui/BlockchainSubaccount.hpp"
+#include "opentxs/interface/ui/BlockchainSubaccountSource.hpp"
+#include "opentxs/interface/ui/BlockchainSubchain.hpp"
+#include "opentxs/interface/ui/Blockchains.hpp"
+#include "opentxs/interface/ui/ContactList.hpp"
+#include "opentxs/interface/ui/ContactListItem.hpp"
+#include "opentxs/interface/ui/MessagableList.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace ottest
@@ -61,6 +64,9 @@ auto activity_thread_send_message(
     return set && sent;
 }
 
+auto check_account_tree_items(
+    const ot::ui::AccountCurrency& widget,
+    const ot::UnallocatedVector<AccountTreeRow>& v) noexcept -> bool;
 auto check_blockchain_subaccounts(
     const ot::ui::BlockchainSubaccountSource& widget,
     const ot::UnallocatedVector<BlockchainSubaccountData>& v) noexcept -> bool;
@@ -200,6 +206,109 @@ auto check_account_list(
     const auto& widget = user.api_->UI().AccountList(user.nym_id_);
     auto output{true};
     const auto& v = expected.rows_;
+    auto row = widget.First();
+
+    if (const auto valid = row->Valid(); 0 < v.size()) {
+        output &= valid;
+
+        EXPECT_TRUE(valid);
+
+        if (false == valid) { return output; }
+    } else {
+        output &= (false == valid);
+
+        EXPECT_FALSE(valid);
+    }
+
+    for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
+        const auto lastVector = std::next(it) == v.end();
+        const auto lastRow = row->Last();
+        output &= (row->AccountID() == it->account_id_);
+        output &= (row->Balance() == it->balance_);
+        output &= (row->ContractID() == it->contract_id_);
+        output &= (row->DisplayBalance() == it->display_balance_);
+        output &= (row->DisplayUnit() == it->display_unit_);
+        output &= (row->Name() == it->name_);
+        output &= (row->NotaryID() == it->notary_id_);
+        output &= (row->NotaryName() == it->notary_name_);
+        output &= (row->Type() == it->type_);
+        output &= (row->Unit() == it->unit_);
+        output &= (lastVector == lastRow);
+
+        EXPECT_EQ(row->AccountID(), it->account_id_);
+        EXPECT_EQ(row->Balance(), it->balance_);
+        EXPECT_EQ(row->ContractID(), it->contract_id_);
+        EXPECT_EQ(row->DisplayBalance(), it->display_balance_);
+        EXPECT_EQ(row->DisplayUnit(), it->display_unit_);
+        EXPECT_EQ(row->Name(), it->name_);
+        EXPECT_EQ(row->NotaryID(), it->notary_id_);
+        EXPECT_EQ(row->NotaryName(), it->notary_name_);
+        EXPECT_EQ(row->Type(), it->type_);
+        EXPECT_EQ(row->Unit(), it->unit_);
+        EXPECT_EQ(lastVector, lastRow);
+
+        if (lastVector) {
+            EXPECT_TRUE(lastRow);
+        } else {
+            EXPECT_FALSE(lastRow);
+
+            if (lastRow) { return output; }
+        }
+    }
+
+    return output;
+}
+
+auto check_account_tree(
+    const User& user,
+    const AccountTreeData& expected) noexcept -> bool
+{
+    const auto& widget = user.api_->UI().AccountTree(user.nym_id_);
+    auto output{true};
+    const auto& v = expected.rows_;
+    auto row = widget.First();
+
+    if (const auto valid = row->Valid(); 0 < v.size()) {
+        output &= valid;
+
+        EXPECT_TRUE(valid);
+
+        if (false == valid) { return output; }
+    } else {
+        output &= (false == valid);
+
+        EXPECT_FALSE(valid);
+    }
+
+    for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
+        output &= (row->Name() == it->name_);
+        output &= (row->Currency() == it->type_);
+        output &= check_account_tree_items(row.get(), it->rows_);
+
+        EXPECT_EQ(row->Name(), it->name_);
+        EXPECT_EQ(row->Currency(), it->type_);
+
+        const auto lastVector = std::next(it) == v.end();
+        const auto lastRow = row->Last();
+        output &= (lastVector == lastRow);
+
+        if (lastVector) {
+            EXPECT_TRUE(lastRow);
+        } else {
+            EXPECT_FALSE(lastRow);
+
+            if (lastRow) { return output; }
+        }
+    }
+
+    return output;
+}
+
+auto check_account_tree_items(
+    const ot::ui::AccountCurrency& widget,
+    const ot::UnallocatedVector<AccountTreeRow>& v) noexcept -> bool
+{
+    auto output{true};
     auto row = widget.First();
 
     if (const auto valid = row->Valid(); 0 < v.size()) {
@@ -714,6 +823,18 @@ auto init_account_list(const User& user, Counter& counter) noexcept -> void
     wait_for_counter(counter);
 }
 
+auto init_account_tree(const User& user, Counter& counter) noexcept -> void
+{
+    user.api_->UI().AccountTree(user.nym_id_, make_cb(counter, [&] {
+                                    auto out = std::stringstream{};
+                                    out << u8"account_tree_";
+                                    out << user.name_lower_;
+
+                                    return out.str();
+                                }()));
+    wait_for_counter(counter);
+}
+
 auto init_activity_thread(
     const User& user,
     const User& remote,
@@ -754,6 +875,13 @@ auto init_messagable_list(const User& user, Counter& counter) noexcept -> void
                                        return out.str();
                                    }()));
     wait_for_counter(counter);
+}
+
+auto print_account_tree(const User& user) noexcept -> ot::UnallocatedCString
+{
+    const auto& widget = user.api_->UI().AccountTree(user.nym_id_);
+
+    return widget.Debug();
 }
 
 auto wait_for_counter(Counter& data, const bool hard) noexcept -> bool

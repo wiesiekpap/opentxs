@@ -51,7 +51,7 @@ public:
         const Nym_p& nym,
         const UnallocatedCString& shortname,
         const UnallocatedCString& terms,
-        const core::UnitType unitOfAccount,
+        const opentxs::UnitType unitOfAccount,
         const VersionNumber version,
         const display::Definition& displayDefinition,
         const Amount& redemptionIncrement);

@@ -2660,7 +2660,7 @@ auto OTAPI_Exec::GenerateBasketCreation(
             shortname,
             terms,
             weight,
-            core::UnitType::Unknown,
+            UnitType::Unknown,
             version,
             displayDefinition,
             redemptionIncrement);

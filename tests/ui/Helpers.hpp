@@ -8,7 +8,7 @@
 // IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
 // IWYU pragma: no_include "opentxs/core/UnitType.hpp"
-// IWYU pragma: no_include "opentxs/core/ui/Blockchains.hpp"
+// IWYU pragma: no_include "opentxs/interface/ui/Blockchains.hpp"
 
 #pragma once
 
@@ -24,8 +24,8 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/ui/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/interface/ui/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
@@ -70,7 +70,7 @@ struct AccountActivityData {
     ot::AccountType type_;
     ot::UnallocatedCString id_{};
     ot::UnallocatedCString name_{};
-    ot::core::UnitType unit_;
+    ot::UnitType unit_;
     ot::UnallocatedCString contract_id_{};
     ot::UnallocatedCString contract_name_{};
     ot::UnallocatedCString notary_id_{};
@@ -100,7 +100,7 @@ struct AccountListRow {
     ot::UnallocatedCString notary_id_{};
     ot::UnallocatedCString notary_name_{};
     ot::AccountType type_{};
-    ot::core::UnitType unit_{};
+    ot::UnitType unit_{};
     int polarity_{};
     ot::Amount balance_{};
     ot::UnallocatedCString display_balance_{};
@@ -108,6 +108,30 @@ struct AccountListRow {
 
 struct AccountListData {
     ot::UnallocatedVector<AccountListRow> rows_{};
+};
+
+struct AccountTreeRow {
+    ot::UnallocatedCString account_id_{};
+    ot::UnallocatedCString contract_id_{};
+    ot::UnallocatedCString display_unit_{};
+    ot::UnallocatedCString name_{};
+    ot::UnallocatedCString notary_id_{};
+    ot::UnallocatedCString notary_name_{};
+    ot::AccountType type_{};
+    ot::UnitType unit_{};
+    int polarity_{};
+    ot::Amount balance_{};
+    ot::UnallocatedCString display_balance_{};
+};
+
+struct AccountCurrencyData {
+    ot::UnitType type_{};
+    ot::UnallocatedCString name_{};
+    ot::UnallocatedVector<AccountTreeRow> rows_{};
+};
+
+struct AccountTreeData {
+    ot::UnallocatedVector<AccountCurrencyData> rows_{};
 };
 
 struct ActivityThreadRow {
@@ -130,8 +154,7 @@ struct ActivityThreadData {
     ot::UnallocatedCString display_name_{};
     ot::UnallocatedCString draft_{};
     ot::UnallocatedCString participants_{};
-    ot::UnallocatedMap<ot::core::UnitType, ot::UnallocatedCString>
-        payment_codes_{};
+    ot::UnallocatedMap<ot::UnitType, ot::UnallocatedCString> payment_codes_{};
     ot::UnallocatedVector<ActivityThreadRow> rows_{};
 };
 
@@ -206,6 +229,13 @@ auto check_account_list_qt(
     const User& user,
     const AccountListData& expected) noexcept -> bool;
 
+auto check_account_tree(
+    const User& user,
+    const AccountTreeData& expected) noexcept -> bool;
+auto check_account_tree_qt(
+    const User& user,
+    const AccountTreeData& expected) noexcept -> bool;
+
 auto check_activity_thread(
     const User& user,
     const ot::Identifier& contact,
@@ -258,6 +288,7 @@ auto init_account_activity(
     const ot::Identifier& account,
     Counter& counter) noexcept -> void;
 auto init_account_list(const User& user, Counter& counter) noexcept -> void;
+auto init_account_tree(const User& user, Counter& counter) noexcept -> void;
 auto init_activity_thread(
     const User& user,
     const User& contact,
@@ -267,6 +298,8 @@ auto init_messagable_list(const User& user, Counter& counter) noexcept -> void;
 
 auto make_cb(Counter& counter, const ot::UnallocatedCString name) noexcept
     -> std::function<void()>;
+
+auto print_account_tree(const User& user) noexcept -> ot::UnallocatedCString;
 
 auto wait_for_counter(Counter& data, const bool hard = true) noexcept -> bool;
 }  // namespace ottest

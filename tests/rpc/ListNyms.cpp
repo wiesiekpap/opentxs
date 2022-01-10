@@ -10,12 +10,12 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Notary.hpp"
-#include "opentxs/util/rpc/CommandType.hpp"
-#include "opentxs/util/rpc/ResponseCode.hpp"
-#include "opentxs/util/rpc/request/Base.hpp"
-#include "opentxs/util/rpc/request/ListNyms.hpp"
-#include "opentxs/util/rpc/response/Base.hpp"
-#include "opentxs/util/rpc/response/ListNyms.hpp"
+#include "opentxs/interface/rpc/CommandType.hpp"
+#include "opentxs/interface/rpc/ResponseCode.hpp"
+#include "opentxs/interface/rpc/request/Base.hpp"
+#include "opentxs/interface/rpc/request/ListNyms.hpp"
+#include "opentxs/interface/rpc/response/Base.hpp"
+#include "opentxs/interface/rpc/response/ListNyms.hpp"
 #include "paymentcode/VectorsV3.hpp"
 
 namespace ot = opentxs;

@@ -36,7 +36,7 @@ class OPENTXS_EXPORT ZMQ
 public:
     virtual auto Context() const
         -> const opentxs::network::zeromq::Context& = 0;
-    virtual auto DefaultAddressType() const -> core::AddressType = 0;
+    virtual auto DefaultAddressType() const -> AddressType = 0;
     virtual auto KeepAlive() const -> std::chrono::seconds = 0;
     virtual void KeepAlive(const std::chrono::seconds duration) const = 0;
     virtual auto Linger() const -> std::chrono::seconds = 0;

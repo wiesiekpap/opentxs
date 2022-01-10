@@ -7,8 +7,8 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "api/context/Context.hpp"  // IWYU pragma: associated
 
-#include "opentxs/util/rpc/request/Base.hpp"
-#include "opentxs/util/rpc/response/Base.hpp"
+#include "opentxs/interface/rpc/request/Base.hpp"
+#include "opentxs/interface/rpc/response/Base.hpp"
 
 namespace opentxs::api::imp
 {

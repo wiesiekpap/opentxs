@@ -315,50 +315,50 @@ auto Blockchain::Imp::AssignLabel(
     }
 }
 
-auto Blockchain::Imp::bip44_type(const core::UnitType type) const noexcept
+auto Blockchain::Imp::bip44_type(const UnitType type) const noexcept
     -> Bip44Type
 {
     switch (type) {
-        case core::UnitType::Btc: {
+        case UnitType::Btc: {
 
             return Bip44Type::BITCOIN;
         }
-        case core::UnitType::Ltc: {
+        case UnitType::Ltc: {
 
             return Bip44Type::LITECOIN;
         }
-        case core::UnitType::Doge: {
+        case UnitType::Doge: {
 
             return Bip44Type::DOGECOIN;
         }
-        case core::UnitType::Dash: {
+        case UnitType::Dash: {
 
             return Bip44Type::DASH;
         }
-        case core::UnitType::Bch: {
+        case UnitType::Bch: {
 
             return Bip44Type::BITCOINCASH;
         }
-        case core::UnitType::Pkt: {
+        case UnitType::Pkt: {
 
             return Bip44Type::PKT;
         }
-        case core::UnitType::Tnbch:
-        case core::UnitType::Tnbtc:
-        case core::UnitType::Tnxrp:
-        case core::UnitType::Tnltx:
-        case core::UnitType::Tnxem:
-        case core::UnitType::Tndash:
-        case core::UnitType::Tnmaid:
-        case core::UnitType::Tnlsk:
-        case core::UnitType::Tndoge:
-        case core::UnitType::Tnxmr:
-        case core::UnitType::Tnwaves:
-        case core::UnitType::Tnnxt:
-        case core::UnitType::Tnsc:
-        case core::UnitType::Tnsteem:
-        case core::UnitType::Tnpkt:
-        case core::UnitType::Regtest: {
+        case UnitType::Tnbch:
+        case UnitType::Tnbtc:
+        case UnitType::Tnxrp:
+        case UnitType::Tnltx:
+        case UnitType::Tnxem:
+        case UnitType::Tndash:
+        case UnitType::Tnmaid:
+        case UnitType::Tnlsk:
+        case UnitType::Tndoge:
+        case UnitType::Tnxmr:
+        case UnitType::Tnwaves:
+        case UnitType::Tnnxt:
+        case UnitType::Tnsc:
+        case UnitType::Tnsteem:
+        case UnitType::Tnpkt:
+        case UnitType::Regtest: {
             return Bip44Type::TESTNET;
         }
         default: {
@@ -643,7 +643,7 @@ auto Blockchain::Imp::get_node(const Identifier& accountID) const
     {
         const auto type = api_.Storage().BlockchainAccountType(nym, id);
 
-        if (core::UnitType::Error == type) {
+        if (UnitType::Error == type) {
             const auto error = UnallocatedCString{"account "} + id +
                                " for nym " + nym + " does not exist";
 
@@ -685,7 +685,7 @@ auto Blockchain::Imp::HDSubaccount(
     const auto nym = nymID.str();
     const auto type = api_.Storage().BlockchainAccountType(nym, id);
 
-    if (core::UnitType::Error == type) {
+    if (UnitType::Error == type) {
         const auto error = UnallocatedCString{"HD account "} + id + " for " +
                            nym + " does not exist";
 
@@ -715,7 +715,7 @@ auto Blockchain::Imp::Init() noexcept -> void
 
 auto Blockchain::Imp::init_path(
     const UnallocatedCString& root,
-    const core::UnitType chain,
+    const UnitType chain,
     const Bip32Index account,
     const opentxs::blockchain::crypto::HDProtocol standard,
     proto::HDPath& path) const noexcept -> void
@@ -1070,7 +1070,7 @@ auto Blockchain::Imp::PaymentCodeSubaccount(
 {
     const auto type = api_.Storage().Bip47Chain(nymID, accountID);
 
-    if (core::UnitType::Error == type) {
+    if (UnitType::Error == type) {
         const auto error = UnallocatedCString{"Payment code account "} +
                            accountID.str() + " for " + nymID.str() +
                            " does not exist";
@@ -1099,7 +1099,7 @@ auto Blockchain::Imp::PaymentCodeSubaccount(
             api_, chain, local, remote);
     const auto type = api_.Storage().Bip47Chain(nymID, accountID);
 
-    if (core::UnitType::Error == type) {
+    if (UnitType::Error == type) {
         const auto id =
             new_payment_code(lock, nymID, local, remote, path, chain, reason);
 

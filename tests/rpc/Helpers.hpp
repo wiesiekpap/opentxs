@@ -165,13 +165,34 @@ protected:
         const ot::identifier::Nym& nym,
         const ot::UnallocatedCString& account,
         Counter& counter) const noexcept -> void;
+    auto InitAccountTreeCounter(const User& nym, Counter& counter)
+        const noexcept -> void;
+    auto InitAccountTreeCounter(
+        const ot::api::session::Client& api,
+        const ot::identifier::Nym& nym,
+        Counter& counter) const noexcept -> void;
     auto IssueUnit(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
         const ot::UnallocatedCString& issuer,
         const ot::UnallocatedCString& shortname,
         const ot::UnallocatedCString& terms,
-        ot::core::UnitType unitOfAccount,
+        ot::UnitType unitOfAccount,
+        const ot::display::Definition& displayDefinition) const noexcept
+        -> ot::UnallocatedCString;
+    auto IssueUnit(
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
+        const ot::UnallocatedCString& issuer,
+        const ot::UnallocatedCString& shortname,
+        const ot::UnallocatedCString& terms,
+        ot::UnitType unitOfAccount) const noexcept -> ot::UnallocatedCString;
+    auto IssueUnit(
+        const ot::api::session::Notary& server,
+        const User& issuer,
+        const ot::UnallocatedCString& shortname,
+        const ot::UnallocatedCString& terms,
+        ot::UnitType unitOfAccount,
         const ot::display::Definition& displayDefinition) const noexcept
         -> ot::UnallocatedCString;
     auto IssueUnit(
@@ -179,7 +200,14 @@ protected:
         const User& issuer,
         const ot::UnallocatedCString& shortname,
         const ot::UnallocatedCString& terms,
-        ot::core::UnitType unitOfAccount,
+        ot::UnitType unitOfAccount) const noexcept -> ot::UnallocatedCString;
+    auto IssueUnit(
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
+        const ot::identifier::Nym& issuer,
+        const ot::UnallocatedCString& shortname,
+        const ot::UnallocatedCString& terms,
+        ot::UnitType unitOfAccount,
         const ot::display::Definition& displayDefinition) const noexcept
         -> ot::UnallocatedCString;
     auto IssueUnit(
@@ -188,9 +216,7 @@ protected:
         const ot::identifier::Nym& issuer,
         const ot::UnallocatedCString& shortname,
         const ot::UnallocatedCString& terms,
-        ot::core::UnitType unitOfAccount,
-        const ot::display::Definition& displayDefinition) const noexcept
-        -> ot::UnallocatedCString;
+        ot::UnitType unitOfAccount) const noexcept -> ot::UnallocatedCString;
     auto RefreshAccount(
         const ot::api::session::Client& api,
         const ot::identifier::Nym& nym,

@@ -191,11 +191,11 @@ auto Contacts::ContactList() const -> ObjectList
 
 auto Contacts::ContactName(const Identifier& id) const -> UnallocatedCString
 {
-    return ContactName(id, core::UnitType::Error);
+    return ContactName(id, UnitType::Error);
 }
 
-auto Contacts::ContactName(const Identifier& id, core::UnitType currencyHint)
-    const -> UnallocatedCString
+auto Contacts::ContactName(const Identifier& id, UnitType currencyHint) const
+    -> UnallocatedCString
 {
     auto alias = UnallocatedCString{};
     const auto fallback = [&](const rLock&) {
@@ -219,7 +219,7 @@ auto Contacts::ContactName(const Identifier& id, core::UnitType currencyHint)
         }
     }
 
-    using Type = core::UnitType;
+    using Type = UnitType;
 
     if ((Type::Error == currencyHint) && (false == alias.empty())) {
         const auto isPaymentCode = [&] {

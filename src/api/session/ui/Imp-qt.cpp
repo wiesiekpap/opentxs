@@ -12,16 +12,16 @@
 #include <tuple>
 #include <utility>
 
-#include "internal/core/ui/UI.hpp"
+#include "internal/interface/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/ui/Blockchains.hpp"
-#include "opentxs/core/ui/qt/BlankModel.hpp"
-#include "opentxs/core/ui/qt/BlockchainSelection.hpp"
-#include "opentxs/core/ui/qt/BlockchainStatistics.hpp"
-#include "opentxs/core/ui/qt/SeedValidator.hpp"
+#include "opentxs/interface/qt/BlankModel.hpp"
+#include "opentxs/interface/qt/BlockchainSelection.hpp"
+#include "opentxs/interface/qt/BlockchainStatistics.hpp"
+#include "opentxs/interface/qt/SeedValidator.hpp"
+#include "opentxs/interface/ui/Blockchains.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::api::session::ui
@@ -35,6 +35,7 @@ ImpQt::ImpQt(
     , accounts_qt_()
     , account_lists_qt_()
     , account_summaries_qt_()
+    , account_trees_qt_()
     , activity_summaries_qt_()
     , activity_threads_qt_()
     , blockchain_account_status_qt_()
@@ -115,7 +116,7 @@ auto ImpQt::AccountListQt(const identifier::Nym& nymID, const SimpleCallback cb)
 
 auto ImpQt::AccountSummaryQt(
     const identifier::Nym& nymID,
-    const core::UnitType currency,
+    const UnitType currency,
     const SimpleCallback cb) const noexcept -> opentxs::ui::AccountSummaryQt*
 {
     auto lock = Lock{lock_};
@@ -128,6 +129,27 @@ auto ImpQt::AccountSummaryQt(
                  .emplace(
                      std::move(key),
                      opentxs::factory::AccountSummaryQtModel(*native))
+                 .first;
+
+        OT_ASSERT(it->second);
+    }
+
+    return it->second.get();
+}
+
+auto ImpQt::AccountTreeQt(const identifier::Nym& nymID, const SimpleCallback cb)
+    const noexcept -> opentxs::ui::AccountTreeQt*
+{
+    auto lock = Lock{lock_};
+    auto key = AccountTreeKey{nymID};
+    auto it = account_trees_qt_.find(key);
+
+    if (account_trees_qt_.end() == it) {
+        auto& native = account_tree(lock, nymID, cb);
+        it = account_trees_qt_
+                 .emplace(
+                     std::move(key),
+                     opentxs::factory::AccountTreeQtModel(*native))
                  .first;
 
         OT_ASSERT(it->second);
@@ -315,7 +337,7 @@ auto ImpQt::MessagableListQt(
 
 auto ImpQt::PayableListQt(
     const identifier::Nym& nymID,
-    core::UnitType currency,
+    UnitType currency,
     const SimpleCallback cb) const noexcept -> opentxs::ui::PayableListQt*
 {
     auto lock = Lock{lock_};
@@ -387,6 +409,7 @@ auto ImpQt::ShutdownModels() noexcept -> void
     blockchain_account_status_qt_.clear();
     activity_threads_qt_.clear();
     activity_summaries_qt_.clear();
+    account_trees_qt_.clear();
     account_summaries_qt_.clear();
     account_lists_qt_.clear();
     accounts_qt_.clear();

@@ -80,7 +80,7 @@ class ServerConnection final
       Lockable
 {
 public:
-    auto ChangeAddressType(const core::AddressType type) -> bool final;
+    auto ChangeAddressType(const AddressType type) -> bool final;
     auto ClearProxy() -> bool final;
     auto EnableProxy() -> bool final;
     auto Send(
@@ -99,7 +99,7 @@ private:
     const api::Session& api_;
     const zeromq::socket::Publish& updates_;
     const OTNotaryID server_id_;
-    core::AddressType address_type_{core::AddressType::Error};
+    AddressType address_type_{AddressType::Error};
     OTServerContract remote_contract_;
     std::thread thread_;
     OTZMQListenCallback callback_;
@@ -117,7 +117,7 @@ private:
     auto clone() const -> ServerConnection* final { return nullptr; }
     auto endpoint() const -> UnallocatedCString;
     auto form_endpoint(
-        core::AddressType type,
+        AddressType type,
         UnallocatedCString hostname,
         std::uint32_t port) const -> UnallocatedCString;
     auto get_timeout() -> Time;

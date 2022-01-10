@@ -157,7 +157,7 @@ auto Storage::AccountSigner(const Identifier& accountID) const -> OTNymID
     return Root().Tree().Accounts().AccountSigner(accountID);
 }
 
-auto Storage::AccountUnit(const Identifier& accountID) const -> core::UnitType
+auto Storage::AccountUnit(const Identifier& accountID) const -> UnitType
 {
     return Root().Tree().Accounts().AccountUnit(accountID);
 }
@@ -186,7 +186,7 @@ auto Storage::AccountsByServer(const identifier::Notary& server) const
     return Root().Tree().Accounts().AccountsByServer(server);
 }
 
-auto Storage::AccountsByUnit(const core::UnitType unit) const
+auto Storage::AccountsByUnit(const UnitType unit) const
     -> UnallocatedSet<OTIdentifier>
 {
     return Root().Tree().Accounts().AccountsByUnit(unit);
@@ -194,14 +194,14 @@ auto Storage::AccountsByUnit(const core::UnitType unit) const
 
 auto Storage::Bip47Chain(
     const identifier::Nym& nymID,
-    const Identifier& channelID) const -> core::UnitType
+    const Identifier& channelID) const -> UnitType
 {
     const bool exists = Root().Tree().Nyms().Exists(nymID.str());
 
     if (false == exists) {
         LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
-        return core::UnitType::Error;
+        return UnitType::Error;
     }
 
     return Root()
@@ -214,7 +214,7 @@ auto Storage::Bip47Chain(
 
 auto Storage::Bip47ChannelsByChain(
     const identifier::Nym& nymID,
-    const core::UnitType chain) const -> Storage::Bip47ChannelList
+    const UnitType chain) const -> Storage::Bip47ChannelList
 {
     const bool exists = Root().Tree().Nyms().Exists(nymID.str());
 
@@ -241,14 +241,14 @@ auto Storage::blockchain_thread_item_id(
 
 auto Storage::BlockchainAccountList(
     const UnallocatedCString& nymID,
-    const core::UnitType type) const -> UnallocatedSet<UnallocatedCString>
+    const UnitType type) const -> UnallocatedSet<UnallocatedCString>
 {
     return Root().Tree().Nyms().Nym(nymID).BlockchainAccountList(type);
 }
 
 auto Storage::BlockchainAccountType(
     const UnallocatedCString& nymID,
-    const UnallocatedCString& accountID) const -> core::UnitType
+    const UnallocatedCString& accountID) const -> UnitType
 {
     return Root().Tree().Nyms().Nym(nymID).BlockchainAccountType(accountID);
 }
@@ -1797,7 +1797,7 @@ auto Storage::Store(
     const identifier::Nym& issuerNym,
     const identifier::Notary& server,
     const identifier::UnitDefinition& contract,
-    const core::UnitType unit) const -> bool
+    const UnitType unit) const -> bool
 {
     return mutable_Root()
         .get()

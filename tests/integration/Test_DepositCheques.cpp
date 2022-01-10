@@ -54,7 +54,7 @@
 
 #define UNIT_DEFINITION_CONTRACT_NAME "Mt Gox USD"
 #define UNIT_DEFINITION_TERMS "YOLO"
-#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::Usd
+#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::UnitType::Usd
 #define CHEQUE_AMOUNT_1 2000
 #define CHEQUE_MEMO_1 "memo"
 
@@ -238,25 +238,25 @@ TEST_F(Test_DepositCheques, payment_codes)
     }
 
     alice.AddPaymentCode(
-        alice_payment_code_, ot::core::UnitType::Btc, true, true, reasonA);
+        alice_payment_code_, ot::UnitType::Btc, true, true, reasonA);
     bob.AddPaymentCode(
-        bob_payment_code_, ot::core::UnitType::Btc, true, true, reasonB);
+        bob_payment_code_, ot::UnitType::Btc, true, true, reasonB);
     issuer.AddPaymentCode(
-        issuer_payment_code_, ot::core::UnitType::Btc, true, true, reasonI);
+        issuer_payment_code_, ot::UnitType::Btc, true, true, reasonI);
     alice.AddPaymentCode(
-        alice_payment_code_, ot::core::UnitType::Bch, true, true, reasonA);
+        alice_payment_code_, ot::UnitType::Bch, true, true, reasonA);
     bob.AddPaymentCode(
-        bob_payment_code_, ot::core::UnitType::Bch, true, true, reasonB);
+        bob_payment_code_, ot::UnitType::Bch, true, true, reasonB);
     issuer.AddPaymentCode(
-        issuer_payment_code_, ot::core::UnitType::Bch, true, true, reasonI);
+        issuer_payment_code_, ot::UnitType::Bch, true, true, reasonI);
 
     if (have_hd_) {
-        EXPECT_FALSE(alice.PaymentCode(ot::core::UnitType::Btc).empty());
-        EXPECT_FALSE(bob.PaymentCode(ot::core::UnitType::Btc).empty());
-        EXPECT_FALSE(issuer.PaymentCode(ot::core::UnitType::Btc).empty());
-        EXPECT_FALSE(alice.PaymentCode(ot::core::UnitType::Bch).empty());
-        EXPECT_FALSE(bob.PaymentCode(ot::core::UnitType::Bch).empty());
-        EXPECT_FALSE(issuer.PaymentCode(ot::core::UnitType::Bch).empty());
+        EXPECT_FALSE(alice.PaymentCode(ot::UnitType::Btc).empty());
+        EXPECT_FALSE(bob.PaymentCode(ot::UnitType::Btc).empty());
+        EXPECT_FALSE(issuer.PaymentCode(ot::UnitType::Btc).empty());
+        EXPECT_FALSE(alice.PaymentCode(ot::UnitType::Bch).empty());
+        EXPECT_FALSE(bob.PaymentCode(ot::UnitType::Bch).empty());
+        EXPECT_FALSE(issuer.PaymentCode(ot::UnitType::Bch).empty());
     } else {
         // TODO
     }
@@ -366,7 +366,7 @@ TEST_F(Test_DepositCheques, issue_dollars)
             issuer_client_.Wallet().mutable_Nym(issuer_nym_id_, reasonI);
         issuer.AddPreferredOTServer(server_1_.ID().str(), true, reasonI);
         issuer.AddContract(
-            unit_id_->str(), ot::core::UnitType::Usd, true, true, reasonI);
+            unit_id_->str(), ot::UnitType::Usd, true, true, reasonI);
     }
 
     auto task = issuer_client_.OTX().IssueUnitDefinition(

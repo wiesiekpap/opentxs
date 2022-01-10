@@ -223,12 +223,6 @@ enum class RemoteBoxType : std::int8_t {
     Outbox = 2,
 };
 
-enum class AccountType : std::int8_t {
-    Error = 0,
-    Blockchain = 1,
-    Custodial = 2,
-};
-
 enum class PaymentType : int {
     Error = 0,
     Cheque = 1,

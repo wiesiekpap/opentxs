@@ -74,8 +74,8 @@ public:
     auto ContactList() const -> ObjectList final;
     auto ContactName(const Identifier& contactID) const
         -> UnallocatedCString final;
-    auto ContactName(const Identifier& contactID, core::UnitType currencyHint)
-        const -> UnallocatedCString final;
+    auto ContactName(const Identifier& contactID, UnitType currencyHint) const
+        -> UnallocatedCString final;
     auto Merge(const Identifier& parent, const Identifier& child) const
         -> std::shared_ptr<const opentxs::Contact> final;
     auto mutable_Contact(const Identifier& id) const

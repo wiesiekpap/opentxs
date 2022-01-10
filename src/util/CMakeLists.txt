@@ -5,7 +5,6 @@
 
 add_subdirectory(license)
 add_subdirectory(platform)
-add_subdirectory(rpc)
 add_subdirectory(storage)
 
 target_sources(

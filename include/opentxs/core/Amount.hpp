@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <string_view>
 #include <type_traits>
 
 #include "opentxs/util/Bytes.hpp"

@@ -77,13 +77,12 @@ auto ZMQ::Context() const -> const opentxs::network::zeromq::Context&
     return api_.Network().ZeroMQ();
 }
 
-auto ZMQ::DefaultAddressType() const -> core::AddressType
+auto ZMQ::DefaultAddressType() const -> AddressType
 {
     bool changed{false};
     const std::int64_t defaultType{
-        static_cast<std::int64_t>(core::AddressType::IPV4)};
-    std::int64_t configuredType{
-        static_cast<std::int64_t>(core::AddressType::Error)};
+        static_cast<std::int64_t>(AddressType::IPV4)};
+    std::int64_t configuredType{static_cast<std::int64_t>(AddressType::Error)};
     api_.Config().CheckSet_long(
         String::Factory("Connection"),
         String::Factory("preferred_address_type"),
@@ -93,7 +92,7 @@ auto ZMQ::DefaultAddressType() const -> core::AddressType
 
     if (changed) { api_.Config().Save(); }
 
-    return static_cast<core::AddressType>(configuredType);
+    return static_cast<AddressType>(configuredType);
 }
 
 void ZMQ::init(const Lock& lock) const

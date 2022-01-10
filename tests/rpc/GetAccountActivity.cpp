@@ -19,12 +19,12 @@
 #include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/util/rpc/CommandType.hpp"
-#include "opentxs/util/rpc/ResponseCode.hpp"
-#include "opentxs/util/rpc/request/Base.hpp"
-#include "opentxs/util/rpc/request/GetAccountActivity.hpp"
-#include "opentxs/util/rpc/response/Base.hpp"
-#include "opentxs/util/rpc/response/GetAccountActivity.hpp"
+#include "opentxs/interface/rpc/CommandType.hpp"
+#include "opentxs/interface/rpc/ResponseCode.hpp"
+#include "opentxs/interface/rpc/request/Base.hpp"
+#include "opentxs/interface/rpc/request/GetAccountActivity.hpp"
+#include "opentxs/interface/rpc/response/Base.hpp"
+#include "opentxs/interface/rpc/response/GetAccountActivity.hpp"
 #include "paymentcode/VectorsV3.hpp"
 #include "ui/Helpers.hpp"
 
@@ -78,7 +78,7 @@ TEST_F(RPC_fixture, preconditions)
             issuer,
             "Mt Gox USD",
             "YOLO",
-            ot::core::UnitType::Usd,
+            ot::UnitType::Usd,
             {u8"USD", {{u8"dollars", {u8"$", u8"", {{10, 0}}, 2, 3}}}});
 
         EXPECT_FALSE(unit.empty());

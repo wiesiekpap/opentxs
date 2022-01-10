@@ -9,7 +9,6 @@
 
 #include <robin_hood.h>
 
-#include "internal/blockchain/Params.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -22,9 +21,7 @@ constexpr auto sync_map_ = [] {
     for (const auto& chain : opentxs::blockchain::DefinedChains()) {
         auto& [table, name] = map[chain];
         table = offset + static_cast<int>(chain);
-        name = opentxs::blockchain::params::Data::Chains()
-                   .at(chain)
-                   .display_string_;
+        name = DisplayString(chain);
     }
 
     return map;

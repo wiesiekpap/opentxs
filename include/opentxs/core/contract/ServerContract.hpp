@@ -43,7 +43,7 @@ class OPENTXS_EXPORT Server : virtual public opentxs::contract::Signable
 {
 public:
     using Endpoint = std::tuple<
-        core::AddressType,
+        AddressType,
         contract::ProtocolVersion,
         UnallocatedCString,  // hostname / address
         std::uint32_t,       // port
@@ -54,8 +54,8 @@ public:
     virtual auto ConnectInfo(
         UnallocatedCString& strHostname,
         std::uint32_t& nPort,
-        core::AddressType& actual,
-        const core::AddressType& preferred) const -> bool = 0;
+        AddressType& actual,
+        const AddressType& preferred) const -> bool = 0;
     virtual auto EffectiveName() const -> UnallocatedCString = 0;
     using Signable::Serialize;
     virtual auto Serialize(AllocateOutput destination, bool includeNym = false)

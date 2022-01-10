@@ -477,13 +477,7 @@ auto Serialize(const block::Position& in) noexcept -> Space
 
 auto Ticker(const Type chain) noexcept -> UnallocatedCString
 {
-    try {
-
-        return params::Data::Chains().at(chain).display_ticker_;
-    } catch (...) {
-
-        return {};
-    }
+    return TickerSymbol(chain);
 }
 }  // namespace opentxs::blockchain::internal
 

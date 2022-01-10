@@ -341,14 +341,14 @@ public:
         const UnallocatedCString& nymid,
         const UnallocatedCString& shortname,
         const UnallocatedCString& terms,
-        const core::UnitType unitOfAccount,
+        const UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const PasswordPrompt& reason) const -> OTUnitDefinition final;
     auto CurrencyContract(
         const UnallocatedCString& nymid,
         const UnallocatedCString& shortname,
         const UnallocatedCString& terms,
-        const core::UnitType unitOfAccount,
+        const UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const display::Definition& displayDefinition,
         const PasswordPrompt& reason) const -> OTUnitDefinition final;
@@ -356,7 +356,7 @@ public:
         const UnallocatedCString& nymid,
         const UnallocatedCString& shortname,
         const UnallocatedCString& terms,
-        const core::UnitType unitOfAccount,
+        const UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const VersionNumber version,
         const PasswordPrompt& reason) const -> OTUnitDefinition final;
@@ -364,7 +364,7 @@ public:
         const UnallocatedCString& nymid,
         const UnallocatedCString& shortname,
         const UnallocatedCString& terms,
-        const core::UnitType unitOfAccount,
+        const UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const display::Definition& displayDefinition,
         const VersionNumber version,
@@ -373,15 +373,14 @@ public:
         const UnallocatedCString& nymid,
         const UnallocatedCString& shortname,
         const UnallocatedCString& terms,
-        const core::UnitType unitOfAccount,
+        const UnitType unitOfAccount,
         const PasswordPrompt& reason,
         const display::Definition& displayDefinition,
         const Amount& redemptionIncrement,
         const VersionNumber version = contract::Unit::DefaultVersion) const
         -> OTUnitDefinition final;
     auto CurrencyTypeBasedOnUnitType(
-        const identifier::UnitDefinition& contractID) const
-        -> core::UnitType final;
+        const identifier::UnitDefinition& contractID) const -> UnitType final;
 
     auto LoadCredential(
         const UnallocatedCString& id,
@@ -408,8 +407,8 @@ protected:
         const identifier::Nym& remoteNymID) const
         -> std::shared_ptr<otx::context::Base>;
     auto extract_unit(const identifier::UnitDefinition& contractID) const
-        -> core::UnitType;
-    auto extract_unit(const contract::Unit& contract) const -> core::UnitType;
+        -> UnitType;
+    auto extract_unit(const contract::Unit& contract) const -> UnitType;
     void save(
         const PasswordPrompt& reason,
         otx::context::internal::Base* context) const;

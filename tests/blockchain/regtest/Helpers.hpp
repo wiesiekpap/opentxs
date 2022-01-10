@@ -10,6 +10,7 @@
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subaccount.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+// IWYU pragma: no_include "opentxs/core/AccountType.hpp"
 // IWYU pragma: no_include "opentxs/core/UnitType.hpp"
 // IWYU pragma: no_include "opentxs/network/p2p/State.hpp"
 // IWYU pragma: no_include "opentxs/network/zeromq/Context.hpp"
@@ -509,7 +510,7 @@ protected:
     const ot::UnallocatedCString expected_notary_name_;
     const ot::UnallocatedCString memo_outgoing_;
     const ot::AccountType expected_account_type_;
-    const ot::core::UnitType expected_unit_type_;
+    const ot::UnitType expected_unit_type_;
     const Generator hd_generator_;
     ScanListener& listener_;
 
@@ -544,7 +545,7 @@ protected:
     const ot::UnallocatedCString expected_notary_name_;
     const ot::UnallocatedCString memo_outgoing_;
     const ot::AccountType expected_account_type_;
-    const ot::core::UnitType expected_unit_type_;
+    const ot::UnitType expected_unit_type_;
     const Generator mine_to_alice_;
     ScanListener& listener_alice_;
     ScanListener& listener_bob_;

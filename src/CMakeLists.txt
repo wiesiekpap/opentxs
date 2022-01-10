@@ -268,6 +268,7 @@ add_subdirectory(blockchain)
 add_subdirectory(core)
 add_subdirectory(crypto)
 add_subdirectory(identity)
+add_subdirectory(interface)
 add_subdirectory(network)
 add_subdirectory(otx)
 add_subdirectory(serialization)
@@ -291,7 +292,7 @@ if(OT_QT_EXPORT)
   if(OPENTXS_STANDALONE)
     install(
       FILES ${OPENTXS_QT_PUBLIC_HEADERS}
-      DESTINATION include/opentxs/core/ui/qt
+      DESTINATION include/opentxs/interface/qt
       COMPONENT dev
     )
   endif()

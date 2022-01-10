@@ -72,7 +72,7 @@ auto Factory::ServerContract(
         std::back_inserter(list),
         [](const auto& in) -> contract::Server::Endpoint {
             return {
-                static_cast<core::AddressType>(std::get<0>(in)),
+                static_cast<AddressType>(std::get<0>(in)),
                 static_cast<contract::ProtocolVersion>(std::get<1>(in)),
                 std::get<2>(in),
                 std::get<3>(in),
@@ -243,8 +243,8 @@ auto Server::GetID(const Lock& lock) const -> OTIdentifier
 auto Server::ConnectInfo(
     UnallocatedCString& strHostname,
     std::uint32_t& nPort,
-    core::AddressType& actual,
-    const core::AddressType& preferred) const -> bool
+    AddressType& actual,
+    const AddressType& preferred) const -> bool
 {
     if (0 < listen_params_.size()) {
         for (auto& endpoint : listen_params_) {

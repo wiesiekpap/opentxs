@@ -678,13 +678,13 @@ auto Wallet::UpdateAccount(
 }
 
 auto Wallet::CurrencyTypeBasedOnUnitType(
-    const identifier::UnitDefinition& contractID) const -> core::UnitType
+    const identifier::UnitDefinition& contractID) const -> UnitType
 {
     return extract_unit(contractID);
 }
 
 auto Wallet::extract_unit(const identifier::UnitDefinition& contractID) const
-    -> core::UnitType
+    -> UnitType
 {
     try {
         const auto contract = UnitDefinition(contractID);
@@ -695,18 +695,17 @@ auto Wallet::extract_unit(const identifier::UnitDefinition& contractID) const
             " Unable to load unit definition contract ")(contractID)(".")
             .Flush();
 
-        return core::UnitType::Unknown;
+        return UnitType::Unknown;
     }
 }
 
-auto Wallet::extract_unit(const contract::Unit& contract) const
-    -> core::UnitType
+auto Wallet::extract_unit(const contract::Unit& contract) const -> UnitType
 {
     try {
         return contract.UnitOfAccount();
     } catch (...) {
 
-        return core::UnitType::Unknown;
+        return UnitType::Unknown;
     }
 }
 
@@ -2749,7 +2748,7 @@ auto Wallet::CurrencyContract(
     const UnallocatedCString& nymid,
     const UnallocatedCString& shortname,
     const UnallocatedCString& terms,
-    const core::UnitType unitOfAccount,
+    const UnitType unitOfAccount,
     const Amount& redemptionIncrement,
     const PasswordPrompt& reason) const -> OTUnitDefinition
 {
@@ -2768,7 +2767,7 @@ auto Wallet::CurrencyContract(
     const UnallocatedCString& nymid,
     const UnallocatedCString& shortname,
     const UnallocatedCString& terms,
-    const core::UnitType unitOfAccount,
+    const UnitType unitOfAccount,
     const Amount& redemptionIncrement,
     const display::Definition& displayDefinition,
     const PasswordPrompt& reason) const -> OTUnitDefinition
@@ -2788,7 +2787,7 @@ auto Wallet::CurrencyContract(
     const UnallocatedCString& nymid,
     const UnallocatedCString& shortname,
     const UnallocatedCString& terms,
-    const core::UnitType unitOfAccount,
+    const UnitType unitOfAccount,
     const Amount& redemptionIncrement,
     const VersionNumber version,
     const PasswordPrompt& reason) const -> OTUnitDefinition
@@ -2808,7 +2807,7 @@ auto Wallet::CurrencyContract(
     const UnallocatedCString& nymid,
     const UnallocatedCString& shortname,
     const UnallocatedCString& terms,
-    const core::UnitType unitOfAccount,
+    const UnitType unitOfAccount,
     const Amount& redemptionIncrement,
     const display::Definition& displayDefinition,
     const VersionNumber version,
@@ -2847,7 +2846,7 @@ auto Wallet::SecurityContract(
     const UnallocatedCString& nymid,
     const UnallocatedCString& shortname,
     const UnallocatedCString& terms,
-    const core::UnitType unitOfAccount,
+    const UnitType unitOfAccount,
     const PasswordPrompt& reason,
     const display::Definition& displayDefinition,
     const Amount& redemptionIncrement,

@@ -14,7 +14,6 @@
 #include <cassert>
 #include <chrono>
 #include <cstdlib>
-#include <exception>
 #include <future>
 #include <memory>
 #include <thread>
@@ -325,12 +324,12 @@ auto Log::operator()(const Amount& in) const noexcept -> const Log&
     return operator()(floatValue.str() + " (" + intValue + ")");
 }
 
-auto Log::operator()(const Amount& in, core::UnitType currency) const noexcept
+auto Log::operator()(const Amount& in, UnitType currency) const noexcept
     -> const Log&
 {
     if (false == imp_->active()) { return *this; }
 
-    if (core::UnitType::Unknown == currency) { return operator()(in); }
+    if (UnitType::Unknown == currency) { return operator()(in); }
 
     const auto intValue = [&] {
         auto out = UnallocatedCString{};

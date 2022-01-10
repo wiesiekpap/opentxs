@@ -74,7 +74,7 @@ public:
     auto Serialize(SerializedType&, bool includeNym = false) const
         -> bool override;
     auto Type() const -> contract::UnitType override = 0;
-    auto UnitOfAccount() const -> core::UnitType override
+    auto UnitOfAccount() const -> opentxs::UnitType override
     {
         return unit_of_account_;
     }
@@ -92,7 +92,7 @@ public:
     ~Unit() override = default;
 
 protected:
-    const core::UnitType unit_of_account_;
+    const opentxs::UnitType unit_of_account_;
 
     virtual auto IDVersion(const Lock& lock) const -> SerializedType;
     virtual auto SigVersion(const Lock& lock) const -> SerializedType;
@@ -106,7 +106,7 @@ protected:
         const Nym_p& nym,
         const UnallocatedCString& shortname,
         const UnallocatedCString& terms,
-        const core::UnitType unitOfAccount,
+        const opentxs::UnitType unitOfAccount,
         const VersionNumber version,
         const display::Definition& displayDefinition,
         const Amount& redemptionIncrement);
@@ -132,7 +132,7 @@ private:
     auto GetID(const Lock& lock) const -> OTIdentifier override;
     auto get_displayscales(const SerializedType&) const
         -> std::optional<display::Definition>;
-    auto get_unitofaccount(const SerializedType&) const -> core::UnitType;
+    auto get_unitofaccount(const SerializedType&) const -> opentxs::UnitType;
     auto verify_signature(const Lock& lock, const proto::Signature& signature)
         const -> bool override;
 

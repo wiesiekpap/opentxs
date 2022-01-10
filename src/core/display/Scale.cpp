@@ -10,7 +10,7 @@
 #include <memory>
 #include <utility>
 
-#include "core/display/Scale_imp.hpp"
+#include "core/display/Scale.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Container.hpp"

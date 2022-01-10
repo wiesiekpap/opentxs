@@ -108,7 +108,7 @@ public:
         return contact_credential_to_contact_data_version_.at(
             ContactCredentialVersion());
     }
-    auto Contracts(const core::UnitType currency, const bool onlyActive) const
+    auto Contracts(const UnitType currency, const bool onlyActive) const
         -> UnallocatedSet<OTIdentifier> final;
     auto EmailAddresses(bool active) const -> UnallocatedCString final;
     auto EncryptionTargets() const noexcept -> NymKeys final;
@@ -186,7 +186,7 @@ public:
         -> bool final;
     auto AddContract(
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const core::UnitType currency,
+        const UnitType currency,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool final;
@@ -197,7 +197,7 @@ public:
         const bool active) -> bool final;
     auto AddPaymentCode(
         const opentxs::PaymentCode& code,
-        const core::UnitType currency,
+        const UnitType currency,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool final;

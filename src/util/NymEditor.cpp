@@ -77,7 +77,7 @@ auto NymData::DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
 
 auto NymData::AddContract(
     const UnallocatedCString& instrumentDefinitionID,
-    const core::UnitType currency,
+    const UnitType currency,
     const bool primary,
     const bool active,
     const PasswordPrompt& reason) -> bool
@@ -105,7 +105,7 @@ auto NymData::AddEmail(
 
 auto NymData::AddPaymentCode(
     const UnallocatedCString& code,
-    const core::UnitType currency,
+    const UnitType currency,
     const bool primary,
     const bool active,
     const PasswordPrompt& reason) -> bool
@@ -194,7 +194,7 @@ auto NymData::EmailAddresses(bool active) const -> UnallocatedCString
 
 auto NymData::HaveContract(
     const identifier::UnitDefinition& instrumentDefinitionID,
-    const core::UnitType currency,
+    const UnitType currency,
     const bool primary,
     const bool active) const -> bool
 {
@@ -239,8 +239,7 @@ auto NymData::nym() const -> const identity::Nym&
     return *nym_;
 }
 
-auto NymData::PaymentCode(const core::UnitType currency) const
-    -> UnallocatedCString
+auto NymData::PaymentCode(const UnitType currency) const -> UnallocatedCString
 {
     return Contact::PaymentCode(data(), currency);
 }

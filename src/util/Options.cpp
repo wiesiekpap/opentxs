@@ -20,7 +20,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "internal/blockchain/Params.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -264,8 +263,7 @@ auto Options::Imp::convert(const UnallocatedCString& value) const
         auto out = UnallocatedMap<UnallocatedCString, blockchain::Type>{};
 
         for (const auto& chain : chains) {
-            const auto& data = blockchain::params::Data::Chains().at(chain);
-            out.emplace(lower(data.display_ticker_), chain);
+            out.emplace(lower(TickerSymbol(chain)), chain);
         }
 
         return out;

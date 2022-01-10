@@ -7,9 +7,9 @@ target_sources(
   opentxs-common
   PRIVATE
     "Definition.cpp"
-    "Definition_imp.hpp"
+    "Definition.hpp"
     "Scale.cpp"
-    "Scale_imp.hpp"
+    "Scale.hpp"
 )
 
 set(cxx-install-headers

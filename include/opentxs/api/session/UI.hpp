@@ -8,7 +8,7 @@
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/identity/wot/claim/ClaimType.hpp"
 // IWYU pragma: no_include "opentxs/core/UnitType.hpp"
-// IWYU pragma: no_include "opentxs/core/ui/Blockchains.hpp"
+// IWYU pragma: no_include "opentxs/interface/ui/Blockchains.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -18,8 +18,8 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/ui/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/interface/ui/Types.hpp"
 
 class QAbstractItemModel;
 
@@ -51,6 +51,8 @@ class AccountList;
 class AccountListQt;
 class AccountSummary;
 class AccountSummaryQt;
+class AccountTree;
+class AccountTreeQt;
 class ActivitySummary;
 class ActivitySummaryQt;
 class ActivityThread;
@@ -106,15 +108,24 @@ public:
         -> opentxs::ui::AccountListQt* = 0;
     virtual auto AccountSummary(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback updateCB = {}) const noexcept
         -> const opentxs::ui::AccountSummary& = 0;
     /// Caller does not own this pointer
     virtual auto AccountSummaryQt(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback updateCB = {}) const noexcept
         -> opentxs::ui::AccountSummaryQt* = 0;
+    virtual auto AccountTree(
+        const identifier::Nym& nym,
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::AccountTree& = 0;
+    /// Caller does not own this pointer
+    virtual auto AccountTreeQt(
+        const identifier::Nym& nym,
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::AccountTreeQt* = 0;
     virtual auto ActivitySummary(
         const identifier::Nym& nymID,
         const SimpleCallback updateCB = {}) const noexcept
@@ -198,13 +209,13 @@ public:
         -> opentxs::ui::MessagableListQt* = 0;
     virtual auto PayableList(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback updateCB = {}) const noexcept
         -> const opentxs::ui::PayableList& = 0;
     /// Caller does not own this pointer
     virtual auto PayableListQt(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback updateCB = {}) const noexcept
         -> opentxs::ui::PayableListQt* = 0;
     virtual auto Profile(
