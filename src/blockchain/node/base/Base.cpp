@@ -8,6 +8,7 @@
 #include "blockchain/node/base/Base.hpp"  // IWYU pragma: associated
 
 #include <boost/asio.hpp>
+#include <boost/system/error_code.hpp>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -23,6 +24,7 @@
 #include "blockchain/node/base/SyncClient.hpp"
 #include "blockchain/node/base/SyncServer.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/Params.hpp"
@@ -34,6 +36,7 @@
 #include "internal/core/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Contacts.hpp"
@@ -309,6 +312,7 @@ Base::Base(
     , headers_received_()
     , work_promises_()
     , send_promises_()
+    , heartbeat_(api_.Network().Asio().Internal().GetTimer())
     , state_(State::UpdatingHeaders)
     , init_promise_()
     , init_(init_promise_.get_future())
@@ -554,6 +558,7 @@ auto Base::init() noexcept -> void
     notify_sync_client();
     init_promise_.set_value();
     trigger();
+    reset_heartbeat();
 }
 
 auto Base::is_synchronized_blocks() const noexcept -> bool
@@ -656,6 +661,7 @@ auto Base::pipeline(zmq::Message&& in) noexcept -> void
             if (sync_server_) { sync_server_->Heartbeat(); }
 
             do_work();
+            reset_heartbeat();
         } break;
         case Task::SendToAddress: {
             process_send_to_address(std::move(in));
@@ -1048,6 +1054,21 @@ auto Base::RequestBlocks(
     if (false == running_.load()) { return false; }
 
     return peer_.RequestBlocks(hashes);
+}
+
+auto Base::reset_heartbeat() noexcept -> void
+{
+    static constexpr auto interval = std::chrono::seconds{5};
+    heartbeat_.SetRelative(interval);
+    heartbeat_.Wait([this](const auto& error) {
+        if (error) {
+            if (boost::system::errc::operation_canceled != error.value()) {
+                LogError()(OT_PRETTY_CLASS())(error).Flush();
+            }
+        } else {
+            pipeline_.Push(MakeWork(Task::Heartbeat));
+        }
+    });
 }
 
 auto Base::SendToAddress(

@@ -202,14 +202,12 @@ private:
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
     std::atomic_bool running_;
-    std::thread heartbeat_;
 
     auto disable(const Lock& lock, const Chain type) const noexcept -> bool;
     auto enable(
         const Lock& lock,
         const Chain type,
         const UnallocatedCString& seednode) const noexcept -> bool;
-    auto heartbeat() const noexcept -> void;
     auto hello(const Lock&, const Chains& chains) const noexcept -> SyncData;
     auto publish_chain_state(Chain type, bool state) const -> void;
     auto start(
