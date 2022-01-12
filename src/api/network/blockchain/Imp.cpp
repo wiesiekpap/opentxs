@@ -127,7 +127,6 @@ BlockchainImp::BlockchainImp(
     , init_promise_()
     , init_(init_promise_.get_future())
     , running_(true)
-    , heartbeat_(&BlockchainImp::heartbeat, this)
 {
 }
 
@@ -238,27 +237,6 @@ auto BlockchainImp::GetSyncServers() const noexcept -> Endpoints
     init_.get();
 
     return db_->GetSyncServers();
-}
-
-auto BlockchainImp::heartbeat() const noexcept -> void
-{
-    init_.get();
-
-    while (running_) {
-        auto counter{-1};
-
-        while (running_ && (20 > ++counter)) {
-            Sleep(std::chrono::milliseconds{250});
-        }
-
-        auto lock = Lock{lock_};
-
-        for (const auto& [key, value] : networks_) {
-            if (false == running_) { return; }
-
-            value->Heartbeat();
-        }
-    }
 }
 
 auto BlockchainImp::Hello() const noexcept -> SyncData
@@ -420,8 +398,6 @@ auto BlockchainImp::RestoreNetworks() const noexcept -> void
 auto BlockchainImp::Shutdown() noexcept -> void
 {
     if (running_.exchange(false)) {
-        if (heartbeat_.joinable()) { heartbeat_.join(); }
-
         LogVerbose()("Shutting down ")(networks_.size())(" blockchain clients")
             .Flush();
 

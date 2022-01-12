@@ -21,6 +21,7 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Timer.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -169,10 +170,6 @@ public:
     auto HeaderOracle() const noexcept -> const node::HeaderOracle& final
     {
         return header_;
-    }
-    auto Heartbeat() const noexcept -> void final
-    {
-        pipeline_.Push(MakeWork(Task::Heartbeat));
     }
     auto IsSynchronized() const noexcept -> bool final
     {
@@ -341,6 +338,7 @@ private:
     Time headers_received_;
     mutable WorkPromises work_promises_;
     mutable SendPromises send_promises_;
+    Timer heartbeat_;
     std::atomic<State> state_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
@@ -361,6 +359,7 @@ private:
     auto process_send_to_address(zmq::Message&& in) noexcept -> void;
     auto process_send_to_payment_code(zmq::Message&& in) noexcept -> void;
     auto process_sync_data(zmq::Message&& in) noexcept -> void;
+    auto reset_heartbeat() noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;
     auto state_machine() noexcept -> bool;
     auto state_machine_headers() noexcept -> void;
