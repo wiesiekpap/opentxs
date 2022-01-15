@@ -10,11 +10,9 @@
 
 #include <cstdint>
 
-namespace opentxs
+namespace opentxs::identity
 {
-namespace identity
-{
-enum class CredentialRole : std::uint8_t {
+enum class CredentialRole : std::uint32_t {
     Error = 0,
     MasterKey = 1,
     ChildKey = 2,
@@ -24,7 +22,6 @@ enum class CredentialRole : std::uint8_t {
 
 constexpr auto value(const CredentialRole in) noexcept
 {
-    return static_cast<std::uint8_t>(in);
+    return static_cast<std::uint32_t>(in);
 }
-}  // namespace identity
-}  // namespace opentxs
+}  // namespace opentxs::identity

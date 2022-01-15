@@ -193,7 +193,7 @@ auto RPC_fixture::CreateNym(
     OT_ASSERT(added);
 
     auto& user = it->second;
-    user.init(api, ot::identity::wot::claim::ClaimType::Individual, index);
+    user.init(api, ot::identity::Type::individual, index);
     auto& nym = user.nym_;
 
     OT_ASSERT(nym);

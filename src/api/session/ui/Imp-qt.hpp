@@ -35,7 +35,9 @@
 #include "opentxs/interface/qt/BlockchainStatistics.hpp"
 #include "opentxs/interface/qt/Contact.hpp"
 #include "opentxs/interface/qt/ContactList.hpp"
+#include "opentxs/interface/qt/IdentityManager.hpp"
 #include "opentxs/interface/qt/MessagableList.hpp"
+#include "opentxs/interface/qt/NymList.hpp"
 #include "opentxs/interface/qt/PayableList.hpp"
 #include "opentxs/interface/qt/Profile.hpp"
 #include "opentxs/interface/qt/SeedValidator.hpp"
@@ -119,8 +121,15 @@ public:
         const noexcept -> opentxs::ui::ContactQt* final;
     auto ContactListQt(const identifier::Nym& nymID, const SimpleCallback cb)
         const noexcept -> opentxs::ui::ContactListQt* final;
+    auto IdentityManagerQt() const noexcept
+        -> opentxs::ui::IdentityManagerQt* final
+    {
+        return &identity_manager_;
+    }
     auto MessagableListQt(const identifier::Nym& nymID, const SimpleCallback cb)
         const noexcept -> opentxs::ui::MessagableListQt* final;
+    auto NymListQt(const SimpleCallback cb) const noexcept
+        -> opentxs::ui::NymListQt* final;
     auto PayableListQt(
         const identifier::Nym& nymID,
         const UnitType currency,
@@ -165,6 +174,7 @@ private:
     using ContactQtPointer = std::unique_ptr<opentxs::ui::ContactQt>;
     using MessagableListQtPointer =
         std::unique_ptr<opentxs::ui::MessagableListQt>;
+    using NymListQtPointer = std::unique_ptr<opentxs::ui::NymListQt>;
     using PayableListQtPointer = std::unique_ptr<opentxs::ui::PayableListQt>;
     using ProfileQtPointer = std::unique_ptr<opentxs::ui::ProfileQt>;
     using UnitListQtPointer = std::unique_ptr<opentxs::ui::UnitListQt>;
@@ -209,6 +219,7 @@ private:
     };
 
     mutable Blank blank_;
+    mutable opentxs::ui::IdentityManagerQt identity_manager_;
     mutable AccountActivityQtMap accounts_qt_;
     mutable AccountListQtMap account_lists_qt_;
     mutable AccountSummaryQtMap account_summaries_qt_;
@@ -221,6 +232,7 @@ private:
     mutable ContactListQtMap contact_lists_qt_;
     mutable ContactQtMap contacts_qt_;
     mutable MessagableListQtMap messagable_lists_qt_;
+    mutable NymListQtPointer nym_list_qt_;
     mutable PayableListQtMap payable_lists_qt_;
     mutable ProfileQtMap profiles_qt_;
     mutable SeedValidatorMap seed_validators_;

@@ -10,6 +10,7 @@
 #include <robin_hood.h>
 
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/identity/IdentityType.hpp"
 #include "opentxs/identity/wot/claim/Attribute.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
@@ -34,9 +35,14 @@ using SectionTypeReverseMap = robin_hood::
 using UnitTypeMap = robin_hood::unordered_flat_map<UnitType, claim::ClaimType>;
 using UnitTypeReverseMap =
     robin_hood::unordered_flat_map<claim::ClaimType, UnitType>;
+using NymTypeMap =
+    robin_hood::unordered_flat_map<identity::Type, claim::ClaimType>;
+using NymTypeReverseMap =
+    robin_hood::unordered_flat_map<claim::ClaimType, identity::Type>;
 
 auto attribute_map() noexcept -> const AttributeMap&;
 auto claimtype_map() noexcept -> const ClaimTypeMap&;
+auto identitytype_map() noexcept -> const NymTypeMap&;
 auto sectiontype_map() noexcept -> const SectionTypeMap&;
 auto unittype_map() noexcept -> const UnitTypeMap&;
 }  // namespace opentxs::identity::wot::claim
@@ -488,6 +494,21 @@ auto claimtype_map() noexcept -> const ClaimTypeMap&
     return map;
 }
 
+auto identitytype_map() noexcept -> const NymTypeMap&
+{
+    static const auto map = NymTypeMap{
+        {identity::Type::invalid, ClaimType::Error},
+        {identity::Type::individual, ClaimType::Individual},
+        {identity::Type::organization, ClaimType::Organization},
+        {identity::Type::business, ClaimType::Business},
+        {identity::Type::government, ClaimType::Government},
+        {identity::Type::server, ClaimType::Server},
+        {identity::Type::bot, ClaimType::Bot},
+    };
+
+    return map;
+}
+
 auto sectiontype_map() noexcept -> const SectionTypeMap&
 {
     static const auto map = SectionTypeMap{
@@ -818,6 +839,24 @@ auto unittype_map() noexcept -> const UnitTypeMap&
 
 namespace opentxs
 {
+auto ClaimToNym(const identity::wot::claim::ClaimType in) noexcept
+    -> identity::Type
+{
+    static const auto map = reverse_arbitrary_map<
+        identity::Type,
+        identity::wot::claim::ClaimType,
+        identity::wot::claim::NymTypeReverseMap>(
+        identity::wot::claim::identitytype_map());
+
+    try {
+
+        return map.at(in);
+    } catch (...) {
+
+        return identity::Type::invalid;
+    }
+}
+
 auto ClaimToUnit(const identity::wot::claim::ClaimType in) noexcept -> UnitType
 {
     static const auto map = reverse_arbitrary_map<
@@ -830,6 +869,16 @@ auto ClaimToUnit(const identity::wot::claim::ClaimType in) noexcept -> UnitType
         return map.at(in);
     } catch (...) {
         return UnitType::Error;
+    }
+}
+
+auto NymToClaim(const identity::Type in) noexcept
+    -> identity::wot::claim::ClaimType
+{
+    try {
+        return identity::wot::claim::identitytype_map().at(in);
+    } catch (...) {
+        return identity::wot::claim::ClaimType::Error;
     }
 }
 

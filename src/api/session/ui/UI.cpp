@@ -215,6 +215,11 @@ auto UI::ContactListQt(const identifier::Nym& nymID, const SimpleCallback cb)
     return imp_->ContactListQt(nymID, cb);
 }
 
+auto UI::IdentityManagerQt() const noexcept -> opentxs::ui::IdentityManagerQt*
+{
+    return imp_->IdentityManagerQt();
+}
+
 auto UI::Init() noexcept -> void { imp_->Init(); }
 
 auto UI::MessagableList(const identifier::Nym& nymID, const SimpleCallback cb)
@@ -227,6 +232,18 @@ auto UI::MessagableListQt(const identifier::Nym& nymID, const SimpleCallback cb)
     const noexcept -> opentxs::ui::MessagableListQt*
 {
     return imp_->MessagableListQt(nymID, cb);
+}
+
+auto UI::NymList(const SimpleCallback cb) const noexcept
+    -> const opentxs::ui::NymList&
+{
+    return imp_->NymList(cb);
+}
+
+auto UI::NymListQt(const SimpleCallback cb) const noexcept
+    -> opentxs::ui::NymListQt*
+{
+    return imp_->NymListQt(cb);
 }
 
 auto UI::PayableList(

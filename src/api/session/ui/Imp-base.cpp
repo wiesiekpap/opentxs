@@ -43,6 +43,7 @@ UI::Imp::Imp(
     , contact_lists_()
     , contacts_()
     , messagable_lists_()
+    , nym_list_()
     , payable_lists_()
     , profiles_()
     , unit_lists_()
@@ -489,6 +490,26 @@ auto UI::Imp::MessagableList(
     return *messagable_list(lock, nymID, cb);
 }
 
+auto UI::Imp::NymList(const SimpleCallback cb) const noexcept
+    -> const opentxs::ui::NymList&
+{
+    auto lock = Lock{lock_};
+
+    return nym_list(lock, cb);
+}
+
+auto UI::Imp::nym_list(const Lock& lock, const SimpleCallback& cb)
+    const noexcept -> opentxs::ui::internal::NymList&
+{
+    if (!nym_list_) {
+        nym_list_ = opentxs::factory::NymListModel(api_, cb);
+
+        OT_ASSERT(nym_list_);
+    }
+
+    return *nym_list_;
+}
+
 auto UI::Imp::payable_list(
     const Lock& lock,
     const identifier::Nym& nymID,
@@ -579,6 +600,9 @@ auto UI::Imp::ShutdownCallbacks() noexcept -> void
     clearCallbacks(unit_lists_);
     clearCallbacks(profiles_);
     clearCallbacks(payable_lists_);
+
+    if (nym_list_) { nym_list_->ClearCallbacks(); }
+
     clearCallbacks(messagable_lists_);
     clearCallbacks(contacts_);
     clearCallbacks(contact_lists_);
@@ -597,6 +621,7 @@ auto UI::Imp::ShutdownModels() noexcept -> void
     unit_lists_.clear();
     profiles_.clear();
     payable_lists_.clear();
+    nym_list_.reset();
     messagable_lists_.clear();
     contacts_.clear();
     contact_lists_.clear();

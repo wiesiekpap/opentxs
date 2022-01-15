@@ -11,6 +11,7 @@ target_sources(
     "${CMAKE_CURRENT_BINARY_DIR}/bech32.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/chai.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/irrxml.cpp"
+    "${CMAKE_CURRENT_BINARY_DIR}/libguarded.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/lucre.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/opentxs.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/packetcrypt.cpp"

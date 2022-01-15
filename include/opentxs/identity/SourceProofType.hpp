@@ -10,14 +10,11 @@
 
 #include <cstdint>
 
-namespace opentxs
+namespace opentxs::identity
 {
-namespace identity
-{
-enum class SourceProofType : std::uint8_t {
+enum class SourceProofType : std::uint32_t {
     Error = 0,
     SelfSignature = 1,
     Signature = 2,
 };
-}  // namespace identity
-}  // namespace opentxs
+}  // namespace opentxs::identity

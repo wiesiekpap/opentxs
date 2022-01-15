@@ -47,11 +47,13 @@
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/identity/Authority.hpp"
 #include "opentxs/identity/CredentialType.hpp"
+#include "opentxs/identity/IdentityType.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/identity/SourceType.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/Data.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -69,7 +71,7 @@ namespace opentxs
 auto Factory::Nym(
     const api::Session& api,
     const crypto::Parameters& params,
-    const identity::wot::claim::ClaimType type,
+    const identity::Type type,
     const UnallocatedCString name,
     const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*
 {
@@ -96,7 +98,7 @@ auto Factory::Nym(
             return nullptr;
         }
 
-        if (identity::wot::claim::ClaimType::Error != type && !name.empty()) {
+        if (identity::Type::invalid != type && !name.empty()) {
             const auto version =
                 ReturnType::contact_credential_to_contact_data_version_.at(
                     identity::internal::Authority::NymToContactCredential(
@@ -107,7 +109,7 @@ auto Factory::Nym(
                 version,
                 version,
                 identity::wot::claim::Data::SectionMap{}};
-            const auto scope = blank.SetScope(type, name);
+            const auto scope = blank.SetScope(NymToClaim(type), name);
             revised.Internal().SetContactData([&] {
                 auto out = proto::ContactData{};
                 scope.Serialize(out);

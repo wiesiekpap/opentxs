@@ -30,7 +30,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
-#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/identity/IdentityType.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Container.hpp"
@@ -134,16 +134,14 @@ struct User {
 
     auto init(
         const ot::api::session::Client& api,
-        const ot::identity::wot::claim::ClaimType type =
-            ot::identity::wot::claim::ClaimType::Individual,
+        const ot::identity::Type type = ot::identity::Type::individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> bool;
     auto init(
         const ot::api::session::Client& api,
         const Server& server,
-        const ot::identity::wot::claim::ClaimType type =
-            ot::identity::wot::claim::ClaimType::Individual,
+        const ot::identity::Type type = ot::identity::Type::individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> bool;
@@ -151,16 +149,14 @@ struct User {
         const ot::api::session::Client& api,
         const Server& server,
         const std::function<void(User&)> custom,
-        const ot::identity::wot::claim::ClaimType type =
-            ot::identity::wot::claim::ClaimType::Individual,
+        const ot::identity::Type type = ot::identity::Type::individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> void;
     auto init_custom(
         const ot::api::session::Client& api,
         const std::function<void(User&)> custom,
-        const ot::identity::wot::claim::ClaimType type =
-            ot::identity::wot::claim::ClaimType::Individual,
+        const ot::identity::Type type = ot::identity::Type::individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> void;
@@ -179,7 +175,7 @@ private:
 
     auto init_basic(
         const ot::api::session::Client& api,
-        const ot::identity::wot::claim::ClaimType type,
+        const ot::identity::Type type,
         const std::uint32_t index,
         const ot::crypto::SeedStyle seed) noexcept -> bool;
 

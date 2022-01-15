@@ -48,8 +48,8 @@
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/identity/IdentityType.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
@@ -225,7 +225,7 @@ void Server::CreateMainFile(bool& mainFileExists)
     nymParameters.SetNym(0);
     nymParameters.SetDefault(false);
     m_nymServer = manager_.Wallet().Nym(
-        nymParameters, identity::wot::claim::ClaimType::Server, reason_, name);
+        nymParameters, identity::Type::server, reason_, name);
 
     if (false == bool(m_nymServer)) {
         LogError()(OT_PRETTY_CLASS())("Error: Failed to create server nym.")

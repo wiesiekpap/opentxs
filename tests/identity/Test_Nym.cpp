@@ -22,6 +22,7 @@
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/CredentialType.hpp"
+#include "opentxs/identity/IdentityType.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/identity/SourceType.hpp"
@@ -33,7 +34,6 @@
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -127,11 +127,7 @@ public:
         const auto reason = api.Factory().PasswordPrompt(__func__);
         const auto alias = ot::UnallocatedCString{"alias"};
         std::unique_ptr<ot::identity::internal::Nym> pNym(ot::Factory::Nym(
-            api,
-            {},
-            ot::identity::wot::claim::ClaimType::Individual,
-            alias,
-            reason));
+            api, {}, ot::identity::Type::individual, alias, reason));
 
         EXPECT_TRUE(pNym);
 

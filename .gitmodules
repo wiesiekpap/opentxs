@@ -31,3 +31,6 @@
 [submodule "deps/secp256k1"]
 	path = deps/secp256k1
 	url = https://github.com/Open-Transactions/secp256k1-abc
+[submodule "deps/cs_libguarded"]
+	path = deps/cs_libguarded
+	url = https://github.com/copperspice/cs_libguarded

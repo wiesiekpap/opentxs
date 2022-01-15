@@ -59,8 +59,8 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Parameters.hpp"
+#include "opentxs/identity/IdentityType.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
@@ -993,6 +993,11 @@ auto Wallet::IsLocalNym(const UnallocatedCString& id) const -> bool
     return api_.Storage().LocalNyms().count(id);
 }
 
+auto Wallet::IsLocalNym(const identifier::Nym& id) const -> bool
+{
+    return IsLocalNym(id.str());
+}
+
 auto Wallet::LocalNymCount() const -> std::size_t
 {
     return api_.Storage().LocalNyms().size();
@@ -1137,7 +1142,7 @@ auto Wallet::Nym(const ReadView& bytes) const -> Nym_p
 }
 
 auto Wallet::Nym(
-    const identity::wot::claim::ClaimType type,
+    const identity::Type type,
     const PasswordPrompt& reason,
     const UnallocatedCString& name) const -> Nym_p
 {
@@ -1149,19 +1154,18 @@ auto Wallet::Nym(
     const PasswordPrompt& reason,
     const UnallocatedCString& name) const -> Nym_p
 {
-    return Nym(
-        parameters, identity::wot::claim::ClaimType::Individual, reason, name);
+    return Nym(parameters, identity::Type::individual, reason, name);
 }
 
 auto Wallet::Nym(const PasswordPrompt& reason, const UnallocatedCString& name)
     const -> Nym_p
 {
-    return Nym({}, identity::wot::claim::ClaimType::Individual, reason, name);
+    return Nym({}, identity::Type::individual, reason, name);
 }
 
 auto Wallet::Nym(
     const opentxs::crypto::Parameters& parameters,
-    const identity::wot::claim::ClaimType type,
+    const identity::Type type,
     const PasswordPrompt& reason,
     const UnallocatedCString& name) const -> Nym_p
 {

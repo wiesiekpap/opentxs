@@ -532,6 +532,35 @@ namespace opentxs::ui::implementation
 {
 template <>
 auto ListItems<
+    NymListRowID,
+    NymListSortKey,
+    std::shared_ptr<NymListRowInternal>>::
+    compare_id(const NymListRowID& lhs, const NymListRowID& rhs) const noexcept
+    -> bool
+{
+    static const auto compare = std::less<NymListRowID>{};
+
+    return compare(lhs, rhs);
+}
+
+template <>
+auto ListItems<
+    NymListRowID,
+    NymListSortKey,
+    std::shared_ptr<NymListRowInternal>>::
+    compare_key(const NymListSortKey& lhs, const NymListSortKey& rhs)
+        const noexcept -> bool
+{
+    static const auto compare = std::less<NymListSortKey>{};
+
+    return compare(lhs, rhs);
+}
+}  // namespace opentxs::ui::implementation
+
+namespace opentxs::ui::implementation
+{
+template <>
+auto ListItems<
     PayableListRowID,
     PayableListSortKey,
     std::shared_ptr<PayableListRowInternal>>::

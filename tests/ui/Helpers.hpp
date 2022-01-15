@@ -205,6 +205,15 @@ struct ContactListData {
     ot::UnallocatedVector<ContactListRow> rows_{};
 };
 
+struct NymListRow {
+    ot::UnallocatedCString id_{};
+    ot::UnallocatedCString name_{};
+};
+
+struct NymListData {
+    ot::UnallocatedVector<NymListRow> rows_{};
+};
+
 auto activity_thread_send_message(
     const User& user,
     const User& contact) noexcept -> bool;
@@ -277,6 +286,13 @@ auto check_messagable_list_qt(
     const User& user,
     const ContactListData& expected) noexcept -> bool;
 
+auto check_nym_list(
+    const ot::api::session::Client& api,
+    const NymListData& expected) noexcept -> bool;
+auto check_nym_list_qt(
+    const ot::api::session::Client& api,
+    const NymListData& expected) noexcept -> bool;
+
 auto contact_list_add_contact(
     const User& user,
     const ot::UnallocatedCString& label,
@@ -295,6 +311,9 @@ auto init_activity_thread(
     Counter& counter) noexcept -> void;
 auto init_contact_list(const User& user, Counter& counter) noexcept -> void;
 auto init_messagable_list(const User& user, Counter& counter) noexcept -> void;
+auto init_nym_list(
+    const ot::api::session::Client& api,
+    Counter& counter) noexcept -> void;
 
 auto make_cb(Counter& counter, const ot::UnallocatedCString name) noexcept
     -> std::function<void()>;

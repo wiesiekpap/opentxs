@@ -266,7 +266,7 @@ auto User::Contact(const ot::UnallocatedCString& contact) const noexcept
 
 auto User::init_basic(
     const ot::api::session::Client& api,
-    const ot::identity::wot::claim::ClaimType type,
+    const ot::identity::Type type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> bool
 {
@@ -302,7 +302,7 @@ auto User::init_basic(
 auto User::init(
     const ot::api::session::Client& api,
     const Server& server,
-    const ot::identity::wot::claim::ClaimType type,
+    const ot::identity::Type type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> bool
 {
@@ -318,7 +318,7 @@ auto User::init(
 
 auto User::init(
     const ot::api::session::Client& api,
-    const ot::identity::wot::claim::ClaimType type,
+    const ot::identity::Type type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> bool
 {
@@ -335,7 +335,7 @@ auto User::init_custom(
     const ot::api::session::Client& api,
     const Server& server,
     const std::function<void(User&)> custom,
-    const ot::identity::wot::claim::ClaimType type,
+    const ot::identity::Type type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> void
 {
@@ -345,7 +345,7 @@ auto User::init_custom(
 auto User::init_custom(
     const ot::api::session::Client& api,
     const std::function<void(User&)> custom,
-    const ot::identity::wot::claim::ClaimType type,
+    const ot::identity::Type type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> void
 {

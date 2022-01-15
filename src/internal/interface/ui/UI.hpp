@@ -63,6 +63,8 @@
 #include "opentxs/interface/ui/List.hpp"
 #include "opentxs/interface/ui/ListRow.hpp"
 #include "opentxs/interface/ui/MessagableList.hpp"
+#include "opentxs/interface/ui/NymList.hpp"
+#include "opentxs/interface/ui/NymListItem.hpp"
 #include "opentxs/interface/ui/PayableList.hpp"
 #include "opentxs/interface/ui/PayableListItem.hpp"
 #include "opentxs/interface/ui/Profile.hpp"
@@ -142,6 +144,7 @@ struct ContactListItem;
 struct ContactSection;
 struct ContactSubsection;
 struct IssuerItem;
+struct NymListItem;
 struct PayableListItem;
 struct ProfileItem;
 struct ProfileSection;
@@ -179,6 +182,8 @@ struct ContactSection;
 struct ContactSubsection;
 struct IssuerItem;
 struct MessagableList;
+struct NymList;
+struct NymListItem;
 struct PayableList;
 struct PayableListItem;
 struct Profile;
@@ -214,6 +219,7 @@ class ContactQt;
 class DestinationValidator;
 class DisplayScaleQt;
 class MessagableListQt;
+class NymListQt;
 class PayableListQt;
 class ProfileQt;
 class UnitListQt;
@@ -481,6 +487,16 @@ using MessagableListRowInterface = ContactListRowInterface;
 using MessagableListRowInternal = ContactListRowInternal;
 using MessagableListRowBlank = ContactListRowBlank;
 using MessagableListSortKey = ContactListSortKey;
+
+// Nym list
+using NymListPrimaryID = OTIdentifier;
+using NymListExternalInterface = ui::NymList;
+using NymListInternalInterface = ui::internal::NymList;
+using NymListRowID = OTNymID;
+using NymListRowInterface = ui::NymListItem;
+using NymListRowInternal = ui::internal::NymListItem;
+using NymListRowBlank = ui::internal::blank::NymListItem;
+using NymListSortKey = UnallocatedCString;
 
 // Payable list
 using PayablePrimaryID = OTNymID;
@@ -876,6 +892,19 @@ struct IssuerItem : virtual public List,
 struct MessagableList : virtual public ContactListType,
                         virtual public ui::MessagableList {
     ~MessagableList() override = default;
+};
+struct NymList : virtual public List, virtual public ui::NymList {
+    virtual auto last(const implementation::NymListRowID& id) const noexcept
+        -> bool = 0;
+
+    ~NymList() override = default;
+};
+struct NymListItem : virtual public Row, virtual public ui::NymListItem {
+    virtual auto reindex(
+        const implementation::NymListSortKey& key,
+        implementation::CustomData& custom) noexcept -> bool = 0;
+
+    ~NymListItem() override = default;
 };
 struct PayableList : virtual public ContactListType,
                      virtual public ui::PayableList {
@@ -1317,6 +1346,17 @@ struct IssuerItem final : public List<
     auto reindex(
         const implementation::AccountSummarySortKey&,
         implementation::CustomData&) noexcept -> bool final
+    {
+        return false;
+    }
+};
+struct NymListItem : virtual public Row, virtual public internal::NymListItem {
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
+    auto NymID() const noexcept -> UnallocatedCString final { return {}; }
+
+    auto reindex(
+        const implementation::NymListSortKey&,
+        implementation::CustomData&) noexcept -> bool override
     {
         return false;
     }
@@ -1833,6 +1873,19 @@ auto MessagableListModel(
     -> std::unique_ptr<ui::internal::MessagableList>;
 auto MessagableListQtModel(ui::internal::MessagableList& parent) noexcept
     -> std::unique_ptr<ui::MessagableListQt>;
+auto NymListItem(
+    const ui::implementation::NymListInternalInterface& parent,
+    const api::session::Client& api,
+    const ui::implementation::NymListRowID& rowID,
+    const ui::implementation::NymListSortKey& key,
+    ui::implementation::CustomData& custom) noexcept
+    -> std::shared_ptr<ui::implementation::NymListRowInternal>;
+auto NymListModel(
+    const api::session::Client& api,
+    const SimpleCallback& cb) noexcept
+    -> std::unique_ptr<ui::internal::NymList>;
+auto NymListQtModel(ui::internal::NymList& parent) noexcept
+    -> std::unique_ptr<ui::NymListQt>;
 auto PayableListItem(
     const ui::implementation::PayableInternalInterface& parent,
     const api::session::Client& api,

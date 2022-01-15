@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/identity/wot/claim/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/identity/IdentityType.hpp"
 // IWYU pragma: no_include "opentxs/core/UnitType.hpp"
 
 #pragma once
@@ -182,6 +182,7 @@ public:
         const identifier::Nym& issuerID) const
         -> Editor<otx::client::Issuer> final;
     auto IsLocalNym(const UnallocatedCString& id) const -> bool final;
+    auto IsLocalNym(const identifier::Nym& id) const -> bool final;
     auto LocalNymCount() const -> std::size_t final;
     auto LocalNyms() const -> UnallocatedSet<OTNymID> final;
     auto Nym(
@@ -191,7 +192,7 @@ public:
     auto Nym(const proto::Nym& nym) const -> Nym_p final;
     auto Nym(const ReadView& bytes) const -> Nym_p final;
     auto Nym(
-        const identity::wot::claim::ClaimType type,
+        const identity::Type type,
         const PasswordPrompt& reason,
         const UnallocatedCString& name) const -> Nym_p final;
     auto Nym(
@@ -202,7 +203,7 @@ public:
         -> Nym_p final;
     auto Nym(
         const opentxs::crypto::Parameters& parameters,
-        const identity::wot::claim::ClaimType type,
+        const identity::Type type,
         const PasswordPrompt& reason,
         const UnallocatedCString& name) const -> Nym_p final;
     auto mutable_Nym(const identifier::Nym& id, const PasswordPrompt& reason)

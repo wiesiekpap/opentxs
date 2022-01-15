@@ -113,6 +113,9 @@ Raw::Raw(const Context& context, const socket::Type type) noexcept
         std::cerr << "Failed to set ZMQ_LINGER\n";
         std::cerr << zmq_strerror(zmq_errno()) << '\n';
     }
+
+    SetIncomingHWM(default_hwm_);
+    SetOutgoingHWM(default_hwm_);
 }
 
 auto Raw::Bind(const char* endpoint) noexcept -> bool
@@ -206,6 +209,34 @@ auto Raw::Send(Message&& msg) noexcept -> bool
 
     return socket::implementation::Socket::send_message(
         lock, Native(), std::move(msg));
+}
+
+auto Raw::SetIncomingHWM(int value) noexcept -> bool
+{
+    const auto rc = zmq_setsockopt(Native(), ZMQ_RCVHWM, &value, sizeof(value));
+
+    if (0 != rc) {
+        std::cerr << (OT_PRETTY_CLASS()) << "Failed to set ZMQ_RCVHWM\n";
+        std::cerr << zmq_strerror(zmq_errno()) << '\n';
+
+        return false;
+    }
+
+    return true;
+}
+
+auto Raw::SetOutgoingHWM(int value) noexcept -> bool
+{
+    const auto rc = zmq_setsockopt(Native(), ZMQ_SNDHWM, &value, sizeof(value));
+
+    if (0 != rc) {
+        std::cerr << (OT_PRETTY_CLASS()) << "Failed to set ZMQ_SNDHWM\n";
+        std::cerr << zmq_strerror(zmq_errno()) << '\n';
+
+        return false;
+    }
+
+    return true;
 }
 
 auto Raw::SetPrivateKey(ReadView key) noexcept -> bool
@@ -365,6 +396,16 @@ auto Raw::Native() noexcept -> void* { return imp_->Native(); }
 auto Raw::Send(Message&& msg) noexcept -> bool
 {
     return imp_->Send(std::move(msg));
+}
+
+auto Raw::SetIncomingHWM(int value) noexcept -> bool
+{
+    return imp_->SetIncomingHWM(value);
+}
+
+auto Raw::SetOutgoingHWM(int value) noexcept -> bool
+{
+    return imp_->SetOutgoingHWM(value);
 }
 
 auto Raw::SetPrivateKey(ReadView key) noexcept -> bool

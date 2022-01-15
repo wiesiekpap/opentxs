@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/identity/wot/claim/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/identity/IdentityType.hpp"
 
 #pragma once
 
@@ -19,6 +19,7 @@
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -149,6 +150,7 @@ public:
         -> UnallocatedSet<OTNymID> = 0;
 
     virtual auto IsLocalNym(const UnallocatedCString& id) const -> bool = 0;
+    virtual auto IsLocalNym(const identifier::Nym& id) const -> bool = 0;
 
     virtual auto LocalNymCount() const -> std::size_t = 0;
 
@@ -188,7 +190,7 @@ public:
     virtual auto Nym(const ReadView& bytes) const -> Nym_p = 0;
 
     virtual auto Nym(
-        const opentxs::identity::wot::claim::ClaimType type,
+        const identity::Type type,
         const PasswordPrompt& reason,
         const UnallocatedCString& name = {}) const -> Nym_p = 0;
     virtual auto Nym(
@@ -200,7 +202,7 @@ public:
         const UnallocatedCString& name = {}) const -> Nym_p = 0;
     virtual auto Nym(
         const opentxs::crypto::Parameters& parameters,
-        const opentxs::identity::wot::claim::ClaimType type,
+        const identity::Type type,
         const PasswordPrompt& reason,
         const UnallocatedCString& name = {}) const -> Nym_p = 0;
 
