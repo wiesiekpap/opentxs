@@ -68,7 +68,7 @@ public:
     using CallbackType1 = ot::identity::wot::claim::Data (*)(
         const ot::identity::wot::claim::Data&,
         const ot::UnallocatedCString&,
-        const ot::core::UnitType,
+        const ot::UnitType,
         const bool,
         const bool);
     using CallbackType2 = ot::identity::wot::claim::Data (*)(
@@ -94,13 +94,13 @@ public:
 ot::identity::wot::claim::Data add_contract(
     const ot::identity::wot::claim::Data& data,
     const ot::UnallocatedCString& id,
-    const ot::core::UnitType type,
+    const ot::UnitType type,
     const bool active,
     const bool primary);
 ot::identity::wot::claim::Data add_contract(
     const ot::identity::wot::claim::Data& data,
     const ot::UnallocatedCString& id,
-    const ot::core::UnitType type,
+    const ot::UnitType type,
     const bool active,
     const bool primary)
 {
@@ -124,13 +124,13 @@ ot::identity::wot::claim::Data add_email(
 ot::identity::wot::claim::Data add_payment_code(
     const ot::identity::wot::claim::Data& data,
     const ot::UnallocatedCString& id,
-    const ot::core::UnitType type,
+    const ot::UnitType type,
     const bool active,
     const bool primary);
 ot::identity::wot::claim::Data add_payment_code(
     const ot::identity::wot::claim::Data& data,
     const ot::UnallocatedCString& id,
-    const ot::core::UnitType type,
+    const ot::UnitType type,
     const bool active,
     const bool primary)
 {
@@ -183,11 +183,7 @@ void Test_ContactData::testAddItemMethod(
         ot::identity::wot::claim::Data::SectionMap{{sectionName, section1}});
 
     const auto& data2 = contactDataMethod(
-        data1,
-        "instrumentDefinitionID1",
-        ot::core::UnitType::Bch,
-        false,
-        false);
+        data1, "instrumentDefinitionID1", ot::UnitType::Bch, false, false);
 
     if (targetVersion) {
         ASSERT_EQ(targetVersion, data2.Version());
@@ -211,11 +207,7 @@ void Test_ContactData::testAddItemMethod(
 
     // Add a contact to a group with a primary.
     const auto& data3 = contactDataMethod(
-        data2,
-        "instrumentDefinitionID2",
-        ot::core::UnitType::Bch,
-        false,
-        false);
+        data2, "instrumentDefinitionID2", ot::UnitType::Bch, false, false);
 
     // Verify that the item wasn't made primary.
     const ot::OTIdentifier identifier2(
@@ -234,11 +226,7 @@ void Test_ContactData::testAddItemMethod(
 
     // Add a contact for a type with no group.
     const auto& data4 = contactDataMethod(
-        data3,
-        "instrumentDefinitionID3",
-        ot::core::UnitType::Eur,
-        false,
-        false);
+        data3, "instrumentDefinitionID3", ot::UnitType::Eur, false, false);
 
     // Verify the group was created.
     ASSERT_NE(
@@ -261,7 +249,7 @@ void Test_ContactData::testAddItemMethod(
 
     // Add an active contact.
     const auto& data5 = contactDataMethod(
-        data4, "instrumentDefinitionID4", ot::core::UnitType::Usd, false, true);
+        data4, "instrumentDefinitionID4", ot::UnitType::Usd, false, true);
 
     // Verify the group was created.
     ASSERT_NE(
@@ -284,7 +272,7 @@ void Test_ContactData::testAddItemMethod(
 
     // Add a primary contact.
     const auto& data6 = contactDataMethod(
-        data5, "instrumentDefinitionID5", ot::core::UnitType::Usd, true, false);
+        data5, "instrumentDefinitionID5", ot::UnitType::Usd, true, false);
 
     // Verify that the item was made primary.
     const ot::OTIdentifier identifier5(
@@ -1521,18 +1509,18 @@ TEST_F(Test_ContactData, Claim_not_found)
 TEST_F(Test_ContactData, Contracts)
 {
     const auto& data1 = contactData_.AddContract(
-        "instrumentDefinitionID1", ot::core::UnitType::Usd, false, false);
-    const auto& contracts = data1.Contracts(ot::core::UnitType::Usd, false);
+        "instrumentDefinitionID1", ot::UnitType::Usd, false, false);
+    const auto& contracts = data1.Contracts(ot::UnitType::Usd, false);
     ASSERT_EQ(1, contracts.size());
 }
 
 TEST_F(Test_ContactData, Contracts_onlyactive)
 {
     const auto& data1 = contactData_.AddContract(
-        "instrumentDefinitionID1", ot::core::UnitType::Usd, false, true);
+        "instrumentDefinitionID1", ot::UnitType::Usd, false, true);
     const auto& data2 = data1.AddContract(
-        "instrumentDefinitionID2", ot::core::UnitType::Usd, false, false);
-    const auto& contracts = data2.Contracts(ot::core::UnitType::Usd, true);
+        "instrumentDefinitionID2", ot::UnitType::Usd, false, false);
+    const auto& contracts = data2.Contracts(ot::UnitType::Usd, true);
     ASSERT_EQ(1, contracts.size());
 }
 

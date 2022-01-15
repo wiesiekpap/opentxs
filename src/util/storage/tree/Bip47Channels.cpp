@@ -54,14 +54,14 @@ Bip47Channels::Bip47Channels(
     }
 }
 
-auto Bip47Channels::Chain(const Identifier& channelID) const -> core::UnitType
+auto Bip47Channels::Chain(const Identifier& channelID) const -> UnitType
 {
     auto lock = sLock{index_lock_};
 
     return get_channel_data(lock, channelID);
 }
 
-auto Bip47Channels::ChannelsByChain(const core::UnitType chain) const
+auto Bip47Channels::ChannelsByChain(const UnitType chain) const
     -> Bip47Channels::ChannelList
 {
     return extract_set(chain, chain_index_);
@@ -95,7 +95,7 @@ auto Bip47Channels::get_channel_data(const L& lock, const Identifier& id) const
 
         return channel_data_.at(id);
     } catch (const std::out_of_range&) {
-        static auto blank = ChannelData{core::UnitType::Error};
+        static auto blank = ChannelData{UnitType::Error};
 
         return blank;
     }

@@ -61,7 +61,7 @@ public:
     virtual auto Serialize(AllocateOutput destination, bool includeNym = false)
         const -> bool = 0;
     virtual auto Type() const -> contract::UnitType = 0;
-    virtual auto UnitOfAccount() const -> core::UnitType = 0;
+    virtual auto UnitOfAccount() const -> opentxs::UnitType = 0;
     virtual auto VisitAccountRecords(
         const UnallocatedCString& dataFolder,
         AccountVisitor& visitor,

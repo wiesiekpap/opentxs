@@ -55,7 +55,7 @@ public:
     auto toString() const -> UnallocatedCString final;
 
     auto AccountList(
-        const core::UnitType type,
+        const UnitType type,
         const identifier::UnitDefinition& unitID) const
         -> UnallocatedSet<OTIdentifier> final;
     auto BailmentInitiated(const identifier::UnitDefinition& unitID) const
@@ -87,7 +87,7 @@ public:
     auto StoreSecretInitiated() const -> bool final;
 
     void AddAccount(
-        const core::UnitType type,
+        const UnitType type,
         const identifier::UnitDefinition& unitID,
         const Identifier& accountID) final;
     auto AddReply(
@@ -98,7 +98,7 @@ public:
         const contract::peer::PeerRequestType type,
         const Identifier& requestID) -> bool final;
     auto RemoveAccount(
-        const core::UnitType type,
+        const UnitType type,
         const identifier::UnitDefinition& unitID,
         const Identifier& accountID) -> bool final;
     void SetPaired(const bool paired) final;
@@ -134,8 +134,7 @@ private:
     mutable OTFlag paired_;
     const OTNymID nym_id_;
     const OTNymID issuer_id_;
-    UnallocatedMap<core::UnitType, UnallocatedSet<UnitAccountPair>>
-        account_map_;
+    UnallocatedMap<UnitType, UnallocatedSet<UnitAccountPair>> account_map_;
     WorkflowMap peer_requests_;
 
     auto find_request(

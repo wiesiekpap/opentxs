@@ -87,12 +87,12 @@ public:
     auto EmailAddresses(bool active = true) const -> UnallocatedCString;
     auto HaveContract(
         const identifier::UnitDefinition& id,
-        const core::UnitType currency,
+        const UnitType currency,
         const bool primary,
         const bool active) const -> bool;
     auto Name() const -> UnallocatedCString;
     auto Nym() const -> const identity::Nym&;
-    auto PaymentCode(const core::UnitType currency) const -> UnallocatedCString;
+    auto PaymentCode(const UnitType currency) const -> UnallocatedCString;
     auto PhoneNumbers(bool active = true) const -> UnallocatedCString;
     auto PreferredOTServer() const -> UnallocatedCString;
     auto PrintContactData() const -> UnallocatedCString;
@@ -111,7 +111,7 @@ public:
     auto AddClaim(const Claim& claim, const PasswordPrompt& reason) -> bool;
     auto AddContract(
         const UnallocatedCString& instrumentDefinitionID,
-        const core::UnitType currency,
+        const UnitType currency,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason) -> bool;
@@ -122,7 +122,7 @@ public:
         const PasswordPrompt& reason) -> bool;
     auto AddPaymentCode(
         const UnallocatedCString& code,
-        const core::UnitType currency,
+        const UnitType currency,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason) -> bool;

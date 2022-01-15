@@ -18,7 +18,7 @@
 #include "Proto.hpp"
 #include "api/session/ui/UI.hpp"
 #include "api/session/ui/UpdateManager.hpp"
-#include "internal/core/ui/UI.hpp"
+#include "internal/interface/ui/UI.hpp"
 #include "internal/util/Lockable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -31,22 +31,23 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/core/ui/AccountActivity.hpp"
-#include "opentxs/core/ui/AccountList.hpp"
-#include "opentxs/core/ui/AccountSummary.hpp"
-#include "opentxs/core/ui/ActivitySummary.hpp"
-#include "opentxs/core/ui/ActivityThread.hpp"
-#include "opentxs/core/ui/Blockchains.hpp"
-#include "opentxs/core/ui/Contact.hpp"
-#include "opentxs/core/ui/ContactList.hpp"
-#include "opentxs/core/ui/List.hpp"
-#include "opentxs/core/ui/MessagableList.hpp"
-#include "opentxs/core/ui/PayableList.hpp"
-#include "opentxs/core/ui/Profile.hpp"
-#include "opentxs/core/ui/Types.hpp"
-#include "opentxs/core/ui/UnitList.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/interface/ui/AccountActivity.hpp"
+#include "opentxs/interface/ui/AccountList.hpp"
+#include "opentxs/interface/ui/AccountSummary.hpp"
+#include "opentxs/interface/ui/AccountTree.hpp"
+#include "opentxs/interface/ui/ActivitySummary.hpp"
+#include "opentxs/interface/ui/ActivityThread.hpp"
+#include "opentxs/interface/ui/Blockchains.hpp"
+#include "opentxs/interface/ui/Contact.hpp"
+#include "opentxs/interface/ui/ContactList.hpp"
+#include "opentxs/interface/ui/List.hpp"
+#include "opentxs/interface/ui/MessagableList.hpp"
+#include "opentxs/interface/ui/PayableList.hpp"
+#include "opentxs/interface/ui/Profile.hpp"
+#include "opentxs/interface/ui/Types.hpp"
+#include "opentxs/interface/ui/UnitList.hpp"
 #include "opentxs/util/Container.hpp"
 
 class QAbstractItemModel;
@@ -87,6 +88,7 @@ namespace internal
 struct AccountActivity;
 struct AccountList;
 struct AccountSummary;
+struct AccountTree;
 struct ActivitySummary;
 struct ActivityThread;
 struct BlockchainAccountStatus;
@@ -106,6 +108,8 @@ class AccountList;
 class AccountListQt;
 class AccountSummary;
 class AccountSummaryQt;
+class AccountTree;
+class AccountTreeQt;
 class ActivitySummary;
 class ActivitySummaryQt;
 class ActivityThread;
@@ -162,14 +166,23 @@ public:
     }
     auto AccountSummary(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback cb) const noexcept
         -> const opentxs::ui::AccountSummary&;
     virtual auto AccountSummaryQt(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback cb) const noexcept
         -> opentxs::ui::AccountSummaryQt*
+    {
+        return nullptr;
+    }
+    auto AccountTree(const identifier::Nym& nym, const SimpleCallback updateCB)
+        const noexcept -> const opentxs::ui::AccountTree&;
+    virtual auto AccountTreeQt(
+        const identifier::Nym& nym,
+        const SimpleCallback updateCB) const noexcept
+        -> opentxs::ui::AccountTreeQt*
     {
         return nullptr;
     }
@@ -265,12 +278,12 @@ public:
     }
     auto PayableList(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback cb) const noexcept
         -> const opentxs::ui::PayableList&;
     virtual auto PayableListQt(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback cb) const noexcept -> opentxs::ui::PayableListQt*
     {
         return nullptr;
@@ -314,7 +327,8 @@ protected:
     using AccountActivityKey = std::pair<OTNymID, OTIdentifier>;
     using AccountListKey = OTNymID;
     /** NymID, currency*/
-    using AccountSummaryKey = std::pair<OTNymID, core::UnitType>;
+    using AccountSummaryKey = std::pair<OTNymID, UnitType>;
+    using AccountTreeKey = OTNymID;
     using ActivitySummaryKey = OTNymID;
     using ActivityThreadKey = std::pair<OTNymID, OTIdentifier>;
     using BlockchainAccountStatusKey = std::pair<OTNymID, blockchain::Type>;
@@ -322,7 +336,7 @@ protected:
     using ContactListKey = OTNymID;
     using MessagableListKey = OTNymID;
     /** NymID, currency*/
-    using PayableListKey = std::pair<OTNymID, core::UnitType>;
+    using PayableListKey = std::pair<OTNymID, UnitType>;
     using ProfileKey = OTNymID;
     using UnitListKey = OTNymID;
 
@@ -332,6 +346,8 @@ protected:
         std::unique_ptr<opentxs::ui::internal::AccountList>;
     using AccountSummaryPointer =
         std::unique_ptr<opentxs::ui::internal::AccountSummary>;
+    using AccountTreePointer =
+        std::unique_ptr<opentxs::ui::internal::AccountTree>;
     using ActivitySummaryPointer =
         std::unique_ptr<opentxs::ui::internal::ActivitySummary>;
     using ActivityThreadPointer =
@@ -357,6 +373,7 @@ protected:
     using AccountListMap = UnallocatedMap<AccountListKey, AccountListPointer>;
     using AccountSummaryMap =
         UnallocatedMap<AccountSummaryKey, AccountSummaryPointer>;
+    using AccountTreeMap = UnallocatedMap<AccountTreeKey, AccountTreePointer>;
     using ActivitySummaryMap =
         UnallocatedMap<ActivitySummaryKey, ActivitySummaryPointer>;
     using ActivityThreadMap =
@@ -380,6 +397,7 @@ protected:
     mutable AccountActivityMap accounts_;
     mutable AccountListMap account_lists_;
     mutable AccountSummaryMap account_summaries_;
+    mutable AccountTreeMap account_trees_;
     mutable ActivitySummaryMap activity_summaries_;
     mutable ActivityThreadMap activity_threads_;
     mutable BlockchainAccountStatusMap blockchain_account_status_;
@@ -407,9 +425,14 @@ protected:
     auto account_summary(
         const Lock& lock,
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback& cb) const noexcept
         -> AccountSummaryMap::mapped_type&;
+    auto account_tree(
+        const Lock& lock,
+        const identifier::Nym& nymID,
+        const SimpleCallback& cb) const noexcept
+        -> AccountTreeMap::mapped_type&;
     auto activity_summary(
         const Lock& lock,
         const identifier::Nym& nymID,
@@ -453,7 +476,7 @@ protected:
     auto payable_list(
         const Lock& lock,
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback& cb) const noexcept
         -> PayableListMap::mapped_type&;
     auto profile(

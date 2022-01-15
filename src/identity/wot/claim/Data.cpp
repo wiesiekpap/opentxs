@@ -200,7 +200,7 @@ Data::operator UnallocatedCString() const
 
 auto Data::AddContract(
     const UnallocatedCString& instrumentDefinitionID,
-    const core::UnitType currency,
+    const UnitType currency,
     const bool primary,
     const bool active) const -> Data
 {
@@ -325,7 +325,7 @@ auto Data::AddItem(const std::shared_ptr<Item>& item) const -> Data
 
 auto Data::AddPaymentCode(
     const UnallocatedCString& code,
-    const core::UnitType currency,
+    const UnitType currency,
     const bool primary,
     const bool active) const -> Data
 {
@@ -687,7 +687,7 @@ auto Data::Claim(const Identifier& item) const -> std::shared_ptr<Item>
     return {};
 }
 
-auto Data::Contracts(const core::UnitType currency, const bool onlyActive) const
+auto Data::Contracts(const UnitType currency, const bool onlyActive) const
     -> UnallocatedSet<OTIdentifier>
 {
     UnallocatedSet<OTIdentifier> output{};

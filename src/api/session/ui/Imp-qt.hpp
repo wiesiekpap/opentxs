@@ -21,25 +21,26 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/ui/Blockchains.hpp"
-#include "opentxs/core/ui/qt/AccountActivity.hpp"
-#include "opentxs/core/ui/qt/AccountList.hpp"
-#include "opentxs/core/ui/qt/AccountSummary.hpp"
-#include "opentxs/core/ui/qt/ActivitySummary.hpp"
-#include "opentxs/core/ui/qt/ActivityThread.hpp"
-#include "opentxs/core/ui/qt/BlankModel.hpp"
-#include "opentxs/core/ui/qt/BlockchainAccountStatus.hpp"
-#include "opentxs/core/ui/qt/BlockchainSelection.hpp"
-#include "opentxs/core/ui/qt/BlockchainStatistics.hpp"
-#include "opentxs/core/ui/qt/Contact.hpp"
-#include "opentxs/core/ui/qt/ContactList.hpp"
-#include "opentxs/core/ui/qt/MessagableList.hpp"
-#include "opentxs/core/ui/qt/PayableList.hpp"
-#include "opentxs/core/ui/qt/Profile.hpp"
-#include "opentxs/core/ui/qt/SeedValidator.hpp"
-#include "opentxs/core/ui/qt/UnitList.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/interface/qt/AccountActivity.hpp"
+#include "opentxs/interface/qt/AccountList.hpp"
+#include "opentxs/interface/qt/AccountSummary.hpp"
+#include "opentxs/interface/qt/AccountTree.hpp"
+#include "opentxs/interface/qt/ActivitySummary.hpp"
+#include "opentxs/interface/qt/ActivityThread.hpp"
+#include "opentxs/interface/qt/BlankModel.hpp"
+#include "opentxs/interface/qt/BlockchainAccountStatus.hpp"
+#include "opentxs/interface/qt/BlockchainSelection.hpp"
+#include "opentxs/interface/qt/BlockchainStatistics.hpp"
+#include "opentxs/interface/qt/Contact.hpp"
+#include "opentxs/interface/qt/ContactList.hpp"
+#include "opentxs/interface/qt/MessagableList.hpp"
+#include "opentxs/interface/qt/PayableList.hpp"
+#include "opentxs/interface/qt/Profile.hpp"
+#include "opentxs/interface/qt/SeedValidator.hpp"
+#include "opentxs/interface/qt/UnitList.hpp"
+#include "opentxs/interface/ui/Blockchains.hpp"
 #include "opentxs/util/Container.hpp"
 
 class QAbstractItemModel;
@@ -87,9 +88,11 @@ public:
         const noexcept -> opentxs::ui::AccountListQt* final;
     auto AccountSummaryQt(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback cb) const noexcept
         -> opentxs::ui::AccountSummaryQt* final;
+    auto AccountTreeQt(const identifier::Nym& nym, const SimpleCallback cb)
+        const noexcept -> opentxs::ui::AccountTreeQt* final;
     auto ActivitySummaryQt(
         const identifier::Nym& nymID,
         const SimpleCallback cb) const noexcept
@@ -120,7 +123,7 @@ public:
         const noexcept -> opentxs::ui::MessagableListQt* final;
     auto PayableListQt(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback cb) const noexcept
         -> opentxs::ui::PayableListQt* final;
     auto ProfileQt(const identifier::Nym& nymID, const SimpleCallback cb)
@@ -147,6 +150,7 @@ private:
     using AccountListQtPointer = std::unique_ptr<opentxs::ui::AccountListQt>;
     using AccountSummaryQtPointer =
         std::unique_ptr<opentxs::ui::AccountSummaryQt>;
+    using AccountTreeQtPointer = std::unique_ptr<opentxs::ui::AccountTreeQt>;
     using ActivitySummaryQtPointer =
         std::unique_ptr<opentxs::ui::ActivitySummaryQt>;
     using ActivityThreadQtPointer =
@@ -171,6 +175,8 @@ private:
         UnallocatedMap<AccountListKey, AccountListQtPointer>;
     using AccountSummaryQtMap =
         UnallocatedMap<AccountSummaryKey, AccountSummaryQtPointer>;
+    using AccountTreeQtMap =
+        UnallocatedMap<AccountTreeKey, AccountTreeQtPointer>;
     using ActivitySummaryQtMap =
         UnallocatedMap<ActivitySummaryKey, ActivitySummaryQtPointer>;
     using ActivityThreadQtMap =
@@ -206,6 +212,7 @@ private:
     mutable AccountActivityQtMap accounts_qt_;
     mutable AccountListQtMap account_lists_qt_;
     mutable AccountSummaryQtMap account_summaries_qt_;
+    mutable AccountTreeQtMap account_trees_qt_;
     mutable ActivitySummaryQtMap activity_summaries_qt_;
     mutable ActivityThreadQtMap activity_threads_qt_;
     mutable BlockchainAccountStatusQtMap blockchain_account_status_qt_;

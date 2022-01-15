@@ -12,17 +12,12 @@
 
 namespace opentxs
 {
-namespace core
-{
 enum class AddressType : std::uint8_t {
     Error = 0,
     IPV4 = 1,
-    Sha256 = 2,
-    IPV6 = 3,
-    Onion = 4,
-    EEP = 5,
-    Inproc = 6,
+    IPV6 = 2,
+    Onion2 = 3,
+    EEP = 4,
+    Inproc = 5,
 };
-
-}  // namespace core
 }  // namespace opentxs

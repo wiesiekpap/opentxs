@@ -22,7 +22,7 @@ enum class SectionType : std::uint8_t;
 namespace opentxs
 {
 OPENTXS_EXPORT auto ClaimToUnit(
-    const identity::wot::claim::ClaimType in) noexcept -> core::UnitType;
-OPENTXS_EXPORT auto UnitToClaim(const core::UnitType in) noexcept
+    const identity::wot::claim::ClaimType in) noexcept -> UnitType;
+OPENTXS_EXPORT auto UnitToClaim(const UnitType in) noexcept
     -> identity::wot::claim::ClaimType;
 }  // namespace opentxs

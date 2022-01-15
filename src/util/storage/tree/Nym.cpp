@@ -158,7 +158,7 @@ auto Nym::Bip47Channels() const -> const storage::Bip47Channels&
     return *bip47();
 }
 
-auto Nym::BlockchainAccountList(const core::UnitType type) const
+auto Nym::BlockchainAccountList(const UnitType type) const
     -> UnallocatedSet<UnallocatedCString>
 {
     Lock lock(blockchain_lock_);
@@ -171,7 +171,7 @@ auto Nym::BlockchainAccountList(const core::UnitType type) const
 }
 
 auto Nym::BlockchainAccountType(const UnallocatedCString& accountID) const
-    -> core::UnitType
+    -> UnitType
 {
     Lock lock(blockchain_lock_);
 
@@ -180,7 +180,7 @@ auto Nym::BlockchainAccountType(const UnallocatedCString& accountID) const
         return blockchain_account_index_.at(accountID);
     } catch (...) {
 
-        return core::UnitType::Error;
+        return UnitType::Error;
     }
 }
 
@@ -803,7 +803,7 @@ auto Nym::SetAlias(const UnallocatedCString& alias) -> bool
     return true;
 }
 
-auto Nym::Store(const core::UnitType type, const proto::HDAccount& data) -> bool
+auto Nym::Store(const UnitType type, const proto::HDAccount& data) -> bool
 {
     const auto& accountID = data.deterministic().common().id();
 

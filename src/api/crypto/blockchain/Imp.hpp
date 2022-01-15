@@ -295,7 +295,7 @@ protected:
     mutable blockchain::AccountCache accounts_;
     mutable blockchain::Wallets wallets_;
 
-    auto bip44_type(const core::UnitType type) const noexcept -> Bip44Type;
+    auto bip44_type(const UnitType type) const noexcept -> Bip44Type;
     auto decode_bech23(const UnallocatedCString& encoded) const noexcept
         -> std::optional<DecodedAddress>;
     auto decode_legacy(const UnallocatedCString& encoded) const noexcept
@@ -304,7 +304,7 @@ protected:
         -> opentxs::blockchain::crypto::Subaccount&;
     auto init_path(
         const UnallocatedCString& root,
-        const core::UnitType chain,
+        const UnitType chain,
         const Bip32Index account,
         const opentxs::blockchain::crypto::HDProtocol standard,
         proto::HDPath& path) const noexcept -> void;

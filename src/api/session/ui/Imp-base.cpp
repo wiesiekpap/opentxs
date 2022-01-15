@@ -11,7 +11,7 @@
 #include <tuple>
 
 #include "internal/core/Core.hpp"
-#include "internal/core/ui/UI.hpp"
+#include "internal/interface/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -19,7 +19,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/ui/Blockchains.hpp"
+#include "opentxs/interface/ui/Blockchains.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::api::session::imp
@@ -34,6 +34,7 @@ UI::Imp::Imp(
     , accounts_()
     , account_lists_()
     , account_summaries_()
+    , account_trees_()
     , activity_summaries_()
     , activity_threads_()
     , blockchain_account_status_()
@@ -129,7 +130,7 @@ auto UI::Imp::AccountList(const identifier::Nym& nymID, const SimpleCallback cb)
 auto UI::Imp::account_summary(
     const Lock& lock,
     const identifier::Nym& nymID,
-    const core::UnitType currency,
+    const UnitType currency,
     const SimpleCallback& cb) const noexcept -> AccountSummaryMap::mapped_type&
 {
     auto key = AccountSummaryKey{nymID, currency};
@@ -153,7 +154,7 @@ auto UI::Imp::account_summary(
 
 auto UI::Imp::AccountSummary(
     const identifier::Nym& nymID,
-    const core::UnitType currency,
+    const UnitType currency,
     const SimpleCallback cb) const noexcept
     -> const opentxs::ui::AccountSummary&
 {
@@ -184,6 +185,37 @@ auto UI::Imp::activity_summary(
                      std::forward_as_tuple(
                          opentxs::factory::ActivitySummaryModel(
                              api_, running_, nymID, cb)))
+                 .first;
+
+        OT_ASSERT(it->second);
+    }
+
+    return it->second;
+}
+
+auto UI::Imp::AccountTree(const identifier::Nym& nymID, const SimpleCallback cb)
+    const noexcept -> const opentxs::ui::AccountTree&
+{
+    auto lock = Lock{lock_};
+
+    return *account_tree(lock, nymID, cb);
+}
+
+auto UI::Imp::account_tree(
+    const Lock& lock,
+    const identifier::Nym& nymID,
+    const SimpleCallback& cb) const noexcept -> AccountTreeMap::mapped_type&
+{
+    auto key = AccountTreeKey{nymID};
+    auto it = account_trees_.find(key);
+
+    if (account_trees_.end() == it) {
+        it = account_trees_
+                 .emplace(
+                     std::piecewise_construct,
+                     std::forward_as_tuple(std::move(key)),
+                     std::forward_as_tuple(
+                         opentxs::factory::AccountTreeModel(api_, nymID, cb)))
                  .first;
 
         OT_ASSERT(it->second);
@@ -460,7 +492,7 @@ auto UI::Imp::MessagableList(
 auto UI::Imp::payable_list(
     const Lock& lock,
     const identifier::Nym& nymID,
-    const core::UnitType currency,
+    const UnitType currency,
     const SimpleCallback& cb) const noexcept -> PayableListMap::mapped_type&
 {
     auto key = PayableListKey{nymID, currency};
@@ -481,7 +513,7 @@ auto UI::Imp::payable_list(
 
 auto UI::Imp::PayableList(
     const identifier::Nym& nymID,
-    core::UnitType currency,
+    UnitType currency,
     const SimpleCallback cb) const noexcept -> const opentxs::ui::PayableList&
 {
     auto lock = Lock{lock_};
@@ -554,6 +586,7 @@ auto UI::Imp::ShutdownCallbacks() noexcept -> void
     clearCallbacks(blockchain_account_status_);
     clearCallbacks(activity_threads_);
     clearCallbacks(activity_summaries_);
+    clearCallbacks(account_trees_);
     clearCallbacks(account_summaries_);
     clearCallbacks(account_lists_);
     clearCallbacks(accounts_);
@@ -572,6 +605,7 @@ auto UI::Imp::ShutdownModels() noexcept -> void
     blockchain_account_status_.clear();
     activity_threads_.clear();
     activity_summaries_.clear();
+    account_trees_.clear();
     account_summaries_.clear();
     account_lists_.clear();
     accounts_.clear();

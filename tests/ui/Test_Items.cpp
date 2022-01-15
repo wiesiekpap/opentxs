@@ -11,8 +11,8 @@
 #include <optional>
 #include <utility>
 
-#include "core/ui/base/Items.hpp"
-#include "internal/core/ui/UI.hpp"
+#include "interface/ui/base/Items.hpp"
+#include "internal/interface/ui/UI.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"

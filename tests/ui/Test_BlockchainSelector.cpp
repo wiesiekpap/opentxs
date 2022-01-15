@@ -19,11 +19,11 @@
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/core/ui/BlockchainSelection.hpp"
-#include "opentxs/core/ui/Blockchains.hpp"
+#include "opentxs/interface/ui/BlockchainSelection.hpp"
+#include "opentxs/interface/ui/Blockchains.hpp"
 #include "opentxs/util/Container.hpp"
 #if OT_QT
-#include "opentxs/core/ui/qt/BlockchainSelection.hpp"
+#include "opentxs/interface/qt/BlockchainSelection.hpp"
 #endif  // OT_QT
 #include "ui/Helpers.hpp"
 

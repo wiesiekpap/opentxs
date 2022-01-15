@@ -12,6 +12,8 @@ else()
   target_sources(opentxs-test-helpers PRIVATE "Helpers-noqt.cpp")
 endif()
 
+add_opentx_test(unittests-opentxs-ui-account-tree Test_AccountTree.cpp)
+
 if(OT_QT_EXPORT)
   add_opentx_test(unittests-opentxs-ui-amountvalidator Test_AmountValidator.cpp)
 endif()

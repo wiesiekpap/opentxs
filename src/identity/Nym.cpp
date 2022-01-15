@@ -320,7 +320,7 @@ auto Nym::AddClaim(const Claim& claim, const opentxs::PasswordPrompt& reason)
 
 auto Nym::AddContract(
     const identifier::UnitDefinition& instrumentDefinitionID,
-    const core::UnitType currency,
+    const UnitType currency,
     const opentxs::PasswordPrompt& reason,
     const bool primary,
     const bool active) -> bool
@@ -379,7 +379,7 @@ auto Nym::AddEmail(
 
 auto Nym::AddPaymentCode(
     const opentxs::PaymentCode& code,
-    const core::UnitType currency,
+    const UnitType currency,
     const opentxs::PasswordPrompt& reason,
     const bool primary,
     const bool active) -> bool
@@ -593,7 +593,7 @@ auto Nym::ContactCredentialVersion() const -> VersionNumber
     return active_.cbegin()->second->ContactCredentialVersion();
 }
 
-auto Nym::Contracts(const core::UnitType currency, const bool onlyActive) const
+auto Nym::Contracts(const UnitType currency, const bool onlyActive) const
     -> UnallocatedSet<OTIdentifier>
 {
     eLock lock(shared_lock_);

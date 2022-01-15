@@ -251,7 +251,7 @@ auto Issuer::toString() const -> UnallocatedCString
 }
 
 auto Issuer::AccountList(
-    const core::UnitType type,
+    const UnitType type,
     const identifier::UnitDefinition& unitID) const
     -> UnallocatedSet<OTIdentifier>
 {
@@ -270,7 +270,7 @@ auto Issuer::AccountList(
 }
 
 void Issuer::AddAccount(
-    const core::UnitType type,
+    const UnitType type,
     const identifier::UnitDefinition& unitID,
     const Identifier& accountID)
 {
@@ -678,7 +678,7 @@ auto Issuer::PrimaryServer() const -> OTNotaryID
 }
 
 auto Issuer::RemoveAccount(
-    const core::UnitType type,
+    const UnitType type,
     const identifier::UnitDefinition& unitID,
     const Identifier& accountID) -> bool
 {

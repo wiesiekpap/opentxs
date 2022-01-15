@@ -7,7 +7,6 @@ add_subdirectory(contract)
 add_subdirectory(display)
 add_subdirectory(identifier)
 add_subdirectory(paymentcode)
-add_subdirectory(ui)
 
 target_sources(
   opentxs-common
@@ -39,6 +38,7 @@ target_include_directories(
 )
 
 set(cxx-install-headers
+    "${opentxs_SOURCE_DIR}/include/opentxs/core/AccountType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/AddressType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/Amount.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/Armored.hpp"
@@ -66,12 +66,3 @@ if(OPENTXS_STANDALONE)
     COMPONENT dev
   )
 endif()
-
-set(OPENTXS_QT_PUBLIC_HEADERS
-    ${OPENTXS_QT_PUBLIC_HEADERS}
-    PARENT_SCOPE
-)
-set(OPENTXS_QT_PRIVATE_HEADERS
-    ${OPENTXS_QT_PRIVATE_HEADERS}
-    PARENT_SCOPE
-)

@@ -207,7 +207,7 @@ public:
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const identifier::UnitDefinition& unitID,
-        const core::UnitType advertise = core::UnitType::Error,
+        const UnitType advertise = UnitType::Error,
         const UnallocatedCString& label = "") const -> BackgroundTask = 0;
     virtual auto MessageContact(
         const identifier::Nym& senderNymID,

@@ -54,7 +54,7 @@ auto UI::AccountListQt(const identifier::Nym& nym, const SimpleCallback cb)
 
 auto UI::AccountSummary(
     const identifier::Nym& nymID,
-    const core::UnitType currency,
+    const UnitType currency,
     const SimpleCallback cb) const noexcept
     -> const opentxs::ui::AccountSummary&
 {
@@ -63,10 +63,22 @@ auto UI::AccountSummary(
 
 auto UI::AccountSummaryQt(
     const identifier::Nym& nymID,
-    const core::UnitType currency,
+    const UnitType currency,
     const SimpleCallback cb) const noexcept -> opentxs::ui::AccountSummaryQt*
 {
     return imp_->AccountSummaryQt(nymID, currency, cb);
+}
+
+auto UI::AccountTree(const identifier::Nym& nym, const SimpleCallback cb)
+    const noexcept -> const opentxs::ui::AccountTree&
+{
+    return imp_->AccountTree(nym, cb);
+}
+
+auto UI::AccountTreeQt(const identifier::Nym& nym, const SimpleCallback cb)
+    const noexcept -> opentxs::ui::AccountTreeQt*
+{
+    return imp_->AccountTreeQt(nym, cb);
 }
 
 auto UI::ActivateUICallback(const Identifier& widget) const noexcept -> void
@@ -219,7 +231,7 @@ auto UI::MessagableListQt(const identifier::Nym& nymID, const SimpleCallback cb)
 
 auto UI::PayableList(
     const identifier::Nym& nymID,
-    const core::UnitType currency,
+    const UnitType currency,
     const SimpleCallback cb) const noexcept -> const opentxs::ui::PayableList&
 {
     return imp_->PayableList(nymID, currency, cb);
@@ -227,7 +239,7 @@ auto UI::PayableList(
 
 auto UI::PayableListQt(
     const identifier::Nym& nymID,
-    const core::UnitType currency,
+    const UnitType currency,
     const SimpleCallback cb) const noexcept -> opentxs::ui::PayableListQt*
 {
     return imp_->PayableListQt(nymID, currency, cb);

@@ -30,12 +30,12 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/interface/rpc/request/Base.hpp"
+#include "opentxs/interface/rpc/response/Base.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Options.hpp"
-#include "opentxs/util/rpc/request/Base.hpp"
-#include "opentxs/util/rpc/response/Base.hpp"
 #include "serialization/protobuf/RPCResponse.pb.h"
 
 class QObject;

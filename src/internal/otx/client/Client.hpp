@@ -64,7 +64,7 @@ using DownloadUnitDefinitionTask = OTUnitID;
 using GetTransactionNumbersTask = OT_GetTransactionNumbersType;
 /** IssueUnitDefinitionTask: unit definition id, account label, claim */
 using IssueUnitDefinitionTask =
-    std::tuple<OTUnitID, UnallocatedCString, core::UnitType>;
+    std::tuple<OTUnitID, UnallocatedCString, UnitType>;
 /** MessageTask: recipientID, message */
 using MessageTask =
     std::tuple<OTNymID, UnallocatedCString, std::shared_ptr<SetID>>;
@@ -119,7 +119,7 @@ struct make_blank<otx::client::IssueUnitDefinitionTask> {
     static auto value(const api::Session& api)
         -> otx::client::IssueUnitDefinitionTask
     {
-        return {make_blank<OTUnitID>::value(api), "", core::UnitType::Error};
+        return {make_blank<OTUnitID>::value(api), "", UnitType::Error};
     }
 };
 template <>

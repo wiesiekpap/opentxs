@@ -130,7 +130,7 @@ auto Accounts::AccountSigner(const Identifier& id) const -> OTNymID
     EXTRACT_FIELD(1);
 }
 
-auto Accounts::AccountUnit(const Identifier& id) const -> core::UnitType
+auto Accounts::AccountUnit(const Identifier& id) const -> UnitType
 {
     EXTRACT_FIELD(5);
 }
@@ -159,7 +159,7 @@ auto Accounts::AccountsByServer(const identifier::Notary& server) const
     EXTRACT_SET_BY_ID(server_index_, server);
 }
 
-auto Accounts::AccountsByUnit(const core::UnitType unit) const
+auto Accounts::AccountsByUnit(const UnitType unit) const
     -> UnallocatedSet<OTIdentifier>
 {
     EXTRACT_SET_BY_VALUE(unit_index_, unit);
@@ -204,7 +204,7 @@ auto Accounts::check_update_account(
     const identifier::Nym& issuerNym,
     const identifier::Notary& server,
     const identifier::UnitDefinition& contract,
-    const core::UnitType unit) -> bool
+    const UnitType unit) -> bool
 {
     if (accountID->empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid account ID.").Flush();
@@ -271,7 +271,7 @@ auto Accounts::check_update_account(
         return false;
     }
 
-    if (core::UnitType::Unknown != unit) {
+    if (UnitType::Unknown != unit) {
         mapUnit = unit;
         unit_index_[unit].emplace(accountID);
     }
@@ -314,7 +314,7 @@ auto Accounts::get_account_data(const Lock& lock, const OTIdentifier& accountID)
             identifier::Nym::Factory(),
             identifier::Notary::Factory(),
             identifier::UnitDefinition::Factory(),
-            core::UnitType::Unknown};
+            UnitType::Unknown};
         auto [output, added] =
             account_data_.emplace(accountID, std::move(blank));
 
@@ -450,7 +450,7 @@ auto Accounts::Store(
     const identifier::Nym& issuer,
     const identifier::Notary& server,
     const identifier::UnitDefinition& contract,
-    const core::UnitType unit) -> bool
+    const UnitType unit) -> bool
 {
     Lock lock(write_lock_);
     const auto account = Identifier::Factory(id);

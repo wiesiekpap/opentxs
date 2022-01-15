@@ -77,7 +77,7 @@ public:
         -> identity::wot::claim::ClaimType;
     static auto PaymentCode(
         const identity::wot::claim::Data& data,
-        const core::UnitType currency) -> UnallocatedCString;
+        const UnitType currency) -> UnallocatedCString;
 
     OPENTXS_NO_EXPORT Contact(
         const api::session::Client& api,
@@ -99,9 +99,9 @@ public:
     auto LastUpdated() const -> std::time_t;
     auto Nyms(const bool includeInactive = false) const
         -> UnallocatedVector<OTNymID>;
-    auto PaymentCode(const core::UnitType currency = core::UnitType::Btc) const
+    auto PaymentCode(const UnitType currency = UnitType::Btc) const
         -> UnallocatedCString;
-    auto PaymentCodes(const core::UnitType currency = core::UnitType::Btc) const
+    auto PaymentCodes(const UnitType currency = UnitType::Btc) const
         -> UnallocatedVector<UnallocatedCString>;
     auto PhoneNumbers(bool active = true) const -> UnallocatedCString;
     auto Print() const -> UnallocatedCString;
@@ -129,7 +129,7 @@ public:
     auto AddPaymentCode(
         const opentxs::PaymentCode& code,
         const bool primary,
-        const core::UnitType currency = core::UnitType::Btc,
+        const UnitType currency = UnitType::Btc,
         const bool active = true) -> bool;
     auto AddPhoneNumber(
         const UnallocatedCString& value,

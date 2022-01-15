@@ -54,7 +54,7 @@ public:
     virtual auto toString() const -> UnallocatedCString = 0;
 
     virtual auto AccountList(
-        const core::UnitType type,
+        const UnitType type,
         const identifier::UnitDefinition& unitID) const
         -> UnallocatedSet<OTIdentifier> = 0;
     virtual auto BailmentInitiated(
@@ -86,7 +86,7 @@ public:
     virtual auto StoreSecretInitiated() const -> bool = 0;
 
     virtual void AddAccount(
-        const core::UnitType type,
+        const UnitType type,
         const identifier::UnitDefinition& unitID,
         const Identifier& accountID) = 0;
     virtual auto AddReply(
@@ -97,7 +97,7 @@ public:
         const contract::peer::PeerRequestType type,
         const Identifier& requestID) -> bool = 0;
     virtual auto RemoveAccount(
-        const core::UnitType type,
+        const UnitType type,
         const identifier::UnitDefinition& unitID,
         const Identifier& accountID) -> bool = 0;
     virtual void SetPaired(const bool paired) = 0;

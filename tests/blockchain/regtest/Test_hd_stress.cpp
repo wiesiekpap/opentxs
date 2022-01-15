@@ -38,13 +38,14 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
+#include "opentxs/core/AccountType.hpp"
 #include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/ui/AccountActivity.hpp"
-#include "opentxs/core/ui/BalanceItem.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/interface/ui/AccountActivity.hpp"
+#include "opentxs/interface/ui/BalanceItem.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -86,7 +87,7 @@ protected:
     const ot::UnallocatedCString expected_notary_name_;
     const ot::UnallocatedCString memo_outgoing_;
     const ot::AccountType expected_account_type_;
-    const ot::core::UnitType expected_unit_type_;
+    const ot::UnitType expected_unit_type_;
     const Generator mine_to_alice_;
     ScanListener& listener_alice_;
     ScanListener& listener_bob_;
@@ -213,11 +214,11 @@ protected:
         , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
         , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
         , expected_display_unit_(u8"UNITTEST")
-        , expected_account_name_(u8"This device")
+        , expected_account_name_(u8"On chain UNITTEST (this device)")
         , expected_notary_name_(u8"Unit Test Simulation")
         , memo_outgoing_("memo for outgoing transaction")
         , expected_account_type_(ot::AccountType::Blockchain)
-        , expected_unit_type_(ot::core::UnitType::Regtest)
+        , expected_unit_type_(ot::UnitType::Regtest)
         , mine_to_alice_([&](Height height) -> Transaction {
             using OutputBuilder = ot::api::session::Factory::OutputBuilder;
 

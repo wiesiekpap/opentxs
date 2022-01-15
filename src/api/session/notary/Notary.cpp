@@ -523,15 +523,14 @@ void Notary::Start()
     server_.ActivateCron();
     UnallocatedCString hostname{};
     std::uint32_t port{0};
-    core::AddressType type{core::AddressType::Inproc};
+    AddressType type{AddressType::Inproc};
     const auto connectInfo = server_.GetConnectInfo(type, hostname, port);
 
     OT_ASSERT(connectInfo);
 
     auto pubkey = Data::Factory();
     auto privateKey = server_.TransportKey(pubkey);
-    message_processor_.init(
-        (core::AddressType::Inproc == type), port, privateKey);
+    message_processor_.init((AddressType::Inproc == type), port, privateKey);
     message_processor_.Start();
     ScanMints();
 }

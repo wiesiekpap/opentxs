@@ -62,5 +62,5 @@ private:
     Imp* imp_;
 };
 
-auto GetDefinition(core::UnitType) noexcept -> const Definition&;
+auto GetDefinition(UnitType) noexcept -> const Definition&;
 }  // namespace opentxs::display

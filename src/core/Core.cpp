@@ -8,22 +8,27 @@
 
 #include <robin_hood.h>
 #include <cstdint>
+#include <iosfwd>
 #include <mutex>
+#include <sstream>
 #include <utility>
 
 #include "internal/blockchain/Params.hpp"
+#include "internal/identity/wot/claim/Types.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/core/AccountType.hpp"
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/ContractEnums.pb.h"
@@ -31,10 +36,14 @@
 
 namespace opentxs::blockchain
 {
-auto AccountName([[maybe_unused]] const blockchain::Type chain) noexcept
-    -> UnallocatedCString
+auto AccountName(const blockchain::Type chain) noexcept -> UnallocatedCString
 {
-    return "This device";
+    auto out = std::stringstream{};
+    out << "On chain ";
+    out << blockchain::TickerSymbol(chain);
+    out << " (this device)";
+
+    return out.str();
 }
 
 auto Chain(const api::Session& api, const identifier::Nym& id) noexcept
@@ -173,8 +182,7 @@ auto UnitID(const api::Session& api, const blockchain::Type chain) noexcept
     auto& output = it->second;
 
     try {
-        const auto preimage =
-            blockchain::params::Data::Chains().at(chain).display_ticker_;
+        const auto preimage = TickerSymbol(chain);
         output->CalculateDigest(preimage);
     } catch (...) {
     }
@@ -183,60 +191,92 @@ auto UnitID(const api::Session& api, const blockchain::Type chain) noexcept
 }
 }  // namespace opentxs::blockchain
 
-namespace opentxs::core
+namespace opentxs
 {
 using AddressTypeMap =
     robin_hood::unordered_flat_map<AddressType, proto::AddressType>;
 using AddressTypeReverseMap =
     robin_hood::unordered_flat_map<proto::AddressType, AddressType>;
 
-auto addresstype_map() noexcept -> const AddressTypeMap&;
-}  // namespace opentxs::core
-
-namespace opentxs::core
-{
-auto addresstype_map() noexcept -> const AddressTypeMap&
+static auto addresstype_map() noexcept -> const AddressTypeMap&
 {
     static const auto map = AddressTypeMap{
         {AddressType::Error, proto::ADDRESSTYPE_ERROR},
         {AddressType::IPV4, proto::ADDRESSTYPE_IPV4},
         {AddressType::IPV6, proto::ADDRESSTYPE_IPV6},
-        {AddressType::Onion, proto::ADDRESSTYPE_ONION},
+        {AddressType::Onion2, proto::ADDRESSTYPE_ONION},
         {AddressType::EEP, proto::ADDRESSTYPE_EEP},
         {AddressType::Inproc, proto::ADDRESSTYPE_INPROC},
     };
 
     return map;
 }
-}  // namespace opentxs::core
+}  // namespace opentxs
 
 namespace opentxs
 {
-auto print(core::UnitType in) noexcept -> UnallocatedCString
+auto print(AccountType in) noexcept -> UnallocatedCString
 {
-    return proto::TranslateItemType(static_cast<std::uint32_t>(in));
+    static const auto map =
+        robin_hood::unordered_flat_map<AccountType, const char*>{
+            {AccountType::Blockchain, "blockchain"},
+            {AccountType::Custodial, "custodial"},
+        };
+
+    try {
+
+        return map.at(in);
+    } catch (...) {
+
+        return "invalid";
+    }
 }
 
-auto translate(core::AddressType in) noexcept -> proto::AddressType
+auto print(AddressType in) noexcept -> UnallocatedCString
+{
+    static const auto map =
+        robin_hood::unordered_flat_map<AddressType, const char*>{
+            {AddressType::IPV4, "ipv4"},
+            {AddressType::IPV6, "ipv6"},
+            {AddressType::Onion2, "onion"},
+            {AddressType::EEP, "eep"},
+            {AddressType::Inproc, "inproc"},
+        };
+
+    try {
+
+        return map.at(in);
+    } catch (...) {
+
+        return "invalid";
+    }
+}
+
+auto print(UnitType in) noexcept -> UnallocatedCString
+{
+    return proto::TranslateItemType(translate(UnitToClaim(in)));
+}
+
+auto translate(AddressType in) noexcept -> proto::AddressType
 {
     try {
-        return core::addresstype_map().at(in);
+        return addresstype_map().at(in);
     } catch (...) {
         return proto::ADDRESSTYPE_ERROR;
     }
 }
 
-auto translate(proto::AddressType in) noexcept -> core::AddressType
+auto translate(proto::AddressType in) noexcept -> AddressType
 {
     static const auto map = reverse_arbitrary_map<
-        core::AddressType,
+        AddressType,
         proto::AddressType,
-        core::AddressTypeReverseMap>(core::addresstype_map());
+        AddressTypeReverseMap>(addresstype_map());
 
     try {
         return map.at(in);
     } catch (...) {
-        return core::AddressType::Error;
+        return AddressType::Error;
     }
 }
 }  // namespace opentxs

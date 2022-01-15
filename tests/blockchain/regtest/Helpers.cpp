@@ -58,6 +58,7 @@
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/AccountType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -923,11 +924,11 @@ Regtest_fixture_hd::Regtest_fixture_hd()
     , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
     , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
     , expected_display_unit_(u8"UNITTEST")
-    , expected_account_name_(u8"This device")
+    , expected_account_name_(u8"On chain UNITTEST (this device)")
     , expected_notary_name_(u8"Unit Test Simulation")
     , memo_outgoing_("memo for outgoing transaction")
     , expected_account_type_(ot::AccountType::Blockchain)
-    , expected_unit_type_(ot::core::UnitType::Regtest)
+    , expected_unit_type_(ot::UnitType::Regtest)
     , hd_generator_([&](Height height) -> Transaction {
         using OutputBuilder = ot::api::session::Factory::OutputBuilder;
         using Index = ot::Bip32Index;
@@ -1156,11 +1157,11 @@ Regtest_payment_code::Regtest_payment_code()
     , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
     , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
     , expected_display_unit_(u8"UNITTEST")
-    , expected_account_name_(u8"This device")
+    , expected_account_name_(u8"On chain UNITTEST (this device)")
     , expected_notary_name_(u8"Unit Test Simulation")
     , memo_outgoing_("memo for outgoing transaction")
     , expected_account_type_(ot::AccountType::Blockchain)
-    , expected_unit_type_(ot::core::UnitType::Regtest)
+    , expected_unit_type_(ot::UnitType::Regtest)
     , mine_to_alice_([&](Height height) -> Transaction {
         using OutputBuilder = ot::api::session::Factory::OutputBuilder;
         static const auto baseAmmount = ot::blockchain::Amount{10000000000};

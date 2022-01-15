@@ -39,7 +39,7 @@ public:
     auto AccountOwner(const Identifier& accountID) const -> OTNymID;
     auto AccountServer(const Identifier& accountID) const -> OTNotaryID;
     auto AccountSigner(const Identifier& accountID) const -> OTNymID;
-    auto AccountUnit(const Identifier& accountID) const -> core::UnitType;
+    auto AccountUnit(const Identifier& accountID) const -> UnitType;
     auto AccountsByContract(const identifier::UnitDefinition& unit) const
         -> UnallocatedSet<OTIdentifier>;
     auto AccountsByIssuer(const identifier::Nym& issuerNym) const
@@ -48,7 +48,7 @@ public:
         -> UnallocatedSet<OTIdentifier>;
     auto AccountsByServer(const identifier::Notary& server) const
         -> UnallocatedSet<OTIdentifier>;
-    auto AccountsByUnit(const core::UnitType unit) const
+    auto AccountsByUnit(const UnitType unit) const
         -> UnallocatedSet<OTIdentifier>;
     auto Alias(const UnallocatedCString& id) const -> UnallocatedCString;
     auto Load(
@@ -69,7 +69,7 @@ public:
         const identifier::Nym& issuerNym,
         const identifier::Notary& server,
         const identifier::UnitDefinition& contract,
-        const core::UnitType unit) -> bool;
+        const UnitType unit) -> bool;
 
     ~Accounts() final = default;
 
@@ -81,11 +81,10 @@ private:
         UnallocatedMap<OTNotaryID, UnallocatedSet<OTIdentifier>>;
     using ContractIndex =
         UnallocatedMap<OTUnitID, UnallocatedSet<OTIdentifier>>;
-    using UnitIndex =
-        UnallocatedMap<core::UnitType, UnallocatedSet<OTIdentifier>>;
+    using UnitIndex = UnallocatedMap<UnitType, UnallocatedSet<OTIdentifier>>;
     /** owner, signer, issuer, server, contract, unit */
-    using AccountData = std::
-        tuple<OTNymID, OTNymID, OTNymID, OTNotaryID, OTUnitID, core::UnitType>;
+    using AccountData =
+        std::tuple<OTNymID, OTNymID, OTNymID, OTNotaryID, OTUnitID, UnitType>;
     using ReverseIndex = UnallocatedMap<OTIdentifier, AccountData>;
 
     NymIndex owner_index_{};
@@ -127,7 +126,7 @@ private:
         const identifier::Nym& issuerNym,
         const identifier::Notary& server,
         const identifier::UnitDefinition& contract,
-        const core::UnitType unit) -> bool;
+        const UnitType unit) -> bool;
     void init(const UnallocatedCString& hash) final;
     auto save(const Lock& lock) const -> bool final;
 

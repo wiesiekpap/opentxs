@@ -44,8 +44,8 @@ class Bip47Channels final : public Node
 public:
     using ChannelList = UnallocatedSet<OTIdentifier>;
 
-    auto Chain(const Identifier& channelID) const -> core::UnitType;
-    auto ChannelsByChain(const core::UnitType chain) const -> ChannelList;
+    auto Chain(const Identifier& channelID) const -> UnitType;
+    auto ChannelsByChain(const UnitType chain) const -> ChannelList;
     auto Load(
         const Identifier& id,
         std::shared_ptr<proto::Bip47Channel>& output,
@@ -61,10 +61,10 @@ private:
     friend Nym;
 
     /** chain */
-    using ChannelData = core::UnitType;
+    using ChannelData = UnitType;
     /** channel id, channel data */
     using ChannelIndex = UnallocatedMap<OTIdentifier, ChannelData>;
-    using ChainIndex = UnallocatedMap<core::UnitType, ChannelList>;
+    using ChainIndex = UnallocatedMap<UnitType, ChannelList>;
 
     mutable std::shared_mutex index_lock_;
     ChannelIndex channel_data_;

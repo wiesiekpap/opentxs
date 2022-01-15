@@ -89,6 +89,6 @@ auto Secret(const ReadView bytes, const bool mode) noexcept
 
 namespace opentxs
 {
-auto translate(const core::AddressType in) noexcept -> proto::AddressType;
-auto translate(const proto::AddressType in) noexcept -> core::AddressType;
+auto translate(const AddressType in) noexcept -> proto::AddressType;
+auto translate(const proto::AddressType in) noexcept -> AddressType;
 }  // namespace opentxs

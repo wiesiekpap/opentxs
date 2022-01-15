@@ -66,7 +66,7 @@ public:
     auto operator()(const OTString& in) const noexcept -> const Log&;
     auto operator()(const OTArmored& in) const noexcept -> const Log&;
     auto operator()(const Amount& in) const noexcept -> const Log&;
-    auto operator()(const Amount& in, core::UnitType currency) const noexcept
+    auto operator()(const Amount& in, UnitType currency) const noexcept
         -> const Log&;
     auto operator()(const String& in) const noexcept -> const Log&;
     auto operator()(const StringXML& in) const noexcept -> const Log&;

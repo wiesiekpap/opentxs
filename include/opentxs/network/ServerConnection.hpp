@@ -69,7 +69,7 @@ public:
         const zeromq::socket::Publish& updates,
         const OTServerContract& contract) -> OTServerConnection;
 
-    virtual auto ChangeAddressType(const core::AddressType type) -> bool = 0;
+    virtual auto ChangeAddressType(const AddressType type) -> bool = 0;
     virtual auto ClearProxy() -> bool = 0;
     virtual auto EnableProxy() -> bool = 0;
     virtual auto Send(

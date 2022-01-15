@@ -150,7 +150,7 @@ struct Unit final : virtual public opentxs::contract::Unit, public Signable {
     auto Serialize(proto::UnitDefinition& output, bool includeNym = false) const
         -> bool final;
     auto Type() const -> contract::UnitType final { return {}; }
-    auto UnitOfAccount() const -> core::UnitType final { return {}; }
+    auto UnitOfAccount() const -> opentxs::UnitType final { return {}; }
     auto VisitAccountRecords(
         const UnallocatedCString&,
         AccountVisitor&,
@@ -182,8 +182,8 @@ struct Server final : virtual public opentxs::contract::Server,
     auto ConnectInfo(
         UnallocatedCString&,
         std::uint32_t&,
-        core::AddressType&,
-        const core::AddressType&) const -> bool final
+        AddressType&,
+        const AddressType&) const -> bool final
     {
         return {};
     }

@@ -26,6 +26,7 @@
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
@@ -35,19 +36,18 @@
 
 namespace opentxs
 {
-auto BlockchainToUnit(const blockchain::Type type) noexcept -> core::UnitType
+auto BlockchainToUnit(const blockchain::Type type) noexcept -> UnitType
 {
     try {
         return blockchain::params::Data::Chains().at(type).itemtype_;
     } catch (...) {
-        return core::UnitType::Unknown;
+        return UnitType::Unknown;
     }
 }
 
-auto UnitToBlockchain(const core::UnitType type) noexcept -> blockchain::Type
+auto UnitToBlockchain(const UnitType type) noexcept -> blockchain::Type
 {
-    using Map =
-        UnallocatedMap<opentxs::core::UnitType, opentxs::blockchain::Type>;
+    using Map = UnallocatedMap<opentxs::UnitType, opentxs::blockchain::Type>;
 
     static const auto build = []() -> auto
     {
@@ -165,13 +165,7 @@ auto DefinedChains() noexcept -> const UnallocatedSet<Type>&
 
 auto DisplayString(const Type type) noexcept -> UnallocatedCString
 {
-    try {
-
-        return params::Data::Chains().at(type).display_string_;
-    } catch (...) {
-
-        return "Unknown";
-    }
+    return opentxs::print(BlockchainToUnit(type));
 }
 
 auto FilterHash(
@@ -393,14 +387,9 @@ auto SupportedChains() noexcept -> const UnallocatedSet<Type>&
 
 auto TickerSymbol(const Type type) noexcept -> UnallocatedCString
 {
-    try {
-
-        return params::Data::Chains().at(type).display_ticker_;
-    } catch (...) {
-
-        return "Unknown";
-    }
+    return display::GetDefinition(BlockchainToUnit(type)).ShortName();
 }
+
 auto TransactionHash(
     const api::Session& api,
     const Type chain,
@@ -521,10 +510,8 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              false,
              true,
-             opentxs::core::UnitType::Btc,
+             opentxs::UnitType::Btc,
              Bip44Type::BITCOIN,
-             "Bitcoin",
-             "BTC",
              486604799,  // 0x1d00ffff
              "01000000000000000000000000000000000000000000000000000000000000000"
              "00000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b"
@@ -580,10 +567,8 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              true,
              true,
-             opentxs::core::UnitType::Tnbtc,
+             opentxs::UnitType::Tnbtc,
              Bip44Type::TESTNET,
-             "Bitcoin (testnet3)",
-             "tnBTC",
              486604799,  // 0x1d00ffff
              "01000000000000000000000000000000000000000000000000000000000000000"
              "00000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b"
@@ -636,10 +621,8 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              false,
              false,
-             opentxs::core::UnitType::Bch,
+             opentxs::UnitType::Bch,
              Bip44Type::BITCOINCASH,
-             "Bitcoin Cash",
-             "BCH",
              486604799,  // 0x1d00ffff
              "01000000000000000000000000000000000000000000000000000000000000000"
              "00000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b"
@@ -692,10 +675,8 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              true,
              false,
-             opentxs::core::UnitType::Tnbch,
+             opentxs::UnitType::Tnbch,
              Bip44Type::TESTNET,
-             "Bitcoin Cash (testnet3)",
-             "tnBCH",
              486604799,  // 0x1d00ffff
              "01000000000000000000000000000000000000000000000000000000000000000"
              "00000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b"
@@ -747,10 +728,8 @@ auto Data::Chains() noexcept -> const ChainData&
              false,
              false,
              false,
-             opentxs::core::UnitType::Eth,
+             opentxs::UnitType::Eth,
              Bip44Type::ETHER,
-             "Ethereum (frontier)",
-             "",
              0,
              "",
              "d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
@@ -778,10 +757,8 @@ auto Data::Chains() noexcept -> const ChainData&
              false,
              true,
              false,
-             opentxs::core::UnitType::Ethereum_ropsten,
+             opentxs::UnitType::Ethereum_ropsten,
              Bip44Type::TESTNET,
-             "Ethereum (ropsten testnet)",
-             "",
              0,
              "",
              "41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d",
@@ -809,10 +786,8 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              false,
              true,
-             opentxs::core::UnitType::Ltc,
+             opentxs::UnitType::Ltc,
              Bip44Type::LITECOIN,
-             "Litecoin",
-             "LTC",
              504365040,  // 0x1e0ffff0
              "01000000000000000000000000000000000000000000000000000000000000000"
              "0000000d9ced4ed1130f7b7faad9be25323ffafa33232a17c3edf6cfd97bee6ba"
@@ -865,10 +840,8 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              true,
              true,
-             opentxs::core::UnitType::Tnltx,
+             opentxs::UnitType::Tnltx,
              Bip44Type::TESTNET,
-             "Litecoin (testnet4)",
-             "tnLTC",
              504365040,  // 0x1e0ffff0
              "01000000000000000000000000000000000000000000000000000000000000000"
              "0000000d9ced4ed1130f7b7faad9be25323ffafa33232a17c3edf6cfd97bee6ba"
@@ -919,10 +892,8 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              false,
              true,
-             opentxs::core::UnitType::Pkt,
+             opentxs::UnitType::Pkt,
              Bip44Type::PKT,
-             "PKT",
-             "PKT",
              521142271,  // 0x1f0fffff
              "00000000000000000000000000000000000000000000000000000000000000000"
              "0000000df345ba23b13467eec222a919d449dab6506abc555ef307794ecd3d36a"
@@ -1145,10 +1116,8 @@ auto Data::Chains() noexcept -> const ChainData&
              false,
              true,
              true,
-             opentxs::core::UnitType::Tnpkt,
+             opentxs::UnitType::Tnpkt,
              Bip44Type::TESTNET,
-             "PKT (testnet)",
-             "tnPKT",
              521142271,  // 0x1f0fffff
              "00000000000000000000000000000000000000000000000000000000000000000"
              "0000000df345ba23b13467eec222a919d449dab6506abc555ef307794ecd3d36a"
@@ -1190,10 +1159,8 @@ auto Data::Chains() noexcept -> const ChainData&
              false,
              true,
              false,
-             opentxs::core::UnitType::Regtest,
+             opentxs::UnitType::Regtest,
              Bip44Type::TESTNET,
-             "Unit Test Simulation",
-             "UNITTEST",
              545259519,  // 0x207fffff
              "01000000000000000000000000000000000000000000000000000000000000000"
              "00000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b"

@@ -105,7 +105,7 @@ Unit::Unit(
     const Nym_p& nym,
     const UnallocatedCString& shortname,
     const UnallocatedCString& terms,
-    const core::UnitType unitOfAccount,
+    const opentxs::UnitType unitOfAccount,
     const VersionNumber version,
     const display::Definition& displayDefinition,
     const Amount& redemptionIncrement)
@@ -452,12 +452,12 @@ auto Unit::GetID(const api::Session& api, const SerializedType& contract)
 }
 
 auto Unit::get_unitofaccount(const SerializedType& serialized) const
-    -> core::UnitType
+    -> opentxs::UnitType
 {
     if (serialized.has_params()) {
         return ClaimToUnit(translate(serialized.params().unit_of_account()));
     } else {
-        return core::UnitType::Custom;
+        return opentxs::UnitType::Custom;
     }
 }
 

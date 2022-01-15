@@ -228,7 +228,7 @@ public:
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const identifier::UnitDefinition& unitID,
-        const core::UnitType advertise,
+        const UnitType advertise,
         const UnallocatedCString& label) const -> BackgroundTask final;
     auto MessageContact(
         const identifier::Nym& senderNymID,

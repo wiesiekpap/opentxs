@@ -67,10 +67,8 @@ struct Data {
     bool supported_{};
     bool testnet_{};
     bool segwit_{};
-    core::UnitType itemtype_{};
+    UnitType itemtype_{};
     Bip44Type bip44_{};
-    UnallocatedCString display_string_{};
-    UnallocatedCString display_ticker_{};
     std::int32_t nBits_{};
     UnallocatedCString genesis_header_hex_{};
     UnallocatedCString genesis_hash_hex_{};

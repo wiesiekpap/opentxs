@@ -20,6 +20,11 @@ auto check_account_list_qt(const User&, const AccountListData&) noexcept -> bool
     return true;
 }
 
+auto check_account_tree_qt(const User&, const AccountTreeData&) noexcept -> bool
+{
+    return true;
+}
+
 auto check_activity_thread_qt(
     const User&,
     const ot::Identifier&,

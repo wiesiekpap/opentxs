@@ -52,8 +52,8 @@ using Balance = std::pair<ConfirmedBalance, UnconfirmedBalance>;
 }  // namespace blockchain
 
 OPENTXS_EXPORT auto BlockchainToUnit(const blockchain::Type type) noexcept
-    -> core::UnitType;
-OPENTXS_EXPORT auto UnitToBlockchain(const core::UnitType type) noexcept
+    -> UnitType;
+OPENTXS_EXPORT auto UnitToBlockchain(const UnitType type) noexcept
     -> blockchain::Type;
 OPENTXS_EXPORT auto print(blockchain::SendResult) noexcept
     -> UnallocatedCString;

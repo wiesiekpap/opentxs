@@ -94,8 +94,8 @@ TEST_F(Test_NymData, AddClaim)
 
 TEST_F(Test_NymData, AddContract)
 {
-    auto added = nymData_.AddContract(
-        "", ot::core::UnitType::Usd, false, false, reason_);
+    auto added =
+        nymData_.AddContract("", ot::UnitType::Usd, false, false, reason_);
     EXPECT_FALSE(added);
 
     const auto identifier1(ot::identifier::UnitDefinition::Factory(
@@ -110,7 +110,7 @@ TEST_F(Test_NymData, AddContract)
             "")));
 
     added = nymData_.AddContract(
-        identifier1->str(), ot::core::UnitType::Usd, false, false, reason_);
+        identifier1->str(), ot::UnitType::Usd, false, false, reason_);
     EXPECT_TRUE(added);
 }
 
@@ -125,12 +125,12 @@ TEST_F(Test_NymData, AddEmail)
 
 TEST_F(Test_NymData, AddPaymentCode)
 {
-    auto added = nymData_.AddPaymentCode(
-        "", ot::core::UnitType::Usd, false, false, reason_);
+    auto added =
+        nymData_.AddPaymentCode("", ot::UnitType::Usd, false, false, reason_);
     EXPECT_FALSE(added);
 
     added = nymData_.AddPaymentCode(
-        paymentCode, ot::core::UnitType::Usd, false, false, reason_);
+        paymentCode, ot::UnitType::Usd, false, false, reason_);
     EXPECT_TRUE(added);
 }
 
@@ -312,23 +312,23 @@ TEST_F(Test_NymData, HaveContract)
             "")));
 
     auto added = nymData_.AddContract(
-        identifier1->str(), ot::core::UnitType::Usd, false, false, reason_);
+        identifier1->str(), ot::UnitType::Usd, false, false, reason_);
     ASSERT_TRUE(added);
 
     auto haveContract =
-        nymData_.HaveContract(identifier1, ot::core::UnitType::Usd, true, true);
+        nymData_.HaveContract(identifier1, ot::UnitType::Usd, true, true);
     EXPECT_TRUE(haveContract);
 
-    haveContract = nymData_.HaveContract(
-        identifier1, ot::core::UnitType::Usd, true, false);
+    haveContract =
+        nymData_.HaveContract(identifier1, ot::UnitType::Usd, true, false);
     EXPECT_TRUE(haveContract);
 
-    haveContract = nymData_.HaveContract(
-        identifier1, ot::core::UnitType::Usd, false, true);
+    haveContract =
+        nymData_.HaveContract(identifier1, ot::UnitType::Usd, false, true);
     EXPECT_TRUE(haveContract);
 
-    haveContract = nymData_.HaveContract(
-        identifier1, ot::core::UnitType::Usd, false, false);
+    haveContract =
+        nymData_.HaveContract(identifier1, ot::UnitType::Usd, false, false);
     EXPECT_TRUE(haveContract);
 
     const auto identifier2(ot::identifier::UnitDefinition::Factory(
@@ -343,23 +343,23 @@ TEST_F(Test_NymData, HaveContract)
             "")));
 
     added = nymData_.AddContract(
-        identifier2->str(), ot::core::UnitType::Usd, false, false, reason_);
+        identifier2->str(), ot::UnitType::Usd, false, false, reason_);
     ASSERT_TRUE(added);
 
-    haveContract = nymData_.HaveContract(
-        identifier2, ot::core::UnitType::Usd, false, false);
+    haveContract =
+        nymData_.HaveContract(identifier2, ot::UnitType::Usd, false, false);
     EXPECT_TRUE(haveContract);
 
-    haveContract = nymData_.HaveContract(
-        identifier2, ot::core::UnitType::Usd, true, false);
-    EXPECT_FALSE(haveContract);
-
-    haveContract = nymData_.HaveContract(
-        identifier2, ot::core::UnitType::Usd, false, true);
+    haveContract =
+        nymData_.HaveContract(identifier2, ot::UnitType::Usd, true, false);
     EXPECT_FALSE(haveContract);
 
     haveContract =
-        nymData_.HaveContract(identifier2, ot::core::UnitType::Usd, true, true);
+        nymData_.HaveContract(identifier2, ot::UnitType::Usd, false, true);
+    EXPECT_FALSE(haveContract);
+
+    haveContract =
+        nymData_.HaveContract(identifier2, ot::UnitType::Usd, true, true);
     EXPECT_FALSE(haveContract);
 }
 
@@ -373,14 +373,14 @@ TEST_F(Test_NymData, Nym)
 TEST_F(Test_NymData, PaymentCode)
 {
     auto added = nymData_.AddPaymentCode(
-        paymentCode, ot::core::UnitType::Btc, true, true, reason_);
+        paymentCode, ot::UnitType::Btc, true, true, reason_);
     ASSERT_TRUE(added);
 
-    auto paymentcode = nymData_.PaymentCode(ot::core::UnitType::Btc);
+    auto paymentcode = nymData_.PaymentCode(ot::UnitType::Btc);
     EXPECT_TRUE(!paymentcode.empty());
     EXPECT_STREQ(paymentCode.c_str(), paymentcode.c_str());
 
-    paymentcode = nymData_.PaymentCode(ot::core::UnitType::Usd);
+    paymentcode = nymData_.PaymentCode(ot::UnitType::Usd);
     EXPECT_TRUE(paymentcode.empty());
 }
 

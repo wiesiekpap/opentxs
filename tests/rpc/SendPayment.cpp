@@ -24,14 +24,14 @@
 #include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/interface/rpc/CommandType.hpp"
+#include "opentxs/interface/rpc/PaymentType.hpp"
+#include "opentxs/interface/rpc/ResponseCode.hpp"
+#include "opentxs/interface/rpc/request/Base.hpp"
+#include "opentxs/interface/rpc/request/SendPayment.hpp"
+#include "opentxs/interface/rpc/response/Base.hpp"
+#include "opentxs/interface/rpc/response/SendPayment.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/rpc/CommandType.hpp"
-#include "opentxs/util/rpc/PaymentType.hpp"
-#include "opentxs/util/rpc/ResponseCode.hpp"
-#include "opentxs/util/rpc/request/Base.hpp"
-#include "opentxs/util/rpc/request/SendPayment.hpp"
-#include "opentxs/util/rpc/response/Base.hpp"
-#include "opentxs/util/rpc/response/SendPayment.hpp"
 #include "paymentcode/VectorsV3.hpp"
 
 namespace ot = opentxs;
@@ -86,7 +86,7 @@ TEST_F(RPC_fixture, preconditions)
             issuer,
             "Mt Gox USD",
             "YOLO",
-            ot::core::UnitType::Usd,
+            ot::UnitType::Usd,
             {u8"USD", {{u8"dollers", {u8"$", u8"", {{10, 0}}, 2, 3}}}});
 
         EXPECT_FALSE(unit.empty());

@@ -68,7 +68,7 @@ class Server
 public:
     auto API() const -> const api::session::Notary& { return manager_; }
     auto GetConnectInfo(
-        core::AddressType& type,
+        AddressType& type,
         UnallocatedCString& hostname,
         std::uint32_t& port) const -> bool;
     auto GetServerID() const noexcept -> const identifier::Notary&;

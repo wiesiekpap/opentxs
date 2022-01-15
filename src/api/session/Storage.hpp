@@ -141,7 +141,7 @@ public:
     auto AccountOwner(const Identifier& accountID) const -> OTNymID final;
     auto AccountServer(const Identifier& accountID) const -> OTNotaryID final;
     auto AccountSigner(const Identifier& accountID) const -> OTNymID final;
-    auto AccountUnit(const Identifier& accountID) const -> core::UnitType final;
+    auto AccountUnit(const Identifier& accountID) const -> UnitType final;
     auto AccountsByContract(const identifier::UnitDefinition& contract) const
         -> UnallocatedSet<OTIdentifier> final;
     auto AccountsByIssuer(const identifier::Nym& issuerNym) const
@@ -150,20 +150,19 @@ public:
         -> UnallocatedSet<OTIdentifier> final;
     auto AccountsByServer(const identifier::Notary& server) const
         -> UnallocatedSet<OTIdentifier> final;
-    auto AccountsByUnit(const core::UnitType unit) const
+    auto AccountsByUnit(const UnitType unit) const
         -> UnallocatedSet<OTIdentifier> final;
     auto Bip47Chain(const identifier::Nym& nymID, const Identifier& channelID)
-        const -> core::UnitType final;
+        const -> UnitType final;
     auto Bip47ChannelsByChain(
         const identifier::Nym& nymID,
-        const core::UnitType chain) const -> Bip47ChannelList final;
+        const UnitType chain) const -> Bip47ChannelList final;
     auto BlockchainAccountList(
         const UnallocatedCString& nymID,
-        const core::UnitType type) const
-        -> UnallocatedSet<UnallocatedCString> final;
+        const UnitType type) const -> UnallocatedSet<UnallocatedCString> final;
     auto BlockchainAccountType(
         const UnallocatedCString& nymID,
-        const UnallocatedCString& accountID) const -> core::UnitType final;
+        const UnallocatedCString& accountID) const -> UnitType final;
     auto BlockchainThreadMap(const identifier::Nym& nym, const Data& txid)
         const noexcept -> UnallocatedVector<OTIdentifier> final;
     auto BlockchainTransactionList(const identifier::Nym& nym) const noexcept
@@ -417,7 +416,7 @@ public:
         const identifier::Nym& issuerNym,
         const identifier::Notary& server,
         const identifier::UnitDefinition& contract,
-        const core::UnitType unit) const -> bool final;
+        const UnitType unit) const -> bool final;
     auto Store(
         const UnallocatedCString& nymID,
         const identity::wot::claim::ClaimType type,

@@ -5,10 +5,11 @@
 
 #include <gtest/gtest.h>
 #include <iterator>
+#include <limits>
 #include <optional>
+#include <stdexcept>
 #include <utility>
 
-#include "internal/core/Amount.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/display/Definition.hpp"
@@ -20,8 +21,7 @@ namespace ottest
 {
 TEST(DisplayScale, usd)
 {
-    const auto usd =
-        opentxs::display::GetDefinition(opentxs::core::UnitType::Usd);
+    const auto usd = opentxs::display::GetDefinition(opentxs::UnitType::Usd);
 
     const auto scales = usd.GetScales();
     auto it = scales.begin();
@@ -174,8 +174,7 @@ TEST(DisplayScale, usd)
 
 TEST(DisplayScale, btc)
 {
-    const auto btc =
-        opentxs::display::GetDefinition(opentxs::core::UnitType::Btc);
+    const auto btc = opentxs::display::GetDefinition(opentxs::UnitType::Btc);
 
     const auto scales = btc.GetScales();
     auto it = scales.begin();
@@ -257,8 +256,7 @@ TEST(DisplayScale, btc)
 
 TEST(DisplayScale, pkt)
 {
-    const auto pkt =
-        opentxs::display::GetDefinition(opentxs::core::UnitType::Pkt);
+    const auto pkt = opentxs::display::GetDefinition(opentxs::UnitType::Pkt);
 
     const auto scales = pkt.GetScales();
     auto it = scales.begin();

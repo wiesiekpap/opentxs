@@ -43,6 +43,7 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/node/TxoTag.hpp"
+#include "opentxs/core/AccountType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -62,10 +63,12 @@ Counter account_activity_alice_{};
 Counter account_activity_bob_{};
 Counter account_list_alice_{};
 Counter account_list_bob_{};
-Counter contact_list_alice_{};
-Counter contact_list_bob_{};
+Counter account_tree_alice_{};
+Counter account_tree_bob_{};
 Counter activity_thread_alice_bob_{};
 Counter activity_thread_bob_alice_{};
+Counter contact_list_alice_{};
+Counter contact_list_bob_{};
 
 TEST_F(Regtest_payment_code, init_opentxs) {}
 
@@ -87,16 +90,20 @@ TEST_F(Regtest_payment_code, init_ui_models)
     account_activity_bob_.expected_ += 0;
     account_list_alice_.expected_ += 1;
     account_list_bob_.expected_ += 1;
+    account_tree_alice_.expected_ += 2;
+    account_tree_bob_.expected_ += 2;
     contact_list_alice_.expected_ += 1;
     contact_list_bob_.expected_ += 1;
     init_account_activity(
         alice_, SendHD().Parent().AccountID(), account_activity_alice_);
     init_account_list(alice_, account_list_alice_);
+    init_account_tree(alice_, account_tree_alice_);
     init_contact_list(alice_, contact_list_alice_);
 
     init_account_activity(
         bob_, ReceiveHD().Parent().AccountID(), account_activity_bob_);
     init_account_list(bob_, account_list_bob_);
+    init_account_tree(bob_, account_tree_bob_);
     init_contact_list(bob_, contact_list_bob_);
 }
 
@@ -164,6 +171,30 @@ TEST_F(Regtest_payment_code, alice_account_list_initial)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
+TEST_F(Regtest_payment_code, alice_account_tree_initial)
+{
+    const auto expected = AccountTreeData{
+        {{expected_unit_type_,
+          expected_notary_name_,
+          {
+              {SendHD().Parent().AccountID().str(),
+               expected_unit_.str(),
+               expected_display_unit_,
+               expected_account_name_,
+               expected_notary_.str(),
+               expected_notary_name_,
+               ot::AccountType::Blockchain,
+               expected_unit_type_,
+               0,
+               0,
+               "0 units"},
+          }}}};
+
+    ASSERT_TRUE(wait_for_counter(account_tree_alice_, false));
+    EXPECT_TRUE(check_account_tree(alice_, expected));
+    EXPECT_TRUE(check_account_tree_qt(alice_, expected));
+}
+
 TEST_F(Regtest_payment_code, bob_contact_list_initial)
 {
     const auto expected = ContactListData{{
@@ -228,6 +259,30 @@ TEST_F(Regtest_payment_code, bob_account_list_initial)
     EXPECT_TRUE(check_account_list_rpc(bob_, expected));
 }
 
+TEST_F(Regtest_payment_code, bob_account_tree_initial)
+{
+    const auto expected = AccountTreeData{
+        {{expected_unit_type_,
+          expected_notary_name_,
+          {
+              {ReceiveHD().Parent().AccountID().str(),
+               expected_unit_.str(),
+               expected_display_unit_,
+               expected_account_name_,
+               expected_notary_.str(),
+               expected_notary_name_,
+               ot::AccountType::Blockchain,
+               expected_unit_type_,
+               0,
+               0,
+               "0 units"},
+          }}}};
+
+    ASSERT_TRUE(wait_for_counter(account_tree_bob_, false));
+    EXPECT_TRUE(check_account_tree(bob_, expected));
+    EXPECT_TRUE(check_account_tree_qt(bob_, expected));
+}
+
 TEST_F(Regtest_payment_code, mine_initial_balance)
 {
     constexpr auto orphan{0};
@@ -239,6 +294,8 @@ TEST_F(Regtest_payment_code, mine_initial_balance)
     account_activity_bob_.expected_ += count;
     account_list_alice_.expected_ += 0;
     account_list_bob_.expected_ += 0;
+    account_tree_alice_.expected_ += 0;
+    account_tree_bob_.expected_ += 0;
 
     EXPECT_EQ(start, 0);
     EXPECT_EQ(end, 1);
@@ -259,6 +316,8 @@ TEST_F(Regtest_payment_code, mature_initial_balance)
     account_activity_bob_.expected_ += count;
     account_list_alice_.expected_ += 1;
     account_list_bob_.expected_ += 0;
+    account_tree_alice_.expected_ += 1;
+    account_tree_bob_.expected_ += 0;
 
     EXPECT_EQ(start, 1);
     EXPECT_EQ(end, 11);
@@ -363,6 +422,30 @@ TEST_F(Regtest_payment_code, alice_account_list_initial_receive)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
+TEST_F(Regtest_payment_code, alice_account_tree_initial_receive)
+{
+    const auto expected = AccountTreeData{
+        {{expected_unit_type_,
+          expected_notary_name_,
+          {
+              {SendHD().Parent().AccountID().str(),
+               expected_unit_.str(),
+               expected_display_unit_,
+               expected_account_name_,
+               expected_notary_.str(),
+               expected_notary_name_,
+               ot::AccountType::Blockchain,
+               expected_unit_type_,
+               1,
+               10000000000,
+               u8"100 units"},
+          }}}};
+
+    ASSERT_TRUE(wait_for_counter(account_tree_alice_, false));
+    EXPECT_TRUE(check_account_tree(alice_, expected));
+    EXPECT_TRUE(check_account_tree_qt(alice_, expected));
+}
+
 TEST_F(Regtest_payment_code, alice_txodb_inital_receive)
 {
     EXPECT_TRUE(CheckTXODBAlice());
@@ -374,6 +457,8 @@ TEST_F(Regtest_payment_code, send_to_bob)
     account_activity_bob_.expected_ += 2;
     account_list_alice_.expected_ += 1;
     account_list_bob_.expected_ += 1;
+    account_tree_alice_.expected_ += 1;
+    account_tree_bob_.expected_ += 1;
     contact_list_alice_.expected_ += 1;
     contact_list_bob_.expected_ += 1;
     const auto& network =
@@ -590,6 +675,30 @@ TEST_F(Regtest_payment_code, alice_account_list_first_spend_unconfirmed)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
+TEST_F(Regtest_payment_code, alice_account_tree_first_spend_unconfirmed)
+{
+    const auto expected = AccountTreeData{
+        {{expected_unit_type_,
+          expected_notary_name_,
+          {
+              {SendHD().Parent().AccountID().str(),
+               expected_unit_.str(),
+               expected_display_unit_,
+               expected_account_name_,
+               expected_notary_.str(),
+               expected_notary_name_,
+               ot::AccountType::Blockchain,
+               expected_unit_type_,
+               1,
+               8999999684,
+               u8"89.999\u202F996\u202F84 units"},
+          }}}};
+
+    ASSERT_TRUE(wait_for_counter(account_tree_alice_, false));
+    EXPECT_TRUE(check_account_tree(alice_, expected));
+    EXPECT_TRUE(check_account_tree_qt(alice_, expected));
+}
+
 TEST_F(Regtest_payment_code, alice_activity_thread_first_spend_unconfirmed)
 {
     activity_thread_alice_bob_.expected_ += 3;
@@ -601,7 +710,7 @@ TEST_F(Regtest_payment_code, alice_activity_thread_first_spend_unconfirmed)
         bob_.payment_code_,
         "",
         contact.str(),
-        {{ot::core::UnitType::Regtest, bob_.payment_code_}},
+        {{ot::UnitType::Regtest, bob_.payment_code_}},
         {
             {
                 false,
@@ -713,6 +822,30 @@ TEST_F(Regtest_payment_code, bob_account_list_first_unconfirmed_incoming)
     EXPECT_TRUE(check_account_list_rpc(bob_, expected));
 }
 
+TEST_F(Regtest_payment_code, bob_account_tree_first_unconfirmed_incoming)
+{
+    const auto expected = AccountTreeData{
+        {{expected_unit_type_,
+          expected_notary_name_,
+          {
+              {ReceiveHD().Parent().AccountID().str(),
+               expected_unit_.str(),
+               expected_display_unit_,
+               expected_account_name_,
+               expected_notary_.str(),
+               expected_notary_name_,
+               ot::AccountType::Blockchain,
+               expected_unit_type_,
+               1,
+               1000000000,
+               u8"10 units"},
+          }}}};
+
+    ASSERT_TRUE(wait_for_counter(account_tree_bob_, false));
+    EXPECT_TRUE(check_account_tree(bob_, expected));
+    EXPECT_TRUE(check_account_tree_qt(bob_, expected));
+}
+
 TEST_F(Regtest_payment_code, bob_activity_thread_first_unconfirmed_incoming)
 {
     activity_thread_bob_alice_.expected_ += 3;
@@ -724,7 +857,7 @@ TEST_F(Regtest_payment_code, bob_activity_thread_first_unconfirmed_incoming)
         alice_.payment_code_,
         "",
         contact.str(),
-        {{ot::core::UnitType::Regtest, alice_.payment_code_}},
+        {{ot::UnitType::Regtest, alice_.payment_code_}},
         {
             {
                 false,
@@ -779,6 +912,8 @@ TEST_F(Regtest_payment_code, confirm_send)
     account_activity_bob_.expected_ += (count + 2);
     account_list_alice_.expected_ += 2;
     account_list_bob_.expected_ += 0;
+    account_tree_alice_.expected_ += 1;
+    account_tree_bob_.expected_ += 0;
     const auto& txid = transactions_.at(1).get();
     const auto extra = [&] {
         auto output = ot::UnallocatedVector<Transaction>{};
@@ -1026,6 +1161,30 @@ TEST_F(Regtest_payment_code, alice_account_list_first_spend_confirmed)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
+TEST_F(Regtest_payment_code, alice_account_tree_first_spend_confirmed)
+{
+    const auto expected = AccountTreeData{
+        {{expected_unit_type_,
+          expected_notary_name_,
+          {
+              {SendHD().Parent().AccountID().str(),
+               expected_unit_.str(),
+               expected_display_unit_,
+               expected_account_name_,
+               expected_notary_.str(),
+               expected_notary_name_,
+               ot::AccountType::Blockchain,
+               expected_unit_type_,
+               1,
+               8999999684,
+               u8"89.999\u202F996\u202F84 units"},
+          }}}};
+
+    ASSERT_TRUE(wait_for_counter(account_tree_alice_, false));
+    EXPECT_TRUE(check_account_tree(alice_, expected));
+    EXPECT_TRUE(check_account_tree_qt(alice_, expected));
+}
+
 TEST_F(Regtest_payment_code, alice_txodb_first_spend_confirmed)
 {
     EXPECT_TRUE(CheckTXODBAlice());
@@ -1143,6 +1302,30 @@ TEST_F(Regtest_payment_code, bob_account_list_first_spend_confirmed)
     EXPECT_TRUE(check_account_list_rpc(bob_, expected));
 }
 
+TEST_F(Regtest_payment_code, bob_account_tree_first_spend_confirmed)
+{
+    const auto expected = AccountTreeData{
+        {{expected_unit_type_,
+          expected_notary_name_,
+          {
+              {ReceiveHD().Parent().AccountID().str(),
+               expected_unit_.str(),
+               expected_display_unit_,
+               expected_account_name_,
+               expected_notary_.str(),
+               expected_notary_name_,
+               ot::AccountType::Blockchain,
+               expected_unit_type_,
+               1,
+               1000000000,
+               u8"10 units"},
+          }}}};
+
+    ASSERT_TRUE(wait_for_counter(account_tree_bob_, false));
+    EXPECT_TRUE(check_account_tree(bob_, expected));
+    EXPECT_TRUE(check_account_tree_qt(bob_, expected));
+}
+
 TEST_F(Regtest_payment_code, bob_first_incoming_transaction)
 {
     const auto& api = client_2_;
@@ -1215,6 +1398,8 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
     account_activity_bob_.expected_ += 2;
     account_list_alice_.expected_ += 1;
     account_list_bob_.expected_ += 1;
+    account_tree_alice_.expected_ += 1;
+    account_tree_bob_.expected_ += 1;
     activity_thread_alice_bob_.expected_ += 1;
     activity_thread_bob_alice_.expected_ += 1;
     const auto& network =
@@ -1402,6 +1587,30 @@ TEST_F(Regtest_payment_code, alice_account_list_second_spend_unconfirmed)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
+TEST_F(Regtest_payment_code, alice_account_tree_second_spend_unconfirmed)
+{
+    const auto expected = AccountTreeData{
+        {{expected_unit_type_,
+          expected_notary_name_,
+          {
+              {SendHD().Parent().AccountID().str(),
+               expected_unit_.str(),
+               expected_display_unit_,
+               expected_account_name_,
+               expected_notary_.str(),
+               expected_notary_name_,
+               ot::AccountType::Blockchain,
+               expected_unit_type_,
+               1,
+               7499999448,
+               u8"74.999\u202F994\u202F48 units"},
+          }}}};
+
+    ASSERT_TRUE(wait_for_counter(account_tree_alice_, false));
+    EXPECT_TRUE(check_account_tree(alice_, expected));
+    EXPECT_TRUE(check_account_tree_qt(alice_, expected));
+}
+
 TEST_F(Regtest_payment_code, alice_activity_thread_second_spend_unconfirmed)
 {
     const auto& contact = alice_.Contact(bob_.name_);
@@ -1411,7 +1620,7 @@ TEST_F(Regtest_payment_code, alice_activity_thread_second_spend_unconfirmed)
         bob_.payment_code_,
         "",
         contact.str(),
-        {{ot::core::UnitType::Regtest, bob_.payment_code_}},
+        {{ot::UnitType::Regtest, bob_.payment_code_}},
         {
             {
                 false,
@@ -1646,6 +1855,30 @@ TEST_F(Regtest_payment_code, bob_account_list_second_unconfirmed_incoming)
     EXPECT_TRUE(check_account_list_rpc(bob_, expected));
 }
 
+TEST_F(Regtest_payment_code, bob_account_tree_second_unconfirmed_incoming)
+{
+    const auto expected = AccountTreeData{
+        {{expected_unit_type_,
+          expected_notary_name_,
+          {
+              {ReceiveHD().Parent().AccountID().str(),
+               expected_unit_.str(),
+               expected_display_unit_,
+               expected_account_name_,
+               expected_notary_.str(),
+               expected_notary_name_,
+               ot::AccountType::Blockchain,
+               expected_unit_type_,
+               1,
+               2500000000,
+               u8"25 units"},
+          }}}};
+
+    ASSERT_TRUE(wait_for_counter(account_tree_bob_, false));
+    EXPECT_TRUE(check_account_tree(bob_, expected));
+    EXPECT_TRUE(check_account_tree_qt(bob_, expected));
+}
+
 TEST_F(Regtest_payment_code, bob_activity_thread_second_unconfirmed_incoming)
 {
     const auto& contact = bob_.Contact(alice_.name_);
@@ -1655,7 +1888,7 @@ TEST_F(Regtest_payment_code, bob_activity_thread_second_unconfirmed_incoming)
         alice_.payment_code_,
         "",
         contact.str(),
-        {{ot::core::UnitType::Regtest, alice_.payment_code_}},
+        {{ot::UnitType::Regtest, alice_.payment_code_}},
         {
             {
                 false,
@@ -1830,6 +2063,30 @@ TEST_F(Regtest_payment_code, alice_account_list_after_otx)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
+TEST_F(Regtest_payment_code, alice_account_tree_after_otx)
+{
+    const auto expected = AccountTreeData{
+        {{expected_unit_type_,
+          expected_notary_name_,
+          {
+              {SendHD().Parent().AccountID().str(),
+               expected_unit_.str(),
+               expected_display_unit_,
+               expected_account_name_,
+               expected_notary_.str(),
+               expected_notary_name_,
+               ot::AccountType::Blockchain,
+               expected_unit_type_,
+               1,
+               7499999448,
+               u8"74.999\u202F994\u202F48 units"},
+          }}}};
+
+    ASSERT_TRUE(wait_for_counter(account_tree_alice_, false));
+    EXPECT_TRUE(check_account_tree(alice_, expected));
+    EXPECT_TRUE(check_account_tree_qt(alice_, expected));
+}
+
 TEST_F(Regtest_payment_code, alice_activity_thread_after_otx)
 {
     const auto& contact = alice_.Contact(bob_.name_);
@@ -1839,7 +2096,7 @@ TEST_F(Regtest_payment_code, alice_activity_thread_after_otx)
         bob_.name_,
         "",
         contact.str(),
-        {{ot::core::UnitType::Regtest, bob_.payment_code_}},
+        {{ot::UnitType::Regtest, bob_.payment_code_}},
         {
             {
                 false,
@@ -2011,6 +2268,30 @@ TEST_F(Regtest_payment_code, bob_account_list_after_otx)
     EXPECT_TRUE(check_account_list_rpc(bob_, expected));
 }
 
+TEST_F(Regtest_payment_code, bob_account_tree_after_otx)
+{
+    const auto expected = AccountTreeData{
+        {{expected_unit_type_,
+          expected_notary_name_,
+          {
+              {ReceiveHD().Parent().AccountID().str(),
+               expected_unit_.str(),
+               expected_display_unit_,
+               expected_account_name_,
+               expected_notary_.str(),
+               expected_notary_name_,
+               ot::AccountType::Blockchain,
+               expected_unit_type_,
+               1,
+               2500000000,
+               u8"25 units"},
+          }}}};
+
+    ASSERT_TRUE(wait_for_counter(account_tree_bob_, false));
+    EXPECT_TRUE(check_account_tree(bob_, expected));
+    EXPECT_TRUE(check_account_tree_qt(bob_, expected));
+}
+
 TEST_F(Regtest_payment_code, bob_activity_thread_after_otx)
 {
     const auto& contact = bob_.Contact(alice_.name_);
@@ -2020,7 +2301,7 @@ TEST_F(Regtest_payment_code, bob_activity_thread_after_otx)
         alice_.name_,
         "",
         contact.str(),
-        {{ot::core::UnitType::Regtest, alice_.payment_code_}},
+        {{ot::UnitType::Regtest, alice_.payment_code_}},
         {
             {
                 false,
@@ -2074,7 +2355,7 @@ TEST_F(Regtest_payment_code, alice_activity_thread_after_message)
         bob_.name_,
         "",
         contact.str(),
-        {{ot::core::UnitType::Regtest, bob_.payment_code_}},
+        {{ot::UnitType::Regtest, bob_.payment_code_}},
         {
             {
                 false,
@@ -2132,7 +2413,7 @@ TEST_F(Regtest_payment_code, bob_activity_thread_after_message)
         alice_.name_,
         "",
         contact.str(),
-        {{ot::core::UnitType::Regtest, alice_.payment_code_}},
+        {{ot::UnitType::Regtest, alice_.payment_code_}},
         {
             {
                 false,

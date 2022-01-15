@@ -11,7 +11,9 @@
 #include <cstdint>
 #include <exception>
 #include <limits>
+#include <memory>
 #include <string_view>
+#include <utility>
 
 #include "internal/core/Amount.hpp"
 #include "internal/util/LogMacros.hpp"

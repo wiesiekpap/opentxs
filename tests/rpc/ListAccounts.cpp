@@ -17,14 +17,14 @@
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/interface/rpc/CommandType.hpp"
+#include "opentxs/interface/rpc/ResponseCode.hpp"
+#include "opentxs/interface/rpc/request/Base.hpp"
+#include "opentxs/interface/rpc/request/ListAccounts.hpp"
+#include "opentxs/interface/rpc/response/Base.hpp"
+#include "opentxs/interface/rpc/response/ListAccounts.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/rpc/CommandType.hpp"
-#include "opentxs/util/rpc/ResponseCode.hpp"
-#include "opentxs/util/rpc/request/Base.hpp"
-#include "opentxs/util/rpc/request/ListAccounts.hpp"
-#include "opentxs/util/rpc/response/Base.hpp"
-#include "opentxs/util/rpc/response/ListAccounts.hpp"
 #include "paymentcode/VectorsV3.hpp"
 
 namespace ot = opentxs;
@@ -80,14 +80,14 @@ TEST_F(RPC_fixture, preconditions)
             issuer,
             "Mt Gox USD",
             "YOLO",
-            ot::core::UnitType::Usd,
+            ot::UnitType::Usd,
             {u8"USD", {{u8"dollars", {u8"$", u8"", {{10, 0}}, 2, 3}}}});
         const auto unit2 = IssueUnit(
             server2,
             issuer,
             "Mt Gox BTC",
             "YOLO",
-            ot::core::UnitType::Btc,
+            ot::UnitType::Btc,
             {u8"BTC", {{u8"BTC", {u8"₿", u8"", {{10, 8}}, 0, 8}}}});
 
         EXPECT_FALSE(unit1.empty());

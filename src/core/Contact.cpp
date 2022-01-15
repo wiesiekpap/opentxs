@@ -141,7 +141,7 @@ struct Contact::Imp {
 
     static auto translate(
         const api::session::Client& api,
-        const core::UnitType chain,
+        const UnitType chain,
         const UnallocatedCString& value,
         const UnallocatedCString& subtype) noexcept(false) -> std::
         tuple<OTData, blockchain::crypto::AddressStyle, blockchain::Type>
@@ -411,7 +411,7 @@ struct Contact::Imp {
         return output;
     }
 
-    auto payment_codes(const Lock& lock, const core::UnitType currency) const
+    auto payment_codes(const Lock& lock, const UnitType currency) const
         -> std::shared_ptr<identity::wot::claim::Group>
     {
         const auto data = merged_data(lock);
@@ -629,7 +629,7 @@ auto Contact::AddNym(const identifier::Nym& nymID, const bool primary) -> bool
 auto Contact::AddPaymentCode(
     const opentxs::PaymentCode& code,
     const bool primary,
-    const core::UnitType currency,
+    const UnitType currency,
     const bool active) -> bool
 {
     UnallocatedSet<identity::wot::claim::Attribute> attr{
@@ -924,7 +924,7 @@ auto Contact::Nyms(const bool includeInactive) const
 
 auto Contact::PaymentCode(
     const identity::wot::claim::Data& data,
-    const core::UnitType currency) -> UnallocatedCString
+    const UnitType currency) -> UnallocatedCString
 {
     auto group = data.Group(
         identity::wot::claim::SectionType::Procedure, UnitToClaim(currency));
@@ -938,8 +938,7 @@ auto Contact::PaymentCode(
     return item->Value();
 }
 
-auto Contact::PaymentCode(const core::UnitType currency) const
-    -> UnallocatedCString
+auto Contact::PaymentCode(const UnitType currency) const -> UnallocatedCString
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
@@ -950,7 +949,7 @@ auto Contact::PaymentCode(const core::UnitType currency) const
     return PaymentCode(*data, currency);
 }
 
-auto Contact::PaymentCodes(const core::UnitType currency) const
+auto Contact::PaymentCodes(const UnitType currency) const
     -> UnallocatedVector<UnallocatedCString>
 {
     auto lock = Lock{imp_->lock_};

@@ -15,8 +15,6 @@
 
 namespace opentxs
 {
-namespace core
-{
 enum class UnitType : std::uint32_t {
     Error = 0,
     Btc = 1,
@@ -320,6 +318,4 @@ enum class UnitType : std::uint32_t {
 
     Unknown = std::numeric_limits<std::uint32_t>::max(),
 };
-
-}  // namespace core
 }  // namespace opentxs

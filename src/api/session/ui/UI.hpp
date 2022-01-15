@@ -17,22 +17,23 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/core/ui/AccountActivity.hpp"
-#include "opentxs/core/ui/AccountList.hpp"
-#include "opentxs/core/ui/AccountSummary.hpp"
-#include "opentxs/core/ui/ActivitySummary.hpp"
-#include "opentxs/core/ui/ActivityThread.hpp"
-#include "opentxs/core/ui/BlockchainAccountStatus.hpp"
-#include "opentxs/core/ui/BlockchainSelection.hpp"
-#include "opentxs/core/ui/BlockchainStatistics.hpp"
-#include "opentxs/core/ui/Blockchains.hpp"
-#include "opentxs/core/ui/Contact.hpp"
-#include "opentxs/core/ui/ContactList.hpp"
-#include "opentxs/core/ui/MessagableList.hpp"
-#include "opentxs/core/ui/PayableList.hpp"
-#include "opentxs/core/ui/Profile.hpp"
-#include "opentxs/core/ui/UnitList.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/interface/ui/AccountActivity.hpp"
+#include "opentxs/interface/ui/AccountList.hpp"
+#include "opentxs/interface/ui/AccountSummary.hpp"
+#include "opentxs/interface/ui/AccountTree.hpp"
+#include "opentxs/interface/ui/ActivitySummary.hpp"
+#include "opentxs/interface/ui/ActivityThread.hpp"
+#include "opentxs/interface/ui/BlockchainAccountStatus.hpp"
+#include "opentxs/interface/ui/BlockchainSelection.hpp"
+#include "opentxs/interface/ui/BlockchainStatistics.hpp"
+#include "opentxs/interface/ui/Blockchains.hpp"
+#include "opentxs/interface/ui/Contact.hpp"
+#include "opentxs/interface/ui/ContactList.hpp"
+#include "opentxs/interface/ui/MessagableList.hpp"
+#include "opentxs/interface/ui/PayableList.hpp"
+#include "opentxs/interface/ui/Profile.hpp"
+#include "opentxs/interface/ui/UnitList.hpp"
 
 class QAbstractItemModel;
 
@@ -53,6 +54,7 @@ class AccountList;
 class AccountListQt;
 class AccountSummary;
 class AccountSummaryQt;
+class AccountTreeQt;
 class ActivitySummary;
 class ActivitySummaryQt;
 class ActivityThread;
@@ -106,14 +108,20 @@ public:
         -> opentxs::ui::AccountListQt* final;
     auto AccountSummary(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback updateCB) const noexcept
         -> const opentxs::ui::AccountSummary& final;
     auto AccountSummaryQt(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback updateCB) const noexcept
         -> opentxs::ui::AccountSummaryQt* final;
+    auto AccountTree(const identifier::Nym& nym, const SimpleCallback updateCB)
+        const noexcept -> const opentxs::ui::AccountTree& final;
+    auto AccountTreeQt(
+        const identifier::Nym& nym,
+        const SimpleCallback updateCB) const noexcept
+        -> opentxs::ui::AccountTreeQt* final;
     auto ActivateUICallback(const Identifier& widget) const noexcept
         -> void final;
     auto ActivitySummary(
@@ -188,12 +196,12 @@ public:
         -> opentxs::ui::MessagableListQt* final;
     auto PayableList(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback updateCB) const noexcept
         -> const opentxs::ui::PayableList& final;
     auto PayableListQt(
         const identifier::Nym& nymID,
-        const core::UnitType currency,
+        const UnitType currency,
         const SimpleCallback updateCB) const noexcept
         -> opentxs::ui::PayableListQt* final;
     auto Profile(const identifier::Nym& nymID, const SimpleCallback updateCB)

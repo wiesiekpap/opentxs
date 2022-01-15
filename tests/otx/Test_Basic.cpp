@@ -103,10 +103,10 @@
 #define SUCCESS true
 #define UNIT_DEFINITION_CONTRACT_NAME "Mt Gox USD"
 #define UNIT_DEFINITION_TERMS "YOLO"
-#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::Usd
+#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::UnitType::Usd
 #define UNIT_DEFINITION_CONTRACT_NAME_2 "Mt Gox BTC"
 #define UNIT_DEFINITION_TERMS_2 "YOLO"
-#define UNIT_DEFINITION_UNIT_OF_ACCOUNT_2 ot::core::UnitType::Btc
+#define UNIT_DEFINITION_UNIT_OF_ACCOUNT_2 ot::UnitType::Btc
 #define MESSAGE_TEXT "example message text"
 #define NEW_SERVER_NAME "Awesome McCoolName"
 #define TEST_SEED                                                              \

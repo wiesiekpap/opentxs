@@ -64,10 +64,10 @@ namespace opentxs::storage
 class Nym final : public Node
 {
 public:
-    auto BlockchainAccountList(const core::UnitType type) const
+    auto BlockchainAccountList(const UnitType type) const
         -> UnallocatedSet<UnallocatedCString>;
     auto BlockchainAccountType(const UnallocatedCString& accountID) const
-        -> core::UnitType;
+        -> UnitType;
 
     auto Bip47Channels() const -> const storage::Bip47Channels&;
     auto Contexts() const -> const storage::Contexts&;
@@ -122,7 +122,7 @@ public:
     auto Migrate(const Driver& to) const -> bool final;
 
     auto SetAlias(const UnallocatedCString& alias) -> bool;
-    auto Store(const core::UnitType type, const proto::HDAccount& data) -> bool;
+    auto Store(const UnitType type, const proto::HDAccount& data) -> bool;
     auto Store(
         const proto::Nym& data,
         const UnallocatedCString& alias,
@@ -188,10 +188,9 @@ private:
     mutable std::unique_ptr<storage::Contexts> contexts_;
     UnallocatedCString contexts_root_;
     mutable std::mutex blockchain_lock_;
-    UnallocatedMap<core::UnitType, UnallocatedSet<UnallocatedCString>>
+    UnallocatedMap<UnitType, UnallocatedSet<UnallocatedCString>>
         blockchain_account_types_{};
-    UnallocatedMap<UnallocatedCString, core::UnitType>
-        blockchain_account_index_;
+    UnallocatedMap<UnallocatedCString, UnitType> blockchain_account_index_;
     UnallocatedMap<UnallocatedCString, std::shared_ptr<proto::HDAccount>>
         blockchain_accounts_{};
     UnallocatedCString issuers_root_;

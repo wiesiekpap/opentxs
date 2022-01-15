@@ -89,8 +89,7 @@ public:
         -> OTNotaryID = 0;
     virtual auto AccountSigner(const Identifier& accountID) const
         -> OTNymID = 0;
-    virtual auto AccountUnit(const Identifier& accountID) const
-        -> core::UnitType = 0;
+    virtual auto AccountUnit(const Identifier& accountID) const -> UnitType = 0;
     virtual auto AccountsByContract(const identifier::UnitDefinition& contract)
         const -> UnallocatedSet<OTIdentifier> = 0;
     virtual auto AccountsByIssuer(const identifier::Nym& issuerNym) const
@@ -99,21 +98,20 @@ public:
         -> UnallocatedSet<OTIdentifier> = 0;
     virtual auto AccountsByServer(const identifier::Notary& server) const
         -> UnallocatedSet<OTIdentifier> = 0;
-    virtual auto AccountsByUnit(const core::UnitType unit) const
+    virtual auto AccountsByUnit(const UnitType unit) const
         -> UnallocatedSet<OTIdentifier> = 0;
     virtual auto Bip47Chain(
         const identifier::Nym& nymID,
-        const Identifier& channelID) const -> core::UnitType = 0;
+        const Identifier& channelID) const -> UnitType = 0;
     virtual auto Bip47ChannelsByChain(
         const identifier::Nym& nymID,
-        const core::UnitType chain) const -> Bip47ChannelList = 0;
+        const UnitType chain) const -> Bip47ChannelList = 0;
     virtual auto BlockchainAccountList(
         const UnallocatedCString& nymID,
-        const core::UnitType type) const
-        -> UnallocatedSet<UnallocatedCString> = 0;
+        const UnitType type) const -> UnallocatedSet<UnallocatedCString> = 0;
     virtual auto BlockchainAccountType(
         const UnallocatedCString& nymID,
-        const UnallocatedCString& accountID) const -> core::UnitType = 0;
+        const UnallocatedCString& accountID) const -> UnitType = 0;
     virtual auto BlockchainThreadMap(
         const identifier::Nym& nym,
         const Data& txid) const noexcept -> UnallocatedVector<OTIdentifier> = 0;
@@ -376,7 +374,7 @@ public:
         const identifier::Nym& issuerNym,
         const identifier::Notary& server,
         const identifier::UnitDefinition& contract,
-        const core::UnitType unit) const -> bool = 0;
+        const UnitType unit) const -> bool = 0;
     virtual auto Store(
         const UnallocatedCString& nymID,
         const opentxs::identity::wot::claim::ClaimType type,
