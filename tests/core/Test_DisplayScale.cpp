@@ -19,37 +19,9 @@ namespace ot = opentxs;
 
 namespace ottest
 {
-TEST(DisplayScale, usd)
+TEST(DisplayScale, usd_format)
 {
     const auto usd = opentxs::display::GetDefinition(opentxs::UnitType::Usd);
-
-    const auto scales = usd.GetScales();
-    auto it = scales.begin();
-
-    {
-        const auto& [index, name] = *it;
-
-        EXPECT_EQ(index, 0);
-        EXPECT_EQ(name, "dollars");
-    }
-
-    std::advance(it, 1);
-
-    {
-        const auto& [index, name] = *it;
-
-        EXPECT_EQ(index, 1);
-        EXPECT_EQ(name, "cents");
-    }
-
-    std::advance(it, 1);
-
-    {
-        const auto& [index, name] = *it;
-
-        EXPECT_EQ(index, 2);
-        EXPECT_EQ(name, "millions");
-    }
 
     const auto amount1 = opentxs::Amount{14000000000};
     const auto amount2 = opentxs::Amount{14000000880};
@@ -94,6 +66,111 @@ TEST(DisplayScale, usd)
         usd.Format(amount4, 2, 1, 2),
         ot::UnallocatedCString{u8"$14,000.02 MM"});
 
+    const auto amount5 = opentxs::Amount{-100};
+    EXPECT_EQ(usd.Format(amount5, 0), ot::UnallocatedCString{u8"$-100.00"});
+
+    const auto commaTest = ot::UnallocatedVector<
+        std::pair<opentxs::Amount, ot::UnallocatedCString>>{
+        {00, u8"$0"},
+        {1, u8"$1"},
+        {10, u8"$10"},
+        {100, u8"$100"},
+        {1000, u8"$1,000"},
+        {10000, u8"$10,000"},
+        {100000, u8"$100,000"},
+        {1000000, u8"$1,000,000"},
+        {10000000, u8"$10,000,000"},
+        {100000000, u8"$100,000,000"},
+        {1000000000, u8"$1,000,000,000"},
+        {10000000000, u8"$10,000,000,000"},
+        {100000000000, u8"$100,000,000,000"},
+        {-1, u8"$-1"},
+        {-10, u8"$-10"},
+        {-100, u8"$-100"},
+        {-1000, u8"$-1,000"},
+        {-10000, u8"$-10,000"},
+        {-100000, u8"$-100,000"},
+        {-1000000, u8"$-1,000,000"},
+        {-10000000, u8"$-10,000,000"},
+        {-100000000, u8"$-100,000,000"},
+        {-1000000000, u8"$-1,000,000,000"},
+        {-10000000000, u8"$-10,000,000,000"},
+        {-100000000000, u8"$-100,000,000,000"},
+        {-1234567890, u8"$-1,234,567,890"},
+        {-123456789, u8"$-123,456,789"},
+        {-12345678, u8"$-12,345,678"},
+        {-1234567, u8"$-1,234,567"},
+        {-123456, u8"$-123,456"},
+        {-12345, u8"$-12,345"},
+        {-1234, u8"$-1,234"},
+        {-123, u8"$-123"},
+        {-12, u8"$-12"},
+        {-1, u8"$-1"},
+        {0, u8"$0"},
+        {1, u8"$1"},
+        {12, u8"$12"},
+        {123, u8"$123"},
+        {1234, u8"$1,234"},
+        {12345, u8"$12,345"},
+        {123456, u8"$123,456"},
+        {1234567, u8"$1,234,567"},
+        {12345678, u8"$12,345,678"},
+        {123456789, u8"$123,456,789"},
+        {1234567890, u8"$1,234,567,890"},
+        {opentxs::signed_amount(-1234, 5, 10), u8"$-1,234.5"},
+        {opentxs::signed_amount(-123, 4, 10), u8"$-123.4"},
+        {opentxs::signed_amount(-12, 3, 10), u8"$-12.3"},
+        {opentxs::signed_amount(-1, 2, 10), u8"$-1.2"},
+        {-opentxs::signed_amount(0, 1, 10), u8"$-0.1"},
+        {opentxs::signed_amount(0, 1, 10), u8"$0.1"},
+        {opentxs::signed_amount(1, 2, 10), u8"$1.2"},
+        {opentxs::signed_amount(12, 3, 10), u8"$12.3"},
+        {opentxs::signed_amount(123, 4, 10), u8"$123.4"},
+        {opentxs::signed_amount(1234, 5, 10), u8"$1,234.5"},
+        {-opentxs::signed_amount(0, 12345, 100000), u8"$-0.123"},
+        {-opentxs::signed_amount(0, 1234, 10000), u8"$-0.123"},
+        {-opentxs::signed_amount(0, 123, 1000), u8"$-0.123"},
+        {-opentxs::signed_amount(0, 12, 100), u8"$-0.12"},
+        {opentxs::signed_amount(0, 12, 100), u8"$0.12"},
+        {opentxs::signed_amount(0, 123, 1000), u8"$0.123"},
+        {opentxs::signed_amount(0, 1234, 10000), u8"$0.123"},
+        {opentxs::signed_amount(0, 12345, 100000), u8"$0.123"},
+    };
+
+    for (const auto& [amount, expected] : commaTest) {
+        EXPECT_EQ(usd.Format(amount, 0, 0), expected);
+    }
+}
+
+TEST(DisplayScale, usd_fractions)
+{
+    const auto usd = opentxs::display::GetDefinition(opentxs::UnitType::Usd);
+
+    auto half = opentxs::signed_amount(0, 5, 10);
+    EXPECT_EQ(usd.Format(half, 0), ot::UnallocatedCString{u8"$0.50"});
+
+    half = opentxs::unsigned_amount(1, 5, 10);
+    EXPECT_EQ(usd.Format(half, 0), ot::UnallocatedCString{u8"$1.50"});
+
+    auto threequarter = opentxs::signed_amount(2, 75, 100);
+    EXPECT_EQ(usd.Format(threequarter, 0), ot::UnallocatedCString{u8"$2.75"});
+
+    threequarter = opentxs::unsigned_amount(3, 75, 100);
+    EXPECT_EQ(usd.Format(threequarter, 0), ot::UnallocatedCString{u8"$3.75"});
+
+    auto seveneighths = opentxs::signed_amount(4, 7, 8);
+    EXPECT_EQ(
+        usd.Format(seveneighths, 0, 0, 3), ot::UnallocatedCString{u8"$4.875"});
+
+    seveneighths = opentxs::unsigned_amount(5, 7, 8);
+    EXPECT_EQ(
+        usd.Format(seveneighths, 0, 0, 3), ot::UnallocatedCString{u8"$5.875"});
+}
+
+TEST(DisplayScale, usd_limits)
+{
+    const auto usd = opentxs::display::GetDefinition(opentxs::UnitType::Usd);
+
     const auto largest_whole_number =
         usd.Import(u8"115792089237316195423570985008687907853"
                    u8"269984665640564039457584007913129639935");
@@ -129,47 +206,39 @@ TEST(DisplayScale, usd)
         usd.Format(smallest_fraction, 0, 0, 64),
         ot::UnallocatedCString{
             u8"$0.000\u202F000\u202F000\u202F000\u202F000\u202F000\u202F05"});
+}
 
-    const auto commaTest = ot::UnallocatedVector<
-        std::pair<opentxs::Amount, ot::UnallocatedCString>>{
-        {00, u8"$0"},
-        {1, u8"$1"},
-        {10, u8"$10"},
-        {100, u8"$100"},
-        {1000, u8"$1,000"},
-        {10000, u8"$10,000"},
-        {100000, u8"$100,000"},
-        {1000000, u8"$1,000,000"},
-        {10000000, u8"$10,000,000"},
-        {100000000, u8"$100,000,000"},
-        {1000000000, u8"$1,000,000,000"},
-        {10000000000, u8"$10,000,000,000"},
-        {100000000000, u8"$100,000,000,000"},
-    };
+TEST(DisplayScale, usd_scales)
+{
+    const auto usd = opentxs::display::GetDefinition(opentxs::UnitType::Usd);
 
-    for (const auto& [amount, expected] : commaTest) {
-        EXPECT_EQ(usd.Format(amount, 0, 0), expected);
+    const auto scales = usd.GetScales();
+    auto it = scales.begin();
+
+    {
+        const auto& [index, name] = *it;
+
+        EXPECT_EQ(index, 0);
+        EXPECT_EQ(name, "dollars");
     }
 
-    auto half = opentxs::signed_amount(0, 5, 10);
-    EXPECT_EQ(usd.Format(half, 0), ot::UnallocatedCString{u8"$0.50"});
+    std::advance(it, 1);
 
-    half = opentxs::unsigned_amount(1, 5, 10);
-    EXPECT_EQ(usd.Format(half, 0), ot::UnallocatedCString{u8"$1.50"});
+    {
+        const auto& [index, name] = *it;
 
-    auto threequarter = opentxs::signed_amount(2, 75, 100);
-    EXPECT_EQ(usd.Format(threequarter, 0), ot::UnallocatedCString{u8"$2.75"});
+        EXPECT_EQ(index, 1);
+        EXPECT_EQ(name, "cents");
+    }
 
-    threequarter = opentxs::unsigned_amount(3, 75, 100);
-    EXPECT_EQ(usd.Format(threequarter, 0), ot::UnallocatedCString{u8"$3.75"});
+    std::advance(it, 1);
 
-    auto seveneighths = opentxs::signed_amount(4, 7, 8);
-    EXPECT_EQ(
-        usd.Format(seveneighths, 0, 0, 3), ot::UnallocatedCString{u8"$4.875"});
+    {
+        const auto& [index, name] = *it;
 
-    seveneighths = opentxs::unsigned_amount(5, 7, 8);
-    EXPECT_EQ(
-        usd.Format(seveneighths, 0, 0, 3), ot::UnallocatedCString{u8"$5.875"});
+        EXPECT_EQ(index, 2);
+        EXPECT_EQ(name, "millions");
+    }
 }
 
 TEST(DisplayScale, btc)

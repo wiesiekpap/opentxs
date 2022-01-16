@@ -77,7 +77,8 @@ public:
         }
 
         const auto wholeDigits = std::size_t{
-            string.size() - fractionalDigits - (haveDecimal ? 1u : 0u)};
+            string.size() - fractionalDigits - (haveDecimal ? 1u : 0u) -
+            (string.front() == '-' ? 1u : 0u)};
         auto counter = std::size_t{
             (4u > wholeDigits) ? 1u : 4u - ((wholeDigits - 1u) % 3u)};
         auto pushed = std::size_t{0};
@@ -87,7 +88,7 @@ public:
             output << c;
             ++pushed;
 
-            if (pushed < wholeDigits) {
+            if (pushed < wholeDigits && (c != '-')) {
                 if (0u == (counter % 4u)) {
                     output << seperator;
                     ++counter;
