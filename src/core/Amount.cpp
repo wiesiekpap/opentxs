@@ -38,7 +38,10 @@ auto signed_amount(long long ip, unsigned long long fp, unsigned long long div)
 {
     using Imp = Amount::Imp;
 
-    return Amount(Imp::shift_left(ip) + (Imp::shift_left(fp) / div));
+    if (ip < 0)
+        return -Amount(Imp::shift_left(-ip) + (Imp::shift_left(fp) / div));
+    else
+        return Amount(Imp::shift_left(ip) + (Imp::shift_left(fp) / div));
 }
 
 auto unsigned_amount(
