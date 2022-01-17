@@ -23,6 +23,7 @@
 #include "interface/ui/blockchainselection/BlockchainSelectionItem.hpp"  // IWYU pragma: associated
 #include "interface/ui/blockchainstatistics/BlockchainStatisticsItem.hpp"  // IWYU pragma: associated
 #include "interface/ui/contactlist/ContactListItem.hpp"  // IWYU pragma: associated
+#include "interface/ui/nymlist/NymListItem.hpp"  // IWYU pragma: associated
 #include "interface/ui/payablelist/PayableListItem.hpp"  // IWYU pragma: associated
 #include "interface/ui/unitlist/UnitListItem.hpp"  // IWYU pragma: associated
 
@@ -133,6 +134,11 @@ auto BlockchainSubchain::qt_data(const int, const int, QVariant&) const noexcept
 }
 
 auto ContactListItem::qt_data(const int, const int, QVariant&) const noexcept
+    -> void
+{
+}
+
+auto NymListItem::qt_data(const int, const int, QVariant&) const noexcept
     -> void
 {
 }

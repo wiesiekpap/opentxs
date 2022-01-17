@@ -115,7 +115,7 @@ public:
                 chris_s_.emplace(pkt_words_, "Chris", pkt_passphrase_);
                 chris_s_->init(
                     ot::Context().StartClientSession(1),
-                    ot::identity::wot::claim::ClaimType::Individual,
+                    ot::identity::Type::individual,
                     0,
                     ot::crypto::SeedStyle::PKT);
             }

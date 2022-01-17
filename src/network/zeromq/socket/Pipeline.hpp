@@ -5,18 +5,20 @@
 
 #pragma once
 
+#include <cs_deferred_guarded.h>
 #include <zmq.h>
 #include <atomic>
 #include <cstddef>
 #include <functional>
 #include <future>
-#include <mutex>
 #include <queue>
+#include <shared_mutex>
 #include <utility>
 
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
+#include "internal/network/zeromq/socket/Raw.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -126,23 +128,30 @@ public:
         const api::Session& api,
         const zeromq::Context& context,
         std::function<void(zeromq::Message&&)> callback) noexcept;
+    Pipeline(
+        const api::Session& api,
+        const zeromq::Context& context,
+        std::function<void(zeromq::Message&&)> callback,
+        const UnallocatedCString internalEndpoint,
+        const UnallocatedCString outgoingEndpoint) noexcept;
 
     ~Pipeline() final;
 
 private:
+    using GuardedSocket =
+        libguarded::deferred_guarded<socket::Raw, std::shared_mutex>;
+
     const zeromq::Context& context_;
-    mutable std::mutex to_internal_lock_;
-    mutable std::mutex to_dealer_lock_;
     mutable Gatekeeper gate_;
     mutable std::atomic<bool> shutdown_;
     internal::Batch& batch_;
-    socket::Raw& sub_;          // NOTE activated by SubscribeTo()
-    socket::Raw& pull_;         // NOTE activated by PullFrom()
-    socket::Raw& outgoing_;     // NOTE receives from to_dealer_
-    socket::Raw& dealer_;       // NOTE activated by ConnectDealer()
-    socket::Raw& internal_;     // NOTE receives from to_internal_
-    socket::Raw& to_internal_;  // NOTE activated by Push()
-    socket::Raw& to_dealer_;    // NOTE activated by Send()
+    socket::Raw& sub_;                   // NOTE activated by SubscribeTo()
+    socket::Raw& pull_;                  // NOTE activated by PullFrom()
+    socket::Raw& outgoing_;              // NOTE receives from to_dealer_
+    socket::Raw& dealer_;                // NOTE activated by ConnectDealer()
+    socket::Raw& internal_;              // NOTE receives from to_internal_
+    mutable GuardedSocket to_dealer_;    // NOTE activated by Send()
+    mutable GuardedSocket to_internal_;  // NOTE activated by Push()
     internal::Thread* thread_;
 
     auto connect(

@@ -12,6 +12,7 @@
 #include <tuple>
 #include <utility>
 
+#include "internal/interface/qt/Factory.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
@@ -32,6 +33,7 @@ ImpQt::ImpQt(
     const Flag& running) noexcept
     : Imp(api, blockchain, running)
     , blank_()
+    , identity_manager_(factory::IdentityManagerQt(api_))
     , accounts_qt_()
     , account_lists_qt_()
     , account_summaries_qt_()
@@ -44,6 +46,7 @@ ImpQt::ImpQt(
     , contact_lists_qt_()
     , contacts_qt_()
     , messagable_lists_qt_()
+    , nym_list_qt_()
     , payable_lists_qt_()
     , profiles_qt_()
     , seed_validators_()
@@ -335,6 +338,20 @@ auto ImpQt::MessagableListQt(
     return it->second.get();
 }
 
+auto ImpQt::NymListQt(const SimpleCallback cb) const noexcept
+    -> opentxs::ui::NymListQt*
+{
+    auto lock = Lock{lock_};
+
+    if (!nym_list_qt_) {
+        nym_list_qt_ = opentxs::factory::NymListQtModel(nym_list(lock, cb));
+
+        OT_ASSERT(nym_list_qt_);
+    }
+
+    return nym_list_qt_.get();
+}
+
 auto ImpQt::PayableListQt(
     const identifier::Nym& nymID,
     UnitType currency,
@@ -401,6 +418,7 @@ auto ImpQt::ShutdownModels() noexcept -> void
     unit_lists_qt_.clear();
     profiles_qt_.clear();
     payable_lists_qt_.clear();
+    nym_list_qt_.reset();
     messagable_lists_qt_.clear();
     contacts_qt_.clear();
     contact_lists_qt_.clear();

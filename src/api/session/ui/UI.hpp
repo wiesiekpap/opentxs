@@ -31,6 +31,7 @@
 #include "opentxs/interface/ui/Contact.hpp"
 #include "opentxs/interface/ui/ContactList.hpp"
 #include "opentxs/interface/ui/MessagableList.hpp"
+#include "opentxs/interface/ui/NymList.hpp"
 #include "opentxs/interface/ui/PayableList.hpp"
 #include "opentxs/interface/ui/Profile.hpp"
 #include "opentxs/interface/ui/UnitList.hpp"
@@ -69,8 +70,11 @@ class Contact;
 class ContactList;
 class ContactListQt;
 class ContactQt;
+class IdentityManagerQt;
 class MessagableList;
 class MessagableListQt;
+class NymList;
+class NymListQt;
 class PayableList;
 class PayableListQt;
 class Profile;
@@ -186,6 +190,8 @@ public:
         const identifier::Nym& nymID,
         const SimpleCallback updateCB) const noexcept
         -> opentxs::ui::ContactListQt* final;
+    auto IdentityManagerQt() const noexcept
+        -> opentxs::ui::IdentityManagerQt* final;
     auto MessagableList(
         const identifier::Nym& nymID,
         const SimpleCallback updateCB) const noexcept
@@ -194,6 +200,10 @@ public:
         const identifier::Nym& nymID,
         const SimpleCallback updateCB) const noexcept
         -> opentxs::ui::MessagableListQt* final;
+    auto NymList(const SimpleCallback updateCB) const noexcept
+        -> const opentxs::ui::NymList& final;
+    auto NymListQt(const SimpleCallback updateCB) const noexcept
+        -> opentxs::ui::NymListQt* final;
     auto PayableList(
         const identifier::Nym& nymID,
         const UnitType currency,

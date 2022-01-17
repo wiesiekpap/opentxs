@@ -55,6 +55,8 @@ public:
     virtual auto DisconnectAll() noexcept -> bool { return {}; }
     virtual auto Native() noexcept -> void* { return nullptr; }
     virtual auto Send(Message&& msg) noexcept -> bool { return {}; }
+    virtual auto SetIncomingHWM(int value) noexcept -> bool { return {}; }
+    virtual auto SetOutgoingHWM(int value) noexcept -> bool { return {}; }
     virtual auto SetPrivateKey(ReadView) noexcept -> bool { return {}; }
     virtual auto SetRoutingID(ReadView) noexcept -> bool { return {}; }
     virtual auto SetZAPDomain(ReadView) noexcept -> bool { return {}; }
@@ -89,6 +91,8 @@ public:
     auto DisconnectAll() noexcept -> bool final;
     auto Native() noexcept -> void* final { return socket_.get(); }
     auto Send(Message&& msg) noexcept -> bool final;
+    auto SetIncomingHWM(int value) noexcept -> bool final;
+    auto SetOutgoingHWM(int value) noexcept -> bool final;
     auto SetPrivateKey(ReadView key) noexcept -> bool final;
     auto SetRoutingID(ReadView key) noexcept -> bool final;
     auto SetZAPDomain(ReadView domain) noexcept -> bool final;
@@ -103,6 +107,8 @@ public:
 private:
     using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
     using Endpoints = UnallocatedSet<UnallocatedCString>;
+
+    static constexpr auto default_hwm_ = int{16384};
 
     const socket::Type type_;
     Socket socket_;

@@ -1,0 +1,291 @@
+// Copyright (c) 2010-2022 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#include "0_stdafx.hpp"    // IWYU pragma: associated
+#include "1_Internal.hpp"  // IWYU pragma: associated
+#include "interface/qt/identitymanager/IdentityManager.hpp"  // IWYU pragma: associated
+#include "internal/interface/qt/Factory.hpp"         // IWYU pragma: associated
+#include "opentxs/interface/qt/IdentityManager.hpp"  // IWYU pragma: associated
+
+#include <QAbstractItemModel>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
+#include "interface/qt/identitymanager/NymType.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/UI.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/interface/qt/AccountActivity.hpp"
+#include "opentxs/interface/qt/AccountList.hpp"
+#include "opentxs/interface/qt/ActivityThread.hpp"
+#include "opentxs/interface/qt/BlockchainAccountStatus.hpp"
+#include "opentxs/interface/qt/ContactList.hpp"
+#include "opentxs/interface/qt/NymList.hpp"
+#include "opentxs/interface/qt/Profile.hpp"
+#include "opentxs/util/Pimpl.hpp"
+
+namespace opentxs::factory
+{
+auto IdentityManagerQt(const api::session::Client& api) noexcept
+    -> ui::IdentityManagerQt
+{
+    using ReturnType = ui::IdentityManagerQt;
+
+    return std::make_unique<ReturnType::Imp>(api).release();
+}
+}  // namespace opentxs::factory
+
+namespace opentxs::ui
+{
+IdentityManagerQt::Imp::Imp(const api::session::Client& api) noexcept
+    : parent_(nullptr)
+    , api_(api)
+    , active_nym_(api_.Factory().NymID())
+{
+}
+
+auto IdentityManagerQt::Imp::getAccountActivity(
+    const QString& accountID) const noexcept -> AccountActivityQt*
+{
+    auto handle = active_nym_.lock_shared();
+    const auto& id = handle->get();
+
+    if (id.empty()) {
+        parent_->needNym();
+
+        return nullptr;
+    }
+
+    return api_.UI().AccountActivityQt(
+        id, api_.Factory().Identifier(accountID.toStdString()));
+}
+
+auto IdentityManagerQt::Imp::getAccountList() const noexcept -> AccountListQt*
+{
+    auto handle = active_nym_.lock_shared();
+    const auto& id = handle->get();
+
+    if (id.empty()) {
+        parent_->needNym();
+
+        return nullptr;
+    }
+
+    return api_.UI().AccountListQt(id);
+}
+
+auto IdentityManagerQt::Imp::getAccountStatus(
+    const QString& accountID) const noexcept -> BlockchainAccountStatusQt*
+{
+    const auto id = api_.Factory().Identifier(accountID.toStdString());
+    const auto [chain, nymID] = api_.Crypto().Blockchain().LookupAccount(id);
+
+    if (blockchain::Type::Unknown == chain) { return nullptr; }
+
+    return api_.UI().BlockchainAccountStatusQt(nymID, chain);
+}
+
+auto IdentityManagerQt::Imp::getActiveNym() const noexcept -> QString
+{
+    auto handle = active_nym_.lock_shared();
+    const auto& id = handle->get();
+
+    return QString::fromStdString(id.str());
+}
+
+auto IdentityManagerQt::Imp::getActivityThread(
+    const QString& contactID) const noexcept -> ActivityThreadQt*
+{
+    auto handle = active_nym_.lock_shared();
+    const auto& id = handle->get();
+
+    if (id.empty()) {
+        parent_->needNym();
+
+        return nullptr;
+    }
+
+    return api_.UI().ActivityThreadQt(
+        id, api_.Factory().Identifier(contactID.toStdString()));
+}
+
+auto IdentityManagerQt::Imp::getContactList() const noexcept -> ContactListQt*
+{
+    auto handle = active_nym_.lock_shared();
+    const auto& id = handle->get();
+
+    if (id.empty()) {
+        parent_->needNym();
+
+        return nullptr;
+    }
+
+    return api_.UI().ContactListQt(id);
+}
+
+auto IdentityManagerQt::Imp::getNymList() const noexcept -> NymListQt*
+{
+    return api_.UI().NymListQt();
+}
+
+auto IdentityManagerQt::Imp::getNymType() const noexcept -> QAbstractListModel*
+{
+    static auto model = identitymanager::NymType{};
+
+    return &model;
+}
+
+auto IdentityManagerQt::Imp::getProfile() const noexcept -> ProfileQt*
+{
+    auto handle = active_nym_.lock_shared();
+    const auto& id = handle->get();
+
+    if (id.empty()) {
+        parent_->needNym();
+
+        return nullptr;
+    }
+
+    return api_.UI().ProfileQt(id);
+}
+
+auto IdentityManagerQt::Imp::setActiveNym(QString id) noexcept -> void
+{
+    auto newID = api_.Factory().NymID(id.toStdString());
+    auto changed{false};
+    active_nym_.modify([&](auto& value) {
+        changed = (newID == value);
+        value = std::move(newID);
+        id = QString::fromStdString(value->str());
+    });
+
+    if (changed) { parent_->activeNymChanged(std::move(id)); }
+}
+}  // namespace opentxs::ui
+
+namespace opentxs::ui
+{
+IdentityManagerQt::IdentityManagerQt(Imp* imp) noexcept
+    : imp_(imp)
+{
+    OT_ASSERT(nullptr != imp);
+
+    imp_->parent_ = this;
+}
+
+// NOTE the move constructor is declared so that RVO can be used, however it
+// it is not defined because should never be called.
+
+auto IdentityManagerQt::getAccountActivity(
+    const QString& accountID) const noexcept -> AccountActivityQt*
+{
+    return imp_->getAccountActivity(accountID);
+}
+
+auto IdentityManagerQt::getAccountActivityQML(
+    const QString& accountID) const noexcept -> QObject*
+{
+    return getAccountActivity(accountID);
+}
+
+auto IdentityManagerQt::getAccountList() const noexcept -> AccountListQt*
+{
+    return imp_->getAccountList();
+}
+
+auto IdentityManagerQt::getAccountListQML() const noexcept -> QObject*
+{
+    return getAccountList();
+}
+
+auto IdentityManagerQt::getAccountStatus(
+    const QString& accountID) const noexcept -> BlockchainAccountStatusQt*
+{
+    return imp_->getAccountStatus(accountID);
+}
+
+auto IdentityManagerQt::getAccountStatusQML(
+    const QString& accountID) const noexcept -> QObject*
+{
+    return getAccountStatus(accountID);
+}
+
+auto IdentityManagerQt::getActiveNym() const noexcept -> QString
+{
+    return imp_->getActiveNym();
+}
+
+auto IdentityManagerQt::getActivityThread(
+    const QString& contactID) const noexcept -> ActivityThreadQt*
+{
+    return imp_->getActivityThread(contactID);
+}
+
+auto IdentityManagerQt::getActivityThreadQML(
+    const QString& contactID) const noexcept -> QObject*
+{
+    return getActivityThread(contactID);
+}
+
+auto IdentityManagerQt::getContactList() const noexcept -> ContactListQt*
+{
+    return imp_->getContactList();
+}
+
+auto IdentityManagerQt::getContactListQML() const noexcept -> QObject*
+{
+    return getContactList();
+}
+
+auto IdentityManagerQt::getNymList() const noexcept -> NymListQt*
+{
+    return imp_->getNymList();
+}
+
+auto IdentityManagerQt::getNymListQML() const noexcept -> QObject*
+{
+    return getNymList();
+}
+
+auto IdentityManagerQt::getNymType() const noexcept -> QAbstractListModel*
+{
+    return imp_->getNymType();
+}
+
+auto IdentityManagerQt::getNymTypeQML() const noexcept -> QObject*
+{
+    return getNymType();
+}
+
+auto IdentityManagerQt::getProfile() const noexcept -> ProfileQt*
+{
+    return imp_->getProfile();
+}
+
+auto IdentityManagerQt::getProfileQML() const noexcept -> QObject*
+{
+    return getProfile();
+}
+
+auto IdentityManagerQt::setActiveNym(QString id) noexcept -> void
+{
+    imp_->setActiveNym(std::move(id));
+}
+
+IdentityManagerQt::~IdentityManagerQt()
+{
+    if (nullptr != imp_) {
+        delete imp_;
+        imp_ = nullptr;
+    }
+}
+}  // namespace opentxs::ui

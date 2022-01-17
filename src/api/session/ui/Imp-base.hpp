@@ -44,6 +44,7 @@
 #include "opentxs/interface/ui/ContactList.hpp"
 #include "opentxs/interface/ui/List.hpp"
 #include "opentxs/interface/ui/MessagableList.hpp"
+#include "opentxs/interface/ui/NymList.hpp"
 #include "opentxs/interface/ui/PayableList.hpp"
 #include "opentxs/interface/ui/Profile.hpp"
 #include "opentxs/interface/ui/Types.hpp"
@@ -97,6 +98,7 @@ struct BlockchainStatistics;
 struct Contact;
 struct ContactList;
 struct MessagableList;
+struct NymList;
 struct PayableList;
 struct Profile;
 struct UnitList;
@@ -124,8 +126,11 @@ class Contact;
 class ContactList;
 class ContactListQt;
 class ContactQt;
+class IdentityManagerQt;
 class MessagableList;
 class MessagableListQt;
+class NymList;
+class NymListQt;
 class PayableList;
 class PayableListQt;
 class Profile;
@@ -267,12 +272,24 @@ public:
     {
         return nullptr;
     }
+    virtual auto IdentityManagerQt() const noexcept
+        -> opentxs::ui::IdentityManagerQt*
+    {
+        return nullptr;
+    }
     auto MessagableList(const identifier::Nym& nymID, const SimpleCallback cb)
         const noexcept -> const opentxs::ui::MessagableList&;
     virtual auto MessagableListQt(
         const identifier::Nym& nymID,
         const SimpleCallback cb) const noexcept
         -> opentxs::ui::MessagableListQt*
+    {
+        return nullptr;
+    }
+    auto NymList(const SimpleCallback cb) const noexcept
+        -> const opentxs::ui::NymList&;
+    virtual auto NymListQt(const SimpleCallback cb) const noexcept
+        -> opentxs::ui::NymListQt*
     {
         return nullptr;
     }
@@ -363,6 +380,7 @@ protected:
     using ContactPointer = std::unique_ptr<opentxs::ui::internal::Contact>;
     using MessagableListPointer =
         std::unique_ptr<opentxs::ui::internal::MessagableList>;
+    using NymListPointer = std::unique_ptr<opentxs::ui::internal::NymList>;
     using PayableListPointer =
         std::unique_ptr<opentxs::ui::internal::PayableList>;
     using ProfilePointer = std::unique_ptr<opentxs::ui::internal::Profile>;
@@ -406,6 +424,7 @@ protected:
     mutable ContactListMap contact_lists_;
     mutable ContactMap contacts_;
     mutable MessagableListMap messagable_lists_;
+    mutable NymListPointer nym_list_;
     mutable PayableListMap payable_lists_;
     mutable ProfileMap profiles_;
     mutable UnitListMap unit_lists_;
@@ -473,6 +492,8 @@ protected:
         const identifier::Nym& nymID,
         const SimpleCallback& cb) const noexcept
         -> MessagableListMap::mapped_type&;
+    auto nym_list(const Lock& lock, const SimpleCallback& cb) const noexcept
+        -> opentxs::ui::internal::NymList&;
     auto payable_list(
         const Lock& lock,
         const identifier::Nym& nymID,

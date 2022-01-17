@@ -35,6 +35,7 @@
 #include "opentxs/interface/qt/BlockchainSelection.hpp"
 #include "opentxs/interface/qt/ContactList.hpp"
 #include "opentxs/interface/qt/MessagableList.hpp"
+#include "opentxs/interface/qt/NymList.hpp"
 
 namespace ottest
 {
@@ -45,6 +46,7 @@ constexpr auto activity_thread_columns_{7};
 constexpr auto blockchain_account_status_columns_{1};
 constexpr auto blockchain_selection_columns_{1};
 constexpr auto contact_list_columns_{1};
+constexpr auto nym_list_columns_{1};
 
 auto check_qt_common(const QAbstractItemModel& model) noexcept -> bool;
 auto check_row(
@@ -97,6 +99,11 @@ auto check_row(
     const QAbstractItemModel& model,
     const QModelIndex& parent,
     const ContactListRow& expected,
+    const int row) noexcept -> bool;
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const NymListRow& expected,
     const int row) noexcept -> bool;
 }  // namespace ottest
 
@@ -438,6 +445,37 @@ auto check_messagable_list_qt(
 
     for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
         output &= check_row(user, model, parent, *it, static_cast<int>(i));
+    }
+
+    return output;
+}
+
+auto check_nym_list_qt(
+    const ot::api::session::Client& api,
+    const NymListData& expected) noexcept -> bool
+{
+    const auto* pModel = api.UI().NymListQt();
+
+    EXPECT_NE(pModel, nullptr);
+
+    if (nullptr == pModel) { return false; }
+
+    const auto& model = *pModel;
+    auto output = check_qt_common(model);
+    auto parent = QModelIndex{};
+    const auto vCount = expected.rows_.size();
+    output &= (model.columnCount(parent) == nym_list_columns_);
+    output &= (static_cast<std::size_t>(model.rowCount(parent)) == vCount);
+
+    EXPECT_EQ(model.columnCount(parent), nym_list_columns_);
+    EXPECT_EQ(model.rowCount(parent), vCount);
+
+    if (0u == vCount) { return output; }
+
+    auto it{expected.rows_.begin()};
+
+    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+        output &= check_row(model, parent, *it, static_cast<int>(i));
     }
 
     return output;
@@ -1222,6 +1260,56 @@ auto check_row(
         EXPECT_EQ(name.toString().toStdString(), expected.name_);
         EXPECT_EQ(section.toString().toStdString(), expected.section_);
         EXPECT_EQ(model.columnCount(index), contact_list_columns_);
+        EXPECT_EQ(model.rowCount(index), vCount);
+    }
+
+    return output;
+}
+
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const NymListRow& expected,
+    const int row) noexcept -> bool
+{
+    using Model = ot::ui::NymListQt;
+    auto output{true};
+
+    for (auto column{0}; column < nym_list_columns_; ++column) {
+        const auto exists = model.hasIndex(row, column, parent);
+        output &= exists;
+
+        EXPECT_TRUE(exists);
+
+        if (false == exists) { continue; }
+
+        const auto vCount = 0u;
+        const auto index = model.index(row, column, parent);
+        const auto name = model.data(index, Model::NameRole);
+        const auto id = model.data(index, Model::IDRole);
+        const auto display = model.data(index, Qt::DisplayRole);
+
+        switch (column) {
+            case Model::NameColumn: {
+                output &= (display == name);
+
+                EXPECT_EQ(display, name);
+            } break;
+            default: {
+                output &= false;
+
+                EXPECT_TRUE(false);
+            }
+        }
+
+        output &= (name.toString().toStdString() == expected.name_);
+        output &= (id.toString().toStdString() == expected.id_);
+        output &= (model.columnCount(index) == nym_list_columns_);
+        output &= (static_cast<std::size_t>(model.rowCount(index)) == vCount);
+
+        EXPECT_EQ(name.toString().toStdString(), expected.name_);
+        EXPECT_EQ(id.toString().toStdString(), expected.id_);
+        EXPECT_EQ(model.columnCount(index), nym_list_columns_);
         EXPECT_EQ(model.rowCount(index), vCount);
     }
 

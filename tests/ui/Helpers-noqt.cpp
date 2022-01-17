@@ -59,4 +59,11 @@ auto check_messagable_list_qt(const User&, const ContactListData&) noexcept
 {
     return true;
 }
+
+auto check_nym_list_qt(
+    const ot::api::session::Client&,
+    const NymListData&) noexcept -> bool
+{
+    return true;
+}
 }  // namespace ottest

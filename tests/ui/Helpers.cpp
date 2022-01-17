@@ -35,6 +35,8 @@
 #include "opentxs/interface/ui/ContactList.hpp"
 #include "opentxs/interface/ui/ContactListItem.hpp"
 #include "opentxs/interface/ui/MessagableList.hpp"
+#include "opentxs/interface/ui/NymList.hpp"
+#include "opentxs/interface/ui/NymListItem.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace ottest
@@ -774,6 +776,50 @@ auto check_messagable_list(
     return output;
 }
 
+auto check_nym_list(
+    const ot::api::session::Client& api,
+    const NymListData& expected) noexcept -> bool
+{
+    const auto& widget = api.UI().NymList();
+    auto output{true};
+    const auto& v = expected.rows_;
+    auto row = widget.First();
+
+    if (const auto valid = row->Valid(); 0 < v.size()) {
+        output &= valid;
+
+        EXPECT_TRUE(valid);
+
+        if (false == valid) { return output; }
+    } else {
+        output &= (false == valid);
+
+        EXPECT_FALSE(valid);
+    }
+
+    for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
+        output &= (row->Name() == it->name_);
+        output &= (row->NymID() == it->id_);
+
+        EXPECT_EQ(row->Name(), it->name_);
+        EXPECT_EQ(row->NymID(), it->id_);
+
+        const auto lastVector = std::next(it) == v.end();
+        const auto lastRow = row->Last();
+        output &= (lastVector == lastRow);
+
+        if (lastVector) {
+            EXPECT_TRUE(lastRow);
+        } else {
+            EXPECT_FALSE(lastRow);
+
+            if (lastRow) { return output; }
+        }
+    }
+
+    return output;
+}
+
 auto contact_list_add_contact(
     const User& user,
     const ot::UnallocatedCString& label,
@@ -875,6 +921,13 @@ auto init_messagable_list(const User& user, Counter& counter) noexcept -> void
                                        return out.str();
                                    }()));
     wait_for_counter(counter);
+}
+
+auto init_nym_list(
+    const ot::api::session::Client& api,
+    Counter& counter) noexcept -> void
+{
+    api.UI().NymList(make_cb(counter, "nym_list"));
 }
 
 auto print_account_tree(const User& user) noexcept -> ot::UnallocatedCString

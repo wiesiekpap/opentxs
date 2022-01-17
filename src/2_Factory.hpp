@@ -12,6 +12,7 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 
@@ -492,7 +493,7 @@ public:
     static auto Nym(
         const api::Session& api,
         const crypto::Parameters& nymParameters,
-        const identity::wot::claim::ClaimType type,
+        const identity::Type type,
         const UnallocatedCString name,
         const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*;
     static auto Nym(

@@ -212,7 +212,7 @@ struct Database::Imp {
                 fs::remove_all(base);
             }
         } else {
-            LogError()("Initializing new blockchain data directory").Flush();
+            LogVerbose()("Initializing new blockchain data directory").Flush();
         }
 
         if (false == legacy.BuildFolderPath(output)) {

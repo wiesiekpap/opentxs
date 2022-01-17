@@ -45,6 +45,8 @@ public:
     auto DisconnectAll() noexcept -> bool;
     auto Native() noexcept -> void*;
     auto Send(Message&& msg) noexcept -> bool;
+    auto SetIncomingHWM(int value) noexcept -> bool;
+    auto SetOutgoingHWM(int value) noexcept -> bool;
     auto SetPrivateKey(ReadView key) noexcept -> bool;
     auto SetRoutingID(ReadView id) noexcept -> bool;
     auto SetZAPDomain(ReadView domain) noexcept -> bool;

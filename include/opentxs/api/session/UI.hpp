@@ -67,8 +67,11 @@ class Contact;
 class ContactList;
 class ContactListQt;
 class ContactQt;
+class IdentityManagerQt;
 class MessagableList;
 class MessagableListQt;
+class NymList;
+class NymListQt;
 class PayableList;
 class PayableListQt;
 class Profile;
@@ -196,6 +199,9 @@ public:
         const identifier::Nym& nymID,
         const SimpleCallback updateCB = {}) const noexcept
         -> opentxs::ui::ContactListQt* = 0;
+    /// Caller does not own this pointer
+    virtual auto IdentityManagerQt() const noexcept
+        -> opentxs::ui::IdentityManagerQt* = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::UI& = 0;
     virtual auto MessagableList(
@@ -207,6 +213,11 @@ public:
         const identifier::Nym& nymID,
         const SimpleCallback updateCB = {}) const noexcept
         -> opentxs::ui::MessagableListQt* = 0;
+    virtual auto NymList(const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::NymList& = 0;
+    /// Caller does not own this pointer
+    virtual auto NymListQt(const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::NymListQt* = 0;
     virtual auto PayableList(
         const identifier::Nym& nymID,
         const UnitType currency,

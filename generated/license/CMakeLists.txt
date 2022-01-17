@@ -30,6 +30,11 @@ file(
 )
 file(
   READ
+  "${opentxs_SOURCE_DIR}/deps/cs_libguarded/LICENSE"
+  LIBGUARDED_LICENSE_TEXT
+)
+file(
+  READ
   "${opentxs_SOURCE_DIR}/deps/lucre/LICENCE"
   LUCRE_LICENSE_TEXT
 )
@@ -97,6 +102,12 @@ endif()
 configure_file(
   "irrxml.cpp.in"
   "${opentxs_BINARY_DIR}/src/util/license/irrxml.cpp"
+  @ONLY
+)
+
+configure_file(
+  "libguarded.cpp.in"
+  "${opentxs_BINARY_DIR}/src/util/license/libguarded.cpp"
   @ONLY
 )
 

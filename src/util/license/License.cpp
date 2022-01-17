@@ -21,6 +21,7 @@ auto LicenseData() noexcept -> const LicenseMap&
         license_bech32(out);
         license_chaiscript(out);
         license_irrxml(out);
+        license_libguarded(out);
         license_lucre(out);
         license_opentxs(out);
         license_packetcrypt(out);

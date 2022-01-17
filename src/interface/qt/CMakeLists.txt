@@ -6,6 +6,7 @@
 if(OT_QT_EXPORT)
   add_subdirectory(displayscale)
   add_subdirectory(seedvalidator)
+  add_subdirectory(identitymanager)
 endif()
 
 add_subdirectory(qml)
@@ -30,6 +31,7 @@ if(OT_QT_EXPORT)
     "${opentxs_SOURCE_DIR}/include/opentxs/interface/qt/DestinationValidator.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/interface/qt/MessagableList.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/interface/qt/Model.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/interface/qt/NymList.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/interface/qt/PayableList.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/interface/qt/Profile.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/interface/qt/UnitList.hpp"
@@ -42,6 +44,7 @@ if(OT_QT_EXPORT)
   target_sources(
     opentxs-common
     PRIVATE
+      "${opentxs_SOURCE_DIR}/src/internal/interface/qt/Factory.hpp"
       "AccountActivity.cpp"
       "AccountList.cpp"
       "AccountSummary.cpp"
@@ -62,12 +65,17 @@ if(OT_QT_EXPORT)
       "DraftValidator.cpp"
       "MessagableList.cpp"
       "Model.cpp"
+      "NymList.cpp"
       "PayableList.cpp"
       "Profile.cpp"
       "SendMonitor.cpp"
       "SendMonitor.hpp"
       "UnitList.cpp"
       ${MOC_SRCS}
+  )
+  target_include_directories(
+    opentxs-common SYSTEM
+    PRIVATE "${opentxs_SOURCE_DIR}/deps/cs_libguarded/src"
   )
 
   if(OT_BLOCKCHAIN_EXPORT)

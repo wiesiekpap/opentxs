@@ -11,9 +11,11 @@ target_sources(
   PRIVATE
     "Authority.cpp"
     "Authority.hpp"
+    "Identity.cpp"
     "Nym.cpp"
     "Nym.hpp"
     "Source.cpp"
+    "Source.hpp"
 )
 target_include_directories(
   opentxs-common SYSTEM
@@ -23,6 +25,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/identity/Authority.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/identity/CredentialRole.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/identity/CredentialType.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/identity/IdentityType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/identity/Nym.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/identity/Source.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/identity/SourceProofType.hpp"
