@@ -128,7 +128,7 @@ auto GetDefinition(UnitType in) noexcept -> const Definition&
               {u8"satoshi", {"", u8"satoshis", {{10, 0}}, 0, 0}},
           }}},
         {UnitType::Tnbtc,
-         {u8"BTC",
+         {u8"tnBTC",
           {
               {u8"BTC", {"", u8"tBTC", {{10, 8}}, 0, 8}},
               {u8"mBTC", {"", u8"mBTC", {{10, 5}}, 0, 5}},
@@ -146,7 +146,7 @@ auto GetDefinition(UnitType in) noexcept -> const Definition&
               {u8"satoshi", {"", u8"satoshis", {{10, 0}}, 0, 0}},
           }}},
         {UnitType::Tnbch,
-         {u8"BCH",
+         {u8"tnBCH",
           {
               {u8"BCH", {"", u8"tBCH", {{10, 8}}, 0, 8}},
               {u8"mBCH", {"", u8"mBCH", {{10, 5}}, 0, 5}},
@@ -165,7 +165,7 @@ auto GetDefinition(UnitType in) noexcept -> const Definition&
               {u8"photons", {"", u8"photons", {{10, 2}}, 0, 0}},
           }}},
         {UnitType::Tnltx,
-         {u8"LTC",
+         {u8"tnLTC",
           {
               {u8"LTC", {"", u8"Ł", {{10, 8}}, 0, 6}},
               {u8"mLTC", {"", u8"mŁ", {{10, 5}}, 0, 3}},
@@ -182,7 +182,7 @@ auto GetDefinition(UnitType in) noexcept -> const Definition&
               {u8"pack", {"", u8"pack", {{10, 0}}, 0, 0}},
           }}},
         {UnitType::Tnpkt,
-         {u8"PKT",
+         {u8"tnPKT",
           {
               {u8"PKT", {"", u8"PKT", {{2, 30}}, 0, 11}},
               {u8"mPKT", {"", u8"mPKT", {{2, 30}, {10, -3}}, 0, 8}},

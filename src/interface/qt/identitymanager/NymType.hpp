@@ -8,9 +8,9 @@
 #include <QAbstractListModel>
 #include <tuple>
 
-#include "opentxs/util/Container.hpp"
-#include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/IdentityType.hpp"
+#include "opentxs/identity/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::ui::identitymanager
 {

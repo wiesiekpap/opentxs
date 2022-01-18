@@ -21,7 +21,6 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/interface/rpc/CommandType.hpp"
