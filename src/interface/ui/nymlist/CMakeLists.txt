@@ -13,6 +13,7 @@ target_sources(
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/interface/ui/NymList.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/interface/ui/NymListItem.hpp"
 )
 target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 target_include_directories(
