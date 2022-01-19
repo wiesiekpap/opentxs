@@ -137,18 +137,20 @@ void OTOffer::GetIdentifier(Identifier& theIdentifier) const
          strAsset = String::Factory(GetInstrumentDefinitionID()),
          strCurrency = String::Factory(GetCurrencyID());
 
-    auto lScale = UnallocatedCString{};
+    UnallocatedCString lScale;
     GetScale().Serialize(writer(lScale));
 
     // In this way we generate a unique ID that will always be consistent
     // for the same instrument definition id, currency ID, and market scale.
-    strTemp->Format(
-        "ASSET TYPE:\n%s\nCURRENCY TYPE:\n%s\nMARKET SCALE:\n%s\n",
-        strAsset->Get(),
-        strCurrency->Get(),
-        lScale.c_str());
 
-    theIdentifier.CalculateDigest(strTemp->Bytes());
+    static UnallocatedCString fmt = "ASSET TYPE:\n%s\nCURRENCY TYPE:\n%s\nMARKET SCALE:\n%s\n";
+    UnallocatedVector<char> tmp;
+    tmp.resize(fmt.length() + strAsset->GetLength() + strCurrency->GetLength() + lScale.length() + 1);
+    std::snprintf(&tmp[0], tmp.capacity(),
+                              fmt.c_str(),
+                              strAsset->Get(), strCurrency->Get(), lScale.c_str());
+
+    theIdentifier.CalculateDigest(&tmp[0]);
 }
 auto OTOffer::IsMarketOrder() const -> bool { return (0 == GetPriceLimit()); }
 
@@ -387,7 +389,7 @@ void OTOffer::UpdateContents(const PasswordPrompt& reason)
     UnallocatedCString str_result;
     tag.output(str_result);
 
-    m_xmlUnsigned->Concatenate("%s", str_result.c_str());
+    m_xmlUnsigned->Concatenate(String::Factory(str_result));
 }
 
 auto OTOffer::MakeOffer(

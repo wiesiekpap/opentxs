@@ -308,20 +308,26 @@ auto NymFile::deserialize_nymfile(
 void NymFile::DisplayStatistics(opentxs::String& strOutput) const
 {
     sLock lock(shared_lock_);
-    strOutput.Concatenate(
-        "Source for ID:\n%s\n", target_nym_->Source().asString()->Get());
-    strOutput.Concatenate("Description: %s\n\n", m_strDescription->Get());
-    strOutput.Concatenate("%s", "\n");
-    strOutput.Concatenate(
-        "==>      Name: %s   %s\n",
-        target_nym_->Alias().c_str(),
-        m_bMarkForDeletion ? "(MARKED FOR DELETION)" : "");
-    strOutput.Concatenate("      Version: %s\n", m_strVersion->Get());
-    strOutput.Concatenate(
-        "Outpayments count: %" PRI_SIZE "\n", m_dequeOutpayments.size());
 
+    auto out_payments = std::to_string(m_dequeOutpayments.size());
+    auto source = target_nym_->Source().asString();
+    auto alias = target_nym_->Alias();
     auto theStringID = String::Factory(target_nym_->ID());
-    strOutput.Concatenate("Nym ID: %s\n", theStringID->Get());
+    static std::string marked_for_deletion {"(MARKED FOR DELETION)"};
+
+    static std::string fmt {"Source for ID:\n%s\nDescription: %s\n\n\n==>      Name: %s   %s\n      Version: %s\nOutpayments count: %s\nNym ID: %s\n"};
+    UnallocatedVector<char> buf;
+    buf.reserve(fmt.length() + 1 + source->GetLength() + m_strDescription->GetLength()
+                + alias.length() + marked_for_deletion.length() + m_strVersion->GetLength()
+                + out_payments.length() + theStringID->GetLength());
+
+    auto size = std::snprintf(&buf[0], buf.capacity(), fmt.c_str(), source->Get(),
+                              m_strDescription->Get(), alias.c_str(),
+                              (m_bMarkForDeletion ? marked_for_deletion.c_str() : ""),
+                              m_strVersion->Get(), out_payments.c_str(), theStringID->Get()
+                              );
+
+    strOutput.Concatenate(String::Factory(&buf[0], size));
 }
 
 auto NymFile::GetHash(
@@ -690,7 +696,7 @@ auto NymFile::serialize_nymfile(const T& lock, opentxs::String& strNym) const
     UnallocatedCString str_result;
     tag.output(str_result);
 
-    strNym.Concatenate("%s", str_result.c_str());
+    strNym.Concatenate(String::Factory(str_result));
 
     return true;
 }

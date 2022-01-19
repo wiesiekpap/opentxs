@@ -343,13 +343,15 @@ auto HD::Path() const noexcept -> const UnallocatedCString
             path->Concatenate(String::Factory(root));
 
             for (auto& it : path_->child()) {
-                path->Concatenate(" / ");
+                static auto slash = String::Factory(UnallocatedCString{" / "});
+                path->Concatenate(slash);
                 if (it < HDIndex{Bip32Child::HARDENED}) {
                     path->Concatenate(String::Factory(std::to_string(it)));
                 } else {
                     path->Concatenate(String::Factory(
                         std::to_string(it - HDIndex{Bip32Child::HARDENED})));
-                    path->Concatenate("'");
+                    static auto amp = String::Factory(UnallocatedCString{"'"});
+                    path->Concatenate(amp);
                 }
             }
         }

@@ -39,6 +39,8 @@
 
 namespace opentxs::otx::blind::mint
 {
+
+
 Mint::Mint(
     const api::Session& api,
     const identifier::Notary& notary,
@@ -59,11 +61,10 @@ Mint::Mint(
     , m_CashAccountID(api.Factory().Identifier())
 {
     m_strFoldername->Set(api.Internal().Legacy().Mint());
-    m_strFilename->Format(
-        "%s%s%s",
-        m_NotaryID->str().c_str(),
-        api::Legacy::PathSeparator(),
-        m_InstrumentDefinitionID->str().c_str());
+    m_strFilename->Set(api::Legacy::Concatenate(
+                           m_NotaryID->str(),
+                           api::Legacy::PathSeparator(),
+                           m_InstrumentDefinitionID->str()).c_str());
 
     InitMint();
 }
@@ -87,11 +88,10 @@ Mint::Mint(
     , m_CashAccountID(api.Factory().Identifier())
 {
     m_strFoldername->Set(api.Internal().Legacy().Mint());
-    m_strFilename->Format(
-        "%s%s%s",
-        m_NotaryID->str().c_str(),
-        api::Legacy::PathSeparator(),
-        m_InstrumentDefinitionID->str().c_str());
+    m_strFilename->Set(api::Legacy::Concatenate(
+                           m_NotaryID->str(),
+                           api::Legacy::PathSeparator(),
+                           m_InstrumentDefinitionID->str()).c_str());
 
     InitMint();
 }
@@ -188,29 +188,30 @@ auto Mint::LoadMint(const char* szAppend) -> bool  // todo: server should
 
     if (!m_strFilename->Exists()) {
         if (nullptr != szAppend)
-            m_strFilename->Format(
-                "%s%s%s%s",
-                strNotaryID->Get(),
-                api::Legacy::PathSeparator(),  // server appends ".1"
-                                               // or ".PUBLIC" here.
-                strInstrumentDefinitionID->Get(),
-                szAppend);
+            m_strFilename->Set(
+                api::Legacy::Concatenate(
+                    strNotaryID->Get(),
+                    api::Legacy::PathSeparator(),  // server appends ".1"
+                                                   // or ".PUBLIC" here.
+                    strInstrumentDefinitionID->Get(),
+                    szAppend).c_str()
+                );
         else
-            m_strFilename->Format(
-                "%s%s%s",
-                strNotaryID->Get(),
-                api::Legacy::PathSeparator(),
-                strInstrumentDefinitionID->Get());  // client uses only
-                                                    // instrument definition
-                                                    // id, no append.
+            m_strFilename->Set(api::Legacy::Concatenate(
+                                   strNotaryID->Get(),
+                                   api::Legacy::PathSeparator(),
+                                   strInstrumentDefinitionID->Get()).c_str()  // client uses only
+                                                                    // instrument definition
+                                                                    // id, no append.
+            );
     }
 
     auto strFilename = String::Factory();
     if (nullptr != szAppend)
-        strFilename->Format(
-            "%s%s",
-            strInstrumentDefinitionID->Get(),
-            szAppend);  // server side
+        strFilename->Set(api::Legacy::Concatenate(
+                             strInstrumentDefinitionID->Get(),
+                             szAppend) .c_str() // server side
+        );
     else
         strFilename =
             String::Factory(strInstrumentDefinitionID->Get());  // client side
@@ -274,23 +275,25 @@ auto Mint::SaveMint(const char* szAppend) -> bool
 
     if (!m_strFilename->Exists()) {
         if (nullptr != szAppend)
-            m_strFilename->Format(
-                "%s%s%s%s",
-                strNotaryID->Get(),
-                api::Legacy::PathSeparator(),  // server side
-                strInstrumentDefinitionID->Get(),
-                szAppend);
+            m_strFilename->Set(api::Legacy::Concatenate(
+                                   strNotaryID->Get(),
+                                   api::Legacy::PathSeparator(),  // server side
+                                   strInstrumentDefinitionID->Get(),
+                                   szAppend).c_str()
+                );
         else
-            m_strFilename->Format(
-                "%s%s%s",
-                strNotaryID->Get(),
-                api::Legacy::PathSeparator(),
-                strInstrumentDefinitionID->Get());  // client side
+            m_strFilename->Set(api::Legacy::Concatenate(
+                                   strNotaryID->Get(),
+                                   api::Legacy::PathSeparator(),
+                                   strInstrumentDefinitionID->Get()).c_str()
+                );  // client side
     }
 
     auto strFilename = String::Factory();
     if (nullptr != szAppend)
-        strFilename->Format("%s%s", strInstrumentDefinitionID->Get(), szAppend);
+        strFilename->Set(
+            api::Legacy::Concatenate(strInstrumentDefinitionID->Get(), szAppend).c_str()
+            );
     else
         strFilename = String::Factory(strInstrumentDefinitionID->Get());
 
@@ -532,7 +535,7 @@ void Mint::UpdateContents(const PasswordPrompt& reason)
     UnallocatedCString str_result;
     tag.output(str_result);
 
-    m_xmlUnsigned->Concatenate("%s", str_result.c_str());
+    m_xmlUnsigned->Concatenate(String::Factory(str_result));
 }
 
 // return -1 if error, 0 if nothing, and 1 if the node was processed.

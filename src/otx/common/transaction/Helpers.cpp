@@ -31,6 +31,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
+#include "internal/api/Legacy.hpp"
 
 namespace
 {
@@ -555,11 +556,12 @@ auto SetupBoxReceiptFilename(
 
     strFolder1name.Set(pszFolder);    // "nymbox" (or "inbox" or "outbox")
     strFolder2name.Set(strNotaryID);  // "NOTARY_ID"
-    strFolder3name.Format("%s.r", strUserOrAcctID.Get());  // "NYM_ID.r"
+    auto folder_3_name = api::Legacy::GetFilenameR(strUserOrAcctID.Get());
+    strFolder3name.Set(folder_3_name.c_str());
 
     // "TRANSACTION_ID.rct"
-    strFilename.Format("%" PRId64 ".rct", lTransactionNum);
-    // todo hardcoding of file extension. Need to standardize extensions.
+    auto filename = api::Legacy::GetFilenameRct(lTransactionNum);
+    strFilename.Set(filename.c_str());
 
     // Finished product: "nymbox/NOTARY_ID/NYM_ID.r/TRANSACTION_ID.rct"
 

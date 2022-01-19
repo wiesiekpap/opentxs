@@ -345,14 +345,14 @@ auto NumList::Output(String& strOutput) const -> bool  // returns false if the
 
     for (auto& it : m_setData) {
         nIterationCount++;
+        auto sx = String::Factory((1 == nIterationCount ? "" : ",") + std::to_string(it));
+
 
         strOutput.Concatenate(
-            "%s%" PRId64,
             // If first iteration, prepend a blank string (instead of a comma.)
             // Like this:  "%" PRId64 ""
-            // But for all subsequent iterations, concatenate: ",%" PRId64 ""
-            (1 == nIterationCount) ? "" : ",",
-            it);
+            // But for all subsequent iterations, Concatenate: ",%" PRId64 ""
+            String::Factory((1 == nIterationCount ? "" : ",") + std::to_string(it)));
     }
 
     return !m_setData.empty();

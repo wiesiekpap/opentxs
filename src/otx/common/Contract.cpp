@@ -663,9 +663,9 @@ void Contract::ReleaseSignatures() { m_listSignatures.clear(); }
 auto Contract::DisplayStatistics(String& strContents) const -> bool
 {
     // Subclasses may override this.
-    strContents.Concatenate(
-        const_cast<char*>("ERROR:  Contract::DisplayStatistics was called "
-                          "instead of a subclass...\n"));
+    static auto msg = String::Factory(UnallocatedCString{"ERROR:  Contract::DisplayStatistics was called "
+                                                         "instead of a subclass...\n"});
+    strContents.Concatenate(msg);
 
     return false;
 }
@@ -730,7 +730,7 @@ void Contract::UpdateContents(const PasswordPrompt& reason)
 // Saves the raw (pre-existing) contract text to any string you want to pass in.
 auto Contract::SaveContractRaw(String& strOutput) const -> bool
 {
-    strOutput.Concatenate("%s", m_strRawFile->Get());
+    strOutput.Concatenate(m_strRawFile);
 
     return true;
 }
@@ -990,7 +990,6 @@ auto Contract::ParseRawFile() -> bool
         bIsEOF = !(m_strRawFile->sgets(buffer1, 2048));
 
         line = buffer1;
-        const char* pBuf = line.c_str();
 
         if (line.length() < 2) {
             if (bSignatureMode) continue;
@@ -1056,7 +1055,7 @@ auto Contract::ParseRawFile() -> bool
             // the signed content.
             // It's just much easier to deal with that way. The input code will
             // insert the extra dashes.
-            // pBuf += 2;
+            // line += 2;
         }
 
         // Else we're on a normal line, not a dashed line.
@@ -1210,11 +1209,12 @@ auto Contract::ParseRawFile() -> bool
 
                 return false;
             }
-
-            auto& sig = *pSig;
-            sig.Concatenate("%s\n", pBuf);
-        } else if (bContentMode)
-            m_xmlUnsigned->Concatenate("%s\n", pBuf);
+            line.append("\n");
+            pSig->Concatenate(String::Factory(line));
+        } else if (bContentMode) {
+            line.append("\n");
+            m_xmlUnsigned->Concatenate(String::Factory(line));
+        }
     } while (!bIsEOF);
 
     if (!bHaveEnteredContentMode) {
@@ -1391,7 +1391,7 @@ auto Contract::CreateContract(
     if ('\n' == cNewline)  // It already has a newline
         m_xmlUnsigned.get() = strContract;
     else
-        m_xmlUnsigned->Format("%s\n", strContract.Get());
+        m_xmlUnsigned->Set(strContract.Get());
 
     // This function assumes that m_xmlUnsigned is ready to be processed.
     // This function only processes that portion of the contract.

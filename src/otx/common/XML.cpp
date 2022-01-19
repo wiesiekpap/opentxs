@@ -32,35 +32,42 @@ auto AddBookendsAroundContent(
     auto strTemp = String::Factory();
     auto strHashType = crypto::HashingProvider::HashTypeToString(hashType);
 
-    strTemp->Concatenate(
-        "-----BEGIN SIGNED %s-----\nHash: %s\n\n",
-        strContractType.Get(),
-        strHashType->Get());
+    static std::string fmt_begin_signed {"-----BEGIN SIGNED %s-----\nHash: %s\n\n"};
+    static std::string fmt_begin_signature {"-----BEGIN %s SIGNATURE-----\nVersion: Open Transactions %s\nComment: http://opentransactions.org\n"};
+    static std::string fmt_end_signature {"\n-----END %s SIGNATURE-----\n\n"};
+    auto fn_signature = [](const String& input, const UnallocatedCString& fmt, const UnallocatedCString& option="") {
+        UnallocatedVector<char> buf;
+        buf.reserve(fmt.length() + 1 + input.GetLength() + option.length());
 
-    strTemp->Concatenate("%s", strContents.Get());
+        auto size = std::snprintf(&buf[0], buf.capacity(), fmt.c_str(), input.Get(), option.c_str());
+
+        return String::Factory(&buf[0], size);
+    };
+
+    auto begin_signature = fn_signature(strContractType, fmt_begin_signature, VersionString());
+    auto end_signature = fn_signature(strContractType, fmt_end_signature);
+
+    strTemp->Concatenate(fn_signature(strContractType, fmt_begin_signed, strHashType->Get()));
+    strTemp->Concatenate(strContents);
+
+    static std::string _meta {"Meta:    CCCC\n"}; //length 14 [9,10,11,12] index to put chars on
+    auto meta = String::Factory(_meta);
 
     for (const auto& sig : listSignatures) {
-        strTemp->Concatenate(
-            "-----BEGIN %s SIGNATURE-----\n"
-            "Version: Open Transactions %s\n"
-            "Comment: "
-            "http://opentransactions.org\n",
-            strContractType.Get(),
-            VersionString());
+        strTemp->Concatenate(begin_signature);
 
-        if (sig->getMetaData().HasMetadata())
-            strTemp->Concatenate(
-                "Meta:    %c%c%c%c\n",
-                sig->getMetaData().GetKeyType(),
-                sig->getMetaData().FirstCharNymID(),
-                sig->getMetaData().FirstCharMasterCredID(),
-                sig->getMetaData().FirstCharChildCredID());
+        if (sig->getMetaData().HasMetadata()) {
+            char* ptr = const_cast<char*>(meta->Get()); //direct memory access
+            *(ptr + 9) = sig->getMetaData().GetKeyType();
+            *(ptr + 10) = sig->getMetaData().FirstCharNymID();
+            *(ptr + 11) = sig->getMetaData().FirstCharMasterCredID();
+            *(ptr + 12) = sig->getMetaData().FirstCharChildCredID();
+            strTemp->Concatenate(meta);
+        }
 
-        strTemp->Concatenate(
-            "%s",
-            sig->Get());  // <=== *** THE SIGNATURE ITSELF ***
-        strTemp->Concatenate(
-            "\n-----END %s SIGNATURE-----\n\n", strContractType.Get());
+
+        strTemp->Concatenate(sig);  // <=== *** THE SIGNATURE ITSELF ***
+        strTemp->Concatenate(end_signature);
     }
 
     UnallocatedCString str_Trim(strTemp->Get());

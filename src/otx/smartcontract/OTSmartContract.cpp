@@ -1424,9 +1424,7 @@ auto OTSmartContract::GetStashBalance(
     //        instrument_definition_id
     //        pServerNym, pCron.
     //
-    auto strBalance = String::Factory();
-    strBalance->Format("%" PRId64, pStash->GetAmount(instrument_definition_id));
-    return strBalance->Get();
+    return std::to_string(pStash->GetAmount(instrument_definition_id));
 }
 
 auto OTSmartContract::SendANoticeToAllParties(const PasswordPrompt& reason)
@@ -3463,10 +3461,13 @@ auto OTSmartContract::ProcessCron(const PasswordPrompt& reason) -> bool
 // virtual
 void OTSmartContract::SetDisplayLabel(const UnallocatedCString* pstrLabel)
 {
-    m_strLabel->Format(
-        "smartcontract trans# %" PRId64 ", clause: %s",
-        GetTransactionNum(),
-        (nullptr != pstrLabel) ? pstrLabel->c_str() : "");
+    std::vector<char> tmp;
+    static std::string fmt {"smartcontract trans# %ld, clause: %s"};
+    tmp.reserve(fmt.length() + 1 + (pstrLabel ? pstrLabel->length() : 0)); // 1 for line end
+    auto size = std::snprintf(&tmp[0], tmp.capacity(), fmt.c_str(),
+        GetTransactionNum(), (pstrLabel ? pstrLabel->c_str() : ""));
+
+    m_strLabel->Set(&tmp[0], size);
 }
 
 void OTSmartContract::ExecuteClauses(
@@ -5141,7 +5142,7 @@ void OTSmartContract::UpdateContents(const PasswordPrompt& reason)
     UnallocatedCString str_result;
     tag.output(str_result);
 
-    m_xmlUnsigned->Concatenate("%s", str_result.c_str());
+    m_xmlUnsigned->Concatenate(String::Factory(str_result));
 }
 
 // Used internally here.

@@ -515,9 +515,9 @@ auto Account::Debit(const Amount& amount) -> bool
     // and it means that we now allow <0 debits on normal accounts,
     // AS LONG AS the result is a HIGHER BALANCE  :-)
     else {
-        auto amount = UnallocatedCString{};
-        newBalance.Serialize(writer(amount));
-        balanceAmount_->Format("%s", amount.c_str());
+        UnallocatedCString _amount;
+        newBalance.Serialize(writer(_amount));
+        balanceAmount_->Set(_amount.c_str());
         balanceDate_->Set(String::Factory(getTimestamp()));
         return true;
     }
@@ -557,9 +557,9 @@ auto Account::Credit(const Amount& amount) -> bool
     // and it means that we now allow <0 credits on normal accounts,
     // AS LONG AS the result is a HIGHER BALANCE  :-)
     else {
-        auto amount = UnallocatedCString{};
-        newBalance.Serialize(writer(amount));
-        balanceAmount_->Format("%s", amount.c_str());
+        UnallocatedCString _amount;
+        newBalance.Serialize(writer(_amount));
+        balanceAmount_->Set(_amount.c_str());
         balanceDate_->Set(String::Factory(getTimestamp()));
         return true;
     }
@@ -813,22 +813,18 @@ auto Account::DisplayStatistics(String& contents) const -> bool
     auto acctType = String::Factory();
     TranslateAccountTypeToString(acctType_, acctType);
 
-    contents.Concatenate(
-        " Asset Account (%s) Name: %s\n"
-        " Last retrieved Balance: %s  on date: %s\n"
-        " accountID: %s\n"
-        " nymID: %s\n"
-        " notaryID: %s\n"
-        " instrumentDefinitionID: %s\n"
-        "\n",
-        acctType->Get(),
-        m_strName->Get(),
-        balanceAmount_->Get(),
-        balanceDate_->Get(),
-        strAccountID->Get(),
-        strNymID->Get(),
-        strNotaryID->Get(),
-        strInstrumentDefinitionID->Get());
+    static std::string fmt {" Asset Account (%s) Name: %s\n Last retrieved Balance: %s  on date: %s\n accountID: %s\n nymID: %s\n notaryID: %s\n instrumentDefinitionID: %s\n\n" };
+    UnallocatedVector<char> buf;
+    buf.reserve(fmt.length() + 1 + acctType->GetLength() + m_strName->GetLength()
+                + balanceAmount_->GetLength() + balanceDate_->GetLength()
+                + strAccountID->GetLength() + strNymID->GetLength()
+                + strNotaryID->GetLength() + strInstrumentDefinitionID->GetLength());
+    auto size = std::snprintf(&buf[0], buf.capacity(), fmt.c_str(), acctType->Get(),
+                  m_strName->Get(), balanceAmount_->Get(), balanceDate_->Get(),
+                  strAccountID->Get(), strNymID->Get(), strNotaryID->Get(),
+                  strInstrumentDefinitionID->Get());
+
+    contents.Concatenate(String::Factory(&buf[0], size));
 
     return true;
 }
@@ -940,7 +936,7 @@ void Account::UpdateContents(const PasswordPrompt& reason)
     UnallocatedCString str_result;
     tag.output(str_result);
 
-    m_xmlUnsigned->Concatenate("%s", str_result.c_str());
+    m_xmlUnsigned->Concatenate(String::Factory(str_result));
 }
 
 // return -1 if error, 0 if nothing, and 1 if the node was processed.
@@ -1050,9 +1046,9 @@ auto Account::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         const auto amount = factory::Amount(balanceAmount_->Get());
 
         balanceDate_->Set(String::Factory(formatTimestamp(date)));
-        auto balance = UnallocatedCString{};
+        UnallocatedCString balance;
         amount.Serialize(writer(balance));
-        balanceAmount_->Format("%s", balance.c_str());
+        balanceAmount_->Set(balance.c_str());
 
         LogDebug()(OT_PRETTY_CLASS())("BALANCE  -- ")(balanceAmount_).Flush();
         LogDebug()(OT_PRETTY_CLASS())("DATE     --")(balanceDate_).Flush();

@@ -9,7 +9,6 @@
 #include "api/context/Context.hpp"    // IWYU pragma: associated
 #include "core/String.hpp"            // IWYU pragma: associated
 #include "internal/util/Signals.hpp"  // IWYU pragma: associated
-#include "internal/util/String.hpp"   // IWYU pragma: associated
 
 extern "C" {
 #include <pwd.h>
@@ -34,51 +33,6 @@ extern "C" {
 
 namespace opentxs
 {
-auto vformat(const char* fmt, va_list* pvl, UnallocatedCString& str_Output)
-    -> bool
-{
-    OT_ASSERT(nullptr != fmt);
-    OT_ASSERT(nullptr != pvl);
-
-    std::int32_t size = 0;
-    std::int32_t nsize = 0;
-    char* buffer = nullptr;
-    va_list args;
-    va_copy(args, *pvl);
-    size = 512;
-    buffer = new char[size + 100];
-    OT_ASSERT(nullptr != buffer);
-    ::sodium_memzero(buffer, size + 100);
-    nsize = vsnprintf(buffer, size, fmt, args);
-    va_end(args);
-
-    OT_ASSERT(nsize >= 0);
-
-    // fail -- delete buffer and try again If nsize was 1024 bytes, then that
-    // would mean that it printed 1024 characters, even though the actual string
-    // must be 1025 in length (to have room for the null terminator.) If size,
-    // the ACTUAL buffer, was 1024 (that is, if size <= nsize) then size would
-    // LACK the necessary space to store the 1025th byte containing the null
-    // terminator. Therefore we are forced to delete the buffer and make one
-    // that is nsize+1, so that it will be 1025 bytes and thus have the
-    // necessary space for the terminator
-    if (size <= nsize) {
-        size = nsize + 1;
-        delete[] buffer;
-        buffer = new char[size + 100];
-        OT_ASSERT(nullptr != buffer);
-        ::sodium_memzero(buffer, size + 100);
-        nsize = vsnprintf(buffer, size, fmt, *pvl);
-
-        OT_ASSERT(nsize >= 0);
-    }
-    OT_ASSERT(size > nsize);
-
-    str_Output = buffer;
-    delete[] buffer;
-    buffer = nullptr;
-    return true;
-}
 
 auto Signals::Block() -> void
 {

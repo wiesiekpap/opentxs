@@ -93,7 +93,7 @@ auto MainFile::SaveMainFileToString(String& strMainFile) -> bool
     UnallocatedCString str_result;
     tag.output(str_result);
 
-    strMainFile.Concatenate("%s", str_result.c_str());
+    strMainFile.Concatenate(String::Factory(str_result));
 
     return true;
 }
@@ -167,7 +167,7 @@ auto MainFile::CreateMainFile(
         return false;
     }
 
-    const char* szBlankFile =  // todo hardcoding.
+    static UnallocatedCString fmt =  // todo hardcoding.
         "<notaryServer version=\"2.0\"\n"
         " notaryID=\"%s\"\n"
         " serverNymID=\"%s\"\n"
@@ -181,15 +181,20 @@ auto MainFile::CreateMainFile(
 
     std::int64_t lTransNum = 5;  // a starting point, for the new server.
 
-    auto strNotaryFile = String::Factory();
-    strNotaryFile->Format(
-        szBlankFile, strNotaryID.c_str(), strNymID.c_str(), lTransNum);
+    auto concatenation_lambda = [](const UnallocatedCString& fmt, const UnallocatedCString& notary_id, const UnallocatedCString& nym_id, int64_t _trans_num) -> UnallocatedCString {
+        auto trans_num = std::to_string(_trans_num);
+        UnallocatedVector<char> tmp;
+        tmp.reserve(fmt.length() + 1 + notary_id.length() + nym_id.length() + trans_num.length());
+        auto size = std::snprintf(&tmp[0], tmp.capacity(), fmt.c_str(), notary_id.c_str(), nym_id.c_str(), _trans_num);
 
-    UnallocatedCString str_Notary(strNotaryFile->Get());
+        return UnallocatedCString (tmp.begin(), tmp.begin() + size);
+    };
+
+    auto notary {concatenation_lambda(fmt, strNotaryID, strNymID, lTransNum)};
 
     if (!OTDB::StorePlainString(
             server_.API(),
-            str_Notary,
+            notary,
             server_.API().DataFolder(),
             ".",
             "notaryServer.xml",

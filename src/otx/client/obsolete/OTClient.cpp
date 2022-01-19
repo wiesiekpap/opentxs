@@ -111,7 +111,7 @@ auto OTClient::ProcessUserCommand(
         case MessageType::unregisterNym: {
             // (0) Set up the REQUEST NUMBER and then INCREMENT IT
             lRequestNumber = context.Request();
-            theMessage.m_strRequestNum->Format("%" PRId64 "", lRequestNumber);
+            theMessage.m_strRequestNum->Set(std::to_string(lRequestNumber).c_str());
             context.IncrementRequest();
 
             // (1) set up member variables
@@ -132,7 +132,7 @@ auto OTClient::ProcessUserCommand(
         {
             // (0) Set up the REQUEST NUMBER and then INCREMENT IT
             lRequestNumber = context.Request();
-            theMessage.m_strRequestNum->Format("%" PRId64 "", lRequestNumber);
+            theMessage.m_strRequestNum->Set(std::to_string(lRequestNumber).c_str());
             context.IncrementRequest();
 
             // (1) Set up member variables
@@ -166,7 +166,7 @@ auto OTClient::ProcessUserCommand(
         {
             // (0) Set up the REQUEST NUMBER and then INCREMENT IT
             lRequestNumber = context.Request();
-            theMessage.m_strRequestNum->Format("%" PRId64 "", lRequestNumber);
+            theMessage.m_strRequestNum->Set(std::to_string(lRequestNumber).c_str());
             context.IncrementRequest();
 
             // (1) Set up member variables

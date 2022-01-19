@@ -7,6 +7,7 @@
 
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
@@ -23,7 +24,21 @@ public:
     static auto PathSeparator() noexcept -> const char*;
     static auto SuggestFolder(const UnallocatedCString& app) noexcept
         -> UnallocatedCString;
-
+    static auto GetFilenameBin(const char* filename) -> UnallocatedCString;
+    static auto GetFilenameA(const char* filename) -> UnallocatedCString;
+    static auto GetFilenameR(const char* filename) -> UnallocatedCString;
+    static auto GetFilenameRct(TransactionNumber number) -> UnallocatedCString;
+    static auto GetFilenameCrn(TransactionNumber number) -> UnallocatedCString;
+    static auto GetFilenameSuccess(const char* filename) -> UnallocatedCString;
+    static auto GetFilenameFail(const char* filename) -> UnallocatedCString;
+    static auto GetFilenameError(const char* filename) -> UnallocatedCString;
+    static auto GetFilenameLst(const UnallocatedCString& filename) -> UnallocatedCString;
+    static auto Concatenate(const UnallocatedCString& notary_id,
+                            const UnallocatedCString& path_separator,
+                            const UnallocatedCString& unit_id,
+                            const char* append= "") -> UnallocatedCString;
+    static auto Concatenate(const UnallocatedCString& unit_id,
+                            const char* append) -> UnallocatedCString;
     virtual auto Account() const noexcept -> const char* = 0;
     virtual auto AppendFile(String& out, const String& base, const String& file)
         const noexcept -> bool = 0;
@@ -73,6 +88,10 @@ private:
     Legacy(Legacy&&) = delete;
     auto operator=(const Legacy&) -> Legacy& = delete;
     auto operator=(Legacy&&) -> Legacy& = delete;
+
+    static auto internal_concatenate(
+        const UnallocatedCString& name,
+        const UnallocatedCString& ext) -> UnallocatedCString;
 };
 }  // namespace api
 }  // namespace opentxs
