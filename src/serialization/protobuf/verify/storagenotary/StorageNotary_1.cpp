@@ -11,8 +11,6 @@
 #include "serialization/protobuf/StorageNotary.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "notary storage index"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const StorageNotary& input, const bool silent) -> bool

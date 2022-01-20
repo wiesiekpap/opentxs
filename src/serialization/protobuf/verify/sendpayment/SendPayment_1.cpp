@@ -9,11 +9,7 @@
 #include "serialization/protobuf/SendPayment.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "send payment"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(const SendPayment& input, const bool silent) -> bool
 {
@@ -151,5 +147,4 @@ auto CheckProto_20(const SendPayment& input, const bool silent) -> bool
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

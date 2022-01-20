@@ -11,8 +11,6 @@
 #include "serialization/protobuf/StorageWorkflowType.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "storage workflow type index"
-
 namespace opentxs::proto
 {
 auto CheckProto_2(const StorageWorkflowType& input, const bool silent) -> bool

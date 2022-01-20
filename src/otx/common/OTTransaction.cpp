@@ -45,7 +45,6 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "internal/api/Legacy.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
@@ -3029,29 +3028,28 @@ auto OTTransaction::DeleteBoxReceipt(Ledger& theLedger) -> bool
     //
     auto strOutput = String::Factory();
 
-    auto concatenation_lambda = [](const UnallocatedCString& line1, const UnallocatedCString& line2) -> UnallocatedCString {
-      UnallocatedCString tmp;
-      tmp.reserve(line1.length() + line2.length() + 4);
-      tmp.append(line1);
-      tmp.append("\n\n");
-      tmp.append(line2);
-      tmp.append("\n");
+    auto concatenation_lambda =
+        [](const UnallocatedCString& line1,
+           const UnallocatedCString& line2) -> UnallocatedCString {
+        UnallocatedCString tmp;
+        tmp.reserve(line1.length() + line2.length() + 4);
+        tmp.append(line1);
+        tmp.append("\n\n");
+        tmp.append(line2);
+        tmp.append("\n");
 
-      return tmp;
+        return tmp;
     };
 
     static std::string marked_for_deletion{"MARKED_FOR_DELETION"};
     if (m_strRawFile->Exists()) {
         strOutput->Set(
-            concatenation_lambda(strFinal->Get(), marked_for_deletion).c_str()
-        );
+            concatenation_lambda(strFinal->Get(), marked_for_deletion).c_str());
     } else {
-        static std::string trx_empty{"(Transaction was already empty -- strange.)"};
+        static std::string trx_empty{
+            "(Transaction was already empty -- strange.)"};
         strOutput->Set(
-            concatenation_lambda(
-                           trx_empty,
-                           marked_for_deletion).c_str()
-        );
+            concatenation_lambda(trx_empty, marked_for_deletion).c_str());
     }
 
     bool bDeleted = OTDB::StorePlainString(

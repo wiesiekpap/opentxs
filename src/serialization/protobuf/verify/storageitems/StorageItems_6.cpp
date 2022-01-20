@@ -11,8 +11,6 @@
 #include "serialization/protobuf/StorageItems.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "storage item index"
-
 namespace opentxs::proto
 {
 auto CheckProto_6(const StorageItems& input, const bool silent) -> bool

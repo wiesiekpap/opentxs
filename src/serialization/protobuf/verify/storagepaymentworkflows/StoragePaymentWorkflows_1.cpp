@@ -13,8 +13,6 @@
 #include "serialization/protobuf/StoragePaymentWorkflows.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "payment workflow storage index"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const StoragePaymentWorkflows& input, const bool silent)

@@ -15,8 +15,6 @@
 #include "serialization/protobuf/ServerRequest.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "server request"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const ServerRequest& input, const bool silent) -> bool

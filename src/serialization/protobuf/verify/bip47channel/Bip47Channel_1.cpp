@@ -17,11 +17,7 @@
 #include "serialization/protobuf/ContactEnums.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "bip47 channel"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 
 auto CheckProto_1(const Bip47Channel& input, const bool silent) -> bool
@@ -131,5 +127,4 @@ auto CheckProto_20(const Bip47Channel& input, const bool silent) -> bool
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

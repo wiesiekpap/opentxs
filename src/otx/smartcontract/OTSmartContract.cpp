@@ -8,7 +8,7 @@
 #include "internal/otx/smartcontract/OTSmartContract.hpp"  // IWYU pragma: associated
 
 #include <chrono>
-#include <cinttypes>
+#include <cstdio>
 #include <memory>
 #include <utility>
 
@@ -3462,10 +3462,16 @@ auto OTSmartContract::ProcessCron(const PasswordPrompt& reason) -> bool
 void OTSmartContract::SetDisplayLabel(const UnallocatedCString* pstrLabel)
 {
     std::vector<char> tmp;
-    static std::string fmt {"smartcontract trans# %ld, clause: %s"};
-    tmp.reserve(fmt.length() + 1 + (pstrLabel ? pstrLabel->length() : 0)); // 1 for line end
-    auto size = std::snprintf(&tmp[0], tmp.capacity(), fmt.c_str(),
-        GetTransactionNum(), (pstrLabel ? pstrLabel->c_str() : ""));
+    static std::string fmt{"smartcontract trans# %ld, clause: %s"};
+    tmp.reserve(
+        fmt.length() + 1 + (pstrLabel ? pstrLabel->length() : 0));  // 1 for
+                                                                    // line end
+    auto size = std::snprintf(
+        &tmp[0],
+        tmp.capacity(),
+        fmt.c_str(),
+        GetTransactionNum(),
+        (pstrLabel ? pstrLabel->c_str() : ""));
 
     m_strLabel->Set(&tmp[0], size);
 }

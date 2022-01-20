@@ -14,8 +14,6 @@
 #include "serialization/protobuf/StorageNym.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "storage nym"
-
 namespace opentxs::proto
 {
 auto CheckProto_9(const StorageNym& input, const bool silent) -> bool

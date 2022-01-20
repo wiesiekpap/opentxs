@@ -383,7 +383,11 @@ target_include_directories(
   PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
 target_link_libraries(
-  proto-verify PRIVATE opentxs-common protobuf::libprotobuf-lite
+  proto-verify
+  PRIVATE
+    Boost::headers
+    opentxs-common
+    protobuf::libprotobuf-lite
 )
 target_link_libraries(opentxs PUBLIC protobuf::libprotobuf-lite)
 set_target_properties(
@@ -392,7 +396,6 @@ set_target_properties(
     MSVC_RUNTIME_LIBRARY "${MSVC_RUNTIME_DEFAULT}"
     C_INCLUDE_WHAT_YOU_USE ""
     CXX_INCLUDE_WHAT_YOU_USE ""
-    UNITY_BUILD OFF
 )
 
 if(NOT MSVC)

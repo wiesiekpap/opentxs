@@ -8,11 +8,7 @@
 #include "serialization/protobuf/BitcoinBlockHeaderFields.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "bitcoin block header fields"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(const BitcoinBlockHeaderFields& input, const bool silent)
     -> bool
@@ -136,5 +132,4 @@ auto CheckProto_20(const BitcoinBlockHeaderFields& input, const bool silent)
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

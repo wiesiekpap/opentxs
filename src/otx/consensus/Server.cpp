@@ -75,7 +75,6 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "internal/api/Legacy.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -4144,9 +4143,10 @@ auto Server::process_get_nym_market_offers_response(
         api_.Internal().Legacy().Nym(),  // "nyms"
         reply.m_strNotaryID->Get(),      // "nyms/<notaryID>",
         "offers",                        // "nyms/<notaryID>/offers",
-        data_file);           // "nyms/<notaryID>/offers/<NymID>.bin"
+        data_file);                      // "nyms/<notaryID>/offers/<NymID>.bin"
     if (!success) {
-        LogError()(OT_PRETTY_CLASS())("Error storing ")(data_file)(" to nyms folder.")
+        LogError()(OT_PRETTY_CLASS())("Error storing ")(
+            data_file)(" to nyms folder.")
             .Flush();
     }
 
@@ -4530,7 +4530,9 @@ auto Server::process_process_box_response(
 
     auto serialized = String::Factory();
     replyTransaction->SaveContractRaw(serialized);
-    auto filename = replyTransaction->GetSuccess() ? api::Legacy::GetFilenameSuccess(receiptID->Get()) : api::Legacy::GetFilenameFail(receiptID->Get());
+    auto filename = replyTransaction->GetSuccess()
+                        ? api::Legacy::GetFilenameSuccess(receiptID->Get())
+                        : api::Legacy::GetFilenameFail(receiptID->Get());
 
     auto encoded = String::Factory();
     auto armored = Armored::Factory(serialized);
@@ -5116,7 +5118,9 @@ void Server::process_response_transaction(
     }
 
     if (pItem) {
-        auto filename = response.GetSuccess() ? api::Legacy::GetFilenameSuccess(receiptID->Get()) : api::Legacy::GetFilenameFail(receiptID->Get());
+        auto filename = response.GetSuccess()
+                            ? api::Legacy::GetFilenameSuccess(receiptID->Get())
+                            : api::Legacy::GetFilenameFail(receiptID->Get());
         OTDB::StorePlainString(
             api_,
             encoded->Get(),

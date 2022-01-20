@@ -13,8 +13,6 @@
 #include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "blockchain transaction proposal"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const BlockchainTransactionProposal& input, const bool silent)

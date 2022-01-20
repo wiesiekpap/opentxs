@@ -8,11 +8,7 @@
 #include "serialization/protobuf/BlockchainInputWitness.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "blockchain input witness"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(const BlockchainInputWitness& input, const bool silent)
     -> bool
@@ -133,5 +129,4 @@ auto CheckProto_20(const BlockchainInputWitness& input, const bool silent)
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

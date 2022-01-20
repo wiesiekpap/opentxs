@@ -14,11 +14,7 @@
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "ciphertext"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 
 auto CheckProto_1(const Ciphertext& input, const bool silent, const bool nested)
@@ -167,5 +163,4 @@ auto CheckProto_20(const Ciphertext& input, const bool silent, const bool)
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

@@ -8,7 +8,6 @@
 #include "api/Settings.hpp"  // IWYU pragma: associated
 
 #include <simpleini/SimpleIni.h>
-#include <cinttypes>
 #include <cstdint>
 #include <cstdlib>  // IWYU pragma: keep
 #include <memory>

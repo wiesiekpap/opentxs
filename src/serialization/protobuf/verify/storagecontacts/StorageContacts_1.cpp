@@ -20,8 +20,6 @@
 #include "serialization/protobuf/StorageItemHash.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "contact storage index"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const StorageContacts& input, const bool silent) -> bool

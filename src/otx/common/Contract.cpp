@@ -663,8 +663,9 @@ void Contract::ReleaseSignatures() { m_listSignatures.clear(); }
 auto Contract::DisplayStatistics(String& strContents) const -> bool
 {
     // Subclasses may override this.
-    static auto msg = String::Factory(UnallocatedCString{"ERROR:  Contract::DisplayStatistics was called "
-                                                         "instead of a subclass...\n"});
+    static auto msg = String::Factory(
+        UnallocatedCString{"ERROR:  Contract::DisplayStatistics was called "
+                           "instead of a subclass...\n"});
     strContents.Concatenate(msg);
 
     return false;

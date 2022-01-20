@@ -8,11 +8,7 @@
 #include "serialization/protobuf/GCS.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "gcs"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(const GCS& input, const bool silent) -> bool
 {
@@ -115,5 +111,4 @@ auto CheckProto_20(const GCS& input, const bool silent) -> bool
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

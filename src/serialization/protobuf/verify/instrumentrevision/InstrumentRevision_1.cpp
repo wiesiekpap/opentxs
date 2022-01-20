@@ -8,8 +8,6 @@
 #include "serialization/protobuf/InstrumentRevision.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "instrument revision"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const InstrumentRevision& input, const bool silent) -> bool

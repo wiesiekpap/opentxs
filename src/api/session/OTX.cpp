@@ -1767,7 +1767,7 @@ auto OTX::refresh_accounts() const -> bool
                     nymID, serverID);
 
             if (registered) {
-                static auto is = String::Factory(UnallocatedCString {" is "});
+                static auto is = String::Factory(UnallocatedCString{" is "});
                 logStr->Concatenate(is);
                 try {
                     auto& queue = get_operations({nymID, serverID});
@@ -1777,11 +1777,13 @@ auto OTX::refresh_accounts() const -> bool
                     return false;
                 }
             } else {
-                static auto is_not = String::Factory(UnallocatedCString {" is not "});
+                static auto is_not =
+                    String::Factory(UnallocatedCString{" is not "});
                 logStr->Concatenate(is_not);
             }
 
-            static auto registered_here = String::Factory(UnallocatedCString {" registered here."});
+            static auto registered_here =
+                String::Factory(UnallocatedCString{" registered here."});
             logStr->Concatenate(registered_here);
             LogDetail()(OT_PRETTY_CLASS())(logStr).Flush();
         }

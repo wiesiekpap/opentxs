@@ -40,7 +40,6 @@
 namespace opentxs::otx::blind::mint
 {
 
-
 Mint::Mint(
     const api::Session& api,
     const identifier::Notary& notary,
@@ -64,7 +63,8 @@ Mint::Mint(
     m_strFilename->Set(api::Legacy::Concatenate(
                            m_NotaryID->str(),
                            api::Legacy::PathSeparator(),
-                           m_InstrumentDefinitionID->str()).c_str());
+                           m_InstrumentDefinitionID->str())
+                           .c_str());
 
     InitMint();
 }
@@ -91,7 +91,8 @@ Mint::Mint(
     m_strFilename->Set(api::Legacy::Concatenate(
                            m_NotaryID->str(),
                            api::Legacy::PathSeparator(),
-                           m_InstrumentDefinitionID->str()).c_str());
+                           m_InstrumentDefinitionID->str())
+                           .c_str());
 
     InitMint();
 }
@@ -194,15 +195,16 @@ auto Mint::LoadMint(const char* szAppend) -> bool  // todo: server should
                     api::Legacy::PathSeparator(),  // server appends ".1"
                                                    // or ".PUBLIC" here.
                     strInstrumentDefinitionID->Get(),
-                    szAppend).c_str()
-                );
+                    szAppend)
+                    .c_str());
         else
             m_strFilename->Set(api::Legacy::Concatenate(
                                    strNotaryID->Get(),
                                    api::Legacy::PathSeparator(),
-                                   strInstrumentDefinitionID->Get()).c_str()  // client uses only
-                                                                    // instrument definition
-                                                                    // id, no append.
+                                   strInstrumentDefinitionID->Get())
+                                   .c_str()  // client uses only
+                                             // instrument definition
+                                             // id, no append.
             );
     }
 
@@ -210,7 +212,8 @@ auto Mint::LoadMint(const char* szAppend) -> bool  // todo: server should
     if (nullptr != szAppend)
         strFilename->Set(api::Legacy::Concatenate(
                              strInstrumentDefinitionID->Get(),
-                             szAppend) .c_str() // server side
+                             szAppend)
+                             .c_str()  // server side
         );
     else
         strFilename =
@@ -279,21 +282,21 @@ auto Mint::SaveMint(const char* szAppend) -> bool
                                    strNotaryID->Get(),
                                    api::Legacy::PathSeparator(),  // server side
                                    strInstrumentDefinitionID->Get(),
-                                   szAppend).c_str()
-                );
+                                   szAppend)
+                                   .c_str());
         else
             m_strFilename->Set(api::Legacy::Concatenate(
                                    strNotaryID->Get(),
                                    api::Legacy::PathSeparator(),
-                                   strInstrumentDefinitionID->Get()).c_str()
-                );  // client side
+                                   strInstrumentDefinitionID->Get())
+                                   .c_str());  // client side
     }
 
     auto strFilename = String::Factory();
     if (nullptr != szAppend)
         strFilename->Set(
-            api::Legacy::Concatenate(strInstrumentDefinitionID->Get(), szAppend).c_str()
-            );
+            api::Legacy::Concatenate(strInstrumentDefinitionID->Get(), szAppend)
+                .c_str());
     else
         strFilename = String::Factory(strInstrumentDefinitionID->Get());
 

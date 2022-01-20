@@ -32,13 +32,16 @@ public:
     static auto GetFilenameSuccess(const char* filename) -> UnallocatedCString;
     static auto GetFilenameFail(const char* filename) -> UnallocatedCString;
     static auto GetFilenameError(const char* filename) -> UnallocatedCString;
-    static auto GetFilenameLst(const UnallocatedCString& filename) -> UnallocatedCString;
-    static auto Concatenate(const UnallocatedCString& notary_id,
-                            const UnallocatedCString& path_separator,
-                            const UnallocatedCString& unit_id,
-                            const char* append= "") -> UnallocatedCString;
-    static auto Concatenate(const UnallocatedCString& unit_id,
-                            const char* append) -> UnallocatedCString;
+    static auto GetFilenameLst(const UnallocatedCString& filename)
+        -> UnallocatedCString;
+    static auto Concatenate(
+        const UnallocatedCString& notary_id,
+        const UnallocatedCString& path_separator,
+        const UnallocatedCString& unit_id,
+        const char* append = "") -> UnallocatedCString;
+    static auto Concatenate(
+        const UnallocatedCString& unit_id,
+        const char* append) -> UnallocatedCString;
     virtual auto Account() const noexcept -> const char* = 0;
     virtual auto AppendFile(String& out, const String& base, const String& file)
         const noexcept -> bool = 0;

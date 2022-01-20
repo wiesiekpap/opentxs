@@ -61,7 +61,6 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "internal/api/Legacy.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -1501,7 +1500,7 @@ void Notary::NotarizeWithdrawal(
                                              // successful.
                 auto strChequeMemo = String::Factory();
                 UnallocatedCString tmp;
-                auto &ref = theVoucherRequest->GetMemo();
+                auto& ref = theVoucherRequest->GetMemo();
                 tmp.reserve(strItemNote->GetLength() + ref.GetLength());
                 tmp.append(strItemNote->Get());
                 tmp.append(ref.Get());

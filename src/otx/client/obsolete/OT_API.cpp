@@ -60,7 +60,6 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "internal/api/Legacy.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
@@ -96,7 +95,7 @@ auto VerifyBalanceReceipt(
     OT_ASSERT(false != bool(tranOut));
 
     auto filename = api::Legacy::GetFilenameSuccess(
-        accountID.str().c_str()); // receipts/NOTARY_ID/accountID.success
+        accountID.str().c_str());  // receipts/NOTARY_ID/accountID.success
     const char* szFolder1name = api.Internal().Legacy().Receipt();  // receipts
     const auto sNotaryID{NOTARY_ID.str()};
     const char* szFolder2name = sNotaryID.c_str();  // receipts/NOTARY_ID
@@ -4364,16 +4363,16 @@ auto OT_API::issueMarketOffer(
         const auto price = displaydefinition.Format(lActivationPrice);
         offer_type.clear();
         if (lPriceLimit > 0) {
-            static std::string msg {"stop limit order, at threshhold: "};
+            static std::string msg{"stop limit order, at threshhold: "};
             offer_type.reserve(msg.length() + price.length());
             offer_type.append(msg);
-            offer_type.append(&cStopSign); // 1
+            offer_type.append(&cStopSign);  // 1
             offer_type.append(price);
         } else {
-            static std::string msg {"stop order, at threshhold: "};
+            static std::string msg{"stop order, at threshhold: "};
             offer_type.reserve(msg.length() + price.length());
             offer_type.append(msg);
-            offer_type.append(&cStopSign); // 1
+            offer_type.append(&cStopSign);  // 1
             offer_type.append(price);
         }
     }
@@ -4381,7 +4380,7 @@ auto OT_API::issueMarketOffer(
     std::string price_limit;
 
     if (lPriceLimit > 0) {
-        static std::string msg {"Price: "};
+        static std::string msg{"Price: "};
         auto limit = displaydefinition.Format(lPriceLimit);
         price_limit.reserve(msg.length() + limit.length());
         price_limit.append(msg);

@@ -13,8 +13,6 @@
 extern "C" {
 #include <pwd.h>
 #include <signal.h>
-#include <sodium.h>
-#include <stdio.h>
 #include <sys/resource.h>
 #include <unistd.h>
 #include <utility>

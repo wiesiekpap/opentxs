@@ -28,11 +28,7 @@
 #include "serialization/protobuf/UnitDefinition.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "unit definition"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 
 auto CheckProto_2(
@@ -283,5 +279,4 @@ auto CheckProto_20(const UnitDefinition& input, const bool silent, const bool)
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

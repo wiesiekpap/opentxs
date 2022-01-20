@@ -8,8 +8,6 @@
 #include "serialization/protobuf/StorageWorkflowIndex.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "storage workflow index"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const StorageWorkflowIndex& input, const bool silent) -> bool

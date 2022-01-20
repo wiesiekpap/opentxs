@@ -9,11 +9,7 @@
 #include "serialization/protobuf/SourceProof.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "source proof"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 
 auto CheckProto_1(
@@ -132,5 +128,4 @@ auto CheckProto_20(const SourceProof& input, const bool silent, bool&) -> bool
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cmath>  // IWYU pragma: keep
+#include <cstdio>
 #include <memory>
 #include <sstream>  // IWYU pragma: keep
 #include <utility>
@@ -38,7 +39,6 @@
 #include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "internal/api/Legacy.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
@@ -303,17 +303,23 @@ auto Unit::DisplayStatistics(String& strContents) const -> bool
 
             break;
         case contract::UnitType::Basket:
-            type = "basket currency"; //length 15 if it changes adjust it in buf
+            type =
+                "basket currency";  // length 15 if it changes adjust it in buf
 
             break;
         default:
             break;
     }
 
-    static std::string fmt {" Asset Type:  %s\n InstrumentDefinitionID: %s\n\n"};
+    static std::string fmt{" Asset Type:  %s\n InstrumentDefinitionID: %s\n\n"};
     UnallocatedVector<char> buf;
     buf.reserve(fmt.length() + 1 + 15 + id_->size());
-    auto size = std::snprintf(&buf[0], buf.capacity(), fmt.c_str(), type, reinterpret_cast<const char*>(id_->data()));
+    auto size = std::snprintf(
+        &buf[0],
+        buf.capacity(),
+        fmt.c_str(),
+        type,
+        reinterpret_cast<const char*>(id_->data()));
     strContents.Concatenate(String::Factory(&buf[0], size));
 
     return true;

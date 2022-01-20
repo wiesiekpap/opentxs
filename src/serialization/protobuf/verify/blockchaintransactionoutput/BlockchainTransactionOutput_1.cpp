@@ -11,11 +11,7 @@
 #include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "blockchain transaction output"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(const BlockchainTransactionOutput& input, const bool silent)
     -> bool
@@ -142,5 +138,4 @@ auto CheckProto_20(const BlockchainTransactionOutput& input, const bool silent)
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

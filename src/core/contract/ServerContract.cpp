@@ -8,6 +8,7 @@
 #include "core/contract/ServerContract.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <cstdio>
 #include <iterator>
 #include <memory>
 #include <stdexcept>
@@ -382,10 +383,15 @@ auto Server::Statistics(String& strContents) const -> bool
 {
     auto alias = nym_->Alias();
 
-    static std::string fmt {" Notary Provider:  %s\n NotaryID: %s\n\n"};
+    static std::string fmt{" Notary Provider:  %s\n NotaryID: %s\n\n"};
     UnallocatedVector<char> buf;
     buf.reserve(fmt.length() + 1 + alias.length() + id_->size());
-    auto size = std::snprintf(&buf[0], buf.capacity(), fmt.c_str(), alias.c_str(), reinterpret_cast<const char*>(id_->data()));
+    auto size = std::snprintf(
+        &buf[0],
+        buf.capacity(),
+        fmt.c_str(),
+        alias.c_str(),
+        reinterpret_cast<const char*>(id_->data()));
 
     strContents.Concatenate(String::Factory(&buf[0], size));
 

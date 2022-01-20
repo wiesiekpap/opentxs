@@ -27,11 +27,7 @@
 #include "serialization/protobuf/Signature.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "peer reply"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_2(const PeerReply& input, const bool silent) -> bool
 {
@@ -158,5 +154,4 @@ auto CheckProto_2(const PeerReply& input, const bool silent) -> bool
 
     return true;
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

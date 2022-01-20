@@ -10,11 +10,7 @@
 #include "serialization/protobuf/ScaleRatio.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "scale ratio"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 
 auto CheckProto_1(const ScaleRatio& input, const bool silent) -> bool
@@ -123,5 +119,4 @@ auto CheckProto_20(const ScaleRatio& input, const bool silent) -> bool
     UNDEFINED_VERSION(20)
 }
 
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

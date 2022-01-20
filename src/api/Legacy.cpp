@@ -10,6 +10,7 @@
 #include <boost/filesystem.hpp>
 #include <cstdlib>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 #include "internal/api/Factory.hpp"
@@ -17,6 +18,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 #define CLIENT_CONFIG_KEY "client"
@@ -51,11 +53,18 @@ auto Legacy::SuggestFolder(const UnallocatedCString& app) noexcept
     return path.string();
 }
 
-auto Legacy::Concatenate(const UnallocatedCString& notary_id, const UnallocatedCString& path_separator, const UnallocatedCString& unit_id, const char* append) -> UnallocatedCString {
+auto Legacy::Concatenate(
+    const UnallocatedCString& notary_id,
+    const UnallocatedCString& path_separator,
+    const UnallocatedCString& unit_id,
+    const char* append) -> UnallocatedCString
+{
     UnallocatedCString app(append);
 
     UnallocatedCString tmp;
-    tmp.reserve(notary_id.length() + path_separator.length() + unit_id.length() + app.length());
+    tmp.reserve(
+        notary_id.length() + path_separator.length() + unit_id.length() +
+        app.length());
 
     tmp.append(notary_id);
     tmp.append(path_separator);
@@ -65,7 +74,9 @@ auto Legacy::Concatenate(const UnallocatedCString& notary_id, const UnallocatedC
     return tmp;
 }
 
-auto Legacy::Concatenate(const UnallocatedCString& unit_id, const char* append) -> UnallocatedCString {
+auto Legacy::Concatenate(const UnallocatedCString& unit_id, const char* append)
+    -> UnallocatedCString
+{
     UnallocatedCString app(append);
     UnallocatedCString tmp;
     tmp.reserve(unit_id.length() + app.length());
@@ -76,14 +87,11 @@ auto Legacy::Concatenate(const UnallocatedCString& unit_id, const char* append) 
     return tmp;
 }
 
-
 auto Legacy::internal_concatenate(
-        const UnallocatedCString& name,
-        const UnallocatedCString& ext) -> UnallocatedCString
+    const UnallocatedCString& name,
+    const UnallocatedCString& ext) -> UnallocatedCString
 {
-    if (name.empty()) {
-        throw std::runtime_error("filname is empty");
-    }
+    if (name.empty()) { throw std::runtime_error("filname is empty"); }
     if (name[0] == '-') {
         throw std::runtime_error("negative number is not supported");
     }
@@ -143,7 +151,8 @@ auto Legacy::GetFilenameError(const char* filename) -> UnallocatedCString
     return Legacy::internal_concatenate(filename, ext);
 }
 
-auto Legacy::GetFilenameLst(const UnallocatedCString& filename) -> UnallocatedCString
+auto Legacy::GetFilenameLst(const UnallocatedCString& filename)
+    -> UnallocatedCString
 {
     static UnallocatedCString ext{".lst"};
     return Legacy::internal_concatenate(filename, ext);

@@ -8,11 +8,7 @@
 #include "serialization/protobuf/StorageBlockchainTransactions.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "storage blockchain transactions"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 
 auto CheckProto_1(const StorageBlockchainTransactions& input, const bool silent)
@@ -148,5 +144,4 @@ auto CheckProto_20(
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

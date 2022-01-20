@@ -9,6 +9,7 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
+#include <cstdio>
 #include <memory>
 #include <utility>
 
@@ -181,16 +182,27 @@ auto MainFile::CreateMainFile(
 
     std::int64_t lTransNum = 5;  // a starting point, for the new server.
 
-    auto concatenation_lambda = [](const UnallocatedCString& fmt, const UnallocatedCString& notary_id, const UnallocatedCString& nym_id, int64_t _trans_num) -> UnallocatedCString {
+    auto concatenation_lambda = [](const UnallocatedCString& fmt,
+                                   const UnallocatedCString& notary_id,
+                                   const UnallocatedCString& nym_id,
+                                   int64_t _trans_num) -> UnallocatedCString {
         auto trans_num = std::to_string(_trans_num);
         UnallocatedVector<char> tmp;
-        tmp.reserve(fmt.length() + 1 + notary_id.length() + nym_id.length() + trans_num.length());
-        auto size = std::snprintf(&tmp[0], tmp.capacity(), fmt.c_str(), notary_id.c_str(), nym_id.c_str(), _trans_num);
+        tmp.reserve(
+            fmt.length() + 1 + notary_id.length() + nym_id.length() +
+            trans_num.length());
+        auto size = std::snprintf(
+            &tmp[0],
+            tmp.capacity(),
+            fmt.c_str(),
+            notary_id.c_str(),
+            nym_id.c_str(),
+            _trans_num);
 
-        return UnallocatedCString (tmp.begin(), tmp.begin() + size);
+        return UnallocatedCString(tmp.begin(), tmp.begin() + size);
     };
 
-    auto notary {concatenation_lambda(fmt, strNotaryID, strNymID, lTransNum)};
+    auto notary{concatenation_lambda(fmt, strNotaryID, strNymID, lTransNum)};
 
     if (!OTDB::StorePlainString(
             server_.API(),

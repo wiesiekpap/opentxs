@@ -9,6 +9,7 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
+#include <cstdio>
 #include <memory>
 #include <utility>
 
@@ -313,19 +314,29 @@ void NymFile::DisplayStatistics(opentxs::String& strOutput) const
     auto source = target_nym_->Source().asString();
     auto alias = target_nym_->Alias();
     auto theStringID = String::Factory(target_nym_->ID());
-    static std::string marked_for_deletion {"(MARKED FOR DELETION)"};
+    static std::string marked_for_deletion{"(MARKED FOR DELETION)"};
 
-    static std::string fmt {"Source for ID:\n%s\nDescription: %s\n\n\n==>      Name: %s   %s\n      Version: %s\nOutpayments count: %s\nNym ID: %s\n"};
+    static std::string fmt{
+        "Source for ID:\n%s\nDescription: %s\n\n\n==>      Name: %s   %s\n     "
+        " Version: %s\nOutpayments count: %s\nNym ID: %s\n"};
     UnallocatedVector<char> buf;
-    buf.reserve(fmt.length() + 1 + source->GetLength() + m_strDescription->GetLength()
-                + alias.length() + marked_for_deletion.length() + m_strVersion->GetLength()
-                + out_payments.length() + theStringID->GetLength());
+    buf.reserve(
+        fmt.length() + 1 + source->GetLength() + m_strDescription->GetLength() +
+        alias.length() + marked_for_deletion.length() +
+        m_strVersion->GetLength() + out_payments.length() +
+        theStringID->GetLength());
 
-    auto size = std::snprintf(&buf[0], buf.capacity(), fmt.c_str(), source->Get(),
-                              m_strDescription->Get(), alias.c_str(),
-                              (m_bMarkForDeletion ? marked_for_deletion.c_str() : ""),
-                              m_strVersion->Get(), out_payments.c_str(), theStringID->Get()
-                              );
+    auto size = std::snprintf(
+        &buf[0],
+        buf.capacity(),
+        fmt.c_str(),
+        source->Get(),
+        m_strDescription->Get(),
+        alias.c_str(),
+        (m_bMarkForDeletion ? marked_for_deletion.c_str() : ""),
+        m_strVersion->Get(),
+        out_payments.c_str(),
+        theStringID->Get());
 
     strOutput.Concatenate(String::Factory(&buf[0], size));
 }
