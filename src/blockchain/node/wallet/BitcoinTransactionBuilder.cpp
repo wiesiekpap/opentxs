@@ -26,6 +26,7 @@
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -234,7 +235,7 @@ struct BitcoinTransactionBuilder::Imp {
             utxo.first.str())(" to transaction")
             .Flush();
         input_count_ = inputs_.size();
-        input_total_ += input.CalculateSize();
+        input.GetBytes(input_total_, witness_total_);
         const auto amount = Amount{utxo.second->Value()};
         input_value_ += amount;
         inputs_.emplace_back(std::move(pInput), amount);
@@ -480,6 +481,7 @@ struct BitcoinTransactionBuilder::Imp {
         , input_count_()
         , output_count_()
         , input_total_()
+        , witness_total_()
         , output_total_()
         , input_value_()
         , output_value_()
@@ -527,6 +529,7 @@ private:
     bitcoin::CompactSize input_count_;
     bitcoin::CompactSize output_count_;
     std::size_t input_total_;
+    std::size_t witness_total_;
     std::size_t output_total_;
     Amount input_value_;
     Amount output_value_;
@@ -830,9 +833,27 @@ private:
     {
         // NOTE assumes one additional output to account for change
         const auto outputs = bitcoin::CompactSize{output_count_.Value() + 1};
+        const auto base = fixed_overhead_ + input_count_.Size() + input_total_ +
+                          outputs.Size() + output_total_ + p2pkh_output_bytes_;
 
-        return fixed_overhead_ + input_count_.Size() + input_total_ +
-               outputs.Size() + output_total_ + p2pkh_output_bytes_;
+        if (false == segwit_) { return base; }
+
+        static constexpr auto markerBytes = std::size_t{2u};
+        const auto segwit = markerBytes + witness_total_;
+        const auto total = base + segwit;
+        const auto scale =
+            params::Data::Chains().at(chain_).segwit_scale_factor_;
+
+        OT_ASSERT(0 < scale);
+
+        const auto factor = scale - 1u;
+        // TODO check for std::size_t overflow?
+        const auto wu = (segwit * factor) + total;
+        static constexpr auto ceil = [](const auto a, const auto b) {
+            return (a + (b - 1u)) / b;
+        };
+
+        return ceil(wu, scale);
     }
     auto dust() const noexcept -> std::size_t
     {

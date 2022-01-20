@@ -138,6 +138,8 @@ struct Input : virtual public bitcoin::Input {
         const filter::Type type,
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
+    virtual auto GetBytes(std::size_t& base, std::size_t& witness)
+        const noexcept -> void = 0;
     virtual auto GetPatterns() const noexcept
         -> UnallocatedVector<PatternID> = 0;
     virtual auto NetBalanceChange(const identifier::Nym& nym) const noexcept
