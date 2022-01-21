@@ -29,10 +29,12 @@ Storage::Storage(
     const Flag& running,
     Options&& args,
     const api::Session& session,
+    const api::session::Endpoints& endpoints,
     const api::Crypto& crypto,
     const api::Settings& config,
     const api::Legacy& legacy,
     const api::network::Asio& asio,
+    const opentxs::network::zeromq::Context& zmq,
     const UnallocatedCString& dataFolder,
     std::unique_ptr<api::session::Factory> factory)
     : config_(config)
@@ -45,8 +47,10 @@ Storage::Storage(
     , crypto_p_(factory::SessionCryptoAPI(
           const_cast<api::Crypto&>(crypto),
           session,
+          endpoints,
           *factory_p_,
-          *storage_))
+          *storage_,
+          zmq))
     , factory_(*factory_p_)
     , crypto_(*crypto_p_)
     , storage_encryption_key_(opentxs::crypto::key::Symmetric::Factory())

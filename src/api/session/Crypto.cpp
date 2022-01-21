@@ -20,13 +20,16 @@ namespace opentxs::factory
 auto SessionCryptoAPI(
     api::Crypto& parent,
     const api::Session& session,
+    const api::session::Endpoints& endpoints,
     const api::session::Factory& factory,
-    const api::session::Storage& storage) noexcept
+    const api::session::Storage& storage,
+    const network::zeromq::Context& zmq) noexcept
     -> std::unique_ptr<api::session::Crypto>
 {
     using ReturnType = api::session::imp::Crypto;
 
-    return std::make_unique<ReturnType>(parent, session, factory, storage);
+    return std::make_unique<ReturnType>(
+        parent, session, endpoints, factory, storage, zmq);
 }
 }  // namespace opentxs::factory
 
@@ -35,8 +38,10 @@ namespace opentxs::api::session::imp
 Crypto::Crypto(
     api::Crypto& parent,
     const api::Session& session,
+    const api::session::Endpoints& endpoints,
     const api::session::Factory& factory,
-    const api::session::Storage& storage) noexcept
+    const api::session::Storage& storage,
+    const opentxs::network::zeromq::Context& zmq) noexcept
     : lock_()
     , blank_blockchain_(factory)
     , blockchain_()
@@ -45,12 +50,14 @@ Crypto::Crypto(
     , symmetric_(factory.InternalSession().Symmetric())
     , seed_p_(factory::SeedAPI(
           session,
+          endpoints,
           factory,
           asymmetric_,
           symmetric_,
           storage,
           parent_.BIP32(),
-          parent_.BIP39()))
+          parent_.BIP39(),
+          zmq))
     , seed_(*seed_p_)
 {
     OT_ASSERT(seed_p_);

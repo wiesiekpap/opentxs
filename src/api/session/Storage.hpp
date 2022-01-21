@@ -428,13 +428,9 @@ public:
     auto Store(const proto::Contact& data) const -> bool final;
     auto Store(const proto::Context& data) const -> bool final;
     auto Store(const proto::Credential& data) const -> bool final;
-    auto Store(
-        const proto::Nym& data,
-        const UnallocatedCString& alias = UnallocatedCString("")) const
-        -> bool final;
-    auto Store(
-        const ReadView& data,
-        const UnallocatedCString& alias = UnallocatedCString("")) const
+    auto Store(const proto::Nym& data, const UnallocatedCString& alias = {})
+        const -> bool final;
+    auto Store(const ReadView& data, const UnallocatedCString& alias = {}) const
         -> bool final;
     auto Store(const UnallocatedCString& nymID, const proto::Issuer& data) const
         -> bool final;
@@ -449,8 +445,7 @@ public:
         const UnallocatedCString& alias,
         const UnallocatedCString& data,
         const StorageBox box,
-        const UnallocatedCString& account = UnallocatedCString("")) const
-        -> bool final;
+        const UnallocatedCString& account = {}) const -> bool final;
     auto Store(
         const identifier::Nym& nym,
         const Identifier& thread,
@@ -467,19 +462,14 @@ public:
         const StorageBox box) const -> bool final;
     auto Store(const identifier::Nym& nym, const proto::Purse& purse) const
         -> bool final;
-    auto Store(
-        const proto::Seed& data,
-        const UnallocatedCString& alias = UnallocatedCString("")) const
-        -> bool final;
+    auto Store(const proto::Seed& data) const -> bool final;
     auto Store(
         const proto::ServerContract& data,
-        const UnallocatedCString& alias = UnallocatedCString("")) const
-        -> bool final;
+        const UnallocatedCString& alias = {}) const -> bool final;
     auto Store(const proto::Ciphertext& serialized) const -> bool final;
     auto Store(
         const proto::UnitDefinition& data,
-        const UnallocatedCString& alias = UnallocatedCString("")) const
-        -> bool final;
+        const UnallocatedCString& alias = {}) const -> bool final;
     auto ThreadList(const UnallocatedCString& nymID, const bool unreadOnly)
         const -> ObjectList final;
     auto ThreadAlias(

@@ -17,10 +17,12 @@
 
 #include "Proto.hpp"
 #include "Proto.tpp"
-#include "crypto/Seed.hpp"
+#include "core/Worker.hpp"
 #include "internal/api/Crypto.hpp"
 #include "internal/api/crypto/Asymmetric.hpp"
 #include "internal/api/crypto/Factory.hpp"
+#include "internal/crypto/Factory.hpp"
+#include "internal/crypto/Seed.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
@@ -30,6 +32,7 @@
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
@@ -42,7 +45,8 @@
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/HashType.hpp"
-#include "opentxs/crypto/Language.hpp"      // IWYU pragma: keep
+#include "opentxs/crypto/Language.hpp"  // IWYU pragma: keep
+#include "opentxs/crypto/Seed.hpp"
 #include "opentxs/crypto/SeedStrength.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/SeedStyle.hpp"     // IWYU pragma: keep
 #include "opentxs/crypto/key/EllipticCurve.hpp"
@@ -51,9 +55,12 @@
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 #include "serialization/protobuf/Seed.pb.h"
 #include "util/HDIndex.hpp"  // IWYU pragma: keep
@@ -62,17 +69,28 @@ namespace opentxs::factory
 {
 auto SeedAPI(
     const api::Session& api,
+    const api::session::Endpoints& endpoints,
     const api::session::Factory& factory,
     const api::crypto::Asymmetric& asymmetric,
     const api::crypto::Symmetric& symmetric,
     const api::session::Storage& storage,
     const crypto::Bip32& bip32,
-    const crypto::Bip39& bip39) noexcept -> std::unique_ptr<api::crypto::Seed>
+    const crypto::Bip39& bip39,
+    const network::zeromq::Context& zmq) noexcept
+    -> std::unique_ptr<api::crypto::Seed>
 {
     using ReturnType = api::crypto::imp::Seed;
 
     return std::make_unique<ReturnType>(
-        api, factory, asymmetric, symmetric, storage, bip32, bip39);
+        api,
+        endpoints,
+        factory,
+        asymmetric,
+        symmetric,
+        storage,
+        bip32,
+        bip39,
+        zmq);
 }
 }  // namespace opentxs::factory
 
@@ -80,12 +98,14 @@ namespace opentxs::api::crypto::imp
 {
 Seed::Seed(
     const api::Session& api,
+    const api::session::Endpoints& endpoints,
     const api::session::Factory& factory,
     const api::crypto::Asymmetric& asymmetric,
     const api::crypto::Symmetric& symmetric,
     const api::session::Storage& storage,
     const opentxs::crypto::Bip32& bip32,
-    const opentxs::crypto::Bip39& bip39)
+    const opentxs::crypto::Bip39& bip39,
+    const opentxs::network::zeromq::Context& zmq)
     : api_(api)  // WARNING do not access during construction
     , factory_(factory)
     , symmetric_(symmetric)
@@ -93,6 +113,14 @@ Seed::Seed(
     , storage_(storage)
     , bip32_(bip32)
     , bip39_(bip39)
+    , socket_([&] {
+        auto out = zmq.PublishSocket();
+        const auto rc = out->Start(endpoints.SeedUpdated());
+
+        OT_ASSERT(rc);
+
+        return out;
+    }())
     , seed_lock_()
     , seeds_()
 {
@@ -316,7 +344,7 @@ auto Seed::GetOrCreateDefaultSeed(
     seedID = storage_.DefaultSeed();
 
     if (seedID.empty()) {
-        seedID = new_seed(lock, type, lang, strength, reason);
+        seedID = new_seed(lock, type, lang, strength, {}, reason);
     }
 
     try {
@@ -441,6 +469,20 @@ auto Seed::GetSeed(
     }
 }
 
+auto Seed::GetSeed(const Identifier& id, const PasswordPrompt& reason)
+    const noexcept -> opentxs::crypto::Seed
+{
+    auto lock = Lock{seed_lock_};
+
+    try {
+
+        return get_seed(lock, id.str(), reason);
+    } catch (...) {
+
+        return {};
+    }
+}
+
 auto Seed::get_seed(
     const Lock& lock,
     const UnallocatedCString& seedID,
@@ -456,8 +498,8 @@ auto Seed::get_seed(
             UnallocatedCString{"Failed to load seed "} + seedID};
     }
 
-    auto seed = opentxs::crypto::Seed{
-        api_, bip39_, symmetric_, factory_, storage_, proto, reason};
+    auto seed = factory::Seed(
+        api_, bip39_, symmetric_, factory_, storage_, proto, reason);
     auto id = seed.ID().str();
 
     OT_ASSERT(id == seedID);
@@ -477,12 +519,17 @@ auto Seed::ImportRaw(const Secret& entropy, const PasswordPrompt& reason) const
     auto lock = Lock{seed_lock_};
 
     try {
-        auto seed = opentxs::crypto::Seed{
-            bip32_, bip39_, symmetric_, factory_, storage_, entropy, reason};
-        const auto id = seed.ID().str();
-        seeds_.try_emplace(id, std::move(seed));
-
-        return id;
+        return new_seed(
+            lock,
+            {},  // NOTE: no comment
+            factory::Seed(
+                bip32_,
+                bip39_,
+                symmetric_,
+                factory_,
+                storage_,
+                entropy,
+                reason));
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
@@ -495,7 +542,8 @@ auto Seed::ImportSeed(
     const Secret& passphrase,
     const opentxs::crypto::SeedStyle type,
     const opentxs::crypto::Language lang,
-    const PasswordPrompt& reason) const -> UnallocatedCString
+    const PasswordPrompt& reason,
+    const std::string_view comment) const -> UnallocatedCString
 {
     switch (type) {
         case opentxs::crypto::SeedStyle::BIP39:
@@ -511,22 +559,21 @@ auto Seed::ImportSeed(
     auto lock = Lock{seed_lock_};
 
     try {
-        auto seed = opentxs::crypto::Seed{
-            api_,
-            bip32_,
-            bip39_,
-            symmetric_,
-            factory_,
-            storage_,
-            type,
-            lang,
-            words,
-            passphrase,
-            reason};
-        const auto id = seed.ID().str();
-        seeds_.try_emplace(id, std::move(seed));
-
-        return id;
+        return new_seed(
+            lock,
+            comment,
+            factory::Seed(
+                api_,
+                bip32_,
+                bip39_,
+                symmetric_,
+                factory_,
+                storage_,
+                type,
+                lang,
+                words,
+                passphrase,
+                reason));
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
@@ -559,18 +606,20 @@ auto Seed::NewSeed(
     const opentxs::crypto::SeedStyle type,
     const opentxs::crypto::Language lang,
     const opentxs::crypto::SeedStrength strength,
-    const PasswordPrompt& reason) const -> UnallocatedCString
+    const PasswordPrompt& reason,
+    const std::string_view comment) const -> UnallocatedCString
 {
     auto lock = Lock{seed_lock_};
 
-    return new_seed(lock, type, lang, strength, reason);
+    return new_seed(lock, type, lang, strength, comment, reason);
 }
 
 auto Seed::new_seed(
-    const Lock&,
+    const Lock& lock,
     const opentxs::crypto::SeedStyle type,
     const opentxs::crypto::Language lang,
     const opentxs::crypto::SeedStrength strength,
+    const std::string_view comment,
     const PasswordPrompt& reason) const noexcept -> UnallocatedCString
 {
     switch (type) {
@@ -584,24 +633,39 @@ auto Seed::new_seed(
     }
 
     try {
-        auto seed = opentxs::crypto::Seed{
-            bip32_,
-            bip39_,
-            symmetric_,
-            factory_,
-            storage_,
-            lang,
-            strength,
-            reason};
-        const auto id = seed.ID().str();
-        seeds_.try_emplace(id, std::move(seed));
-
-        return id;
+        return new_seed(
+            lock,
+            comment,
+            factory::Seed(
+                bip32_,
+                bip39_,
+                symmetric_,
+                factory_,
+                storage_,
+                lang,
+                strength,
+                reason));
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return {};
     }
+}
+
+auto Seed::new_seed(
+    const Lock&,
+    const std::string_view comment,
+    opentxs::crypto::Seed&& seed) const noexcept -> UnallocatedCString
+{
+    const auto& id = seed.ID();
+    const auto sID = id.str();
+    seeds_.try_emplace(sID, std::move(seed));
+
+    if (valid(comment)) { SetSeedComment(id, comment); }
+
+    publish(id);
+
+    return sID;
 }
 
 auto Seed::Passphrase(
@@ -619,6 +683,21 @@ auto Seed::Passphrase(
 
         return {};
     }
+}
+
+auto Seed::publish(const UnallocatedCString& id) const noexcept -> void
+{
+    publish(api_.Factory().Identifier(id));
+}
+
+auto Seed::publish(const Identifier& id) const noexcept -> void
+{
+    socket_->Send([&] {
+        auto out = MakeWork(WorkType::SeedUpdated);
+        out.AddFrame(id);
+
+        return out;
+    }());
 }
 
 auto Seed::SeedDescription(UnallocatedCString seedID) const noexcept
@@ -642,14 +721,19 @@ auto Seed::SeedDescription(UnallocatedCString seedID) const noexcept
             }
 
             return std::make_pair(
-                opentxs::crypto::Seed::Translate(proto.type()),
+                opentxs::crypto::internal::Seed::Translate(proto.type()),
                 std::move(name));
         }();
         auto out = std::stringstream{};
-        out << opentxs::print(type);
-        out << " seed";
 
-        if (false == alias.empty()) { out << ": " << alias; }
+        if (alias.empty()) {
+            out << "Unnamed seed";
+        } else {
+            out << alias;
+        }
+
+        out << ": ";
+        out << opentxs::print(type);
 
         if (isDefault) { out << " (default)"; }
 
@@ -657,6 +741,27 @@ auto Seed::SeedDescription(UnallocatedCString seedID) const noexcept
     } catch (...) {
 
         return "Invalid seed";
+    }
+}
+
+auto Seed::SetSeedComment(const Identifier& id, const std::string_view comment)
+    const noexcept -> bool
+{
+    const auto alias = std::string{comment};
+
+    if (api_.Storage().SetSeedAlias(id.str(), alias)) {
+        LogVerbose()(OT_PRETTY_CLASS())("Changed seed comment for ")(
+            id)(" to ")(alias)
+            .Flush();
+        publish(id);
+
+        return true;
+    } else {
+        LogError()(OT_PRETTY_CLASS())("Failed to set seed comment for ")(
+            id)(" to ")(alias)
+            .Flush();
+
+        return false;
     }
 }
 
@@ -670,7 +775,7 @@ auto Seed::UpdateIndex(
     try {
         auto& seed = get_seed(lock, seedID, reason);
 
-        return seed.IncrementIndex(index);
+        return seed.Internal().IncrementIndex(index);
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 

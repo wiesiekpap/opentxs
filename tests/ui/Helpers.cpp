@@ -37,7 +37,26 @@
 #include "opentxs/interface/ui/MessagableList.hpp"
 #include "opentxs/interface/ui/NymList.hpp"
 #include "opentxs/interface/ui/NymListItem.hpp"
+#include "opentxs/interface/ui/SeedTree.hpp"
+#include "opentxs/interface/ui/SeedTreeItem.hpp"
+#include "opentxs/interface/ui/SeedTreeNym.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
+
+namespace ottest
+{
+auto check_account_tree_items(
+    const ot::ui::AccountCurrency& widget,
+    const ot::UnallocatedVector<AccountTreeRow>& v) noexcept -> bool;
+auto check_blockchain_subaccounts(
+    const ot::ui::BlockchainSubaccountSource& widget,
+    const ot::UnallocatedVector<BlockchainSubaccountData>& v) noexcept -> bool;
+auto check_blockchain_subchains(
+    const ot::ui::BlockchainSubaccount& widget,
+    const ot::UnallocatedVector<BlockchainSubchainData>& v) noexcept -> bool;
+auto check_seed_tree_items(
+    const ot::ui::SeedTreeItem& widget,
+    const ot::UnallocatedVector<SeedTreeNym>& v) noexcept -> bool;
+}  // namespace ottest
 
 namespace ottest
 {
@@ -65,16 +84,6 @@ auto activity_thread_send_message(
 
     return set && sent;
 }
-
-auto check_account_tree_items(
-    const ot::ui::AccountCurrency& widget,
-    const ot::UnallocatedVector<AccountTreeRow>& v) noexcept -> bool;
-auto check_blockchain_subaccounts(
-    const ot::ui::BlockchainSubaccountSource& widget,
-    const ot::UnallocatedVector<BlockchainSubaccountData>& v) noexcept -> bool;
-auto check_blockchain_subchains(
-    const ot::ui::BlockchainSubaccount& widget,
-    const ot::UnallocatedVector<BlockchainSubchainData>& v) noexcept -> bool;
 
 auto check_account_activity(
     const User& user,
@@ -820,6 +829,97 @@ auto check_nym_list(
     return output;
 }
 
+auto check_seed_tree(
+    const ot::api::session::Client& api,
+    const SeedTreeData& expected) noexcept -> bool
+{
+    const auto& widget = api.UI().SeedTree();
+    auto output{true};
+    const auto& v = expected.rows_;
+    auto row = widget.First();
+
+    if (const auto valid = row->Valid(); 0 < v.size()) {
+        output &= valid;
+
+        EXPECT_TRUE(valid);
+
+        if (false == valid) { return output; }
+    } else {
+        output &= (false == valid);
+
+        EXPECT_FALSE(valid);
+    }
+
+    for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
+        output &= (row->SeedID() == it->id_);
+        output &= (row->Name() == it->name_);
+        output &= (row->Type() == it->type_);
+        output &= check_seed_tree_items(row.get(), it->rows_);
+
+        EXPECT_EQ(row->SeedID(), it->id_);
+        EXPECT_EQ(row->Name(), it->name_);
+        EXPECT_EQ(row->Type(), it->type_);
+
+        const auto lastVector = std::next(it) == v.end();
+        const auto lastRow = row->Last();
+        output &= (lastVector == lastRow);
+
+        if (lastVector) {
+            EXPECT_TRUE(lastRow);
+        } else {
+            EXPECT_FALSE(lastRow);
+
+            if (lastRow) { return output; }
+        }
+    }
+
+    return output;
+}
+
+auto check_seed_tree_items(
+    const ot::ui::SeedTreeItem& widget,
+    const ot::UnallocatedVector<SeedTreeNym>& v) noexcept -> bool
+{
+    auto output{true};
+    auto row = widget.First();
+
+    if (const auto valid = row->Valid(); 0 < v.size()) {
+        output &= valid;
+
+        EXPECT_TRUE(valid);
+
+        if (false == valid) { return output; }
+    } else {
+        output &= (false == valid);
+
+        EXPECT_FALSE(valid);
+    }
+
+    for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
+        const auto lastVector = std::next(it) == v.end();
+        const auto lastRow = row->Last();
+        output &= (row->Index() == it->index_);
+        output &= (row->Name() == it->name_);
+        output &= (row->NymID() == it->id_);
+        output &= (lastVector == lastRow);
+
+        EXPECT_EQ(row->Index(), it->index_);
+        EXPECT_EQ(row->Name(), it->name_);
+        EXPECT_EQ(row->NymID(), it->id_);
+        EXPECT_EQ(lastVector, lastRow);
+
+        if (lastVector) {
+            EXPECT_TRUE(lastRow);
+        } else {
+            EXPECT_FALSE(lastRow);
+
+            if (lastRow) { return output; }
+        }
+    }
+
+    return output;
+}
+
 auto contact_list_add_contact(
     const User& user,
     const ot::UnallocatedCString& label,
@@ -930,9 +1030,24 @@ auto init_nym_list(
     api.UI().NymList(make_cb(counter, "nym_list"));
 }
 
+auto init_seed_tree(
+    const ot::api::session::Client& api,
+    Counter& counter) noexcept -> void
+{
+    api.UI().SeedTree(make_cb(counter, "seed_tree"));
+}
+
 auto print_account_tree(const User& user) noexcept -> ot::UnallocatedCString
 {
     const auto& widget = user.api_->UI().AccountTree(user.nym_id_);
+
+    return widget.Debug();
+}
+
+auto print_seed_tree(const ot::api::session::Client& api) noexcept
+    -> ot::UnallocatedCString
+{
+    const auto& widget = api.UI().SeedTree();
 
     return widget.Debug();
 }

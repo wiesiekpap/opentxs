@@ -428,6 +428,17 @@ public:
      */
     virtual auto PendingBailment() const noexcept -> UnallocatedCString = 0;
 
+    /** HD seed update notifications
+     *
+     *  A subscribe socket can connect to this endpoint to receive
+     *  SeedUpdated tagged messages
+     *
+     *  See opentxs/util/WorkTypes.hpp for message format documentation
+     *
+     *  This endpoint is active for all session types.
+     */
+    virtual auto SeedUpdated() const noexcept -> UnallocatedCString = 0;
+
     /** Server reply notification
      *
      *  A subscribe socket can connect to this endpoint to be notified when

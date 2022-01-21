@@ -34,6 +34,7 @@
 #include "opentxs/interface/ui/NymList.hpp"
 #include "opentxs/interface/ui/PayableList.hpp"
 #include "opentxs/interface/ui/Profile.hpp"
+#include "opentxs/interface/ui/SeedTree.hpp"
 #include "opentxs/interface/ui/UnitList.hpp"
 
 class QAbstractItemModel;
@@ -79,6 +80,8 @@ class PayableList;
 class PayableListQt;
 class Profile;
 class ProfileQt;
+class SeedTree;
+class SeedTreeQt;
 class SeedValidator;
 class UnitList;
 class UnitListQt;
@@ -220,6 +223,10 @@ public:
         const noexcept -> opentxs::ui::ProfileQt* final;
     auto RegisterUICallback(const Identifier& widget, const SimpleCallback& cb)
         const noexcept -> void final;
+    auto SeedTree(const SimpleCallback updateCB) const noexcept
+        -> const opentxs::ui::SeedTree& final;
+    auto SeedTreeQt(const SimpleCallback updateCB) const noexcept
+        -> opentxs::ui::SeedTreeQt* final;
     auto SeedValidator(
         const opentxs::crypto::SeedStyle type,
         const opentxs::crypto::Language lang) const noexcept

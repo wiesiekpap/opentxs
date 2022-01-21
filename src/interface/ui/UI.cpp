@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <iosfwd>
 #include <sstream>
 
 #include "internal/core/Core.hpp"

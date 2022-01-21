@@ -8,11 +8,13 @@
 // IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
 // IWYU pragma: no_include "opentxs/core/UnitType.hpp"
+// IWYU pragma: no_include "opentxs/crypto/SeedStyle.hpp"
 // IWYU pragma: no_include "opentxs/interface/ui/Blockchains.hpp"
 
 #pragma once
 
 #include <atomic>
+#include <cstddef>
 #include <functional>
 #include <optional>
 #include <tuple>
@@ -24,6 +26,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/interface/ui/Types.hpp"
 #include "opentxs/util/Container.hpp"
@@ -214,6 +217,23 @@ struct NymListData {
     ot::UnallocatedVector<NymListRow> rows_{};
 };
 
+struct SeedTreeNym {
+    std::size_t index_{};
+    ot::UnallocatedCString id_{};
+    ot::UnallocatedCString name_{};
+};
+
+struct SeedTreeItem {
+    ot::UnallocatedCString id_{};
+    ot::UnallocatedCString name_{};
+    ot::crypto::SeedStyle type_{};
+    ot::UnallocatedVector<SeedTreeNym> rows_;
+};
+
+struct SeedTreeData {
+    ot::UnallocatedVector<SeedTreeItem> rows_;
+};
+
 auto activity_thread_send_message(
     const User& user,
     const User& contact) noexcept -> bool;
@@ -293,6 +313,13 @@ auto check_nym_list_qt(
     const ot::api::session::Client& api,
     const NymListData& expected) noexcept -> bool;
 
+auto check_seed_tree(
+    const ot::api::session::Client& api,
+    const SeedTreeData& expected) noexcept -> bool;
+auto check_seed_tree_qt(
+    const ot::api::session::Client& api,
+    const SeedTreeData& expected) noexcept -> bool;
+
 auto contact_list_add_contact(
     const User& user,
     const ot::UnallocatedCString& label,
@@ -314,11 +341,16 @@ auto init_messagable_list(const User& user, Counter& counter) noexcept -> void;
 auto init_nym_list(
     const ot::api::session::Client& api,
     Counter& counter) noexcept -> void;
+auto init_seed_tree(
+    const ot::api::session::Client& api,
+    Counter& counter) noexcept -> void;
 
 auto make_cb(Counter& counter, const ot::UnallocatedCString name) noexcept
     -> std::function<void()>;
 
 auto print_account_tree(const User& user) noexcept -> ot::UnallocatedCString;
+auto print_seed_tree(const ot::api::session::Client& api) noexcept
+    -> ot::UnallocatedCString;
 
 auto wait_for_counter(Counter& data, const bool hard = true) noexcept -> bool;
 }  // namespace ottest

@@ -40,8 +40,11 @@ namespace key
 class HD;
 class Secp256k1;
 }  // namespace key
+
+class Seed;
 }  // namespace crypto
 
+class Identifier;
 class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
@@ -97,13 +100,6 @@ public:
         const VersionNumber version,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::HD> = 0;
-    virtual auto GetOrCreateDefaultSeed(
-        UnallocatedCString& seedID,
-        opentxs::crypto::SeedStyle& type,
-        opentxs::crypto::Language& lang,
-        Bip32Index& index,
-        const opentxs::crypto::SeedStrength strength,
-        const PasswordPrompt& reason) const -> OTSecret = 0;
     virtual auto GetPaymentCode(
         const UnallocatedCString& seedID,
         const Bip32Index nym,
@@ -117,6 +113,8 @@ public:
         const UnallocatedCString& seedID,
         Bip32Index& index,
         const PasswordPrompt& reason) const -> OTSecret = 0;
+    virtual auto GetSeed(const Identifier& id, const PasswordPrompt& reason)
+        const noexcept -> opentxs::crypto::Seed = 0;
     virtual auto ImportRaw(const Secret& entropy, const PasswordPrompt& reason)
         const -> UnallocatedCString = 0;
     virtual auto ImportSeed(
@@ -124,7 +122,8 @@ public:
         const Secret& passphrase,
         const opentxs::crypto::SeedStyle type,
         const opentxs::crypto::Language lang,
-        const PasswordPrompt& reason) const -> UnallocatedCString = 0;
+        const PasswordPrompt& reason,
+        const std::string_view comment = {}) const -> UnallocatedCString = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Seed& = 0;
     virtual auto LongestWord(
@@ -134,16 +133,16 @@ public:
         const opentxs::crypto::SeedStyle type,
         const opentxs::crypto::Language lang,
         const opentxs::crypto::SeedStrength strength,
-        const PasswordPrompt& reason) const -> UnallocatedCString = 0;
+        const PasswordPrompt& reason,
+        const std::string_view comment = {}) const -> UnallocatedCString = 0;
     virtual auto Passphrase(
         const UnallocatedCString& seedID,
         const PasswordPrompt& reason) const -> UnallocatedCString = 0;
     virtual auto SeedDescription(UnallocatedCString seedID) const noexcept
         -> UnallocatedCString = 0;
-    virtual auto UpdateIndex(
-        const UnallocatedCString& seedID,
-        const Bip32Index index,
-        const PasswordPrompt& reason) const -> bool = 0;
+    virtual auto SetSeedComment(
+        const Identifier& id,
+        const std::string_view comment) const noexcept -> bool = 0;
     virtual auto ValidateWord(
         const opentxs::crypto::SeedStyle type,
         const opentxs::crypto::Language lang,

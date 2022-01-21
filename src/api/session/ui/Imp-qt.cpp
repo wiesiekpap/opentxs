@@ -49,6 +49,7 @@ ImpQt::ImpQt(
     , nym_list_qt_()
     , payable_lists_qt_()
     , profiles_qt_()
+    , seed_tree_qt_()
     , seed_validators_()
     , unit_lists_qt_()
 {
@@ -395,6 +396,20 @@ auto ImpQt::ProfileQt(const identifier::Nym& nymID, const SimpleCallback cb)
     return it->second.get();
 }
 
+auto ImpQt::SeedTreeQt(const SimpleCallback cb) const noexcept
+    -> opentxs::ui::SeedTreeQt*
+{
+    auto lock = Lock{lock_};
+
+    if (!seed_tree_qt_) {
+        seed_tree_qt_ = opentxs::factory::SeedTreeQtModel(seed_tree(lock, cb));
+
+        OT_ASSERT(seed_tree_qt_);
+    }
+
+    return seed_tree_qt_.get();
+}
+
 auto ImpQt::SeedValidator(
     const opentxs::crypto::SeedStyle type,
     const opentxs::crypto::Language lang) const noexcept
@@ -416,6 +431,7 @@ auto ImpQt::SeedValidator(
 auto ImpQt::ShutdownModels() noexcept -> void
 {
     unit_lists_qt_.clear();
+    seed_tree_qt_.reset();
     profiles_qt_.clear();
     payable_lists_qt_.clear();
     nym_list_qt_.reset();

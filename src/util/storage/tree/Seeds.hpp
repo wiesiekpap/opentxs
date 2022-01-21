@@ -41,11 +41,11 @@ private:
 
     UnallocatedCString default_seed_;
 
-    void init(const UnallocatedCString& hash) final;
+    auto init(const UnallocatedCString& hash) -> void final;
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
-    void set_default(
+    auto set_default(
         const std::unique_lock<std::mutex>& lock,
-        const UnallocatedCString& id);
+        const UnallocatedCString& id) -> void;
     auto serialize() const -> proto::StorageSeeds;
 
     Seeds(const Driver& storage, const UnallocatedCString& hash);
@@ -68,8 +68,7 @@ public:
     auto SetAlias(const UnallocatedCString& id, const UnallocatedCString& alias)
         -> bool;
     auto SetDefault(const UnallocatedCString& id) -> bool;
-    auto Store(const proto::Seed& data, const UnallocatedCString& alias)
-        -> bool;
+    auto Store(const proto::Seed& data) -> bool;
 
     ~Seeds() final = default;
 };

@@ -85,6 +85,7 @@ public:
     auto PendingBailment() const noexcept -> UnallocatedCString final;
     auto ProcessPushNotification() const noexcept -> UnallocatedCString final;
     auto PushNotification() const noexcept -> UnallocatedCString final;
+    auto SeedUpdated() const noexcept -> UnallocatedCString final;
     auto ServerReplyReceived() const noexcept -> UnallocatedCString final;
     auto ServerRequestSent() const noexcept -> UnallocatedCString final;
     auto ServerUpdate() const noexcept -> UnallocatedCString final;

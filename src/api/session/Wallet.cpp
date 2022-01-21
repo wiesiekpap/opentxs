@@ -2152,6 +2152,13 @@ void Wallet::save(NymData* nymData, const Lock& lock) const
     OT_ASSERT(lock.owns_lock())
 
     SaveCredentialIDs(nymData->nym());
+    nym_publisher_->Send([&] {
+        auto work =
+            opentxs::network::zeromq::tagged_message(WorkType::NymUpdated);
+        work.AddFrame(nymData->nym().ID());
+
+        return work;
+    }());
 }
 
 void Wallet::save(
