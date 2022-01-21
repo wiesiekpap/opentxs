@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "internal/otx/common/cron/OTCronItem.hpp"  // IWYU pragma: associated
 
-#include <cinttypes>
 #include <cstdint>
 #include <memory>
 
@@ -32,7 +31,6 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
-#include "internal/api/Legacy.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
@@ -119,8 +117,7 @@ auto OTCronItem::LoadCronReceipt(
     auto filename = api::Legacy::GetFilenameCrn(lTransactionNum);
 
     const char* szFoldername = api.Internal().Legacy().Cron();
-    if (!OTDB::Exists(
-            api, api.DataFolder(), szFoldername, filename, "", "")) {
+    if (!OTDB::Exists(api, api.DataFolder(), szFoldername, filename, "", "")) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("File does not exist: ")(
             szFoldername)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
@@ -129,10 +126,10 @@ auto OTCronItem::LoadCronReceipt(
 
     auto strFileContents = String::Factory(OTDB::QueryPlainString(
         api, api.DataFolder(), szFoldername, filename, "", ""));  // <===
-                                                                    // LOADING
-                                                                    // FROM
-                                                                    // DATA
-                                                                    // STORE.
+                                                                  // LOADING
+                                                                  // FROM
+                                                                  // DATA
+                                                                  // STORE.
 
     if (strFileContents->GetLength() < 2) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("Error reading file: ")(
@@ -219,21 +216,11 @@ auto OTCronItem::GetActiveCronTransNums(
     auto filename = api::Legacy::GetFilenameLst(nymID.str());
 
     if (OTDB::Exists(
-            api,
-            dataFolder,
-            szFoldername,
-            strNotaryID->Get(),
-            filename,
-            "")) {
+            api, dataFolder, szFoldername, strNotaryID->Get(), filename, "")) {
         // Load up existing list, if it exists.
         //
         auto strNumlist = String::Factory(OTDB::QueryPlainString(
-            api,
-            dataFolder,
-            szFoldername,
-            strNotaryID->Get(),
-            filename,
-            ""));
+            api, dataFolder, szFoldername, strNotaryID->Get(), filename, ""));
 
         if (strNumlist->Exists()) {
             if (false ==
@@ -371,12 +358,7 @@ auto OTCronItem::EraseActiveCronReceipt(
     // item itself.
     //
     if (!OTDB::Exists(
-            api,
-            dataFolder,
-            szFoldername,
-            strNotaryID->Get(),
-            filename,
-            "")) {
+            api, dataFolder, szFoldername, strNotaryID->Get(), filename, "")) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("File does not exist: ")(
             szFoldername)(api::Legacy::PathSeparator())(
             strNotaryID)(api::Legacy::PathSeparator())(filename.c_str())(".")
@@ -385,12 +367,7 @@ auto OTCronItem::EraseActiveCronReceipt(
     }
 
     if (!OTDB::EraseValueByKey(
-            api,
-            dataFolder,
-            szFoldername,
-            strNotaryID->Get(),
-            filename,
-            "")) {
+            api, dataFolder, szFoldername, strNotaryID->Get(), filename, "")) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("Error erasing file: ")(
             szFoldername)(api::Legacy::PathSeparator())(
             strNotaryID)(api::Legacy::PathSeparator())(filename.c_str())(".")
@@ -409,7 +386,7 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
 
     auto strNotaryID = String::Factory(GetNotaryID());
     auto filename =
-        api::Legacy::GetFilenameCrn(lOpeningNum); // cron/TRANSACTION_NUM.crn
+        api::Legacy::GetFilenameCrn(lOpeningNum);  // cron/TRANSACTION_NUM.crn
 
     const char* szFoldername = api_.Internal().Legacy().Cron();  // cron
 
@@ -555,11 +532,10 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
 auto OTCronItem::SaveCronReceipt() -> bool
 {
     auto filename = api::Legacy::GetFilenameCrn(
-        GetTransactionNum()); // cron/TRANSACTION_NUM.crn
+        GetTransactionNum());  // cron/TRANSACTION_NUM.crn
     const char* szFoldername = api_.Internal().Legacy().Cron();  // cron
 
-    if (OTDB::Exists(
-            api_, api_.DataFolder(), szFoldername, filename, "", "")) {
+    if (OTDB::Exists(api_, api_.DataFolder(), szFoldername, filename, "", "")) {
         LogError()(OT_PRETTY_CLASS())(
             "Cron Record already exists for transaction ")(GetTransactionNum())(
             " ")(szFoldername)(api::Legacy::PathSeparator())(

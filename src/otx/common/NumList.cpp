@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "internal/otx/common/NumList.hpp"  // IWYU pragma: associated
 
-#include <cinttypes>
 #include <cstdint>
 #include <locale>
 #include <utility>
@@ -16,6 +15,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 // OTNumList (helper class.)
 
@@ -345,14 +345,15 @@ auto NumList::Output(String& strOutput) const -> bool  // returns false if the
 
     for (auto& it : m_setData) {
         nIterationCount++;
-        auto sx = String::Factory((1 == nIterationCount ? "" : ",") + std::to_string(it));
-
+        auto sx = String::Factory(
+            (1 == nIterationCount ? "" : ",") + std::to_string(it));
 
         strOutput.Concatenate(
             // If first iteration, prepend a blank string (instead of a comma.)
             // Like this:  "%" PRId64 ""
             // But for all subsequent iterations, Concatenate: ",%" PRId64 ""
-            String::Factory((1 == nIterationCount ? "" : ",") + std::to_string(it)));
+            String::Factory(
+                (1 == nIterationCount ? "" : ",") + std::to_string(it)));
     }
 
     return !m_setData.empty();

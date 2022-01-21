@@ -11,8 +11,6 @@
 #include "serialization/protobuf/StorageBlockchainAccountList.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "storage blockchain account list"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const StorageBlockchainAccountList& input, const bool silent)

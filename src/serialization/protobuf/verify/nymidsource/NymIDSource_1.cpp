@@ -19,11 +19,7 @@
 #include "serialization/protobuf/PaymentCode.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "nym id source"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 
 auto CheckProto_1(const NymIDSource& input, const bool silent) -> bool
@@ -183,5 +179,4 @@ auto CheckProto_20(const NymIDSource& input, const bool silent) -> bool
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

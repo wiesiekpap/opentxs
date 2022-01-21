@@ -13,9 +13,7 @@
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto ContactAllowedContactData() noexcept -> const VersionMap&
 {
@@ -284,5 +282,4 @@ auto RequiredAuthorityVersion(
 
     return 0;
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

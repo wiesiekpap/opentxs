@@ -11,8 +11,6 @@
 #include "serialization/protobuf/BlockchainTransactionProposedOutput.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "blockchain transaction proposed output"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(

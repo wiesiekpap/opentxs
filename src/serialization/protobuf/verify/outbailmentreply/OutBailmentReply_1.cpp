@@ -8,11 +8,7 @@
 #include "serialization/protobuf/OutBailmentReply.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "outbailment reply"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 
 auto CheckProto_1(const OutBailmentReply& input, const bool silent) -> bool
@@ -117,5 +113,4 @@ auto CheckProto_20(const OutBailmentReply& input, const bool silent) -> bool
     UNDEFINED_VERSION(20)
 }
 
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

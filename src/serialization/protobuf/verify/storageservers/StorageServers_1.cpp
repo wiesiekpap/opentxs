@@ -16,11 +16,7 @@
 #include "serialization/protobuf/StorageServers.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "server storage index"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 
 auto CheckProto_1(const StorageServers& input, const bool silent) -> bool
@@ -142,5 +138,4 @@ auto CheckProto_20(const StorageServers& input, const bool silent) -> bool
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

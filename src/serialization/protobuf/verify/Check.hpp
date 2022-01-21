@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <boost/type_index.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <sstream>
@@ -34,13 +35,24 @@ static const std::size_t MIN_PLAUSIBLE_SCRIPT{2};
 static const std::size_t MAX_PLAUSIBLE_SCRIPT{1048576};
 static const std::size_t MAX_PLAUSIBLE_WORK{128};
 
+template <typename T>
+auto GetProtoName(const T& in) noexcept -> std::string
+{
+    static const auto name = boost::typeindex::type_id<T>().pretty_name();
+    auto out = std::stringstream{};
+    out << name;
+
+    return out.str();
+}
+
 void WriteLogMessage(const std::stringstream& message) noexcept;
 }  // namespace opentxs::proto
 
 #define FAIL_1(b)                                                              \
     {                                                                          \
         if (false == silent) {                                                 \
-            PrintErrorMessage(PROTO_NAME, input.version(), b);                 \
+            PrintErrorMessage(                                                 \
+                GetProtoName(input).c_str(), input.version(), b);              \
         }                                                                      \
                                                                                \
         return false;                                                          \
@@ -49,7 +61,8 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
 #define FAIL_2(b, c)                                                           \
     {                                                                          \
         if (false == silent) {                                                 \
-            PrintErrorMessage(PROTO_NAME, input.version(), b, c);              \
+            PrintErrorMessage(                                                 \
+                GetProtoName(input).c_str(), input.version(), b, c);           \
         }                                                                      \
                                                                                \
         return false;                                                          \
@@ -59,9 +72,9 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
     {                                                                          \
         if (false == silent) {                                                 \
             std::stringstream out{};                                           \
-            out << "Verify version " << input.version() << " " << PROTO_NAME   \
-                << " failed: " << b << "(" << c << ")" << d << "(" << e << ")" \
-                << std::endl;                                                  \
+            out << "Verify version " << input.version() << " "                 \
+                << GetProtoName(input) << " failed: " << b << "(" << c << ")"  \
+                << d << "(" << e << ")" << std::endl;                          \
             WriteLogMessage(out);                                              \
         }                                                                      \
                                                                                \
@@ -72,9 +85,9 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
     {                                                                          \
         if (false == silent) {                                                 \
             std::stringstream out{};                                           \
-            out << "Verify version " << input.version() << " " << PROTO_NAME   \
-                << " failed: " << b << "(" << c << ")" << d << "(" << e << ")" \
-                << f << "(" << g << ")" << std::endl;                          \
+            out << "Verify version " << input.version() << " "                 \
+                << GetProtoName(input) << " failed: " << b << "(" << c << ")"  \
+                << d << "(" << e << ")" << f << "(" << g << ")" << std::endl;  \
             WriteLogMessage(out);                                              \
         }                                                                      \
                                                                                \
@@ -348,7 +361,10 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
     {                                                                          \
         if (false == silent) {                                                 \
             PrintErrorMessage(                                                 \
-                PROTO_NAME, input.version(), "undefined version", b);          \
+                GetProtoName(input).c_str(),                                   \
+                input.version(),                                               \
+                "undefined version",                                           \
+                b);                                                            \
         }                                                                      \
                                                                                \
         return false;                                                          \

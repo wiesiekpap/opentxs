@@ -16,6 +16,7 @@ namespace ui
 {
 class AccountActivityQt;
 class AccountListQt;
+class AccountTreeQt;
 class ActivityThreadQt;
 class BlockchainAccountStatusQt;
 class ContactListQt;
@@ -56,6 +57,7 @@ public:
     auto getAccountList() const noexcept -> AccountListQt*;
     auto getAccountStatus(const QString& accountID) const noexcept
         -> BlockchainAccountStatusQt*;
+    auto getAccountTree() const noexcept -> AccountTreeQt*;
     auto getActiveNym() const noexcept -> QString;
     auto getActivityThread(const QString& contactID) const noexcept
         -> ActivityThreadQt*;
@@ -74,6 +76,8 @@ public:
     // NOLINTNEXTLINE(modernize-use-trailing-return-type)
     Q_INVOKABLE QObject* getAccountStatusQML(
         const QString& accountID) const noexcept;
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    Q_INVOKABLE QObject* getAccountTreeQML() const noexcept;
     // NOLINTNEXTLINE(modernize-use-trailing-return-type)
     Q_INVOKABLE QObject* getActivityThreadQML(
         const QString& contactID) const noexcept;

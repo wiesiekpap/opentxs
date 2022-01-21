@@ -10,11 +10,7 @@
 #include "serialization/protobuf/StorageItemHash.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "storage item hash"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(const StorageItemHash& input, const bool silent) -> bool
 {
@@ -36,5 +32,4 @@ auto CheckProto_1(const StorageItemHash& input, const bool silent) -> bool
 
     return true;
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

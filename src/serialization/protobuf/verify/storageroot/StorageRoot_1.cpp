@@ -8,11 +8,7 @@
 #include "serialization/protobuf/StorageRoot.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "storage root"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(const StorageRoot& input, const bool silent) -> bool
 {
@@ -21,5 +17,4 @@ auto CheckProto_1(const StorageRoot& input, const bool silent) -> bool
 
     return true;
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

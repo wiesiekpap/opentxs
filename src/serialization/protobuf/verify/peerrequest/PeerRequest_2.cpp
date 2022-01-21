@@ -18,8 +18,6 @@
 #include "serialization/protobuf/PeerRequest.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "peer request"
-
 namespace opentxs::proto
 {
 auto CheckProto_2(const PeerRequest& input, const bool silent) -> bool

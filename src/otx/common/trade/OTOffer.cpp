@@ -9,6 +9,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 
 #include "internal/otx/common/Instrument.hpp"
@@ -143,12 +144,19 @@ void OTOffer::GetIdentifier(Identifier& theIdentifier) const
     // In this way we generate a unique ID that will always be consistent
     // for the same instrument definition id, currency ID, and market scale.
 
-    static UnallocatedCString fmt = "ASSET TYPE:\n%s\nCURRENCY TYPE:\n%s\nMARKET SCALE:\n%s\n";
+    static UnallocatedCString fmt =
+        "ASSET TYPE:\n%s\nCURRENCY TYPE:\n%s\nMARKET SCALE:\n%s\n";
     UnallocatedVector<char> tmp;
-    tmp.resize(fmt.length() + strAsset->GetLength() + strCurrency->GetLength() + lScale.length() + 1);
-    std::snprintf(&tmp[0], tmp.capacity(),
-                              fmt.c_str(),
-                              strAsset->Get(), strCurrency->Get(), lScale.c_str());
+    tmp.resize(
+        fmt.length() + strAsset->GetLength() + strCurrency->GetLength() +
+        lScale.length() + 1);
+    std::snprintf(
+        &tmp[0],
+        tmp.capacity(),
+        fmt.c_str(),
+        strAsset->Get(),
+        strCurrency->Get(),
+        lScale.c_str());
 
     theIdentifier.CalculateDigest(&tmp[0]);
 }

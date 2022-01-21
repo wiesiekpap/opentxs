@@ -717,8 +717,8 @@ auto Ledger::make_filename(const ledgerType theType) -> std::
     if (false == m_strFilename->Exists()) {
         m_strFilename->Set(
             api::Legacy::Concatenate(
-                two.c_str(), api::Legacy::PathSeparator(), three.c_str()).c_str()
-            );
+                two.c_str(), api::Legacy::PathSeparator(), three.c_str())
+                .c_str());
     }
 
     if (2 > one.size()) { return output; }
@@ -854,16 +854,16 @@ auto Ledger::generate_ledger(
             m_strFilename->Set(api::Legacy::Concatenate(
                                    strNotaryID->Get(),
                                    api::Legacy::PathSeparator(),
-                                   strID->Get()).c_str()
-                );
+                                   strID->Get())
+                                   .c_str());
             break;
         case ledgerType::inbox:  // stored by AcctID ONLY.
             m_strFoldername = String::Factory(api_.Internal().Legacy().Inbox());
             m_strFilename->Set(api::Legacy::Concatenate(
                                    strNotaryID->Get(),
                                    api::Legacy::PathSeparator(),
-                                   strID->Get()).c_str()
-                );
+                                   strID->Get())
+                                   .c_str());
             break;
         case ledgerType::outbox:  // stored by AcctID ONLY.
             m_strFoldername =
@@ -871,8 +871,8 @@ auto Ledger::generate_ledger(
             m_strFilename->Set(api::Legacy::Concatenate(
                                    strNotaryID->Get(),
                                    api::Legacy::PathSeparator(),
-                                   strID->Get()).c_str()
-                );
+                                   strID->Get())
+                                   .c_str());
             break;
         case ledgerType::paymentInbox:  // stored by NymID ONLY.
             m_strFoldername =
@@ -880,8 +880,8 @@ auto Ledger::generate_ledger(
             m_strFilename->Set(api::Legacy::Concatenate(
                                    strNotaryID->Get(),
                                    api::Legacy::PathSeparator(),
-                                   strID->Get()).c_str()
-                );
+                                   strID->Get())
+                                   .c_str());
             break;
         case ledgerType::recordBox:  // stored by Acct ID *and* Nym ID
                                      // (depending on the box.)
@@ -890,8 +890,8 @@ auto Ledger::generate_ledger(
             m_strFilename->Set(api::Legacy::Concatenate(
                                    strNotaryID->Get(),
                                    api::Legacy::PathSeparator(),
-                                   strID->Get()).c_str()
-                );
+                                   strID->Get())
+                                   .c_str());
             break;
         case ledgerType::expiredBox:  // stored by Nym ID only.
             m_strFoldername =
@@ -899,8 +899,8 @@ auto Ledger::generate_ledger(
             m_strFilename->Set(api::Legacy::Concatenate(
                                    strNotaryID->Get(),
                                    api::Legacy::PathSeparator(),
-                                   strID->Get()).c_str()
-                );
+                                   strID->Get())
+                                   .c_str());
             break;
         case ledgerType::message:
             LogTrace()(OT_PRETTY_CLASS())("Generating message ledger...")

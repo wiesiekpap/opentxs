@@ -8,8 +8,6 @@
 #include "serialization/protobuf/BlockchainFilterHeader.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "blockchain filter header"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const BlockchainFilterHeader& input, const bool silent)

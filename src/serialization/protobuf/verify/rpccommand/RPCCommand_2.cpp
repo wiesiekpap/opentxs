@@ -28,8 +28,6 @@
 #include "serialization/protobuf/RPCEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "RPC command"
-
 namespace opentxs::proto
 {
 auto CheckProto_2(const RPCCommand& input, const bool silent) -> bool

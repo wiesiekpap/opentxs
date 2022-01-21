@@ -13,8 +13,6 @@
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "server contract"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const ServerContract& input, const bool silent) -> bool

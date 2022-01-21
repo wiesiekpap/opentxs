@@ -11,8 +11,6 @@
 #include "serialization/protobuf/BlockchainP2PSync.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "blockchain p2p sync"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const BlockchainP2PSync& input, const bool silent) -> bool

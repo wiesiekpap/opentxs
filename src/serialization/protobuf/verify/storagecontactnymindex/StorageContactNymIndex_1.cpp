@@ -9,8 +9,6 @@
 #include "serialization/protobuf/StorageContactNymIndex.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "storage contact nym index"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const StorageContactNymIndex& input, const bool silent)

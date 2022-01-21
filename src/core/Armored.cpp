@@ -11,6 +11,7 @@
 #include <zlib.h>
 #include <algorithm>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <limits>
@@ -571,19 +572,24 @@ auto Armored::WriteArmoredString(
     bool bEscaped) const -> bool
 {
     static std::string escape = "- ";
-    static std::string _OT_BEGIN_ARMORED {OT_BEGIN_ARMORED};
-    static std::string _OT_END_ARMORED {OT_END_ARMORED};
+    static std::string _OT_BEGIN_ARMORED{OT_BEGIN_ARMORED};
+    static std::string _OT_END_ARMORED{OT_END_ARMORED};
 
     // "%s-----BEGIN OT ARMORED %s-----\n"
     // "%s-----END OT ARMORED %s-----\n"
     UnallocatedVector<char> tmp;
     static std::string fmt =
-"%s%s %s-----\nVersion: Open Transactions %s\nComment: http://opentransactions.org\n\n%s\n%s%s %s-----\n\n";
+        "%s%s %s-----\nVersion: Open Transactions %s\nComment: "
+        "http://opentransactions.org\n\n%s\n%s%s %s-----\n\n";
     // 20 for version
-    tmp.resize(fmt.length() + 1 + escape.length() +
-               _OT_BEGIN_ARMORED.length() + str_type.length() + 20 + GetLength() +
-                   escape.length() + _OT_END_ARMORED.length() + str_type.length());
-    auto size = std::snprintf(&tmp[0], tmp.capacity(), fmt.c_str(),
+    tmp.resize(
+        fmt.length() + 1 + escape.length() + _OT_BEGIN_ARMORED.length() +
+        str_type.length() + 20 + GetLength() + escape.length() +
+        _OT_END_ARMORED.length() + str_type.length());
+    auto size = std::snprintf(
+        &tmp[0],
+        tmp.capacity(),
+        fmt.c_str(),
         bEscaped ? escape.c_str() : "",
         _OT_BEGIN_ARMORED.c_str(),
         str_type.c_str(),  // "%s%s %s-----\n"

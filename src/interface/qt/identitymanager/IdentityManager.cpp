@@ -26,6 +26,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/interface/qt/AccountActivity.hpp"
 #include "opentxs/interface/qt/AccountList.hpp"
+#include "opentxs/interface/qt/AccountTree.hpp"
 #include "opentxs/interface/qt/ActivityThread.hpp"
 #include "opentxs/interface/qt/BlockchainAccountStatus.hpp"
 #include "opentxs/interface/qt/ContactList.hpp"
@@ -92,6 +93,20 @@ auto IdentityManagerQt::Imp::getAccountStatus(
     if (blockchain::Type::Unknown == chain) { return nullptr; }
 
     return api_.UI().BlockchainAccountStatusQt(nymID, chain);
+}
+
+auto IdentityManagerQt::Imp::getAccountTree() const noexcept -> AccountTreeQt*
+{
+    auto handle = active_nym_.lock_shared();
+    const auto& id = handle->get();
+
+    if (id.empty()) {
+        parent_->needNym();
+
+        return nullptr;
+    }
+
+    return api_.UI().AccountTreeQt(id);
 }
 
 auto IdentityManagerQt::Imp::getActiveNym() const noexcept -> QString
@@ -217,6 +232,16 @@ auto IdentityManagerQt::getAccountStatusQML(
     const QString& accountID) const noexcept -> QObject*
 {
     return getAccountStatus(accountID);
+}
+
+auto IdentityManagerQt::getAccountTree() const noexcept -> AccountTreeQt*
+{
+    return imp_->getAccountTree();
+}
+
+auto IdentityManagerQt::getAccountTreeQML() const noexcept -> QObject*
+{
+    return imp_->getAccountTree();
 }
 
 auto IdentityManagerQt::getActiveNym() const noexcept -> QString

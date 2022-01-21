@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "internal/otx/common/transaction/Helpers.hpp"  // IWYU pragma: associated
 
-#include <cinttypes>
 #include <cstdint>
 
 #include "internal/api/Legacy.hpp"
@@ -31,7 +30,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
-#include "internal/api/Legacy.hpp"
 
 namespace
 {

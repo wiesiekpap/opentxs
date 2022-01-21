@@ -8,6 +8,7 @@
 #include "internal/otx/common/Account.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <cstdio>
 #include <memory>
 
 #include "internal/api/Legacy.hpp"
@@ -813,16 +814,28 @@ auto Account::DisplayStatistics(String& contents) const -> bool
     auto acctType = String::Factory();
     TranslateAccountTypeToString(acctType_, acctType);
 
-    static std::string fmt {" Asset Account (%s) Name: %s\n Last retrieved Balance: %s  on date: %s\n accountID: %s\n nymID: %s\n notaryID: %s\n instrumentDefinitionID: %s\n\n" };
+    static std::string fmt{
+        " Asset Account (%s) Name: %s\n Last retrieved Balance: %s  on date: "
+        "%s\n accountID: %s\n nymID: %s\n notaryID: %s\n "
+        "instrumentDefinitionID: %s\n\n"};
     UnallocatedVector<char> buf;
-    buf.reserve(fmt.length() + 1 + acctType->GetLength() + m_strName->GetLength()
-                + balanceAmount_->GetLength() + balanceDate_->GetLength()
-                + strAccountID->GetLength() + strNymID->GetLength()
-                + strNotaryID->GetLength() + strInstrumentDefinitionID->GetLength());
-    auto size = std::snprintf(&buf[0], buf.capacity(), fmt.c_str(), acctType->Get(),
-                  m_strName->Get(), balanceAmount_->Get(), balanceDate_->Get(),
-                  strAccountID->Get(), strNymID->Get(), strNotaryID->Get(),
-                  strInstrumentDefinitionID->Get());
+    buf.reserve(
+        fmt.length() + 1 + acctType->GetLength() + m_strName->GetLength() +
+        balanceAmount_->GetLength() + balanceDate_->GetLength() +
+        strAccountID->GetLength() + strNymID->GetLength() +
+        strNotaryID->GetLength() + strInstrumentDefinitionID->GetLength());
+    auto size = std::snprintf(
+        &buf[0],
+        buf.capacity(),
+        fmt.c_str(),
+        acctType->Get(),
+        m_strName->Get(),
+        balanceAmount_->Get(),
+        balanceDate_->Get(),
+        strAccountID->Get(),
+        strNymID->Get(),
+        strNotaryID->Get(),
+        strInstrumentDefinitionID->Get());
 
     contents.Concatenate(String::Factory(&buf[0], size));
 

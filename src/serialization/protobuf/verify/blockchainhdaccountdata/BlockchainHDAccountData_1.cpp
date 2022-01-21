@@ -8,8 +8,6 @@
 #include "serialization/protobuf/BlockchainHDAccountData.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "blockchain hd account data"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const BlockchainHDAccountData& input, const bool silent)

@@ -32,8 +32,6 @@
             std::to_string(static_cast<std::uint32_t>(input.state())))         \
     }
 
-#define PROTO_NAME "payment workflow"
-
 namespace opentxs::proto
 {
 auto CheckProto_3(const PaymentWorkflow& input, const bool silent) -> bool

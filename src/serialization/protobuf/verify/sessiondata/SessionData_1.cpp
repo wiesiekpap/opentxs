@@ -8,11 +8,7 @@
 #include "serialization/protobuf/SessionData.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "session data"
-
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(const SessionData& input, const bool silent) -> bool
 {
@@ -113,5 +109,4 @@ auto CheckProto_20(const SessionData& input, const bool silent) -> bool
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

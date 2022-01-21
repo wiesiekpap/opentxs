@@ -13,8 +13,6 @@
 #include "serialization/protobuf/HDAccount.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "hd account"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const HDAccount& input, const bool silent) -> bool

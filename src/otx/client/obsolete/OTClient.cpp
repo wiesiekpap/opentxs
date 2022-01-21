@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                             // IWYU pragma: associated
 #include "internal/otx/client/obsolete/OTClient.hpp"  // IWYU pragma: associated
 
-#include <cinttypes>
 #include <cstdint>
 #include <memory>
 
@@ -22,6 +21,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -111,7 +111,8 @@ auto OTClient::ProcessUserCommand(
         case MessageType::unregisterNym: {
             // (0) Set up the REQUEST NUMBER and then INCREMENT IT
             lRequestNumber = context.Request();
-            theMessage.m_strRequestNum->Set(std::to_string(lRequestNumber).c_str());
+            theMessage.m_strRequestNum->Set(
+                std::to_string(lRequestNumber).c_str());
             context.IncrementRequest();
 
             // (1) set up member variables
@@ -132,7 +133,8 @@ auto OTClient::ProcessUserCommand(
         {
             // (0) Set up the REQUEST NUMBER and then INCREMENT IT
             lRequestNumber = context.Request();
-            theMessage.m_strRequestNum->Set(std::to_string(lRequestNumber).c_str());
+            theMessage.m_strRequestNum->Set(
+                std::to_string(lRequestNumber).c_str());
             context.IncrementRequest();
 
             // (1) Set up member variables
@@ -166,7 +168,8 @@ auto OTClient::ProcessUserCommand(
         {
             // (0) Set up the REQUEST NUMBER and then INCREMENT IT
             lRequestNumber = context.Request();
-            theMessage.m_strRequestNum->Set(std::to_string(lRequestNumber).c_str());
+            theMessage.m_strRequestNum->Set(
+                std::to_string(lRequestNumber).c_str());
             context.IncrementRequest();
 
             // (1) Set up member variables

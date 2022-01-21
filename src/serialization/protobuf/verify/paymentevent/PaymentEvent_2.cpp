@@ -14,8 +14,6 @@
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "payment event"
-
 namespace opentxs::proto
 {
 auto CheckProto_2(

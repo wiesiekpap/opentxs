@@ -11,8 +11,6 @@
 #include "serialization/protobuf/TaggedKey.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "envelope"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const TaggedKey& input, const bool silent) -> bool

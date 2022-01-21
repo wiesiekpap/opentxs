@@ -8,8 +8,6 @@
 #include "serialization/protobuf/BlockchainP2PChainState.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
-#define PROTO_NAME "blockchain p2p chain state"
-
 namespace opentxs::proto
 {
 auto CheckProto_1(const BlockchainP2PChainState& input, const bool silent)
