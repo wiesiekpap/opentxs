@@ -48,6 +48,7 @@ class Crypto;
 
 namespace session
 {
+class Endpoints;
 class Factory;
 class Storage;
 }  // namespace session
@@ -65,6 +66,14 @@ class Secp256k1;
 class Sodium;
 class SymmetricProvider;
 }  // namespace crypto
+
+namespace network
+{
+namespace zeromq
+{
+class Context;
+}  // namespace zeromq
+}  // namespace network
 }  // namespace opentxs
 
 namespace opentxs::api::session::imp
@@ -166,8 +175,10 @@ public:
     Crypto(
         api::Crypto& parent,
         const api::Session& session,
+        const api::session::Endpoints& endpoints,
         const api::session::Factory& factory,
-        const api::session::Storage& storage) noexcept;
+        const api::session::Storage& storage,
+        const opentxs::network::zeromq::Context& zmq) noexcept;
 
     ~Crypto() final;
 

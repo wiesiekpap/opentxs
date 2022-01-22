@@ -5,13 +5,21 @@
 
 #pragma once
 
+#include <cs_plain_guarded.h>
 #include <memory>
+#include <mutex>
 
+#include "internal/crypto/Seed.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/core/Secret.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/Seed.hpp"
 #include "opentxs/crypto/SeedStrength.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Ciphertext.pb.h"
 
 namespace opentxs
 {
@@ -28,6 +36,7 @@ class Factory;
 class Storage;
 }  // namespace session
 
+class Factory;
 class Session;
 }  // namespace api
 
@@ -39,6 +48,7 @@ class Bip39;
 
 namespace proto
 {
+class Ciphertext;
 class Seed;
 }  // namespace proto
 
@@ -47,24 +57,27 @@ class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
 
-namespace opentxs::crypto
-{
-class Seed
+class opentxs::crypto::Seed::Imp final : public internal::Seed
 {
 public:
-    static auto Translate(const int proto) noexcept -> SeedStyle;
+    const SeedStyle type_;
+    const Language lang_;
+    const OTSecret entropy_;
+    const OTSecret words_;
+    const OTSecret phrase_;
+    const OTIdentifier id_;
+    const api::session::Storage* const storage_;
+    const proto::Ciphertext encrypted_words_;
+    const proto::Ciphertext encrypted_phrase_;
+    const proto::Ciphertext encrypted_entropy_;
 
-    auto Entropy() const noexcept -> const Secret&;
-    auto ID() const noexcept -> const Identifier&;
     auto Index() const noexcept -> Bip32Index;
-    auto Phrase() const noexcept -> const Secret&;
-    auto Type() const noexcept -> SeedStyle;
-    auto Words() const noexcept -> const Secret&;
 
-    auto IncrementIndex(const Bip32Index index) noexcept -> bool;
+    auto IncrementIndex(const Bip32Index index) noexcept -> bool final;
 
-    Seed(
-        const opentxs::crypto::Bip32& bip32,
+    Imp() noexcept;
+    Imp(const api::Factory& factory) noexcept;
+    Imp(const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
         const api::session::Factory& factory,
@@ -72,8 +85,7 @@ public:
         const Language lang,
         const SeedStrength strength,
         const PasswordPrompt& reason) noexcept(false);
-    Seed(
-        const api::Session& api,
+    Imp(const api::Session& api,
         const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
@@ -84,34 +96,67 @@ public:
         const Secret& words,
         const Secret& passphrase,
         const PasswordPrompt& reason) noexcept(false);
-    Seed(
-        const opentxs::crypto::Bip32& bip32,
+    Imp(const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
         const api::session::Factory& factory,
         const api::session::Storage& storage,
         const Secret& entropy,
         const PasswordPrompt& reason) noexcept(false);
-    Seed(
-        const api::Session& api,
+    Imp(const api::Session& api,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
         const api::session::Factory& factory,
         const api::session::Storage& storage,
         const proto::Seed& proto,
         const PasswordPrompt& reason) noexcept(false);
-    Seed(Seed&&) noexcept;
+    Imp(const Imp& rhs) noexcept;
 
-    ~Seed();
+    ~Imp() final = default;
 
 private:
-    struct Imp;
+    static constexpr auto default_version_ = VersionNumber{4u};
+    static constexpr auto no_passphrase_{""};
 
-    std::unique_ptr<Imp> imp_;
+    struct MutableData {
+        VersionNumber version_;
+        Bip32Index index_;
 
-    Seed() = delete;
-    Seed(const Seed&) = delete;
-    auto operator=(const Seed&) -> Seed& = delete;
-    auto operator=(Seed&&) -> Seed& = delete;
+        MutableData(VersionNumber version, Bip32Index index) noexcept
+            : version_(version)
+            , index_(index)
+        {
+        }
+        MutableData() noexcept
+            : MutableData(default_version_, 0)
+        {
+        }
+        MutableData(const MutableData& rhs) noexcept
+            : MutableData(rhs.version_, rhs.index_)
+        {
+        }
+    };
+    using Guarded = libguarded::plain_guarded<MutableData>;
+    using SerializeType = proto::Seed;
+
+    // TODO switch to shared_guarded after
+    // https://github.com/copperspice/cs_libguarded/pull/18 is merged upstream
+    mutable Guarded data_;
+
+    static auto encrypt(
+        const SeedStyle type,
+        const api::crypto::Symmetric& symmetric,
+        const Secret& entropy,
+        const Secret& words,
+        const Secret& phrase,
+        proto::Ciphertext& cwords,
+        proto::Ciphertext& cphrase,
+        const PasswordPrompt& reason) noexcept(false) -> proto::Ciphertext;
+
+    auto save() const noexcept -> bool;
+    auto save(const MutableData& data) const noexcept -> bool;
+
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
-}  // namespace opentxs::crypto

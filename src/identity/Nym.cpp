@@ -17,6 +17,7 @@
 
 #include "2_Factory.hpp"
 #include "Proto.tpp"
+#include "internal/api/crypto/Seed.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/crypto/Parameters.hpp"
 #include "internal/identity/Identity.hpp"
@@ -1084,7 +1085,7 @@ auto Nym::normalize(
                 "opentxs compiled without hd credential support");
         }
 
-        const auto& seeds = api.Crypto().Seed();
+        const auto& seeds = api.Crypto().Seed().Internal();
         output.SetCredset(0);
         auto nymIndex = Bip32Index{0};
         auto fingerprint = in.Seed();

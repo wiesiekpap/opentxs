@@ -280,6 +280,18 @@ auto UI::RegisterUICallback(const Identifier& widget, const SimpleCallback& cb)
     imp_->RegisterUICallback(widget, cb);
 }
 
+auto UI::SeedTree(const SimpleCallback cb) const noexcept
+    -> const opentxs::ui::SeedTree&
+{
+    return imp_->SeedTree(cb);
+}
+
+auto UI::SeedTreeQt(const SimpleCallback cb) const noexcept
+    -> opentxs::ui::SeedTreeQt*
+{
+    return imp_->SeedTreeQt(cb);
+}
+
 auto UI::SeedValidator(
     const opentxs::crypto::SeedStyle type,
     const opentxs::crypto::Language lang) const noexcept

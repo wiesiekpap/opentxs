@@ -161,8 +161,7 @@ TEST_F(BlockchainSelector, alice_initial)
         alice_.nym_id_->str(),
         chain_,
         {
-            {ot::UnallocatedCString{"BIP-39 seed: "} + alice_.seed_id_ +
-                 " (default)",
+            {"Unnamed seed: BIP-39 (default)",
              alice_.seed_id_,
              Subaccount::HD,
              {
@@ -213,8 +212,7 @@ TEST_F(BlockchainSelector, bob_initial)
         bob_.nym_id_->str(),
         chain_,
         {
-            {ot::UnallocatedCString{"BIP-39 seed: "} + bob_.seed_id_ +
-                 " (default)",
+            {"Unnamed seed: BIP-39 (default)",
              bob_.seed_id_,
              Subaccount::HD,
              {
@@ -244,7 +242,7 @@ TEST_F(BlockchainSelector, chris_initial)
         chris_.nym_id_->str(),
         chain_,
         {
-            {ot::UnallocatedCString{"pktwallet seed: "} + chris_.seed_id_,
+            {"Unnamed seed: pktwallet",
              chris_.seed_id_,
              Subaccount::HD,
              {
@@ -275,7 +273,7 @@ TEST_F(BlockchainSelector, chris_final)
         chris_.nym_id_->str(),
         chain_,
         {
-            {ot::UnallocatedCString{"pktwallet seed: "} + chris_.seed_id_,
+            {"Unnamed seed: pktwallet",
              chris_.seed_id_,
              Subaccount::HD,
              {

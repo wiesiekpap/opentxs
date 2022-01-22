@@ -12,6 +12,8 @@ target_sources(
   opentxs-common
   PRIVATE
     "${opentxs_SOURCE_DIR}/src/internal/crypto/Crypto.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/crypto/Factory.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/crypto/Seed.hpp"
     "Bip39.cpp"
     "Bip39.hpp"
     "Crypto.cpp"
@@ -26,6 +28,7 @@ target_sources(
 target_include_directories(
   opentxs-common SYSTEM
   PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+          "${opentxs_SOURCE_DIR}/deps/cs_libguarded/src"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/Bip32.hpp"
@@ -37,6 +40,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/HashType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/Language.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/SecretStyle.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/crypto/Seed.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/SeedStrength.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/SeedStyle.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/SignatureRole.hpp"

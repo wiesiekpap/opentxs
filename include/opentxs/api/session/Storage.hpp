@@ -388,12 +388,10 @@ public:
     virtual auto Store(const proto::Credential& data) const -> bool = 0;
     virtual auto Store(
         const proto::Nym& data,
-        const UnallocatedCString& alias = UnallocatedCString("")) const
-        -> bool = 0;
+        const UnallocatedCString& alias = {}) const -> bool = 0;
     virtual auto Store(
         const ReadView& data,
-        const UnallocatedCString& alias = UnallocatedCString("")) const
-        -> bool = 0;
+        const UnallocatedCString& alias = {}) const -> bool = 0;
     virtual auto Store(
         const UnallocatedCString& nymID,
         const proto::Issuer& data) const -> bool = 0;
@@ -408,8 +406,7 @@ public:
         const UnallocatedCString& alias,
         const UnallocatedCString& data,
         const StorageBox box,
-        const UnallocatedCString& account = UnallocatedCString("")) const
-        -> bool = 0;
+        const UnallocatedCString& account = {}) const -> bool = 0;
     virtual auto Store(
         const identifier::Nym& nym,
         const Identifier& thread,
@@ -426,19 +423,14 @@ public:
         const StorageBox box) const -> bool = 0;
     virtual auto Store(const identifier::Nym& nym, const proto::Purse& purse)
         const -> bool = 0;
-    virtual auto Store(
-        const proto::Seed& data,
-        const UnallocatedCString& alias = UnallocatedCString("")) const
-        -> bool = 0;
+    virtual auto Store(const proto::Seed& data) const -> bool = 0;
     virtual auto Store(
         const proto::ServerContract& data,
-        const UnallocatedCString& alias = UnallocatedCString("")) const
-        -> bool = 0;
+        const UnallocatedCString& alias = {}) const -> bool = 0;
     virtual auto Store(const proto::Ciphertext& serialized) const -> bool = 0;
     virtual auto Store(
         const proto::UnitDefinition& data,
-        const UnallocatedCString& alias = UnallocatedCString("")) const
-        -> bool = 0;
+        const UnallocatedCString& alias = {}) const -> bool = 0;
     virtual auto ThreadList(
         const UnallocatedCString& nymID,
         const bool unreadOnly) const -> ObjectList = 0;

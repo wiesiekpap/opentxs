@@ -99,8 +99,10 @@ auto OTX(
 auto SessionCryptoAPI(
     api::Crypto& parent,
     const api::Session& session,
+    const api::session::Endpoints& endpoints,
     const api::session::Factory& factory,
-    const api::session::Storage& storage) noexcept
+    const api::session::Storage& storage,
+    const network::zeromq::Context& zmq) noexcept
     -> std::unique_ptr<api::session::Crypto>;
 auto SessionFactoryAPI(const api::session::Client& parent) noexcept
     -> std::unique_ptr<api::session::Factory>;

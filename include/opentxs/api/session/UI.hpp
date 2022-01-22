@@ -76,6 +76,8 @@ class PayableList;
 class PayableListQt;
 class Profile;
 class ProfileQt;
+class SeedTree;
+class SeedTreeQt;
 class SeedValidator;
 class UnitList;
 class UnitListQt;
@@ -238,6 +240,11 @@ public:
         const identifier::Nym& nymID,
         const SimpleCallback updateCB = {}) const noexcept
         -> opentxs::ui::ProfileQt* = 0;
+    virtual auto SeedTree(const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::SeedTree& = 0;
+    /// Caller does not own this pointer
+    virtual auto SeedTreeQt(const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::SeedTreeQt* = 0;
     /// Caller does not own this pointer
     virtual auto SeedValidator(
         const opentxs::crypto::SeedStyle type,

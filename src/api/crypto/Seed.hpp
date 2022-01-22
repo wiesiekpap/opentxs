@@ -15,19 +15,20 @@
 #include <string_view>
 
 #include "Proto.hpp"
-#include "crypto/Seed.hpp"
 #include "internal/api/crypto/Seed.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/Seed.hpp"
 #include "opentxs/crypto/SeedStrength.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
+#include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -46,6 +47,7 @@ class Symmetric;
 
 namespace session
 {
+class Endpoints;
 class Factory;
 class Storage;
 }  // namespace session
@@ -66,12 +68,21 @@ class Bip39;
 class Seed;
 }  // namespace crypto
 
+namespace network
+{
+namespace zeromq
+{
+class Context;
+}  // namespace zeromq
+}  // namespace network
+
 namespace proto
 {
 class HDPath;
 class Seed;
 }  // namespace proto
 
+class Identifier;
 class PasswordPrompt;
 }  // namespace opentxs
 
@@ -155,6 +166,8 @@ public:
         const UnallocatedCString& seedID,
         Bip32Index& index,
         const PasswordPrompt& reason) const -> OTSecret final;
+    auto GetSeed(const Identifier& id, const PasswordPrompt& reason)
+        const noexcept -> opentxs::crypto::Seed final;
     auto GetStorageKey(
         const UnallocatedCString& seedID,
         const PasswordPrompt& reason) const -> OTSymmetricKey final;
@@ -165,7 +178,8 @@ public:
         const Secret& passphrase,
         const opentxs::crypto::SeedStyle type,
         const opentxs::crypto::Language lang,
-        const PasswordPrompt& reason) const -> UnallocatedCString final;
+        const PasswordPrompt& reason,
+        const std::string_view comment) const -> UnallocatedCString final;
     auto LongestWord(
         const opentxs::crypto::SeedStyle type,
         const opentxs::crypto::Language lang) const noexcept
@@ -174,12 +188,15 @@ public:
         const opentxs::crypto::SeedStyle type,
         const opentxs::crypto::Language lang,
         const opentxs::crypto::SeedStrength strength,
-        const PasswordPrompt& reason) const -> UnallocatedCString final;
+        const PasswordPrompt& reason,
+        const std::string_view comment) const -> UnallocatedCString final;
     auto Passphrase(
         const UnallocatedCString& seedID,
         const PasswordPrompt& reason) const -> UnallocatedCString final;
     auto SeedDescription(UnallocatedCString seedID) const noexcept
         -> UnallocatedCString final;
+    auto SetSeedComment(const Identifier& id, const std::string_view comment)
+        const noexcept -> bool final;
     auto UpdateIndex(
         const UnallocatedCString& seedID,
         const Bip32Index index,
@@ -198,12 +215,14 @@ public:
 
     Seed(
         const api::Session& api,
+        const api::session::Endpoints& endpoints,
         const api::session::Factory& factory,
         const api::crypto::Asymmetric& asymmetric,
         const api::crypto::Symmetric& symmetric,
         const api::session::Storage& storage,
         const opentxs::crypto::Bip32& bip32,
-        const opentxs::crypto::Bip39& bip39);
+        const opentxs::crypto::Bip39& bip39,
+        const opentxs::network::zeromq::Context& zmq);
 
     ~Seed() final = default;
 
@@ -217,6 +236,7 @@ private:
     const api::session::Storage& storage_;
     const opentxs::crypto::Bip32& bip32_;
     const opentxs::crypto::Bip39& bip39_;
+    const OTZMQPublishSocket socket_;
     mutable std::mutex seed_lock_;
     mutable SeedMap seeds_;
 
@@ -230,7 +250,14 @@ private:
         const opentxs::crypto::SeedStyle type,
         const opentxs::crypto::Language lang,
         const opentxs::crypto::SeedStrength strength,
+        const std::string_view comment,
         const PasswordPrompt& reason) const noexcept -> UnallocatedCString;
+    auto new_seed(
+        const Lock& lock,
+        const std::string_view comment,
+        opentxs::crypto::Seed&& seed) const noexcept -> UnallocatedCString;
+    auto publish(const Identifier& id) const noexcept -> void;
+    auto publish(const UnallocatedCString& id) const noexcept -> void;
 
     Seed() = delete;
     Seed(const Seed&) = delete;

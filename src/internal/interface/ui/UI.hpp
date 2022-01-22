@@ -31,6 +31,7 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/interface/ui/AccountActivity.hpp"
 #include "opentxs/interface/ui/AccountCurrency.hpp"
@@ -71,6 +72,9 @@
 #include "opentxs/interface/ui/ProfileItem.hpp"
 #include "opentxs/interface/ui/ProfileSection.hpp"
 #include "opentxs/interface/ui/ProfileSubsection.hpp"
+#include "opentxs/interface/ui/SeedTree.hpp"
+#include "opentxs/interface/ui/SeedTreeItem.hpp"
+#include "opentxs/interface/ui/SeedTreeNym.hpp"
 #include "opentxs/interface/ui/Types.hpp"
 #include "opentxs/interface/ui/UnitList.hpp"
 #include "opentxs/interface/ui/UnitListItem.hpp"
@@ -149,6 +153,8 @@ struct PayableListItem;
 struct ProfileItem;
 struct ProfileSection;
 struct ProfileSubsection;
+struct SeedTreeItem;
+struct SeedTreeNym;
 struct UnitListItem;
 }  // namespace blank
 
@@ -190,6 +196,9 @@ struct Profile;
 struct ProfileItem;
 struct ProfileSection;
 struct ProfileSubsection;
+struct SeedTree;
+struct SeedTreeItem;
+struct SeedTreeNym;
 struct UnitList;
 struct UnitListItem;
 }  // namespace internal
@@ -222,6 +231,7 @@ class MessagableListQt;
 class NymListQt;
 class PayableListQt;
 class ProfileQt;
+class SeedTreeQt;
 class UnitListQt;
 }  // namespace ui
 
@@ -536,6 +546,30 @@ using ProfileSubsectionRowInterface = ui::ProfileItem;
 using ProfileSubsectionRowInternal = ui::internal::ProfileItem;
 using ProfileSubsectionRowBlank = ui::internal::blank::ProfileItem;
 using ProfileSubsectionSortKey = int;
+
+// Seed tree
+using SeedTreePrimaryID = OTIdentifier;
+using SeedTreeExternalInterface = ui::SeedTree;
+using SeedTreeInternalInterface = ui::internal::SeedTree;
+// seed id
+using SeedTreeRowID = OTIdentifier;
+using SeedTreeRowInterface = ui::SeedTreeItem;
+using SeedTreeRowInternal = ui::internal::SeedTreeItem;
+using SeedTreeRowBlank = ui::internal::blank::SeedTreeItem;
+// primary, seed name
+using SeedTreeSortKey = std::pair<bool, UnallocatedCString>;
+
+using SeedTreeItemPrimaryID = SeedTreePrimaryID;
+using SeedTreeItemExternalInterface = SeedTreeRowInterface;
+using SeedTreeItemInternalInterface = SeedTreeRowInternal;
+using SeedTreeItemRowID = OTNymID;
+using SeedTreeItemRowInterface = ui::SeedTreeNym;
+using SeedTreeItemRowInternal = ui::internal::SeedTreeNym;
+using SeedTreeItemRowBlank = ui::internal::blank::SeedTreeNym;
+/// nym index
+using SeedTreeItemSortKey = std::size_t;
+using SeedTreeItemRowData =
+    ChildObjectData<SeedTreeItemRowID, SeedTreeItemSortKey>;
 
 // Unit list
 using UnitListPrimaryID = OTNymID;
@@ -970,6 +1004,31 @@ struct ProfileItem : virtual public Row, virtual public ui::ProfileItem {
         implementation::CustomData& custom) noexcept -> bool = 0;
 
     ~ProfileItem() override = default;
+};
+struct SeedTree : virtual public List, virtual public ui::SeedTree {
+    virtual auto last(const implementation::SeedTreeRowID& id) const noexcept
+        -> bool = 0;
+
+    ~SeedTree() override = default;
+};
+struct SeedTreeItem : virtual public List,
+                      virtual public Row,
+                      virtual public ui::SeedTreeItem {
+    virtual auto last(
+        const implementation::SeedTreeItemRowID& id) const noexcept -> bool = 0;
+
+    virtual auto reindex(
+        const implementation::SeedTreeSortKey& key,
+        implementation::CustomData& custom) noexcept -> bool = 0;
+
+    ~SeedTreeItem() override = default;
+};
+struct SeedTreeNym : virtual public Row, virtual public ui::SeedTreeNym {
+    virtual auto reindex(
+        const implementation::SeedTreeItemSortKey& key,
+        implementation::CustomData& custom) noexcept -> bool = 0;
+
+    ~SeedTreeNym() override = default;
 };
 struct UnitList : virtual public List, virtual public ui::UnitList {
     virtual auto last(const implementation::UnitListRowID& id) const noexcept
@@ -1516,6 +1575,38 @@ struct ProfileSubsection : public List<
 private:
     const OTNymID nym_id_{identifier::Nym::Factory()};
 };
+struct SeedTreeItem final : public List<
+                                internal::SeedTreeItem,
+                                SharedPimpl<ui::SeedTreeNym>,
+                                implementation::SeedTreeItemRowID> {
+    auto SeedID() const noexcept -> UnallocatedCString final { return {}; }
+    auto Debug() const noexcept -> UnallocatedCString final { return {}; }
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
+    auto Type() const noexcept -> crypto::SeedStyle final { return {}; }
+
+    auto reindex(
+        const implementation::SeedTreeSortKey& key,
+        implementation::CustomData& custom) noexcept -> bool final
+    {
+        return {};
+    }
+
+    ~SeedTreeItem() final = default;
+};
+struct SeedTreeNym final : public Row, public internal::SeedTreeNym {
+    auto NymID() const noexcept -> UnallocatedCString final { return {}; }
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
+    auto Index() const noexcept -> std::size_t final { return {}; }
+
+    auto reindex(
+        const implementation::SeedTreeItemSortKey& key,
+        implementation::CustomData& custom) noexcept -> bool final
+    {
+        return {};
+    }
+
+    ~SeedTreeNym() final = default;
+};
 struct UnitListItem final : virtual public Row,
                             virtual public internal::UnitListItem {
     auto Name() const noexcept -> UnallocatedCString final { return {}; }
@@ -1946,6 +2037,26 @@ auto ProfileSubsectionWidget(
     const ui::implementation::ProfileSectionSortKey& key,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::ProfileSectionRowInternal>;
+auto SeedTreeModel(
+    const api::session::Client& api,
+    const SimpleCallback& cb) noexcept
+    -> std::unique_ptr<ui::internal::SeedTree>;
+auto SeedTreeQtModel(ui::internal::SeedTree& parent) noexcept
+    -> std::unique_ptr<ui::SeedTreeQt>;
+auto SeedTreeItemModel(
+    const ui::implementation::SeedTreeInternalInterface& parent,
+    const api::session::Client& api,
+    const ui::implementation::SeedTreeRowID& rowID,
+    const ui::implementation::SeedTreeSortKey& key,
+    ui::implementation::CustomData& custom) noexcept
+    -> std::shared_ptr<ui::implementation::SeedTreeRowInternal>;
+auto SeedTreeNym(
+    const ui::implementation::SeedTreeItemInternalInterface& parent,
+    const api::session::Client& api,
+    const ui::implementation::SeedTreeItemRowID& rowID,
+    const ui::implementation::SeedTreeItemSortKey& sortKey,
+    ui::implementation::CustomData& custom) noexcept
+    -> std::shared_ptr<ui::implementation::SeedTreeItemRowInternal>;
 auto UnitListItem(
     const ui::implementation::UnitListInternalInterface& parent,
     const api::session::Client& api,

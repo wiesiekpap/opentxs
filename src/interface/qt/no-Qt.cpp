@@ -25,6 +25,8 @@
 #include "interface/ui/contactlist/ContactListItem.hpp"  // IWYU pragma: associated
 #include "interface/ui/nymlist/NymListItem.hpp"  // IWYU pragma: associated
 #include "interface/ui/payablelist/PayableListItem.hpp"  // IWYU pragma: associated
+#include "interface/ui/seedtree/SeedTreeItem.hpp"  // IWYU pragma: associated
+#include "interface/ui/seedtree/SeedTreeNym.hpp"   // IWYU pragma: associated
 #include "interface/ui/unitlist/UnitListItem.hpp"  // IWYU pragma: associated
 
 #include "interface/qt/SendMonitor.hpp"
@@ -148,6 +150,16 @@ auto IssuerItem::qt_data(const int, const int, QVariant&) const noexcept -> void
 }
 
 auto PayableListItem::qt_data(const int, const int, QVariant&) const noexcept
+    -> void
+{
+}
+
+auto SeedTreeItem::qt_data(const int, const int, QVariant&) const noexcept
+    -> void
+{
+}
+
+auto SeedTreeNym::qt_data(const int, const int, QVariant&) const noexcept
     -> void
 {
 }

@@ -56,7 +56,7 @@ auto Seeds::Delete(const UnallocatedCString& id) -> bool
     return delete_item(id);
 }
 
-void Seeds::init(const UnallocatedCString& hash)
+auto Seeds::init(const UnallocatedCString& hash) -> void
 {
     std::shared_ptr<proto::StorageSeeds> serialized;
     driver_.LoadProto(hash, serialized);
@@ -125,9 +125,9 @@ auto Seeds::SetAlias(
     return set_alias(id, alias);
 }
 
-void Seeds::set_default(
+auto Seeds::set_default(
     const std::unique_lock<std::mutex>& lock,
-    const UnallocatedCString& id)
+    const UnallocatedCString& id) -> void
 {
     if (!verify_write_lock(lock)) {
         std::cerr << __func__ << ": Lock failure." << std::endl;
@@ -146,8 +146,7 @@ auto Seeds::SetDefault(const UnallocatedCString& id) -> bool
     return save(lock);
 }
 
-auto Seeds::Store(const proto::Seed& data, const UnallocatedCString& alias)
-    -> bool
+auto Seeds::Store(const proto::Seed& data) -> bool
 {
     std::unique_lock<std::mutex> lock(write_lock_);
 
@@ -172,8 +171,6 @@ auto Seeds::Store(const proto::Seed& data, const UnallocatedCString& alias)
     if (!driver_.StoreProto(data, hash)) { return false; }
 
     if (default_seed_.empty()) { set_default(lock, id); }
-
-    if (!alias.empty()) { std::get<1>(metadata) = alias; }
 
     return save(lock);
 }

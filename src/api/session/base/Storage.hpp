@@ -33,6 +33,7 @@ class Asio;
 namespace session
 {
 class Crypto;
+class Endpoints;
 class Factory;
 class Storage;
 }  // namespace session
@@ -42,6 +43,14 @@ class Legacy;
 class Session;
 class Settings;
 }  // namespace api
+
+namespace network
+{
+namespace zeromq
+{
+class Context;
+}  // namespace zeromq
+}  // namespace network
 
 namespace storage
 {
@@ -86,10 +95,12 @@ protected:
         const Flag& running,
         Options&& args,
         const api::Session& session,
+        const api::session::Endpoints& endpoints,
         const api::Crypto& crypto,
         const api::Settings& config,
         const api::Legacy& legacy,
         const api::network::Asio& asio,
+        const opentxs::network::zeromq::Context& zmq,
         const UnallocatedCString& dataFolder,
         std::unique_ptr<api::session::Factory> factory);
 

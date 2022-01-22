@@ -680,6 +680,64 @@ namespace opentxs::ui::implementation
 {
 template <>
 auto ListItems<
+    SeedTreeRowID,
+    SeedTreeSortKey,
+    std::shared_ptr<SeedTreeRowInternal>>::
+    compare_id(const SeedTreeRowID& lhs, const SeedTreeRowID& rhs)
+        const noexcept -> bool
+{
+    static const auto compare = std::less<SeedTreeRowID>{};
+
+    return compare(lhs, rhs);
+}
+
+template <>
+auto ListItems<
+    SeedTreeRowID,
+    SeedTreeSortKey,
+    std::shared_ptr<SeedTreeRowInternal>>::
+    compare_key(const SeedTreeSortKey& lhs, const SeedTreeSortKey& rhs)
+        const noexcept -> bool
+{
+    static const auto compare = std::less<SeedTreeSortKey>{};
+
+    return compare(lhs, rhs);
+}
+}  // namespace opentxs::ui::implementation
+
+namespace opentxs::ui::implementation
+{
+template <>
+auto ListItems<
+    SeedTreeItemRowID,
+    SeedTreeItemSortKey,
+    std::shared_ptr<SeedTreeItemRowInternal>>::
+    compare_id(const SeedTreeItemRowID& lhs, const SeedTreeItemRowID& rhs)
+        const noexcept -> bool
+{
+    static const auto compare = std::less<SeedTreeItemRowID>{};
+
+    return compare(lhs, rhs);
+}
+
+template <>
+auto ListItems<
+    SeedTreeItemRowID,
+    SeedTreeItemSortKey,
+    std::shared_ptr<SeedTreeItemRowInternal>>::
+    compare_key(const SeedTreeItemSortKey& lhs, const SeedTreeItemSortKey& rhs)
+        const noexcept -> bool
+{
+    static const auto compare = std::less<SeedTreeItemSortKey>{};
+
+    return compare(lhs, rhs);
+}
+}  // namespace opentxs::ui::implementation
+
+namespace opentxs::ui::implementation
+{
+template <>
+auto ListItems<
     UnitListRowID,
     UnitListSortKey,
     std::shared_ptr<UnitListRowInternal>>::

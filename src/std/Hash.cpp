@@ -28,6 +28,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Parameters.hpp"
+#include "opentxs/crypto/Seed.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -90,6 +91,14 @@ auto hash<opentxs::crypto::Parameters>::operator()(
     const auto preimage = rhs.Internal().Hash();
 
     return opentxs::crypto::sodium::Siphash(key, preimage->Bytes());
+}
+
+auto hash<opentxs::crypto::Seed>::operator()(
+    const opentxs::crypto::Seed& rhs) const noexcept -> std::size_t
+{
+    static const auto hasher = hash<opentxs::OTIdentifier>{};
+
+    return hasher(rhs.ID());
 }
 
 auto hash<opentxs::network::zeromq::Frame>::operator()(

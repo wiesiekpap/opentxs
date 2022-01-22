@@ -335,6 +335,13 @@ auto Endpoints::PushNotification() const noexcept -> UnallocatedCString
     return push_notification_;
 }
 
+auto Endpoints::SeedUpdated() const noexcept -> UnallocatedCString
+{
+    static constexpr auto path{"crypto/seed"};
+
+    return build_inproc_path(path, version_1_);
+}
+
 auto Endpoints::ServerReplyReceived() const noexcept -> UnallocatedCString
 {
     static constexpr auto path{"reply/received"};

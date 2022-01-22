@@ -32,7 +32,18 @@ public:
         const BIP44Chain internal,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::HD> = 0;
+    virtual auto GetOrCreateDefaultSeed(
+        UnallocatedCString& seedID,
+        opentxs::crypto::SeedStyle& type,
+        opentxs::crypto::Language& lang,
+        Bip32Index& index,
+        const opentxs::crypto::SeedStrength strength,
+        const PasswordPrompt& reason) const -> OTSecret = 0;
     auto Internal() const noexcept -> const Seed& final { return *this; }
+    virtual auto UpdateIndex(
+        const UnallocatedCString& seedID,
+        const Bip32Index index,
+        const PasswordPrompt& reason) const -> bool = 0;
 
     auto Internal() noexcept -> Seed& final { return *this; }
 

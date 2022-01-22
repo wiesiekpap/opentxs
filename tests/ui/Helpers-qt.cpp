@@ -26,6 +26,7 @@
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/interface/qt/AccountActivity.hpp"
 #include "opentxs/interface/qt/AccountList.hpp"
 #include "opentxs/interface/qt/AccountTree.hpp"
@@ -36,6 +37,7 @@
 #include "opentxs/interface/qt/ContactList.hpp"
 #include "opentxs/interface/qt/MessagableList.hpp"
 #include "opentxs/interface/qt/NymList.hpp"
+#include "opentxs/interface/qt/SeedTree.hpp"
 
 namespace ottest
 {
@@ -47,6 +49,7 @@ constexpr auto blockchain_account_status_columns_{1};
 constexpr auto blockchain_selection_columns_{1};
 constexpr auto contact_list_columns_{1};
 constexpr auto nym_list_columns_{1};
+constexpr auto seed_tree_columns_{1};
 
 auto check_qt_common(const QAbstractItemModel& model) noexcept -> bool;
 auto check_row(
@@ -104,6 +107,16 @@ auto check_row(
     const QAbstractItemModel& model,
     const QModelIndex& parent,
     const NymListRow& expected,
+    const int row) noexcept -> bool;
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const SeedTreeItem& expected,
+    const int row) noexcept -> bool;
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const SeedTreeNym& expected,
     const int row) noexcept -> bool;
 }  // namespace ottest
 
@@ -1310,6 +1323,153 @@ auto check_row(
         EXPECT_EQ(name.toString().toStdString(), expected.name_);
         EXPECT_EQ(id.toString().toStdString(), expected.id_);
         EXPECT_EQ(model.columnCount(index), nym_list_columns_);
+        EXPECT_EQ(model.rowCount(index), vCount);
+    }
+
+    return output;
+}
+
+auto check_seed_tree_qt(
+    const ot::api::session::Client& api,
+    const SeedTreeData& expected) noexcept -> bool
+{
+    const auto* pModel = api.UI().SeedTreeQt();
+
+    EXPECT_NE(pModel, nullptr);
+
+    if (nullptr == pModel) { return false; }
+
+    const auto& model = *pModel;
+    auto output = check_qt_common(model);
+    auto parent = QModelIndex{};
+    const auto vCount = expected.rows_.size();
+
+    if (0u == vCount) { return output; }
+
+    auto it{expected.rows_.begin()};
+
+    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+        output &= check_row(model, parent, *it, static_cast<int>(i));
+    }
+
+    return output;
+}
+
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const SeedTreeItem& expected,
+    const int row) noexcept -> bool
+{
+    using Model = ot::ui::SeedTreeQt;
+    auto output{true};
+
+    for (auto column{0}; column < seed_tree_columns_; ++column) {
+        const auto exists = model.hasIndex(row, column, parent);
+        output &= exists;
+
+        EXPECT_TRUE(exists);
+
+        if (false == exists) { continue; }
+
+        const auto vCount = expected.rows_.size();
+        const auto index = model.index(row, column, parent);
+        const auto id = model.data(index, Model::SeedIDRole);
+        const auto name = model.data(index, Model::SeedNameRole);
+        const auto type = model.data(index, Model::SeedTypeRole);
+        const auto display = model.data(index, Qt::DisplayRole);
+
+        switch (column) {
+            case Model::NameColumn: {
+                output &=
+                    (display.toString().toStdString() ==
+                     name.toString().toStdString());
+
+                EXPECT_EQ(
+                    display.toString().toStdString(),
+                    name.toString().toStdString());
+            } break;
+            default: {
+                output &= false;
+
+                EXPECT_TRUE(false);
+            }
+        }
+
+        output &= (id.toString().toStdString() == expected.id_);
+        output &= (name.toString().toStdString() == expected.name_);
+        output &=
+            (static_cast<ot::crypto::SeedStyle>(type.toInt()) ==
+             expected.type_);
+        output &= (model.columnCount(index) == seed_tree_columns_);
+        output &= (static_cast<std::size_t>(model.rowCount(index)) == vCount);
+
+        EXPECT_EQ(id.toString().toStdString(), expected.id_);
+        EXPECT_EQ(name.toString().toStdString(), expected.name_);
+        EXPECT_EQ(
+            static_cast<ot::crypto::SeedStyle>(type.toInt()), expected.type_);
+        EXPECT_EQ(model.columnCount(index), seed_tree_columns_);
+        EXPECT_EQ(model.rowCount(index), vCount);
+
+        if (0u == vCount) { return output; }
+
+        auto it{expected.rows_.begin()};
+
+        for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+            output &= check_row(model, index, *it, static_cast<int>(i));
+        }
+    }
+
+    return output;
+}
+
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const SeedTreeNym& expected,
+    const int row) noexcept -> bool
+{
+    using Model = ot::ui::SeedTreeQt;
+    auto output{true};
+
+    for (auto column{0}; column < seed_tree_columns_; ++column) {
+        const auto exists = model.hasIndex(row, column, parent);
+        output &= exists;
+
+        EXPECT_TRUE(exists);
+
+        if (false == exists) { continue; }
+
+        const auto vCount = 0u;
+        const auto index = model.index(row, column, parent);
+        const auto position = model.data(index, Model::NymIndexRole);
+        const auto id = model.data(index, Model::NymIDRole);
+        const auto name = model.data(index, Model::NymNameRole);
+        const auto display = model.data(index, Qt::DisplayRole);
+
+        switch (column) {
+            case Model::NameColumn: {
+                output &= (display == name);
+
+                EXPECT_EQ(display, name);
+            } break;
+            default: {
+                output &= false;
+
+                EXPECT_TRUE(false);
+            }
+        }
+
+        output &= (position.toULongLong() == expected.index_);
+        output &= (id.toString().toStdString() == expected.id_);
+        output &= (name.toString().toStdString() == expected.name_);
+        output &= (model.columnCount(index) == seed_tree_columns_);
+        output &= (static_cast<std::size_t>(model.rowCount(index)) == vCount);
+
+        EXPECT_EQ(position.toULongLong(), expected.index_);
+        EXPECT_EQ(id.toString().toStdString(), expected.id_);
+        EXPECT_EQ(name.toString().toStdString(), expected.name_);
+        EXPECT_EQ(model.columnCount(index), seed_tree_columns_);
         EXPECT_EQ(model.rowCount(index), vCount);
     }
 

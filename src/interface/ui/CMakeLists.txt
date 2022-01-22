@@ -19,6 +19,7 @@ add_subdirectory(messagablelist)
 add_subdirectory(nymlist)
 add_subdirectory(payablelist)
 add_subdirectory(profile)
+add_subdirectory(seedtree)
 add_subdirectory(unitlist)
 
 target_sources(

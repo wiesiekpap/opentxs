@@ -100,10 +100,12 @@ Session::Session(
           running,
           std::move(args),
           *this,
+          endpoints_,
           crypto,
           config,
           parent.Internal().Legacy(),
           parent.Asio(),
+          zmq,
           dataFolder,
           std::move(factory))
     , network_(network(zmq_context_, endpoints_, *this))

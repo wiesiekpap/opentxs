@@ -66,4 +66,11 @@ auto check_nym_list_qt(
 {
     return true;
 }
+
+auto check_seed_tree_qt(
+    const ot::api::session::Client&,
+    const SeedTreeData&) noexcept -> bool
+{
+    return true;
+}
 }  // namespace ottest

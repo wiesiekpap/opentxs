@@ -2187,8 +2187,7 @@ auto Storage::Store(const identifier::Nym& nym, const proto::Purse& purse) const
     return nymNode.get().mutable_Nym(nym.str()).get().Store(purse);
 }
 
-auto Storage::Store(const proto::Seed& data, const UnallocatedCString& alias)
-    const -> bool
+auto Storage::Store(const proto::Seed& data) const -> bool
 {
     return mutable_Root()
         .get()
@@ -2196,7 +2195,7 @@ auto Storage::Store(const proto::Seed& data, const UnallocatedCString& alias)
         .get()
         .mutable_Seeds()
         .get()
-        .Store(data, alias);
+        .Store(data);
 }
 
 auto Storage::Store(

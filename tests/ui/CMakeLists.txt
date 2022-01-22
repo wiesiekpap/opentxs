@@ -35,3 +35,4 @@ endif()
 
 add_opentx_test(unittests-opentxs-ui-items Test_Items.cpp)
 add_opentx_test(unittests-opentxs-ui-nym-list Test_NymList.cpp)
+add_opentx_test(unittests-opentxs-ui-seed-tree Test_SeedTree.cpp)

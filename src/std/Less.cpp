@@ -11,10 +11,18 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/crypto/Seed.hpp"
 #include "opentxs/util/Pimpl.hpp"  // IWYU pragma: keep
 
 namespace std
 {
+auto less<opentxs::crypto::Seed>::operator()(
+    const opentxs::crypto::Seed& lhs,
+    const opentxs::crypto::Seed& rhs) const noexcept -> bool
+{
+    return lhs < rhs;
+}
+
 auto less<opentxs::Pimpl<opentxs::Data>>::operator()(
     const opentxs::OTData& lhs,
     const opentxs::OTData& rhs) const -> bool

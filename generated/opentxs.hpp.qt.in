@@ -19,5 +19,6 @@
 #include "opentxs/interface/qt/NymList.hpp"
 #include "opentxs/interface/qt/PayableList.hpp"
 #include "opentxs/interface/qt/Profile.hpp"
+#include "opentxs/interface/qt/SeedTree.hpp"
 #include "opentxs/interface/qt/SeedValidator.hpp"
 #include "opentxs/interface/qt/UnitList.hpp"

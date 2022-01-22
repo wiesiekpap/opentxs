@@ -40,6 +40,7 @@
 #include "opentxs/interface/qt/NymList.hpp"
 #include "opentxs/interface/qt/PayableList.hpp"
 #include "opentxs/interface/qt/Profile.hpp"
+#include "opentxs/interface/qt/SeedTree.hpp"
 #include "opentxs/interface/qt/SeedValidator.hpp"
 #include "opentxs/interface/qt/UnitList.hpp"
 #include "opentxs/interface/ui/Blockchains.hpp"
@@ -137,6 +138,8 @@ public:
         -> opentxs::ui::PayableListQt* final;
     auto ProfileQt(const identifier::Nym& nymID, const SimpleCallback cb)
         const noexcept -> opentxs::ui::ProfileQt* final;
+    auto SeedTreeQt(const SimpleCallback updateCB) const noexcept
+        -> opentxs::ui::SeedTreeQt* final;
     auto SeedValidator(
         const opentxs::crypto::SeedStyle type,
         const opentxs::crypto::Language lang) const noexcept
@@ -177,6 +180,7 @@ private:
     using NymListQtPointer = std::unique_ptr<opentxs::ui::NymListQt>;
     using PayableListQtPointer = std::unique_ptr<opentxs::ui::PayableListQt>;
     using ProfileQtPointer = std::unique_ptr<opentxs::ui::ProfileQt>;
+    using SeedTreeQtPointer = std::unique_ptr<opentxs::ui::SeedTreeQt>;
     using UnitListQtPointer = std::unique_ptr<opentxs::ui::UnitListQt>;
 
     using AccountActivityQtMap =
@@ -235,6 +239,7 @@ private:
     mutable NymListQtPointer nym_list_qt_;
     mutable PayableListQtMap payable_lists_qt_;
     mutable ProfileQtMap profiles_qt_;
+    mutable SeedTreeQtPointer seed_tree_qt_;
     mutable SeedValidatorMap seed_validators_;
     mutable UnitListQtMap unit_lists_qt_;
 

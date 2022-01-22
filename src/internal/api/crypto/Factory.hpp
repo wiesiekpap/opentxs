@@ -24,6 +24,7 @@ namespace session
 {
 class Activity;
 class Contacts;
+class Endpoints;
 class Factory;
 class Storage;
 }  // namespace session
@@ -43,6 +44,14 @@ class Pbkdf2;
 class Ripemd160;
 class Scrypt;
 }  // namespace crypto
+
+namespace network
+{
+namespace zeromq
+{
+class Context;
+}  // namespace zeromq
+}  // namespace network
 
 class Options;
 }  // namespace opentxs
@@ -74,12 +83,15 @@ auto Hash(
     -> std::unique_ptr<api::crypto::Hash>;
 auto SeedAPI(
     const api::Session& api,
+    const api::session::Endpoints& endpoints,
     const api::session::Factory& factory,
     const api::crypto::Asymmetric& asymmetric,
     const api::crypto::Symmetric& symmetric,
     const api::session::Storage& storage,
     const crypto::Bip32& bip32,
-    const crypto::Bip39& bip39) noexcept -> std::unique_ptr<api::crypto::Seed>;
+    const crypto::Bip39& bip39,
+    const network::zeromq::Context& zmq) noexcept
+    -> std::unique_ptr<api::crypto::Seed>;
 auto Symmetric(const api::Session& api) noexcept
     -> std::unique_ptr<api::crypto::Symmetric>;
 }  // namespace opentxs::factory
