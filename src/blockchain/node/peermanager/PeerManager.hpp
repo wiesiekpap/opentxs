@@ -41,6 +41,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/Gatekeeper.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs
@@ -151,7 +152,6 @@ public:
             const node::internal::PeerDatabase& database,
             const node::internal::PeerManager& parent,
             const database::BlockStorage policy,
-            const std::atomic<bool>& running,
             const UnallocatedCString& shutdown,
             const Type chain,
             const UnallocatedCString& seednode,
@@ -175,7 +175,6 @@ public:
         const node::internal::PeerManager& parent_;
         const network::zeromq::socket::Publish& connected_peers_;
         const database::BlockStorage policy_;
-        const std::atomic<bool>& running_;
         const UnallocatedCString& shutdown_endpoint_;
         const bool invalid_peer_;
         const OTData localhost_peer_;
@@ -190,6 +189,7 @@ public:
         std::unique_ptr<IncomingConnectionManager> incoming_zmq_;
         std::unique_ptr<IncomingConnectionManager> incoming_tcp_;
         UnallocatedMap<OTIdentifier, Time> attempt_;
+        Gatekeeper gatekeeper_;
 
         static auto get_preferred_services(
             const node::internal::Config& config) noexcept

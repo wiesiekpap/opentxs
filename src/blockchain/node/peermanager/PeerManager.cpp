@@ -102,7 +102,6 @@ PeerManager::PeerManager(
           database_,
           *this,
           policy,
-          running_,
           shutdown,
           chain,
           seednode,

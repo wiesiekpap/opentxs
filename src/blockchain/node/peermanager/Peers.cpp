@@ -54,7 +54,6 @@ PeerManager::Peers::Peers(
     const internal::PeerDatabase& database,
     const internal::PeerManager& parent,
     const database::BlockStorage policy,
-    const std::atomic<bool>& running,
     const UnallocatedCString& shutdown,
     const Type chain,
     const UnallocatedCString& seednode,
@@ -71,7 +70,6 @@ PeerManager::Peers::Peers(
     , parent_(parent)
     , connected_peers_(api_.Network().Blockchain().Internal().PeerUpdate())
     , policy_(policy)
-    , running_(running)
     , shutdown_endpoint_(shutdown)
     , invalid_peer_(false)
     , localhost_peer_(api_.Factory().Data("0x7f000001", StringStyle::Hex))
@@ -96,6 +94,7 @@ PeerManager::Peers::Peers(
     , incoming_zmq_()
     , incoming_tcp_()
     , attempt_()
+    , gatekeeper_()
 {
     const auto& data = params::Data::Chains().at(chain_);
     database_.AddOrUpdate(Endpoint{factory::BlockchainAddress(
@@ -205,9 +204,10 @@ auto PeerManager::Peers::AddPeer(
     const p2p::Address& address,
     std::promise<bool>& promise) noexcept -> void
 {
-    if (false == running_) {
-        promise.set_value(false);
+    auto ticket = gatekeeper_.get();
 
+    if (ticket) {
+        promise.set_value(false);
         return;
     }
 
@@ -609,7 +609,9 @@ auto PeerManager::Peers::set_default_peer(
 
 auto PeerManager::Peers::Run() noexcept -> bool
 {
-    if ((false == running_) || invalid_peer_) { return false; }
+    auto ticket = gatekeeper_.get();
+
+    if (ticket|| invalid_peer_) { return false; }
 
     const auto target = minimum_peers_.load();
 
@@ -627,7 +629,7 @@ auto PeerManager::Peers::Run() noexcept -> bool
 
 auto PeerManager::Peers::Shutdown() noexcept -> void
 {
-    OT_ASSERT(false == running_);
+    gatekeeper_.shutdown();
 
     if (incoming_zmq_) { incoming_zmq_->Shutdown(); }
     if (incoming_tcp_) { incoming_tcp_->Shutdown(); }
