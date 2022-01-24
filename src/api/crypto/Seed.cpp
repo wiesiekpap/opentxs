@@ -257,11 +257,12 @@ auto Seed::Bip32Root(
     }
 }
 
-auto Seed::DefaultSeed() const -> UnallocatedCString
+auto Seed::DefaultSeed() const -> std::pair<UnallocatedCString, std::size_t>
 {
     auto lock = Lock{seed_lock_};
+    const auto count = storage_.SeedList();
 
-    return storage_.DefaultSeed();
+    return std::make_pair(storage_.DefaultSeed(), count.size());
 }
 
 auto Seed::GetHDKey(
@@ -633,18 +634,32 @@ auto Seed::new_seed(
     }
 
     try {
-        return new_seed(
-            lock,
-            comment,
-            factory::Seed(
-                bip32_,
-                bip39_,
-                symmetric_,
-                factory_,
-                storage_,
-                lang,
-                strength,
-                reason));
+        auto seed = factory::Seed(
+            api_,
+            bip32_,
+            bip39_,
+            symmetric_,
+            factory_,
+            storage_,
+            lang,
+            strength,
+            reason);
+        const auto check = factory::Seed(
+            api_,
+            bip32_,
+            bip39_,
+            symmetric_,
+            factory_,
+            storage_,
+            seed.Type(),
+            lang,
+            seed.Words(),
+            seed.Phrase(),
+            reason);
+
+        OT_ASSERT(seed.ID() == check.ID());
+
+        return new_seed(lock, comment, std::move(seed));
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
@@ -742,6 +757,36 @@ auto Seed::SeedDescription(UnallocatedCString seedID) const noexcept
 
         return "Invalid seed";
     }
+}
+
+auto Seed::SetDefault(const Identifier& id) const noexcept -> bool
+{
+    if (id.empty()) {
+        LogError()(OT_PRETTY_CLASS())("Invalid id").Flush();
+
+        return false;
+    }
+
+    const auto seedID = id.str();
+    const auto exists = [&] {
+        for (const auto& [value, alias] : api_.Storage().SeedList()) {
+            if (value == seedID) { return true; }
+        }
+
+        return false;
+    }();
+
+    if (false == exists) {
+        LogError()(OT_PRETTY_CLASS())("Seed ")(id)(" does not exist").Flush();
+
+        return false;
+    }
+
+    const auto out = api_.Storage().SetDefaultSeed(seedID);
+
+    if (out) { publish(id); }
+
+    return out;
 }
 
 auto Seed::SetSeedComment(const Identifier& id, const std::string_view comment)

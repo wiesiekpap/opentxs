@@ -25,6 +25,11 @@ namespace imp
 {
 class Storage;
 }  // namespace imp
+
+namespace session
+{
+class Factory;
+}  // namespace session
 }  // namespace api
 
 namespace proto
@@ -83,6 +88,8 @@ public:
 private:
     friend api::imp::Storage;
     friend storage::Root;
+
+    const api::session::Factory& factory_;
 
     UnallocatedCString account_root_{Node::BLANK_HASH};
     UnallocatedCString contact_root_{Node::BLANK_HASH};
@@ -144,7 +151,10 @@ private:
     auto serialize() const -> proto::StorageItems;
     auto update_root(const UnallocatedCString& hash) -> bool;
 
-    Tree(const Driver& storage, const UnallocatedCString& key);
+    Tree(
+        const api::session::Factory& factory,
+        const Driver& storage,
+        const UnallocatedCString& key);
     Tree() = delete;
     Tree(const Tree&);
     Tree(Tree&&) = delete;

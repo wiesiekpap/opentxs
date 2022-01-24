@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <memory>
 #include <string_view>
+#include <tuple>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Secret.hpp"
@@ -71,7 +72,8 @@ public:
     virtual auto Bip32Root(
         const UnallocatedCString& seedID,
         const PasswordPrompt& reason) const -> UnallocatedCString = 0;
-    virtual auto DefaultSeed() const -> UnallocatedCString = 0;
+    virtual auto DefaultSeed() const
+        -> std::pair<UnallocatedCString, std::size_t> = 0;
     virtual auto GetHDKey(
         const UnallocatedCString& seedID,
         const EcdsaCurve& curve,
@@ -140,6 +142,7 @@ public:
         const PasswordPrompt& reason) const -> UnallocatedCString = 0;
     virtual auto SeedDescription(UnallocatedCString seedID) const noexcept
         -> UnallocatedCString = 0;
+    virtual auto SetDefault(const Identifier& id) const noexcept -> bool = 0;
     virtual auto SetSeedComment(
         const Identifier& id,
         const std::string_view comment) const noexcept -> bool = 0;

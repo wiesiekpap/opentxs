@@ -31,6 +31,7 @@ namespace opentxs::factory
 auto StorageMultiplex(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
+    const api::session::Factory& factory,
     const api::session::Storage& parent,
     const Flag& primaryBucket,
     const storage::Config& config) noexcept
@@ -39,7 +40,7 @@ auto StorageMultiplex(
     using ReturnType = opentxs::storage::driver::Multiplex;
 
     return std::make_unique<ReturnType>(
-        crypto, asio, parent, primaryBucket, config);
+        crypto, asio, factory, parent, primaryBucket, config);
 }
 }  // namespace opentxs::factory
 
@@ -48,11 +49,13 @@ namespace opentxs::storage::driver
 Multiplex::Multiplex(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
+    const api::session::Factory& factory,
     const api::session::Storage& storage,
     const Flag& primaryBucket,
     const storage::Config& config)
     : crypto_(crypto)
     , asio_(asio)
+    , factory_(factory)
     , storage_(storage)
     , primary_bucket_(primaryBucket)
     , config_(config)
@@ -77,6 +80,7 @@ auto Multiplex::BestRoot(bool& primaryOutOfSync) -> UnallocatedCString
     try {
         localRoot.reset(new storage::Root(
             asio_,
+            factory_,
             *this,
             bestHash,
             std::numeric_limits<std::int64_t>::max(),
@@ -95,6 +99,7 @@ auto Multiplex::BestRoot(bool& primaryOutOfSync) -> UnallocatedCString
         try {
             localRoot.reset(new storage::Root(
                 asio_,
+                factory_,
                 *this,
                 rootHash,
                 std::numeric_limits<std::int64_t>::max(),
@@ -311,6 +316,7 @@ void Multiplex::migrate_primary(
     auto bucket = Flag::Factory(false);
     root.reset(new storage::Root(
         asio_,
+        factory_,
         *this,
         rootHash,
         std::numeric_limits<std::int64_t>::max(),

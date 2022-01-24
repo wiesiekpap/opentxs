@@ -138,6 +138,7 @@ public:
         Account::AccountType type,
         TransactionNumber stash,
         const PasswordPrompt& reason) const -> ExclusiveAccount final;
+    auto DefaultNym() const noexcept -> std::pair<OTNymID, std::size_t> final;
     auto DeleteAccount(const Identifier& accountID) const -> bool final;
     auto IssuerAccount(const identifier::UnitDefinition& unitID) const
         -> SharedAccount final;
@@ -317,6 +318,7 @@ public:
         const PasswordPrompt& reason,
         const VersionNumber version) const -> OTServerContract final;
     auto ServerList() const -> ObjectList final;
+    auto SetDefaultNym(const identifier::Nym& id) const noexcept -> bool final;
     auto SetNymAlias(const identifier::Nym& id, const UnallocatedCString& alias)
         const -> bool final;
     auto SetServerAlias(
@@ -443,6 +445,7 @@ private:
     mutable ServerMap server_map_;
     mutable UnitMap unit_map_;
     mutable IssuerMap issuer_map_;
+    mutable std::mutex create_nym_lock_;
     mutable std::mutex account_map_lock_;
     mutable std::mutex nym_map_lock_;
     mutable std::mutex server_map_lock_;
@@ -502,7 +505,8 @@ private:
         const Nym_p& signerNym,
         const identifier::Nym& id,
         const PasswordPrompt& reason) const -> Editor<opentxs::NymFile>;
-    auto notify(const identifier::Nym& id) const noexcept -> void;
+    auto notify_changed(const identifier::Nym& id) const noexcept -> void;
+    auto notify_new(const identifier::Nym& id) const noexcept -> void;
     virtual void nym_to_contact(
         [[maybe_unused]] const identity::Nym& nym,
         [[maybe_unused]] const UnallocatedCString& name) const noexcept

@@ -1437,7 +1437,7 @@ auto Pair::store_secret(
     auto& [success, requestID] = output;
 
     auto setID = [&](const Identifier& in) -> void { output.second = in; };
-    const auto seedID = client_.Crypto().Seed().DefaultSeed();
+    const auto seedID = client_.Crypto().Seed().DefaultSeed().first;
     auto [taskID, future] = client_.OTX().InitiateStoreSecret(
         localNymID,
         serverID,

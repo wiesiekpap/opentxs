@@ -730,7 +730,7 @@ auto RPC_fixture::StartNotarySession(int index) const noexcept
         std::inserter(nyms, nyms.end()),
         [](const auto& in) { return in->str(); });
     auto& seeds = seed_map_.at(instance);
-    seeds.emplace(out.Crypto().Seed().DefaultSeed());
+    seeds.emplace(out.Crypto().Seed().DefaultSeed().first);
 
     return out;
 }

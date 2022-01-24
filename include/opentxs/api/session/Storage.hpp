@@ -137,6 +137,7 @@ public:
         const UnallocatedSet<UnallocatedCString>& participants) const
         -> bool = 0;
     virtual auto DeleteAccount(const UnallocatedCString& id) const -> bool = 0;
+    virtual auto DefaultNym() const -> OTNymID = 0;
     virtual auto DefaultSeed() const -> UnallocatedCString = 0;
     virtual auto DeleteContact(const UnallocatedCString& id) const -> bool = 0;
     virtual auto DeletePaymentWorkflow(
@@ -339,6 +340,7 @@ public:
     virtual auto SetContactAlias(
         const UnallocatedCString& id,
         const UnallocatedCString& alias) const -> bool = 0;
+    virtual auto SetDefaultNym(const identifier::Nym& id) const -> bool = 0;
     virtual auto SetDefaultSeed(const UnallocatedCString& id) const -> bool = 0;
     virtual auto SetNymAlias(
         const identifier::Nym& id,

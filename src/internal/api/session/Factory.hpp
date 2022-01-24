@@ -111,6 +111,7 @@ auto SessionFactoryAPI(const api::session::Notary& parent) noexcept
 auto StorageAPI(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
+    const api::session::Factory& factory,
     const Flag& running,
     const opentxs::storage::Config& config) noexcept
     -> std::unique_ptr<api::session::Storage>;

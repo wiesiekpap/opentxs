@@ -62,9 +62,9 @@ class opentxs::crypto::Seed::Imp final : public internal::Seed
 public:
     const SeedStyle type_;
     const Language lang_;
-    const OTSecret entropy_;
     const OTSecret words_;
     const OTSecret phrase_;
+    const OTSecret entropy_;
     const OTIdentifier id_;
     const api::session::Storage* const storage_;
     const proto::Ciphertext encrypted_words_;
@@ -77,7 +77,8 @@ public:
 
     Imp() noexcept;
     Imp(const api::Factory& factory) noexcept;
-    Imp(const opentxs::crypto::Bip32& bip32,
+    Imp(const api::Session& api,
+        const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
         const api::session::Factory& factory,

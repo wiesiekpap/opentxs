@@ -27,6 +27,7 @@ class Asio;
 
 namespace session
 {
+class Factory;
 class Storage;
 }  // namespace session
 
@@ -91,6 +92,7 @@ public:
     Multiplex(
         const api::Crypto& crypto,
         const api::network::Asio& asio,
+        const api::session::Factory& factory,
         const api::session::Storage& storage,
         const Flag& primaryBucket,
         const storage::Config& config);
@@ -100,6 +102,7 @@ public:
 private:
     const api::Crypto& crypto_;
     const api::network::Asio& asio_;
+    const api::session::Factory& factory_;
     const api::session::Storage& storage_;
     const Flag& primary_bucket_;
     const storage::Config& config_;

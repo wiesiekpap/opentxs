@@ -187,6 +187,15 @@ auto StorageNymListAllowedStorageBip47NymAddressIndex() noexcept
 {
     static const auto output = VersionMap{
         {4, {1, 1}},
+        {5, {1, 1}},
+    };
+
+    return output;
+}
+auto StorageNymListAllowedIdentifier() noexcept -> const VersionMap&
+{
+    static const auto output = VersionMap{
+        {5, {1, 1}},
     };
 
     return output;
@@ -198,6 +207,7 @@ auto StorageNymListAllowedStorageItemHash() noexcept -> const VersionMap&
         {2, {1, 2}},
         {3, {1, 3}},
         {4, {1, 4}},
+        {5, {1, 5}},
     };
 
     return output;

@@ -54,6 +54,7 @@ namespace opentxs::factory
 {
 auto Bip32(const api::Crypto& crypto) noexcept -> crypto::Bip32;
 auto Seed(
+    const api::Session& api,
     const crypto::Bip32& bip32,
     const crypto::Bip39& bip39,
     const api::crypto::Symmetric& symmetric,
