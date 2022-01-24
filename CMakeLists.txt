@@ -829,10 +829,10 @@ if(OPENTXS_STANDALONE)
   set( CPACK_PACKAGE_VERSION_PATCH "${${PROJECT_NAME}_VERSION_PATCH}" )
 
   #set( CPACK_PACKAGE_ICON " ")
-  set( CPACK_PACKAGE_DESCRIPTION "The Open-Transactions project is a collaborative effort to develop a robust, commercial-grade, fully-featured, free-software toolkit implementing the OTX protocol as well as a full-strength financial cryptography library, API, CLI, and prototype server. The project is managed by a worldwide community of volunteers that use the Internet to communicate, plan, and develop the Open-Transactions toolkit and its related documentation. ${${PROJECT_NAME}_GIT_VERSION}" )
+  set( CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Open-Transactions project is a collaborative effort to develop a robust, commercial-grade, fully-featured, free-software toolkit implementing the OTX protocol as well as a full-strength financial cryptography library, API, CLI, and prototype server. The project is managed by a worldwide community of volunteers that use the Internet to communicate, plan, and develop the Open-Transactions toolkit and its related documentation. ${${PROJECT_NAME}_GIT_VERSION}" )
   #set( CPACK_PACKAGE_CHECKSUM "" )
   set( CPACK_PACKAGE_HOMEPAGE_URL "https://opentransactions.org/wiki/Main_Page" )
-  set( CPACK_THREADS 4 )
+  set( CPACK_THREADS 12 )
   include(CPack)
 endif()
 
