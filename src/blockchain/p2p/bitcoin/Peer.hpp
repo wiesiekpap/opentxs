@@ -18,7 +18,6 @@
 #include "blockchain/p2p/peer/Peer.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -171,7 +170,7 @@ private:
     auto broadcast_inv_transaction(ReadView txid) noexcept -> void final;
     auto broadcast_transaction(zmq::Message&& message) noexcept -> void final;
     auto ping() noexcept -> void final;
-    auto pong() noexcept -> void final;
+    auto pong(Nonce) noexcept -> void final;
     auto process_message(zmq::Message&& message) noexcept -> void final;
     auto reconcile_mempool() noexcept -> void;
     auto request_addresses() noexcept -> void final;

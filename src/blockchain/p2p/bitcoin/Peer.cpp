@@ -393,10 +393,10 @@ auto Peer::ping() noexcept -> void
     send(ping.Transmit());
 }
 
-auto Peer::pong() noexcept -> void
+auto Peer::pong(Nonce nonce) noexcept -> void
 {
     std::unique_ptr<Message> pPong{
-        factory::BitcoinP2PPong(api_, chain_, nonce_)};
+        factory::BitcoinP2PPong(api_, chain_, nonce)};
 
     if (false == bool(pPong)) {
         LogError()(OT_PRETTY_CLASS())("Failed to construct pong").Flush();
@@ -1544,15 +1544,15 @@ auto Peer::process_ping(
     }
 
     const auto& message = *pMessage;
-
-    if (message.Nonce() == nonce_) {
+    auto nonce = message.Nonce();
+    if (nonce == nonce_) {
         LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
             address_.Display())(" which is apparently us.")
             .Flush();
         disconnect();
     }
 
-    pong();
+    pong(nonce);
 }
 
 auto Peer::process_pong(
