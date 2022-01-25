@@ -3,9 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#include <cs_ordered_guarded.h>
 #include <robin_hood.h>
 #include <future>
 #include <mutex>
+#include <shared_mutex>
 #include <tuple>
 #include <utility>
 
@@ -52,6 +54,12 @@ class Context;
 
 namespace opentxs::network::zeromq::context
 {
+using Batches = robin_hood::unordered_node_map<BatchID, internal::Batch>;
+using BatchIndex =
+    robin_hood::unordered_node_map<BatchID, UnallocatedVector<SocketID>>;
+using SocketIndex =
+    robin_hood::unordered_node_map<SocketID, std::pair<BatchID, socket::Raw*>>;
+
 class Pool final : public zeromq::internal::Pool
 {
 public:
@@ -79,15 +87,11 @@ public:
 private:
     const Context& parent_;
     const unsigned int count_;
-    mutable std::mutex index_lock_;
-    mutable std::mutex batch_lock_;
     Gatekeeper gate_;
     robin_hood::unordered_node_map<unsigned int, context::Thread> threads_;
-    robin_hood::unordered_node_map<BatchID, internal::Batch> batches_;
-    robin_hood::unordered_node_map<BatchID, UnallocatedVector<SocketID>>
-        batch_index_;
-    robin_hood::unordered_node_map<SocketID, std::pair<BatchID, socket::Raw*>>
-        socket_index_;
+    libguarded::ordered_guarded<Batches, std::shared_mutex> batches_;
+    libguarded::ordered_guarded<BatchIndex, std::shared_mutex> batch_index_;
+    libguarded::ordered_guarded<SocketIndex, std::shared_mutex> socket_index_;
 
     auto get(BatchID id) noexcept -> context::Thread&;
 

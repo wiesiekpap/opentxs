@@ -111,6 +111,10 @@ PeerManager::Peers::Peers(
 
 auto PeerManager::Peers::add_peer(Endpoint endpoint) noexcept -> int
 {
+    auto ticket = gatekeeper_.get();
+
+    if (ticket) return -1;
+
     return add_peer(++next_id_, std::move(endpoint));
 }
 
