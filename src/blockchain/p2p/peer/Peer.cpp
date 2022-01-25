@@ -12,6 +12,7 @@
 
 #include "blockchain/DownloadTask.hpp"
 #include "blockchain/p2p/peer/ConnectionManager.hpp"
+#include "internal/util/Future.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -285,7 +286,11 @@ auto Peer::on_init() noexcept -> void { check_init(); }
 
 auto Peer::pipeline(zmq::Message&& message) noexcept -> void
 {
-    init_.get();
+    if (false == IsReady(init_)) {
+        pipeline_.Push(std::move(message));
+
+        return;
+    }
 
     if (false == running_.load()) { return; }
 
