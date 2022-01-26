@@ -139,8 +139,7 @@ auto Seeds::set_default(
 
 auto Seeds::SetDefault(const UnallocatedCString& id) -> bool
 {
-    std::unique_lock<std::mutex> lock(write_lock_);
-
+    auto lock = Lock{write_lock_};
     set_default(lock, id);
 
     return save(lock);
@@ -148,7 +147,7 @@ auto Seeds::SetDefault(const UnallocatedCString& id) -> bool
 
 auto Seeds::Store(const proto::Seed& data) -> bool
 {
-    std::unique_lock<std::mutex> lock(write_lock_);
+    auto lock = Lock{write_lock_};
 
     const UnallocatedCString id = data.fingerprint();
     const auto incomingRevision = data.index();

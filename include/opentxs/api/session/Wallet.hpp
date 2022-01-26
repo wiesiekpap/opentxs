@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <ctime>
 #include <memory>
+#include <tuple>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/BasketContract.hpp"
@@ -131,6 +132,9 @@ public:
      */
     virtual auto ClientContext(const identifier::Nym& remoteNymID) const
         -> std::shared_ptr<const otx::context::Client> = 0;
+
+    virtual auto DefaultNym() const noexcept
+        -> std::pair<OTNymID, std::size_t> = 0;
 
     /**   Load a read-only copy of a ServerContext object
      *
@@ -495,6 +499,8 @@ public:
      */
     virtual auto ServerList() const -> ObjectList = 0;
 
+    virtual auto SetDefaultNym(const identifier::Nym& id) const noexcept
+        -> bool = 0;
     /**   Updates the alias for the specified nym.
      *
      *    An alias is a local label which is not part of the nym credentials

@@ -51,6 +51,11 @@ namespace network
 class Asio;
 }  // namespace network
 
+namespace session
+{
+class Factory;
+}  // namespace session
+
 class Crypto;
 }  // namespace api
 
@@ -186,6 +191,7 @@ public:
         const UnallocatedSet<UnallocatedCString>& participants) const
         -> bool final;
     auto DeleteAccount(const UnallocatedCString& id) const -> bool final;
+    auto DefaultNym() const -> OTNymID final;
     auto DefaultSeed() const -> UnallocatedCString final;
     auto DeleteContact(const UnallocatedCString& id) const -> bool final;
     auto DeletePaymentWorkflow(
@@ -382,6 +388,7 @@ public:
     auto SetContactAlias(
         const UnallocatedCString& id,
         const UnallocatedCString& alias) const -> bool final;
+    auto SetDefaultNym(const identifier::Nym& id) const -> bool final;
     auto SetDefaultSeed(const UnallocatedCString& id) const -> bool final;
     auto SetNymAlias(const identifier::Nym& id, const UnallocatedCString& alias)
         const -> bool final;
@@ -489,6 +496,7 @@ public:
     Storage(
         const api::Crypto& crypto,
         const network::Asio& asio,
+        const session::Factory& factory,
         const Flag& running,
         const opentxs::storage::Config& config);
 
@@ -498,6 +506,7 @@ private:
     static const std::uint32_t HASH_TYPE;
 
     const api::Crypto& crypto_;
+    const api::session::Factory& factory_;
     const network::Asio& asio_;
     const Flag& running_;
     std::int64_t gc_interval_;

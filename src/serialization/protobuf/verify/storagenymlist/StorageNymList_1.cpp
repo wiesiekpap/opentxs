@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/StorageNymList.hpp"  // IWYU pragma: associated
 
 #include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/verify/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/StorageBip47NymAddressIndex.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyStorage.hpp"
@@ -14,13 +15,13 @@
 
 namespace opentxs::proto
 {
-
 auto CheckProto_1(const StorageNymList& input, const bool silent) -> bool
 {
     CHECK_SUBOBJECTS(nym, StorageNymListAllowedStorageItemHash());
     CHECK_NONE(localnymid)
     CHECK_NONE(address)
     CHECK_NONE(transaction)
+    CHECK_EXCLUDED(defaultlocalnym)
 
     return true;
 }
@@ -36,6 +37,8 @@ auto CheckProto_3(const StorageNymList& input, const bool silent) -> bool
     CHECK_IDENTIFIERS(localnymid)
     CHECK_NONE(address)
     CHECK_NONE(transaction)
+    CHECK_EXCLUDED(defaultlocalnym)
+
     return true;
 }
 
@@ -47,13 +50,22 @@ auto CheckProto_4(const StorageNymList& input, const bool silent) -> bool
         address, StorageNymListAllowedStorageBip47NymAddressIndex())
     OPTIONAL_SUBOBJECTS(
         transaction, StorageNymListAllowedStorageBip47NymAddressIndex())
+    CHECK_EXCLUDED(defaultlocalnym)
 
     return true;
 }
 
 auto CheckProto_5(const StorageNymList& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(5)
+    CHECK_SUBOBJECTS(nym, StorageNymListAllowedStorageItemHash());
+    CHECK_IDENTIFIERS(localnymid)
+    OPTIONAL_SUBOBJECTS(
+        address, StorageNymListAllowedStorageBip47NymAddressIndex())
+    OPTIONAL_SUBOBJECTS(
+        transaction, StorageNymListAllowedStorageBip47NymAddressIndex())
+    OPTIONAL_SUBOBJECT(defaultlocalnym, StorageNymListAllowedIdentifier())
+
+    return true;
 }
 
 auto CheckProto_6(const StorageNymList& input, const bool silent) -> bool

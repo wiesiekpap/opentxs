@@ -79,6 +79,7 @@ namespace opentxs::factory
 auto StorageAPI(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
+    const api::session::Factory& factory,
     const Flag& running,
     const opentxs::storage::Config& config) noexcept
     -> std::unique_ptr<api::session::Storage>
@@ -89,7 +90,7 @@ auto StorageAPI(
     }
 
     return std::make_unique<api::session::imp::Storage>(
-        crypto, asio, running, config);
+        crypto, asio, factory, running, config);
 }
 }  // namespace opentxs::factory
 
@@ -100,9 +101,11 @@ const std::uint32_t Storage::HASH_TYPE = 2;  // BTC160
 Storage::Storage(
     const api::Crypto& crypto,
     const network::Asio& asio,
+    const api::session::Factory& factory,
     const Flag& running,
     const opentxs::storage::Config& config)
     : crypto_(crypto)
+    , factory_(factory)
     , asio_(asio)
     , running_(running)
     , gc_interval_(config.gc_interval_)
@@ -113,6 +116,7 @@ Storage::Storage(
     , multiplex_p_(factory::StorageMultiplex(
           crypto_,
           asio_,
+          factory_,
           *this,
           primary_bucket_,
           config_))
@@ -351,6 +355,11 @@ auto Storage::CreateThread(
     return (false == id.empty());
 }
 
+auto Storage::DefaultNym() const -> OTNymID
+{
+    return Root().Tree().Nyms().Default();
+}
+
 auto Storage::DefaultSeed() const -> UnallocatedCString
 {
     return Root().Tree().Seeds().Default();
@@ -421,6 +430,7 @@ void Storage::InitPlugins()
 
     std::unique_ptr<opentxs::storage::Root> root{new opentxs::storage::Root(
         asio_,
+        factory_,
         multiplex_,
         hash,
         std::numeric_limits<std::int64_t>::max(),
@@ -1521,6 +1531,7 @@ auto Storage::root() const -> opentxs::storage::Root*
     if (!root_) {
         root_.reset(new opentxs::storage::Root(
             asio_,
+            factory_,
             multiplex_,
             multiplex_.LoadRoot(),
             gc_interval_,
@@ -1595,6 +1606,17 @@ auto Storage::SetContactAlias(
         .mutable_Contacts()
         .get()
         .SetAlias(id, alias);
+}
+
+auto Storage::SetDefaultNym(const identifier::Nym& id) const -> bool
+{
+    return mutable_Root()
+        .get()
+        .mutable_Tree()
+        .get()
+        .mutable_Nyms()
+        .get()
+        .SetDefault(id);
 }
 
 auto Storage::SetDefaultSeed(const UnallocatedCString& id) const -> bool

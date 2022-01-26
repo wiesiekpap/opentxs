@@ -15,6 +15,8 @@
 #include "interface/ui/seedtree/SeedTreeItem.hpp"
 #include "interface/ui/seedtree/SeedTreeNym.hpp"
 #include "internal/interface/ui/UI.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::factory
@@ -54,6 +56,35 @@ SeedTreeQt::SeedTreeQt(internal::SeedTree& parent) noexcept
             {SeedTreeQt::NymIndexRole, "nymindex"},
         });
     }
+
+    imp_->parent_.SetCallbacks(
+        {[this](const auto& id) {
+             emit defaultNymChanged(QString::fromStdString(id.str()));
+         },
+         [this](const auto& id) {
+             emit defaultSeedChanged(QString::fromStdString(id.str()));
+         }});
+}
+
+auto SeedTreeQt::check() -> void
+{
+    if (const auto seed = defaultSeed(); seed.isEmpty()) {
+        emit needSeed();
+    } else if (const auto nym = defaultNym(); nym.isEmpty()) {
+        emit needNym();
+    } else {
+        emit ready();
+    }
+}
+
+auto SeedTreeQt::defaultNym() const noexcept -> QString
+{
+    return QString::fromStdString(imp_->parent_.DefaultNym()->str());
+}
+
+auto SeedTreeQt::defaultSeed() const noexcept -> QString
+{
+    return QString::fromStdString(imp_->parent_.DefaultSeed()->str());
 }
 
 SeedTreeQt::~SeedTreeQt()

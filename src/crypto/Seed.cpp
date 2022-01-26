@@ -43,6 +43,7 @@
 namespace opentxs::factory
 {
 auto Seed(
+    const api::Session& api,
     const crypto::Bip32& bip32,
     const crypto::Bip39& bip39,
     const api::crypto::Symmetric& symmetric,
@@ -55,6 +56,7 @@ auto Seed(
     using ReturnType = opentxs::crypto::Seed::Imp;
 
     return std::make_unique<ReturnType>(
+               api,
                bip32,
                bip39,
                symmetric,
@@ -238,9 +240,9 @@ Seed::Imp::Imp() noexcept
 Seed::Imp::Imp(const api::Factory& factory) noexcept
     : type_(SeedStyle::Error)
     , lang_(Language::none)
-    , entropy_(factory.Secret(0))
     , words_(factory.Secret(0))
     , phrase_(factory.Secret(0))
+    , entropy_(factory.Secret(0))
     , id_(Identifier::Factory())
     , storage_(nullptr)
     , encrypted_words_()
@@ -253,9 +255,9 @@ Seed::Imp::Imp(const api::Factory& factory) noexcept
 Seed::Imp::Imp(const Imp& rhs) noexcept
     : type_(rhs.type_)
     , lang_(rhs.lang_)
-    , entropy_(rhs.entropy_)
     , words_(rhs.words_)
     , phrase_(rhs.phrase_)
+    , entropy_(rhs.entropy_)
     , id_(rhs.id_)
     , storage_(rhs.storage_)
     , encrypted_words_(rhs.encrypted_words_)
@@ -266,6 +268,7 @@ Seed::Imp::Imp(const Imp& rhs) noexcept
 }
 
 Seed::Imp::Imp(
+    const api::Session& api,
     const opentxs::crypto::Bip32& bip32,
     const opentxs::crypto::Bip39& bip39,
     const api::crypto::Symmetric& symmetric,
@@ -274,60 +277,48 @@ Seed::Imp::Imp(
     const Language lang,
     const SeedStrength strength,
     const PasswordPrompt& reason) noexcept(false)
-    : type_(SeedStyle::BIP39)
-    , lang_(lang)
-    , entropy_([&] {
-        auto out = factory.Secret(0);
-        static constexpr auto bitsPerByte{8u};
-        const auto bytes = static_cast<std::size_t>(strength) / bitsPerByte;
-
-        if ((16u > bytes) || (32u < bytes)) {
-            throw std::runtime_error{"Invalid seed strength"};
-        }
-
-        out->Randomize(static_cast<std::size_t>(strength) / bitsPerByte);
-
-        return out;
-    }())
-    , words_([&] {
-        auto out = factory.Secret(0);
-
-        if (false == bip39.SeedToWords(entropy_, out, lang_)) {
-            throw std::runtime_error{"Unable to convert entropy to word list"};
-        }
-
-        return out;
-    }())
-    , phrase_([&] {
-        auto out = factory.Secret(0);
-        out->AssignText(no_passphrase_);
-
-        return out;
-    }())
-    , id_(bip32.SeedID(entropy_->Bytes()))
-    , storage_(&storage)
-    , encrypted_words_()
-    , encrypted_phrase_()
-    , encrypted_entropy_(encrypt(
-          type_,
+    : Imp(
+          api,
+          bip32,
+          bip39,
           symmetric,
-          entropy_,
-          words_,
-          phrase_,
-          const_cast<proto::Ciphertext&>(encrypted_words_),
-          const_cast<proto::Ciphertext&>(encrypted_phrase_),
-          reason))
-    , data_()
+          factory,
+          storage,
+          SeedStyle::BIP39,
+          lang,
+          [&] {
+              const auto random = [&] {
+                  auto out = factory.Secret(0);
+                  static constexpr auto bitsPerByte{8u};
+                  const auto bytes =
+                      static_cast<std::size_t>(strength) / bitsPerByte;
+
+                  if ((16u > bytes) || (32u < bytes)) {
+                      throw std::runtime_error{"Invalid seed strength"};
+                  }
+
+                  out->Randomize(
+                      static_cast<std::size_t>(strength) / bitsPerByte);
+
+                  return out;
+              }();
+              auto out = factory.Secret(0);
+
+              if (false == bip39.SeedToWords(random, out, lang)) {
+                  throw std::runtime_error{
+                      "Unable to convert entropy to word list"};
+              }
+
+              return out;
+          }(),
+          [&] {
+              auto out = factory.Secret(0);
+              out->AssignText(no_passphrase_);
+
+              return out;
+          }(),
+          reason)
 {
-    if (16u > entropy_->size()) {
-        throw std::runtime_error{"Entropy too short"};
-    }
-
-    if (64u < entropy_->size()) {
-        throw std::runtime_error{"Entropy too long"};
-    }
-
-    if (false == save()) { throw std::runtime_error{"Failed to save seed"}; }
 }
 
 Seed::Imp::Imp(
@@ -344,6 +335,8 @@ Seed::Imp::Imp(
     const PasswordPrompt& reason) noexcept(false)
     : type_(type)
     , lang_(lang)
+    , words_(words)
+    , phrase_(passphrase)
     , entropy_([&] {
         auto out = factory.Secret(0);
 
@@ -354,8 +347,6 @@ Seed::Imp::Imp(
 
         return out;
     }())
-    , words_(words)
-    , phrase_(passphrase)
     , id_(bip32.SeedID(entropy_->Bytes()))
     , storage_(&storage)
     , encrypted_words_()
@@ -392,9 +383,9 @@ Seed::Imp::Imp(
     const PasswordPrompt& reason) noexcept(false)
     : type_(SeedStyle::BIP32)
     , lang_(Language::none)
-    , entropy_(entropy)
     , words_(factory.Secret(0))
     , phrase_(factory.Secret(0))
+    , entropy_(entropy)
     , id_(bip32.SeedID(entropy_->Bytes()))
     , storage_(&storage)
     , encrypted_words_()
@@ -431,9 +422,9 @@ Seed::Imp::Imp(
     const PasswordPrompt& reason) noexcept(false)
     : type_(internal::translate(proto.type()))
     , lang_(internal::translate(proto.lang()))
-    , entropy_(factory.Secret(0))
     , words_(factory.Secret(0))
     , phrase_(factory.Secret(0))
+    , entropy_(factory.Secret(0))
     , id_(factory.Identifier(proto.fingerprint()))
     , storage_(&storage)
     , encrypted_words_(proto.has_words() ? proto.words() : proto::Ciphertext{})

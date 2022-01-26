@@ -33,8 +33,12 @@
 
 namespace opentxs::storage
 {
-Tree::Tree(const Driver& storage, const UnallocatedCString& hash)
+Tree::Tree(
+    const api::session::Factory& factory,
+    const Driver& storage,
+    const UnallocatedCString& hash)
     : Node(storage, hash)
+    , factory_(factory)
     , account_root_(Node::BLANK_HASH)
     , contact_root_(Node::BLANK_HASH)
     , credential_root_(Node::BLANK_HASH)
@@ -70,6 +74,7 @@ Tree::Tree(const Driver& storage, const UnallocatedCString& hash)
 
 Tree::Tree(const Tree& rhs)
     : Node(rhs.driver_, "")
+    , factory_(rhs.factory_)
     , account_root_(Node::BLANK_HASH)
     , contact_root_(Node::BLANK_HASH)
     , credential_root_(Node::BLANK_HASH)
@@ -271,7 +276,7 @@ auto Tree::mutable_Notary(const UnallocatedCString& id)
 
 auto Tree::mutable_Nyms() -> Editor<storage::Nyms>
 {
-    return get_editor<storage::Nyms>(nym_lock_, nyms_, nym_root_);
+    return get_editor<storage::Nyms>(nym_lock_, nyms_, nym_root_, factory_);
 }
 
 auto Tree::mutable_Seeds() -> Editor<storage::Seeds>
@@ -303,7 +308,7 @@ auto Tree::notary(const UnallocatedCString& id) const -> storage::Notary*
 
 auto Tree::nyms() const -> storage::Nyms*
 {
-    return get_child<storage::Nyms>(nym_lock_, nyms_, nym_root_);
+    return get_child<storage::Nyms>(nym_lock_, nyms_, nym_root_, factory_);
 }
 
 auto Tree::save(const Lock& lock) const -> bool

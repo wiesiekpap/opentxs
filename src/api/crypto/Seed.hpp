@@ -13,6 +13,8 @@
 #include <memory>
 #include <mutex>
 #include <string_view>
+#include <tuple>
+#include <utility>
 
 #include "Proto.hpp"
 #include "internal/api/crypto/Seed.hpp"
@@ -120,7 +122,8 @@ public:
     auto Bip32Root(
         const UnallocatedCString& seedID,
         const PasswordPrompt& reason) const -> UnallocatedCString final;
-    auto DefaultSeed() const -> UnallocatedCString final;
+    auto DefaultSeed() const
+        -> std::pair<UnallocatedCString, std::size_t> final;
     auto GetHDKey(
         const UnallocatedCString& seedID,
         const EcdsaCurve& curve,
@@ -195,6 +198,7 @@ public:
         const PasswordPrompt& reason) const -> UnallocatedCString final;
     auto SeedDescription(UnallocatedCString seedID) const noexcept
         -> UnallocatedCString final;
+    auto SetDefault(const Identifier& id) const noexcept -> bool final;
     auto SetSeedComment(const Identifier& id, const std::string_view comment)
         const noexcept -> bool final;
     auto UpdateIndex(

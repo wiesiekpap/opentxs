@@ -20,6 +20,7 @@ class Asio;
 
 namespace session
 {
+class Factory;
 class Storage;
 }  // namespace session
 
@@ -83,6 +84,7 @@ auto StorageLMDB(
 auto StorageMultiplex(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
+    const api::session::Factory& factory,
     const api::session::Storage& parent,
     const Flag& primaryBucket,
     const storage::Config& config) noexcept

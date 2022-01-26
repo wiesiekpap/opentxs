@@ -57,7 +57,7 @@ auto NymListItem::reindex(
 {
     auto changed{false};
     name_.modify([&](auto& name) {
-        changed = (name == key);
+        changed = (name != key);
 
         if (changed) { name = key; }
     });

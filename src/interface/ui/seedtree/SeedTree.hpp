@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <cs_ordered_guarded.h>
+#include <mutex>
+#include <shared_mutex>
 #include <tuple>
 #include <utility>
 
@@ -43,6 +46,16 @@ class Client;
 }  // namespace session
 }  // namespace api
 
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
+namespace identity
+{
+class Nym;
+}  // namespace identity
+
 namespace network
 {
 namespace zeromq
@@ -75,7 +88,12 @@ using SeedTreeList = List<
 class SeedTree final : public SeedTreeList, Worker<SeedTree>
 {
 public:
+    auto ClearCallbacks() const noexcept -> void final;
     auto Debug() const noexcept -> UnallocatedCString final;
+    auto DefaultNym() const noexcept -> OTNymID final;
+    auto DefaultSeed() const noexcept -> OTIdentifier final;
+
+    auto SetCallbacks(Callbacks&&) noexcept -> void final;
 
     SeedTree(
         const api::session::Client& api,
@@ -100,6 +118,15 @@ private:
     using SeedData =
         std::tuple<bool, UnallocatedCString, crypto::SeedStyle, NymMap>;
     using ChildMap = UnallocatedMap<OTIdentifier, SeedData>;
+    using GuardedCallbacks =
+        libguarded::ordered_guarded<Callbacks, std::shared_mutex>;
+    using GuardedNym = libguarded::ordered_guarded<OTNymID, std::shared_mutex>;
+    using GuardedSeed =
+        libguarded::ordered_guarded<OTIdentifier, std::shared_mutex>;
+
+    mutable GuardedCallbacks callbacks_;
+    GuardedNym default_nym_;
+    GuardedSeed default_seed_;
 
     auto construct_row(
         const SeedTreeRowID& id,
@@ -115,12 +142,18 @@ private:
     auto load_seed(const Identifier& id, ChildMap& out) const noexcept(false)
         -> SeedData&;
     auto load_seeds(ChildMap& out) const noexcept -> void;
+    auto nym_name(const identity::Nym& nym) const noexcept
+        -> UnallocatedCString;
 
     auto add_children(ChildMap&& children) noexcept -> void;
+    auto check_default_nym() noexcept -> void;
+    auto check_default_seed() noexcept -> void;
     auto load() noexcept -> void;
     auto pipeline(Message&& in) noexcept -> void;
     auto process_nym(Message&& in) noexcept -> void;
+    auto process_nym(const identifier::Nym& id) noexcept -> void;
     auto process_seed(Message&& in) noexcept -> void;
+    auto process_seed(const Identifier& id) noexcept -> void;
     auto startup() noexcept -> void;
 
     SeedTree() = delete;

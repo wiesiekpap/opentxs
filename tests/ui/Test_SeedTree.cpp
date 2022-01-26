@@ -80,7 +80,7 @@ TEST_F(Test_SeedTree, empty)
 
 TEST_F(Test_SeedTree, create_nyms)
 {
-    counter_.expected_ += 5;
+    counter_.expected_ += 7;
 
     {
         const auto& v = GetVectors3().alice_;
@@ -106,7 +106,9 @@ TEST_F(Test_SeedTree, create_nyms)
          "Unnamed seed: BIP-39 (default)",
          ot::crypto::SeedStyle::BIP39,
          {
-             {0, alex_->nym_id_->str(), alex_name_},
+             {0,
+              alex_->nym_id_->str(),
+              ot::UnallocatedCString{alex_name_} + " (default)"},
              {1, bob_->nym_id_->str(), bob_name_},
          }},
         {seed_2_id_,
@@ -139,7 +141,9 @@ TEST_F(Test_SeedTree, add_seed)
          "Unnamed seed: BIP-39 (default)",
          ot::crypto::SeedStyle::BIP39,
          {
-             {0, alex_->nym_id_->str(), alex_name_},
+             {0,
+              alex_->nym_id_->str(),
+              ot::UnallocatedCString{alex_name_} + " (default)"},
              {1, bob_->nym_id_->str(), bob_name_},
          }},
         {seed_3_id_, "Imported: BIP-39", ot::crypto::SeedStyle::BIP39, {}},
@@ -169,7 +173,9 @@ TEST_F(Test_SeedTree, rename_nym)
          "Unnamed seed: BIP-39 (default)",
          ot::crypto::SeedStyle::BIP39,
          {
-             {0, alex_->nym_id_->str(), daniel_name_},
+             {0,
+              alex_->nym_id_->str(),
+              ot::UnallocatedCString{daniel_name_} + " (default)"},
              {1, bob_->nym_id_->str(), bob_name_},
          }},
         {seed_3_id_, "Imported: BIP-39", ot::crypto::SeedStyle::BIP39, {}},
@@ -197,7 +203,9 @@ TEST_F(Test_SeedTree, rename_seed)
          "Unnamed seed: BIP-39 (default)",
          ot::crypto::SeedStyle::BIP39,
          {
-             {0, alex_->nym_id_->str(), daniel_name_},
+             {0,
+              alex_->nym_id_->str(),
+              ot::UnallocatedCString{daniel_name_} + " (default)"},
              {1, bob_->nym_id_->str(), bob_name_},
          }},
         {seed_2_id_,
@@ -207,6 +215,63 @@ TEST_F(Test_SeedTree, rename_seed)
              {0, chris_->nym_id_->str(), chris_name_},
          }},
         {seed_3_id_, "Imported: BIP-39", ot::crypto::SeedStyle::BIP39, {}},
+    }};
+
+    ASSERT_TRUE(wait_for_counter(counter_));
+    EXPECT_TRUE(check_seed_tree(api_, expected));
+    EXPECT_TRUE(check_seed_tree_qt(api_, expected));
+}
+
+TEST_F(Test_SeedTree, change_default_seed)
+{
+    counter_.expected_ += 3;
+    api_.Crypto().Seed().SetDefault(
+        api_.Factory().Identifier(ot::UnallocatedCString{seed_2_id_}));
+    const auto expected = SeedTreeData{{
+        {seed_2_id_,
+         "Backup: pktwallet (default)",
+         ot::crypto::SeedStyle::PKT,
+         {
+             {0, chris_->nym_id_->str(), chris_name_},
+         }},
+        {seed_3_id_, "Imported: BIP-39", ot::crypto::SeedStyle::BIP39, {}},
+        {seed_1_id_,
+         "Unnamed seed: BIP-39",
+         ot::crypto::SeedStyle::BIP39,
+         {
+             {0,
+              alex_->nym_id_->str(),
+              ot::UnallocatedCString{daniel_name_} + " (default)"},
+             {1, bob_->nym_id_->str(), bob_name_},
+         }},
+    }};
+
+    ASSERT_TRUE(wait_for_counter(counter_));
+    EXPECT_TRUE(check_seed_tree(api_, expected));
+    EXPECT_TRUE(check_seed_tree_qt(api_, expected));
+}
+
+TEST_F(Test_SeedTree, change_default_nym)
+{
+    counter_.expected_ += 3;
+    api_.Wallet().SetDefaultNym(bob_->nym_id_);
+    const auto expected = SeedTreeData{{
+        {seed_2_id_,
+         "Backup: pktwallet (default)",
+         ot::crypto::SeedStyle::PKT,
+         {
+             {0, chris_->nym_id_->str(), chris_name_},
+         }},
+        {seed_3_id_, "Imported: BIP-39", ot::crypto::SeedStyle::BIP39, {}},
+        {seed_1_id_,
+         "Unnamed seed: BIP-39",
+         ot::crypto::SeedStyle::BIP39,
+         {
+             {0, alex_->nym_id_->str(), daniel_name_},
+             {1,
+              bob_->nym_id_->str(),
+              ot::UnallocatedCString{bob_name_} + " (default)"},
+         }},
     }};
 
     ASSERT_TRUE(wait_for_counter(counter_));

@@ -24,9 +24,11 @@ namespace opentxs::storage
 {
 Root::GC::GC(
     const api::network::Asio& asio,
+    const api::session::Factory& factory,
     const Driver& driver,
     const std::int64_t interval) noexcept
     : asio_(asio)
+    , factory_(factory)
     , driver_(driver)
     , interval_(interval)
     , lock_()
@@ -93,7 +95,7 @@ auto Root::GC::collect_garbage(
     LogVerbose()(OT_PRETTY_CLASS())("Beginning garbage collection.").Flush();
     auto success{false};
     auto postcondition = ScopeGuard{[&] { promise_.set_value(success); }};
-    auto temp = storage::Tree{driver_, root_};
+    auto temp = storage::Tree{factory_, driver_, root_};
     success = temp.Migrate(*to);
 
     if (success) {
