@@ -119,7 +119,7 @@ auto Peer::check_init() noexcept -> void
         const auto elapsed = Clock::now() - init_start_;
 
         if (limit <= elapsed) {
-            LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
+            LogVerbose()("Disconnecting ")(display_chain_)(" peer ")(
                 address_.Display())(" due to connection timeout.")
                 .Flush();
             disconnect();

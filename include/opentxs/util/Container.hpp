@@ -7,6 +7,16 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
+#include <deque>          // IWYU pragma: export
+#include <forward_list>   // IWYU pragma: export
+#include <list>           // IWYU pragma: export
+#include <map>            // IWYU pragma: export
+#include <set>            // IWYU pragma: export
+#include <string>         // IWYU pragma: export
+#include <unordered_map>  // IWYU pragma: export
+#include <unordered_set>  // IWYU pragma: export
+#include <vector>         // IWYU pragma: export
 #if __has_include(<memory_resource>)
 #include <memory_resource>  // IWYU pragma: export
 #elif __has_include(<experimental/memory_resource>)
@@ -24,15 +34,6 @@
 #else
 #error polymorphic allocator support is required
 #endif
-#include <deque>          // IWYU pragma: export
-#include <forward_list>   // IWYU pragma: export
-#include <list>           // IWYU pragma: export
-#include <map>            // IWYU pragma: export
-#include <set>            // IWYU pragma: export
-#include <string>         // IWYU pragma: export
-#include <unordered_map>  // IWYU pragma: export
-#include <unordered_set>  // IWYU pragma: export
-#include <vector>         // IWYU pragma: export
 
 namespace opentxs
 {
@@ -56,10 +57,9 @@ using Resource = std::experimental::pmr::memory_resource;
 // std::experimental::pmr::unsynchronized_pool_resource; using Monotonic =
 // std::experimental::pmr::monotonic_buffer_resource;
 #endif
-
-// TODO not yet supported on Android
-// auto System() noexcept -> Resource*;
-// auto Null() noexcept -> Resource*;
+using Default = PMR<std::byte>;
+auto System() noexcept -> Resource*;
+auto Null() noexcept -> Resource*;
 }  // namespace alloc
 
 #if __has_include(<memory_resource>)

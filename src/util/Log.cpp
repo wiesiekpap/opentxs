@@ -31,6 +31,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -260,6 +261,11 @@ auto Log::operator()(const char* in) const noexcept -> const Log&
     return (*imp_)(in);
 }
 
+auto Log::operator()(const CString& in) const noexcept -> const Log&
+{
+    return operator()(in.c_str());
+}
+
 auto Log::operator()(const UnallocatedCString& in) const noexcept -> const Log&
 {
     return operator()(in.c_str());
@@ -340,6 +346,14 @@ auto Log::operator()(const Amount& in, UnitType currency) const noexcept
 
     return operator()(
         display::GetDefinition(currency).Format(in) + " (" + intValue + ")");
+}
+
+auto Log::operator()(const Amount& in, const display::Scale& scale)
+    const noexcept -> const Log&
+{
+    if (false == imp_->active()) { return *this; }
+
+    return operator()(scale.Format(in));
 }
 
 auto Log::operator()(const String& in) const noexcept -> const Log&

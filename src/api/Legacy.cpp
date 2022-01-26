@@ -10,7 +10,6 @@
 #include <boost/filesystem.hpp>
 #include <cstdlib>
 #include <memory>
-#include <stdexcept>
 #include <utility>
 
 #include "internal/api/Factory.hpp"

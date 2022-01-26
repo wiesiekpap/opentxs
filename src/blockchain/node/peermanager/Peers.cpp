@@ -611,7 +611,7 @@ auto PeerManager::Peers::Run() noexcept -> bool
 {
     auto ticket = gatekeeper_.get();
 
-    if (ticket|| invalid_peer_) { return false; }
+    if (ticket || invalid_peer_) { return false; }
 
     const auto target = minimum_peers_.load();
 

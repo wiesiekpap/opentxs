@@ -537,6 +537,7 @@ struct Wallet : virtual public node::Wallet {
     virtual auto ConstructTransaction(
         const proto::BlockchainTransactionProposal& tx,
         std::promise<SendOutcome>&& promise) const noexcept -> void = 0;
+    virtual auto FeeEstimate() const noexcept -> std::optional<Amount> = 0;
 
     virtual auto Init() noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;

@@ -103,6 +103,10 @@ struct NullWallet final : public node::internal::Wallet {
         static const auto blank = api_.Factory().Data();
         promise.set_value({SendResult::UnspecifiedError, blank});
     }
+    auto FeeEstimate() const noexcept -> std::optional<Amount> final
+    {
+        return {};
+    }
     auto GetBalance() const noexcept -> Balance final { return {}; }
     auto GetBalance(const identifier::Nym&) const noexcept -> Balance final
     {
@@ -499,10 +503,28 @@ auto Base::Disconnect() noexcept -> bool
 
 auto Base::FeeRate() const noexcept -> Amount
 {
-    // TODO the hardcoded default fee rate should be a fallback only
-    // if there is no better data available.
+    // TODO in full node mode, calculate the fee network from the mempool and
+    // recent blocks
+    // TODO on networks that support it, query the fee rate from network peers
+    const auto http = wallet_.FeeEstimate();
+    const auto fallback = params::Data::Chains().at(chain_).default_fee_rate_;
+    const auto chain = DisplayString(chain_);
+    LogConsole()(chain)(" defined minimum fee rate is: ")(fallback).Flush();
 
-    return params::Data::Chains().at(chain_).default_fee_rate_;
+    if (http.has_value()) {
+        LogConsole()(chain)(" transaction fee rate via https oracle is: ")(
+            http.value())
+            .Flush();
+    } else {
+        LogConsole()(chain)(
+            " transaction fee estimates via https oracle not available")
+            .Flush();
+    }
+
+    auto out = std::max<Amount>(fallback, http.value_or(0));
+    LogConsole()("Using ")(out)(" for current ")(chain)(" fee rate").Flush();
+
+    return out;
 }
 
 auto Base::GetConfirmations(const UnallocatedCString& txid) const noexcept

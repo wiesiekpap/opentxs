@@ -34,6 +34,7 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/wallet/FeeOracle.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -44,6 +45,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -103,6 +105,10 @@ public:
     auto ConstructTransaction(
         const proto::BlockchainTransactionProposal& tx,
         std::promise<SendOutcome>&& promise) const noexcept -> void final;
+    auto FeeEstimate() const noexcept -> std::optional<Amount> final
+    {
+        return fee_oracle_.EstimatedFee();
+    }
     auto GetBalance() const noexcept -> Balance final;
     auto GetBalance(const identifier::Nym& owner) const noexcept
         -> Balance final;
@@ -168,6 +174,7 @@ private:
     const node::internal::Mempool& mempool_;
     const Type chain_;
     const TaskCallback task_finished_;
+    wallet::FeeOracle fee_oracle_;
     std::atomic_bool enabled_;
     wallet::Accounts accounts_;
     wallet::Proposals proposals_;

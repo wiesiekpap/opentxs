@@ -5,11 +5,10 @@
 
 #include <gtest/gtest.h>
 #include <cstdint>
-#include <stdexcept>
-#include <string>
 #include <type_traits>
 
 #include "internal/api/Legacy.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 class Filename : public ::testing::Test

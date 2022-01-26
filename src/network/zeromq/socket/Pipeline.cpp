@@ -195,20 +195,9 @@ Pipeline::Pipeline(
     OT_ASSERT(nullptr != thread_);
 }
 
-auto Pipeline::Close() const noexcept -> bool
-{
-    gate_.shutdown();
-
-    if (auto sent = shutdown_.exchange(true); false == sent) {
-        batch_.ClearCallbacks();
-    }
-
-    return true;
-}
-
-auto Pipeline::connect(
+auto Pipeline::bind(
     SocketID id,
-    const UnallocatedCString& endpoint,
+    const std::string_view endpoint,
     std::function<Message(bool)> notify) const noexcept
     -> std::pair<bool, std::future<bool>>
 {
@@ -223,17 +212,61 @@ auto Pipeline::connect(
 
     return thread_->Modify(
         id,
-        [endpoint,
+        [ep = CString{endpoint},
          extra = std::move(notify),
          &cb = batch_.listen_callbacks_.at(0).get()](auto& socket) {
-            const auto value = socket.Connect(endpoint.c_str());
+            const auto value = socket.Bind(ep.c_str());
+
+            if (extra) { cb.Process(extra(value)); }
+        });
+}
+
+auto Pipeline::BindSubscriber(
+    const std::string_view endpoint,
+    std::function<Message(bool)> notify) const noexcept -> bool
+{
+    return bind(sub_.ID(), endpoint, std::move(notify)).first;
+}
+
+auto Pipeline::Close() const noexcept -> bool
+{
+    gate_.shutdown();
+
+    if (auto sent = shutdown_.exchange(true); false == sent) {
+        batch_.ClearCallbacks();
+    }
+
+    return true;
+}
+
+auto Pipeline::connect(
+    SocketID id,
+    const std::string_view endpoint,
+    std::function<Message(bool)> notify) const noexcept
+    -> std::pair<bool, std::future<bool>>
+{
+    const auto done = gate_.get();
+
+    if (done) {
+        auto null = std::promise<bool>{};
+        null.set_value(false);
+
+        return std::make_pair(false, null.get_future());
+    }
+
+    return thread_->Modify(
+        id,
+        [ep = CString{endpoint},
+         extra = std::move(notify),
+         &cb = batch_.listen_callbacks_.at(0).get()](auto& socket) {
+            const auto value = socket.Connect(ep.c_str());
 
             if (extra) { cb.Process(extra(value)); }
         });
 }
 
 auto Pipeline::ConnectDealer(
-    const UnallocatedCString& endpoint,
+    const std::string_view endpoint,
     std::function<Message(bool)> notify) const noexcept -> bool
 {
     return connect(dealer_.ID(), endpoint, std::move(notify)).first;
@@ -259,8 +292,7 @@ auto Pipeline::ConnectionIDSubscribe() const noexcept -> std::size_t
     return sub_.ID();
 }
 
-auto Pipeline::PullFrom(const UnallocatedCString& endpoint) const noexcept
-    -> bool
+auto Pipeline::PullFrom(const std::string_view endpoint) const noexcept -> bool
 {
     return connect(pull_.ID(), endpoint).first;
 }
@@ -291,7 +323,7 @@ auto Pipeline::Send(zeromq::Message&& msg) const noexcept -> bool
     return true;
 }
 
-auto Pipeline::SubscribeTo(const UnallocatedCString& endpoint) const noexcept
+auto Pipeline::SubscribeTo(const std::string_view endpoint) const noexcept
     -> bool
 {
     return connect(sub_.ID(), endpoint).first;
@@ -325,10 +357,17 @@ auto Pipeline::operator=(Pipeline&& rhs) noexcept -> Pipeline&
     return *this;
 }
 
+auto Pipeline::BindSubscriber(
+    const std::string_view endpoint,
+    std::function<Message(bool)> notify) const noexcept -> bool
+{
+    return imp_->BindSubscriber(endpoint, std::move(notify));
+}
+
 auto Pipeline::Close() const noexcept -> bool { return imp_->Close(); }
 
 auto Pipeline::ConnectDealer(
-    const UnallocatedCString& endpoint,
+    const std::string_view endpoint,
     std::function<Message(bool)> notify) const noexcept -> bool
 {
     return imp_->ConnectDealer(endpoint, std::move(notify));
@@ -361,8 +400,7 @@ auto Pipeline::Internal() const noexcept -> const internal::Pipeline&
 
 auto Pipeline::Internal() noexcept -> internal::Pipeline& { return *imp_; }
 
-auto Pipeline::PullFrom(const UnallocatedCString& endpoint) const noexcept
-    -> bool
+auto Pipeline::PullFrom(const std::string_view endpoint) const noexcept -> bool
 {
     return imp_->PullFrom(endpoint);
 }
@@ -377,7 +415,7 @@ auto Pipeline::Send(Message&& msg) const noexcept -> bool
     return imp_->Send(std::move(msg));
 }
 
-auto Pipeline::SubscribeTo(const UnallocatedCString& endpoint) const noexcept
+auto Pipeline::SubscribeTo(const std::string_view endpoint) const noexcept
     -> bool
 {
     return imp_->SubscribeTo(endpoint);

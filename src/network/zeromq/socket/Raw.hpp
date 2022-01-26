@@ -56,6 +56,7 @@ public:
     virtual auto Native() noexcept -> void* { return nullptr; }
     virtual auto Send(Message&& msg) noexcept -> bool { return {}; }
     virtual auto SetIncomingHWM(int value) noexcept -> bool { return {}; }
+    virtual auto SetLinger(int value) noexcept -> bool { return {}; }
     virtual auto SetOutgoingHWM(int value) noexcept -> bool { return {}; }
     virtual auto SetPrivateKey(ReadView) noexcept -> bool { return {}; }
     virtual auto SetRoutingID(ReadView) noexcept -> bool { return {}; }
@@ -92,6 +93,7 @@ public:
     auto Native() noexcept -> void* final { return socket_.get(); }
     auto Send(Message&& msg) noexcept -> bool final;
     auto SetIncomingHWM(int value) noexcept -> bool final;
+    auto SetLinger(int value) noexcept -> bool final;
     auto SetOutgoingHWM(int value) noexcept -> bool final;
     auto SetPrivateKey(ReadView key) noexcept -> bool final;
     auto SetRoutingID(ReadView key) noexcept -> bool final;
