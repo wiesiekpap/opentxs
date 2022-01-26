@@ -67,6 +67,7 @@ struct Data {
     bool supported_{};
     bool testnet_{};
     bool segwit_{};
+    unsigned segwit_scale_factor_{};
     UnitType itemtype_{};
     Bip44Type bip44_{};
     std::int32_t nBits_{};

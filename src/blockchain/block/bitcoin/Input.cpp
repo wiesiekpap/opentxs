@@ -15,6 +15,7 @@
 #include <cstring>
 #include <iosfwd>
 #include <iterator>
+#include <numeric>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
@@ -526,9 +527,7 @@ auto Input::AssociatePreviousOutput(const internal::Output& in) noexcept -> bool
 auto Input::CalculateSize(const bool normalized) const noexcept -> std::size_t
 {
     return cache_.size(normalized, [&] {
-        const auto data = (0 < coinbase_.size()) ? coinbase_.size()
-                                                 : script_->CalculateSize();
-        const auto cs = blockchain::bitcoin::CompactSize(data);
+        const auto cs = blockchain::bitcoin::CompactSize(payload_bytes());
 
         return sizeof(previous_) + (normalized ? 1 : cs.Total()) +
                sizeof(sequence_);
@@ -742,6 +741,31 @@ auto Input::FindMatches(
     return matches;
 }
 
+auto Input::GetBytes(std::size_t& base, std::size_t& witness) const noexcept
+    -> void
+{
+    using CS = blockchain::bitcoin::CompactSize;
+
+    {
+        const auto cs = CS{payload_bytes()};
+        base += sizeof(previous_);
+        base += cs.Total();
+        base += sizeof(sequence_);
+    }
+    {
+        const auto count = CS{witness_.size()};
+        witness += std::accumulate(
+            witness_.begin(),
+            witness_.end(),
+            count.Size(),
+            [](const auto lhs, const auto& rhs) {
+                const auto cs = CS{rhs.size()};
+
+                return lhs + cs.Total();
+            });
+    }
+}
+
 auto Input::GetPatterns() const noexcept -> UnallocatedVector<PatternID>
 {
     return {std::begin(pubkey_hashes_), std::end(pubkey_hashes_)};
@@ -772,6 +796,17 @@ auto Input::index_elements() noexcept -> void
 auto Input::MergeMetadata(const internal::Input& rhs) noexcept -> bool
 {
     return cache_.merge(rhs);
+}
+
+auto Input::payload_bytes() const noexcept -> std::size_t
+{
+    if (0u < coinbase_.size()) {
+
+        return coinbase_.size();
+    } else {
+
+        return script_->CalculateSize();
+    }
 }
 
 auto Input::Print() const noexcept -> UnallocatedCString
