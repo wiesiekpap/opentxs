@@ -24,15 +24,23 @@ public:
     static auto PathSeparator() noexcept -> const char*;
     static auto SuggestFolder(const UnallocatedCString& app) noexcept
         -> UnallocatedCString;
-    static auto GetFilenameBin(const char* filename) -> UnallocatedCString;
-    static auto GetFilenameA(const char* filename) -> UnallocatedCString;
-    static auto GetFilenameR(const char* filename) -> UnallocatedCString;
-    static auto GetFilenameRct(TransactionNumber number) -> UnallocatedCString;
-    static auto GetFilenameCrn(TransactionNumber number) -> UnallocatedCString;
-    static auto GetFilenameSuccess(const char* filename) -> UnallocatedCString;
-    static auto GetFilenameFail(const char* filename) -> UnallocatedCString;
-    static auto GetFilenameError(const char* filename) -> UnallocatedCString;
-    static auto GetFilenameLst(const UnallocatedCString& filename)
+    static auto GetFilenameBin(const char* filename) noexcept
+        -> UnallocatedCString;
+    static auto GetFilenameA(const char* filename) noexcept
+        -> UnallocatedCString;
+    static auto GetFilenameR(const char* filename) noexcept
+        -> UnallocatedCString;
+    static auto GetFilenameRct(TransactionNumber number) noexcept
+        -> UnallocatedCString;
+    static auto GetFilenameCrn(TransactionNumber number) noexcept
+        -> UnallocatedCString;
+    static auto GetFilenameSuccess(const char* filename) noexcept
+        -> UnallocatedCString;
+    static auto GetFilenameFail(const char* filename) noexcept
+        -> UnallocatedCString;
+    static auto GetFilenameError(const char* filename) noexcept
+        -> UnallocatedCString;
+    static auto GetFilenameLst(const UnallocatedCString& filename) noexcept
         -> UnallocatedCString;
     static auto Concatenate(
         const UnallocatedCString& notary_id,
@@ -93,8 +101,8 @@ private:
     auto operator=(Legacy&&) -> Legacy& = delete;
 
     static auto internal_concatenate(
-        const UnallocatedCString& name,
-        const UnallocatedCString& ext) -> UnallocatedCString;
+        const char* name,
+        const UnallocatedCString& ext) noexcept -> UnallocatedCString;
 };
 }  // namespace api
 }  // namespace opentxs

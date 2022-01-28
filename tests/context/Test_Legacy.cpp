@@ -25,11 +25,9 @@ TEST_F(Filename, GetFilenameBin)
 
 TEST_F(Filename, getFilenameBin_invalid_input)
 {
-    EXPECT_THROW(
-        opentxs::api::Legacy::GetFilenameBin("-1"), std::runtime_error);
-    EXPECT_THROW(opentxs::api::Legacy::GetFilenameBin(""), std::runtime_error);
-    EXPECT_THROW(
-        opentxs::api::Legacy::GetFilenameBin(nullptr), std::logic_error);
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameBin("-1").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameBin("").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameBin(nullptr).empty());
 }
 
 TEST_F(Filename, GetFilenameA)
@@ -41,9 +39,9 @@ TEST_F(Filename, GetFilenameA)
 
 TEST_F(Filename, getFilenameA_invalid_input)
 {
-    EXPECT_THROW(opentxs::api::Legacy::GetFilenameA("-1"), std::runtime_error);
-    EXPECT_THROW(opentxs::api::Legacy::GetFilenameA(""), std::runtime_error);
-    EXPECT_THROW(opentxs::api::Legacy::GetFilenameA(nullptr), std::logic_error);
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameA("-1").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameA("").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameA(nullptr).empty());
 }
 
 TEST_F(Filename, GetFilenameR)
@@ -55,9 +53,9 @@ TEST_F(Filename, GetFilenameR)
 
 TEST_F(Filename, getFilenameR_invalid_input)
 {
-    EXPECT_THROW(opentxs::api::Legacy::GetFilenameR("-1"), std::runtime_error);
-    EXPECT_THROW(opentxs::api::Legacy::GetFilenameR(""), std::runtime_error);
-    EXPECT_THROW(opentxs::api::Legacy::GetFilenameR(nullptr), std::logic_error);
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameR("-1").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameR("").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameR(nullptr).empty());
 }
 
 TEST_F(Filename, GetFilenameRct)
@@ -76,7 +74,7 @@ TEST_F(Filename, GetFilenameRct)
 
 TEST_F(Filename, getFilenameRct_invalid_input)
 {
-    EXPECT_THROW(opentxs::api::Legacy::GetFilenameRct(-1), std::runtime_error);
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameRct(-1).empty());
 }
 
 TEST_F(Filename, GetFilenameCrn)
@@ -98,7 +96,7 @@ TEST_F(Filename, GetFilenameCrn)
 
 TEST_F(Filename, getFilenameCrn_invalid_input)
 {
-    EXPECT_THROW(opentxs::api::Legacy::GetFilenameCrn(-1), std::runtime_error);
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameCrn(-1).empty());
 }
 
 TEST_F(Filename, GetFilenameSuccess)
@@ -110,12 +108,9 @@ TEST_F(Filename, GetFilenameSuccess)
 
 TEST_F(Filename, getFilenameSuccess_invalid_input)
 {
-    EXPECT_THROW(
-        opentxs::api::Legacy::GetFilenameSuccess("-1"), std::runtime_error);
-    EXPECT_THROW(
-        opentxs::api::Legacy::GetFilenameSuccess(""), std::runtime_error);
-    EXPECT_THROW(
-        opentxs::api::Legacy::GetFilenameSuccess(nullptr), std::logic_error);
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameSuccess("-1").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameSuccess("").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameSuccess(nullptr).empty());
 }
 
 TEST_F(Filename, GetFilenameFail)
@@ -127,11 +122,9 @@ TEST_F(Filename, GetFilenameFail)
 
 TEST_F(Filename, getFilenameFail_invalid_input)
 {
-    EXPECT_THROW(
-        opentxs::api::Legacy::GetFilenameFail("-1"), std::runtime_error);
-    EXPECT_THROW(opentxs::api::Legacy::GetFilenameFail(""), std::runtime_error);
-    EXPECT_THROW(
-        opentxs::api::Legacy::GetFilenameFail(nullptr), std::logic_error);
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameFail("-1").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameFail("").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameFail(nullptr).empty());
 }
 
 TEST_F(Filename, GetFilenameError)
@@ -143,12 +136,9 @@ TEST_F(Filename, GetFilenameError)
 
 TEST_F(Filename, getFilenameError_invalid_input)
 {
-    EXPECT_THROW(
-        opentxs::api::Legacy::GetFilenameError("-1"), std::runtime_error);
-    EXPECT_THROW(
-        opentxs::api::Legacy::GetFilenameError(""), std::runtime_error);
-    EXPECT_THROW(
-        opentxs::api::Legacy::GetFilenameError(nullptr), std::logic_error);
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameError("-1").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameError("").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameError(nullptr).empty());
 }
 
 TEST_F(Filename, GetFilenameLst)
@@ -160,10 +150,7 @@ TEST_F(Filename, GetFilenameLst)
 
 TEST_F(Filename, getFilenameLst_invalid_input)
 {
-    EXPECT_THROW(
-        opentxs::api::Legacy::GetFilenameError("-1"), std::runtime_error);
-    EXPECT_THROW(
-        opentxs::api::Legacy::GetFilenameError(""), std::runtime_error);
-    EXPECT_THROW(
-        opentxs::api::Legacy::GetFilenameError(nullptr), std::logic_error);
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameError("-1").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameError("").empty());
+    ASSERT_TRUE(opentxs::api::Legacy::GetFilenameError(nullptr).empty());
 }
