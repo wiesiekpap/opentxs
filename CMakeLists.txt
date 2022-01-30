@@ -815,11 +815,14 @@ if(OPENTXS_STANDALONE)
   include( InstallRequiredSystemLibraries )
 
   set (CPACK_NSIS_MODIFY_PATH "ON")
-  set(CPACK_PACKAGE_EXECUTABLES 
-    "..\\\\Uninstall;Uninstall ${PROJECT_NAME}  v${PROJECT_VERSION}" )
 
-  set( CPACK_NSIS_MENU_LINKS
-   "https://opentransactions.org" "Open Transactions Link" )
+  if ( WIN32)
+    set(CPACK_PACKAGE_EXECUTABLES 
+      "..\\\\Uninstall;Uninstall ${PROJECT_NAME}  v${PROJECT_VERSION}" )
+
+    set( CPACK_NSIS_MENU_LINKS
+     "https://opentransactions.org" "Open Transactions Link" )
+  endif() 
 
   set( CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md" )
   set( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE" )
