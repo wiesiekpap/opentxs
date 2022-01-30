@@ -25,14 +25,16 @@ namespace opentxs::storage
 {
 Root::Root(
     const api::network::Asio& asio,
+    const api::session::Factory& factory,
     const Driver& storage,
     const UnallocatedCString& hash,
     const std::int64_t interval,
     Flag& bucket)
     : ot_super(storage, hash)
+    , factory_(factory)
     , current_bucket_(bucket)
     , sequence_()
-    , gc_(asio, driver_, interval)
+    , gc_(asio, factory_, driver_, interval)
     , tree_root_()
     , tree_lock_()
     , tree_()
@@ -183,7 +185,9 @@ auto Root::tree() const -> storage::Tree*
 {
     Lock lock(tree_lock_);
 
-    if (!tree_) { tree_.reset(new storage::Tree(driver_, tree_root_)); }
+    if (!tree_) {
+        tree_.reset(new storage::Tree(factory_, driver_, tree_root_));
+    }
 
     OT_ASSERT(tree_);
 

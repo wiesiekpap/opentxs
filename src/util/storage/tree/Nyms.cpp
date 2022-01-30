@@ -9,15 +9,18 @@
 
 #include <cstdlib>
 #include <functional>
+#include <mutex>
 #include <tuple>
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/Nym.hpp"
 #include "internal/serialization/protobuf/verify/StorageNymList.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/Nym.pb.h"
@@ -31,10 +34,15 @@
 
 namespace opentxs::storage
 {
-Nyms::Nyms(const Driver& storage, const UnallocatedCString& hash)
+Nyms::Nyms(
+    const Driver& storage,
+    const UnallocatedCString& hash,
+    const api::session::Factory& factory)
     : Node(storage, hash)
+    , factory_(factory)
     , nyms_()
     , local_nyms_()
+    , default_local_nym_(factory_.NymID())
 {
     if (check_hash(hash)) {
         init(hash);
@@ -43,9 +51,18 @@ Nyms::Nyms(const Driver& storage, const UnallocatedCString& hash)
     }
 }
 
+auto Nyms::Default() const -> OTNymID
+{
+    auto lock = Lock{write_lock_};
+    LogTrace()(OT_PRETTY_CLASS())("Default nym is ")(default_local_nym_)
+        .Flush();
+
+    return default_local_nym_;
+}
+
 auto Nyms::Exists(const UnallocatedCString& id) const -> bool
 {
-    Lock lock(write_lock_);
+    auto lock = Lock{write_lock_};
 
     return nyms_.find(id) != nyms_.end();
 }
@@ -71,6 +88,17 @@ void Nyms::init(const UnallocatedCString& hash)
     for (const auto& nymID : serialized->localnymid()) {
         local_nyms_.emplace(nymID);
     }
+
+    if (serialized->has_defaultlocalnym()) {
+        default_local_nym_ =
+            factory_.InternalSession().NymID(serialized->defaultlocalnym());
+    }
+
+    if (default_local_nym_->empty() && (1u == local_nyms_.size())) {
+        default_local_nym_ = factory_.NymID(*local_nyms_.begin());
+        auto lock = Lock{write_lock_};
+        save(lock);
+    }
 }
 
 auto Nyms::LocalNyms() const -> const UnallocatedSet<UnallocatedCString>
@@ -80,7 +108,7 @@ auto Nyms::LocalNyms() const -> const UnallocatedSet<UnallocatedCString>
 
 void Nyms::Map(NymLambda lambda) const
 {
-    Lock lock(write_lock_);
+    auto lock = Lock{write_lock_};
     const auto copy = item_map_;
     lock.unlock();
 
@@ -122,7 +150,7 @@ auto Nyms::mutable_Nym(const UnallocatedCString& id) -> Editor<storage::Nym>
 
 auto Nyms::nym(const UnallocatedCString& id) const -> storage::Nym*
 {
-    Lock lock(write_lock_);
+    auto lock = Lock{write_lock_};
 
     return nym(lock, id);
 }
@@ -158,7 +186,7 @@ auto Nyms::RelabelThread(
     const UnallocatedCString& threadID,
     const UnallocatedCString label) -> bool
 {
-    Lock lock(write_lock_);
+    auto lock = Lock{write_lock_};
     UnallocatedSet<UnallocatedCString> nyms{};
 
     for (const auto& it : item_map_) {
@@ -237,8 +265,8 @@ void Nyms::save(
 
 auto Nyms::serialize() const -> proto::StorageNymList
 {
-    proto::StorageNymList serialized;
-    serialized.set_version(version_);
+    auto output = proto::StorageNymList{};
+    output.set_version(version_);
 
     for (const auto& item : item_map_) {
         const bool goodID = !item.first.empty();
@@ -247,18 +275,34 @@ auto Nyms::serialize() const -> proto::StorageNymList
 
         if (good) {
             serialize_index(
-                version_, item.first, item.second, *serialized.add_nym());
+                version_, item.first, item.second, *output.add_nym());
         }
     }
 
-    for (const auto& nymID : local_nyms_) { serialized.add_localnymid(nymID); }
+    for (const auto& nymID : local_nyms_) { output.add_localnymid(nymID); }
 
-    return serialized;
+    default_local_nym_->Serialize(*output.mutable_defaultlocalnym());
+
+    return output;
+}
+
+auto Nyms::SetDefault(const identifier::Nym& id) -> bool
+{
+    auto lock = Lock{write_lock_};
+    set_default(lock, id);
+
+    return save(lock);
+}
+
+auto Nyms::set_default(const Lock&, const identifier::Nym& id) -> void
+{
+    LogTrace()(OT_PRETTY_CLASS())("Default nym is ")(id).Flush();
+    default_local_nym_ = id;
 }
 
 void Nyms::UpgradeLocalnym()
 {
-    Lock lock(write_lock_);
+    auto lock = Lock{write_lock_};
 
     for (const auto& index : item_map_) {
         const auto& id = index.first;

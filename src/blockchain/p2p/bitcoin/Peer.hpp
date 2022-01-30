@@ -171,7 +171,7 @@ private:
     auto broadcast_inv_transaction(ReadView txid) noexcept -> void final;
     auto broadcast_transaction(zmq::Message&& message) noexcept -> void final;
     auto ping() noexcept -> void final;
-    auto pong() noexcept -> void final;
+    auto pong(Nonce) noexcept -> void final;
     auto process_message(zmq::Message&& message) noexcept -> void final;
     auto reconcile_mempool() noexcept -> void;
     auto request_addresses() noexcept -> void final;

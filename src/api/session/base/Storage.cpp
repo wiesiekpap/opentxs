@@ -42,8 +42,12 @@ Storage::Storage(
     , data_folder_(dataFolder)
     , storage_config_(legacy, config_, args_, String::Factory(dataFolder))
     , factory_p_(std::move(factory))
-    , storage_(
-          opentxs::factory::StorageAPI(crypto, asio, running, storage_config_))
+    , storage_(opentxs::factory::StorageAPI(
+          crypto,
+          asio,
+          *factory_p_,
+          running,
+          storage_config_))
     , crypto_p_(factory::SessionCryptoAPI(
           const_cast<api::Crypto&>(crypto),
           session,
@@ -70,7 +74,7 @@ auto Storage::init(
 {
     if (crypto::HaveHDKeys() &&
         (false == storage_config_.fs_encrypted_backup_directory_.empty())) {
-        auto seed = seeds.DefaultSeed();
+        auto seed = seeds.DefaultSeed().first;
 
         if (seed.empty()) {
             LogError()(OT_PRETTY_CLASS())("No default seed.").Flush();

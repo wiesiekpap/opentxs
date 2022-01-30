@@ -19,6 +19,7 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/node/Node.hpp"
@@ -449,6 +450,13 @@ auto Transaction::AssociatedRemoteContacts(
     output.erase(std::remove(output.begin(), output.end(), mask), output.end());
 
     return output;
+}
+
+auto Transaction::base_size() const noexcept -> std::size_t
+{
+    static constexpr auto fixed = sizeof(version_) + sizeof(lock_time_);
+
+    return fixed + inputs_->CalculateSize(false) + outputs_->CalculateSize();
 }
 
 auto Transaction::calculate_size(const bool normalize) const noexcept
@@ -903,5 +911,27 @@ auto Transaction::SetKeyData(const KeyData& data) noexcept -> void
 {
     inputs_->SetKeyData(data);
     outputs_->SetKeyData(data);
+}
+
+auto Transaction::vBytes(blockchain::Type chain) const noexcept -> std::size_t
+{
+    const auto& data = params::Data::Chains().at(chain);
+    const auto total = CalculateSize();
+
+    if (data.segwit_) {
+        const auto& scale = data.segwit_scale_factor_;
+
+        OT_ASSERT(0 < scale);
+
+        const auto weight = (base_size() * (scale - 1u)) + total;
+        static constexpr auto ceil = [](const auto a, const auto b) {
+            return (a + (b - 1u)) / b;
+        };
+
+        return ceil(weight, scale);
+    } else {
+
+        return CalculateSize();
+    }
 }
 }  // namespace opentxs::blockchain::block::bitcoin::implementation

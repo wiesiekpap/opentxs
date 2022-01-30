@@ -25,6 +25,7 @@
 #include "core/Worker.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
+#include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/util/Flag.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -270,7 +271,7 @@ protected:
     // NOTE call init in every final child class constructor
     auto init() noexcept -> void;
     virtual auto ping() noexcept -> void = 0;
-    virtual auto pong() noexcept -> void = 0;
+    virtual auto pong(bitcoin::Nonce) noexcept -> void = 0;
     virtual auto request_addresses() noexcept -> void = 0;
     virtual auto request_block(zmq::Message&& message) noexcept -> void = 0;
     virtual auto request_blocks() noexcept -> void = 0;

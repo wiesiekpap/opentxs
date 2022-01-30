@@ -89,6 +89,8 @@ public:
     virtual auto SegwitFlag() const noexcept -> std::byte = 0;
     virtual auto Timestamp() const noexcept -> Time = 0;
     virtual auto Version() const noexcept -> std::int32_t = 0;
+    virtual auto vBytes(blockchain::Type chain) const noexcept
+        -> std::size_t = 0;
     virtual auto WTXID() const noexcept -> const Txid& = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept

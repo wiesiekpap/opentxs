@@ -13,6 +13,7 @@
 #include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Storage.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/StorageNymList.pb.h"
@@ -20,6 +21,19 @@
 
 namespace opentxs
 {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+}  // namespace api
+
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
 namespace storage
 {
 class Driver;
@@ -34,14 +48,33 @@ namespace storage
 {
 class Nyms final : public Node
 {
+public:
+    auto Default() const -> OTNymID;
+    auto Exists(const UnallocatedCString& id) const -> bool;
+    auto LocalNyms() const -> const UnallocatedSet<UnallocatedCString>;
+    void Map(NymLambda lambda) const;
+    auto Migrate(const Driver& to) const -> bool final;
+    auto Nym(const UnallocatedCString& id) const -> const storage::Nym&;
+
+    auto mutable_Nym(const UnallocatedCString& id) -> Editor<storage::Nym>;
+    auto RelabelThread(
+        const UnallocatedCString& threadID,
+        const UnallocatedCString label) -> bool;
+    auto SetDefault(const identifier::Nym& id) -> bool;
+    void UpgradeLocalnym();
+
+    ~Nyms() final = default;
+
 private:
     friend Tree;
 
-    static constexpr auto current_version_ = VersionNumber{3};
+    static constexpr auto current_version_ = VersionNumber{5};
 
+    const api::session::Factory& factory_;
     mutable UnallocatedMap<UnallocatedCString, std::unique_ptr<storage::Nym>>
         nyms_;
-    UnallocatedSet<UnallocatedCString> local_nyms_{};
+    UnallocatedSet<UnallocatedCString> local_nyms_;
+    OTNymID default_local_nym_;
 
     auto nym(const UnallocatedCString& id) const -> storage::Nym*;
     auto nym(const Lock& lock, const UnallocatedCString& id) const
@@ -54,28 +87,17 @@ private:
     void init(const UnallocatedCString& hash) final;
     auto save(const Lock& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
+    auto set_default(const Lock& lock, const identifier::Nym& id) -> void;
 
-    Nyms(const Driver& storage, const UnallocatedCString& hash);
+    Nyms(
+        const Driver& storage,
+        const UnallocatedCString& hash,
+        const api::session::Factory& factory);
     Nyms() = delete;
     Nyms(const Nyms&) = delete;
     Nyms(Nyms&&) = delete;
     auto operator=(const Nyms&) -> Nyms = delete;
     auto operator=(Nyms&&) -> Nyms = delete;
-
-public:
-    auto Exists(const UnallocatedCString& id) const -> bool;
-    auto LocalNyms() const -> const UnallocatedSet<UnallocatedCString>;
-    void Map(NymLambda lambda) const;
-    auto Migrate(const Driver& to) const -> bool final;
-    auto Nym(const UnallocatedCString& id) const -> const storage::Nym&;
-
-    auto mutable_Nym(const UnallocatedCString& id) -> Editor<storage::Nym>;
-    auto RelabelThread(
-        const UnallocatedCString& threadID,
-        const UnallocatedCString label) -> bool;
-    void UpgradeLocalnym();
-
-    ~Nyms() final = default;
 };
 }  // namespace storage
 }  // namespace opentxs

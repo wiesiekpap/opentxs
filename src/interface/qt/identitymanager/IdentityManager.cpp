@@ -48,8 +48,8 @@ auto IdentityManagerQt(const api::session::Client& api) noexcept
 namespace opentxs::ui
 {
 IdentityManagerQt::Imp::Imp(const api::session::Client& api) noexcept
-    : parent_(nullptr)
-    , api_(api)
+    : api_(api)
+    , parent_(nullptr)
     , active_nym_(api_.Factory().NymID())
 {
 }
@@ -173,12 +173,17 @@ auto IdentityManagerQt::Imp::getProfile() const noexcept -> ProfileQt*
     return api_.UI().ProfileQt(id);
 }
 
+auto IdentityManagerQt::Imp::init(IdentityManagerQt* parent) noexcept -> void
+{
+    parent_ = parent;
+}
+
 auto IdentityManagerQt::Imp::setActiveNym(QString id) noexcept -> void
 {
     auto newID = api_.Factory().NymID(id.toStdString());
     auto changed{false};
     active_nym_.modify([&](auto& value) {
-        changed = (newID == value);
+        changed = (newID != value);
         value = std::move(newID);
         id = QString::fromStdString(value->str());
     });
@@ -194,7 +199,7 @@ IdentityManagerQt::IdentityManagerQt(Imp* imp) noexcept
 {
     OT_ASSERT(nullptr != imp);
 
-    imp_->parent_ = this;
+    imp_->init(this);
 }
 
 // NOTE the move constructor is declared so that RVO can be used, however it

@@ -90,6 +90,8 @@ public:
         const filter::Type type,
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches final;
+    auto GetBytes(std::size_t& base, std::size_t& witness) const noexcept
+        -> void final;
     auto GetPatterns() const noexcept -> UnallocatedVector<PatternID> final;
     auto Internal() const noexcept -> const internal::Input& final
     {
@@ -305,6 +307,7 @@ private:
     auto classify() const noexcept -> Redeem;
     auto decode_coinbase() const noexcept -> UnallocatedCString;
     auto is_bip16() const noexcept;
+    auto payload_bytes() const noexcept -> std::size_t;
     auto serialize(const AllocateOutput destination, const bool normalized)
         const noexcept -> std::optional<std::size_t>;
 

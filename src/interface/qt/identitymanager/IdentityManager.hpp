@@ -41,8 +41,6 @@ class QAbstractListModel;
 class opentxs::ui::IdentityManagerQt::Imp
 {
 public:
-    IdentityManagerQt* parent_;
-
     auto getAccountActivity(const QString& accountID) const noexcept
         -> AccountActivityQt*;
     auto getAccountList() const noexcept -> AccountListQt*;
@@ -57,12 +55,14 @@ public:
     auto getNymType() const noexcept -> QAbstractListModel*;
     auto getProfile() const noexcept -> ProfileQt*;
 
+    auto init(IdentityManagerQt* parent) noexcept -> void;
     auto setActiveNym(QString) noexcept -> void;
 
     Imp(const api::session::Client& api) noexcept;
 
 private:
     const api::session::Client& api_;
+    IdentityManagerQt* parent_;
     libguarded::ordered_guarded<OTNymID, std::shared_mutex> active_nym_;
 
     Imp(const Imp&) = delete;

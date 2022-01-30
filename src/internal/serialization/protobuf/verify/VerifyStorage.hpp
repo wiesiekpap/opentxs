@@ -35,6 +35,7 @@ auto StorageNymAllowedStorageItemHash() noexcept -> const VersionMap&;
 auto StorageNymAllowedStoragePurse() noexcept -> const VersionMap&;
 auto StorageNymListAllowedStorageBip47NymAddressIndex() noexcept
     -> const VersionMap&;
+auto StorageNymListAllowedIdentifier() noexcept -> const VersionMap&;
 auto StorageNymListAllowedStorageItemHash() noexcept -> const VersionMap&;
 auto StoragePaymentWorkflowsAllowedStorageItemHash() noexcept
     -> const VersionMap&;

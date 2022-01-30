@@ -295,7 +295,8 @@ TEST_F(Test_PaymentCode, factory)
 TEST_F(Test_PaymentCode, factory_seed_nym)
 {
     if (have_hd_) {
-        ot::UnallocatedCString seed = client_.Crypto().Seed().DefaultSeed();
+        ot::UnallocatedCString seed =
+            client_.Crypto().Seed().DefaultSeed().first;
         [[maybe_unused]] std::uint32_t nym_idx = 0;
         [[maybe_unused]] std::uint8_t version = 1;
         [[maybe_unused]] bool bitmessage = false;

@@ -10,6 +10,7 @@ option java_package = "org.opentransactions.proto";
 option java_outer_classname = "OTStorageNymList";
 option optimize_for = LITE_RUNTIME;
 
+import public "Identifier.proto";
 import public "StorageBip47NymAddressIndex.proto";
 import public "StorageItemHash.proto";
 
@@ -19,4 +20,5 @@ message StorageNymList {
     repeated string localnymid = 3;
     repeated StorageBip47NymAddressIndex address = 4;
     repeated StorageBip47NymAddressIndex transaction = 5;
+    optional Identifier defaultlocalnym = 6;
 }

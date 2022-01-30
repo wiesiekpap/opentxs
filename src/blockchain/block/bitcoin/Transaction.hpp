@@ -144,6 +144,7 @@ public:
     auto Serialize() const noexcept -> std::optional<SerializeType> final;
     auto Timestamp() const noexcept -> Time final { return time_; }
     auto Version() const noexcept -> std::int32_t final { return version_; }
+    auto vBytes(blockchain::Type chain) const noexcept -> std::size_t final;
     auto WTXID() const noexcept -> const Txid& final { return wtxid_; }
 
     auto AssociatePreviousOutput(
@@ -272,6 +273,7 @@ private:
     static auto calculate_witness_size(const UnallocatedVector<Space>&) noexcept
         -> std::size_t;
 
+    auto base_size() const noexcept -> std::size_t;
     auto calculate_size(const bool normalize) const noexcept -> std::size_t;
     auto calculate_witness_size() const noexcept -> std::size_t;
     auto serialize(const AllocateOutput destination, const bool normalize)

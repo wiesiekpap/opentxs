@@ -510,6 +510,7 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              false,
              true,
+             4u,
              opentxs::UnitType::Btc,
              Bip44Type::BITCOIN,
              486604799,  // 0x1d00ffff
@@ -567,6 +568,7 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              true,
              true,
+             4u,
              opentxs::UnitType::Tnbtc,
              Bip44Type::TESTNET,
              486604799,  // 0x1d00ffff
@@ -621,6 +623,7 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              false,
              false,
+             0,
              opentxs::UnitType::Bch,
              Bip44Type::BITCOINCASH,
              486604799,  // 0x1d00ffff
@@ -675,6 +678,7 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              true,
              false,
+             0,
              opentxs::UnitType::Tnbch,
              Bip44Type::TESTNET,
              486604799,  // 0x1d00ffff
@@ -728,6 +732,7 @@ auto Data::Chains() noexcept -> const ChainData&
              false,
              false,
              false,
+             0,
              opentxs::UnitType::Eth,
              Bip44Type::ETHER,
              0,
@@ -757,6 +762,7 @@ auto Data::Chains() noexcept -> const ChainData&
              false,
              true,
              false,
+             0,
              opentxs::UnitType::Ethereum_ropsten,
              Bip44Type::TESTNET,
              0,
@@ -786,6 +792,7 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              false,
              true,
+             4u,
              opentxs::UnitType::Ltc,
              Bip44Type::LITECOIN,
              504365040,  // 0x1e0ffff0
@@ -840,6 +847,7 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              true,
              true,
+             4u,
              opentxs::UnitType::Tnltx,
              Bip44Type::TESTNET,
              504365040,  // 0x1e0ffff0
@@ -892,6 +900,7 @@ auto Data::Chains() noexcept -> const ChainData&
              true,
              false,
              true,
+             4u,
              opentxs::UnitType::Pkt,
              Bip44Type::PKT,
              521142271,  // 0x1f0fffff
@@ -1116,6 +1125,7 @@ auto Data::Chains() noexcept -> const ChainData&
              false,
              true,
              true,
+             4u,
              opentxs::UnitType::Tnpkt,
              Bip44Type::TESTNET,
              521142271,  // 0x1f0fffff
@@ -1159,6 +1169,7 @@ auto Data::Chains() noexcept -> const ChainData&
              false,
              true,
              false,
+             0,
              opentxs::UnitType::Regtest,
              Bip44Type::TESTNET,
              545259519,  // 0x207fffff

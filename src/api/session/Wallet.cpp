@@ -99,6 +99,7 @@ Wallet::Wallet(const api::Session& api)
     , server_map_()
     , unit_map_()
     , issuer_map_()
+    , create_nym_lock_()
     , account_map_lock_()
     , nym_map_lock_()
     , server_map_lock_()
@@ -196,11 +197,7 @@ auto Wallet::Account(const Identifier& accountID) const -> SharedAccount
     Lock mapLock(account_map_lock_);
 
     try {
-        auto& row = account(mapLock, accountID, false);
-        // WTF clang? This is perfectly valid c++17. Fix your shit.
-        // auto& [rowMutex, pAccount] = row;
-        auto& rowMutex = std::get<0>(row);
-        auto& pAccount = std::get<1>(row);
+        auto& [rowMutex, pAccount] = account(mapLock, accountID, false);
 
         if (pAccount) { return SharedAccount(pAccount.get(), rowMutex); }
     } catch (...) {
@@ -406,11 +403,7 @@ auto Wallet::CreateAccount(
         OT_ASSERT(newAccount)
 
         const auto& accountID = newAccount->GetRealAccountID();
-        auto& row = account(mapLock, accountID, true);
-        // WTF clang? This is perfectly valid c++17. Fix your shit.
-        // auto& [rowMutex, pAccount] = row;
-        auto& rowMutex = std::get<0>(row);
-        auto& pAccount = std::get<1>(row);
+        auto& [rowMutex, pAccount] = account(mapLock, accountID, true);
 
         if (pAccount) {
             LogError()(OT_PRETTY_CLASS())("Account already exists.").Flush();
@@ -458,16 +451,19 @@ auto Wallet::CreateAccount(
     }
 }
 
+auto Wallet::DefaultNym() const noexcept -> std::pair<OTNymID, std::size_t>
+{
+    auto lock = Lock{create_nym_lock_};
+
+    return std::make_pair(api_.Storage().DefaultNym(), LocalNymCount());
+}
+
 auto Wallet::DeleteAccount(const Identifier& accountID) const -> bool
 {
     Lock mapLock(account_map_lock_);
 
     try {
-        auto& row = account(mapLock, accountID, false);
-        // WTF clang? This is perfectly valid c++17. Fix your shit.
-        // auto& [rowMutex, pAccount] = row;
-        auto& rowMutex = std::get<0>(row);
-        auto& pAccount = std::get<1>(row);
+        auto& [rowMutex, pAccount] = account(mapLock, accountID, false);
         eLock lock(rowMutex);
 
         if (pAccount) {
@@ -495,11 +491,7 @@ auto Wallet::IssuerAccount(const identifier::UnitDefinition& unitID) const
 
     try {
         for (const auto& accountID : accounts) {
-            auto& row = account(mapLock, accountID, false);
-            // WTF clang? This is perfectly valid c++17. Fix your shit.
-            // auto& [rowMutex, pAccount] = row;
-            auto& rowMutex = std::get<0>(row);
-            auto& pAccount = std::get<1>(row);
+            auto& [rowMutex, pAccount] = account(mapLock, accountID, false);
 
             if (pAccount) {
                 if (pAccount->IsIssuer()) {
@@ -564,11 +556,7 @@ auto Wallet::UpdateAccount(
     const PasswordPrompt& reason) const -> bool
 {
     Lock mapLock(account_map_lock_);
-    auto& row = account(mapLock, accountID, true);
-    // WTF clang? This is perfectly valid c++17. Fix your shit.
-    // auto& [rowMutex, pAccount] = row;
-    auto& rowMutex = std::get<0>(row);
-    auto& pAccount = std::get<1>(row);
+    auto& [rowMutex, pAccount] = account(mapLock, accountID, true);
     eLock rowLock(rowMutex);
     mapLock.unlock();
     const auto& localNym = *context.Nym();
@@ -834,11 +822,7 @@ auto Wallet::ImportAccount(std::unique_ptr<opentxs::Account>& imported) const
     Lock mapLock(account_map_lock_);
 
     try {
-        auto& row = account(mapLock, accountID, true);
-        // WTF clang? This is perfectly valid c++17. Fix your shit.
-        // auto& [rowMutex, pAccount] = row;
-        auto& rowMutex = std::get<0>(row);
-        auto& pAccount = std::get<1>(row);
+        auto& [rowMutex, pAccount] = account(mapLock, accountID, true);
         eLock rowLock(rowMutex);
         mapLock.unlock();
 
@@ -1031,7 +1015,7 @@ auto Wallet::Nym(
         return nullptr;
     }
 
-    Lock mapLock(nym_map_lock_);
+    auto mapLock = Lock{nym_map_lock_};
     bool inMap = (nym_map_.find(id) != nym_map_.end());
     bool valid = false;
 
@@ -1121,11 +1105,11 @@ auto Wallet::Nym(const proto::Nym& serialized) const -> Nym_p
                 .Flush();
             candidate.WriteCredentials();
             SaveCredentialIDs(candidate);
-            Lock mapLock(nym_map_lock_);
+            auto mapLock = Lock{nym_map_lock_};
             auto& mapNym = nym_map_[nymID].second;
             // TODO update existing nym rather than destroying it
             mapNym.reset(pCandidate.release());
-            notify(nymID);
+            notify_new(nymID);
 
             return mapNym;
         } else {
@@ -1169,6 +1153,7 @@ auto Wallet::Nym(
     const PasswordPrompt& reason,
     const UnallocatedCString& name) const -> Nym_p
 {
+    auto lock = Lock{create_nym_lock_};
     std::shared_ptr<identity::internal::Nym> pNym(
         opentxs::Factory::Nym(api_, parameters, type, name, reason));
 
@@ -1178,6 +1163,7 @@ auto Wallet::Nym(
         return {};
     }
 
+    const auto first = (0u == LocalNymCount());
     auto& nym = *pNym;
     const auto& id = nym.ID();
 
@@ -1185,7 +1171,7 @@ auto Wallet::Nym(
         nym.SetAlias(name);
 
         {
-            Lock mapLock(nym_map_lock_);
+            auto mapLock = Lock{nym_map_lock_};
             auto it = nym_map_.find(id);
 
             if (nym_map_.end() != it) { return it->second.second; }
@@ -1198,16 +1184,27 @@ auto Wallet::Nym(
                 auto nymfile = mutable_nymfile(pNym, pNym, id, reason);
             }
 
-            Lock mapLock(nym_map_lock_);
-            auto& pMapNym = nym_map_[id].second;
-            pMapNym = pNym;
-            nym_created_publisher_->Send([&] {
-                auto work = opentxs::network::zeromq::tagged_message(
-                    WorkType::NymCreated);
-                work.AddFrame(pNym->ID());
+            if (first) {
+                LogTrace()(OT_PRETTY_CLASS())(
+                    "Marking first created nym as default");
+                api_.Storage().SetDefaultNym(id);
+            } else {
+                LogTrace()(OT_PRETTY_CLASS())("Default nym already set")
+                    .Flush();
+            }
 
-                return work;
-            }());
+            {
+                auto mapLock = Lock{nym_map_lock_};
+                auto& pMapNym = nym_map_[id].second;
+                pMapNym = pNym;
+                nym_created_publisher_->Send([&] {
+                    auto work = opentxs::network::zeromq::tagged_message(
+                        WorkType::NymCreated);
+                    work.AddFrame(pNym->ID());
+
+                    return work;
+                }());
+            }
 
             return std::move(pNym);
         } else {
@@ -1232,7 +1229,7 @@ auto Wallet::mutable_Nym(
         LogError()(OT_PRETTY_CLASS())("Nym ")(nym)(" not found.").Flush();
     }
 
-    Lock mapLock(nym_map_lock_);
+    auto mapLock = Lock{nym_map_lock_};
     auto it = nym_map_.find(id);
 
     if (nym_map_.end() == it) { OT_FAIL }
@@ -1310,9 +1307,8 @@ auto Wallet::mutable_nymfile(
     return EditorType(nymfile_lock(id), nymfile.release(), callback, deleter);
 }
 
-auto Wallet::notify(const identifier::Nym& id) const noexcept -> void
+auto Wallet::notify_changed(const identifier::Nym& id) const noexcept -> void
 {
-    api_.Internal().NewNym(id);
     nym_publisher_->Send([&] {
         auto work =
             opentxs::network::zeromq::tagged_message(WorkType::NymUpdated);
@@ -1320,6 +1316,12 @@ auto Wallet::notify(const identifier::Nym& id) const noexcept -> void
 
         return work;
     }());
+}
+
+auto Wallet::notify_new(const identifier::Nym& id) const noexcept -> void
+{
+    api_.Internal().NewNym(id);
+    notify_changed(id);
 }
 
 auto Wallet::nymfile_lock(const identifier::Nym& nymID) const -> std::mutex&
@@ -2152,13 +2154,7 @@ void Wallet::save(NymData* nymData, const Lock& lock) const
     OT_ASSERT(lock.owns_lock())
 
     SaveCredentialIDs(nymData->nym());
-    nym_publisher_->Send([&] {
-        auto work =
-            opentxs::network::zeromq::tagged_message(WorkType::NymUpdated);
-        work.AddFrame(nymData->nym().ID());
-
-        return work;
-    }());
+    notify_changed(nymData->nym().ID());
 }
 
 void Wallet::save(
@@ -2192,7 +2188,7 @@ auto Wallet::SaveCredentialIDs(const identity::Nym& nym) const -> bool
 
     if (!api_.Storage().Store(index, nym.Alias())) {
         LogError()(OT_PRETTY_CLASS())(
-            " Failure trying to store credential list for Nym: ")(nym.ID())
+            "Failure trying to store credential list for Nym: ")(nym.ID())
             .Flush();
 
         return false;
@@ -2203,11 +2199,32 @@ auto Wallet::SaveCredentialIDs(const identity::Nym& nym) const -> bool
     return true;
 }
 
+auto Wallet::SetDefaultNym(const identifier::Nym& id) const noexcept -> bool
+{
+    if (id.empty()) {
+        LogError()(OT_PRETTY_CLASS())("Invalid id").Flush();
+
+        return false;
+    }
+
+    if (0u == LocalNyms().count(id)) {
+        LogError()(OT_PRETTY_CLASS())("Nym ")(id)(" is not local").Flush();
+
+        return false;
+    }
+
+    auto out = api_.Storage().SetDefaultNym(id);
+
+    if (out) { notify_changed(id); }
+
+    return out;
+}
+
 auto Wallet::SetNymAlias(
     const identifier::Nym& id,
     const UnallocatedCString& alias) const -> bool
 {
-    Lock mapLock(nym_map_lock_);
+    auto mapLock = Lock{nym_map_lock_};
     auto& nym = nym_map_[id].second;
     nym->SetAlias(alias);
 

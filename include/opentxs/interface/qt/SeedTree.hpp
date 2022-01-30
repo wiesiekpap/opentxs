@@ -30,6 +30,18 @@ class SeedTreeQt;
 class OPENTXS_EXPORT opentxs::ui::SeedTreeQt final : public qt::Model
 {
     Q_OBJECT
+    Q_PROPERTY(QString defaultNym READ defaultNym NOTIFY defaultNymChanged)
+    Q_PROPERTY(QString defaultSeed READ defaultSeed NOTIFY defaultSeedChanged)
+
+signals:
+    void defaultNymChanged(QString) const;
+    void defaultSeedChanged(QString) const;
+    void needNym() const;
+    void needSeed() const;
+    void ready();
+
+public slots:
+    void check();
 
 public:
     enum Roles {
@@ -43,6 +55,9 @@ public:
     enum Columns {
         NameColumn = 0,
     };
+
+    auto defaultNym() const noexcept -> QString;
+    auto defaultSeed() const noexcept -> QString;
 
     SeedTreeQt(internal::SeedTree& parent) noexcept;
 

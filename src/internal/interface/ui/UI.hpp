@@ -1006,8 +1006,18 @@ struct ProfileItem : virtual public Row, virtual public ui::ProfileItem {
     ~ProfileItem() override = default;
 };
 struct SeedTree : virtual public List, virtual public ui::SeedTree {
+    struct Callbacks {
+        using NymCB = std::function<void(const identifier::Nym&)>;
+        using SeedCB = std::function<void(const Identifier&)>;
+
+        NymCB nym_changed_{};
+        SeedCB seed_changed_{};
+    };
+
     virtual auto last(const implementation::SeedTreeRowID& id) const noexcept
         -> bool = 0;
+
+    virtual auto SetCallbacks(Callbacks&&) noexcept -> void = 0;
 
     ~SeedTree() override = default;
 };

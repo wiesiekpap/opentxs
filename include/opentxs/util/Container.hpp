@@ -10,8 +10,9 @@
 #if __has_include(<memory_resource>)
 #include <memory_resource>  // IWYU pragma: export
 #elif __has_include(<experimental/memory_resource>)
-// NOTE android ndk r23 still lacks complete c++17 support
+// NOTE android ndk r23 and Apple still lack complete c++17 support
 #include <experimental/deque>            // IWYU pragma: export
+#include <experimental/forward_list>     // IWYU pragma: export
 #include <experimental/list>             // IWYU pragma: export
 #include <experimental/map>              // IWYU pragma: export
 #include <experimental/memory_resource>  // IWYU pragma: export
@@ -20,8 +21,11 @@
 #include <experimental/unordered_map>    // IWYU pragma: export
 #include <experimental/unordered_set>    // IWYU pragma: export
 #include <experimental/vector>           // IWYU pragma: export
+#else
+#error polymorphic allocator support is required
 #endif
 #include <deque>          // IWYU pragma: export
+#include <forward_list>   // IWYU pragma: export
 #include <list>           // IWYU pragma: export
 #include <map>            // IWYU pragma: export
 #include <set>            // IWYU pragma: export
@@ -32,10 +36,38 @@
 
 namespace opentxs
 {
+namespace alloc
+{
+#if __has_include(<memory_resource>)
+template <typename T>
+using PMR = std::pmr::polymorphic_allocator<T>;
+using Resource = std::pmr::memory_resource;
+// TODO not yet supported on Android
+// using SynchronizedPool = std::pmr::synchronized_pool_resource;
+// using UnsynchronizedPool = std::pmr::unsynchronized_pool_resource;
+// using Monotonic = std::pmr::monotonic_buffer_resource;
+#else
+template <typename T>
+using PMR = std::experimental::pmr::polymorphic_allocator<T>;
+using Resource = std::experimental::pmr::memory_resource;
+// TODO not yet supported on Android
+// using SynchronizedPool = std::experimental::pmr::synchronized_pool_resource;
+// using UnsynchronizedPool =
+// std::experimental::pmr::unsynchronized_pool_resource; using Monotonic =
+// std::experimental::pmr::monotonic_buffer_resource;
+#endif
+
+// TODO not yet supported on Android
+// auto System() noexcept -> Resource*;
+// auto Null() noexcept -> Resource*;
+}  // namespace alloc
+
 #if __has_include(<memory_resource>)
 using CString = std::pmr::string;
 template <typename T>
 using Deque = std::pmr::deque<T>;
+template <typename T>
+using ForwardList = std::pmr::forward_list<T>;
 template <typename T>
 using List = std::pmr::list<T>;
 template <typename K, typename V>
@@ -56,10 +88,12 @@ template <typename T>
 using UnorderedSet = std::pmr::unordered_set<T>;
 template <typename T>
 using Vector = std::pmr::vector<T>;
-#elif __has_include(<experimental/memory_resource>)
+#else
 using CString = std::experimental::pmr::string;
 template <typename T>
 using Deque = std::experimental::pmr::deque<T>;
+template <typename T>
+using ForwardList = std::experimental::pmr::forward_list<T>;
 template <typename T>
 using List = std::experimental::pmr::list<T>;
 template <typename K, typename V>
@@ -80,12 +114,12 @@ template <typename T>
 using UnorderedSet = std::experimental::pmr::unordered_set<T>;
 template <typename T>
 using Vector = std::experimental::pmr::vector<T>;
-#else
-#error polymorphic allocator support is required
 #endif
 using UnallocatedCString = std::string;
 template <typename T>
 using UnallocatedDeque = std::deque<T>;
+template <typename T>
+using UnallocatedForwardList = std::forward_list<T>;
 template <typename T>
 using UnallocatedList = std::list<T>;
 template <typename K, typename V>
