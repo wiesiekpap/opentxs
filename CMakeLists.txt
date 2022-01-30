@@ -824,6 +824,7 @@ if(OPENTXS_STANDALONE)
      "https://opentransactions.org" "Open Transactions Link" )
   endif() 
 
+  set( CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL, "ON" )
   set( CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md" )
   set( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE" )
   set( CPACK_PACKAGE_VENDOR "http://www.OpenTransactions.org" )
