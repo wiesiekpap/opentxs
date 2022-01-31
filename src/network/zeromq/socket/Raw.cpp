@@ -104,16 +104,7 @@ Raw::Raw(const Context& context, const socket::Type type) noexcept
     , bound_endpoints_()
     , connected_endpoints_()
 {
-    static constexpr auto linger = int{0};
-
-    const auto rc =
-        ::zmq_setsockopt(Native(), ZMQ_LINGER, &linger, sizeof(linger));
-
-    if (0 != rc) {
-        std::cerr << "Failed to set ZMQ_LINGER\n";
-        std::cerr << zmq_strerror(zmq_errno()) << '\n';
-    }
-
+    SetLinger(0);
     SetIncomingHWM(default_hwm_);
     SetOutgoingHWM(default_hwm_);
 }
@@ -217,6 +208,20 @@ auto Raw::SetIncomingHWM(int value) noexcept -> bool
 
     if (0 != rc) {
         std::cerr << (OT_PRETTY_CLASS()) << "Failed to set ZMQ_RCVHWM\n";
+        std::cerr << zmq_strerror(zmq_errno()) << '\n';
+
+        return false;
+    }
+
+    return true;
+}
+
+auto Raw::SetLinger(int value) noexcept -> bool
+{
+    const auto rc = zmq_setsockopt(Native(), ZMQ_LINGER, &value, sizeof(value));
+
+    if (0 != rc) {
+        std::cerr << (OT_PRETTY_CLASS()) << "Failed to set ZMQ_LINGER\n";
         std::cerr << zmq_strerror(zmq_errno()) << '\n';
 
         return false;
@@ -401,6 +406,11 @@ auto Raw::Send(Message&& msg) noexcept -> bool
 auto Raw::SetIncomingHWM(int value) noexcept -> bool
 {
     return imp_->SetIncomingHWM(value);
+}
+
+auto Raw::SetLinger(int value) noexcept -> bool
+{
+    return imp_->SetLinger(value);
 }
 
 auto Raw::SetOutgoingHWM(int value) noexcept -> bool

@@ -34,6 +34,11 @@ class error_code;
 
 namespace opentxs
 {
+namespace display
+{
+class Scale;
+}  // namespace display
+
 namespace identifier
 {
 class Notary;
@@ -60,6 +65,7 @@ public:
     auto operator()() const noexcept -> const Log&;
     auto operator()(const char* in) const noexcept -> const Log&;
     auto operator()(char* in) const noexcept -> const Log&;
+    auto operator()(const CString& in) const noexcept -> const Log&;
     auto operator()(const UnallocatedCString& in) const noexcept -> const Log&;
     auto operator()(const std::chrono::nanoseconds& in) const noexcept
         -> const Log&;
@@ -68,6 +74,8 @@ public:
     auto operator()(const Amount& in) const noexcept -> const Log&;
     auto operator()(const Amount& in, UnitType currency) const noexcept
         -> const Log&;
+    auto operator()(const Amount& in, const display::Scale& scale)
+        const noexcept -> const Log&;
     auto operator()(const String& in) const noexcept -> const Log&;
     auto operator()(const StringXML& in) const noexcept -> const Log&;
     auto operator()(const Armored& in) const noexcept -> const Log&;

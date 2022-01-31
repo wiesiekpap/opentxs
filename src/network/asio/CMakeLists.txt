@@ -6,10 +6,17 @@
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/network/asio/HTTP.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/network/asio/HTTPS.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/network/asio/WebRequest.hpp"
     "Endpoint.cpp"
     "Endpoint.hpp"
+    "HTTP.cpp"
+    "HTTPS.cpp"
+    "SSLCerts.cpp"
     "Socket.cpp"
     "Socket.hpp"
+    "WebRequest.tpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/asio/Endpoint.hpp"

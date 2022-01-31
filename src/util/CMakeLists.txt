@@ -68,6 +68,7 @@ target_include_directories(
   PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
 set(cxx-install-headers
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/Allocated.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Bytes.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Container.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Iterator.hpp"
@@ -87,15 +88,17 @@ set(cxx-install-headers
 target_link_libraries(
   opentxs-common
   PRIVATE
-    opentxs::messages
-    Boost::iostreams
-    Boost::headers
+    Boost::container
     Boost::filesystem
+    Boost::headers
+    Boost::iostreams
+    opentxs::messages
     unofficial-sodium::sodium
 )
 target_link_libraries(
   opentxs
   PUBLIC
+    Boost::container
     Boost::filesystem
     Boost::iostreams
     Boost::program_options

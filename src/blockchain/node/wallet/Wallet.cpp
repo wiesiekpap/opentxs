@@ -19,6 +19,7 @@
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/wallet/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -78,6 +79,7 @@ Wallet::Wallet(
         work.AddFrame(UnallocatedCString(type));
         pipeline_.Push(std::move(work));
     })
+    , fee_oracle_(factory::FeeOracle(api_, chain))
     , enabled_(true)
     , accounts_(api, parent_, db_, chain_, task_finished_)
     , proposals_(api, parent_, db_, chain_)
@@ -449,6 +451,7 @@ auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
         LogDetail()("Shutting down ")(DisplayString(chain_))(" wallet").Flush();
         pipeline_.Close();
         accounts_.Shutdown();
+        fee_oracle_.Shutdown();
         promise.set_value();
     }
 }

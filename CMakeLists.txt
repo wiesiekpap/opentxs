@@ -457,11 +457,12 @@ find_package(Protobuf REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(
   Boost
-  1.73.0
+  1.75.0
   REQUIRED
   COMPONENTS
     filesystem
     iostreams
+    json
     program_options
     system
     thread

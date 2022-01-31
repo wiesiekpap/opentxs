@@ -13,6 +13,7 @@
 #include <future>
 #include <queue>
 #include <shared_mutex>
+#include <string_view>
 #include <utility>
 
 #include "internal/network/zeromq/Context.hpp"
@@ -61,9 +62,15 @@ namespace opentxs::network::zeromq
 class Pipeline::Imp : virtual public internal::Pipeline
 {
 public:
+    virtual auto BindSubscriber(
+        const std::string_view,
+        std::function<Message(bool)>) const noexcept -> bool
+    {
+        return false;
+    }
     virtual auto Close() const noexcept -> bool { return false; }
     virtual auto ConnectDealer(
-        const UnallocatedCString&,
+        const std::string_view,
         std::function<Message(bool)>) const noexcept -> bool
     {
         return false;
@@ -81,13 +88,13 @@ public:
     {
         return {};
     }
-    virtual auto PullFrom(const UnallocatedCString&) const noexcept -> bool
+    virtual auto PullFrom(const std::string_view) const noexcept -> bool
     {
         return false;
     }
     virtual auto Push(Message&&) const noexcept -> bool { return false; }
     virtual auto Send(Message&&) const noexcept -> bool { return false; }
-    virtual auto SubscribeTo(const UnallocatedCString&) const noexcept -> bool
+    virtual auto SubscribeTo(const std::string_view) const noexcept -> bool
     {
         return false;
     }
@@ -109,19 +116,21 @@ namespace opentxs::network::zeromq::implementation
 class Pipeline final : virtual public zeromq::Pipeline::Imp
 {
 public:
+    auto BindSubscriber(
+        const std::string_view endpoint,
+        std::function<Message(bool)> notify) const noexcept -> bool final;
     auto Close() const noexcept -> bool final;
     auto ConnectDealer(
-        const UnallocatedCString& endpoint,
+        const std::string_view endpoint,
         std::function<Message(bool)> notify) const noexcept -> bool final;
     auto ConnectionIDDealer() const noexcept -> std::size_t final;
     auto ConnectionIDInternal() const noexcept -> std::size_t final;
     auto ConnectionIDPull() const noexcept -> std::size_t final;
     auto ConnectionIDSubscribe() const noexcept -> std::size_t final;
-    auto PullFrom(const UnallocatedCString& endpoint) const noexcept
-        -> bool final;
+    auto PullFrom(const std::string_view endpoint) const noexcept -> bool final;
     auto Push(zeromq::Message&& data) const noexcept -> bool final;
     auto Send(zeromq::Message&& data) const noexcept -> bool final;
-    auto SubscribeTo(const UnallocatedCString& endpoint) const noexcept
+    auto SubscribeTo(const std::string_view endpoint) const noexcept
         -> bool final;
 
     Pipeline(
@@ -154,9 +163,14 @@ private:
     mutable GuardedSocket to_internal_;  // NOTE activated by Push()
     internal::Thread* thread_;
 
+    auto bind(
+        SocketID id,
+        const std::string_view endpoint,
+        std::function<Message(bool)> notify = {}) const noexcept
+        -> std::pair<bool, std::future<bool>>;
     auto connect(
         SocketID id,
-        const UnallocatedCString& endpoint,
+        const std::string_view endpoint,
         std::function<Message(bool)> notify = {}) const noexcept
         -> std::pair<bool, std::future<bool>>;
 

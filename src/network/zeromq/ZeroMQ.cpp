@@ -37,6 +37,15 @@ auto MakeArbitraryInproc() noexcept -> UnallocatedCString
     return out.str();
 }
 
+auto MakeArbitraryInproc(alloc::Resource* alloc) noexcept -> CString
+{
+    const auto data = MakeArbitraryInproc();
+    auto out = CString{alloc};
+    out.assign(data.data(), data.size());
+
+    return out;
+}
+
 auto MakeDeterministicInproc(
     const UnallocatedCString& path,
     const int instance,

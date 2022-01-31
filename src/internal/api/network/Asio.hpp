@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <future>
+
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -16,6 +18,11 @@ namespace asio
 {
 class io_context;
 }  // namespace asio
+
+namespace json
+{
+class value;
+}  // namespace json
 }  // namespace boost
 
 namespace opentxs
@@ -41,6 +48,13 @@ public:
     using Endpoint = opentxs::network::asio::Endpoint::Imp;
     using Socket = opentxs::network::asio::Socket::Imp;
     using Callback = std::function<void()>;
+
+    virtual auto FetchJson(
+        const ReadView host,
+        const ReadView path,
+        const bool https = true,
+        const ReadView notify = {}) const noexcept
+        -> std::future<boost::json::value> = 0;
 
     virtual auto Connect(const ReadView id, Socket& socket) noexcept
         -> bool = 0;

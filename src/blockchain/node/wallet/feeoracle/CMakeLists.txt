@@ -6,27 +6,15 @@
 target_sources(
   opentxs-common
   PRIVATE
-    "Acceptor.cpp"
-    "Acceptor.hpp"
-    "Acceptors.cpp"
-    "Acceptors.hpp"
-    "AddressSites.cpp"
-    "Asio.cpp"
-    "Buffers.cpp"
-    "Buffers.hpp"
-    "Context.cpp"
-    "Context.hpp"
-    "Imp.cpp"
-    "Imp.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/Factory.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/FeeOracle.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/FeeSource.hpp"
+    "BTC.cpp"
+    "FeeOracle.cpp"
+    "FeeOracle.hpp"
+    "FeeSource.cpp"
+    "FeeSource.hpp"
 )
 target_include_directories(
   opentxs-common SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/cs_libguarded/src"
-)
-target_link_libraries(opentxs-common PRIVATE OpenSSL::SSL)
-target_link_libraries(
-  opentxs
-  PUBLIC
-    Boost::system
-    Boost::thread
-    OpenSSL::SSL
 )

@@ -2096,7 +2096,7 @@ auto Peer::start_handshake() noexcept -> void
         const auto status = Connected().wait_for(std::chrono::seconds(5));
 
         if (std::future_status::ready != status) {
-            LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
+            LogVerbose()("Disconnecting ")(display_chain_)(" peer ")(
                 address_.Display())(" due to handshake timeout.")
                 .Flush();
             disconnect();
