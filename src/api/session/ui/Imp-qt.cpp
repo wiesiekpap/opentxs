@@ -54,6 +54,7 @@ ImpQt::ImpQt(
     , unit_lists_qt_()
 {
     // WARNING: do not access api_.Wallet() during construction
+    opentxs::ui::claim_ownership(&identity_manager_);
 }
 
 auto ImpQt::Blank::get(const std::size_t columns) noexcept
