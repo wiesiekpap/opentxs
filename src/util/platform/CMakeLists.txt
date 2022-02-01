@@ -20,6 +20,12 @@ elseif(UNIX)
 
   if(APPLE)
     target_sources(opentxs-common PRIVATE "Apple.cpp")
+
+    if(IOS)
+      target_sources(opentxs-common PRIVATE "iOS.cpp")
+    else()
+      target_sources(opentxs-common PRIVATE "MacOS.cpp")
+    endif()
   else()
     # Use this file for functions which do not need different behavior on
     # Android.

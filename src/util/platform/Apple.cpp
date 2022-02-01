@@ -13,6 +13,8 @@ extern "C" {
 #include <sys/resource.h>
 }
 
+#include "opentxs/util/Container.hpp"
+
 namespace opentxs
 {
 auto SetThisThreadsPriority(ThreadPriority) noexcept -> void
@@ -34,14 +36,15 @@ auto Legacy::get_suffix() noexcept -> fs::path
     return get_suffix("OpenTransactions");
 }
 
-auto Legacy::prepend() noexcept -> UnallocatedCString
-{
-#if TARGET_OS_IPHONE  // iOS
-    return "Documents/";
-#else  // OSX
-    return "Library/Application Support/";
-#endif
-}
-
 auto Legacy::use_dot() noexcept -> bool { return false; }
 }  // namespace opentxs::api::imp
+
+// TODO after libc++ finally incorporates this into std, and after Apple ships
+// that version of libc++, then this can be removed
+namespace std::experimental::fundamentals_v1::pmr
+{
+auto get_default_resource() noexcept -> opentxs::alloc::Resource*
+{
+    return opentxs::alloc::System();
+}
+}  // namespace std::experimental::fundamentals_v1::pmr

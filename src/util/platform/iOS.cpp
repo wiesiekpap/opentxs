@@ -7,20 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "api/Legacy.hpp"  // IWYU pragma: associated
 
-#include "opentxs/util/Container.hpp"
-
 namespace opentxs::api::imp
 {
-auto Legacy::use_dot() noexcept -> bool { return false; }
+auto Legacy::prepend() noexcept -> UnallocatedCString { return "Documents/"; }
 }  // namespace opentxs::api::imp
-
-// TODO after libc++ finally incorporates this into std, and after a new version
-// of the ndk is released which uses that version of libc++, then this can be
-// removed
-namespace std::experimental::fundamentals_v1::pmr
-{
-auto get_default_resource() noexcept -> opentxs::alloc::Resource*
-{
-    return opentxs::alloc::System();
-}
-}  // namespace std::experimental::fundamentals_v1::pmr
