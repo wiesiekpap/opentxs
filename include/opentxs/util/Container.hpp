@@ -20,7 +20,6 @@
 #if __has_include(<memory_resource>)
 #include <memory_resource>  // IWYU pragma: export
 #elif __has_include(<experimental/memory_resource>)
-// NOTE android ndk r23 and Apple still lack complete c++17 support
 #include <experimental/deque>            // IWYU pragma: export
 #include <experimental/forward_list>     // IWYU pragma: export
 #include <experimental/list>             // IWYU pragma: export
@@ -37,31 +36,6 @@
 
 namespace opentxs
 {
-namespace alloc
-{
-#if __has_include(<memory_resource>)
-template <typename T>
-using PMR = std::pmr::polymorphic_allocator<T>;
-using Resource = std::pmr::memory_resource;
-// TODO not yet supported on Android
-// using SynchronizedPool = std::pmr::synchronized_pool_resource;
-// using UnsynchronizedPool = std::pmr::unsynchronized_pool_resource;
-// using Monotonic = std::pmr::monotonic_buffer_resource;
-#else
-template <typename T>
-using PMR = std::experimental::pmr::polymorphic_allocator<T>;
-using Resource = std::experimental::pmr::memory_resource;
-// TODO not yet supported on Android
-// using SynchronizedPool = std::experimental::pmr::synchronized_pool_resource;
-// using UnsynchronizedPool =
-// std::experimental::pmr::unsynchronized_pool_resource; using Monotonic =
-// std::experimental::pmr::monotonic_buffer_resource;
-#endif
-using Default = PMR<std::byte>;
-auto System() noexcept -> Resource*;
-auto Null() noexcept -> Resource*;
-}  // namespace alloc
-
 #if __has_include(<memory_resource>)
 using CString = std::pmr::string;
 template <typename T>

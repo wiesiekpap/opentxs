@@ -19,7 +19,9 @@
 #include "internal/network/zeromq/Thread.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
+#include "internal/util/BoostPMR.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Gatekeeper.hpp"
 
@@ -53,6 +55,7 @@ class Thread final : public zeromq::internal::Thread
 {
 public:
     auto Add(BatchID id, StartArgs&& args) noexcept -> bool;
+    auto Alloc() noexcept -> alloc::Resource* final { return &alloc_; }
     auto Modify(SocketID socket, ModifyCallback cb) noexcept
         -> AsyncResult final;
     auto Remove(BatchID id, UnallocatedVector<socket::Raw*>&& sockets) noexcept
@@ -102,6 +105,7 @@ private:
     };
 
     zeromq::internal::Pool& parent_;
+    alloc::BoostPool alloc_;
     socket::Raw null_;
     Gatekeeper gate_;
     Items poll_;

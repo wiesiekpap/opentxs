@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iterator>
 
+#include "internal/util/BoostPMR.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 
@@ -39,7 +40,8 @@ auto SetIntersection(
     const ParsedPatterns& parsed,
     const UnallocatedVector<Space>& compare) noexcept -> Matches
 {
-    auto matches = UnallocatedVector<Space>{};
+    auto alloc = alloc::BoostMonotonic{4096};
+    auto matches = Vector<Space>{&alloc};
     auto output = Matches{};
     std::set_intersection(
         std::begin(parsed.data_),

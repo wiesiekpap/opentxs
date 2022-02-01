@@ -28,6 +28,7 @@
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/GCS.hpp"
+#include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
@@ -564,7 +565,8 @@ auto GCS::test(const UnallocatedVector<std::uint64_t>& targets) const noexcept
     -> bool
 {
     const auto& set = decompress();
-    auto matches = UnallocatedVector<std::uint64_t>{};
+    auto alloc = alloc::BoostMonotonic{1024};
+    auto matches = Vector<std::uint64_t>{&alloc};
     std::set_intersection(
         std::begin(targets),
         std::end(targets),

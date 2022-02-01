@@ -10,6 +10,7 @@ add_subdirectory(storage)
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/util/BoostPMR.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Editor.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Exclusive.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Flag.hpp"
@@ -22,12 +23,12 @@ target_sources(
     "${opentxs_SOURCE_DIR}/src/internal/util/Timer.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Types.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/UniqueQueue.hpp"
+    "Allocator.cpp"
     "Allocator.hpp"
     "AsyncValue.hpp"
     "Backoff.hpp"
     "Blank.hpp"
     "Bytes.cpp"
-    "Container.cpp"
     "Container.hpp"
     "Exclusive.tpp"
     "Flag.cpp"
@@ -69,6 +70,7 @@ target_include_directories(
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Allocated.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/Allocator.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Bytes.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Container.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Iterator.hpp"

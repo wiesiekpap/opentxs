@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "opentxs/util/Container.hpp"
+#include "opentxs/util/Allocator.hpp"
 
 namespace opentxs
 {

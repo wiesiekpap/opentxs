@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "internal/network/asio/HTTPS.hpp"  // IWYU pragma: associated
 
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::network::asio
