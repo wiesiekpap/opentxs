@@ -291,8 +291,9 @@ auto Raw::SetPrivateKey(ReadView key) noexcept -> bool
 
 auto Raw::SetRouterHandover(bool value) noexcept -> bool
 {
+    const auto data = value ? int{1} : int{0};
     const auto rc =
-        zmq_setsockopt(Native(), ZMQ_ROUTER_HANDOVER, &value, sizeof(value));
+        zmq_setsockopt(Native(), ZMQ_ROUTER_HANDOVER, &data, sizeof(data));
 
     if (0 != rc) {
         std::cerr << (OT_PRETTY_CLASS())
