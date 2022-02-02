@@ -18,7 +18,6 @@
 #include <iterator>
 #include <memory>
 #include <thread>
-#include <type_traits>
 
 #include "internal/network/zeromq/Pool.hpp"
 #include "internal/network/zeromq/socket/Factory.hpp"
@@ -34,6 +33,7 @@ namespace opentxs::network::zeromq::context
 {
 Thread::Thread(zeromq::internal::Pool& parent) noexcept
     : parent_(parent)
+    , alloc_()
     , null_(factory::ZMQSocketNull())
     , gate_()
     , poll_()

@@ -349,6 +349,7 @@
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
 #include "opentxs/util/Allocated.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"

@@ -12,6 +12,7 @@
 #include <string_view>
 
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs

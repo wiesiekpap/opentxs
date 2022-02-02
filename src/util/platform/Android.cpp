@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "api/Legacy.hpp"  // IWYU pragma: associated
 
-#include "opentxs/util/Container.hpp"
+#include "opentxs/util/Allocator.hpp"
 
 namespace opentxs::api::imp
 {

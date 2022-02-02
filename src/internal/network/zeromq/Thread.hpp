@@ -9,6 +9,7 @@
 #include <tuple>
 
 #include "internal/network/zeromq/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 
 namespace opentxs
 {
@@ -29,6 +30,7 @@ namespace opentxs::network::zeromq::internal
 class Thread
 {
 public:
+    virtual auto Alloc() noexcept -> alloc::Resource* = 0;
     virtual auto Modify(SocketID socket, ModifyCallback cb) noexcept
         -> std::pair<bool, std::future<bool>> = 0;
 

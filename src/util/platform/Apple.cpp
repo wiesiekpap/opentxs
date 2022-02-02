@@ -13,7 +13,7 @@ extern "C" {
 #include <sys/resource.h>
 }
 
-#include "opentxs/util/Container.hpp"
+#include "opentxs/util/Allocator.hpp"
 
 namespace opentxs
 {
