@@ -18,15 +18,15 @@
 namespace opentxs::display
 {
 Scale::Scale(
-    const UnallocatedCString& prefix,
-    const UnallocatedCString& suffix,
-    const UnallocatedVector<Ratio>& ratios,
+    std::string_view prefix,
+    std::string_view suffix,
+    Vector<Ratio>&& ratios,
     const OptionalInt defaultMinDecimals,
     const OptionalInt defaultMaxDecimals) noexcept
     : imp_(std::make_unique<Imp>(
                prefix,
                suffix,
-               ratios,
+               std::move(ratios),
                defaultMinDecimals,
                defaultMaxDecimals)
                .release())
@@ -75,7 +75,7 @@ auto Scale::Format(
     return imp_->format(amount, minDecimals, maxDecimals);
 }
 
-auto Scale::Import(const UnallocatedCString& formatted) const noexcept(false)
+auto Scale::Import(const std::string_view formatted) const noexcept(false)
     -> Amount
 {
     return imp_->Import(formatted);
@@ -86,17 +86,17 @@ auto Scale::MaximumDecimals() const noexcept -> std::uint8_t
     return imp_->MaximumDecimals();
 }
 
-auto Scale::Prefix() const noexcept -> UnallocatedCString
+auto Scale::Prefix() const noexcept -> std::string_view
 {
     return imp_->prefix_;
 }
 
-auto Scale::Ratios() const noexcept -> const UnallocatedVector<Ratio>&
+auto Scale::Ratios() const noexcept -> const Vector<Ratio>&
 {
     return imp_->ratios_;
 }
 
-auto Scale::Suffix() const noexcept -> UnallocatedCString
+auto Scale::Suffix() const noexcept -> std::string_view
 {
     return imp_->suffix_;
 }

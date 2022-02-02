@@ -39,6 +39,7 @@
 { "include": ["<qqmlengine.h>", "private", "<QQmlEngine>", "public"] },
 { "include": ["<qstring.h>", "private", "<QString>", "public"] },
 { "include": ["<qstringlist.h>", "private", "<QStringList>", "public"] },
+{ "include": ["<qstringview.h>", "private", "<QStringView>", "public"] },
 { "include": ["<qvalidator.h>", "private", "<QValidator>", "public"] },
 { "include": ["<qvariant.h>", "private", "<QVariant>", "public"] },
 { "include": ["<qvector.h>", "private", "<QVector>", "public"] },

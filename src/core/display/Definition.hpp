@@ -12,6 +12,7 @@
 #include <mutex>
 #include <optional>
 #include <stdexcept>
+#include <string_view>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
@@ -25,14 +26,14 @@
 namespace opentxs::display
 {
 struct Definition::Imp {
-    using Scales = UnallocatedVector<NamedScale>;
+    using Scales = Vector<NamedScale>;
 
-    const UnallocatedCString short_name_;
+    const CString short_name_;
     const Scales scales_;
     mutable std::mutex lock_;
     mutable std::optional<Map> cached_;
 
-    auto Import(const UnallocatedCString& in, const Index index) const
+    auto Import(const std::string_view in, const Index index) const
         noexcept(false) -> Amount
     {
         try {
@@ -62,7 +63,7 @@ struct Definition::Imp {
         }
     }
 
-    Imp(UnallocatedCString&& shortname, Scales&& scales) noexcept
+    Imp(CString&& shortname, Scales&& scales) noexcept
         : short_name_(std::move(shortname))
         , scales_(std::move(scales))
         , lock_()

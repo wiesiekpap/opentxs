@@ -12,6 +12,8 @@
 #include <cstdio>
 #include <memory>
 #include <sstream>  // IWYU pragma: keep
+#include <string_view>
+#include <type_traits>
 #include <utility>
 
 #include "2_Factory.hpp"
@@ -421,19 +423,24 @@ auto Unit::get_displayscales(const SerializedType& serialized) const
 {
     if (serialized.has_params()) {
         auto& params = serialized.params();
-
         auto scales = display::Definition::Scales{};
+
         for (auto& scale : params.scales()) {
-            auto ratios = UnallocatedVector<display::Scale::Ratio>{};
-            for (auto& ratio : scale.ratios()) {
-                ratios.emplace_back(std::pair{ratio.base(), ratio.power()});
-            }
             scales.emplace_back(std::pair(
                 scale.name(),
                 display::Scale{
                     scale.prefix(),
                     scale.suffix(),
-                    ratios,
+                    [&] {
+                        auto out = Vector<display::Scale::Ratio>{};
+
+                        for (auto& ratio : scale.ratios()) {
+                            out.emplace_back(
+                                std::pair{ratio.base(), ratio.power()});
+                        }
+
+                        return out;
+                    }(),
                     scale.default_minimum_decimals(),
                     scale.default_maximum_decimals()}));
         }
@@ -496,17 +503,19 @@ auto Unit::IDVersion(const Lock& lock) const -> SerializedType
     currency.set_short_name(Name());
 
     if (display_definition_.has_value()) {
-        for (auto& scale : display_definition_->DisplayScales()) {
+        for (const auto& [i, scale] : display_definition_->DisplayScales()) {
+            const auto prefix = scale.Prefix();
+            const auto suffix = scale.Suffix();
             auto& serialized = *currency.add_scales();
             serialized.set_version(1);
             serialized.set_name(short_name_);
-            serialized.set_prefix(scale.second.Prefix());
-            serialized.set_suffix(scale.second.Suffix());
+            serialized.set_prefix(prefix.data(), prefix.size());
+            serialized.set_suffix(suffix.data(), suffix.size());
             serialized.set_default_minimum_decimals(
-                scale.second.DefaultMinDecimals().value_or(0));
+                scale.DefaultMinDecimals().value_or(0));
             serialized.set_default_maximum_decimals(
-                scale.second.DefaultMaxDecimals().value_or(0));
-            for (auto& ratio : scale.second.Ratios()) {
+                scale.DefaultMaxDecimals().value_or(0));
+            for (auto& ratio : scale.Ratios()) {
                 auto& ratios = *serialized.add_ratios();
                 ratios.set_version(1);
                 ratios.set_base(ratio.first);

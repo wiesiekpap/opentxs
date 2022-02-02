@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -40,21 +41,21 @@ public:
         const OptionalInt minDecimals = std::nullopt,
         const OptionalInt maxDecimals = std::nullopt) const noexcept(false)
         -> UnallocatedCString;
-    auto Import(const UnallocatedCString& formatted) const noexcept(false)
+    auto Import(const std::string_view formatted) const noexcept(false)
         -> Amount;
     auto MaximumDecimals() const noexcept -> std::uint8_t;
-    auto Prefix() const noexcept -> UnallocatedCString;
-    auto Ratios() const noexcept -> const UnallocatedVector<Ratio>&;
-    auto Suffix() const noexcept -> UnallocatedCString;
+    auto Prefix() const noexcept -> std::string_view;
+    auto Ratios() const noexcept -> const Vector<Ratio>&;
+    auto Suffix() const noexcept -> std::string_view;
 
     virtual auto swap(Scale& rhs) noexcept -> void;
 
     OPENTXS_NO_EXPORT Scale(Imp* imp) noexcept;
     Scale() noexcept;
     Scale(
-        const UnallocatedCString& prefix,
-        const UnallocatedCString& suffix,
-        const UnallocatedVector<Ratio>& ratios,
+        std::string_view prefix,
+        std::string_view suffix,
+        Vector<Ratio>&& ratios,
         const OptionalInt defaultMinDecimals = std::nullopt,
         const OptionalInt defaultMaxDecimals = std::nullopt) noexcept;
     Scale(const Scale&) noexcept;

@@ -112,7 +112,7 @@ auto CustodialAccountActivity::DisplayUnit() const noexcept
 {
     auto lock = sLock{shared_lock_};
     const auto& definition = display::GetDefinition(Unit());
-    return definition.ShortName();
+    return UnallocatedCString{definition.ShortName()};
 }
 
 auto CustodialAccountActivity::extract_event(

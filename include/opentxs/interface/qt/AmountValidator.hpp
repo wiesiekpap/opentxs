@@ -44,7 +44,7 @@ public slots:
 
 public:
     // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-    Q_INVOKABLE QString revise(const QString& input, int previousValue) const;
+    Q_INVOKABLE QString revise(QString& input, int previousValue) const;
 
 public:
     int getMaxDecimals() const;
