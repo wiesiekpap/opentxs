@@ -3,11 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"             // IWYU pragma: associated
-#include "1_Internal.hpp"           // IWYU pragma: associated
-#include "api/Legacy.hpp"           // IWYU pragma: associated
-#include "api/context/Context.hpp"  // IWYU pragma: associated
-#include "util/Thread.hpp"          // IWYU pragma: associated
+#include "0_stdafx.hpp"                        // IWYU pragma: associated
+#include "1_Internal.hpp"                      // IWYU pragma: associated
+#include "api/Legacy.hpp"                      // IWYU pragma: associated
+#include "api/context/Context.hpp"             // IWYU pragma: associated
+#include "network/zeromq/context/Context.hpp"  // IWYU pragma: associated
+#include "util/Thread.hpp"                     // IWYU pragma: associated
 
 extern "C" {
 #include <sys/resource.h>
@@ -38,6 +39,11 @@ auto Legacy::get_suffix() noexcept -> fs::path
 
 auto Legacy::use_dot() noexcept -> bool { return false; }
 }  // namespace opentxs::api::imp
+
+namespace opentxs::network::zeromq::implementation
+{
+auto Context::max_sockets() noexcept -> int { return 1024; }
+}  // namespace opentxs::network::zeromq::implementation
 
 // TODO after libc++ finally incorporates this into std, and after Apple ships
 // that version of libc++, then this can be removed

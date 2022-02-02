@@ -43,6 +43,7 @@ public:
     virtual auto Start(BatchID id, StartArgs&& sockets) const noexcept
         -> Thread* = 0;
     virtual auto Stop(BatchID id) const noexcept -> std::future<bool> = 0;
+    virtual auto Thread(BatchID id) const noexcept -> Thread* = 0;
 
     auto Internal() noexcept -> internal::Context& final { return *this; }
 

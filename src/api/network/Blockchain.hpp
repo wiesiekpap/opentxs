@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <stdexcept>
+#include <string_view>
 
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -177,12 +178,9 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     {
         return {};
     }
-    virtual auto SyncEndpoint() const noexcept
-        -> const UnallocatedCString& override
+    virtual auto SyncEndpoint() const noexcept -> std::string_view override
     {
-        static const auto blank = UnallocatedCString{};
-
-        return blank;
+        return {};
     }
     auto UpdatePeer(
         [[maybe_unused]] const opentxs::blockchain::Type,

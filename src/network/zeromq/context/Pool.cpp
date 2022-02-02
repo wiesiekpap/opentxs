@@ -50,7 +50,7 @@ auto Pool::DoModify(SocketID id, ModifyCallback& cb) noexcept -> bool
     }
 }
 
-auto Pool::get(BatchID id) noexcept -> Thread&
+auto Pool::get(BatchID id) noexcept -> context::Thread&
 {
     return threads_.at(id % count_);
 }
@@ -175,6 +175,14 @@ auto Pool::UpdateIndex(BatchID id) noexcept -> void
         auto lock = Lock{batch_lock_};
         batches_.erase(id);
     }
+}
+
+auto Pool::Thread(BatchID id) const noexcept -> zeromq::internal::Thread*
+{
+    auto& thread = static_cast<zeromq::internal::Thread&>(
+        const_cast<Pool*>(this)->get(id));
+
+    return &thread;
 }
 
 Pool::~Pool()

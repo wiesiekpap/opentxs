@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <memory>
+#include <string_view>
 
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/util/Container.hpp"
@@ -25,11 +25,25 @@ class Blockchain;
 
 class Session;
 }  // namespace api
+
+namespace network
+{
+namespace zeromq
+{
+namespace internal
+{
+class Batch;
+class Thread;
+}  // namespace internal
+}  // namespace zeromq
+}  // namespace network
 }  // namespace opentxs
 
 namespace opentxs::api::network::blockchain
 {
-struct SyncClient {
+class SyncClient
+{
+public:
     enum class Task : OTZMQWorkType {
         Shutdown = value(WorkType::Shutdown),
         Ack = value(WorkType::P2PBlockchainSyncAck),
@@ -39,9 +53,10 @@ struct SyncClient {
         Register = OT_ZMQ_INTERNAL_SIGNAL + 0,
         Request = OT_ZMQ_INTERNAL_SIGNAL + 1,
         Processed = OT_ZMQ_INTERNAL_SIGNAL + 2,
+        StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
-    auto Endpoint() const noexcept -> const UnallocatedCString&;
+    auto Endpoint() const noexcept -> std::string_view;
 
     auto Init(const Blockchain& parent) noexcept -> void;
 
@@ -52,9 +67,11 @@ struct SyncClient {
 private:
     struct Imp;
 
-    std::unique_ptr<Imp> imp_p_;
-    Imp& imp_;
+    Imp* imp_;
 
+    SyncClient(
+        const api::Session& api,
+        opentxs::network::zeromq::internal::Batch& batch) noexcept;
     SyncClient() = delete;
     SyncClient(const SyncClient&) = delete;
     SyncClient(SyncClient&&) = delete;

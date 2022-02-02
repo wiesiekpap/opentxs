@@ -12,6 +12,7 @@
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Pool.hpp"
+#include "internal/network/zeromq/Thread.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "network/zeromq/context/Thread.hpp"
 #include "opentxs/Types.hpp"
@@ -66,6 +67,7 @@ public:
     auto Shutdown() noexcept -> void;
     auto Start(BatchID id, StartArgs&& sockets) noexcept
         -> zeromq::internal::Thread*;
+    auto Thread(BatchID id) const noexcept -> zeromq::internal::Thread* final;
     auto Stop(BatchID id) noexcept -> std::future<bool>;
     auto UpdateIndex(BatchID id, StartArgs&& sockets) noexcept -> void final;
     auto UpdateIndex(BatchID id) noexcept -> void final;
@@ -80,14 +82,14 @@ private:
     mutable std::mutex index_lock_;
     mutable std::mutex batch_lock_;
     Gatekeeper gate_;
-    robin_hood::unordered_node_map<unsigned int, Thread> threads_;
+    robin_hood::unordered_node_map<unsigned int, context::Thread> threads_;
     robin_hood::unordered_node_map<BatchID, internal::Batch> batches_;
     robin_hood::unordered_node_map<BatchID, UnallocatedVector<SocketID>>
         batch_index_;
     robin_hood::unordered_node_map<SocketID, std::pair<BatchID, socket::Raw*>>
         socket_index_;
 
-    auto get(BatchID id) noexcept -> Thread&;
+    auto get(BatchID id) noexcept -> context::Thread&;
 
     Pool() = delete;
     Pool(const Pool&) = delete;

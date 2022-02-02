@@ -13,6 +13,10 @@ if(OT_BLOCKCHAIN_EXPORT)
       "SyncClient.cpp"
       "SyncClient.hpp"
   )
+  target_include_directories(
+    opentxs-common SYSTEM
+    PRIVATE "${opentxs_SOURCE_DIR}/deps/cs_libguarded/src"
+  )
 else()
   target_sources(opentxs-common PRIVATE "Null.cpp")
 endif()

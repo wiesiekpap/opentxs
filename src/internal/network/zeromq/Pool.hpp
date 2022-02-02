@@ -11,6 +11,11 @@ namespace network
 {
 namespace zeromq
 {
+namespace internal
+{
+class Thread;
+}  // namespace internal
+
 class Context;
 }  // namespace zeromq
 }  // namespace network
@@ -22,6 +27,8 @@ class Pool
 {
 public:
     virtual auto Parent() const noexcept -> const zeromq::Context& = 0;
+    virtual auto Thread(BatchID id) const noexcept
+        -> zeromq::internal::Thread* = 0;
 
     virtual auto DoModify(SocketID id, ModifyCallback& cb) noexcept -> bool = 0;
     virtual auto UpdateIndex(BatchID id, StartArgs&& sockets) noexcept

@@ -7,8 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Allocator.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::network::zeromq

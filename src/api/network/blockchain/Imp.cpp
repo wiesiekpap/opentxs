@@ -528,7 +528,7 @@ auto BlockchainImp::stop(const Lock& lock, const Chain type) const noexcept
     return true;
 }
 
-auto BlockchainImp::SyncEndpoint() const noexcept -> const UnallocatedCString&
+auto BlockchainImp::SyncEndpoint() const noexcept -> std::string_view
 {
     if (sync_client_) {
 

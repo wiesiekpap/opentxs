@@ -57,8 +57,10 @@ public:
     virtual auto Send(Message&& msg) noexcept -> bool { return {}; }
     virtual auto SetIncomingHWM(int value) noexcept -> bool { return {}; }
     virtual auto SetLinger(int value) noexcept -> bool { return {}; }
+    virtual auto SetMonitor(const char*, int) noexcept -> bool { return {}; }
     virtual auto SetOutgoingHWM(int value) noexcept -> bool { return {}; }
     virtual auto SetPrivateKey(ReadView) noexcept -> bool { return {}; }
+    virtual auto SetRouterHandover(bool value) noexcept -> bool { return {}; }
     virtual auto SetRoutingID(ReadView) noexcept -> bool { return {}; }
     virtual auto SetZAPDomain(ReadView) noexcept -> bool { return {}; }
     virtual auto Stop() noexcept -> void {}
@@ -94,8 +96,10 @@ public:
     auto Send(Message&& msg) noexcept -> bool final;
     auto SetIncomingHWM(int value) noexcept -> bool final;
     auto SetLinger(int value) noexcept -> bool final;
+    auto SetMonitor(const char* endpoint, int events) noexcept -> bool final;
     auto SetOutgoingHWM(int value) noexcept -> bool final;
     auto SetPrivateKey(ReadView key) noexcept -> bool final;
+    auto SetRouterHandover(bool value) noexcept -> bool final;
     auto SetRoutingID(ReadView key) noexcept -> bool final;
     auto SetZAPDomain(ReadView domain) noexcept -> bool final;
     auto Stop() noexcept -> void final;

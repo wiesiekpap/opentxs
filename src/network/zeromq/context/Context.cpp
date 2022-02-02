@@ -64,18 +64,7 @@ Context::Context() noexcept
     assert(nullptr != context_);
     assert(1 == ::zmq_has("curve"));
 
-    constexpr auto sockets
-    {
-#if defined _WIN32
-        10240
-#elif defined __APPLE__
-        1024
-#else
-        16384
-#endif
-    };
-    [[maybe_unused]] const auto init =
-        ::zmq_ctx_set(context_, ZMQ_MAX_SOCKETS, sockets);
+    const auto init = ::zmq_ctx_set(context_, ZMQ_MAX_SOCKETS, max_sockets());
 
     assert(0 == init);
 }
@@ -215,6 +204,11 @@ auto Context::SubscribeSocket(const ListenCallback& callback) const noexcept
     -> OTZMQSubscribeSocket
 {
     return OTZMQSubscribeSocket{factory::SubscribeSocket(*this, callback)};
+}
+
+auto Context::Thread(BatchID id) const noexcept -> internal::Thread*
+{
+    return pool_.Thread(id);
 }
 
 Context::~Context()

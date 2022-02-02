@@ -12,7 +12,7 @@ jobs:
         include:
           - binding: all
             platform: ubuntu-20.04
-            docker: v10
+            docker: 11
     runs-on: ${{ matrix.platform }}
     steps:
     - uses: actions/checkout@v2.3.4
