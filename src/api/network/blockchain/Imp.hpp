@@ -10,6 +10,7 @@
 #include <future>
 #include <memory>
 #include <mutex>
+#include <string_view>
 #include <thread>
 #include <thread>
 #include <tuple>
@@ -43,7 +44,7 @@ namespace network
 {
 namespace blockchain
 {
-struct SyncClient;
+class SyncClient;
 }  // namespace blockchain
 
 class Blockchain;
@@ -157,7 +158,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         const UnallocatedCString& publicUpdateEndpoint) const noexcept
         -> bool final;
     auto Stop(const Imp::Chain type) const noexcept -> bool final;
-    auto SyncEndpoint() const noexcept -> const UnallocatedCString& final;
+    auto SyncEndpoint() const noexcept -> std::string_view final;
     auto UpdatePeer(
         const opentxs::blockchain::Type chain,
         const UnallocatedCString& address) const noexcept -> void final;

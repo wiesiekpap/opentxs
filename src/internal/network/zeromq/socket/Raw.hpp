@@ -47,8 +47,10 @@ public:
     auto Send(Message&& msg) noexcept -> bool;
     auto SetIncomingHWM(int value) noexcept -> bool;
     auto SetLinger(int value) noexcept -> bool;
+    auto SetMonitor(const char* endpoint, int events) noexcept -> bool;
     auto SetOutgoingHWM(int value) noexcept -> bool;
     auto SetPrivateKey(ReadView key) noexcept -> bool;
+    auto SetRouterHandover(bool value) noexcept -> bool;
     auto SetRoutingID(ReadView id) noexcept -> bool;
     auto SetZAPDomain(ReadView domain) noexcept -> bool;
     auto Stop() noexcept -> void;

@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <string_view>
+
 #include "opentxs/network/p2p/State.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -74,7 +76,7 @@ public:
         const opentxs::blockchain::block::Height target) const noexcept
         -> void = 0;
     virtual auto RestoreNetworks() const noexcept -> void = 0;
-    virtual auto SyncEndpoint() const noexcept -> const UnallocatedCString& = 0;
+    virtual auto SyncEndpoint() const noexcept -> std::string_view = 0;
     virtual auto UpdatePeer(
         const opentxs::blockchain::Type chain,
         const UnallocatedCString& address) const noexcept -> void = 0;

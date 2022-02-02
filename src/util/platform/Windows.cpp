@@ -3,13 +3,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"               // IWYU pragma: associated
-#include "1_Internal.hpp"             // IWYU pragma: associated
-#include "api/Legacy.hpp"             // IWYU pragma: associated
-#include "api/context/Context.hpp"    // IWYU pragma: associated
-#include "core/String.hpp"            // IWYU pragma: associated
-#include "internal/util/Signals.hpp"  // IWYU pragma: associated
-#include "util/Thread.hpp"            // IWYU pragma: associated
+#include "0_stdafx.hpp"                        // IWYU pragma: associated
+#include "1_Internal.hpp"                      // IWYU pragma: associated
+#include "api/Legacy.hpp"                      // IWYU pragma: associated
+#include "api/context/Context.hpp"             // IWYU pragma: associated
+#include "core/String.hpp"                     // IWYU pragma: associated
+#include "internal/util/Signals.hpp"           // IWYU pragma: associated
+#include "network/zeromq/context/Context.hpp"  // IWYU pragma: associated
+#include "util/Thread.hpp"                     // IWYU pragma: associated
 
 #include <Windows.h>  // IWYU pragma: associated
 
@@ -171,3 +172,8 @@ auto Legacy::prepend() noexcept -> UnallocatedCString { return {}; }
 
 auto Legacy::use_dot() noexcept -> bool { return false; }
 }  // namespace opentxs::api::imp
+
+namespace opentxs::network::zeromq::implementation
+{
+auto Context::max_sockets() noexcept -> int { return 10240; }
+}  // namespace opentxs::network::zeromq::implementation

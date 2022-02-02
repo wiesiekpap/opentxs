@@ -77,9 +77,9 @@ struct SyncClient::Imp {
 
             OT_ASSERT(0 == rc);
 
-            const auto& endpoint =
-                api_.Network().Blockchain().Internal().SyncEndpoint();
-            rc = ::zmq_connect(out.get(), endpoint.c_str());
+            const auto endpoint =
+                CString{api_.Network().Blockchain().Internal().SyncEndpoint()};
+            rc = ::zmq_connect(out.get(), endpoint.data());
 
             OT_ASSERT(0 == rc);
 

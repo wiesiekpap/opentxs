@@ -115,6 +115,7 @@ public:
     auto Stop(BatchID id) const noexcept -> std::future<bool> final;
     auto SubscribeSocket(const ListenCallback& callback) const noexcept
         -> OTZMQSubscribeSocket final;
+    auto Thread(BatchID id) const noexcept -> internal::Thread* final;
 
     Context() noexcept;
 
@@ -123,6 +124,8 @@ public:
 private:
     void* context_;
     mutable context::Pool pool_;
+
+    static auto max_sockets() noexcept -> int;
 
     Context(const Context&) = delete;
     Context(Context&&) = delete;

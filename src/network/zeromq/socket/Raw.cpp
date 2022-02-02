@@ -216,6 +216,20 @@ auto Raw::SetIncomingHWM(int value) noexcept -> bool
     return true;
 }
 
+auto Raw::SetMonitor(const char* endpoint, int events) noexcept -> bool
+{
+    const auto rc = zmq_socket_monitor(Native(), endpoint, events);
+
+    if (0 != rc) {
+        std::cerr << (OT_PRETTY_CLASS()) << "Failed zmq_socket_monitor\n";
+        std::cerr << zmq_strerror(zmq_errno()) << '\n';
+
+        return false;
+    }
+
+    return true;
+}
+
 auto Raw::SetLinger(int value) noexcept -> bool
 {
     const auto rc = zmq_setsockopt(Native(), ZMQ_LINGER, &value, sizeof(value));
@@ -268,6 +282,22 @@ auto Raw::SetPrivateKey(ReadView key) noexcept -> bool
     if (0 != rc) {
         std::cerr << (OT_PRETTY_CLASS()) << "Failed to set private key"
                   << std::endl;
+
+        return false;
+    }
+
+    return true;
+}
+
+auto Raw::SetRouterHandover(bool value) noexcept -> bool
+{
+    const auto rc =
+        zmq_setsockopt(Native(), ZMQ_ROUTER_HANDOVER, &value, sizeof(value));
+
+    if (0 != rc) {
+        std::cerr << (OT_PRETTY_CLASS())
+                  << "Failed to set ZMQ_ROUTER_HANDOVER\n";
+        std::cerr << zmq_strerror(zmq_errno()) << '\n';
 
         return false;
     }
@@ -413,6 +443,11 @@ auto Raw::SetLinger(int value) noexcept -> bool
     return imp_->SetLinger(value);
 }
 
+auto Raw::SetMonitor(const char* endpoint, int events) noexcept -> bool
+{
+    return imp_->SetMonitor(endpoint, events);
+}
+
 auto Raw::SetOutgoingHWM(int value) noexcept -> bool
 {
     return imp_->SetOutgoingHWM(value);
@@ -421,6 +456,11 @@ auto Raw::SetOutgoingHWM(int value) noexcept -> bool
 auto Raw::SetPrivateKey(ReadView key) noexcept -> bool
 {
     return imp_->SetPrivateKey(key);
+}
+
+auto Raw::SetRouterHandover(bool value) noexcept -> bool
+{
+    return imp_->SetRouterHandover(value);
 }
 
 auto Raw::SetRoutingID(ReadView id) noexcept -> bool

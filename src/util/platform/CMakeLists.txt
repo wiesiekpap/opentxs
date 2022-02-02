@@ -42,3 +42,6 @@ elseif(UNIX)
     endif()
   endif()
 endif()
+
+target_link_libraries(opentxs-common PRIVATE "${OT_ZMQ_TARGET}")
+target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")
