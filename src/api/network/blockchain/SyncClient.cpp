@@ -25,6 +25,7 @@
 
 #include "Proto.tpp"
 #include "core/Worker.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
@@ -32,6 +33,7 @@
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Timer.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -129,7 +131,7 @@ struct SyncClient::Imp {
         }())
         , internal_router_([&]() -> auto& {
             auto& out = batch_.sockets_.at(3);
-            auto rc = out.Connect(endpoint_.c_str());
+            auto rc = out.Bind(endpoint_.c_str());
 
             OT_ASSERT(rc);
 
@@ -181,7 +183,7 @@ struct SyncClient::Imp {
 
             return socket;
         }())
-        , timer_()
+        , timer_(api_.Network().Asio().Internal().GetTimer())
         , servers_()
         , clients_()
         , providers_()
