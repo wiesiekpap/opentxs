@@ -33,11 +33,11 @@ namespace opentxs::display
 class Scale::Imp
 {
 public:
-    const UnallocatedCString prefix_;
-    const UnallocatedCString suffix_;
+    const CString prefix_;
+    const CString suffix_;
     const OptionalInt default_min_;
     const OptionalInt default_max_;
-    const UnallocatedVector<Ratio> ratios_;
+    const Vector<Ratio> ratios_;
 
     auto format(
         const Amount& amount,
@@ -115,7 +115,7 @@ public:
 
         return output.str();
     }
-    auto Import(const UnallocatedCString& formatted) const noexcept(false)
+    auto Import(const std::string_view formatted) const noexcept(false)
         -> Amount
     {
         try {
@@ -146,18 +146,18 @@ public:
         , absolute_max_{}
     {
     }
-    Imp(const UnallocatedCString& prefix,
-        const UnallocatedCString& suffix,
-        const UnallocatedVector<Ratio>& ratios,
+    Imp(std::string_view prefix,
+        std::string_view suffix,
+        Vector<Ratio>&& ratios,
         const OptionalInt defaultMinDecimals,
         const OptionalInt defaultMaxDecimals) noexcept
         : prefix_(prefix)
         , suffix_(suffix)
         , default_min_(defaultMinDecimals)
         , default_max_(defaultMaxDecimals)
-        , ratios_(ratios)
-        , incoming_(calculate_incoming_ratio(ratios))
-        , outgoing_(calculate_outgoing_ratio(ratios))
+        , ratios_(std::move(ratios))
+        , incoming_(calculate_incoming_ratio(ratios_))
+        , outgoing_(calculate_outgoing_ratio(ratios_))
         , locale_()
         , absolute_max_(20 + bmp::log10(incoming_))
     {
@@ -188,8 +188,8 @@ private:
     const int absolute_max_;
 
     // ratio for converting display string to Amount
-    static auto calculate_incoming_ratio(
-        const UnallocatedVector<Ratio>& ratios) noexcept -> amount::Float
+    static auto calculate_incoming_ratio(const Vector<Ratio>& ratios) noexcept
+        -> amount::Float
     {
         auto output = amount::Float{1};
 
@@ -200,8 +200,8 @@ private:
         return output;
     }
     // ratio for converting Amount to display string
-    static auto calculate_outgoing_ratio(
-        const UnallocatedVector<Ratio>& ratios) noexcept -> amount::Float
+    static auto calculate_outgoing_ratio(const Vector<Ratio>& ratios) noexcept
+        -> amount::Float
     {
         auto output = amount::Float{1};
 
@@ -235,8 +235,7 @@ private:
         return output;
     }
 
-    auto strip(const UnallocatedCString& in) const noexcept
-        -> UnallocatedCString
+    auto strip(const std::string_view in) const noexcept -> UnallocatedCString
     {
         const auto decimal = locale_.decimal_point();
         auto output = UnallocatedCString{};

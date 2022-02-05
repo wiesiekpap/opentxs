@@ -77,7 +77,7 @@ TEST_F(Test_AmountValidator, decimals)
     const auto unit = IssueUnit(
         server,
         issuer,
-        "decimals-" + def.ShortName(),
+        "decimals-" + ot::UnallocatedCString{def.ShortName()},
         "Test",
         ot::UnitType::Regtest,
         def);
@@ -90,12 +90,13 @@ TEST_F(Test_AmountValidator, decimals)
             registered_accounts_[issuer.nym_id_->str()].back()));
 
     auto& amountValidator = *activity->getAmountValidator();
+    amountValidator.setScale(0);
 
     auto inputString = QString{"1.234567890"};
     auto pos = 0;
     auto validated = amountValidator.validate(inputString, pos);
 
-    EXPECT_EQ(validated, QValidator::State::Acceptable);
+    EXPECT_EQ(validated, QValidator::State::Intermediate);
     EXPECT_EQ(inputString.toStdString(), "1.234\u202F567\u202F89 units");
 
     inputString = QString{"1.234567890"};
@@ -105,7 +106,7 @@ TEST_F(Test_AmountValidator, decimals)
 
     validated = amountValidator.validate(inputString, pos);
 
-    EXPECT_EQ(validated, QValidator::State::Acceptable);
+    EXPECT_EQ(validated, QValidator::State::Intermediate);
     EXPECT_EQ(inputString.toStdString(), "1.234\u202F6 units");
 
     inputString = QString{"1.2"};
@@ -117,6 +118,15 @@ TEST_F(Test_AmountValidator, decimals)
 
     EXPECT_EQ(validated, QValidator::State::Acceptable);
     EXPECT_EQ(inputString.toStdString(), "1.200 units");
+
+    inputString = QString{"1"};
+    amountValidator.setMaxDecimals(8);
+    amountValidator.setMinDecimals(5);
+
+    validated = amountValidator.validate(inputString, pos);
+
+    EXPECT_EQ(validated, QValidator::State::Acceptable);
+    EXPECT_EQ(inputString.toStdString(), "1.000\u202F00 units");
 }
 
 TEST_F(Test_AmountValidator, fixup)
@@ -130,7 +140,7 @@ TEST_F(Test_AmountValidator, fixup)
     const auto unit = IssueUnit(
         server,
         issuer,
-        "fixup-" + def.ShortName(),
+        "fixup-" + ot::UnallocatedCString{def.ShortName()},
         "Test",
         ot::UnitType::Regtest,
         def);
@@ -162,7 +172,7 @@ TEST_F(Test_AmountValidator, revise)
     const auto unit = IssueUnit(
         server,
         issuer,
-        "revise-" + def.ShortName(),
+        "revise-" + ot::UnallocatedCString{def.ShortName()},
         "Test",
         ot::UnitType::Bch,
         def);
@@ -175,12 +185,13 @@ TEST_F(Test_AmountValidator, revise)
             registered_accounts_[issuer.nym_id_->str()].back()));
 
     auto& amountValidator = *activity->getAmountValidator();
+    amountValidator.setScale(0);
 
     auto inputString = QString{"1.234567890"};
     auto pos = 0;
     auto validated = amountValidator.validate(inputString, pos);
 
-    EXPECT_EQ(validated, QValidator::State::Acceptable);
+    EXPECT_EQ(validated, QValidator::State::Intermediate);
     EXPECT_EQ(inputString.toStdString(), "1.234\u202F567\u202F89 BCH");
 
     amountValidator.setScale(1);
@@ -215,7 +226,7 @@ TEST_F(Test_AmountValidator, scale)
     const auto unit = IssueUnit(
         server,
         issuer,
-        "scale-" + def.ShortName(),
+        "scale-" + ot::UnallocatedCString{def.ShortName()},
         "Test",
         ot::UnitType::Bch,
         def);
@@ -228,12 +239,13 @@ TEST_F(Test_AmountValidator, scale)
             registered_accounts_[issuer.nym_id_->str()].back()));
 
     auto& amountValidator = *activity->getAmountValidator();
+    amountValidator.setScale(0);
 
     auto inputString = QString{"1.234567890"};
     auto pos = 0;
     auto validated = amountValidator.validate(inputString, pos);
 
-    EXPECT_EQ(validated, QValidator::State::Acceptable);
+    EXPECT_EQ(validated, QValidator::State::Intermediate);
     EXPECT_EQ(inputString.toStdString(), "1.234\u202F567\u202F89 BCH");
 
     inputString = QString{"1.234567890"};
@@ -243,7 +255,7 @@ TEST_F(Test_AmountValidator, scale)
 
     validated = amountValidator.validate(inputString, pos);
 
-    EXPECT_EQ(validated, QValidator::State::Acceptable);
+    EXPECT_EQ(validated, QValidator::State::Intermediate);
     EXPECT_EQ(inputString.toStdString(), "1.234\u202F57 mBCH");
 
     inputString = QString{"1.234567890"};
@@ -253,7 +265,7 @@ TEST_F(Test_AmountValidator, scale)
 
     validated = amountValidator.validate(inputString, pos);
 
-    EXPECT_EQ(validated, QValidator::State::Acceptable);
+    EXPECT_EQ(validated, QValidator::State::Intermediate);
     EXPECT_EQ(inputString.toStdString(), "1.23 bits");
 
     inputString = QString{"1.234567890"};
@@ -263,7 +275,7 @@ TEST_F(Test_AmountValidator, scale)
 
     validated = amountValidator.validate(inputString, pos);
 
-    EXPECT_EQ(validated, QValidator::State::Acceptable);
+    EXPECT_EQ(validated, QValidator::State::Intermediate);
     EXPECT_EQ(inputString.toStdString(), "1.23 μBCH");
 
     inputString = QString{"1.234567890"};
@@ -273,7 +285,7 @@ TEST_F(Test_AmountValidator, scale)
 
     validated = amountValidator.validate(inputString, pos);
 
-    EXPECT_EQ(validated, QValidator::State::Acceptable);
+    EXPECT_EQ(validated, QValidator::State::Intermediate);
     EXPECT_EQ(inputString.toStdString(), "1 satoshis");
 }
 
@@ -396,7 +408,7 @@ TEST_F(Test_AmountValidator, validate)
         const auto unit = IssueUnit(
             server,
             issuer,
-            "validate-" + def.ShortName(),
+            "validate-" + ot::UnallocatedCString{def.ShortName()},
             "Test",
             chain.unittype_,
             def);

@@ -25,7 +25,7 @@ namespace opentxs::display
 {
 using DefinitionMap = robin_hood::unordered_flat_map<UnitType, Definition>;
 
-Definition::Definition(UnallocatedCString&& shortname, Scales&& scales) noexcept
+Definition::Definition(CString&& shortname, Scales&& scales) noexcept
     : imp_(std::make_unique<Imp>(std::move(shortname), std::move(scales))
                .release())
 {
@@ -90,13 +90,13 @@ auto Definition::GetScales() const noexcept -> const Map&
     return imp_->cached_.value();
 }
 
-auto Definition::Import(const UnallocatedCString& formatted, const Index scale)
+auto Definition::Import(const std::string_view formatted, const Index scale)
     const noexcept(false) -> Amount
 {
     return imp_->Import(formatted, scale);
 }
 
-auto Definition::ShortName() const noexcept -> UnallocatedCString
+auto Definition::ShortName() const noexcept -> std::string_view
 {
     return imp_->short_name_;
 }

@@ -10,6 +10,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <optional>
+#include <string_view>
 
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/display/Scale.hpp"
@@ -26,10 +27,10 @@ class Definition
 {
 public:
     using Index = unsigned int;
-    using Name = UnallocatedCString;
+    using Name = CString;
     using NamedScale = std::pair<Name, Scale>;
-    using Map = UnallocatedMap<Index, Name>;
-    using Scales = UnallocatedVector<NamedScale>;
+    using Map = opentxs::Map<Index, Name>;
+    using Scales = Vector<NamedScale>;
     using OptionalInt = Scale::OptionalInt;
 
     auto DisplayScales() const noexcept -> const Scales&;
@@ -40,13 +41,13 @@ public:
         const OptionalInt maxDecimals = std::nullopt) const noexcept(false)
         -> UnallocatedCString;
     auto GetScales() const noexcept -> const Map&;
-    auto Import(const UnallocatedCString& formatted, const Index scale = 0)
-        const noexcept(false) -> Amount;
-    auto ShortName() const noexcept -> UnallocatedCString;
+    auto Import(const std::string_view formatted, const Index scale = 0) const
+        noexcept(false) -> Amount;
+    auto ShortName() const noexcept -> std::string_view;
 
     virtual auto swap(Definition& rhs) noexcept -> void;
 
-    Definition(UnallocatedCString&& shortname, Scales&& scales) noexcept;
+    Definition(CString&& shortname, Scales&& scales) noexcept;
     Definition() noexcept;
     Definition(const Definition&) noexcept;
     Definition(Definition&&) noexcept;

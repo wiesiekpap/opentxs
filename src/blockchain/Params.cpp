@@ -387,7 +387,8 @@ auto SupportedChains() noexcept -> const UnallocatedSet<Type>&
 
 auto TickerSymbol(const Type type) noexcept -> UnallocatedCString
 {
-    return display::GetDefinition(BlockchainToUnit(type)).ShortName();
+    return UnallocatedCString{
+        display::GetDefinition(BlockchainToUnit(type)).ShortName()};
 }
 
 auto TransactionHash(

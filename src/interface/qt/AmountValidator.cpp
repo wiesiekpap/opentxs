@@ -44,8 +44,7 @@ auto AmountValidator::getMinDecimals() const -> int
 
 auto AmountValidator::getScale() const -> int { return imp_->getScale(); }
 
-auto AmountValidator::revise(const QString& input, int previous) const
-    -> QString
+auto AmountValidator::revise(QString& input, int previous) const -> QString
 {
     return imp_->revise(input, previous);
 }
