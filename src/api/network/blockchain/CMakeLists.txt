@@ -4,28 +4,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 if(OT_BLOCKCHAIN_EXPORT)
+  add_subdirectory(syncclientrouter)
+
   target_sources(
     opentxs-common
     PRIVATE
       "Factory.cpp"
       "Imp.cpp"
       "Imp.hpp"
-      "SyncClient.cpp"
-      "SyncClient.hpp"
-  )
-  target_include_directories(
-    opentxs-common SYSTEM
-    PRIVATE "${opentxs_SOURCE_DIR}/deps/cs_libguarded/src"
   )
 else()
   target_sources(opentxs-common PRIVATE "Null.cpp")
 endif()
-
-target_link_libraries(opentxs-common PRIVATE "${OT_ZMQ_TARGET}")
-target_link_libraries(
-  opentxs
-  PUBLIC
-    "${OT_ZMQ_TARGET}"
-    Boost::system
-    Boost::thread
-)

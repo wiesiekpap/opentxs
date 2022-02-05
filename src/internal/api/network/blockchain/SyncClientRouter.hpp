@@ -41,15 +41,17 @@ class Thread;
 
 namespace opentxs::api::network::blockchain
 {
-class SyncClient
+class SyncClientRouter
 {
 public:
     enum class Task : OTZMQWorkType {
         Shutdown = value(WorkType::Shutdown),
+        BlockHeader = value(WorkType::BlockchainNewHeader),
+        Reorg = value(WorkType::BlockchainReorg),
+        Server = value(WorkType::SyncServerUpdated),
         Ack = value(WorkType::P2PBlockchainSyncAck),
         Reply = value(WorkType::P2PBlockchainSyncReply),
         Push = value(WorkType::P2PBlockchainNewBlock),
-        Server = value(WorkType::SyncServerUpdated),
         Register = OT_ZMQ_INTERNAL_SIGNAL + 0,
         Request = OT_ZMQ_INTERNAL_SIGNAL + 1,
         Processed = OT_ZMQ_INTERNAL_SIGNAL + 2,
@@ -60,22 +62,22 @@ public:
 
     auto Init(const Blockchain& parent) noexcept -> void;
 
-    SyncClient(const api::Session& api) noexcept;
+    SyncClientRouter(const api::Session& api) noexcept;
 
-    ~SyncClient();
+    ~SyncClientRouter();
 
 private:
-    struct Imp;
+    class Imp;
 
     Imp* imp_;
 
-    SyncClient(
+    SyncClientRouter(
         const api::Session& api,
         opentxs::network::zeromq::internal::Batch& batch) noexcept;
-    SyncClient() = delete;
-    SyncClient(const SyncClient&) = delete;
-    SyncClient(SyncClient&&) = delete;
-    auto operator=(const SyncClient&) -> SyncClient& = delete;
-    auto operator=(SyncClient&&) -> SyncClient& = delete;
+    SyncClientRouter() = delete;
+    SyncClientRouter(const SyncClientRouter&) = delete;
+    SyncClientRouter(SyncClientRouter&&) = delete;
+    auto operator=(const SyncClientRouter&) -> SyncClientRouter& = delete;
+    auto operator=(SyncClientRouter&&) -> SyncClientRouter& = delete;
 };
 }  // namespace opentxs::api::network::blockchain

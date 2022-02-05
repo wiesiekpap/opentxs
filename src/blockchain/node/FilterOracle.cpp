@@ -521,6 +521,7 @@ auto FilterOracle::ProcessSyncData(
     auto cache = UnallocatedVector<SyncClientFilterData>{};
     const auto& blocks = data.Blocks();
     const auto incoming = blocks.front().Height();
+    const auto finalFilter = data.LastPosition(api_);
     const auto filterType = blocks.front().FilterType();
     const auto current = database_.FilterTip(filterType);
 
@@ -532,7 +533,31 @@ auto FilterOracle::ProcessSyncData(
         return;
     }
 
-    if (incoming > (current.first + 1)) { return; }
+    LogVerbose()(OT_PRETTY_CLASS())("current ")(DisplayString(chain_))(
+        " filter tip height is ")(current.first)
+        .Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("incoming ")(DisplayString(chain_))(
+        " sync data provides heights ")(incoming)(" to ")(finalFilter.first)
+        .Flush();
+
+    if (incoming > (current.first + 1)) {
+        LogVerbose()(OT_PRETTY_CLASS())("cannot connect ")(
+            DisplayString(chain_))(" sync data to current tip")
+            .Flush();
+
+        return;
+    }
+
+    const auto redundant = (finalFilter.first < current.first) ||
+                           (finalFilter.second == current.second);
+
+    if (redundant) {
+        LogVerbose()(OT_PRETTY_CLASS())("ignoring redundant ")(
+            DisplayString(chain_))(" sync data")
+            .Flush();
+
+        return;
+    }
 
     const auto count{std::min<std::size_t>(hashes.size(), blocks.size())};
 

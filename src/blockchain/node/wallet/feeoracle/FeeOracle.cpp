@@ -182,13 +182,12 @@ auto FeeOracle::Imp::state_machine() noexcept -> bool
                               auto& value) mutable {
         if (0 < average) {
             static const auto scale = display::Scale{"", "", {{10, 0}}, 0, 0};
-            LogConsole()("Updated ")(DisplayString(chain_))(
-                " fee estimate to ")(scale.Format(average))(
-                " sat / 1000 vBytes")
+            LogDetail()("Updated ")(DisplayString(chain_))(" fee estimate to ")(
+                scale.Format(average))(" sat / 1000 vBytes")
                 .Flush();
             value.emplace(std::move(average));
         } else {
-            LogConsole()("Fee estimate for ")(DisplayString(chain_))(
+            LogDetail()("Fee estimate for ")(DisplayString(chain_))(
                 " not available")
                 .Flush();
             value = std::nullopt;

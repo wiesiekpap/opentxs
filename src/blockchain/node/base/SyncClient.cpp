@@ -18,9 +18,9 @@
 #include <thread>
 #include <utility>
 
-#include "api/network/blockchain/SyncClient.hpp"
 #include "core/Worker.hpp"
 #include "internal/api/network/Blockchain.hpp"
+#include "internal/api/network/blockchain/SyncClientRouter.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
@@ -142,7 +142,7 @@ struct SyncClient::Imp {
 private:
     using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
     using OTSocket = network::zeromq::socket::implementation::Socket;
-    using Task = api::network::blockchain::SyncClient::Task;
+    using Task = api::network::blockchain::SyncClientRouter::Task;
 
     static constexpr int linger_{0};
     static constexpr std::size_t limit_{32_MiB};
