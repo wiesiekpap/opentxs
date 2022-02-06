@@ -12,7 +12,6 @@
 #include <iterator>
 #include <utility>
 
-#include "api/network/blockchain/SyncClient.hpp"
 #include "blockchain/database/common/Database.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/Params.hpp"
@@ -120,7 +119,7 @@ BlockchainImp::BlockchainImp(
     , lock_()
     , config_()
     , networks_()
-    , sync_client_()
+    , sync_client_(std::nullopt)
     , sync_server_(api_, zmq)
     , init_promise_()
     , init_(init_promise_.get_future())
@@ -306,13 +305,9 @@ auto BlockchainImp::Init(
 
         return out;
     }();
-    sync_client_ = [&]() -> std::unique_ptr<blockchain::SyncClient> {
-        if (base_config_->use_sync_server_) {
-            return std::make_unique<blockchain::SyncClient>(api_);
-        }
 
-        return {};
-    }();
+    if (base_config_->use_sync_server_) { sync_client_.emplace(api_); }
+
     init_promise_.set_value();
     static const auto defaultServers = UnallocatedVector<UnallocatedCString>{
         "tcp://metier1.opentransactions.org:8814",

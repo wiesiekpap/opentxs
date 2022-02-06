@@ -10,6 +10,7 @@
 #include <future>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string_view>
 #include <thread>
 #include <thread>
@@ -18,6 +19,7 @@
 #include "api/network/Blockchain.hpp"
 #include "blockchain/database/common/Database.hpp"
 #include "internal/api/network/Blockchain.hpp"
+#include "internal/api/network/blockchain/SyncClientRouter.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "network/p2p/server/Server.hpp"
 #include "opentxs/Types.hpp"
@@ -44,7 +46,7 @@ namespace network
 {
 namespace blockchain
 {
-class SyncClient;
+class SyncClientRouter;
 }  // namespace blockchain
 
 class Blockchain;
@@ -198,7 +200,7 @@ private:
     mutable std::mutex lock_;
     mutable UnallocatedMap<Chain, Config> config_;
     mutable UnallocatedMap<Chain, pNode> networks_;
-    std::unique_ptr<blockchain::SyncClient> sync_client_;
+    mutable std::optional<blockchain::SyncClientRouter> sync_client_;
     mutable opentxs::network::p2p::Server sync_server_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
