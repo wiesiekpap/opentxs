@@ -4,16 +4,24 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
+// IWYU pragma: no_include "opentxs/network/zeromq/socket/SocketType.hpp"
 
 #pragma once
 
 #include <cs_deferred_guarded.h>
+#include <atomic>
+#include <cstddef>
 #include <random>
+#include <shared_mutex>
 #include <string_view>
 
 #include "api/network/blockchain/syncclientrouter/Server.hpp"
 #include "internal/api/network/blockchain/SyncClientRouter.hpp"
+#include "internal/network/zeromq/socket/Raw.hpp"
+#include "internal/util/Timer.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/Types.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
@@ -39,6 +47,14 @@ namespace internal
 class Batch;
 class Thread;
 }  // namespace internal
+
+namespace socket
+{
+class Raw;
+}  // namespace socket
+
+class ListenCallback;
+class Message;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
