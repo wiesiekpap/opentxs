@@ -549,7 +549,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  "seed.bitcoin.sprovoost.nl",
                  "dnsseed.emzy.de",
              },
-             100000,
+             25000,
              100,
              {
                  {Style::P2PKH, true},
@@ -604,7 +604,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  "testnet-seed.bluematt.me",
                  "testnet-seed.bitcoin.schildbach.de",
              },
-             3113,
+             4000,
              100,
              {
                  {Style::P2PKH, true},
@@ -828,7 +828,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  "dnsseed.litecoinpool.org",
                  "dnsseed.koin-project.com",
              },
-             25000,
+             2000,
              100,
              {
                  {Style::P2PKH, true},
@@ -881,7 +881,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  "seed-b.litecoin.loshan.co.uk",
                  "dnsseed-testnet.thrasher.io",
              },
-             25000,
+             2000,
              100,
              {
                  {Style::P2PKH, true},
