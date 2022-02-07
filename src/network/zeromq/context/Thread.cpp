@@ -91,6 +91,10 @@ auto Thread::join() noexcept -> void
 
 auto Thread::Modify(SocketID socket, ModifyCallback cb) noexcept -> AsyncResult
 {
+    const auto ticket = gate_.get();
+
+    if (ticket) { return {}; }
+
     if (!cb) {
         std::cerr << (OT_PRETTY_CLASS()) << "invalid callback" << std::endl;
 

@@ -25,8 +25,6 @@ namespace opentxs::network::zeromq::context
 Pool::Pool(const Context& parent) noexcept
     : parent_(parent)
     , count_(std::thread::hardware_concurrency())
-    , index_lock_()
-    , batch_lock_()
     , gate_()
     , threads_()
     , batches_()
@@ -38,9 +36,13 @@ Pool::Pool(const Context& parent) noexcept
 
 auto Pool::DoModify(SocketID id, ModifyCallback& cb) noexcept -> bool
 {
+    const auto ticket = gate_.get();
+
+    if (ticket) { return false; }
+
     try {
-        auto lock = Lock{index_lock_};
-        auto [batch, socket] = socket_index_.at(id);
+        auto socket_index = socket_index_.lock_shared();
+        auto [batch, socket] = socket_index->at(id);
         cb(*socket);
 
         return true;
@@ -59,9 +61,12 @@ auto Pool::MakeBatch(UnallocatedVector<socket::Type>&& types) noexcept
     -> internal::Batch&
 {
     auto id = GetBatchID();
-    auto lock = Lock{batch_lock_};
-    auto [it, added] = batches_.try_emplace(id, id, parent_, std::move(types));
-
+    Batches::iterator it;
+    auto added{false};
+    std::pair<Batches::iterator&, bool&> result{it, added};
+    batches_.modify([&](auto& batches) {
+        result = batches.try_emplace(id, id, parent_, std::move(types));
+    });
     assert(added);
 
     return it->second;
@@ -75,9 +80,8 @@ auto Pool::Modify(SocketID id, ModifyCallback cb) noexcept -> AsyncResult
 
     try {
         auto [batch, socket] = [&] {
-            auto lock = Lock{index_lock_};
-
-            return socket_index_.at(id);
+            auto socket_index = socket_index_.lock_shared();
+            return socket_index->at(id);
         }();
 
         return get(batch).Modify(id, std::move(cb));
@@ -97,7 +101,9 @@ auto Pool::Start(BatchID id, StartArgs&& sockets) noexcept
     if (ticket) { return nullptr; }
 
     try {
-        if (auto lock = Lock{index_lock_}; 0u < batch_index_.count(id)) {
+
+        if (auto batch_index = batch_index_.lock_shared();
+            0u < batch_index->count(id)) {
             throw std::runtime_error{"batch already exists"};
         }
 
@@ -121,10 +127,10 @@ auto Pool::Stop(BatchID id) noexcept -> std::future<bool>
     try {
         auto sockets = [&] {
             auto out = UnallocatedVector<socket::Raw*>{};
-            auto lock = Lock{index_lock_};
-
-            for (const auto& sID : batch_index_.at(id)) {
-                out.emplace_back(socket_index_.at(sID).second);
+            auto batch_index = batch_index_.lock_shared();
+            for (const auto& sID : batch_index->at(id)) {
+                auto socket_index = socket_index_.lock_shared();
+                out.emplace_back(socket_index->at(sID).second);
             }
 
             return out;
@@ -143,16 +149,19 @@ auto Pool::Stop(BatchID id) noexcept -> std::future<bool>
 
 auto Pool::UpdateIndex(BatchID id, StartArgs&& sockets) noexcept -> void
 {
-    auto lock = Lock{index_lock_};
-    auto& batch = batch_index_[id];
-
     for (auto& [sID, socket, cb] : sockets) {
-        batch.emplace_back(sID);
+        auto& sid = sID;
+        auto& sock = socket;
+        batch_index_.modify(
+            [&](auto& batch_index) { batch_index[id].emplace_back(sid); });
 
-        assert(0u == socket_index_.count(sID));
-
-        const auto [it, added] =
-            socket_index_.try_emplace(sID, std::make_pair(id, socket));
+        SocketIndex::iterator it;
+        auto added{false};
+        std::pair<SocketIndex::iterator&, bool&> result{it, added};
+        socket_index_.modify([&](auto& socket_index) {
+            assert(0u == socket_index.count(sid));
+            result = socket_index.try_emplace(sid, std::make_pair(id, sock));
+        });
 
         assert(added);
     }
@@ -160,21 +169,18 @@ auto Pool::UpdateIndex(BatchID id, StartArgs&& sockets) noexcept -> void
 
 auto Pool::UpdateIndex(BatchID id) noexcept -> void
 {
-    {
-        auto lock = Lock{index_lock_};
-
-        if (auto batch = batch_index_.find(id); batch_index_.end() != batch) {
-            for (const auto& socketID : batch->second) {
-                socket_index_.erase(socketID);
-            }
-
-            batch_index_.erase(batch);
+    batch_index_.modify([&](auto& batch_index) {
+        if (auto batch = batch_index.find(id); batch_index.end() != batch) {
+            socket_index_.modify([&](auto& socket_index) {
+                for (const auto& socketID : batch->second) {
+                    socket_index.erase(socketID);
+                }
+            });
+            batch_index.erase(batch);
         }
-    }
-    {
-        auto lock = Lock{batch_lock_};
-        batches_.erase(id);
-    }
+    });
+
+    batches_.modify([&](auto& batch) { batch.erase(id); });
 }
 
 auto Pool::Thread(BatchID id) const noexcept -> zeromq::internal::Thread*
