@@ -15,12 +15,13 @@
 #include <mutex>
 #include <queue>
 #include <stdexcept>
+#include <string_view>
 #include <thread>
 #include <utility>
 
 #include "core/Worker.hpp"
 #include "internal/api/network/Blockchain.hpp"
-#include "internal/api/network/blockchain/SyncClientRouter.hpp"
+#include "internal/network/p2p/Types.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
@@ -101,7 +102,7 @@ struct SyncClient::Imp {
 
             OT_ASSERT(0 == rc);
 
-            rc = ::zmq_connect(out.get(), api_.Endpoints().Shutdown().c_str());
+            rc = ::zmq_connect(out.get(), api_.Endpoints().Shutdown().data());
 
             OT_ASSERT(0 == rc);
 
@@ -142,7 +143,7 @@ struct SyncClient::Imp {
 private:
     using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
     using OTSocket = network::zeromq::socket::implementation::Socket;
-    using Task = api::network::blockchain::SyncClientRouter::Task;
+    using Task = opentxs::network::p2p::Job;
 
     static constexpr int linger_{0};
     static constexpr std::size_t limit_{32_MiB};
@@ -346,7 +347,7 @@ private:
                 case Task::Shutdown: {
                     running_ = false;
                 } break;
-                case Task::Ack: {
+                case Task::SyncAck: {
                     const auto base = api_.Factory().BlockchainSyncMessage(msg);
                     const auto& ack = base->asAcknowledgement();
                     update_remote_position(ack.State(chain_));
@@ -363,12 +364,12 @@ private:
                         state_.store(State::Sync);
                     }
                 } break;
-                case Task::Reply: {
+                case Task::SyncReply: {
                     activity_ = Clock::now();
                     timer_.reset();
                     add_to_queue(std::move(msg));
                 } break;
-                case Task::Push: {
+                case Task::SyncPush: {
                     activity_ = Clock::now();
 
                     switch (state_.load()) {
@@ -393,7 +394,7 @@ private:
                         api_.Factory().Data(body.at(2).Bytes())};
                     processing_ = false;
                 } break;
-                case Task::Server:
+                case Task::SyncServerUpdated:
                 case Task::Register:
                 case Task::Request:
                 default: {

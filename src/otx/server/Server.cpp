@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <regex>
+#include <string_view>
 
 #include "Proto.tpp"
 #include "internal/api/session/Endpoints.hpp"
@@ -101,7 +102,7 @@ Server::Server(
           zmq::socket::Socket::Direction::Connect))
 {
     const auto bound = notification_socket_->Start(
-        manager_.Endpoints().Internal().PushNotification());
+        manager_.Endpoints().Internal().PushNotification().data());
 
     OT_ASSERT(bound);
 }

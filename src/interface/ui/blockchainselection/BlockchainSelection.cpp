@@ -66,7 +66,8 @@ BlockchainSelection::BlockchainSelection(
     , enabled_count_(0)
     , enabled_callback_()
 {
-    init_executor({api.Endpoints().BlockchainStateChange()});
+    init_executor(
+        {UnallocatedCString{api.Endpoints().BlockchainStateChange()}});
     pipeline_.Push(MakeWork(Work::init));
 }
 

@@ -122,10 +122,10 @@ public:
 
     void subscribe_sockets()
     {
-        ASSERT_TRUE(issuer_peer_request_listener_->Start(
-            api_issuer_.Endpoints().PeerRequestUpdate()));
+        ASSERT_TRUE(issuer_peer_request_listener_->Start(ot::UnallocatedCString{
+            api_issuer_.Endpoints().PeerRequestUpdate()}));
         ASSERT_TRUE(chris_rename_notary_listener_->Start(
-            api_chris_.Endpoints().PairEvent()));
+            ot::UnallocatedCString{api_chris_.Endpoints().PairEvent()}));
     }
 
     void chris_rename_notary(ot::network::zeromq::Message&& in)

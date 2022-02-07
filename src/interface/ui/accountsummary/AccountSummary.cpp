@@ -8,6 +8,7 @@
 #include "interface/ui/accountsummary/AccountSummary.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <string_view>
 #include <thread>
 #include <utility>
 
@@ -52,16 +53,16 @@ AccountSummary::AccountSummary(
     const SimpleCallback& cb) noexcept
     : AccountSummaryList(api, nymID, cb, false)
     , listeners_({
-          {api_.Endpoints().IssuerUpdate(),
+          {api_.Endpoints().IssuerUpdate().data(),
            new MessageProcessor<AccountSummary>(
                &AccountSummary::process_issuer)},
-          {api_.Endpoints().ServerUpdate(),
+          {api_.Endpoints().ServerUpdate().data(),
            new MessageProcessor<AccountSummary>(
                &AccountSummary::process_server)},
-          {api_.Endpoints().ConnectionStatus(),
+          {api_.Endpoints().ConnectionStatus().data(),
            new MessageProcessor<AccountSummary>(
                &AccountSummary::process_connection)},
-          {api_.Endpoints().NymDownload(),
+          {api_.Endpoints().NymDownload().data(),
            new MessageProcessor<AccountSummary>(&AccountSummary::process_nym)},
       })
     , currency_{currency}

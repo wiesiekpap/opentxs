@@ -86,12 +86,12 @@ Wallet::Wallet(
 {
     init_executor({
         shutdown,
-        api.Endpoints().BlockchainReorg(),
-        api.Endpoints().NymCreated(),
-        api.Endpoints().BlockchainNewFilter(),
+        UnallocatedCString{api.Endpoints().BlockchainReorg()},
+        UnallocatedCString{api.Endpoints().NymCreated()},
+        UnallocatedCString{api.Endpoints().BlockchainNewFilter()},
         api_.Crypto().Blockchain().Internal().KeyEndpoint(),
-        api.Endpoints().BlockchainMempool(),
-        api.Endpoints().BlockchainBlockAvailable(),
+        UnallocatedCString{api.Endpoints().BlockchainMempool()},
+        UnallocatedCString{api.Endpoints().BlockchainBlockAvailable()},
     });
     trigger_wallet();
 }

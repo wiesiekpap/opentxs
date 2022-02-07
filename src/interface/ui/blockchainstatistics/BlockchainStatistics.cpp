@@ -60,13 +60,13 @@ BlockchainStatistics::BlockchainStatistics(
     , blockchain_(api.Network().Blockchain())
 {
     init_executor({
-        api.Endpoints().BlockchainBlockDownloadQueue(),
-        api.Endpoints().BlockchainNewFilter(),
-        api.Endpoints().BlockchainPeer(),
-        api.Endpoints().BlockchainPeerConnection(),
-        api.Endpoints().BlockchainReorg(),
-        api.Endpoints().BlockchainStateChange(),
-        api.Endpoints().BlockchainWalletUpdated(),
+        UnallocatedCString{api.Endpoints().BlockchainBlockDownloadQueue()},
+        UnallocatedCString{api.Endpoints().BlockchainNewFilter()},
+        UnallocatedCString{api.Endpoints().BlockchainPeer()},
+        UnallocatedCString{api.Endpoints().BlockchainPeerConnection()},
+        UnallocatedCString{api.Endpoints().BlockchainReorg()},
+        UnallocatedCString{api.Endpoints().BlockchainStateChange()},
+        UnallocatedCString{api.Endpoints().BlockchainWalletUpdated()},
     });
     pipeline_.Push(MakeWork(Work::init));
 }

@@ -15,12 +15,15 @@
 #include <shared_mutex>
 #include <string_view>
 
-#include "api/network/blockchain/syncclientrouter/Server.hpp"
-#include "internal/api/network/blockchain/SyncClientRouter.hpp"
+#include "internal/network/p2p/Client.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/Timer.hpp"
+#include "network/p2p/client/Server.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/network/zeromq/message/FrameIterator.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -59,7 +62,7 @@ class Message;
 }  // namespace network
 }  // namespace opentxs
 
-class opentxs::api::network::blockchain::SyncClientRouter::Imp
+class opentxs::network::p2p::Client::Imp
 {
 public:
     using Chain = opentxs::blockchain::Type;
@@ -68,7 +71,7 @@ public:
 
     auto Endpoint() const noexcept -> std::string_view;
 
-    auto Init(const Blockchain& parent) noexcept -> void;
+    auto Init(const api::network::Blockchain& parent) noexcept -> void;
 
     Imp(const api::Session& api,
         opentxs::network::zeromq::internal::Batch& batch) noexcept;
@@ -76,9 +79,9 @@ public:
     ~Imp();
 
 private:
-    using ServerMap = Map<CString, syncclientrouter::Server>;
+    using ServerMap = Map<CString, client::Server>;
     using ChainMap = Map<Chain, CString>;
-    using ProviderMap = Map<Chain, UnallocatedSet<CString>>;
+    using ProviderMap = Map<Chain, Set<CString>>;
     using ActiveMap = Map<Chain, std::atomic<std::size_t>>;
     using Height = opentxs::blockchain::block::Height;
     using HeightMap = Map<Chain, Height>;
@@ -95,23 +98,26 @@ private:
     const Callback& external_cb_;
     const Callback& internal_cb_;
     const Callback& monitor_cb_;
+    const Callback& wallet_cb_;
     opentxs::network::zeromq::socket::Raw& external_router_;
     opentxs::network::zeromq::socket::Raw& monitor_;
     opentxs::network::zeromq::socket::Raw& external_sub_;
     opentxs::network::zeromq::socket::Raw& internal_router_;
     opentxs::network::zeromq::socket::Raw& internal_sub_;
     opentxs::network::zeromq::socket::Raw& loopback_;
+    opentxs::network::zeromq::socket::Raw& wallet_;
     mutable GuardedSocket to_loopback_;
     mutable std::random_device rd_;
     mutable std::default_random_engine eng_;
-    syncclientrouter::Server blank_;
+    client::Server blank_;
     Timer timer_;
     HeightMap progress_;
     ServerMap servers_;
     ChainMap clients_;
     ProviderMap providers_;
     ActiveMap active_;
-    UnallocatedSet<CString> connected_servers_;
+    Set<CString> connected_servers_;
+    Deque<Message> pending_;
     std::atomic<std::size_t> connected_count_;
     std::atomic_bool running_;
     opentxs::network::zeromq::internal::Thread* thread_;
@@ -120,20 +126,25 @@ private:
     auto get_provider(Chain chain) const noexcept -> CString;
     auto get_required_height(Chain chain) const noexcept -> Height;
 
-    auto ping_server(syncclientrouter::Server& server) noexcept -> void;
+    auto flush_pending() noexcept -> void;
+    auto forward_to_all(Message&& message) noexcept -> void;
+    auto forward_to_all(Chain chain, const Message& message) noexcept -> void;
+    auto ping_server(client::Server& server) noexcept -> void;
     auto process_header(Message&& msg) noexcept -> void;
     auto process_external(Message&& msg) noexcept -> void;
     auto process_internal(Message&& msg) noexcept -> void;
     auto process_monitor(Message&& msg) noexcept -> void;
     auto process_register(Message&& msg) noexcept -> void;
     auto process_request(Message&& msg) noexcept -> void;
+    auto process_response(Message&& msg) noexcept -> void;
     auto process_server(Message&& msg) noexcept -> void;
     auto process_server(const CString ep) noexcept -> void;
+    auto process_wallet(Message&& msg) noexcept -> void;
     auto reset_timer() noexcept -> void;
-    auto server_is_active(syncclientrouter::Server& server) noexcept -> void;
-    auto server_is_stalled(syncclientrouter::Server& server) noexcept -> void;
+    auto server_is_active(client::Server& server) noexcept -> void;
+    auto server_is_stalled(client::Server& server) noexcept -> void;
     auto shutdown() noexcept -> void;
-    auto startup(const Blockchain& parent) noexcept -> void;
+    auto startup(const api::network::Blockchain& parent) noexcept -> void;
     auto state_machine() noexcept -> void;
 
     Imp() = delete;

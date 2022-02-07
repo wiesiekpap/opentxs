@@ -16,30 +16,21 @@
 
 namespace opentxs
 {
-namespace api
-{
-namespace network
-{
-namespace blockchain
-{
-namespace syncclientrouter
-{
-class Server;
-}  // namespace syncclientrouter
-}  // namespace blockchain
-}  // namespace network
-}  // namespace api
-
 namespace network
 {
 namespace p2p
 {
+namespace client
+{
+class Server;
+}  // namespace client
+
 class State;
 }  // namespace p2p
 }  // namespace network
 }  // namespace opentxs
 
-class opentxs::api::network::blockchain::syncclientrouter::Server
+class opentxs::network::p2p::client::Server
 {
 public:
     using Chain = opentxs::blockchain::Type;

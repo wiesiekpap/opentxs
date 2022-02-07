@@ -14,6 +14,7 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
+#include <string_view>
 #include <utility>
 
 #include "Proto.tpp"
@@ -88,7 +89,7 @@ MessageProcessor::MessageProcessor(
     zmq_batch_.listen_callbacks_.emplace_back(zmq::ListenCallback::Factory(
         [this](auto&& m) { pipeline(std::move(m)); }));
     auto rc = notification_.Bind(
-        api_.Endpoints().Internal().PushNotification().c_str());
+        api_.Endpoints().Internal().PushNotification().data());
 
     OT_ASSERT(rc);
 

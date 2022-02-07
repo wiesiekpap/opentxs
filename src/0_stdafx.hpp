@@ -5,6 +5,10 @@
 
 #pragma once
 
+// NOTE without this you may get winsock-related problems with boost::asio on
+// Windows:
+//     https://stackoverflow.com/q/9750344
+//     https://stackoverflow.com/a/38201394
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN

@@ -74,11 +74,11 @@ CustodialAccountActivity::CustodialAccountActivity(
     , alias_()
 {
     init({
-        api.Endpoints().AccountUpdate(),
-        api.Endpoints().ContactUpdate(),
-        api.Endpoints().ServerUpdate(),
-        api.Endpoints().UnitUpdate(),
-        api.Endpoints().WorkflowAccountUpdate(),
+        UnallocatedCString{api.Endpoints().AccountUpdate()},
+        UnallocatedCString{api.Endpoints().ContactUpdate()},
+        UnallocatedCString{api.Endpoints().ServerUpdate()},
+        UnallocatedCString{api.Endpoints().UnitUpdate()},
+        UnallocatedCString{api.Endpoints().WorkflowAccountUpdate()},
     });
 
     // If an Account exists, then the unit definition and notary contracts must

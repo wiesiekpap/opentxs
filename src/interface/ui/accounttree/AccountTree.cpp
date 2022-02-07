@@ -74,8 +74,8 @@ AccountTree::AccountTree(
     // TODO monitor for notary nym changes since this may affect custodial
     // account names
     init_executor({
-        api.Endpoints().AccountUpdate(),
-        api.Endpoints().BlockchainAccountCreated(),
+        UnallocatedCString{api.Endpoints().AccountUpdate()},
+        UnallocatedCString{api.Endpoints().BlockchainAccountCreated()},
     });
     // TODO this model might never initialize if blockchain support is disabled
     pipeline_.ConnectDealer(api.Endpoints().BlockchainBalance(), [](auto) {

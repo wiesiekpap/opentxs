@@ -71,7 +71,7 @@ BlockchainImp::BlockchainImp(
     , transaction_updates_([&] {
         auto out = api_.Network().ZeroMQ().PublishSocket();
         const auto listen =
-            out->Start(api_.Endpoints().BlockchainTransactions());
+            out->Start(api_.Endpoints().BlockchainTransactions().data());
 
         OT_ASSERT(listen);
 
@@ -88,7 +88,7 @@ BlockchainImp::BlockchainImp(
     , scan_updates_([&] {
         auto out = api_.Network().ZeroMQ().PublishSocket();
         const auto listen =
-            out->Start(api_.Endpoints().BlockchainScanProgress());
+            out->Start(api_.Endpoints().BlockchainScanProgress().data());
 
         OT_ASSERT(listen);
 
@@ -97,7 +97,7 @@ BlockchainImp::BlockchainImp(
     , new_blockchain_accounts_([&] {
         auto out = api_.Network().ZeroMQ().PublishSocket();
         const auto listen =
-            out->Start(api_.Endpoints().BlockchainAccountCreated());
+            out->Start(api_.Endpoints().BlockchainAccountCreated().data());
 
         OT_ASSERT(listen);
 

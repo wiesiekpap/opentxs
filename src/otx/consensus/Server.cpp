@@ -12,6 +12,7 @@
 #include <functional>
 #include <iterator>
 #include <stdexcept>
+#include <string_view>
 #include <type_traits>
 
 #include "Proto.hpp"
@@ -1917,7 +1918,7 @@ auto Server::init_new_account(
 
 void Server::init_sockets()
 {
-    auto started = find_nym_->Start(api_.Endpoints().FindNym());
+    auto started = find_nym_->Start(api_.Endpoints().FindNym().data());
 
     if (false == started) {
         LogError()(OT_PRETTY_CLASS())("Failed to start find nym socket ")
@@ -1926,7 +1927,7 @@ void Server::init_sockets()
         OT_FAIL;
     }
 
-    started = find_server_->Start(api_.Endpoints().FindServer());
+    started = find_server_->Start(api_.Endpoints().FindServer().data());
 
     if (false == started) {
         LogError()(OT_PRETTY_CLASS())("Failed to start find server socket ")
@@ -1935,8 +1936,8 @@ void Server::init_sockets()
         OT_FAIL;
     }
 
-    started =
-        find_unit_definition_->Start(api_.Endpoints().FindUnitDefinition());
+    started = find_unit_definition_->Start(
+        api_.Endpoints().FindUnitDefinition().data());
 
     if (false == started) {
         LogError()(OT_PRETTY_CLASS())("Failed to start find unit socket ")

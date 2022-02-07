@@ -6,11 +6,11 @@
 target_sources(
   opentxs-common
   PRIVATE
-    "${opentxs_SOURCE_DIR}/src/internal/api/network/blockchain/SyncClientRouter.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/network/p2p/Client.hpp"
+    "Client.cpp"
+    "Client.hpp"
     "Server.cpp"
     "Server.hpp"
-    "SyncClientRouter.cpp"
-    "SyncClientRouter.hpp"
 )
 target_include_directories(
   opentxs-common SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/cs_libguarded/src"

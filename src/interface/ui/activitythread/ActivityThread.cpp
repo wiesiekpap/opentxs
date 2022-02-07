@@ -99,10 +99,10 @@ ActivityThread::ActivityThread(
 {
     init_executor({
         api.Activity().ThreadPublisher(primary_id_),
-        api.Endpoints().ContactUpdate(),
-        api.Endpoints().Messagability(),
-        api.Endpoints().MessageLoaded(),
-        api.Endpoints().TaskComplete(),
+        UnallocatedCString{api.Endpoints().ContactUpdate()},
+        UnallocatedCString{api.Endpoints().Messagability()},
+        UnallocatedCString{api.Endpoints().MessageLoaded()},
+        UnallocatedCString{api.Endpoints().TaskComplete()},
     });
     pipeline_.Push(MakeWork(Work::init));
 }

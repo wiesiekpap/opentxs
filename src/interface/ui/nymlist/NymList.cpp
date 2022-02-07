@@ -53,8 +53,8 @@ NymList::NymList(
     , Worker(api, {})
 {
     init_executor({
-        api.Endpoints().NymCreated(),
-        api.Endpoints().NymDownload(),
+        UnallocatedCString{api.Endpoints().NymCreated()},
+        UnallocatedCString{api.Endpoints().NymDownload()},
     });
     pipeline_.Push(MakeWork(Work::init));
 }

@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <string_view>
 #include <utility>
 
 #include "2_Factory.hpp"
@@ -65,7 +66,7 @@ ZMQ::ZMQ(const api::Session& api, const Flag& running)
     , status_publisher_(api_.Network().ZeroMQ().PublishSocket())
 {
     // WARNING: do not access api_.Wallet() during construction
-    status_publisher_->Start(api_.Endpoints().ConnectionStatus());
+    status_publisher_->Start(api_.Endpoints().ConnectionStatus().data());
 
     Lock lock(lock_);
 

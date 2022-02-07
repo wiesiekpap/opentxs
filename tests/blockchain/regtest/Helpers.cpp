@@ -155,7 +155,7 @@ struct BlockListener::Imp {
         }))
         , socket_(api_.Network().ZeroMQ().SubscribeSocket(cb_))
     {
-        OT_ASSERT(socket_->Start(api_.Endpoints().BlockchainReorg()));
+        OT_ASSERT(socket_->Start(api_.Endpoints().BlockchainReorg().data()));
     }
 };
 
@@ -270,25 +270,26 @@ struct PeerListener::Imp {
         , c2_socket_(client2.Network().ZeroMQ().SubscribeSocket(client_2_cb_))
     {
         if (false == m_socket_->Start(
-                         waitForHandshake
-                             ? miner.Endpoints().BlockchainPeer()
-                             : miner.Endpoints().BlockchainPeerConnection())) {
+                         (waitForHandshake
+                              ? miner.Endpoints().BlockchainPeer()
+                              : miner.Endpoints().BlockchainPeerConnection())
+                             .data())) {
             throw std::runtime_error("Error connecting to miner socket");
         }
 
-        if (false ==
-            c1_socket_->Start(
-                waitForHandshake
-                    ? client1.Endpoints().BlockchainPeer()
-                    : client1.Endpoints().BlockchainPeerConnection())) {
+        if (false == c1_socket_->Start(
+                         (waitForHandshake
+                              ? client1.Endpoints().BlockchainPeer()
+                              : client1.Endpoints().BlockchainPeerConnection())
+                             .data())) {
             throw std::runtime_error("Error connecting to client1 socket");
         }
 
-        if (false ==
-            c2_socket_->Start(
-                waitForHandshake
-                    ? client2.Endpoints().BlockchainPeer()
-                    : client2.Endpoints().BlockchainPeerConnection())) {
+        if (false == c2_socket_->Start(
+                         (waitForHandshake
+                              ? client2.Endpoints().BlockchainPeer()
+                              : client2.Endpoints().BlockchainPeerConnection())
+                             .data())) {
             throw std::runtime_error("Error connecting to client2 socket");
         }
     }
@@ -1452,7 +1453,7 @@ struct ScanListener::Imp {
         , socket_([&] {
             auto out = api_.Network().ZeroMQ().SubscribeSocket(cb_);
             const auto rc =
-                out->Start(api_.Endpoints().BlockchainScanProgress());
+                out->Start(api_.Endpoints().BlockchainScanProgress().data());
 
             OT_ASSERT(rc);
 
@@ -2259,7 +2260,8 @@ struct WalletListener::Imp {
         }))
         , socket_(api_.Network().ZeroMQ().SubscribeSocket(cb_))
     {
-        OT_ASSERT(socket_->Start(api_.Endpoints().BlockchainSyncProgress()));
+        OT_ASSERT(
+            socket_->Start(api_.Endpoints().BlockchainSyncProgress().data()));
     }
 };
 

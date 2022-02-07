@@ -71,7 +71,8 @@ public:
         , type_(type)
         , checkpoint_(std::move(cb))
     {
-        init_executor({shutdown, api_.Endpoints().BlockchainReorg()});
+        init_executor(
+            {shutdown, UnallocatedCString{api_.Endpoints().BlockchainReorg()}});
 
         OT_ASSERT(checkpoint_);
     }

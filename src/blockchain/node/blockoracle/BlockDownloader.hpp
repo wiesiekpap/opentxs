@@ -70,9 +70,10 @@ public:
         , chain_(chain)
         , socket_(api_.Network().ZeroMQ().PublishSocket())
     {
-        init_executor({shutdown, api_.Endpoints().BlockchainReorg()});
+        init_executor(
+            {shutdown, UnallocatedCString{api_.Endpoints().BlockchainReorg()}});
         auto zmq = socket_->Start(
-            api_.Endpoints().Internal().BlockchainBlockUpdated(chain_));
+            api_.Endpoints().Internal().BlockchainBlockUpdated(chain_).data());
 
         OT_ASSERT(zmq);
     }

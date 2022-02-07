@@ -5,9 +5,9 @@
 
 // IWYU pragma: no_include <cxxabi.h>
 
-#include "0_stdafx.hpp"    // IWYU pragma: associated
-#include "1_Internal.hpp"  // IWYU pragma: associated
-#include "api/network/blockchain/syncclientrouter/SyncClientRouter.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                   // IWYU pragma: associated
+#include "1_Internal.hpp"                 // IWYU pragma: associated
+#include "network/p2p/client/Client.hpp"  // IWYU pragma: associated
 
 #include <boost/system/error_code.hpp>
 #include <zmq.h>
@@ -24,7 +24,9 @@
 #include "Proto.tpp"
 #include "core/Worker.hpp"
 #include "internal/api/network/Asio.hpp"
+#include "internal/api/session/Endpoints.hpp"
 #include "internal/network/p2p/Factory.hpp"
+#include "internal/network/p2p/Types.hpp"
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/socket/Factory.hpp"
@@ -51,8 +53,8 @@
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -62,9 +64,9 @@
 
 namespace bc = opentxs::blockchain;
 
-namespace opentxs::api::network::blockchain
+namespace opentxs::network::p2p
 {
-SyncClientRouter::Imp::Imp(
+Client::Imp::Imp(
     const api::Session& api,
     opentxs::network::zeromq::internal::Batch& batch) noexcept
     : api_(api)
@@ -73,19 +75,22 @@ SyncClientRouter::Imp::Imp(
     , loopback_endpoint_(opentxs::network::zeromq::MakeArbitraryInproc())
     , batch_([&]() -> auto& {
         auto& out = batch;
-        out.listen_callbacks_.reserve(3);
+        out.listen_callbacks_.reserve(4);
         out.listen_callbacks_.emplace_back(Callback::Factory(
             [this](auto&& in) { process_external(std::move(in)); }));
         out.listen_callbacks_.emplace_back(Callback::Factory(
             [this](auto&& in) { process_internal(std::move(in)); }));
         out.listen_callbacks_.emplace_back(Callback::Factory(
             [this](auto&& in) { process_monitor(std::move(in)); }));
+        out.listen_callbacks_.emplace_back(Callback::Factory(
+            [this](auto&& in) { process_wallet(std::move(in)); }));
 
         return out;
     }())
     , external_cb_(batch_.listen_callbacks_.at(0))
     , internal_cb_(batch_.listen_callbacks_.at(1))
     , monitor_cb_(batch_.listen_callbacks_.at(2))
+    , wallet_cb_(batch_.listen_callbacks_.at(3))
     , external_router_([&]() -> auto& {
         auto& out = batch_.sockets_.at(0);
         auto rc = out.SetRouterHandover(true);
@@ -132,16 +137,15 @@ SyncClientRouter::Imp::Imp(
 
         OT_ASSERT(rc);
 
-        rc =
-            out.Connect(api_.Endpoints().BlockchainSyncServerUpdated().c_str());
+        rc = out.Connect(api_.Endpoints().BlockchainSyncServerUpdated().data());
 
         OT_ASSERT(rc);
 
-        rc = out.Connect(api_.Endpoints().Shutdown().c_str());
+        rc = out.Connect(api_.Endpoints().Shutdown().data());
 
         OT_ASSERT(rc);
 
-        rc = out.Connect(api_.Endpoints().BlockchainReorg().c_str());
+        rc = out.Connect(api_.Endpoints().BlockchainReorg().data());
 
         OT_ASSERT(rc);
 
@@ -154,6 +158,18 @@ SyncClientRouter::Imp::Imp(
         OT_ASSERT(rc);
 
         LogTrace()(OT_PRETTY_CLASS())("loopback bound to ")(loopback_endpoint_)
+            .Flush();
+
+        return out;
+    }())
+    , wallet_([&]() -> auto& {
+        auto& out = batch_.sockets_.at(6);
+        const auto endpoint = CString{api_.Endpoints().Internal().P2PWallet()};
+        const auto rc = out.Connect(endpoint.c_str());
+
+        OT_ASSERT(rc);
+
+        LogTrace()(OT_PRETTY_CLASS())("wallet socket connected to ")(endpoint)
             .Flush();
 
         return out;
@@ -189,6 +205,7 @@ SyncClientRouter::Imp::Imp(
         return out;
     }())
     , connected_servers_()
+    , pending_()
     , connected_count_(0)
     , running_(true)
     , thread_(api_.Network().ZeroMQ().Internal().Start(
@@ -224,17 +241,59 @@ SyncClientRouter::Imp::Imp(
                [id = loopback_.ID(), &cb = internal_cb_](auto&& m) {
                    cb.Process(std::move(m));
                }},
+              {wallet_.ID(),
+               &wallet_,
+               [id = wallet_.ID(), &cb = wallet_cb_](auto&& m) {
+                   cb.Process(std::move(m));
+               }},
           }))
 {
     OT_ASSERT(nullptr != thread_);
 }
 
-auto SyncClientRouter::Imp::Endpoint() const noexcept -> std::string_view
+auto Client::Imp::Endpoint() const noexcept -> std::string_view
 {
     return endpoint_;
 }
 
-auto SyncClientRouter::Imp::get_chain(Chain chain) const noexcept -> CString
+auto Client::Imp::flush_pending() noexcept -> void
+{
+    OT_ASSERT(0 < connected_servers_.size());
+
+    LogTrace()(OT_PRETTY_CLASS())("sending ")(pending_.size())(
+        " queued messages")
+        .Flush();
+
+    while (0 < pending_.size()) {
+        forward_to_all(std::move(pending_.front()));
+        pending_.pop_front();
+    }
+}
+
+auto Client::Imp::forward_to_all(Message&& message) noexcept -> void
+{
+    if (0 == connected_servers_.size()) {
+        LogTrace()(OT_PRETTY_CLASS())("No connected peers available").Flush();
+        pending_.push_back(std::move(message));
+        // TODO limit queue size
+    }
+
+    for (const auto& id : connected_servers_) {
+        auto& server = servers_.at(id);
+        LogTrace()("Forwarding request to ")(id).Flush();
+        external_router_.Send([&] {
+            auto msg = opentxs::network::zeromq::Message{};
+            msg.AddFrame(server.endpoint_);
+            msg.StartBody();
+
+            for (const auto& frame : message.Body()) { msg.AddFrame(frame); }
+
+            return msg;
+        }());
+    }
+}
+
+auto Client::Imp::get_chain(Chain chain) const noexcept -> CString
 {
     try {
 
@@ -245,7 +304,7 @@ auto SyncClientRouter::Imp::get_chain(Chain chain) const noexcept -> CString
     }
 }
 
-auto SyncClientRouter::Imp::get_provider(Chain chain) const noexcept -> CString
+auto Client::Imp::get_provider(Chain chain) const noexcept -> CString
 {
     try {
         const auto& providers = providers_.at(chain);
@@ -270,8 +329,7 @@ auto SyncClientRouter::Imp::get_provider(Chain chain) const noexcept -> CString
     }
 }
 
-auto SyncClientRouter::Imp::get_required_height(Chain chain) const noexcept
-    -> Height
+auto Client::Imp::get_required_height(Chain chain) const noexcept -> Height
 {
     try {
 
@@ -282,14 +340,13 @@ auto SyncClientRouter::Imp::get_required_height(Chain chain) const noexcept
     }
 }
 
-auto SyncClientRouter::Imp::Init(const Blockchain& parent) noexcept -> void
+auto Client::Imp::Init(const api::network::Blockchain& parent) noexcept -> void
 {
     startup(parent);
     reset_timer();
 }
 
-auto SyncClientRouter::Imp::ping_server(
-    syncclientrouter::Server& server) noexcept -> void
+auto Client::Imp::ping_server(client::Server& server) noexcept -> void
 {
     external_router_.Send([&] {
         auto msg = opentxs::network::zeromq::Message{};
@@ -305,7 +362,7 @@ auto SyncClientRouter::Imp::ping_server(
     server.waiting_ = true;
 }
 
-auto SyncClientRouter::Imp::process_external(Message&& msg) noexcept -> void
+auto Client::Imp::process_external(Message&& msg) noexcept -> void
 {
     try {
         const auto body = msg.Body();
@@ -314,18 +371,28 @@ auto SyncClientRouter::Imp::process_external(Message&& msg) noexcept -> void
             throw std::runtime_error{"Empty message body"};
         }
 
-        const auto task = body.at(0).as<Task>();
+        const auto task = body.at(0).as<Job>();
 
         switch (task) {
-            case Task::Ack:
-            case Task::Reply:
-            case Task::Push: {
+            case Job::SyncAck:
+            case Job::SyncReply:
+            case Job::SyncPush: {
             } break;
-            case Task::Shutdown:
-            case Task::Server:
-            case Task::Register:
-            case Task::Request:
-            case Task::Processed:
+            case Job::Response: {
+                process_response(std::move(msg));
+
+                return;
+            }
+            case Job::Shutdown:
+            case Job::BlockHeader:
+            case Job::Reorg:
+            case Job::SyncServerUpdated:
+            case Job::PublishContract:
+            case Job::QueryContract:
+            case Job::Register:
+            case Job::Request:
+            case Job::Processed:
+            case Job::StateMachine:
             default: {
                 const auto error =
                     CString{} + "Unsupported task on external socket: " +
@@ -454,13 +521,13 @@ auto SyncClientRouter::Imp::process_external(Message&& msg) noexcept -> void
             }
         }
     } catch (const std::exception& e) {
-        LogTrace()(OT_PRETTY_CLASS())(e.what()).Flush();
+        LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return;
     }
 }
 
-auto SyncClientRouter::Imp::process_header(Message&& msg) noexcept -> void
+auto Client::Imp::process_header(Message&& msg) noexcept -> void
 {
     const auto body = msg.Body();
     const auto index = [&]() -> std::size_t {
@@ -482,38 +549,41 @@ auto SyncClientRouter::Imp::process_header(Message&& msg) noexcept -> void
         .Flush();
 }
 
-auto SyncClientRouter::Imp::process_internal(Message&& msg) noexcept -> void
+auto Client::Imp::process_internal(Message&& msg) noexcept -> void
 {
     const auto body = msg.Body();
 
     if (0 == body.size()) { OT_FAIL; }
 
-    const auto type = body.at(0).as<Task>();
+    const auto type = body.at(0).as<Job>();
 
     switch (type) {
-        case Task::Shutdown: {
+        case Job::Shutdown: {
             shutdown();
         } break;
-        case Task::BlockHeader:
-        case Task::Reorg: {
+        case Job::BlockHeader:
+        case Job::Reorg: {
             process_header(std::move(msg));
         } break;
-        case Task::Server: {
+        case Job::SyncServerUpdated: {
             process_server(std::move(msg));
         } break;
-        case Task::Register: {
+        case Job::Register: {
             process_register(std::move(msg));
         } break;
-        case Task::Request: {
+        case Job::Request: {
             process_request(std::move(msg));
         } break;
-        case Task::StateMachine: {
+        case Job::StateMachine: {
             state_machine();
         } break;
-        case Task::Ack:
-        case Task::Reply:
-        case Task::Push:
-        case Task::Processed:
+        case Job::SyncAck:
+        case Job::SyncReply:
+        case Job::SyncPush:
+        case Job::Response:
+        case Job::PublishContract:
+        case Job::QueryContract:
+        case Job::Processed:
         default: {
             LogError()(OT_PRETTY_CLASS())(
                 "Unsupported message type on internal socket: ")(
@@ -525,7 +595,7 @@ auto SyncClientRouter::Imp::process_internal(Message&& msg) noexcept -> void
     }
 }
 
-auto SyncClientRouter::Imp::process_monitor(Message&& msg) noexcept -> void
+auto Client::Imp::process_monitor(Message&& msg) noexcept -> void
 {
     OT_ASSERT(2u == msg.size());
 
@@ -557,7 +627,7 @@ auto SyncClientRouter::Imp::process_monitor(Message&& msg) noexcept -> void
     }
 }
 
-auto SyncClientRouter::Imp::process_register(Message&& msg) noexcept -> void
+auto Client::Imp::process_register(Message&& msg) noexcept -> void
 {
     const auto body = msg.Body();
     const auto& identity = msg.at(0);
@@ -577,7 +647,7 @@ auto SyncClientRouter::Imp::process_register(Message&& msg) noexcept -> void
     }
 }
 
-auto SyncClientRouter::Imp::process_request(Message&& msg) noexcept -> void
+auto Client::Imp::process_request(Message&& msg) noexcept -> void
 {
     const auto body = msg.Body();
 
@@ -619,7 +689,45 @@ auto SyncClientRouter::Imp::process_request(Message&& msg) noexcept -> void
     server.last_sent_ = Clock::now();
 }
 
-auto SyncClientRouter::Imp::process_server(Message&& msg) noexcept -> void
+auto Client::Imp::process_response(Message&& msg) noexcept -> void
+{
+#if OT_BLOCKCHAIN
+    try {
+        const auto base = api_.Factory().BlockchainSyncMessage(msg);
+
+        if (!base) {
+            throw std::runtime_error{"failed to instantiate response"};
+        }
+
+        using Type = opentxs::network::p2p::MessageType;
+        const auto type = base->Type();
+
+        switch (type) {
+            case Type::publish_ack:
+            case Type::contract: {
+                wallet_.Send(std::move(msg));
+            } break;
+            case Type::error:
+            case Type::sync_request:
+            case Type::sync_ack:
+            case Type::sync_reply:
+            case Type::new_block_header:
+            case Type::query:
+            case Type::publish_contract:
+            case Type::contract_query:
+            default: {
+                throw std::runtime_error{
+                    UnallocatedCString{"Unsupported response type "} +
+                    opentxs::print(type)};
+            }
+        }
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+    }
+#endif  // OT_BLOCKCHAIN
+}
+
+auto Client::Imp::process_server(Message&& msg) noexcept -> void
 {
     const auto body = msg.Body();
 
@@ -640,7 +748,7 @@ auto SyncClientRouter::Imp::process_server(Message&& msg) noexcept -> void
     }
 }
 
-auto SyncClientRouter::Imp::process_server(const CString ep) noexcept -> void
+auto Client::Imp::process_server(const CString ep) noexcept -> void
 {
     if (external_router_.Connect(ep.c_str())) {
         servers_.try_emplace(ep, ep);
@@ -654,7 +762,45 @@ auto SyncClientRouter::Imp::process_server(const CString ep) noexcept -> void
     }
 }
 
-auto SyncClientRouter::Imp::reset_timer() noexcept -> void
+auto Client::Imp::process_wallet(Message&& msg) noexcept -> void
+{
+    const auto body = msg.Body();
+
+    if (0 == body.size()) { OT_FAIL; }
+
+    const auto type = body.at(0).as<Job>();
+
+    switch (type) {
+        case Job::Response: {
+            external_router_.Send(std::move(msg));
+        } break;
+        case Job::PublishContract:
+        case Job::QueryContract: {
+            forward_to_all(std::move(msg));
+        } break;
+        case Job::Shutdown:
+        case Job::BlockHeader:
+        case Job::Reorg:
+        case Job::SyncServerUpdated:
+        case Job::SyncAck:
+        case Job::SyncReply:
+        case Job::SyncPush:
+        case Job::Register:
+        case Job::Request:
+        case Job::Processed:
+        case Job::StateMachine:
+        default: {
+            LogError()(OT_PRETTY_CLASS())(
+                "Unsupported message type on internal socket: ")(
+                static_cast<OTZMQWorkType>(type))
+                .Flush();
+
+            OT_FAIL;
+        }
+    }
+}
+
+auto Client::Imp::reset_timer() noexcept -> void
 {
     static constexpr auto interval = std::chrono::seconds{10};
     timer_.SetRelative(interval);
@@ -665,15 +811,14 @@ auto SyncClientRouter::Imp::reset_timer() noexcept -> void
             }
         } else {
             to_loopback_.modify_detach([&](auto& socket) {
-                socket.Send(MakeWork(Task::StateMachine));
+                socket.Send(MakeWork(Job::StateMachine));
             });
             reset_timer();
         }
     });
 }
 
-auto SyncClientRouter::Imp::server_is_active(
-    syncclientrouter::Server& server) noexcept -> void
+auto Client::Imp::server_is_active(client::Server& server) noexcept -> void
 {
     if (server.endpoint_.empty()) { return; }
 
@@ -682,10 +827,10 @@ auto SyncClientRouter::Imp::server_is_active(
     server.waiting_ = false;
     connected_servers_.emplace(server.endpoint_);
     connected_count_.store(connected_servers_.size());
+    flush_pending();
 }
 
-auto SyncClientRouter::Imp::server_is_stalled(
-    syncclientrouter::Server& server) noexcept -> void
+auto Client::Imp::server_is_stalled(client::Server& server) noexcept -> void
 {
     connected_servers_.erase(server.endpoint_);
     connected_count_.store(connected_servers_.size());
@@ -704,17 +849,18 @@ auto SyncClientRouter::Imp::server_is_stalled(
     server.SetStalled();
 }
 
-auto SyncClientRouter::Imp::shutdown() noexcept -> void
+auto Client::Imp::shutdown() noexcept -> void
 {
     if (auto run = running_.exchange(false); run) { batch_.ClearCallbacks(); }
 }
 
-auto SyncClientRouter::Imp::startup(const Blockchain& parent) noexcept -> void
+auto Client::Imp::startup(const api::network::Blockchain& parent) noexcept
+    -> void
 {
     to_loopback_.modify_detach([&](auto& socket) {
         for (const auto& ep : parent.GetSyncServers()) {
             socket.Send([&] {
-                auto out = MakeWork(Task::Server);
+                auto out = MakeWork(Job::SyncServerUpdated);
                 out.AddFrame(ep);
                 out.AddFrame(true);
 
@@ -724,7 +870,7 @@ auto SyncClientRouter::Imp::startup(const Blockchain& parent) noexcept -> void
     });
 }
 
-auto SyncClientRouter::Imp::state_machine() noexcept -> void
+auto Client::Imp::state_machine() noexcept -> void
 {
     for (auto& serverData : servers_) {
         auto& [endpoint, server] = serverData;
@@ -741,17 +887,17 @@ auto SyncClientRouter::Imp::state_machine() noexcept -> void
     }
 }
 
-SyncClientRouter::Imp::~Imp()
+Client::Imp::~Imp()
 {
     shutdown();
     api_.Network().ZeroMQ().Internal().Stop(batch_.id_);
 }
-}  // namespace opentxs::api::network::blockchain
+}  // namespace opentxs::network::p2p
 
-namespace opentxs::api::network::blockchain
+namespace opentxs::network::p2p
 {
-SyncClientRouter::SyncClientRouter(const api::Session& api) noexcept
-    : SyncClientRouter(api, api.Network().ZeroMQ().Internal().MakeBatch([] {
+Client::Client(const api::Session& api) noexcept
+    : Client(api, api.Network().ZeroMQ().Internal().MakeBatch([] {
         using Type = Imp::SocketType;
         auto out = UnallocatedVector<Type>{
             Type::Router,
@@ -760,6 +906,7 @@ SyncClientRouter::SyncClientRouter(const api::Session& api) noexcept
             Type::Router,
             Type::Subscribe,
             Type::Pair,
+            Type::Pair,
         };
 
         return out;
@@ -767,28 +914,28 @@ SyncClientRouter::SyncClientRouter(const api::Session& api) noexcept
 {
 }
 
-SyncClientRouter::SyncClientRouter(
+Client::Client(
     const api::Session& api,
     opentxs::network::zeromq::internal::Batch& batch) noexcept
     : imp_(std::make_unique<Imp>(api, batch).release())
 {
 }
 
-auto SyncClientRouter::Endpoint() const noexcept -> std::string_view
+auto Client::Endpoint() const noexcept -> std::string_view
 {
     return imp_->Endpoint();
 }
 
-auto SyncClientRouter::Init(const Blockchain& parent) noexcept -> void
+auto Client::Init(const api::network::Blockchain& parent) noexcept -> void
 {
     return imp_->Init(parent);
 }
 
-SyncClientRouter::~SyncClientRouter()
+Client::~Client()
 {
     if (nullptr != imp_) {
         delete imp_;
         imp_ = nullptr;
     }
 }
-}  // namespace opentxs::api::network::blockchain
+}  // namespace opentxs::network::p2p

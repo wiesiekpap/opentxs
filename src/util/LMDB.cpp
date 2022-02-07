@@ -503,10 +503,7 @@ struct LMDB::Imp {
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
 
-    ~Imp()
-    {
-        close_env();
-    }
+    ~Imp() { close_env(); }
 
 private:
     using NewKey =
@@ -535,12 +532,14 @@ private:
                           MDB_CREATE | flags,
                           &output);
 
-        if (!static_cast<bool>(status)) { // free memory allocated in mdb_txn_begin - transaction
+        if (!static_cast<bool>(status)) {  // free memory allocated in
+                                           // mdb_txn_begin - transaction
             ::mdb_txn_abort(transaction);
         }
         OT_ASSERT(status);
 
-        ::mdb_txn_commit(transaction); // free memory allocated in mdb_txn_begin - transaction
+        ::mdb_txn_commit(transaction);  // free memory allocated in
+                                        // mdb_txn_begin - transaction
 
         return output;
     }
@@ -555,7 +554,8 @@ private:
         auto rc = ::mdb_env_create(&env_);
         bool set = 0 == rc;
         if (!set) {
-            LogConsole()("failed to mdb_env_create: ")(::mdb_strerror(rc)).Flush();
+            LogConsole()("failed to mdb_env_create: ")(::mdb_strerror(rc))
+                .Flush();
             close_env();
         }
 
@@ -583,7 +583,8 @@ private:
         rc = ::mdb_env_set_maxreaders(env_, 1024u);
         set = 0 == rc;
         if (!set) {
-            LogConsole()("failed to set maxreaders: ")(::mdb_strerror(rc)).Flush();
+            LogConsole()("failed to set maxreaders: ")(::mdb_strerror(rc))
+                .Flush();
             close_env();
         }
 
@@ -592,7 +593,9 @@ private:
         rc = ::mdb_env_open(env_, folder.c_str(), flags, 0664);
         set = 0 == rc;
         if (!set) {
-            LogConsole()("failed to open: ")(folder.c_str())(" flags: ")(flags)(" reason: ")(::mdb_strerror(rc)).Flush();
+            LogConsole()("failed to open: ")(folder.c_str())(" flags: ")(
+                flags)(" reason: ")(::mdb_strerror(rc))
+                .Flush();
             close_env();
         }
 
@@ -606,7 +609,8 @@ private:
         }
     }
 
-    auto close_env() -> void {
+    auto close_env() -> void
+    {
         if (nullptr != env_) {
             ::mdb_env_close(env_);
             env_ = nullptr;

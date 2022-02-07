@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"    // IWYU pragma: associated
-#include "1_Internal.hpp"  // IWYU pragma: associated
-#include "api/network/blockchain/syncclientrouter/Server.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                   // IWYU pragma: associated
+#include "1_Internal.hpp"                 // IWYU pragma: associated
+#include "network/p2p/client/Server.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
 #include <chrono>
@@ -14,7 +14,7 @@
 
 #include "opentxs/network/p2p/State.hpp"
 
-namespace opentxs::api::network::blockchain::syncclientrouter
+namespace opentxs::network::p2p::client
 {
 Server::Server(const std::string_view endpoint) noexcept
     : endpoint_(endpoint)
@@ -103,4 +103,4 @@ auto Server::SetStalled() noexcept -> void
     connected_ = false;
     chains_.clear();
 }
-}  // namespace opentxs::api::network::blockchain::syncclientrouter
+}  // namespace opentxs::network::p2p::client

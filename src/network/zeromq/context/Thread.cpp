@@ -251,8 +251,8 @@ auto Thread::run() noexcept -> void
             timeout.count());
 
         if (0 > events) {
-            const auto error = ::zmq_errno();
-            std::cout << OT_PRETTY_CLASS() << error << std::endl;
+            std::cout << OT_PRETTY_CLASS() << ::zmq_strerror(::zmq_errno())
+                      << std::endl;
 
             continue;
         } else if (0 == events) {

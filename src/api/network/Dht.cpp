@@ -9,6 +9,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <string_view>
 #include <utility>
 
 #include "Proto.tpp"
@@ -167,9 +168,9 @@ Dht::Dht(
           request_unit_callback_,
           zmq::socket::Socket::Direction::Bind)}
 {
-    request_nym_socket_->Start(endpoints.DhtRequestNym());
-    request_server_socket_->Start(endpoints.DhtRequestServer());
-    request_unit_socket_->Start(endpoints.DhtRequestUnit());
+    request_nym_socket_->Start(endpoints.DhtRequestNym().data());
+    request_server_socket_->Start(endpoints.DhtRequestServer().data());
+    request_unit_socket_->Start(endpoints.DhtRequestUnit().data());
 }
 
 auto Dht::Insert(const UnallocatedCString& key, const UnallocatedCString& value)

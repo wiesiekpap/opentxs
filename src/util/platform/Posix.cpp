@@ -21,6 +21,9 @@ extern "C" {
 #endif
 }
 
+#include <cerrno>
+#include <cstring>
+
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/util/Log.hpp"
@@ -204,7 +207,9 @@ auto Context::Init_Rlimit() noexcept -> void
     set_desired_files(desired);
 
     if (0 != ::getrlimit(RLIMIT_NOFILE, &original)) {
-        LogConsole()("Failed to query resource limits")(" errno: ")(strerror(errno)).Flush();
+        LogConsole()("Failed to query resource limits")(" errno: ")(
+            strerror(errno))
+            .Flush();
 
         return;
     }
@@ -216,14 +221,17 @@ auto Context::Init_Rlimit() noexcept -> void
     if (0 != ::setrlimit(RLIMIT_NOFILE, &desired)) {
         LogConsole()("Failed to set open file limit to ")(desired.rlim_cur)(
             ". You must increase this user account's resource limits via the "
-            "method appropriate for your operating system.")(" errno: ")(strerror(errno))
+            "method appropriate for your operating system.")(" errno: ")(
+            strerror(errno))
             .Flush();
 
         return;
     }
 
     if (0 != ::getrlimit(RLIMIT_NOFILE, &result)) {
-        LogConsole()("Failed to query resource limits")(" errno: ")(strerror(errno)).Flush();
+        LogConsole()("Failed to query resource limits")(" errno: ")(
+            strerror(errno))
+            .Flush();
 
         return;
     }

@@ -76,7 +76,9 @@ FilterOracle::BlockIndexer::BlockIndexer(
     , job_counter_()
 {
     init_executor(
-        {shutdown, api_.Endpoints().Internal().BlockchainBlockUpdated(chain_)});
+        {shutdown,
+         UnallocatedCString{
+             api_.Endpoints().Internal().BlockchainBlockUpdated(chain_)}});
 }
 
 auto FilterOracle::BlockIndexer::batch_size(const std::size_t in) const noexcept

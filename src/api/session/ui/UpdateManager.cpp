@@ -9,6 +9,7 @@
 
 #include <functional>
 #include <mutex>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -89,7 +90,7 @@ struct UpdateManager::Imp {
             pipeline(std::move(in));
         }))
     {
-        publisher_->Start(api_.Endpoints().WidgetUpdate());
+        publisher_->Start(api_.Endpoints().WidgetUpdate().data());
     }
 
 private:

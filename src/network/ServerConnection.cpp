@@ -14,6 +14,7 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
+#include <string_view>
 #include <thread>
 #include <utility>
 
@@ -106,7 +107,7 @@ ServerConnection::ServerConnection(
 {
     thread_ = std::thread(&ServerConnection::activity_timer, this);
     const auto started = notification_socket_->Start(
-        api_.Endpoints().Internal().ProcessPushNotification());
+        api_.Endpoints().Internal().ProcessPushNotification().data());
 
     OT_ASSERT(started);
 }

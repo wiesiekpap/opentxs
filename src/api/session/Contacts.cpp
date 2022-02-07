@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include <stdexcept>
+#include <string_view>
 #include <type_traits>
 
 #include "internal/api/crypto/Blockchain.hpp"
@@ -75,7 +76,7 @@ Contacts::Contacts(const api::session::Client& api)
     , publisher_(api.Network().ZeroMQ().PublishSocket())
 {
     // WARNING: do not access api_.Wallet() during construction
-    publisher_->Start(api_.Endpoints().ContactUpdate());
+    publisher_->Start(api_.Endpoints().ContactUpdate().data());
 
     // TODO update Storage to record contact ids that need to be updated
     // in blockchain api in cases where the process was interrupted due to

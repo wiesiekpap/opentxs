@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <cs_deferred_guarded.h>
 #include <chrono>
 #include <cstdint>
 #include <ctime>
@@ -23,6 +24,7 @@
 #include "Proto.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/identity/Identity.hpp"
+#include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
 #include "internal/util/Editor.hpp"
@@ -77,6 +79,26 @@ struct Nym;
 
 class Nym;
 }  // namespace identity
+
+namespace network
+{
+namespace zeromq
+{
+namespace internal
+{
+class Batch;
+class Thread;
+}  // namespace internal
+
+namespace socket
+{
+class Raw;
+}  // namespace socket
+
+class ListenCallback;
+class Message;
+}  // namespace zeromq
+}  // namespace network
 
 namespace otx
 {
@@ -288,6 +310,11 @@ public:
         const identifier::Nym& nym,
         const Identifier& request,
         const StorageBox& box) const -> bool final;
+    auto PublishNotary(const identifier::Notary& id) const noexcept
+        -> bool final;
+    auto PublishNym(const identifier::Nym& id) const noexcept -> bool final;
+    auto PublishUnit(const identifier::UnitDefinition& id) const noexcept
+        -> bool final;
     auto Purse(
         const identifier::Nym& nym,
         const identifier::Notary& server,
@@ -391,7 +418,7 @@ public:
     auto SaveCredential(const proto::Credential& credential) const
         -> bool final;
 
-    ~Wallet() override = default;
+    ~Wallet() override;
 
 protected:
     using AccountLock =
@@ -439,6 +466,9 @@ private:
         UnallocatedMap<UnallocatedCString, proto::ContactItemType>;
     using UnitNameReverse =
         UnallocatedMap<proto::ContactItemType, UnallocatedCString>;
+    using GuardedSocket = libguarded::deferred_guarded<
+        opentxs::network::zeromq::socket::Raw,
+        std::shared_mutex>;
 
     mutable AccountMap account_map_;
     mutable NymMap nym_map_;
@@ -469,6 +499,12 @@ private:
     OTZMQRequestSocket dht_server_requester_;
     OTZMQRequestSocket dht_unit_requester_;
     OTZMQPushSocket find_nym_;
+    opentxs::network::zeromq::internal::Batch& batch_;
+    opentxs::network::zeromq::ListenCallback& p2p_callback_;
+    opentxs::network::zeromq::socket::Raw& p2p_socket_;
+    opentxs::network::zeromq::socket::Raw& loopback_;
+    mutable GuardedSocket to_loopback_;
+    opentxs::network::zeromq::internal::Thread* thread_;
 
     static auto reverse_unit_map(const UnitNameMap& map) -> UnitNameReverse;
 
@@ -514,6 +550,14 @@ private:
     }
     auto nymfile_lock(const identifier::Nym& nymID) const -> std::mutex&;
     auto peer_lock(const UnallocatedCString& nymID) const -> std::mutex&;
+    auto process_p2p(opentxs::network::zeromq::Message&& msg) const noexcept
+        -> void;
+    auto process_p2p_query_contract(
+        opentxs::network::zeromq::Message&& msg) const noexcept -> void;
+    auto process_p2p_publish_contract(
+        opentxs::network::zeromq::Message&& msg) const noexcept -> void;
+    auto process_p2p_response(
+        opentxs::network::zeromq::Message&& msg) const noexcept -> void;
     auto publish_server(const identifier::Notary& id) const noexcept -> void;
     auto publish_unit(const identifier::UnitDefinition& id) const noexcept
         -> void;
@@ -537,6 +581,10 @@ private:
         opentxs::NymFile* nym,
         const Lock& lock) const;
     auto SaveCredentialIDs(const identity::Nym& nym) const -> bool;
+    auto search_notary(const identifier::Notary& id) const noexcept -> void;
+    auto search_nym(const identifier::Nym& id) const noexcept -> void;
+    auto search_unit(const identifier::UnitDefinition& id) const noexcept
+        -> void;
     virtual auto signer_nym(const identifier::Nym& id) const -> Nym_p = 0;
 
     /* Throws std::out_of_range for missing accounts */

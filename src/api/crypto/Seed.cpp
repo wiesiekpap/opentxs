@@ -115,7 +115,7 @@ Seed::Seed(
     , bip39_(bip39)
     , socket_([&] {
         auto out = zmq.PublishSocket();
-        const auto rc = out->Start(endpoints.SeedUpdated());
+        const auto rc = out->Start(endpoints.SeedUpdated().data());
 
         OT_ASSERT(rc);
 

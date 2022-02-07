@@ -24,5 +24,11 @@ constexpr auto OT_ZMQ_INIT_SIGNAL =                      OTZMQWorkType{OT_ZMQ_HI
 constexpr auto OT_ZMQ_NEW_FULL_BLOCK_SIGNAL =            OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 6};
 constexpr auto OT_ZMQ_SYNC_DATA_SIGNAL =                 OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 7};
 constexpr auto OT_ZMQ_HEARTBEAT_SIGNAL =                 OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 8};
+constexpr auto OT_ZMQ_REGISTER_SIGNAL =                  OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 9};
+constexpr auto OT_ZMQ_UNREGISTER_SIGNAL =                OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 10};
+constexpr auto OT_ZMQ_CONNECT_SIGNAL =                   OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 11};
+constexpr auto OT_ZMQ_DISCONNECT_SIGNAL =                OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 12};
+constexpr auto OT_ZMQ_BIND_SIGNAL =                      OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 13};
+constexpr auto OT_ZMQ_UNBIND_SIGNAL =                    OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 14};
 // clang-format on
 }  // namespace opentxs

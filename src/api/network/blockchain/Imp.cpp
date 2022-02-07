@@ -44,7 +44,7 @@ BlockchainImp::BlockchainImp(
     , db_(nullptr)
     , active_peer_updates_([&] {
         auto out = zmq.PublishSocket();
-        const auto listen = out->Start(endpoints.BlockchainPeer());
+        const auto listen = out->Start(endpoints.BlockchainPeer().data());
 
         OT_ASSERT(listen);
 
@@ -52,7 +52,8 @@ BlockchainImp::BlockchainImp(
     }())
     , block_available_([&] {
         auto out = zmq.PublishSocket();
-        const auto listen = out->Start(endpoints.BlockchainBlockAvailable());
+        const auto listen =
+            out->Start(endpoints.BlockchainBlockAvailable().data());
 
         OT_ASSERT(listen);
 
@@ -61,7 +62,7 @@ BlockchainImp::BlockchainImp(
     , block_download_queue_([&] {
         auto out = zmq.PublishSocket();
         const auto listen =
-            out->Start(endpoints.BlockchainBlockDownloadQueue());
+            out->Start(endpoints.BlockchainBlockDownloadQueue().data());
 
         OT_ASSERT(listen);
 
@@ -69,7 +70,7 @@ BlockchainImp::BlockchainImp(
     }())
     , chain_state_publisher_([&] {
         auto out = zmq.PublishSocket();
-        auto rc = out->Start(endpoints.BlockchainStateChange());
+        auto rc = out->Start(endpoints.BlockchainStateChange().data());
 
         OT_ASSERT(rc);
 
@@ -77,7 +78,8 @@ BlockchainImp::BlockchainImp(
     }())
     , connected_peer_updates_([&] {
         auto out = zmq.PublishSocket();
-        const auto listen = out->Start(endpoints.BlockchainPeerConnection());
+        const auto listen =
+            out->Start(endpoints.BlockchainPeerConnection().data());
 
         OT_ASSERT(listen);
 
@@ -85,7 +87,7 @@ BlockchainImp::BlockchainImp(
     }())
     , new_filters_([&] {
         auto out = zmq.PublishSocket();
-        const auto listen = out->Start(endpoints.BlockchainNewFilter());
+        const auto listen = out->Start(endpoints.BlockchainNewFilter().data());
 
         OT_ASSERT(listen);
 
@@ -93,7 +95,7 @@ BlockchainImp::BlockchainImp(
     }())
     , reorg_([&] {
         auto out = zmq.PublishSocket();
-        const auto listen = out->Start(endpoints.BlockchainReorg());
+        const auto listen = out->Start(endpoints.BlockchainReorg().data());
 
         OT_ASSERT(listen);
 
@@ -101,7 +103,8 @@ BlockchainImp::BlockchainImp(
     }())
     , sync_updates_([&] {
         auto out = zmq.PublishSocket();
-        const auto listen = out->Start(endpoints.BlockchainSyncProgress());
+        const auto listen =
+            out->Start(endpoints.BlockchainSyncProgress().data());
 
         OT_ASSERT(listen);
 
@@ -109,7 +112,7 @@ BlockchainImp::BlockchainImp(
     }())
     , mempool_([&] {
         auto out = zmq.PublishSocket();
-        const auto listen = out->Start(endpoints.BlockchainMempool());
+        const auto listen = out->Start(endpoints.BlockchainMempool().data());
 
         OT_ASSERT(listen);
 

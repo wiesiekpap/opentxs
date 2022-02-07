@@ -12,6 +12,7 @@
 #include <ctime>
 #include <iterator>
 #include <memory>
+#include <string_view>
 #include <type_traits>
 
 #include "Proto.tpp"
@@ -122,11 +123,12 @@ Pair::Pair(const Flag& running, const api::session::Client& client)
           client_.Network().ZeroMQ().SubscribeSocket(peer_request_callback_))
 {
     // WARNING: do not access client_.Wallet() during construction
-    pair_event_->Start(client_.Endpoints().PairEvent());
-    pending_bailment_->Start(client_.Endpoints().PendingBailment());
-    nym_subscriber_->Start(client_.Endpoints().NymDownload());
-    peer_reply_subscriber_->Start(client_.Endpoints().PeerReplyUpdate());
-    peer_request_subscriber_->Start(client_.Endpoints().PeerRequestUpdate());
+    pair_event_->Start(client_.Endpoints().PairEvent().data());
+    pending_bailment_->Start(client_.Endpoints().PendingBailment().data());
+    nym_subscriber_->Start(client_.Endpoints().NymDownload().data());
+    peer_reply_subscriber_->Start(client_.Endpoints().PeerReplyUpdate().data());
+    peer_request_subscriber_->Start(
+        client_.Endpoints().PeerRequestUpdate().data());
 }
 
 Pair::State::State(

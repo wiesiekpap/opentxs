@@ -59,7 +59,7 @@ Contact::Contact(
     const SimpleCallback& cb) noexcept
     : ContactType(api, contactID, cb, false)
     , listeners_({
-          {api_.Endpoints().ContactUpdate(),
+          {UnallocatedCString{api_.Endpoints().ContactUpdate()},
            new MessageProcessor<Contact>(&Contact::process_contact)},
       })
     , callbacks_()

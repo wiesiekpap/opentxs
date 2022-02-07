@@ -10,6 +10,7 @@
 extern "C" {
 #include <lmdb.h>
 }
+#include <string_view>
 
 #include "blockchain/database/common/Database.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
@@ -37,7 +38,7 @@ Configuration::Configuration(
     , socket_([&] {
         auto out = api_.Network().ZeroMQ().PublishSocket();
         const auto rc =
-            out->Start(api_.Endpoints().BlockchainSyncServerUpdated());
+            out->Start(api_.Endpoints().BlockchainSyncServerUpdated().data());
 
         OT_ASSERT(rc);
 

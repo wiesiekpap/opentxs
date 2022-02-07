@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "Proto.tpp"
@@ -104,7 +105,7 @@ Notary::Notary(
           zmq::socket::Socket::Direction::Connect))
 {
     const auto bound = notification_socket_->Start(
-        manager_.Endpoints().Internal().PushNotification());
+        manager_.Endpoints().Internal().PushNotification().data());
 
     OT_ASSERT(bound);
 }
