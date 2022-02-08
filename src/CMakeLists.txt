@@ -235,16 +235,6 @@ if(OT_PCH)
     [["serialization/protobuf/ZMQEnums.pb.h"]]
   )
 
-  if(APPLE)
-    target_precompile_headers(
-      opentxs-common
-      PUBLIC
-      [["TargetConditionals.h"]]
-      <limits.h>
-      <mach-o/dyld.h>
-    )
-  endif()
-
   if(APPLE OR ANDROID)
     target_precompile_headers(
       opentxs-common
