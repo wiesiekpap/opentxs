@@ -5,15 +5,6 @@
 
 #pragma once
 
-#ifdef __APPLE__
-#include "TargetConditionals.h"
-
-#ifdef TARGET_OS_MAC
-#include <limits.h>
-#include <mach-o/dyld.h>
-#endif
-#endif
-
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
