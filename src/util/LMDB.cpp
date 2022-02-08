@@ -505,10 +505,7 @@ struct LMDB::Imp {
 
     ~Imp()
     {
-        if (nullptr != env_) {
-            ::mdb_env_close(env_);
-            env_ = nullptr;
-        }
+        close_env();
     }
 
 private:
@@ -538,9 +535,12 @@ private:
                           MDB_CREATE | flags,
                           &output);
 
+        if (!static_cast<bool>(status)) { // free memory allocated in mdb_txn_begin - transaction
+            ::mdb_txn_abort(transaction);
+        }
         OT_ASSERT(status);
 
-        ::mdb_txn_commit(transaction);
+        ::mdb_txn_commit(transaction); // free memory allocated in mdb_txn_begin - transaction
 
         return output;
     }
@@ -552,25 +552,49 @@ private:
     {
         OT_ASSERT(std::numeric_limits<unsigned int>::max() >= tables);
 
-        bool set = 0 == ::mdb_env_create(&env_);
+        auto rc = ::mdb_env_create(&env_);
+        bool set = 0 == rc;
+        if (!set) {
+            LogConsole()("failed to mdb_env_create: ")(::mdb_strerror(rc)).Flush();
+            close_env();
+        }
 
         OT_ASSERT(set);
         OT_ASSERT(nullptr != env_);
 
-        set = 0 == ::mdb_env_set_mapsize(env_, db_file_size());
+        rc = ::mdb_env_set_mapsize(env_, db_file_size());
+        set = 0 == rc;
+        if (!set) {
+            LogConsole()("failed to set mapsize: ")(::mdb_strerror(rc)).Flush();
+            close_env();
+        }
 
         OT_ASSERT(set);
 
-        set =
-            0 == ::mdb_env_set_maxdbs(env_, static_cast<unsigned int>(tables));
+        rc = ::mdb_env_set_maxdbs(env_, static_cast<unsigned int>(tables));
+        set = 0 == rc;
+        if (!set) {
+            LogConsole()("failed to set maxdbs: ")(::mdb_strerror(rc)).Flush();
+            close_env();
+        }
 
         OT_ASSERT(set);
 
-        set = 0 == ::mdb_env_set_maxreaders(env_, 1024u);
+        rc = ::mdb_env_set_maxreaders(env_, 1024u);
+        set = 0 == rc;
+        if (!set) {
+            LogConsole()("failed to set maxreaders: ")(::mdb_strerror(rc)).Flush();
+            close_env();
+        }
 
         OT_ASSERT(set);
 
-        set = 0 == ::mdb_env_open(env_, folder.c_str(), flags, 0664);
+        rc = ::mdb_env_open(env_, folder.c_str(), flags, 0664);
+        set = 0 == rc;
+        if (!set) {
+            LogConsole()("failed to open: ")(folder.c_str())(" flags: ")(flags)(" reason: ")(::mdb_strerror(rc)).Flush();
+            close_env();
+        }
 
         OT_ASSERT(set);
     }
@@ -579,6 +603,13 @@ private:
     {
         for (const auto& [table, flags] : init) {
             db_.emplace(table, init_db(table, flags));
+        }
+    }
+
+    auto close_env() -> void {
+        if (nullptr != env_) {
+            ::mdb_env_close(env_);
+            env_ = nullptr;
         }
     }
 };

@@ -204,7 +204,7 @@ auto Context::Init_Rlimit() noexcept -> void
     set_desired_files(desired);
 
     if (0 != ::getrlimit(RLIMIT_NOFILE, &original)) {
-        LogConsole()("Failed to query resource limits").Flush();
+        LogConsole()("Failed to query resource limits")(" errno: ")(strerror(errno)).Flush();
 
         return;
     }
@@ -216,14 +216,14 @@ auto Context::Init_Rlimit() noexcept -> void
     if (0 != ::setrlimit(RLIMIT_NOFILE, &desired)) {
         LogConsole()("Failed to set open file limit to ")(desired.rlim_cur)(
             ". You must increase this user account's resource limits via the "
-            "method appropriate for your operating system.")
+            "method appropriate for your operating system.")(" errno: ")(strerror(errno))
             .Flush();
 
         return;
     }
 
     if (0 != ::getrlimit(RLIMIT_NOFILE, &result)) {
-        LogConsole()("Failed to query resource limits").Flush();
+        LogConsole()("Failed to query resource limits")(" errno: ")(strerror(errno)).Flush();
 
         return;
     }
@@ -239,6 +239,7 @@ auto Context::Init_Rlimit() noexcept -> void
     rlim.rlim_max = rlim.rlim_cur = 0;
 
     if (setrlimit(RLIMIT_CORE, &rlim)) {
+        LogConsole()(" setrlimit: ")(strerror(errno)).Flush();
         OT_FAIL_MSG("Crypto::Init: ASSERT: setrlimit failed. (Used for "
                     "preventing core dumps.)\n");
     }
@@ -252,6 +253,8 @@ auto Legacy::get_home_platform() noexcept -> UnallocatedCString
     if (nullptr != pwd) {
         if (nullptr != pwd->pw_dir) { return pwd->pw_dir; }
     }
+
+    LogConsole()("getpwuid: ")(strerror(errno)).Flush();
 
     return {};
 }
