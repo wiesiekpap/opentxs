@@ -88,6 +88,9 @@ public:
 private:
     auto process_external(zeromq::Message&& incoming) noexcept -> void;
     auto process_internal(zeromq::Message&& incoming) noexcept -> void;
+    auto process_pushtx(
+        zeromq::Message&& incoming,
+        const p2p::Base& base) noexcept -> void;
     auto process_sync(
         zeromq::Message&& incoming,
         const p2p::Base& base) noexcept -> void;

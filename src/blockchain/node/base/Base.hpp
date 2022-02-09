@@ -139,7 +139,8 @@ public:
         return *block_p_;
     }
     auto BroadcastTransaction(
-        const block::bitcoin::Transaction& tx) const noexcept -> bool final;
+        const block::bitcoin::Transaction& tx,
+        const bool pushtx) const noexcept -> bool final;
     auto Chain() const noexcept -> Type final { return chain_; }
     auto FeeRate() const noexcept -> Amount final;
     auto FilterOracleInternal() const noexcept

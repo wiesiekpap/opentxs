@@ -324,7 +324,7 @@ private:
         }
 
         txid = transaction.ID();
-        const auto sent = node_.BroadcastTransaction(transaction);
+        const auto sent = node_.BroadcastTransaction(transaction, true);
 
         try {
             if (sent) {
@@ -427,7 +427,7 @@ private:
             if (false == bool(pTx)) { continue; }
 
             const auto& tx = *pTx;
-            node_.BroadcastTransaction(tx);
+            node_.BroadcastTransaction(tx, true);
         }
     }
     auto send(const Lock& lock) noexcept -> void

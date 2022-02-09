@@ -91,6 +91,8 @@ private:
     using GuardedSocket = libguarded::deferred_guarded<
         opentxs::network::zeromq::socket::Raw,
         std::shared_mutex>;
+    using QueuedMessages = Deque<Message>;
+    using QueuedChainMessages = Map<Chain, QueuedMessages>;
 
     const api::Session& api_;
     const CString endpoint_;
@@ -119,7 +121,8 @@ private:
     ProviderMap providers_;
     ActiveMap active_;
     Set<CString> connected_servers_;
-    Deque<Message> pending_;
+    QueuedMessages pending_;
+    QueuedChainMessages pending_chain_;
     std::atomic<std::size_t> connected_count_;
     std::atomic_bool running_;
     opentxs::network::zeromq::internal::Thread* thread_;
@@ -129,13 +132,15 @@ private:
     auto get_required_height(Chain chain) const noexcept -> Height;
 
     auto flush_pending() noexcept -> void;
+    auto flush_pending(Chain chain) noexcept -> void;
+    auto forward_to_all(Chain chain, Message&& message) noexcept -> void;
     auto forward_to_all(Message&& message) noexcept -> void;
-    auto forward_to_all(Chain chain, const Message& message) noexcept -> void;
     auto ping_server(client::Server& server) noexcept -> void;
-    auto process_header(Message&& msg) noexcept -> void;
     auto process_external(Message&& msg) noexcept -> void;
+    auto process_header(Message&& msg) noexcept -> void;
     auto process_internal(Message&& msg) noexcept -> void;
     auto process_monitor(Message&& msg) noexcept -> void;
+    auto process_pushtx(Message&& msg) noexcept -> void;
     auto process_register(Message&& msg) noexcept -> void;
     auto process_request(Message&& msg) noexcept -> void;
     auto process_response(Message&& msg) noexcept -> void;

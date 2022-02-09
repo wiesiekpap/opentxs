@@ -24,6 +24,8 @@
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/PublishContract.hpp"       // IWYU pragma: keep
 #include "opentxs/network/p2p/PublishContractReply.hpp"  // IWYU pragma: keep
+#include "opentxs/network/p2p/PushTransaction.hpp"       // IWYU pragma: keep
+#include "opentxs/network/p2p/PushTransactionReply.hpp"  // IWYU pragma: keep
 #include "opentxs/network/p2p/Query.hpp"                 // IWYU pragma: keep
 #include "opentxs/network/p2p/QueryContract.hpp"         // IWYU pragma: keep
 #include "opentxs/network/p2p/QueryContractReply.hpp"    // IWYU pragma: keep
@@ -56,6 +58,8 @@ auto MessageToWork() noexcept -> const ForwardMap&
         {MessageType::publish_ack, WorkType::P2PResponse},
         {MessageType::contract_query, WorkType::P2PQueryContract},
         {MessageType::contract, WorkType::P2PResponse},
+        {MessageType::pushtx, WorkType::P2PPushTransaction},
+        {MessageType::pushtx_reply, WorkType::P2PResponse},
     };
 
     return data;
@@ -138,6 +142,21 @@ auto Base::Imp::asPublishContractReply() const noexcept
     -> const PublishContractReply&
 {
     static const auto blank = factory::BlockchainSyncPublishContractReply();
+
+    return blank;
+}
+
+auto Base::Imp::asPushTransaction() const noexcept -> const PushTransaction&
+{
+    static const auto blank = factory::BlockchainSyncPushTransaction();
+
+    return blank;
+}
+
+auto Base::Imp::asPushTransactionReply() const noexcept
+    -> const PushTransactionReply&
+{
+    static const auto blank = factory::BlockchainSyncPushTransactionReply();
 
     return blank;
 }
@@ -264,6 +283,17 @@ auto Base::asPublishContractReply() const noexcept
     -> const PublishContractReply&
 {
     return imp_->asPublishContractReply();
+}
+
+auto Base::asPushTransaction() const noexcept -> const PushTransaction&
+{
+    return imp_->asPushTransaction();
+}
+
+auto Base::asPushTransactionReply() const noexcept
+    -> const PushTransactionReply&
+{
+    return imp_->asPushTransactionReply();
 }
 
 auto Base::asQuery() const noexcept -> const Query& { return imp_->asQuery(); }

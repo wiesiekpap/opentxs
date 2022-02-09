@@ -10,6 +10,7 @@
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
 #include "integration/Helpers.hpp"
+#include "internal/blockchain/Params.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -17,6 +18,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/AddressType.hpp"
@@ -30,6 +32,8 @@
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/PublishContract.hpp"
 #include "opentxs/network/p2p/PublishContractReply.hpp"
+#include "opentxs/network/p2p/PushTransaction.hpp"
+#include "opentxs/network/p2p/PushTransactionReply.hpp"
 #include "opentxs/network/p2p/Query.hpp"
 #include "opentxs/network/p2p/QueryContract.hpp"
 #include "opentxs/network/p2p/QueryContractReply.hpp"
@@ -892,6 +896,138 @@ TEST_F(Regtest_fixture_sync, query_unit)
         EXPECT_EQ(reply.ContractType(), ot::contract::Type::unit);
         ASSERT_TRUE(opentxs::valid(reply.Payload()));
         EXPECT_EQ(expected->Bytes(), reply.Payload());
+    }
+}
+
+TEST_F(Regtest_fixture_sync, pushtx)
+{
+    static const auto hex = ot::UnallocatedCString{
+        "01000000000102fff7f7881a8099afa6940d42d1e7f6362bec38171ea3edf43354"
+        "1db4e4ad969f00000000494830450221008b9d1dc26ba6a9cb62127b02742fa9d7"
+        "54cd3bebf337f7a55d114c8e5cdd30be022040529b194ba3f9281a99f2b1c0a19c"
+        "0489bc22ede944ccf4ecbab4cc618ef3ed01eeffffffef51e1b804cc89d182d279"
+        "655c3aa89e815b1b309fe287d9b2b55d57b90ec68a0100000000ffffffff02202c"
+        "b206000000001976a9148280b37df378db99f66f85c95a783a76ac7a6d5988ac90"
+        "93510d000000001976a9143bde42dbee7e4dbe6a21b2d50ce2f0167faa815988ac"
+        "000247304402203609e17b84f6a7d30c80bfa610b5b4542f32a8a0d5447a12fb13"
+        "66d7f01cc44a0220573a954c4518331561406f90300e8f3358f51928d43c212a8c"
+        "aed02de67eebee0121025476c2e83188368da1ff3e292e7acafcdb3566bb0ad253"
+        "f62fc70f07aeee635711000000"};
+    const auto data = client_2_.Factory().Data(hex, ot::StringStyle::Hex);
+    const auto tx = client_2_.Factory().BitcoinTransaction(
+        test_chain_, data->Bytes(), false);
+
+    ASSERT_TRUE(tx);
+
+    const auto original =
+        opentxs::factory::BlockchainSyncPushTransaction(test_chain_, *tx);
+
+    EXPECT_EQ(original.Type(), otsync::MessageType::pushtx);
+    EXPECT_NE(original.Version(), 0);
+    EXPECT_EQ(original.Chain(), test_chain_);
+    EXPECT_EQ(original.ID(), tx->ID());
+    EXPECT_EQ(original.Payload(), data->Bytes());
+
+    {
+        const auto serialized = [&] {
+            auto out = opentxs::network::zeromq::Message{};
+
+            EXPECT_TRUE(original.Serialize(out));
+
+            return out;
+        }();
+
+        EXPECT_EQ(serialized.size(), 5);
+
+        const auto header = serialized.Header();
+        const auto body = serialized.Body();
+
+        EXPECT_EQ(header.size(), 0);
+        EXPECT_EQ(body.size(), 4);
+
+        auto recovered = client_2_.Factory().BlockchainSyncMessage(serialized);
+
+        ASSERT_TRUE(recovered);
+
+        EXPECT_EQ(recovered->Type(), original.Type());
+        EXPECT_EQ(recovered->Version(), original.Version());
+
+        const auto& query = recovered->asPushTransaction();
+
+        EXPECT_EQ(query.Type(), original.Type());
+        EXPECT_EQ(query.Version(), original.Version());
+        EXPECT_EQ(query.Chain(), original.Chain());
+        EXPECT_EQ(query.ID(), original.ID());
+        EXPECT_EQ(query.Payload(), original.Payload());
+    }
+
+    sync_req_.expected_ += 1;
+
+    EXPECT_TRUE(sync_req_.request(original));
+    ASSERT_TRUE(sync_req_.wait());
+
+    {
+        const auto& msg = sync_req_.get(++sync_req_.checked_);
+        const auto base = client_2_.Factory().BlockchainSyncMessage(msg);
+
+        ASSERT_TRUE(base);
+        ASSERT_EQ(base->Type(), otsync::MessageType::pushtx_reply);
+
+        const auto& reply = base->asPushTransactionReply();
+
+        EXPECT_EQ(reply.Chain(), original.Chain());
+        EXPECT_EQ(reply.ID(), original.ID());
+        EXPECT_TRUE(reply.Success());
+    }
+}
+
+TEST_F(Regtest_fixture_sync, pushtx_chain_not_active)
+{
+    static const auto hex = ot::UnallocatedCString{
+        "01000000000102fff7f7881a8099afa6940d42d1e7f6362bec38171ea3edf43354"
+        "1db4e4ad969f00000000494830450221008b9d1dc26ba6a9cb62127b02742fa9d7"
+        "54cd3bebf337f7a55d114c8e5cdd30be022040529b194ba3f9281a99f2b1c0a19c"
+        "0489bc22ede944ccf4ecbab4cc618ef3ed01eeffffffef51e1b804cc89d182d279"
+        "655c3aa89e815b1b309fe287d9b2b55d57b90ec68a0100000000ffffffff02202c"
+        "b206000000001976a9148280b37df378db99f66f85c95a783a76ac7a6d5988ac90"
+        "93510d000000001976a9143bde42dbee7e4dbe6a21b2d50ce2f0167faa815988ac"
+        "000247304402203609e17b84f6a7d30c80bfa610b5b4542f32a8a0d5447a12fb13"
+        "66d7f01cc44a0220573a954c4518331561406f90300e8f3358f51928d43c212a8c"
+        "aed02de67eebee0121025476c2e83188368da1ff3e292e7acafcdb3566bb0ad253"
+        "f62fc70f07aeee635711000000"};
+    const auto data = client_2_.Factory().Data(hex, ot::StringStyle::Hex);
+    const constexpr auto chain = ot::blockchain::Type::Bitcoin;
+    const auto tx =
+        client_2_.Factory().BitcoinTransaction(chain, data->Bytes(), false);
+
+    ASSERT_TRUE(tx);
+
+    const auto original =
+        opentxs::factory::BlockchainSyncPushTransaction(chain, *tx);
+
+    EXPECT_EQ(original.Type(), otsync::MessageType::pushtx);
+    EXPECT_NE(original.Version(), 0);
+    EXPECT_EQ(original.Chain(), chain);
+    EXPECT_EQ(original.ID(), tx->ID());
+    EXPECT_EQ(original.Payload(), data->Bytes());
+
+    sync_req_.expected_ += 1;
+
+    EXPECT_TRUE(sync_req_.request(original));
+    ASSERT_TRUE(sync_req_.wait());
+
+    {
+        const auto& msg = sync_req_.get(++sync_req_.checked_);
+        const auto base = client_2_.Factory().BlockchainSyncMessage(msg);
+
+        ASSERT_TRUE(base);
+        ASSERT_EQ(base->Type(), otsync::MessageType::pushtx_reply);
+
+        const auto& reply = base->asPushTransactionReply();
+
+        EXPECT_EQ(reply.Chain(), original.Chain());
+        EXPECT_EQ(reply.ID(), original.ID());
+        EXPECT_FALSE(reply.Success());
     }
 }
 

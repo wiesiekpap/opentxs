@@ -19,6 +19,17 @@ namespace api
 {
 class Session;
 }  // namespace api
+
+namespace blockchain
+{
+namespace block
+{
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+}  // namespace block
+}  // namespace blockchain
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -34,9 +45,9 @@ public:
     ~SyncClient();
 
 private:
-    struct Imp;
+    class Imp;
 
-    std::unique_ptr<Imp> imp_;
+    Imp* imp_;
 
     SyncClient() = delete;
     SyncClient(const SyncClient&) = delete;

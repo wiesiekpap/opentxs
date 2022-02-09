@@ -59,10 +59,13 @@ public:
     static auto translate(const RemoteType in) noexcept -> LocalType;
 
     virtual auto asAcknowledgement() const noexcept -> const Acknowledgement&;
+    virtual auto asData() const noexcept -> const Data&;
     virtual auto asPublishContract() const noexcept -> const PublishContract&;
     virtual auto asPublishContractReply() const noexcept
         -> const PublishContractReply&;
-    virtual auto asData() const noexcept -> const Data&;
+    virtual auto asPushTransaction() const noexcept -> const PushTransaction&;
+    virtual auto asPushTransactionReply() const noexcept
+        -> const PushTransactionReply&;
     virtual auto asQuery() const noexcept -> const Query&;
     virtual auto asQueryContract() const noexcept -> const QueryContract&;
     virtual auto asQueryContractReply() const noexcept

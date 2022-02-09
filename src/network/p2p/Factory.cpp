@@ -25,6 +25,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
@@ -33,6 +34,8 @@
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/PublishContract.hpp"
 #include "opentxs/network/p2p/PublishContractReply.hpp"
+#include "opentxs/network/p2p/PushTransaction.hpp"
+#include "opentxs/network/p2p/PushTransactionReply.hpp"
 #include "opentxs/network/p2p/Query.hpp"
 #include "opentxs/network/p2p/QueryContract.hpp"
 #include "opentxs/network/p2p/QueryContractReply.hpp"
@@ -119,6 +122,22 @@ auto BlockchainSyncMessage(
                             id.Bytes(),
                             payload.Bytes());
                     }
+                    case MessageType::pushtx: {
+                        if (4 >= b.size()) {
+                            throw std::runtime_error{
+                                "Insufficient frames (pushtx response)"};
+                        }
+
+                        const auto& chain = b.at(2);
+                        const auto& id = b.at(3);
+                        const auto& success = b.at(4);
+
+                        return BlockchainSyncPushTransactionReply_p(
+                            api,
+                            chain.as<opentxs::blockchain::Type>(),
+                            id.Bytes(),
+                            success.Bytes());
+                    }
                     default: {
                         throw std::runtime_error{
                             UnallocatedCString{
@@ -152,6 +171,22 @@ auto BlockchainSyncMessage(
                 const auto& id = b.at(1);
 
                 return BlockchainSyncQueryContract_p(api, id.Bytes());
+            }
+            case WorkType::P2PPushTransaction: {
+                if (3 >= b.size()) {
+                    throw std::runtime_error{
+                        "Insufficient frames (publish contract)"};
+                }
+
+                const auto& chain = b.at(1);
+                const auto& id = b.at(2);
+                const auto& payload = b.at(3);
+
+                return BlockchainSyncPushTransaction_p(
+                    api,
+                    chain.as<opentxs::blockchain::Type>(),
+                    id.Bytes(),
+                    payload.Bytes());
             }
             default: {
             }
