@@ -42,7 +42,7 @@ auto Legacy::use_dot() noexcept -> bool { return false; }
 
 namespace opentxs::network::zeromq::implementation
 {
-auto Context::max_sockets() noexcept -> int { return 1024; }
+auto Context::max_sockets() noexcept -> int { return 10240; }
 }  // namespace opentxs::network::zeromq::implementation
 
 // TODO after libc++ finally incorporates this into std, and after Apple ships
