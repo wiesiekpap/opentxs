@@ -7,6 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <string_view>
+
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -17,14 +19,14 @@ OPENTXS_EXPORT auto MakeArbitraryInproc() noexcept -> UnallocatedCString;
 OPENTXS_EXPORT auto MakeArbitraryInproc(alloc::Resource* alloc) noexcept
     -> CString;
 auto MakeDeterministicInproc(
-    const UnallocatedCString& path,
+    const std::string_view path,
     const int instance,
     const int version) noexcept -> UnallocatedCString;
 auto MakeDeterministicInproc(
-    const UnallocatedCString& path,
+    const std::string_view path,
     const int instance,
     const int version,
-    const UnallocatedCString& suffix) noexcept -> UnallocatedCString;
+    const std::string_view suffix) noexcept -> UnallocatedCString;
 auto RawToZ85(const ReadView input, const AllocateOutput output) noexcept
     -> bool;
 auto Z85ToRaw(const ReadView input, const AllocateOutput output) noexcept

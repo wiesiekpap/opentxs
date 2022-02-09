@@ -47,7 +47,7 @@ auto MakeArbitraryInproc(alloc::Resource* alloc) noexcept -> CString
 }
 
 auto MakeDeterministicInproc(
-    const UnallocatedCString& path,
+    const std::string_view path,
     const int instance,
     const int version) noexcept -> UnallocatedCString
 {
@@ -63,10 +63,10 @@ auto MakeDeterministicInproc(
 }
 
 auto MakeDeterministicInproc(
-    const UnallocatedCString& path,
+    const std::string_view path,
     const int instance,
     const int version,
-    const UnallocatedCString& suffix) noexcept -> UnallocatedCString
+    const std::string_view suffix) noexcept -> UnallocatedCString
 {
     auto out = std::stringstream{};
     out << MakeDeterministicInproc(path, instance, version);

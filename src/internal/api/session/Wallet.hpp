@@ -184,6 +184,12 @@ public:
     virtual auto PeerRequestCreate(
         const identifier::Nym& nym,
         const proto::PeerRequest& request) const -> bool = 0;
+    virtual auto PublishNotary(const identifier::Notary& id) const noexcept
+        -> bool = 0;
+    virtual auto PublishNym(const identifier::Nym& id) const noexcept
+        -> bool = 0;
+    virtual auto PublishUnit(
+        const identifier::UnitDefinition& id) const noexcept -> bool = 0;
     virtual auto SaveCredential(const proto::Credential& credential) const
         -> bool = 0;
     using session::Wallet::Server;

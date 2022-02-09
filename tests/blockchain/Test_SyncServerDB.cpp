@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <memory>
+#include <string_view>
 
 #include "Helpers.hpp"
 #include "opentxs/OT.hpp"
@@ -53,7 +54,8 @@ protected:
         , listener_([&]() -> auto& {
             if (!listener_p_) {
                 listener_p_ = std::make_unique<Listener>(
-                    api_, api_.Endpoints().BlockchainSyncServerUpdated());
+                    api_,
+                    api_.Endpoints().BlockchainSyncServerUpdated().data());
             }
 
             return *listener_p_;

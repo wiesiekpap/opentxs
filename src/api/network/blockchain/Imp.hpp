@@ -19,9 +19,9 @@
 #include "api/network/Blockchain.hpp"
 #include "blockchain/database/common/Database.hpp"
 #include "internal/api/network/Blockchain.hpp"
-#include "internal/api/network/blockchain/SyncClientRouter.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "network/p2p/server/Server.hpp"
+#include "internal/network/p2p/Client.hpp"
+#include "internal/network/p2p/Server.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -44,11 +44,6 @@ class Blockchain;
 
 namespace network
 {
-namespace blockchain
-{
-class SyncClientRouter;
-}  // namespace blockchain
-
 class Blockchain;
 }  // namespace network
 
@@ -85,6 +80,7 @@ namespace network
 {
 namespace p2p
 {
+class Client;
 class Server;
 }  // namespace p2p
 
@@ -200,7 +196,7 @@ private:
     mutable std::mutex lock_;
     mutable UnallocatedMap<Chain, Config> config_;
     mutable UnallocatedMap<Chain, pNode> networks_;
-    mutable std::optional<blockchain::SyncClientRouter> sync_client_;
+    mutable std::optional<opentxs::network::p2p::Client> sync_client_;
     mutable opentxs::network::p2p::Server sync_server_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;

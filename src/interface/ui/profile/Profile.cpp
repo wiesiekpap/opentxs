@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <functional>
 #include <memory>
+#include <string_view>
 #include <thread>
 #include <tuple>
 #include <utility>
@@ -69,7 +70,7 @@ Profile::Profile(
     const SimpleCallback& cb) noexcept
     : ProfileList(api, nymID, cb, false)
     , listeners_({
-          {api_.Endpoints().NymDownload(),
+          {api_.Endpoints().NymDownload().data(),
            new MessageProcessor<Profile>(&Profile::process_nym)},
       })
     , callbacks_()

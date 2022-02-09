@@ -1955,8 +1955,8 @@ auto RPC::start_client(const proto::RPCCommand& command) const
             ot_.StartClientSession(get_args(command.arg()), session);
         instance = manager.Instance();
 
-        auto bound =
-            task_subscriber_->Start(manager.Endpoints().TaskComplete());
+        auto bound = task_subscriber_->Start(
+            UnallocatedCString{manager.Endpoints().TaskComplete()});
 
         OT_ASSERT(bound)
 

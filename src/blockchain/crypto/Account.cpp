@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <optional>
 #include <stdexcept>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -101,7 +102,7 @@ Account::Account(
     , find_nym_([&] {
         using Dir = network::zeromq::socket::Socket::Direction;
         auto out = api_.Network().ZeroMQ().PushSocket(Dir::Connect);
-        const auto started = out->Start(api_.Endpoints().FindNym());
+        const auto started = out->Start(api_.Endpoints().FindNym().data());
 
         OT_ASSERT(started);
 

@@ -72,7 +72,7 @@ IssuerItem::IssuerItem(
           key,
           false)
     , listeners_({
-          {api_.Endpoints().AccountUpdate(),
+          {UnallocatedCString{api_.Endpoints().AccountUpdate()},
            new MessageProcessor<IssuerItem>(&IssuerItem::process_account)},
       })
     , name_{std::get<1>(key_)}

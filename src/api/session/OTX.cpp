@@ -13,6 +13,7 @@
 #include <ctime>
 #include <memory>
 #include <stdexcept>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 
@@ -188,10 +189,11 @@ OTX::OTX(
           }))
     , account_subscriber_([&] {
         const auto endpoint = api_.Endpoints().AccountUpdate();
-        LogDetail()(OT_PRETTY_CLASS())("Connecting to ")(endpoint).Flush();
+        LogDetail()(OT_PRETTY_CLASS())("Connecting to ")(endpoint.data())
+            .Flush();
         auto out = api_.Network().ZeroMQ().SubscribeSocket(
             account_subscriber_callback_.get());
-        const auto start = out->Start(endpoint);
+        const auto start = out->Start(endpoint.data());
 
         OT_ASSERT(start);
 
@@ -205,8 +207,8 @@ OTX::OTX(
         auto out = api_.Network().ZeroMQ().PullSocket(
             notification_listener_callback_,
             zmq::socket::Socket::Direction::Bind);
-        const auto start =
-            out->Start(api_.Endpoints().Internal().ProcessPushNotification());
+        const auto start = out->Start(
+            api_.Endpoints().Internal().ProcessPushNotification().data());
 
         OT_ASSERT(start);
 
@@ -219,7 +221,7 @@ OTX::OTX(
     , find_nym_listener_([&] {
         auto out = api_.Network().ZeroMQ().PullSocket(
             find_nym_callback_, zmq::socket::Socket::Direction::Bind);
-        const auto start = out->Start(api_.Endpoints().FindNym());
+        const auto start = out->Start(api_.Endpoints().FindNym().data());
 
         OT_ASSERT(start);
 
@@ -232,7 +234,7 @@ OTX::OTX(
     , find_server_listener_([&] {
         auto out = api_.Network().ZeroMQ().PullSocket(
             find_server_callback_, zmq::socket::Socket::Direction::Bind);
-        const auto start = out->Start(api_.Endpoints().FindServer());
+        const auto start = out->Start(api_.Endpoints().FindServer().data());
 
         OT_ASSERT(start);
 
@@ -245,7 +247,8 @@ OTX::OTX(
     , find_unit_listener_([&] {
         auto out = api_.Network().ZeroMQ().PullSocket(
             find_unit_callback_, zmq::socket::Socket::Direction::Bind);
-        const auto start = out->Start(api_.Endpoints().FindUnitDefinition());
+        const auto start =
+            out->Start(api_.Endpoints().FindUnitDefinition().data());
 
         OT_ASSERT(start);
 
@@ -253,7 +256,7 @@ OTX::OTX(
     }())
     , task_finished_([&] {
         auto out = api_.Network().ZeroMQ().PublishSocket();
-        const auto start = out->Start(api_.Endpoints().TaskComplete());
+        const auto start = out->Start(api_.Endpoints().TaskComplete().data());
 
         OT_ASSERT(start);
 
@@ -261,7 +264,7 @@ OTX::OTX(
     }())
     , messagability_([&] {
         auto out = api_.Network().ZeroMQ().PublishSocket();
-        const auto start = out->Start(api_.Endpoints().Messagability());
+        const auto start = out->Start(api_.Endpoints().Messagability().data());
 
         OT_ASSERT(start);
 

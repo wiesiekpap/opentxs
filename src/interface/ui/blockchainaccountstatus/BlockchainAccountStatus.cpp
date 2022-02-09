@@ -72,9 +72,9 @@ BlockchainAccountStatus::BlockchainAccountStatus(
     , chain_(chain)
 {
     init_executor({
-        api.Endpoints().BlockchainAccountCreated(),
-        api.Endpoints().BlockchainReorg(),
-        api.Endpoints().BlockchainScanProgress(),
+        UnallocatedCString{api.Endpoints().BlockchainAccountCreated()},
+        UnallocatedCString{api.Endpoints().BlockchainReorg()},
+        UnallocatedCString{api.Endpoints().BlockchainScanProgress()},
     });
     pipeline_.Push(MakeWork(Work::init));
 }

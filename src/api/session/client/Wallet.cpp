@@ -9,6 +9,7 @@
 
 #include <exception>
 #include <functional>
+#include <string_view>
 
 #include "api/session/Wallet.hpp"
 #include "internal/api/session/Factory.hpp"
@@ -62,8 +63,10 @@ Wallet::Wallet(const api::session::Client& parent)
     , request_sent_(client_.Network().ZeroMQ().PublishSocket())
     , reply_received_(client_.Network().ZeroMQ().PublishSocket())
 {
-    auto bound = request_sent_->Start(api_.Endpoints().ServerRequestSent());
-    bound &= reply_received_->Start(api_.Endpoints().ServerReplyReceived());
+    auto bound =
+        request_sent_->Start(api_.Endpoints().ServerRequestSent().data());
+    bound &=
+        reply_received_->Start(api_.Endpoints().ServerReplyReceived().data());
 
     OT_ASSERT(bound);
 }

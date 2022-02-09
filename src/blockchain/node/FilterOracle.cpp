@@ -14,6 +14,7 @@
 #include <future>
 #include <iterator>
 #include <stdexcept>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -132,7 +133,7 @@ FilterOracle::FilterOracle(
     , new_filters_([&] {
         auto socket = api_.Network().ZeroMQ().PublishSocket();
         auto started = socket->Start(
-            api_.Endpoints().Internal().BlockchainFilterUpdated(chain_));
+            api_.Endpoints().Internal().BlockchainFilterUpdated(chain_).data());
 
         OT_ASSERT(started);
 

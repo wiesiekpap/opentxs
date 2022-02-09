@@ -60,7 +60,7 @@ ContactList::ContactList(
     OT_ASSERT(false == owner_contact_id_->empty());
 
     process_contact(owner_contact_id_);
-    init_executor({api.Endpoints().ContactUpdate()});
+    init_executor({UnallocatedCString{api.Endpoints().ContactUpdate()}});
     pipeline_.Push(MakeWork(Work::init));
 }
 

@@ -69,9 +69,9 @@ SeedTree::SeedTree(
     , default_seed_(api.Factory().Identifier())
 {
     init_executor({
-        api.Endpoints().NymCreated(),
-        api.Endpoints().NymDownload(),
-        api.Endpoints().SeedUpdated(),
+        UnallocatedCString{api.Endpoints().NymCreated()},
+        UnallocatedCString{api.Endpoints().NymDownload()},
+        UnallocatedCString{api.Endpoints().SeedUpdated()},
     });
     pipeline_.Push(MakeWork(Work::init));
 }

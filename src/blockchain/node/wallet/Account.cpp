@@ -12,8 +12,11 @@
 #include <utility>
 
 #include "blockchain/node/wallet/DeterministicStateData.hpp"  // IWYU pragma: keep
+#include "internal/api/session/Wallet.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
@@ -145,6 +148,8 @@ struct Account::Imp {
         , jobs_(std::move(jobs))
         , gatekeeper_()
     {
+        api_.Wallet().Internal().PublishNym(ref.NymID());
+
         for (const auto& account : ref_.GetHD()) {
             instantiate(account, Subchain::Internal, internal_);
             instantiate(account, Subchain::External, external_);

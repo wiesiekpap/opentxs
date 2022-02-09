@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iterator>
 #include <mutex>
+#include <string_view>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
@@ -126,7 +127,7 @@ struct BalanceOracle::Imp {
             auto out =
                 zmq_.RouterSocket(cb_, zmq::socket::Socket::Direction::Bind);
             const auto started =
-                out->Start(api_.Endpoints().BlockchainBalance());
+                out->Start(api_.Endpoints().BlockchainBalance().data());
 
             OT_ASSERT(started);
 
@@ -135,7 +136,7 @@ struct BalanceOracle::Imp {
         , publisher_([&] {
             auto out = zmq_.PublishSocket();
             const auto started =
-                out->Start(api_.Endpoints().BlockchainWalletUpdated());
+                out->Start(api_.Endpoints().BlockchainWalletUpdated().data());
 
             OT_ASSERT(started);
 

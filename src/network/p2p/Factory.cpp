@@ -71,7 +71,6 @@ auto BlockchainSyncMessage(
 
                 return typeFrame.as<WorkType>();
             } catch (...) {
-
                 throw std::runtime_error{"Invalid type"};
             }
         }();

@@ -12,6 +12,7 @@
 #include <iterator>
 #include <memory>
 #include <stdexcept>
+#include <string_view>
 #include <type_traits>
 
 #include "Proto.hpp"
@@ -463,8 +464,8 @@ Workflow::Workflow(
 {
     // WARNING: do not access api_.Wallet() during construction
     const auto endpoint = api_.Endpoints().WorkflowAccountUpdate();
-    LogDetail()(OT_PRETTY_CLASS())("Binding to ")(endpoint).Flush();
-    auto bound = account_publisher_->Start(endpoint);
+    LogDetail()(OT_PRETTY_CLASS())("Binding to ")(endpoint.data()).Flush();
+    auto bound = account_publisher_->Start(endpoint.data());
 
     OT_ASSERT(bound)
 

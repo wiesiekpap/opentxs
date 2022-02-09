@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
+#include <string_view>
 #include <thread>
 #include <type_traits>
 #include <utility>
@@ -75,7 +76,7 @@ Activity::Activity(
     , contact_(contact)
     , message_loaded_([&] {
         auto out = api_.Network().ZeroMQ().PublishSocket();
-        const auto rc = out->Start(api_.Endpoints().MessageLoaded());
+        const auto rc = out->Start(api_.Endpoints().MessageLoaded().data());
 
         OT_ASSERT(rc);
 
@@ -392,7 +393,7 @@ auto Activity::get_blockchain(const eLock&, const identifier::Nym& nymID)
 
     const auto endpoint = api_.Endpoints().BlockchainTransactions(nymID);
     const auto& [publisher, inserted] =
-        blockchain_publishers_.emplace(nymID, start_publisher(endpoint));
+        blockchain_publishers_.emplace(nymID, start_publisher(endpoint.data()));
 
     OT_ASSERT(inserted);
 

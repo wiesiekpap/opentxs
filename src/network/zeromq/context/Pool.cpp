@@ -12,12 +12,12 @@
 #include <cassert>
 #include <functional>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <thread>
 
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/context/Thread.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::network::zeromq::context

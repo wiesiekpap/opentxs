@@ -56,7 +56,8 @@ PayableList::PayableList(
     , currency_(currency)
 {
     init_executor(
-        {api.Endpoints().ContactUpdate(), api.Endpoints().NymDownload()});
+        {UnallocatedCString{api.Endpoints().ContactUpdate()},
+         UnallocatedCString{api.Endpoints().NymDownload()}});
     pipeline_.Push(MakeWork(Work::init));
 }
 

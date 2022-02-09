@@ -3,12 +3,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+if(OT_BLOCKCHAIN_EXPORT)
+  add_subdirectory(client)
+endif()
+
 add_subdirectory(server)
 
 target_sources(
   opentxs-common
   PRIVATE
     "${opentxs_SOURCE_DIR}/src/internal/network/p2p/Factory.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/network/p2p/Types.hpp"
     "Acknowledgement.cpp"
     "Base.cpp"
     "Base.hpp"

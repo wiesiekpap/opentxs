@@ -5,12 +5,14 @@
 
 #pragma once
 
-#include <memory>
+#include <atomic>
+#include <functional>
+#include <mutex>
+#include <tuple>
 
-#include "internal/api/network/Blockchain.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
+#include "internal/network/p2p/Server.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/Gatekeeper.hpp"
 
 namespace opentxs
 {
@@ -21,37 +23,77 @@ class Session;
 
 namespace network
 {
+namespace p2p
+{
+class Base;
+}  // namespace p2p
+
 namespace zeromq
 {
+namespace internal
+{
+class Batch;
+class Thread;
+}  // namespace internal
+
+namespace socket
+{
+class Raw;
+}  // namespace socket
+
 class Context;
+class ListenCallback;
+class Message;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
 
 namespace opentxs::network::p2p
 {
-class Server
+class Server::Imp
 {
 public:
-    using Chain = opentxs::blockchain::Type;
+    using Map = UnallocatedMap<
+        Chain,
+        std::tuple<
+            UnallocatedCString,
+            bool,
+            std::reference_wrapper<zeromq::socket::Raw>>>;
 
-    auto Endpoint(const Chain chain) const noexcept -> UnallocatedCString;
+    const api::Session& api_;
+    const zeromq::Context& zmq_;
+    zeromq::internal::Batch& batch_;
+    const zeromq::ListenCallback& external_callback_;
+    const zeromq::ListenCallback& internal_callback_;
+    zeromq::socket::Raw& sync_;
+    zeromq::socket::Raw& update_;
+    zeromq::socket::Raw& wallet_;
+    mutable std::mutex map_lock_;
+    Map map_;
+    zeromq::internal::Thread* thread_;
+    UnallocatedCString sync_endpoint_;
+    UnallocatedCString sync_public_endpoint_;
+    UnallocatedCString update_endpoint_;
+    UnallocatedCString update_public_endpoint_;
+    std::atomic_bool started_;
+    std::atomic_bool running_;
+    mutable Gatekeeper gate_;
 
-    auto Disable(const Chain chain) noexcept -> void;
-    auto Enable(const Chain chain) noexcept -> void;
-    auto Start(
-        const UnallocatedCString& sync,
-        const UnallocatedCString& publicSync,
-        const UnallocatedCString& update,
-        const UnallocatedCString& publicUpdate) noexcept -> bool;
+    Imp(const api::Session& api, const zeromq::Context& zmq) noexcept;
 
-    Server(const api::Session& api, const zeromq::Context& zmq) noexcept;
-
-    ~Server();
+    ~Imp();
 
 private:
-    class Imp;
+    auto process_external(zeromq::Message&& incoming) noexcept -> void;
+    auto process_internal(zeromq::Message&& incoming) noexcept -> void;
+    auto process_sync(
+        zeromq::Message&& incoming,
+        const p2p::Base& base) noexcept -> void;
 
-    std::unique_ptr<Imp> imp_;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs::network::p2p

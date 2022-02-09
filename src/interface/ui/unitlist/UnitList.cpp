@@ -8,6 +8,7 @@
 #include "interface/ui/unitlist/UnitList.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <string_view>
 #include <thread>
 #include <utility>
 
@@ -70,7 +71,7 @@ UnitList::UnitList(
           zmq::socket::Socket::Direction::Connect))
 #endif  // OT_BLOCKCHAIN
     , listeners_{
-          {api_.Endpoints().AccountUpdate(),
+          {api_.Endpoints().AccountUpdate().data(),
            new MessageProcessor<UnitList>(&UnitList::process_account)}}
 {
     setup_listeners(listeners_);
@@ -139,7 +140,7 @@ auto UnitList::setup_listeners(const ListenerDefinitions& definitions) noexcept
 {
     Widget::setup_listeners(definitions);
     const auto connected =
-        blockchain_balance_->Start(api_.Endpoints().BlockchainBalance());
+        blockchain_balance_->Start(api_.Endpoints().BlockchainBalance().data());
 
     OT_ASSERT(connected);
 }

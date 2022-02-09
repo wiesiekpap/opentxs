@@ -12,6 +12,7 @@
 #include <future>
 #include <limits>
 #include <memory>
+#include <string_view>
 #include <type_traits>
 
 #include "interface/ui/base/List.hpp"
@@ -94,18 +95,18 @@ BlockchainAccountActivity::BlockchainAccountActivity(
     , progress_()
     , height_(0)
 {
-    const auto connected =
-        balance_socket_->Start(Widget::api_.Endpoints().BlockchainBalance());
+    const auto connected = balance_socket_->Start(
+        Widget::api_.Endpoints().BlockchainBalance().data());
 
     OT_ASSERT(connected);
 
     init({
-        api.Endpoints().BlockchainReorg(),
-        api.Endpoints().BlockchainStateChange(),
-        api.Endpoints().BlockchainSyncProgress(),
-        api.Endpoints().BlockchainTransactions(),
-        api.Endpoints().BlockchainTransactions(nymID),
-        api.Endpoints().ContactUpdate(),
+        UnallocatedCString{api.Endpoints().BlockchainReorg()},
+        UnallocatedCString{api.Endpoints().BlockchainStateChange()},
+        UnallocatedCString{api.Endpoints().BlockchainSyncProgress()},
+        UnallocatedCString{api.Endpoints().BlockchainTransactions()},
+        UnallocatedCString{api.Endpoints().BlockchainTransactions(nymID)},
+        UnallocatedCString{api.Endpoints().ContactUpdate()},
     });
     balance_socket_->Send([&] {
         auto work =

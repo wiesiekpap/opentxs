@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include <cxxabi.h>
+
 #include "0_stdafx.hpp"            // IWYU pragma: associated
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "api/session/Wallet.hpp"  // IWYU pragma: associated
@@ -11,16 +13,24 @@
 #include <functional>
 #include <iterator>
 #include <stdexcept>
+#include <string_view>
 #include <thread>
 #include <type_traits>
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
+#include "internal/api/session/Endpoints.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/identity/Identity.hpp"
+#include "internal/network/p2p/Factory.hpp"
+#include "internal/network/p2p/Types.hpp"
+#include "internal/network/zeromq/Batch.hpp"
+#include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
+#include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/otx/OTX.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Purse.hpp"
@@ -49,6 +59,8 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/BasketContract.hpp"
+#include "opentxs/core/contract/ContractType.hpp"
+#include "opentxs/core/contract/Types.hpp"
 #include "opentxs/core/contract/Unit.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
@@ -57,15 +69,28 @@
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/core/identifier/Types.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/identity/IdentityType.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/network/p2p/Base.hpp"
+#include "opentxs/network/p2p/MessageType.hpp"
+#include "opentxs/network/p2p/PublishContract.hpp"
+#include "opentxs/network/p2p/PublishContractReply.hpp"
+#include "opentxs/network/p2p/QueryContract.hpp"
+#include "opentxs/network/p2p/QueryContractReply.hpp"
+#include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/ListenCallback.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"  // IWYU pragma: keep
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
@@ -124,19 +149,80 @@ Wallet::Wallet(const api::Session& api)
     , dht_unit_requester_{api_.Network().ZeroMQ().RequestSocket()}
     , find_nym_(api_.Network().ZeroMQ().PushSocket(
           opentxs::network::zeromq::socket::Socket::Direction::Connect))
+    , batch_([&]() -> auto& {
+        using Type = opentxs::network::zeromq::socket::Type;
+        using Callback = opentxs::network::zeromq::ListenCallback;
+        auto& out = api_.Network().ZeroMQ().Internal().MakeBatch({
+            Type::Pair,
+            Type::Pull,
+        });
+        out.listen_callbacks_.emplace_back(Callback::Factory(
+            [this](auto&& in) { process_p2p(std::move(in)); }));
+
+        return out;
+    }())
+    , p2p_callback_(batch_.listen_callbacks_.at(0))
+    , p2p_socket_([&]() -> auto& {
+        auto& out = batch_.sockets_.at(0);
+        const auto endpoint = CString{api_.Endpoints().Internal().P2PWallet()};
+        const auto rc = out.Bind(endpoint.c_str());
+
+        OT_ASSERT(rc);
+
+        LogTrace()(OT_PRETTY_CLASS())("wallet socket bound to ")(endpoint)
+            .Flush();
+
+        return out;
+    }())
+    , loopback_(batch_.sockets_.at(1))
+    , to_loopback_([&] {
+        using Type = opentxs::network::zeromq::socket::Type;
+        const auto endpoint = opentxs::network::zeromq::MakeArbitraryInproc();
+        const auto& context = api_.Network().ZeroMQ();
+        auto socket = factory::ZMQSocket(context, Type::Push);
+        auto rc = loopback_.Bind(endpoint.c_str());
+
+        OT_ASSERT(rc);
+
+        rc = socket.Connect(endpoint.c_str());
+
+        OT_ASSERT(rc);
+
+        rc = socket.SetOutgoingHWM(0);
+
+        OT_ASSERT(rc);
+
+        return socket;
+    }())
+    , thread_(api_.Network().ZeroMQ().Internal().Start(
+          batch_.id_,
+          {
+              {p2p_socket_.ID(),
+               &p2p_socket_,
+               [id = p2p_socket_.ID(), &cb = p2p_callback_](auto&& m) {
+                   cb.Process(std::move(m));
+               }},
+              {loopback_.ID(),
+               &loopback_,
+               [id = loopback_.ID(), &socket = p2p_socket_](auto&& m) {
+                   socket.Send(std::move(m));
+               }},
+          }))
 {
-    account_publisher_->Start(api_.Endpoints().AccountUpdate());
-    issuer_publisher_->Start(api_.Endpoints().IssuerUpdate());
-    nym_publisher_->Start(api_.Endpoints().NymDownload());
-    nym_created_publisher_->Start(api_.Endpoints().NymCreated());
-    server_publisher_->Start(api_.Endpoints().ServerUpdate());
-    unit_publisher_->Start(api_.Endpoints().UnitUpdate());
-    peer_reply_publisher_->Start(api_.Endpoints().PeerReplyUpdate());
-    peer_request_publisher_->Start(api_.Endpoints().PeerRequestUpdate());
-    dht_nym_requester_->Start(api_.Endpoints().DhtRequestNym());
-    dht_server_requester_->Start(api_.Endpoints().DhtRequestServer());
-    dht_unit_requester_->Start(api_.Endpoints().DhtRequestUnit());
-    find_nym_->Start(api_.Endpoints().FindNym());
+    account_publisher_->Start(api_.Endpoints().AccountUpdate().data());
+    issuer_publisher_->Start(api_.Endpoints().IssuerUpdate().data());
+    nym_publisher_->Start(api_.Endpoints().NymDownload().data());
+    nym_created_publisher_->Start(api_.Endpoints().NymCreated().data());
+    server_publisher_->Start(api_.Endpoints().ServerUpdate().data());
+    unit_publisher_->Start(api_.Endpoints().UnitUpdate().data());
+    peer_reply_publisher_->Start(api_.Endpoints().PeerReplyUpdate().data());
+    peer_request_publisher_->Start(api_.Endpoints().PeerRequestUpdate().data());
+    dht_nym_requester_->Start(api_.Endpoints().DhtRequestNym().data());
+    dht_server_requester_->Start(api_.Endpoints().DhtRequestServer().data());
+    dht_unit_requester_->Start(api_.Endpoints().DhtRequestUnit().data());
+    find_nym_->Start(api_.Endpoints().FindNym().data());
+
+    OT_ASSERT(nullptr != thread_);
 }
 
 auto Wallet::account(
@@ -1035,13 +1121,7 @@ auto Wallet::Nym(
                 nym_map_.erase(id);
             }
         } else {
-            dht_nym_requester_->Send([&] {
-                auto work = opentxs::network::zeromq::tagged_message(
-                    WorkType::DHTRequestNym);
-                work.AddFrame(id);
-
-                return work;
-            }());
+            search_nym(id);
 
             if (timeout > std::chrono::milliseconds(0)) {
                 mapLock.unlock();
@@ -1889,6 +1969,356 @@ auto Wallet::PeerRequestUpdate(
     }
 }
 
+auto Wallet::process_p2p(opentxs::network::zeromq::Message&& msg) const noexcept
+    -> void
+{
+    const auto body = msg.Body();
+
+    if (0 == body.size()) { OT_FAIL; }
+
+    using Job = opentxs::network::p2p::Job;
+    const auto type = body.at(0).as<Job>();
+
+    switch (type) {
+        case Job::Response: {
+            process_p2p_response(std::move(msg));
+        } break;
+        case Job::PublishContract: {
+            process_p2p_publish_contract(std::move(msg));
+        } break;
+        case Job::QueryContract: {
+            process_p2p_query_contract(std::move(msg));
+        } break;
+        case Job::Shutdown:
+        case Job::BlockHeader:
+        case Job::Reorg:
+        case Job::SyncServerUpdated:
+        case Job::SyncAck:
+        case Job::SyncReply:
+        case Job::SyncPush:
+        case Job::Register:
+        case Job::Request:
+        case Job::Processed:
+        case Job::StateMachine:
+        default: {
+            LogError()(OT_PRETTY_CLASS())(
+                "Unsupported message type on internal socket: ")(
+                static_cast<OTZMQWorkType>(type))
+                .Flush();
+
+            OT_FAIL;
+        }
+    }
+}
+
+auto Wallet::process_p2p_publish_contract(
+    opentxs::network::zeromq::Message&& msg) const noexcept -> void
+{
+#if OT_BLOCKCHAIN
+    try {
+        const auto base = api_.Factory().BlockchainSyncMessage(msg);
+
+        if (!base) {
+            throw std::runtime_error{"failed to instantiate message"};
+        }
+
+        using Type = opentxs::network::p2p::MessageType;
+        const auto type = base->Type();
+
+        if (Type::publish_contract != type) {
+            const auto error = CString{} + "Unsupported message type " +
+                               opentxs::print(type).c_str();
+
+            throw std::runtime_error{error.c_str()};
+        }
+
+        const auto& contract = base->asPublishContract();
+        const auto& id = contract.ID();
+        auto payload = [&] {
+            const auto type = contract.ContractType();
+
+            switch (type) {
+                case contract::Type::nym: {
+                    const auto nym = Nym(contract.Payload());
+
+                    return (nym && nym->ID() == id);
+                }
+                case contract::Type::notary: {
+                    const auto notary = Server(contract.Payload());
+
+                    return (notary->ID() == id);
+                }
+                case contract::Type::unit: {
+                    const auto unit = UnitDefinition(contract.Payload());
+
+                    return (unit->ID() == id);
+                }
+                default: {
+                    throw std::runtime_error{
+                        UnallocatedCString{
+                            "unsupported or unknown contract type: "} +
+                        opentxs::print(type)};
+                }
+            }
+        }();
+        p2p_socket_.Send([&] {
+            auto out =
+                opentxs::network::zeromq::reply_to_message(std::move(msg));
+            const auto reply =
+                factory::BlockchainSyncPublishContractReply(id, payload);
+            reply.Serialize(out);
+
+            return out;
+        }());
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+    }
+#endif  // OT_BLOCKCHAIN
+}
+
+auto Wallet::process_p2p_query_contract(
+    opentxs::network::zeromq::Message&& msg) const noexcept -> void
+{
+#if OT_BLOCKCHAIN
+    try {
+        const auto base = api_.Factory().BlockchainSyncMessage(msg);
+
+        if (!base) {
+            throw std::runtime_error{"failed to instantiate message"};
+        }
+
+        using Type = opentxs::network::p2p::MessageType;
+        const auto type = base->Type();
+
+        if (Type::contract_query != type) {
+            const auto error = CString{} + "Unsupported message type " +
+                               opentxs::print(type).c_str();
+
+            throw std::runtime_error{error.c_str()};
+        }
+
+        auto payload = [&] {
+            const auto& id = base->asQueryContract().ID();
+            const auto type = translate(id.Type());
+
+            try {
+                switch (type) {
+                    case contract::Type::nym: {
+                        const auto nymID =
+                            api_.Factory().InternalSession().NymID(id);
+                        const auto nym = Nym(nymID);
+
+                        if (!nym) {
+                            throw std::runtime_error{
+                                UnallocatedCString{"nym "} + nymID->str() +
+                                " not found"};
+                        }
+
+                        return factory::BlockchainSyncQueryContractReply(*nym);
+                    }
+                    case contract::Type::notary: {
+                        const auto notaryID =
+                            api_.Factory().InternalSession().ServerID(id);
+
+                        return factory::BlockchainSyncQueryContractReply(
+                            Server(notaryID));
+                    }
+                    case contract::Type::unit: {
+                        const auto unitID =
+                            api_.Factory().InternalSession().UnitID(id);
+
+                        return factory::BlockchainSyncQueryContractReply(
+                            UnitDefinition(unitID));
+                    }
+                    default: {
+                        throw std::runtime_error{
+                            UnallocatedCString{
+                                "unsupported or unknown contract type: "} +
+                            opentxs::print(type)};
+                    }
+                }
+            } catch (const std::exception& e) {
+                LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+                return factory::BlockchainSyncQueryContractReply(id);
+            }
+        }();
+        p2p_socket_.Send([&] {
+            auto out =
+                opentxs::network::zeromq::reply_to_message(std::move(msg));
+            payload.Serialize(out);
+
+            return out;
+        }());
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+    }
+#endif  // OT_BLOCKCHAIN
+}
+
+auto Wallet::process_p2p_response(
+    opentxs::network::zeromq::Message&& msg) const noexcept -> void
+{
+#if OT_BLOCKCHAIN
+    try {
+        const auto base = api_.Factory().BlockchainSyncMessage(msg);
+
+        if (!base) {
+            throw std::runtime_error{"failed to instantiate message"};
+        }
+
+        using Type = opentxs::network::p2p::MessageType;
+        const auto type = base->Type();
+
+        switch (type) {
+            case Type::publish_ack: {
+                const auto& contract = base->asPublishContractReply();
+                const auto& id = contract.ID();
+                const auto& log = LogVerbose();
+                log("Contract ")(id)(" ");
+
+                if (contract.Success()) {
+                    log("successfully");
+                } else {
+                    log("not");
+                }
+
+                log(" published").Flush();
+            } break;
+            case Type::contract: {
+                const auto& contract = base->asQueryContractReply();
+                const auto& id = contract.ID();
+                const auto& log = LogVerbose();
+                const auto success = [&] {
+                    const auto type = contract.ContractType();
+
+                    switch (type) {
+                        case contract::Type::nym: {
+                            log("Nym");
+
+                            if (!valid(contract.Payload())) { return false; }
+
+                            const auto nym = Nym(contract.Payload());
+
+                            return (nym && nym->ID() == id);
+                        }
+                        case contract::Type::notary: {
+                            log("Notary contract");
+
+                            if (!valid(contract.Payload())) { return false; }
+
+                            const auto notary = Server(contract.Payload());
+
+                            return (notary->ID() == id);
+                        }
+                        case contract::Type::unit: {
+                            log("Unit definition");
+
+                            if (!valid(contract.Payload())) { return false; }
+
+                            const auto unit =
+                                UnitDefinition(contract.Payload());
+
+                            return (unit->ID() == id);
+                        }
+                        default: {
+                            throw std::runtime_error{
+                                UnallocatedCString{
+                                    "unsupported or unknown contract type: "} +
+                                opentxs::print(type)};
+                        }
+                    }
+                }();
+                log(" ")(id)(" ");
+
+                if (success) {
+                    log("successfully retrieved");
+                } else {
+                    log("not found on remote node");
+                }
+
+                log.Flush();
+            } break;
+            default:
+                const auto error = CString{} + "Unsupported message type " +
+                                   opentxs::print(type).c_str();
+
+                throw std::runtime_error{error.c_str()};
+        }
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+    }
+#endif  // OT_BLOCKCHAIN
+}
+
+auto Wallet::PublishNotary(const identifier::Notary& id) const noexcept -> bool
+{
+    try {
+        auto notary = Server(id);
+        to_loopback_.modify_detach([&notary](auto& socket) {
+            const auto command = factory::BlockchainSyncPublishContract(notary);
+            socket.Send([&] {
+                auto out = opentxs::network::zeromq::Message{};
+                command.Serialize(out);
+
+                return out;
+            }());
+        });
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
+}
+
+auto Wallet::PublishNym(const identifier::Nym& id) const noexcept -> bool
+{
+    auto nym = Nym(id);
+
+    if (!nym) {
+        LogError()(OT_PRETTY_CLASS())("nym ")(id)(" does not exist").Flush();
+
+        return false;
+    }
+
+    to_loopback_.modify_detach([&nym](auto& socket) {
+        const auto command = factory::BlockchainSyncPublishContract(*nym);
+        socket.Send([&] {
+            auto out = opentxs::network::zeromq::Message{};
+            command.Serialize(out);
+
+            return out;
+        }());
+    });
+
+    return true;
+}
+
+auto Wallet::PublishUnit(const identifier::UnitDefinition& id) const noexcept
+    -> bool
+{
+    try {
+        auto unit = UnitDefinition(id);
+        to_loopback_.modify_detach([&unit](auto& socket) {
+            const auto command = factory::BlockchainSyncPublishContract(unit);
+            socket.Send([&] {
+                auto out = opentxs::network::zeromq::Message{};
+                command.Serialize(out);
+
+                return out;
+            }());
+        });
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
+}
+
 auto Wallet::purse(
     const identifier::Nym& nym,
     const identifier::Notary& server,
@@ -2199,6 +2629,76 @@ auto Wallet::SaveCredentialIDs(const identity::Nym& nym) const -> bool
     return true;
 }
 
+auto Wallet::search_notary(const identifier::Notary& id) const noexcept -> void
+{
+    LogVerbose()(OT_PRETTY_CLASS())(
+        "Searching remote networks for unknown notary ")(id)
+        .Flush();
+    dht_server_requester_->Send([&] {
+        auto work = opentxs::network::zeromq::tagged_message(
+            WorkType::DHTRequestServer);
+        work.AddFrame(id);
+
+        return work;
+    }());
+    to_loopback_.modify_detach([&id](auto& socket) {
+        const auto command = factory::BlockchainSyncQueryContract(id);
+        socket.Send([&] {
+            auto out = opentxs::network::zeromq::Message{};
+            command.Serialize(out);
+
+            return out;
+        }());
+    });
+}
+
+auto Wallet::search_nym(const identifier::Nym& id) const noexcept -> void
+{
+    LogVerbose()(OT_PRETTY_CLASS())(
+        "Searching remote networks for unknown nym ")(id)
+        .Flush();
+    dht_nym_requester_->Send([&] {
+        auto work =
+            opentxs::network::zeromq::tagged_message(WorkType::DHTRequestNym);
+        work.AddFrame(id);
+
+        return work;
+    }());
+    to_loopback_.modify_detach([&id](auto& socket) {
+        const auto command = factory::BlockchainSyncQueryContract(id);
+        socket.Send([&] {
+            auto out = opentxs::network::zeromq::Message{};
+            command.Serialize(out);
+
+            return out;
+        }());
+    });
+}
+
+auto Wallet::search_unit(const identifier::UnitDefinition& id) const noexcept
+    -> void
+{
+    LogVerbose()(OT_PRETTY_CLASS())(
+        "Searching remote networks for unknown unit definition ")(id)
+        .Flush();
+    dht_unit_requester_->Send([&] {
+        auto work =
+            opentxs::network::zeromq::tagged_message(WorkType::DHTRequestUnit);
+        work.AddFrame(id);
+
+        return work;
+    }());
+    to_loopback_.modify_detach([&id](auto& socket) {
+        const auto command = factory::BlockchainSyncQueryContract(id);
+        socket.Send([&] {
+            auto out = opentxs::network::zeromq::Message{};
+            command.Serialize(out);
+
+            return out;
+        }());
+    });
+}
+
 auto Wallet::SetDefaultNym(const identifier::Nym& id) const noexcept -> bool
 {
     if (id.empty()) {
@@ -2272,13 +2772,7 @@ auto Wallet::Server(
                 }
             }
         } else {
-            dht_server_requester_->Send([&] {
-                auto work = opentxs::network::zeromq::tagged_message(
-                    WorkType::DHTRequestServer);
-                work.AddFrame(id);
-
-                return work;
-            }());
+            search_notary(id);
 
             if (timeout > std::chrono::milliseconds(0)) {
                 mapLock.unlock();
@@ -2618,13 +3112,7 @@ auto Wallet::UnitDefinition(
                 }
             }
         } else {
-            dht_unit_requester_->Send([&] {
-                auto work = opentxs::network::zeromq::tagged_message(
-                    WorkType::DHTRequestUnit);
-                work.AddFrame(id);
-
-                return work;
-            }());
+            search_unit(id);
 
             if (timeout > std::chrono::milliseconds(0)) {
                 mapLock.unlock();
@@ -2925,5 +3413,11 @@ auto Wallet::LoadCredential(
 auto Wallet::SaveCredential(const proto::Credential& credential) const -> bool
 {
     return api_.Storage().Store(credential);
+}
+
+Wallet::~Wallet()
+{
+    batch_.ClearCallbacks();
+    api_.Network().ZeroMQ().Internal().Stop(batch_.id_);
 }
 }  // namespace opentxs::api::session::imp

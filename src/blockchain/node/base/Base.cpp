@@ -329,8 +329,8 @@ Base::Base(
     OT_ASSERT(wallet_p_);
 
     header_.Internal().Init();
-    init_executor(
-        {api_.Endpoints().Internal().BlockchainFilterUpdated(chain_)});
+    init_executor({UnallocatedCString{
+        api_.Endpoints().Internal().BlockchainFilterUpdated(chain_)}});
     LogVerbose()(config_.print()).Flush();
 
     for (const auto& addr : api_.GetOptions().BlockchainBindIpv4()) {
