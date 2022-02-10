@@ -7,6 +7,7 @@
 
 #include "opentxs/api/session/Storage.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace crypto
@@ -17,6 +18,7 @@ class Symmetric;
 }  // namespace key
 }  // namespace crypto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::internal
 {

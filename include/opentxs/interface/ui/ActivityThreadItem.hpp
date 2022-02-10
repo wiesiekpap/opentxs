@@ -15,6 +15,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -24,6 +25,7 @@ class ActivityThreadItem;
 
 using OTUIActivityThreadItem = SharedPimpl<ui::ActivityThreadItem>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui
 {

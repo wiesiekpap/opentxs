@@ -40,6 +40,7 @@
 
 class QObject;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -83,6 +84,7 @@ class PasswordCallback;
 class PasswordCaller;
 class Signals;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 extern "C" {
 struct rlimit;

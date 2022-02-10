@@ -7,6 +7,7 @@
 
 #include "opentxs/interface/rpc/response/Base.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace rpc
@@ -17,6 +18,7 @@ class Base;
 }  // namespace request
 }  // namespace rpc
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::rpc::response
 {

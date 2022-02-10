@@ -12,6 +12,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/util/Iterator.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -28,14 +29,9 @@ struct Outputs;
 }  // namespace block
 }  // namespace blockchain
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace block
-{
-namespace bitcoin
+namespace opentxs::blockchain::block::bitcoin
 {
 class OPENTXS_EXPORT Outputs
 {
@@ -69,7 +65,4 @@ private:
     auto operator=(const Outputs&) -> Outputs& = delete;
     auto operator=(Outputs&&) -> Outputs& = delete;
 };
-}  // namespace bitcoin
-}  // namespace block
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::block::bitcoin

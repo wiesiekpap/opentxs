@@ -11,11 +11,13 @@
 
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 class Flag;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api
 {

@@ -9,14 +9,14 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace api
+namespace opentxs::api
 {
 class Legacy
 {
@@ -104,5 +104,4 @@ private:
         const char* name,
         const UnallocatedCString& ext) noexcept -> UnallocatedCString;
 };
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api

@@ -19,6 +19,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -35,6 +36,7 @@ class Factory;
 class Identifier;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::identity::wot::verification::implementation
 {

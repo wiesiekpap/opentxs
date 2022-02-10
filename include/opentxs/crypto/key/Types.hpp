@@ -10,11 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace opentxs
-{
-namespace crypto
-{
-namespace key
+namespace opentxs::crypto::key
 {
 namespace asymmetric
 {
@@ -28,6 +24,4 @@ namespace symmetric
 enum class Source : std::uint8_t;
 enum class Algorithm : std::uint8_t;
 }  // namespace symmetric
-}  // namespace key
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto::key

@@ -16,6 +16,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Time.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -56,6 +57,7 @@ class Client;
 class Identifier;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

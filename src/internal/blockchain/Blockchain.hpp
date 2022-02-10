@@ -30,6 +30,7 @@
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/GCS.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -62,6 +63,7 @@ class GCS;
 
 class Amount;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace be = boost::endian;
 

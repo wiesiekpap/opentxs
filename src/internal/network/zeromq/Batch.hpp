@@ -15,6 +15,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -35,6 +36,7 @@ class ReplyCallback;
 using OTZMQListenCallback = Pimpl<network::zeromq::ListenCallback>;
 using OTZMQReplyCallback = Pimpl<network::zeromq::ReplyCallback>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::network::zeromq::internal
 {

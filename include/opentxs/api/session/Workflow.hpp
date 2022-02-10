@@ -15,6 +15,7 @@
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -53,6 +54,7 @@ class Purse;
 
 class OTTransaction;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session
 {

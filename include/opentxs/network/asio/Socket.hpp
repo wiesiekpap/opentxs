@@ -15,6 +15,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/WorkType.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -25,12 +26,9 @@ class Endpoint;
 }  // namespace asio
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace network
-{
-namespace asio
+namespace opentxs::network::asio
 {
 class OPENTXS_EXPORT Socket
 {
@@ -61,6 +59,4 @@ private:
     auto operator=(const Socket&) -> Socket& = delete;
     auto operator=(Socket&&) -> Socket& = delete;
 };
-}  // namespace asio
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::asio

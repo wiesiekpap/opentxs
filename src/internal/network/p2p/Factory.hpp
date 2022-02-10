@@ -3,24 +3,38 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU praga: no_include "opentxs/core/contract/ContractType.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
+// IWYU pragma: no_include "opentxs/core/contract/ContractType.hpp"
 
 #pragma once
 
 #include <memory>
 
+#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/contract/Types.hpp"
 #include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/WorkType.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
 {
 class Session;
 }  // namespace api
+
+namespace blockchain
+{
+namespace block
+{
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+}  // namespace block
+}  // namespace blockchain
 
 namespace contract
 {
@@ -42,6 +56,8 @@ class Base;
 class Data;
 class PublishContract;
 class PublishContractReply;
+class PushTransaction;
+class PushTransactionReply;
 class Query;
 class QueryContract;
 class QueryContractReply;
@@ -56,6 +72,7 @@ class Message;
 
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::factory
 {
@@ -105,6 +122,29 @@ auto BlockchainSyncPublishContractReply_p(
     const ReadView id,
     const ReadView success) noexcept
     -> std::unique_ptr<network::p2p::PublishContractReply>;
+auto BlockchainSyncPushTransaction() noexcept -> network::p2p::PushTransaction;
+auto BlockchainSyncPushTransaction(
+    const opentxs::blockchain::Type chain,
+    const opentxs::blockchain::block::bitcoin::Transaction& payload) noexcept
+    -> network::p2p::PushTransaction;
+auto BlockchainSyncPushTransaction_p(
+    const api::Session& api,
+    const opentxs::blockchain::Type chain,
+    const ReadView id,
+    const ReadView payload) noexcept
+    -> std::unique_ptr<network::p2p::PushTransaction>;
+auto BlockchainSyncPushTransactionReply() noexcept
+    -> network::p2p::PushTransactionReply;
+auto BlockchainSyncPushTransactionReply(
+    const opentxs::blockchain::Type chain,
+    const opentxs::blockchain::block::Txid& id,
+    const bool success) noexcept -> network::p2p::PushTransactionReply;
+auto BlockchainSyncPushTransactionReply_p(
+    const api::Session& api,
+    const opentxs::blockchain::Type chain,
+    const ReadView id,
+    const ReadView success) noexcept
+    -> std::unique_ptr<network::p2p::PushTransactionReply>;
 auto BlockchainSyncQuery() noexcept -> network::p2p::Query;
 auto BlockchainSyncQuery(int) noexcept -> network::p2p::Query;
 auto BlockchainSyncQuery_p(int) noexcept

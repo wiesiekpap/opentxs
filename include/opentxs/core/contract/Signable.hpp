@@ -12,6 +12,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -19,10 +20,9 @@ namespace proto
 class Signature;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace contract
+namespace opentxs::contract
 {
 class OPENTXS_EXPORT Signable
 {
@@ -59,5 +59,4 @@ private:
     auto operator=(const Signable&) -> Signable& = delete;
     auto operator=(Signable&&) -> Signable& = delete;
 };
-}  // namespace contract
-}  // namespace opentxs
+}  // namespace opentxs::contract

@@ -18,6 +18,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -33,12 +34,9 @@ class Header;
 }  // namespace block
 }  // namespace blockchain
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace block
+namespace opentxs::blockchain::block
 {
 class OPENTXS_EXPORT Block
 {
@@ -63,6 +61,4 @@ private:
     auto operator=(const Block&) -> Block& = delete;
     auto operator=(Block&&) -> Block& = delete;
 };
-}  // namespace block
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::block

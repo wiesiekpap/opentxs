@@ -34,6 +34,7 @@
 #include "serialization/protobuf/BlockchainTransaction.pb.h"
 #include "util/LMDB.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -76,6 +77,7 @@ class Contact;
 class Data;
 class Options;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::database::common
 {

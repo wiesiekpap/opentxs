@@ -12,6 +12,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Time.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -41,6 +42,7 @@ class Token;
 
 class Amount;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::otx::blind::internal
 {

@@ -15,6 +15,7 @@
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -30,6 +31,7 @@ class Data;
 
 using OTData = Pimpl<Data>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace std
 {

@@ -22,6 +22,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Credential.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -55,6 +56,7 @@ class OTPassword;
 class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::identity::credential::implementation
 {

@@ -21,6 +21,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace irr
 {
 namespace io
@@ -58,6 +59,7 @@ class Armored;
 class PasswordPrompt;
 class Tag;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

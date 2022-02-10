@@ -36,6 +36,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -87,6 +88,7 @@ class Seed;
 class Identifier;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::crypto::imp
 {

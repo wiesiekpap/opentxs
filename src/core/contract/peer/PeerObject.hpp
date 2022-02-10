@@ -20,6 +20,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/PeerObject.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -49,6 +50,7 @@ class Armored;
 class Factory;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::peer::implementation
 {

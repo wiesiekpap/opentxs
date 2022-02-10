@@ -11,6 +11,7 @@
 
 #include "opentxs/crypto/Types.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -18,10 +19,9 @@ namespace proto
 class Ciphertext;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace crypto
+namespace opentxs::crypto
 {
 class OPENTXS_EXPORT SymmetricProvider
 {
@@ -70,5 +70,4 @@ private:
     auto operator=(const SymmetricProvider&) -> SymmetricProvider& = delete;
     auto operator=(SymmetricProvider&&) -> SymmetricProvider& = delete;
 };
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto

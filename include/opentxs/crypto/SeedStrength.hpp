@@ -10,9 +10,7 @@
 
 #include <cstdint>
 
-namespace opentxs
-{
-namespace crypto
+namespace opentxs::crypto
 {
 enum class SeedStrength : std::size_t {
     Twelve = 128,
@@ -21,5 +19,4 @@ enum class SeedStrength : std::size_t {
     TwentyOne = 224,
     TwentyFour = 256,
 };
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto

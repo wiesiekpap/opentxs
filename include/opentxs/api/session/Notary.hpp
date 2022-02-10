@@ -13,6 +13,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -48,6 +49,7 @@ class Server;
 
 class Options;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session
 {

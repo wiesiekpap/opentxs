@@ -13,6 +13,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/interface/qt/IdentityManager.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -35,6 +36,7 @@ class NymListQt;
 class ProfileQt;
 }  // namespace ui
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class QAbstractListModel;
 

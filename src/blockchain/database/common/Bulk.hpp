@@ -15,6 +15,7 @@
 #include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace storage
@@ -30,6 +31,7 @@ namespace util
 struct IndexData;
 }  // namespace util
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::database::common
 {

@@ -14,6 +14,7 @@
 #include "opentxs/network/zeromq/zap/Request.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -29,6 +30,7 @@ class Callback;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::network::zeromq::zap::implementation
 {

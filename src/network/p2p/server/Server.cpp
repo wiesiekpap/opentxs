@@ -19,6 +19,7 @@
 
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/api/session/Endpoints.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
@@ -33,9 +34,14 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/network/p2p/Acknowledgement.hpp"
 #include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
+#include "opentxs/network/p2p/PushTransaction.hpp"
+#include "opentxs/network/p2p/PushTransactionReply.hpp"
 #include "opentxs/network/p2p/Request.hpp"
 #include "opentxs/network/p2p/State.hpp"
 #include "opentxs/network/p2p/Types.hpp"
@@ -159,6 +165,9 @@ auto Server::Imp::process_external(zeromq::Message&& incoming) noexcept -> void
             case Type::contract_query: {
                 wallet_.Send(std::move(incoming));
             } break;
+            case Type::pushtx: {
+                process_pushtx(std::move(incoming), *base);
+            } break;
             default: {
                 throw std::runtime_error{
                     UnallocatedCString{"Unsupported message type "} +
@@ -185,6 +194,40 @@ auto Server::Imp::process_internal(zeromq::Message&& incoming) noexcept -> void
         LogTrace()(OT_PRETTY_CLASS())("broadcasting push notification").Flush();
         update_.Send(std::move(incoming));
     }
+}
+
+auto Server::Imp::process_pushtx(
+    zeromq::Message&& msg,
+    const p2p::Base& base) noexcept -> void
+{
+#if OT_BLOCKCHAIN
+    auto success{true};
+    const auto& pushtx = base.asPushTransaction();
+    const auto chain = pushtx.Chain();
+
+    try {
+        const auto tx =
+            api_.Factory().BitcoinTransaction(chain, pushtx.Payload(), false);
+
+        if (!tx) { throw std::runtime_error{"Invalid transaction"}; }
+
+        const auto& node =
+            api_.Network().Blockchain().GetChain(chain).Internal();
+        success = node.BroadcastTransaction(*tx);
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+        success = false;
+    }
+
+    sync_.Send([&] {
+        auto out = opentxs::network::zeromq::reply_to_message(std::move(msg));
+        const auto reply = factory::BlockchainSyncPushTransactionReply(
+            chain, pushtx.ID(), success);
+        reply.Serialize(out);
+
+        return out;
+    }());
+#endif  // OT_BLOCKCHAIN
 }
 
 auto Server::Imp::process_sync(

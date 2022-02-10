@@ -10,22 +10,12 @@
 
 #include <cstdint>
 
-namespace opentxs
+namespace opentxs::crypto::key::asymmetric
 {
-namespace crypto
-{
-namespace key
-{
-namespace asymmetric
-{
-
 enum class Mode : std::uint8_t {
     Error = 0,
     Null = 1,
     Public = 2,
     Private = 3,
 };
-}  // namespace asymmetric
-}  // namespace key
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto::key::asymmetric

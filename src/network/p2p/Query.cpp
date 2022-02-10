@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_forward_declare opentxs::network::zeromq::Message
+
 #include "0_stdafx.hpp"                   // IWYU pragma: associated
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "opentxs/network/p2p/Query.hpp"  // IWYU pragma: associated
@@ -14,17 +16,6 @@
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/State.hpp"
-
-namespace opentxs
-{
-namespace network
-{
-namespace zeromq
-{
-class Message;
-}  // namespace zeromq
-}  // namespace network
-}  // namespace opentxs
 
 namespace opentxs::factory
 {

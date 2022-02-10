@@ -10,9 +10,7 @@
 
 #include <limits>
 
-namespace opentxs
-{
-namespace blockchain
+namespace opentxs::blockchain
 {
 enum class Type : TypeEnum {
     Unknown = 0,
@@ -28,5 +26,4 @@ enum class Type : TypeEnum {
     PKT_testnet = 10,
     UnitTest = std::numeric_limits<TypeEnum>::max(),
 };
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain

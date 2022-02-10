@@ -17,6 +17,7 @@
 #include "opentxs/network/OpenDHT.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace dht
 {
 class DhtRunner;
@@ -29,6 +30,7 @@ namespace network
 class DhtConfig;
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::network::implementation
 {

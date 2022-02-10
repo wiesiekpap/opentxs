@@ -19,13 +19,13 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
 {
 class Session;
 }  // namespace api
-
 namespace identity
 {
 namespace wot
@@ -46,6 +46,7 @@ class ContactSection;
 
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::identity::wot::claim
 {

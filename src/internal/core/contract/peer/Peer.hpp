@@ -21,6 +21,7 @@
 #include "serialization/protobuf/ZMQEnums.pb.h"
 #include "util/Blank.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -28,6 +29,7 @@ namespace proto
 class PairEvent;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::contract::peer::internal
 {

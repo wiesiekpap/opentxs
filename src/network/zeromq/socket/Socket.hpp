@@ -23,6 +23,7 @@
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -33,6 +34,7 @@ class Message;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 #define CURVE_KEY_BYTES 32
 #define CURVE_KEY_Z85_BYTES 40

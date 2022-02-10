@@ -25,9 +25,7 @@
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 PeerReplies::PeerReplies(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
@@ -134,5 +132,4 @@ auto PeerReplies::Store(const proto::PeerReply& data) -> bool
 {
     return store_proto(data, data.id(), data.cookie());
 }
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

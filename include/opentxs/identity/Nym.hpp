@@ -22,6 +22,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace google
 {
 namespace protobuf
@@ -74,10 +75,9 @@ class PaymentCode;
 class Signature;
 class Tag;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace identity
+namespace opentxs::identity
 {
 class OPENTXS_EXPORT Nym
 {
@@ -269,5 +269,4 @@ private:
     auto operator=(const Nym&) -> Nym& = delete;
     auto operator=(Nym&&) -> Nym& = delete;
 };
-}  // namespace identity
-}  // namespace opentxs
+}  // namespace opentxs::identity

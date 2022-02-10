@@ -10,15 +10,8 @@
 
 #include <cstdint>
 
-namespace opentxs
+namespace opentxs::crypto::key::symmetric
 {
-namespace crypto
-{
-namespace key
-{
-namespace symmetric
-{
-
 enum class Algorithm : std::uint8_t {
     Error = 0,
     ChaCha20Poly1305 = 1,
@@ -28,7 +21,4 @@ constexpr auto value(const Algorithm in) noexcept
 {
     return static_cast<std::uint8_t>(in);
 }
-}  // namespace symmetric
-}  // namespace key
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto::key::symmetric

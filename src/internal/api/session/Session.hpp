@@ -12,6 +12,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -35,6 +36,7 @@ class Nym;
 class Secret;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace
 {

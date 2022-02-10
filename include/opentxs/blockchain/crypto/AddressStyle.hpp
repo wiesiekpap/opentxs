@@ -8,11 +8,7 @@
 #include "opentxs/Version.hpp"                  // IWYU pragma: associated
 #include "opentxs/blockchain/crypto/Types.hpp"  // IWYU pragma: associated
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace crypto
+namespace opentxs::blockchain::crypto
 {
 enum class AddressStyle : std::uint16_t {
     Unknown = 0,
@@ -22,6 +18,4 @@ enum class AddressStyle : std::uint16_t {
     P2WSH = 4,
     P2TR = 5,
 };
-}  // namespace crypto
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::crypto

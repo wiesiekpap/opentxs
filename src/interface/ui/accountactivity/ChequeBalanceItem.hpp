@@ -15,6 +15,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -49,6 +50,7 @@ class PaymentWorkflow;
 
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui::implementation
 {

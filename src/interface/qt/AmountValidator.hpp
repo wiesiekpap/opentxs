@@ -35,6 +35,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace implementation
@@ -45,6 +46,7 @@ class AccountActivity;
 }  // namespace implementation
 }  // namespace implementation
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui
 {

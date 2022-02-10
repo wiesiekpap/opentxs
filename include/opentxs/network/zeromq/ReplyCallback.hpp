@@ -11,6 +11,7 @@
 
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -24,12 +25,9 @@ class ReplyCallback;
 
 using OTZMQReplyCallback = Pimpl<network::zeromq::ReplyCallback>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace network
-{
-namespace zeromq
+namespace opentxs::network::zeromq
 {
 class OPENTXS_EXPORT ReplyCallback
 {
@@ -59,6 +57,4 @@ private:
     auto operator=(const ReplyCallback&) -> ReplyCallback& = delete;
     auto operator=(ReplyCallback&&) -> ReplyCallback& = default;
 };
-}  // namespace zeromq
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::zeromq

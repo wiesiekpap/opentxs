@@ -33,6 +33,7 @@
 #include "serialization/protobuf/BlockchainDeterministicAccountData.pb.h"
 #include "serialization/protobuf/HDPath.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -56,6 +57,7 @@ class BlockchainDeterministicAccountData;
 
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::crypto::implementation
 {

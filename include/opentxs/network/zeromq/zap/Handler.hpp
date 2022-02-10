@@ -11,6 +11,7 @@
 #include "opentxs/network/zeromq/zap/ZAP.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -27,14 +28,9 @@ class Handler;
 
 using OTZMQZAPHandler = Pimpl<network::zeromq::zap::Handler>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace network
-{
-namespace zeromq
-{
-namespace zap
+namespace opentxs::network::zeromq::zap
 {
 class OPENTXS_EXPORT Handler : virtual public zeromq::socket::Reply
 {
@@ -60,7 +56,4 @@ private:
     auto operator=(const Handler&) -> Handler& = delete;
     auto operator=(Handler&&) -> Handler& = delete;
 };
-}  // namespace zap
-}  // namespace zeromq
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::zeromq::zap

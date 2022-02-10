@@ -16,6 +16,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -36,12 +37,9 @@ struct BlockOracle;
 }  // namespace node
 }  // namespace blockchain
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace node
+namespace opentxs::blockchain::node
 {
 class OPENTXS_EXPORT BlockOracle
 {
@@ -73,6 +71,4 @@ private:
     auto operator=(const BlockOracle&) -> BlockOracle& = delete;
     auto operator=(BlockOracle&&) -> BlockOracle& = delete;
 };
-}  // namespace node
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::node

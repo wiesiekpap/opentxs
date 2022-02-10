@@ -12,6 +12,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstddef>
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <stdexcept>
@@ -55,18 +56,21 @@ namespace bcsync = opentxs::network::p2p;
 
 namespace opentxs::blockchain::node::base
 {
-struct SyncClient::Imp {
+class SyncClient::Imp
+{
+public:
     enum class State { Init, Sync, Run };
 
     const UnallocatedCString endpoint_;
-    std::atomic<State> state_;
+    const api::Session& api_;
+    const Type chain_;
 
     Imp(const api::Session& api, const Type chain) noexcept
         : endpoint_(network::zeromq::MakeArbitraryInproc())
-        , state_(State::Init)
         , api_(api)
         , chain_(chain)
         , lock_()
+        , state_(State::Init)
         , begin_sync_()
         , activity_()
         , processing_(false)
@@ -149,9 +153,8 @@ private:
     static constexpr std::size_t limit_{32_MiB};
     static constexpr std::chrono::seconds retry_interval_{4};
 
-    const api::Session& api_;
-    const Type chain_;
     mutable std::mutex lock_;
+    std::atomic<State> state_;
     Time begin_sync_;
     Time activity_;
     bool processing_;
@@ -394,6 +397,10 @@ private:
                         api_.Factory().Data(body.at(2).Bytes())};
                     processing_ = false;
                 } break;
+                case Task::PushTransaction: {
+                    auto lock = Lock{lock_};
+                    OTSocket::send_message(lock, dealer_.get(), std::move(msg));
+                } break;
                 case Task::SyncServerUpdated:
                 case Task::Register:
                 case Task::Request:
@@ -495,7 +502,7 @@ private:
     }
     auto update_queue_position(const bcsync::Data& data) noexcept -> void
     {
-        const auto& blocks = data.Blocks();
+        const auto& blocks = data.Blocks();  // FIXME
 
         if (0u == blocks.size()) { return; }
 
@@ -514,7 +521,7 @@ private:
 };
 
 SyncClient::SyncClient(const api::Session& api, const Type chain) noexcept
-    : imp_(std::make_unique<Imp>(api, chain))
+    : imp_(std::make_unique<Imp>(api, chain).release())
 {
 }
 
@@ -523,5 +530,11 @@ auto SyncClient::Endpoint() const noexcept -> const UnallocatedCString&
     return imp_->endpoint_;
 }
 
-SyncClient::~SyncClient() = default;
+SyncClient::~SyncClient()
+{
+    if (nullptr != imp_) {
+        delete imp_;
+        imp_ = nullptr;
+    }
+}
 }  // namespace opentxs::blockchain::node::base

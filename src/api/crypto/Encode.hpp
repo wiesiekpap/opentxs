@@ -16,6 +16,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -31,6 +32,7 @@ class Crypto;
 class OTPassword;
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::crypto::imp
 {

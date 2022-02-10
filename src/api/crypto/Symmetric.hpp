@@ -17,6 +17,7 @@
 #include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/util/Bytes.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -43,6 +44,7 @@ class OTPassword;
 class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::crypto::imp
 {

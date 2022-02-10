@@ -13,6 +13,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -50,10 +51,9 @@ class PasswordPrompt;
 
 using OTServerConnection = Pimpl<network::ServerConnection>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace network
+namespace opentxs::network
 {
 class OPENTXS_EXPORT ServerConnection
 {
@@ -95,5 +95,4 @@ private:
     auto operator=(const ServerConnection&) -> ServerConnection& = delete;
     auto operator=(ServerConnection&&) -> ServerConnection& = delete;
 };
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network

@@ -16,6 +16,7 @@
 class QModelIndex;
 class QObject;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -28,6 +29,7 @@ struct BlockchainSelection;
 class BlockchainSelectionQt;
 }  // namespace ui
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class OPENTXS_EXPORT opentxs::ui::BlockchainSelectionQt final : public qt::Model
 {

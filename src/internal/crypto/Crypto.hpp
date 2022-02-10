@@ -5,6 +5,7 @@
 
 #pragma once
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -12,6 +13,7 @@ namespace api
 class Factory;
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::crypto::internal
 {

@@ -68,6 +68,7 @@
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/PeerEnums.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -112,6 +113,7 @@ class Data;
 class PasswordPrompt;
 class PeerObject;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::client
 {

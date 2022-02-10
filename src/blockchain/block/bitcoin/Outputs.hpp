@@ -26,6 +26,7 @@
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -33,6 +34,7 @@ namespace proto
 class BlockchainTransaction;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::block::bitcoin::implementation
 {

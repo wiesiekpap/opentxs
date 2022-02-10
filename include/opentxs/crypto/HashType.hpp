@@ -10,9 +10,7 @@
 
 #include <cstdint>
 
-namespace opentxs
-{
-namespace crypto
+namespace opentxs::crypto
 {
 enum class HashType : std::uint8_t {
     Error = 0,
@@ -35,5 +33,4 @@ constexpr auto value(const HashType in) noexcept
     return static_cast<std::uint8_t>(in);
 }
 
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto

@@ -19,6 +19,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -34,6 +35,7 @@ class Definition;
 class Factory;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::contract::unit::implementation
 {

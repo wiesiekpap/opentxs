@@ -10,6 +10,7 @@
 #include "opentxs/identity/wot/verification/Nym.hpp"
 #include "opentxs/identity/wot/verification/Set.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -17,6 +18,7 @@ namespace api
 class Session;
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::identity::wot::verification::internal
 {

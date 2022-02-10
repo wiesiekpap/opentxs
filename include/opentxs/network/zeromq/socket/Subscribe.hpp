@@ -10,6 +10,7 @@
 #include "opentxs/network/zeromq/curve/Client.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -25,14 +26,9 @@ class Subscribe;
 
 using OTZMQSubscribeSocket = Pimpl<network::zeromq::socket::Subscribe>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace network
-{
-namespace zeromq
-{
-namespace socket
+namespace opentxs::network::zeromq::socket
 {
 class OPENTXS_EXPORT Subscribe : virtual public curve::Client
 {
@@ -55,7 +51,4 @@ private:
     auto operator=(const Subscribe&) -> Subscribe& = delete;
     auto operator=(Subscribe&&) -> Subscribe& = delete;
 };
-}  // namespace socket
-}  // namespace zeromq
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::zeromq::socket

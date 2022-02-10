@@ -10,6 +10,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/interface/rpc/response/Base.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -25,12 +26,9 @@ class ListNyms;
 }  // namespace request
 }  // namespace rpc
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace rpc
-{
-namespace response
+namespace opentxs::rpc::response
 {
 class OPENTXS_EXPORT ListNyms final : public Base
 {
@@ -54,6 +52,4 @@ private:
     auto operator=(const ListNyms&) -> ListNyms& = delete;
     auto operator=(ListNyms&&) -> ListNyms& = delete;
 };
-}  // namespace response
-}  // namespace rpc
-}  // namespace opentxs
+}  // namespace opentxs::rpc::response

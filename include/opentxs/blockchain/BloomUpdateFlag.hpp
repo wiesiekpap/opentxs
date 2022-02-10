@@ -8,10 +8,7 @@
 #include "opentxs/Version.hpp"           // IWYU pragma: associated
 #include "opentxs/blockchain/Types.hpp"  // IWYU pragma: associated
 
-namespace opentxs
-{
-namespace blockchain
+namespace opentxs::blockchain
 {
 enum class BloomUpdateFlag : std::uint8_t { None = 0, All = 1, PubkeyOnly = 2 };
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain

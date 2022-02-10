@@ -11,6 +11,7 @@
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -24,6 +25,7 @@ class Raw;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::network::zeromq::internal
 {

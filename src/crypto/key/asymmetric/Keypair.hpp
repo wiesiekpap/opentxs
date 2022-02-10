@@ -15,6 +15,7 @@
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/identity/Types.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -33,6 +34,7 @@ class PasswordPrompt;
 class Secret;
 class Signature;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::crypto::key::implementation
 {

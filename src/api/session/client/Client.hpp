@@ -26,6 +26,7 @@
 #include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -76,6 +77,7 @@ class OTAPI_Exec;
 class OT_API;
 class Options;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::imp
 {

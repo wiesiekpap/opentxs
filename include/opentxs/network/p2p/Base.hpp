@@ -13,6 +13,7 @@
 #include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/util/Numbers.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -25,6 +26,8 @@ class Block;
 class Data;
 class PublishContract;
 class PublishContractReply;
+class PushTransaction;
+class PushTransactionReply;
 class Query;
 class QueryContract;
 class QueryContractReply;
@@ -37,6 +40,7 @@ class Message;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::network::p2p
 {
@@ -49,6 +53,8 @@ public:
     auto asData() const noexcept -> const Data&;
     auto asPublishContract() const noexcept -> const PublishContract&;
     auto asPublishContractReply() const noexcept -> const PublishContractReply&;
+    auto asPushTransaction() const noexcept -> const PushTransaction&;
+    auto asPushTransactionReply() const noexcept -> const PushTransactionReply&;
     auto asQuery() const noexcept -> const Query&;
     auto asQueryContract() const noexcept -> const QueryContract&;
     auto asQueryContractReply() const noexcept -> const QueryContractReply&;

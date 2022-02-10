@@ -286,6 +286,8 @@
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/PublishContract.hpp"
 #include "opentxs/network/p2p/PublishContractReply.hpp"
+#include "opentxs/network/p2p/PushTransaction.hpp"
+#include "opentxs/network/p2p/PushTransactionReply.hpp"
 #include "opentxs/network/p2p/Query.hpp"
 #include "opentxs/network/p2p/QueryContract.hpp"
 #include "opentxs/network/p2p/QueryContractReply.hpp"

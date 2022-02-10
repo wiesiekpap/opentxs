@@ -11,6 +11,7 @@
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -23,6 +24,7 @@ class Config;
 class Settings;
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::crypto::imp
 {

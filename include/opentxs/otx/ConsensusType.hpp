@@ -10,9 +10,7 @@
 
 #include <cstdint>
 
-namespace opentxs
-{
-namespace otx
+namespace opentxs::otx
 {
 enum class ConsensusType : std::uint8_t {
     Error = 0,
@@ -20,5 +18,4 @@ enum class ConsensusType : std::uint8_t {
     Client = 2,
     Peer = 3,
 };
-}  // namespace otx
-}  // namespace opentxs
+}  // namespace opentxs::otx

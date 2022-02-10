@@ -8,12 +8,14 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 class Flag;
 
 using OTFlag = Pimpl<Flag>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

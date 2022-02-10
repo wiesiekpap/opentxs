@@ -17,6 +17,7 @@
 
 class QObject;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -38,6 +39,7 @@ class Client;
 class Notary;
 }  // namespace session
 
+class Context;
 class Crypto;
 class Factory;
 class Settings;
@@ -66,10 +68,9 @@ class Base;
 
 class Options;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api
-{
-class OPENTXS_EXPORT Context : virtual public Periodic
+class OPENTXS_EXPORT opentxs::api::Context : virtual public Periodic
 {
 public:
     using ShutdownCallback = std::function<void()>;
@@ -151,4 +152,3 @@ private:
     auto operator=(const Context&) -> Context& = delete;
     auto operator=(Context&&) -> Context& = delete;
 };
-}  // namespace opentxs::api

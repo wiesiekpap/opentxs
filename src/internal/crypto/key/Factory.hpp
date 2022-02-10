@@ -20,6 +20,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -56,6 +57,7 @@ class Data;
 class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::factory
 {

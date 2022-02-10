@@ -42,6 +42,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace boost
 {
 namespace asio
@@ -84,6 +85,7 @@ class Message;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace algo = boost::algorithm;
 namespace beast = boost::beast;

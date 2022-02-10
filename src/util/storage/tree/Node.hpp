@@ -25,6 +25,7 @@
 #include "serialization/protobuf/StorageEnums.pb.h"
 #include "util/storage/Plugin.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -44,6 +45,7 @@ class Driver;
 class Root;
 }  // namespace storage
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::storage
 {

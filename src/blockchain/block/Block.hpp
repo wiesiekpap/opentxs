@@ -11,6 +11,7 @@
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -18,6 +19,7 @@ namespace api
 class Session;
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::block::implementation
 {

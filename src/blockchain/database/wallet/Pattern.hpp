@@ -15,6 +15,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -31,6 +32,7 @@ struct Pattern;
 }  // namespace database
 }  // namespace blockchain
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace std
 {

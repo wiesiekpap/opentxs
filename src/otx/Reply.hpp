@@ -22,6 +22,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/ServerReply.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -37,6 +38,7 @@ class Signature;
 
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::otx::implementation
 {

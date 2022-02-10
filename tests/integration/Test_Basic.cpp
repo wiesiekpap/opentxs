@@ -71,17 +71,6 @@
 #include "opentxs/util/Time.hpp"
 #include "ui/Helpers.hpp"
 
-namespace opentxs
-{
-namespace api
-{
-namespace session
-{
-class Notary;
-}  // namespace session
-}  // namespace api
-}  // namespace opentxs
-
 #define UNIT_DEFINITION_CONTRACT_VERSION 2
 #define UNIT_DEFINITION_CONTRACT_NAME "Mt Gox USD"
 #define UNIT_DEFINITION_TERMS "YOLO"

@@ -19,6 +19,7 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -32,6 +33,7 @@ struct Address;
 }  // namespace p2p
 }  // namespace blockchain
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::database::common
 {

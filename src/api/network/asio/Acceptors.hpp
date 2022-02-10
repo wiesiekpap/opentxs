@@ -7,6 +7,7 @@
 
 #include "opentxs/api/network/Asio.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace boost
 {
 namespace asio
@@ -36,6 +37,7 @@ class Endpoint;
 }  // namespace asio
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::network::asio
 {

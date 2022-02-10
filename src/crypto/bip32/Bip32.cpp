@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_forward_declare opentxs::api::Crypto
+
 #include "0_stdafx.hpp"              // IWYU pragma: associated
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "opentxs/crypto/Bip32.hpp"  // IWYU pragma: associated
@@ -11,20 +13,13 @@
 #include <sstream>
 #include <utility>
 
+#include "crypto/HDNode.hpp"
 #include "crypto/bip32/Imp.hpp"
 #include "internal/crypto/Factory.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 #include "util/HDIndex.hpp"
-
-namespace opentxs
-{
-namespace api
-{
-class Crypto;
-}  // namespace api
-}  // namespace opentxs
 
 namespace opentxs::crypto
 {

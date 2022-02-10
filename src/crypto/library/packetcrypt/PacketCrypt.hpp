@@ -10,6 +10,7 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -28,6 +29,7 @@ class HeaderOracle;
 }  // namespace client
 }  // namespace blockchain
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::crypto::implementation
 {

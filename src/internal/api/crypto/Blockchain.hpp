@@ -7,6 +7,7 @@
 
 #include "opentxs/api/crypto/Blockchain.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -24,6 +25,7 @@ class HDPath;
 
 class Contact;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::crypto::internal
 {

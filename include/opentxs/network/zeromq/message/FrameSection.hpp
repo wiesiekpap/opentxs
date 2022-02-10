@@ -14,6 +14,7 @@
 #include <iosfwd>
 #include <iterator>
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -27,6 +28,7 @@ class Message;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::network::zeromq
 {

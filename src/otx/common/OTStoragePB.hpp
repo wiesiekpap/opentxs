@@ -39,9 +39,7 @@
 #pragma GCC diagnostic pop
 #endif
 
-namespace opentxs
-{
-namespace OTDB
+namespace opentxs::OTDB
 {
 // Interface:    IStorablePB
 //
@@ -328,8 +326,6 @@ PROPERTY_NAME_GOES_HERE    = __pb_obj.PROPERTY_NAME_GOES_HERE();
 }
 */
 
-}  // namespace OTDB
-
-}  // namespace opentxs
+}  // namespace opentxs::OTDB
 
 #endif  // defined(OTDB_PROTOCOL_BUFFERS)

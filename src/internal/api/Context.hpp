@@ -7,6 +7,7 @@
 
 #include "opentxs/api/Context.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -16,6 +17,7 @@ class Legacy;
 
 class PasswordCaller;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::internal
 {

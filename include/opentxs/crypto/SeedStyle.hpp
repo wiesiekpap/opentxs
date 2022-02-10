@@ -11,9 +11,7 @@
 #include <cstdint>
 #include <limits>
 
-namespace opentxs
-{
-namespace crypto
+namespace opentxs::crypto
 {
 enum class SeedStyle : std::uint8_t {
     BIP32 = 0,
@@ -21,5 +19,4 @@ enum class SeedStyle : std::uint8_t {
     PKT = 2,
     Error = std::numeric_limits<std::uint8_t>::max(),
 };
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto

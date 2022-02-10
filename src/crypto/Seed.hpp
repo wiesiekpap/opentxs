@@ -21,6 +21,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -56,6 +57,7 @@ class Identifier;
 class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class opentxs::crypto::Seed::Imp final : public internal::Seed
 {

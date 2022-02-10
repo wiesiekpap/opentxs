@@ -13,6 +13,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -23,6 +24,7 @@ class Context;
 class Options;
 class PasswordCaller;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

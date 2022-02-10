@@ -14,6 +14,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -21,10 +22,9 @@ namespace proto
 class GCS;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace blockchain
+namespace opentxs::blockchain
 {
 class OPENTXS_EXPORT GCS
 {
@@ -54,5 +54,4 @@ public:
     virtual ~GCS() = default;
 };
 
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain

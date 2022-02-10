@@ -14,6 +14,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace google
 {
 namespace protobuf
@@ -76,6 +77,7 @@ class OTTransaction;
 class OTTransactionType;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::internal
 {

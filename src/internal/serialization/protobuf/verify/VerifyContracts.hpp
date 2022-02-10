@@ -8,9 +8,7 @@
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "opentxs/Version.hpp"
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto BasketParamsAllowedBasketItem() noexcept -> const VersionMap&;
 auto CurrencyParamsAllowedDisplayScales() noexcept -> const VersionMap&;
@@ -27,5 +25,4 @@ auto UnitDefinitionAllowedCurrencyParams() noexcept -> const VersionMap&;
 auto UnitDefinitionAllowedNym() noexcept -> const VersionMap&;
 auto UnitDefinitionAllowedSecurityParams() noexcept -> const VersionMap&;
 auto UnitDefinitionAllowedSignature() noexcept -> const VersionMap&;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

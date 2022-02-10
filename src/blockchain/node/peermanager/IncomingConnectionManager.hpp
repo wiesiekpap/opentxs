@@ -11,6 +11,7 @@
 
 #include <memory>
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -21,7 +22,7 @@ class Socket;
 }  // namespace asio
 }  // namespace network
 }  // namespace opentxs
-
+// NOLINTEND(modernize-concat-nested-namespaces)
 namespace opentxs::blockchain::node::implementation
 {
 class PeerManager::IncomingConnectionManager

@@ -16,6 +16,7 @@
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -25,6 +26,7 @@ class BalanceItem;
 
 using OTUIBalanceItem = SharedPimpl<ui::BalanceItem>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui
 {

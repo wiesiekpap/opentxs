@@ -16,6 +16,7 @@
 #include "opentxs/util/Options.hpp"
 #include "util/storage/Config.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -60,6 +61,7 @@ class Config;
 class Flag;
 class Options;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::base
 {

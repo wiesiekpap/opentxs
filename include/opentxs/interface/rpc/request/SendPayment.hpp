@@ -14,6 +14,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -22,12 +23,9 @@ class RPCCommand;
 }  // namespace proto
 class Amount;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace rpc
-{
-namespace request
+namespace opentxs::rpc::request
 {
 class OPENTXS_EXPORT SendPayment final : public Base
 {
@@ -83,6 +81,4 @@ private:
     auto operator=(const SendPayment&) -> SendPayment& = delete;
     auto operator=(SendPayment&&) -> SendPayment& = delete;
 };
-}  // namespace request
-}  // namespace rpc
-}  // namespace opentxs
+}  // namespace opentxs::rpc::request

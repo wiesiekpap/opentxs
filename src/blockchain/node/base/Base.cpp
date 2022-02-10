@@ -35,6 +35,7 @@
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
+#include "internal/network/p2p/Factory.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
@@ -68,6 +69,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/network/p2p/Data.hpp"
+#include "opentxs/network/p2p/PushTransaction.hpp"
 #include "opentxs/network/p2p/State.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -476,9 +478,21 @@ auto Base::AddPeer(const p2p::Address& address) const noexcept -> bool
 }
 
 auto Base::BroadcastTransaction(
-    const block::bitcoin::Transaction& tx) const noexcept -> bool
+    const block::bitcoin::Transaction& tx,
+    const bool pushtx) const noexcept -> bool
 {
     mempool_.Submit(tx.clone());
+
+    if (pushtx && sync_client_) {
+        sync_socket_->Send([&] {
+            auto out = network::zeromq::Message{};
+            const auto command =
+                factory::BlockchainSyncPushTransaction(chain_, tx);
+            command.Serialize(out);
+
+            return out;
+        }());
+    }
 
     if (false == running_.load()) { return false; }
 
@@ -631,11 +645,14 @@ auto Base::Listen(const p2p::Address& address) const noexcept -> bool
 auto Base::notify_sync_client() const noexcept -> void
 {
     if (sync_client_) {
-        const auto tip = filters_.FilterTip(filters_.DefaultType());
-        auto msg = MakeWork(OTZMQWorkType{OT_ZMQ_INTERNAL_SIGNAL + 2});
-        msg.AddFrame(tip.first);
-        msg.AddFrame(tip.second);
-        sync_socket_->Send(std::move(msg));
+        sync_socket_->Send([this] {
+            const auto tip = filters_.FilterTip(filters_.DefaultType());
+            auto msg = MakeWork(OTZMQWorkType{OT_ZMQ_INTERNAL_SIGNAL + 2});
+            msg.AddFrame(tip.first);
+            msg.AddFrame(tip.second);
+
+            return msg;
+        }());
     }
 }
 

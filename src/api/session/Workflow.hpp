@@ -33,6 +33,7 @@
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "serialization/protobuf/RPCEnums.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -65,6 +66,7 @@ namespace proto
 class PaymentWorkflow;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::imp
 {

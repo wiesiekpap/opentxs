@@ -47,6 +47,7 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -110,6 +111,7 @@ class Message;
 
 class PaymentCode;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -137,7 +139,8 @@ public:
         return *block_p_;
     }
     auto BroadcastTransaction(
-        const block::bitcoin::Transaction& tx) const noexcept -> bool final;
+        const block::bitcoin::Transaction& tx,
+        const bool pushtx) const noexcept -> bool final;
     auto Chain() const noexcept -> Type final { return chain_; }
     auto FeeRate() const noexcept -> Amount final;
     auto FilterOracleInternal() const noexcept

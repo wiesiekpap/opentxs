@@ -55,6 +55,7 @@
 #include "util/LMDB.hpp"
 #include "util/Work.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -158,6 +159,7 @@ class BlockchainTransactionProposal;
 template <typename T>
 struct make_blank;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -470,7 +472,8 @@ struct Network : virtual public node::Manager {
     };
 
     virtual auto BroadcastTransaction(
-        const block::bitcoin::Transaction& tx) const noexcept -> bool = 0;
+        const block::bitcoin::Transaction& tx,
+        const bool pushtx = false) const noexcept -> bool = 0;
     virtual auto Chain() const noexcept -> Type = 0;
     // amount represents satoshis per 1000 bytes
     virtual auto FeeRate() const noexcept -> Amount = 0;

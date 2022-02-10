@@ -21,6 +21,7 @@ enum class Job : OTZMQWorkType {
     Response = value(WorkType::P2PResponse),
     PublishContract = value(WorkType::P2PPublishContract),
     QueryContract = value(WorkType::P2PQueryContract),
+    PushTransaction = value(WorkType::P2PPushTransaction),
     Register = OT_ZMQ_INTERNAL_SIGNAL + 0,
     Request = OT_ZMQ_INTERNAL_SIGNAL + 1,
     Processed = OT_ZMQ_INTERNAL_SIGNAL + 2,

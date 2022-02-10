@@ -24,6 +24,7 @@
 #include "serialization/protobuf/PeerEnums.pb.h"
 #include "util/Blank.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -42,6 +43,7 @@ class Identifier;
 class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

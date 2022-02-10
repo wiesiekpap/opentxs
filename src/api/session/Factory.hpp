@@ -90,6 +90,7 @@
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Time.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace google
 {
 namespace protobuf
@@ -212,6 +213,7 @@ class OTTrade;
 class OTTransactionType;
 class PeerObject;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::imp
 {

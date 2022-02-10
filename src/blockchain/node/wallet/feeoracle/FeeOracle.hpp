@@ -26,6 +26,7 @@
 #include "util/Allocated.hpp"
 #include "util/Work.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -55,6 +56,7 @@ class Message;
 class Amount;
 class Timer;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class opentxs::blockchain::node::wallet::FeeOracle::Imp final
     : public opentxs::implementation::Allocated,

@@ -7,6 +7,7 @@
 
 #include "opentxs/api/crypto/Symmetric.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -14,6 +15,7 @@ namespace proto
 class SymmetricKey;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::crypto::internal
 {

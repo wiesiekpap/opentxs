@@ -12,6 +12,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace identifier
@@ -21,6 +22,7 @@ class Nym;
 
 using OTNymID = Pimpl<identifier::Nym>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace std
 {

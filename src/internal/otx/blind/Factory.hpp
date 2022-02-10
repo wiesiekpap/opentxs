@@ -13,6 +13,7 @@
 #include "opentxs/otx/blind/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -62,6 +63,7 @@ class Amount;
 class PasswordPrompt;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::factory
 {

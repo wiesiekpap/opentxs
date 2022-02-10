@@ -11,6 +11,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -20,6 +21,7 @@ class AccountListItem;
 
 using OTUIAccountListItem = SharedPimpl<ui::AccountListItem>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui
 {

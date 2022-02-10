@@ -9,6 +9,7 @@
 
 #include "opentxs/core/Secret.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -19,6 +20,7 @@ class Factory;
 }  // namespace internal
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api
 {

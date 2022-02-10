@@ -24,6 +24,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace boost
 {
 namespace system
@@ -54,6 +55,7 @@ class Log;
 class Amount;
 class StringXML;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

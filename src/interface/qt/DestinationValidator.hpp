@@ -15,6 +15,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/interface/qt/DestinationValidator.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -35,6 +36,7 @@ class AccountActivity;
 
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui
 {

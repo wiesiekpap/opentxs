@@ -12,6 +12,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "otx/blind/mint/Imp.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -43,6 +44,7 @@ class Token;
 class PasswordPrompt;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::otx::blind::mint
 {

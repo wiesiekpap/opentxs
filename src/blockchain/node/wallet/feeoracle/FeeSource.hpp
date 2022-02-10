@@ -24,6 +24,7 @@
 #include "util/Allocated.hpp"
 #include "util/Work.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace boost
 {
 namespace json
@@ -55,6 +56,7 @@ class Message;
 class Amount;
 class Timer;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class opentxs::blockchain::node::wallet::FeeSource::Imp
     : public opentxs::implementation::Allocated,

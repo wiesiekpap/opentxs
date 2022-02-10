@@ -12,6 +12,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -22,6 +23,7 @@ class IssuerItem;
 
 using OTUIIssuerItem = SharedPimpl<ui::IssuerItem>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui
 {

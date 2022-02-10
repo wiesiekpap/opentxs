@@ -7,6 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -27,6 +28,7 @@ class Context;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::network
 {

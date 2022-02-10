@@ -13,14 +13,11 @@
 
 namespace opentxs
 {
-namespace blockchain
-{
-namespace node
+namespace blockchain::node
 {
 enum class TxoState : std::uint16_t;
 enum class TxoTag : std::uint16_t;
-}  // namespace node
-}  // namespace blockchain
+}  // namespace blockchain::node
 
 OPENTXS_EXPORT auto print(blockchain::node::TxoState) noexcept
     -> UnallocatedCString;

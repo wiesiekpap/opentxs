@@ -8,6 +8,7 @@
 #include "internal/api/session/Session.hpp"
 #include "opentxs/api/session/Client.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace identifier
@@ -28,6 +29,7 @@ class ServerAction;
 class OT_API;
 class OTAPI_Exec;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::internal
 {

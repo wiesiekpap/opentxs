@@ -11,6 +11,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "util/LMDB.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -26,6 +27,7 @@ class Transaction;
 
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::node::wallet
 {

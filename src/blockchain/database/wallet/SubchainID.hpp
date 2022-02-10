@@ -15,6 +15,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -22,6 +23,7 @@ namespace api
 class Session;
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::database::wallet::db
 {

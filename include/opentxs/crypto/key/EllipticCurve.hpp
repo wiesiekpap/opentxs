@@ -12,6 +12,7 @@
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace crypto
@@ -19,12 +20,9 @@ namespace crypto
 class EcdsaProvider;
 }  // namespace crypto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace crypto
-{
-namespace key
+namespace opentxs::crypto::key
 {
 class OPENTXS_EXPORT EllipticCurve : virtual public Asymmetric
 {
@@ -59,6 +57,4 @@ private:
     auto operator=(const EllipticCurve&) -> EllipticCurve& = delete;
     auto operator=(EllipticCurve&&) -> EllipticCurve& = delete;
 };
-}  // namespace key
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto::key

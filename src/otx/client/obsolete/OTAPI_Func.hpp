@@ -31,6 +31,7 @@
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -64,6 +65,7 @@ class OTPaymentPlan;
 class OTSmartContract;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

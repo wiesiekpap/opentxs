@@ -7,6 +7,7 @@
 
 #include "opentxs/api/crypto/Asymmetric.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -29,6 +30,7 @@ namespace proto
 class AsymmetricKey;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::crypto::internal
 {

@@ -7,13 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-namespace opentxs
-{
-namespace network
-{
-namespace zeromq
-{
-namespace zap
+namespace opentxs::network::zeromq::zap
 {
 enum class Mechanism : int {
     Unknown = 0,
@@ -29,7 +23,4 @@ enum class Status : int {
     AuthFailure = 400,
     SystemError = 500,
 };
-}  // namespace zap
-}  // namespace zeromq
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::zeromq::zap

@@ -9,6 +9,7 @@
 
 #include "internal/util/UniqueQueue.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace identifier
@@ -23,6 +24,7 @@ class OTPayment;
 template <class T>
 class UniqueQueue;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::internal
 {

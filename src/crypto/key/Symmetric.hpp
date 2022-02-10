@@ -26,6 +26,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -43,6 +44,7 @@ class Factory;
 class PasswordPrompt;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::crypto::key::implementation
 {

@@ -42,6 +42,7 @@
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/storage/Config.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -111,6 +112,7 @@ class Root;
 class Data;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::imp
 {

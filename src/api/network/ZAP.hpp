@@ -11,6 +11,7 @@
 #include "opentxs/network/zeromq/zap/Handler.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -23,6 +24,7 @@ class Context;
 
 class Factory;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::network::imp
 {

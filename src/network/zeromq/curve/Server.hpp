@@ -13,6 +13,7 @@
 #include "opentxs/network/zeromq/curve/Server.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -32,6 +33,7 @@ class Socket;
 class OTPassword;
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::network::zeromq::curve::implementation
 {

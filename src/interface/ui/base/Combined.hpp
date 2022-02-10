@@ -8,6 +8,7 @@
 #include "interface/ui/base/List.hpp"
 #include "interface/ui/base/RowType.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -18,6 +19,7 @@ class Client;
 }  // namespace session
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui::implementation
 {

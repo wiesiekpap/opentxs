@@ -11,6 +11,7 @@
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/CashEnums.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -18,10 +19,9 @@ namespace proto
 class Token;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(
     const Token& input,
@@ -183,5 +183,4 @@ auto CheckProto_20(
     UnallocatedCString& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

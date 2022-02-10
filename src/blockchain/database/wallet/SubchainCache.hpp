@@ -26,6 +26,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "util/LMDB.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -49,6 +50,7 @@ struct Position;
 }  // namespace database
 }  // namespace blockchain
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::database::wallet
 {

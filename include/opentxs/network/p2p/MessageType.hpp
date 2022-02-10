@@ -22,5 +22,7 @@ enum class MessageType : TypeEnum {
     publish_ack = 7,
     contract_query = 8,
     contract = 9,
+    pushtx = 10,
+    pushtx_reply = 11,
 };
 }  // namespace opentxs::network::p2p

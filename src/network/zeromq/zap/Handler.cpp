@@ -22,17 +22,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs
-{
-namespace network
-{
-namespace zeromq
-{
-class Context;
-}  // namespace zeromq
-}  // namespace network
-}  // namespace opentxs
-
 template class opentxs::Pimpl<opentxs::network::zeromq::zap::Handler>;
 template class opentxs::network::zeromq::socket::implementation::Receiver<
     opentxs::network::zeromq::zap::Request>;

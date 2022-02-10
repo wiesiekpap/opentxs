@@ -45,6 +45,7 @@
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Work.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -82,6 +83,7 @@ class PaymentWorkflow;
 class Data;
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui::implementation
 {

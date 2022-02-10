@@ -28,6 +28,7 @@
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -47,6 +48,7 @@ class Manager;
 }  // namespace node
 }  // namespace blockchain
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace b = ot::blockchain;
 namespace bb = b::block;

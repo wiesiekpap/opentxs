@@ -55,6 +55,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -135,6 +136,7 @@ class Server;
 class Secret;
 class PaymentCode;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session
 {

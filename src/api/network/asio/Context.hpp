@@ -7,6 +7,7 @@
 
 #include "util/Thread.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace boost
 {
 namespace asio
@@ -14,6 +15,7 @@ namespace asio
 class io_context;
 }  // namespace asio
 }  // namespace boost
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::network::asio
 {

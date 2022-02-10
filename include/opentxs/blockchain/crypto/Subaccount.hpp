@@ -17,6 +17,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -35,12 +36,9 @@ class Element;
 
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace crypto
+namespace opentxs::blockchain::crypto
 {
 class OPENTXS_EXPORT Subaccount
 {
@@ -71,6 +69,4 @@ private:
     auto operator=(const Subaccount&) -> Subaccount& = delete;
     auto operator=(Subaccount&&) -> Subaccount& = delete;
 };
-}  // namespace crypto
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::crypto

@@ -30,6 +30,7 @@
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -63,6 +64,7 @@ class Identifier;
 class OTSignatureMetadata;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::crypto::key::implementation
 {

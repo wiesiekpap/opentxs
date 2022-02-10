@@ -15,6 +15,7 @@
 
 class QObject;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -37,6 +38,7 @@ class DestinationValidator;
 
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class OPENTXS_EXPORT opentxs::ui::DestinationValidator final : public QValidator
 {

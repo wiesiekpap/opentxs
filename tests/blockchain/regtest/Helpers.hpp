@@ -63,6 +63,7 @@
 #include "opentxs/util/Options.hpp"
 #include "ui/Helpers.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -131,6 +132,7 @@ class Message;
 
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace b = ot::blockchain;
 namespace zmq = ot::network::zeromq;

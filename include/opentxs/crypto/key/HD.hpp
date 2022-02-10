@@ -12,6 +12,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -32,12 +33,9 @@ class HD;
 
 using OTHDKey = Pimpl<crypto::key::HD>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace crypto
-{
-namespace key
+namespace opentxs::crypto::key
 {
 class OPENTXS_EXPORT HD : virtual public EllipticCurve
 {
@@ -69,6 +67,4 @@ private:
     auto operator=(const HD&) -> HD& = delete;
     auto operator=(HD&&) -> HD& = delete;
 };
-}  // namespace key
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto::key

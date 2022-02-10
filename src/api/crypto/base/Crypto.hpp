@@ -34,6 +34,7 @@
 #include "opentxs/crypto/library/SymmetricProvider.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -71,6 +72,7 @@ class Secp256k1;
 class Sodium;
 }  // namespace crypto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::imp
 {

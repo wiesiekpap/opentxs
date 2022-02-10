@@ -10,6 +10,7 @@
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace contract
@@ -25,14 +26,9 @@ class Connection;
 
 using OTConnectionReply = SharedPimpl<contract::peer::reply::Connection>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace contract
-{
-namespace peer
-{
-namespace reply
+namespace opentxs::contract::peer::reply
 {
 class OPENTXS_EXPORT Connection : virtual public peer::Reply
 {
@@ -54,7 +50,4 @@ private:
     auto operator=(const Connection&) -> Connection& = delete;
     auto operator=(Connection&&) -> Connection& = delete;
 };
-}  // namespace reply
-}  // namespace peer
-}  // namespace contract
-}  // namespace opentxs
+}  // namespace opentxs::contract::peer::reply

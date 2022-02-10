@@ -8,6 +8,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace identifier
@@ -21,6 +22,7 @@ class OTPayment;
 class PasswordPrompt;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

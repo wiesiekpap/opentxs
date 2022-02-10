@@ -16,6 +16,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -25,14 +26,9 @@ class Session;
 
 class PaymentCode;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace block
-{
-namespace bitcoin
+namespace opentxs::blockchain::block::bitcoin
 {
 class OPENTXS_EXPORT Script
 {
@@ -120,7 +116,4 @@ private:
     auto operator=(const Script&) -> Script& = delete;
     auto operator=(Script&&) -> Script& = delete;
 };
-}  // namespace bitcoin
-}  // namespace block
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::block::bitcoin

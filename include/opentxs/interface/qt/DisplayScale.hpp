@@ -16,6 +16,7 @@
 
 class QObject;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace display
@@ -28,6 +29,7 @@ namespace ui
 class DisplayScaleQt;
 }  // namespace ui
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class OPENTXS_EXPORT opentxs::ui::DisplayScaleQt final
     : public QAbstractListModel

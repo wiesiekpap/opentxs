@@ -45,6 +45,7 @@
 #include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
+#include "opentxs/network/p2p/PushTransaction.hpp"
 #include "opentxs/network/p2p/Query.hpp"
 #include "opentxs/network/p2p/Request.hpp"
 #include "opentxs/network/p2p/State.hpp"
@@ -206,6 +207,7 @@ Client::Imp::Imp(
     }())
     , connected_servers_()
     , pending_()
+    , pending_chain_()
     , connected_count_(0)
     , running_(true)
     , thread_(api_.Network().ZeroMQ().Internal().Start(
@@ -270,6 +272,23 @@ auto Client::Imp::flush_pending() noexcept -> void
     }
 }
 
+auto Client::Imp::flush_pending(Chain chain) noexcept -> void
+{
+    auto& pending = pending_chain_.at(chain);
+    auto& providers = providers_.at(chain);
+
+    OT_ASSERT(0 < providers.size());
+
+    LogTrace()(OT_PRETTY_CLASS())("sending ")(pending.size())(
+        " queued messages")
+        .Flush();
+
+    while (0 < pending.size()) {
+        forward_to_all(std::move(pending.front()));
+        pending.pop_front();
+    }
+}
+
 auto Client::Imp::forward_to_all(Message&& message) noexcept -> void
 {
     if (0 == connected_servers_.size()) {
@@ -279,6 +298,35 @@ auto Client::Imp::forward_to_all(Message&& message) noexcept -> void
     }
 
     for (const auto& id : connected_servers_) {
+        auto& server = servers_.at(id);
+        LogTrace()("Forwarding request to ")(id).Flush();
+        external_router_.Send([&] {
+            auto msg = opentxs::network::zeromq::Message{};
+            msg.AddFrame(server.endpoint_);
+            msg.StartBody();
+
+            for (const auto& frame : message.Body()) { msg.AddFrame(frame); }
+
+            return msg;
+        }());
+    }
+}
+
+auto Client::Imp::forward_to_all(Chain chain, Message&& message) noexcept
+    -> void
+{
+    const auto& providers = providers_[chain];
+
+    if (0 == providers.size()) {
+        LogTrace()(OT_PRETTY_CLASS())("No connected ")(DisplayString(chain))(
+            " peers available")
+            .Flush();
+        auto& pending = pending_chain_[chain];
+        pending.push_back(std::move(message));
+        // TODO limit queue size
+    }
+
+    for (const auto& id : providers) {
         auto& server = servers_.at(id);
         LogTrace()("Forwarding request to ")(id).Flush();
         external_router_.Send([&] {
@@ -452,6 +500,7 @@ auto Client::Imp::process_external(Message&& msg) noexcept -> void
                         LogVerbose()(endpoint)(" has data for ")(
                             DisplayString(chain))
                             .Flush();
+                        flush_pending(chain);
                     } else {
                         providers.erase(endpoint);
                         LogVerbose()(endpoint)(" is out of date for ")(
@@ -568,6 +617,9 @@ auto Client::Imp::process_internal(Message&& msg) noexcept -> void
         case Job::SyncServerUpdated: {
             process_server(std::move(msg));
         } break;
+        case Job::PushTransaction: {
+            process_pushtx(std::move(msg));
+        } break;
         case Job::Register: {
             process_register(std::move(msg));
         } break;
@@ -625,6 +677,21 @@ auto Client::Imp::process_monitor(Message&& msg) noexcept -> void
             OT_FAIL;
         }
     }
+}
+
+auto Client::Imp::process_pushtx(Message&& msg) noexcept -> void
+{
+#if OT_BLOCKCHAIN
+    const auto base = api_.Factory().BlockchainSyncMessage(msg);
+    using Type = opentxs::network::p2p::MessageType;
+
+    OT_ASSERT(base);
+    OT_ASSERT(Type::pushtx == base->Type());
+
+    const auto& pushtx = base->asPushTransaction();
+
+    forward_to_all(pushtx.Chain(), std::move(msg));
+#endif  // OT_BLOCKCHAIN
 }
 
 auto Client::Imp::process_register(Message&& msg) noexcept -> void

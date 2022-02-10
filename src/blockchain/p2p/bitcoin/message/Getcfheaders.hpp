@@ -17,6 +17,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -35,6 +36,7 @@ class Header;
 }  // namespace p2p
 }  // namespace blockchain
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {

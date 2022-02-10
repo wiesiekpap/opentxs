@@ -28,6 +28,7 @@
 #include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -75,6 +76,7 @@ class LMDB;
 
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 extern "C" {
 typedef struct MDB_txn MDB_txn;

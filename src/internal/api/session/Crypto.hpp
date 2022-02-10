@@ -11,6 +11,7 @@
 
 #include "internal/api/Crypto.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -23,6 +24,7 @@ class Blockchain;
 class Session;
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::internal
 {

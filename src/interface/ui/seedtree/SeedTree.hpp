@@ -36,6 +36,7 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -72,6 +73,7 @@ class Message;
 class Amount;
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui::implementation
 {

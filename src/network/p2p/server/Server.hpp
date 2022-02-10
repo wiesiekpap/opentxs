@@ -14,6 +14,7 @@
 #include "opentxs/util/Container.hpp"
 #include "util/Gatekeeper.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -47,6 +48,7 @@ class Message;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::network::p2p
 {
@@ -86,6 +88,9 @@ public:
 private:
     auto process_external(zeromq::Message&& incoming) noexcept -> void;
     auto process_internal(zeromq::Message&& incoming) noexcept -> void;
+    auto process_pushtx(
+        zeromq::Message&& incoming,
+        const p2p::Base& base) noexcept -> void;
     auto process_sync(
         zeromq::Message&& incoming,
         const p2p::Base& base) noexcept -> void;

@@ -13,6 +13,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -26,6 +27,7 @@ class Encode;
 }  // namespace crypto
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::crypto
 {

@@ -12,6 +12,7 @@
 #include "opentxs/util/storage/Driver.hpp"
 #include "util/storage/drivers/filesystem/Common.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -37,6 +38,7 @@ class Plugin;
 
 class Flag;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::storage::driver::filesystem
 {

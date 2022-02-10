@@ -9,6 +9,7 @@
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -21,6 +22,7 @@ class Signature;
 
 using OTSignature = Pimpl<Signature>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

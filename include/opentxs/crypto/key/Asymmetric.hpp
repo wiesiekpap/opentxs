@@ -19,6 +19,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace crypto
@@ -46,12 +47,9 @@ class Secret;
 
 using OTAsymmetricKey = Pimpl<crypto::key::Asymmetric>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace crypto
-{
-namespace key
+namespace opentxs::crypto::key
 {
 class OPENTXS_EXPORT Asymmetric
 {
@@ -145,6 +143,4 @@ private:
     auto operator=(const Asymmetric&) -> Asymmetric& = delete;
     auto operator=(Asymmetric&&) -> Asymmetric& = delete;
 };
-}  // namespace key
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto::key

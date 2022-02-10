@@ -10,9 +10,7 @@
 
 #include <limits>
 
-namespace opentxs
-{
-namespace rpc
+namespace opentxs::rpc
 {
 enum class ResponseCode : TypeEnum {
     invalid = 0,
@@ -49,5 +47,4 @@ enum class ResponseCode : TypeEnum {
     unimplemented = std::numeric_limits<TypeEnum>::max() - 1u,
     error = std::numeric_limits<TypeEnum>::max(),
 };
-}  // namespace rpc
-}  // namespace opentxs
+}  // namespace opentxs::rpc

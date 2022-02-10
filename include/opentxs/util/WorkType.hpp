@@ -61,6 +61,7 @@ enum class WorkType : OTZMQWorkType {
     P2PResponse = 1029,
     P2PPublishContract = 1030,
     P2PQueryContract = 1031,
+    P2PPushTransaction = 1032,
     AsioRegister = 2048,
     AsioConnect = 2049,
     AsioDisconnect = 2050,

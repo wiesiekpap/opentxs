@@ -30,6 +30,7 @@
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/ServerRequest.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -73,6 +74,7 @@ class OTPassword;
 class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 

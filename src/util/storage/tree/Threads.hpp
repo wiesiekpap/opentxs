@@ -18,6 +18,7 @@
 #include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/tree/Node.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace storage
@@ -28,6 +29,7 @@ class Nym;
 class Thread;
 }  // namespace storage
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::storage
 {

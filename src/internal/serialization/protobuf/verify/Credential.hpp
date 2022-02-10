@@ -8,6 +8,7 @@
 #include "opentxs/Version.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -15,10 +16,9 @@ namespace proto
 class Credential;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(
     const Credential& serializedCred,
@@ -140,5 +140,4 @@ auto CheckProto_20(
     const KeyMode& mode = KEYMODE_ERROR,
     const CredentialRole role = CREDROLE_ERROR,
     const bool withSigs = true) -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

@@ -14,6 +14,7 @@
 #include "opentxs/interface/ui/List.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -24,6 +25,7 @@ class BalanceItem;
 
 class Amount;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui
 {

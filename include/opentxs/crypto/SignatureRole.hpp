@@ -10,9 +10,7 @@
 
 #include <cstdint>
 
-namespace opentxs
-{
-namespace crypto
+namespace opentxs::crypto
 {
 enum class SignatureRole : std::uint16_t {
     PublicCredential = 0,
@@ -28,5 +26,4 @@ enum class SignatureRole : std::uint16_t {
     ServerRequest = 10,
     ServerReply = 11
 };
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto

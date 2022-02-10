@@ -22,6 +22,7 @@
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/SourceProof.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -55,6 +56,7 @@ class Factory;
 class Identifier;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::identity::credential::implementation
 {

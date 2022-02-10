@@ -12,6 +12,7 @@
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -27,14 +28,9 @@ class Router;
 
 using OTZMQRouterSocket = Pimpl<network::zeromq::socket::Router>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace network
-{
-namespace zeromq
-{
-namespace socket
+namespace opentxs::network::zeromq::socket
 {
 class OPENTXS_EXPORT Router : virtual public curve::Server,
                               virtual public curve::Client,
@@ -59,7 +55,4 @@ private:
     auto operator=(const Router&) -> Router& = delete;
     auto operator=(Router&&) -> Router& = delete;
 };
-}  // namespace socket
-}  // namespace zeromq
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::zeromq::socket

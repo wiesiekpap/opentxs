@@ -42,9 +42,7 @@ OPENTXS_EXPORT auto operator+(
     const blockchain::Work& rhs) noexcept -> OTWork;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace blockchain
+namespace opentxs::blockchain
 {
 class OPENTXS_EXPORT Work
 {
@@ -82,5 +80,4 @@ private:
     auto operator=(const Work& rhs) -> Work& = delete;
     auto operator=(Work&& rhs) -> Work& = delete;
 };
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain

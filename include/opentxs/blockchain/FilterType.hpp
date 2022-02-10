@@ -10,11 +10,7 @@
 
 #include <limits>
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace filter
+namespace opentxs::blockchain::filter
 {
 enum class Type : TypeEnum {
     Basic_BIP158 = 0,
@@ -22,6 +18,4 @@ enum class Type : TypeEnum {
     ES = 88,
     Unknown = std::numeric_limits<TypeEnum>::max(),
 };
-}  // namespace filter
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::filter

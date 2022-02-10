@@ -12,6 +12,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -20,7 +21,11 @@ class NumericHash;
 }  // namespace blockchain
 
 using OTNumericHash = Pimpl<blockchain::NumericHash>;
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
+namespace opentxs
+{
 OPENTXS_EXPORT auto operator==(
     const OTNumericHash& lhs,
     const blockchain::NumericHash& rhs) noexcept -> bool;
@@ -35,9 +40,7 @@ OPENTXS_EXPORT auto operator<=(
     const blockchain::NumericHash& rhs) noexcept -> bool;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace blockchain
+namespace opentxs::blockchain
 {
 class OPENTXS_EXPORT NumericHash
 {
@@ -72,5 +75,4 @@ private:
     auto operator=(const NumericHash& rhs) -> NumericHash& = delete;
     auto operator=(NumericHash&& rhs) -> NumericHash& = delete;
 };
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain

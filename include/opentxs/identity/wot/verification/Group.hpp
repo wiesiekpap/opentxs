@@ -11,6 +11,7 @@
 #include "opentxs/identity/wot/verification/Item.hpp"
 #include "opentxs/util/Iterator.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace identifier
@@ -36,6 +37,7 @@ class VerificationGroup;
 
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::identity::wot::verification
 {

@@ -8,9 +8,7 @@
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "opentxs/Version.hpp"
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto BlindedSeriesListAllowedStorageItemHash() noexcept -> const VersionMap&;
 auto StorageAccountsAllowedStorageAccountIndex() noexcept -> const VersionMap&;
@@ -48,5 +46,4 @@ auto StorageSeedsAllowedStorageItemHash() noexcept -> const VersionMap&;
 auto StorageServersAllowedStorageItemHash() noexcept -> const VersionMap&;
 auto StorageThreadAllowedItem() noexcept -> const VersionMap&;
 auto StorageUnitsAllowedStorageItemHash() noexcept -> const VersionMap&;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

@@ -11,6 +11,7 @@
 
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -32,6 +33,7 @@ class Data;
 }  // namespace p2p
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::node::internal
 {

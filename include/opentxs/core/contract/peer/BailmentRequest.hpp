@@ -10,6 +10,7 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace identifier
@@ -30,14 +31,9 @@ class Bailment;
 
 using OTBailmentRequest = SharedPimpl<contract::peer::request::Bailment>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace contract
-{
-namespace peer
-{
-namespace request
+namespace opentxs::contract::peer::request
 {
 class OPENTXS_EXPORT Bailment : virtual public peer::Request
 {
@@ -62,7 +58,4 @@ private:
     auto operator=(const Bailment&) -> Bailment& = delete;
     auto operator=(Bailment&&) -> Bailment& = delete;
 };
-}  // namespace request
-}  // namespace peer
-}  // namespace contract
-}  // namespace opentxs
+}  // namespace opentxs::contract::peer::request

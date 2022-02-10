@@ -9,6 +9,7 @@
 
 #include <cstdint>
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -22,12 +23,9 @@ class Util;
 }  // namespace crypto
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace api
-{
-namespace crypto
+namespace opentxs::api::crypto
 {
 class Util
 {
@@ -51,6 +49,4 @@ private:
     auto operator=(const Util&) -> Util& = delete;
     auto operator=(Util&&) -> Util& = delete;
 };
-}  // namespace crypto
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::crypto

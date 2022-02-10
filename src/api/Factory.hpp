@@ -15,6 +15,7 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/util/Bytes.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -23,6 +24,7 @@ class Crypto;
 class Factory;
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::imp
 {

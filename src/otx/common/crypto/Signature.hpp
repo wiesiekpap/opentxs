@@ -9,6 +9,7 @@
 #include "internal/otx/common/crypto/OTSignatureMetadata.hpp"
 #include "internal/otx/common/crypto/Signature.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -16,6 +17,7 @@ namespace api
 class Session;
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::implementation
 {

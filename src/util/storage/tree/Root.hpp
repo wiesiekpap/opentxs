@@ -23,6 +23,7 @@
 #include "util/storage/tree/Node.hpp"
 #include "util/storage/tree/Tree.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -59,6 +60,7 @@ class Driver;
 }  // namespace implementation
 }  // namespace storage
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::storage
 {

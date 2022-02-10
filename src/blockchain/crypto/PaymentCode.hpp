@@ -39,6 +39,7 @@
 #include "serialization/protobuf/HDPath.pb.h"
 #include "util/Latest.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -73,6 +74,7 @@ class HDPath;
 
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::crypto::implementation
 {

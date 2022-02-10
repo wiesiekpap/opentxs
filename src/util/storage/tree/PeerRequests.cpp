@@ -25,9 +25,7 @@
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 PeerRequests::PeerRequests(
     const Driver& storage,
@@ -120,5 +118,4 @@ auto PeerRequests::Store(
 {
     return store_proto(data, data.id(), alias);
 }
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

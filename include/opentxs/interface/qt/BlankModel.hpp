@@ -9,9 +9,7 @@
 
 #include <QIdentityProxyModel>
 
-namespace opentxs
-{
-namespace ui
+namespace opentxs::ui
 {
 struct OPENTXS_EXPORT BlankModel final : public QAbstractItemModel {
     Q_OBJECT
@@ -48,5 +46,4 @@ private:
 
     BlankModel() = delete;
 };
-}  // namespace ui
-}  // namespace opentxs
+}  // namespace opentxs::ui

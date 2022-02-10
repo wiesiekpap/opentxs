@@ -9,6 +9,7 @@
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
 #include "opentxs/util/Bytes.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -26,6 +27,7 @@ class Asymmetric;
 
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::crypto::implementation
 {

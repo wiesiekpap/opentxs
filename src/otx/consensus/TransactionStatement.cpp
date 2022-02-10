@@ -19,11 +19,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs
-{
-namespace otx
-{
-namespace context
+namespace opentxs::otx::context
 {
 TransactionStatement::TransactionStatement(
     const UnallocatedCString& notary,
@@ -182,6 +178,4 @@ void TransactionStatement::Remove(const TransactionNumber& number)
     available_.erase(number);
     issued_.erase(number);
 }
-}  // namespace context
-}  // namespace otx
-}  // namespace opentxs
+}  // namespace opentxs::otx::context
