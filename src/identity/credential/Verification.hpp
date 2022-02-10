@@ -14,6 +14,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/VerificationSet.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -44,6 +45,7 @@ class Credential;
 class Factory;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::identity::credential::implementation
 {

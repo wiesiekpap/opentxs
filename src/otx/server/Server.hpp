@@ -36,6 +36,7 @@
 #include "otx/server/Transactor.hpp"
 #include "otx/server/UserCommandProcessor.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -60,6 +61,7 @@ class Data;
 class OTPassword;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::server
 {

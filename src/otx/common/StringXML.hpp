@@ -11,6 +11,7 @@
 #include "core/String.hpp"
 #include "internal/otx/common/StringXML.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace irr
 {
 namespace io
@@ -23,6 +24,7 @@ namespace opentxs
 {
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::implementation
 {

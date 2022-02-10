@@ -9,6 +9,7 @@
 
 #include "api/session/Factory.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -22,6 +23,7 @@ class Notary;
 
 class OTCron;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::server
 {

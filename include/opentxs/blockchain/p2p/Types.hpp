@@ -11,11 +11,7 @@
 
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace p2p
+namespace opentxs::blockchain::p2p
 {
 namespace bitcoin
 {
@@ -57,6 +53,4 @@ enum class Service : std::uint8_t {
 
 OPENTXS_EXPORT auto DisplayService(const Service service) noexcept
     -> UnallocatedCString;
-}  // namespace p2p
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::p2p

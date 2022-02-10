@@ -14,6 +14,7 @@
 
 class QObject;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -26,6 +27,7 @@ class AccountActivity;
 class AmountValidator;
 }  // namespace ui
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class OPENTXS_EXPORT opentxs::ui::AmountValidator final : public QValidator
 {

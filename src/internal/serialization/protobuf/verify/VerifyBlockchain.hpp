@@ -8,9 +8,7 @@
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "opentxs/Version.hpp"
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto Bip47ChainAllowedBip47Channel() noexcept -> const VersionMap&;
 auto Bip47ChannelAllowedBip47Direction() noexcept -> const VersionMap&;
@@ -62,5 +60,4 @@ auto HDAccountAllowedBlockchainAddress() noexcept -> const VersionMap&;
 auto HDAccountAllowedBlockchainDeterministicAccountData() noexcept
     -> const VersionMap&;
 auto HDAccountAllowedBlockchainHDAccountData() noexcept -> const VersionMap&;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

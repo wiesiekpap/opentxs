@@ -9,11 +9,7 @@
 
 #include "opentxs/crypto/key/Asymmetric.hpp"
 
-namespace opentxs
-{
-namespace crypto
-{
-namespace key
+namespace opentxs::crypto::key
 {
 class OPENTXS_EXPORT RSA : virtual public Asymmetric
 {
@@ -29,6 +25,4 @@ private:
     auto operator=(const RSA&) -> RSA& = delete;
     auto operator=(RSA&&) -> RSA& = delete;
 };
-}  // namespace key
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto::key

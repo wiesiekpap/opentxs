@@ -15,13 +15,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
-{
-namespace network
-{
-namespace blockchain
-{
-namespace bitcoin
+namespace opentxs::network::blockchain::bitcoin
 {
 class OPENTXS_EXPORT CompactSize
 {
@@ -109,7 +103,4 @@ OPENTXS_EXPORT auto DecodeSize(
     const std::size_t total,
     std::size_t& output,
     std::size_t& csExtraBytes) noexcept -> bool;
-}  // namespace bitcoin
-}  // namespace blockchain
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::blockchain::bitcoin

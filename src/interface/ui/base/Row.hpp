@@ -9,6 +9,7 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/util/Lockable.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -19,6 +20,7 @@ class Client;
 }  // namespace session
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui::implementation
 {

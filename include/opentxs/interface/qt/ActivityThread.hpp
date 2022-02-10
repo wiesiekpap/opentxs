@@ -17,6 +17,7 @@
 class QObject;
 class QValidator;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -29,6 +30,7 @@ struct ActivityThread;
 class ActivityThreadQt;
 }  // namespace ui
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class OPENTXS_EXPORT opentxs::ui::ActivityThreadQt final : public qt::Model
 {

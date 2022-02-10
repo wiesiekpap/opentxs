@@ -7,6 +7,7 @@
 
 #include "opentxs/Version.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -14,10 +15,9 @@ namespace proto
 class BitcoinBlockHeaderFields;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(const BitcoinBlockHeaderFields& input, const bool silent)
     -> bool;
@@ -59,5 +59,4 @@ auto CheckProto_19(const BitcoinBlockHeaderFields& input, const bool silent)
     -> bool;
 auto CheckProto_20(const BitcoinBlockHeaderFields& input, const bool silent)
     -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

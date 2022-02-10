@@ -18,6 +18,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -44,6 +45,7 @@ namespace ui
 class ProfileItem;
 }  // namespace ui
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 template class opentxs::SharedPimpl<opentxs::ui::ProfileItem>;
 

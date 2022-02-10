@@ -10,6 +10,7 @@
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/Version.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -17,10 +18,9 @@ namespace proto
 class ContactSection;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(
     const ContactSection& contactSection,
@@ -122,5 +122,4 @@ auto CheckProto_20(
     const bool silent,
     const ClaimType indexed,
     const uint32_t parentVersion = 0xffffffff) -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

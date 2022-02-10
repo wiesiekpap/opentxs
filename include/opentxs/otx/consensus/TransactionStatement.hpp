@@ -14,11 +14,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
-namespace opentxs
-{
-namespace otx
-{
-namespace context
+namespace opentxs::otx::context
 {
 class TransactionStatement
 {
@@ -53,6 +49,4 @@ public:
 
     ~TransactionStatement() = default;
 };
-}  // namespace context
-}  // namespace otx
-}  // namespace opentxs
+}  // namespace opentxs::otx::context

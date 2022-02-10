@@ -18,6 +18,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -37,6 +38,7 @@ class Identifier;
 using OTData = Pimpl<Data>;
 using OTIdentifier = Pimpl<Identifier>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::p2p::peer
 {

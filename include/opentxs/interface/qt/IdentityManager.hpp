@@ -10,6 +10,7 @@
 #include <QObject>
 #include <QString>
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -25,6 +26,7 @@ class NymListQt;
 class ProfileQt;
 }  // namespace ui
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class QAbstractListModel;
 class QObject;

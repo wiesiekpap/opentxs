@@ -10,6 +10,7 @@
 #include "internal/util/Editor.hpp"
 #include "opentxs/api/session/Contacts.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -22,6 +23,7 @@ class Blockchain;
 
 class Contact;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::internal
 {

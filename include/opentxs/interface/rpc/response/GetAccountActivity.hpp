@@ -12,6 +12,7 @@
 #include "opentxs/interface/rpc/response/Base.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -29,6 +30,7 @@ class GetAccountActivity;
 class AccountEvent;
 }  // namespace rpc
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::rpc::response
 {

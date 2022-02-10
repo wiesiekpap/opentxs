@@ -26,6 +26,7 @@ class file_descriptor_sink;
 }  // namespace iostreams
 }  // namespace boost
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -48,6 +49,7 @@ namespace storage
 class Config;
 }  // namespace storage
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::storage::driver::filesystem
 {

@@ -27,6 +27,7 @@
 #include "otx/blind/purse/Purse.hpp"
 #include "serialization/protobuf/Envelope.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -65,6 +66,7 @@ class Purse;
 
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::otx::blind::purse
 {

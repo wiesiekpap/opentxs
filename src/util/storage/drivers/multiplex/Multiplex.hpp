@@ -16,6 +16,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -44,6 +45,7 @@ class Root;
 class Flag;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::storage::driver
 {

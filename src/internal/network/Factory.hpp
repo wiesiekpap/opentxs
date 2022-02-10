@@ -7,6 +7,7 @@
 
 #include <memory>
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -15,6 +16,7 @@ class DhtConfig;
 class OpenDHT;
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::factory
 {

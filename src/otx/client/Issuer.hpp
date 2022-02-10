@@ -27,6 +27,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Issuer.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -46,6 +47,7 @@ class Issuer;
 
 class Factory;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::otx::client::implementation
 {

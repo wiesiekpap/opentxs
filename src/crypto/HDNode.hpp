@@ -11,6 +11,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -18,6 +19,7 @@ namespace api
 class Crypto;
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::crypto::implementation
 {

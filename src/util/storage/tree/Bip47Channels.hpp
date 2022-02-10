@@ -20,6 +20,7 @@
 #include "serialization/protobuf/StorageBip47Contexts.pb.h"
 #include "util/storage/tree/Node.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -36,6 +37,7 @@ class Nym;
 
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::storage
 {

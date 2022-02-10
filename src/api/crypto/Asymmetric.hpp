@@ -25,6 +25,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -59,6 +60,7 @@ class OTPassword;
 class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::crypto::imp
 {

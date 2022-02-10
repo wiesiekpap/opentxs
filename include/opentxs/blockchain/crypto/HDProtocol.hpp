@@ -8,11 +8,7 @@
 #include "opentxs/Version.hpp"                  // IWYU pragma: associated
 #include "opentxs/blockchain/crypto/Types.hpp"  // IWYU pragma: associated
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace crypto
+namespace opentxs::blockchain::crypto
 {
 enum class HDProtocol : std::uint16_t {
     Error = 0,
@@ -21,6 +17,4 @@ enum class HDProtocol : std::uint16_t {
     BIP_49 = 49,
     BIP_84 = 84,
 };
-}  // namespace crypto
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::crypto

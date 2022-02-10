@@ -19,6 +19,7 @@
 #include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/tree/Node.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -41,10 +42,9 @@ class Nym;
 class Tree;
 }  // namespace storage
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 class Nyms final : public Node
 {
@@ -99,5 +99,4 @@ private:
     auto operator=(const Nyms&) -> Nyms = delete;
     auto operator=(Nyms&&) -> Nyms = delete;
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

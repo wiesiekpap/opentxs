@@ -11,6 +11,7 @@
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -18,10 +19,9 @@ namespace proto
 class Signature;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(
     const Signature& signature,
@@ -305,5 +305,4 @@ auto CheckProto_20(
     const Signature&,
     const bool,
     const SignatureRole role = SIGROLE_ERROR) -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

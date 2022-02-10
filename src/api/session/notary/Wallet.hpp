@@ -11,6 +11,7 @@
 #include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -54,6 +55,7 @@ class Factory;
 class Identifier;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::server
 {

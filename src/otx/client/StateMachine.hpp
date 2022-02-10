@@ -38,6 +38,7 @@
 #include "opentxs/util/SharedPimpl.hpp"
 #include "otx/client/PaymentTasks.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -61,6 +62,7 @@ class Flag;
 class OTPassword;
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace std
 {

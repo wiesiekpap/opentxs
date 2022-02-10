@@ -26,6 +26,7 @@
 #include "opentxs/crypto/key/Types.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -75,6 +76,7 @@ class Context;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::imp
 {

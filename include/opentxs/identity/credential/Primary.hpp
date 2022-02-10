@@ -9,6 +9,7 @@
 
 #include "opentxs/identity/credential/Key.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -16,12 +17,9 @@ namespace proto
 class HDPath;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace identity
-{
-namespace credential
+namespace opentxs::identity::credential
 {
 class OPENTXS_EXPORT Primary : virtual public identity::credential::Key
 {
@@ -41,6 +39,4 @@ private:
     auto operator=(const Primary&) -> Primary& = delete;
     auto operator=(Primary&&) -> Primary& = delete;
 };
-}  // namespace credential
-}  // namespace identity
-}  // namespace opentxs
+}  // namespace opentxs::identity::credential

@@ -67,6 +67,7 @@ struct less<COIN> {
 };
 }  // namespace std
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -116,6 +117,7 @@ class Identifier;
 class PasswordPrompt;
 class PaymentCode;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

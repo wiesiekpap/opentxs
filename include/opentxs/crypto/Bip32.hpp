@@ -19,6 +19,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace crypto
@@ -41,10 +42,9 @@ class HDPath;
 
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace crypto
+namespace opentxs::crypto
 {
 auto Print(const proto::HDPath& node) noexcept -> UnallocatedCString;
 auto Print(const proto::HDPath& node, bool showSeedID) noexcept
@@ -118,5 +118,4 @@ private:
     auto operator=(const Bip32&) -> Bip32& = delete;
     auto operator=(Bip32&&) -> Bip32& = delete;
 };
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto

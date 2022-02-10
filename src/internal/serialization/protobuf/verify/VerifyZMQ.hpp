@@ -8,9 +8,6 @@
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "opentxs/Version.hpp"
 
-namespace opentxs
+namespace opentxs::proto
 {
-namespace proto
-{
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

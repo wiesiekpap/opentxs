@@ -37,6 +37,7 @@
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -91,6 +92,7 @@ class Push;
 class Outstanding;
 class PaymentCode;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::node::wallet
 {

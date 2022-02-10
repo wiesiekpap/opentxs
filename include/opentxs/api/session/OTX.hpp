@@ -25,6 +25,7 @@
 #define OT_CHEQUE_HOURS 24 * OT_CHEQUE_DAYS
 #define DEFAULT_PROCESS_INBOX_ITEMS 5
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -53,6 +54,7 @@ class UnitDefinition;
 class Amount;
 class OTPayment;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session
 {

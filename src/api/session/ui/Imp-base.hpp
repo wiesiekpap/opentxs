@@ -53,6 +53,7 @@
 
 class QAbstractItemModel;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -145,6 +146,7 @@ class UnitListQt;
 
 class Flag;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::imp
 {

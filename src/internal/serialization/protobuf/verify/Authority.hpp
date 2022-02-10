@@ -9,6 +9,7 @@
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -16,10 +17,9 @@ namespace proto
 class Authority;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(
     const Authority& input,
@@ -161,5 +161,4 @@ auto CheckProto_20(
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

@@ -12,6 +12,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -21,10 +22,9 @@ class Session;
 
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace crypto
+namespace opentxs::crypto
 {
 class OPENTXS_EXPORT Bip39
 {
@@ -59,5 +59,4 @@ private:
     auto operator=(const Bip39&) -> Bip39& = delete;
     auto operator=(Bip39&&) -> Bip39& = delete;
 };
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto

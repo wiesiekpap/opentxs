@@ -23,6 +23,7 @@
 #include "otx/blind/token/Imp.hpp"
 #include "serialization/protobuf/Token.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -58,6 +59,7 @@ class Token;
 
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::otx::blind::token
 {

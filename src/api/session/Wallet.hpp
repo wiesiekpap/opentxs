@@ -53,6 +53,7 @@
 #include "opentxs/util/NymEditor.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -143,6 +144,7 @@ class PasswordPrompt;
 class PeerObject;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::imp
 {

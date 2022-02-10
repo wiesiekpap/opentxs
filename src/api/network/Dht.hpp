@@ -23,6 +23,7 @@
 #include "opentxs/network/zeromq/socket/Reply.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -55,6 +56,7 @@ class ServerContract;
 class UnitDefinition;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::network::imp
 {

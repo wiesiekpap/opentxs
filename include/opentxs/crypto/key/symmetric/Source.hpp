@@ -10,15 +10,8 @@
 
 #include <cstdint>
 
-namespace opentxs
+namespace opentxs::crypto::key::symmetric
 {
-namespace crypto
-{
-namespace key
-{
-namespace symmetric
-{
-
 enum class Source : std::uint8_t {
     Error = 0,
     Raw = 1,
@@ -31,7 +24,4 @@ constexpr auto value(const Source in) noexcept
 {
     return static_cast<std::uint8_t>(in);
 }
-}  // namespace symmetric
-}  // namespace key
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto::key::symmetric

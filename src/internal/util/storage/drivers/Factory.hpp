@@ -9,6 +9,7 @@
 
 #include "opentxs/util/Container.hpp"  // IWYU pragma: keep
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -52,6 +53,7 @@ class Plugin;
 class Flag;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::factory
 {

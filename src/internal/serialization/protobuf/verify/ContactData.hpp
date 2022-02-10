@@ -8,6 +8,7 @@
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/Version.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -15,10 +16,9 @@ namespace proto
 class ContactData;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(
     const ContactData& contactData,
@@ -52,5 +52,4 @@ auto CheckProto_17(const ContactData&, const bool, const ClaimType) -> bool;
 auto CheckProto_18(const ContactData&, const bool, const ClaimType) -> bool;
 auto CheckProto_19(const ContactData&, const bool, const ClaimType) -> bool;
 auto CheckProto_20(const ContactData&, const bool, const ClaimType) -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

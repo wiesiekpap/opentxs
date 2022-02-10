@@ -7,6 +7,7 @@
 
 #include "opentxs/Version.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -14,10 +15,9 @@ namespace proto
 class StorageSeeds;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(const StorageSeeds& seeds, const bool silent) -> bool;
 auto CheckProto_2(const StorageSeeds&, const bool) -> bool;
@@ -39,5 +39,4 @@ auto CheckProto_17(const StorageSeeds&, const bool) -> bool;
 auto CheckProto_18(const StorageSeeds&, const bool) -> bool;
 auto CheckProto_19(const StorageSeeds&, const bool) -> bool;
 auto CheckProto_20(const StorageSeeds&, const bool) -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

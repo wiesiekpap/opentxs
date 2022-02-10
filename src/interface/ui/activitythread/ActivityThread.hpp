@@ -39,6 +39,7 @@
 #include "util/Blank.hpp"
 #include "util/Work.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -77,6 +78,7 @@ class StorageThreadItem;
 
 class Contact;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace std
 {

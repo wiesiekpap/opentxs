@@ -11,10 +11,12 @@
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 class Factory;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace bmp = boost::multiprecision;
 

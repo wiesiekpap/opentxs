@@ -11,6 +11,7 @@
 
 #include "opentxs/api/Periodic.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -47,6 +48,7 @@ class Settings;
 
 class Options;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class QObject;
 

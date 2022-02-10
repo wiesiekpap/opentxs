@@ -25,9 +25,7 @@
 
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 using PaymentWorkflowVersion = std::pair<std::uint32_t, PaymentWorkflowType>;
 using WorkflowEventMap =
@@ -44,5 +42,4 @@ auto PaymentWorkflowAllowedEventTypes() noexcept -> const WorkflowEventMap&;
 auto PaymentWorkflowAllowedInstrumentRevision() noexcept -> const VersionMap&;
 auto PaymentWorkflowAllowedPaymentEvent() noexcept -> const VersionMap&;
 auto PaymentWorkflowAllowedState() noexcept -> const WorkflowStateMap&;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

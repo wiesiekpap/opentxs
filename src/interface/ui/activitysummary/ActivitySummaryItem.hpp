@@ -27,6 +27,7 @@
 
 class QVariant;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -61,6 +62,7 @@ class ActivitySummaryItem;
 class Flag;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui::implementation
 {

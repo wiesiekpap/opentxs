@@ -7,6 +7,7 @@
 
 #include "internal/interface/ui/UI.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -17,6 +18,7 @@ struct Row;
 }  // namespace internal
 }  // namespace ui
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui::implementation
 {

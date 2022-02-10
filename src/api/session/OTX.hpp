@@ -49,6 +49,7 @@
 #include "opentxs/util/Time.hpp"
 #include "otx/client/StateMachine.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -91,6 +92,7 @@ class StateMachine;
 
 class OTClient;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::imp
 {

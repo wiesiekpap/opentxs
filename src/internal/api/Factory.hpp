@@ -9,6 +9,7 @@
 
 #include "opentxs/api/Context.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -42,6 +43,7 @@ class Options;
 class PasswordCaller;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::factory
 {

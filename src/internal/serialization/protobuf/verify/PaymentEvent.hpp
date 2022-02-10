@@ -12,6 +12,7 @@
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -19,10 +20,9 @@ namespace proto
 class PaymentEvent;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(
     const PaymentEvent& input,
@@ -144,5 +144,4 @@ auto CheckProto_20(
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
     UnallocatedMap<PaymentEventType, std::size_t>& events) -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

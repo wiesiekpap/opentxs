@@ -15,6 +15,7 @@
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/util/Numbers.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -32,6 +33,7 @@ class Factory;
 class Identifier;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::contract::peer::reply::implementation
 {

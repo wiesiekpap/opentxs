@@ -15,6 +15,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/WorkType.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -36,6 +37,7 @@ class Endpoint;
 }  // namespace asio
 }  // namespace network
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace asio = boost::asio;
 namespace ip = asio::ip;

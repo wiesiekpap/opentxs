@@ -19,6 +19,7 @@
 #define STORAGE_CONFIG_FS_BACKUP_DIRECTORY_KEY "fs_backup_directory"
 #define STORAGE_CONFIG_FS_ENCRYPTED_BACKUP_DIRECTORY_KEY "fs_encrypted_backup"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -30,6 +31,7 @@ class Settings;
 class Options;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::storage
 {

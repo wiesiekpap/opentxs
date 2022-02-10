@@ -8,6 +8,7 @@
 #include "opentxs/Version.hpp"
 #include "serialization/protobuf/CashEnums.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -15,10 +16,9 @@ namespace proto
 class LucreTokenData;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(
     const LucreTokenData& input,
@@ -100,5 +100,4 @@ auto CheckProto_20(
     const LucreTokenData& input,
     const bool silent,
     const TokenState state) -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

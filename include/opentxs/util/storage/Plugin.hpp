@@ -10,9 +10,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 class Plugin : public virtual Driver
 {
@@ -33,5 +31,4 @@ private:
     auto operator=(const Plugin&) -> Plugin& = delete;
     auto operator=(Plugin&&) -> Plugin& = delete;
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

@@ -13,6 +13,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -31,12 +32,9 @@ class HeaderOracle;
 }  // namespace node
 }  // namespace blockchain
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace node
+namespace opentxs::blockchain::node
 {
 class OPENTXS_EXPORT HeaderOracle
 {
@@ -170,6 +168,4 @@ private:
     auto operator=(const HeaderOracle&) -> HeaderOracle& = delete;
     auto operator=(HeaderOracle&&) -> HeaderOracle& = delete;
 };
-}  // namespace node
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::node

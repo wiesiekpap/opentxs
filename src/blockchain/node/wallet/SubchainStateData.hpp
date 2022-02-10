@@ -45,6 +45,7 @@
 #include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -99,6 +100,7 @@ class Push;
 
 class Outstanding;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::node::wallet
 {

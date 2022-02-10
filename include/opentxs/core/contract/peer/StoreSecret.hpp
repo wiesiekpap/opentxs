@@ -10,6 +10,7 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace contract
@@ -25,14 +26,9 @@ class StoreSecret;
 
 using OTStoreSecret = SharedPimpl<contract::peer::request::StoreSecret>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace contract
-{
-namespace peer
-{
-namespace request
+namespace opentxs::contract::peer::request
 {
 class OPENTXS_EXPORT StoreSecret : virtual public peer::Request
 {
@@ -54,7 +50,4 @@ private:
     auto operator=(const StoreSecret&) -> StoreSecret& = delete;
     auto operator=(StoreSecret&&) -> StoreSecret& = delete;
 };
-}  // namespace request
-}  // namespace peer
-}  // namespace contract
-}  // namespace opentxs
+}  // namespace opentxs::contract::peer::request

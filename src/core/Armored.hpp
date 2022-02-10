@@ -13,6 +13,7 @@
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace OTDB
@@ -29,6 +30,7 @@ class Data;
 class Factory;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::implementation
 {

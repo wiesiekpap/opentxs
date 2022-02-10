@@ -14,6 +14,7 @@
 
 class QObject;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -26,6 +27,7 @@ struct AccountSummary;
 class AccountSummaryQt;
 }  // namespace ui
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class OPENTXS_EXPORT opentxs::ui::AccountSummaryQt final : public qt::Model
 {

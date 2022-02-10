@@ -20,6 +20,7 @@
 #include "serialization/protobuf/StoragePaymentWorkflows.pb.h"
 #include "util/storage/tree/Node.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -33,6 +34,7 @@ class Driver;
 class Nym;
 }  // namespace storage
 }  // namespace opentxs
+// NOLINTENd(modernize-concat-nested-namespaces)
 
 namespace opentxs::storage
 {

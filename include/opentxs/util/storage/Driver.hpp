@@ -12,9 +12,7 @@
 
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 class Driver
 {
@@ -82,5 +80,4 @@ private:
     auto operator=(const Driver&) -> Driver& = delete;
     auto operator=(Driver&&) -> Driver& = delete;
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

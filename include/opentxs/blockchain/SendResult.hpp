@@ -10,9 +10,7 @@
 
 #include <limits>
 
-namespace opentxs
-{
-namespace blockchain
+namespace opentxs::blockchain
 {
 enum class SendResult : TypeEnum {
     UnspecifiedError = 0,
@@ -32,5 +30,4 @@ enum class SendResult : TypeEnum {
     SendFailed = 14,
     Sent = std::numeric_limits<TypeEnum>::max(),
 };
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain

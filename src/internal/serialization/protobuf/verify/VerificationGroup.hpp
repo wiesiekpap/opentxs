@@ -8,6 +8,7 @@
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/Version.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -15,10 +16,9 @@ namespace proto
 class VerificationGroup;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(
     const VerificationGroup& verificationGroup,
@@ -62,5 +62,4 @@ auto CheckProto_19(const VerificationGroup&, const bool, const VerificationType)
     -> bool;
 auto CheckProto_20(const VerificationGroup&, const bool, const VerificationType)
     -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

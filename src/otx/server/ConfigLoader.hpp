@@ -5,6 +5,7 @@
 
 #pragma once
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -15,6 +16,7 @@ class Settings;
 
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::server
 {

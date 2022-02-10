@@ -85,6 +85,7 @@
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Blank.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -237,6 +238,7 @@ class UnitListQt;
 
 class Flag;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class QObject;
 class QVariant;

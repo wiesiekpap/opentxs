@@ -9,18 +9,14 @@
 
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace network
-{
-namespace zeromq
-{
-namespace curve
+namespace opentxs::network::zeromq::curve
 {
 class OPENTXS_EXPORT Server : virtual public socket::Socket
 {
@@ -42,7 +38,4 @@ private:
     auto operator=(const Server&) -> Server& = delete;
     auto operator=(Server&&) -> Server& = delete;
 };
-}  // namespace curve
-}  // namespace zeromq
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::zeromq::curve

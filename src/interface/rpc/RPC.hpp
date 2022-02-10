@@ -37,6 +37,7 @@
 #include "serialization/protobuf/RPCEnums.pb.h"
 #include "serialization/protobuf/RPCResponse.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -86,6 +87,7 @@ class AccountData;
 class Identifier;
 class Options;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 

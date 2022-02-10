@@ -10,6 +10,7 @@
 #include "opentxs/core/contract/Unit.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace contract
@@ -22,12 +23,9 @@ class Security;
 
 using OTSecurityContract = SharedPimpl<contract::unit::Security>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace contract
-{
-namespace unit
+namespace opentxs::contract::unit
 {
 class OPENTXS_EXPORT Security : virtual public contract::Unit
 {
@@ -49,6 +47,4 @@ private:
     auto operator=(const Security&) -> Security& = delete;
     auto operator=(Security&&) -> Security& = delete;
 };
-}  // namespace unit
-}  // namespace contract
-}  // namespace opentxs
+}  // namespace opentxs::contract::unit

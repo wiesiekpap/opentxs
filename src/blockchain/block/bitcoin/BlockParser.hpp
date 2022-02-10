@@ -43,6 +43,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -74,6 +75,7 @@ auto reader(const ArrayType& in) noexcept -> ReadView
     return {reinterpret_cast<const char*>(in.data()), in.size()};
 }
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::factory
 {

@@ -14,6 +14,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -22,10 +23,9 @@ class AccountEvent;
 }  // namespace proto
 class Amount;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace rpc
+namespace opentxs::rpc
 {
 class OPENTXS_EXPORT AccountEvent
 {
@@ -74,5 +74,4 @@ private:
     auto operator=(const AccountEvent&) -> AccountEvent& = delete;
     auto operator=(AccountEvent&&) -> AccountEvent& = delete;
 };
-}  // namespace rpc
-}  // namespace opentxs
+}  // namespace opentxs::rpc

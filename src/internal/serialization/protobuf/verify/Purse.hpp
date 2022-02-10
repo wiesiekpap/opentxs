@@ -8,6 +8,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -15,10 +16,9 @@ namespace proto
 class Purse;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto CheckProto_1(const Purse& input, const bool silent) -> bool;
 auto CheckProto_1(
@@ -120,5 +120,4 @@ auto CheckProto_20(
     const Purse& input,
     const bool silent,
     UnallocatedCString& value) -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

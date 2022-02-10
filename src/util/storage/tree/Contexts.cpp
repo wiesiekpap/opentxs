@@ -25,9 +25,7 @@
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 Contexts::Contexts(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
@@ -111,5 +109,4 @@ auto Contexts::Store(
 {
     return store_proto(data, data.remotenym(), alias);
 }
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

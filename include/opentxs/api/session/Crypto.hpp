@@ -9,6 +9,7 @@
 
 #include "opentxs/api/crypto/Crypto.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -30,6 +31,7 @@ class Crypto;
 }  // namespace session
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session
 {

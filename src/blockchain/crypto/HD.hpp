@@ -30,6 +30,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/HDAccount.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -60,6 +61,7 @@ class HDPath;
 class Identifier;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::crypto::implementation
 {

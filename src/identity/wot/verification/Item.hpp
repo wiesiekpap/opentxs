@@ -14,6 +14,7 @@
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/Signature.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -34,6 +35,7 @@ class Nym;
 class Factory;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::identity::wot::verification::implementation
 {

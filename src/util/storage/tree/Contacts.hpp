@@ -22,6 +22,7 @@
 #include "serialization/protobuf/StorageContacts.pb.h"
 #include "util/storage/tree/Node.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -35,6 +36,7 @@ class Driver;
 class Tree;
 }  // namespace storage
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::storage
 {

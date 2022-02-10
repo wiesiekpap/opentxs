@@ -15,6 +15,7 @@
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -24,6 +25,7 @@ class ActivitySummaryItem;
 
 using OTUIActivitySummaryItem = SharedPimpl<ui::ActivitySummaryItem>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui
 {

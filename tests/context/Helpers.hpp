@@ -14,10 +14,12 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Options.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 class Options;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace ot = opentxs;
 

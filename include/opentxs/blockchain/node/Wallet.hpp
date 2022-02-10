@@ -19,6 +19,7 @@
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -41,12 +42,9 @@ class Nym;
 
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace node
+namespace opentxs::blockchain::node
 {
 class OPENTXS_EXPORT Wallet
 {
@@ -94,6 +92,4 @@ private:
     auto operator=(const Wallet&) -> Wallet& = delete;
     auto operator=(Wallet&&) -> Wallet& = delete;
 };
-}  // namespace node
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::node

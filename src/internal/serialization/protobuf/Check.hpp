@@ -10,9 +10,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 void PrintErrorMessage(const char* proto, const char* error) noexcept;
 void PrintErrorMessage(
@@ -144,5 +142,4 @@ auto Validate(const T& input, const bool silent, Args&&... params) noexcept
 
     return Check<T>(input, version, version, silent, params...);
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

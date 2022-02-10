@@ -55,6 +55,7 @@
 #include "util/LMDB.hpp"
 #include "util/Work.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -158,6 +159,7 @@ class BlockchainTransactionProposal;
 template <typename T>
 struct make_blank;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 

@@ -19,6 +19,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/GCS.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -31,6 +32,7 @@ namespace proto
 class GCS;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::implementation
 {

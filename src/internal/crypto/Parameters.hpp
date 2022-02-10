@@ -7,6 +7,7 @@
 
 #include "opentxs/core/Data.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -15,6 +16,7 @@ class ContactData;
 class VerificationSet;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::crypto::internal
 {

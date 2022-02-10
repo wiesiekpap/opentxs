@@ -14,6 +14,7 @@
 #include "serialization/protobuf/StorageCredentials.pb.h"
 #include "util/storage/tree/Node.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -27,10 +28,9 @@ class Driver;
 class Tree;
 }  // namespace storage
 }  // namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 class Credentials final : public Node
 {
@@ -64,5 +64,4 @@ public:
 
     ~Credentials() final = default;
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

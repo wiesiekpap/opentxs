@@ -9,11 +9,7 @@
 
 #include "opentxs/identity/credential/Key.hpp"
 
-namespace opentxs
-{
-namespace identity
-{
-namespace credential
+namespace opentxs::identity::credential
 {
 class OPENTXS_EXPORT Secondary : virtual public Key
 {
@@ -29,6 +25,4 @@ private:
     auto operator=(const Secondary&) -> Secondary& = delete;
     auto operator=(Secondary&&) -> Secondary& = delete;
 };
-}  // namespace credential
-}  // namespace identity
-}  // namespace opentxs
+}  // namespace opentxs::identity::credential

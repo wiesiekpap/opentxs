@@ -7,6 +7,7 @@
 
 #include "opentxs/crypto/Types.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace identity
@@ -26,6 +27,7 @@ class Signature;
 
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::internal
 {

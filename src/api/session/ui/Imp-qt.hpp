@@ -48,6 +48,7 @@
 
 class QAbstractItemModel;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -76,6 +77,7 @@ struct BlankModel;
 class Flag;
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::ui
 {

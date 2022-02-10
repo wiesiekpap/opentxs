@@ -14,6 +14,7 @@
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace identifier
@@ -39,12 +40,9 @@ class Context;
 
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace otx
-{
-namespace context
+namespace opentxs::otx::context
 {
 class OPENTXS_EXPORT Base : virtual public opentxs::contract::Signable
 {
@@ -108,6 +106,4 @@ private:
     auto operator=(const Base&) -> Base& = delete;
     auto operator=(Base&&) -> Base& = delete;
 };
-}  // namespace context
-}  // namespace otx
-}  // namespace opentxs
+}  // namespace opentxs::otx::context

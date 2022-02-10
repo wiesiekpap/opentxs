@@ -21,6 +21,7 @@
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -42,6 +43,7 @@ class LMDB;
 }  // namespace lmdb
 }  // namespace storage
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::database::common
 {

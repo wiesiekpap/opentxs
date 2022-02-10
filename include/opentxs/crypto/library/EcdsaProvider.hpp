@@ -9,9 +9,7 @@
 
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 
-namespace opentxs
-{
-namespace crypto
+namespace opentxs::crypto
 {
 class OPENTXS_EXPORT EcdsaProvider : virtual public AsymmetricProvider
 {
@@ -44,5 +42,4 @@ private:
     auto operator=(const EcdsaProvider&) -> EcdsaProvider& = delete;
     auto operator=(EcdsaProvider&&) -> EcdsaProvider& = delete;
 };
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace  opentxs::crypto

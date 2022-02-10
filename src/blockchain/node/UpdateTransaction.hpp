@@ -11,6 +11,7 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -28,6 +29,7 @@ class Header;
 
 class Factory;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::node
 {

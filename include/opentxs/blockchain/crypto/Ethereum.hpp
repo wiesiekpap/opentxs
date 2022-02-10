@@ -9,11 +9,7 @@
 
 #include "opentxs/blockchain/crypto/Imported.hpp"
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace crypto
+namespace opentxs::blockchain::crypto
 {
 class OPENTXS_EXPORT Ethereum : virtual public Imported
 {
@@ -38,6 +34,4 @@ private:
     Ethereum& operator=(const Ethereum&) = delete;
     Ethereum& operator=(Ethereum&&) = delete;
 };
-}  // namespace crypto
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::crypto

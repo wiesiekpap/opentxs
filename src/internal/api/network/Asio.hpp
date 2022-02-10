@@ -12,6 +12,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "util/Work.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace boost
 {
 namespace asio
@@ -29,6 +30,7 @@ namespace opentxs
 {
 class Timer;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

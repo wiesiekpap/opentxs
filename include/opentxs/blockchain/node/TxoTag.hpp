@@ -8,11 +8,7 @@
 #include "opentxs/Version.hpp"                // IWYU pragma: associated
 #include "opentxs/blockchain/node/Types.hpp"  // IWYU pragma: associated
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace node
+namespace opentxs::blockchain::node
 {
 enum class TxoTag : std::uint16_t {
     Normal = 0,
@@ -20,6 +16,4 @@ enum class TxoTag : std::uint16_t {
     Notification = 2,
     Change = 3,
 };
-}  // namespace node
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::node

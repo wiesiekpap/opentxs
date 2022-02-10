@@ -23,17 +23,6 @@
 #include "opentxs/util/Container.hpp"
 #include "ui/Helpers.hpp"
 
-namespace opentxs
-{
-namespace api
-{
-namespace session
-{
-class Notary;
-}  // namespace session
-}  // namespace api
-}  // namespace opentxs
-
 namespace ottest
 {
 Counter contact_list_alex_{};

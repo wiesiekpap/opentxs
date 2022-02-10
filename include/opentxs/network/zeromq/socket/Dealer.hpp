@@ -11,6 +11,7 @@
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -26,14 +27,9 @@ class Dealer;
 
 using OTZMQDealerSocket = Pimpl<network::zeromq::socket::Dealer>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace network
-{
-namespace zeromq
-{
-namespace socket
+namespace opentxs::network::zeromq::socket
 {
 class OPENTXS_EXPORT Dealer : virtual public curve::Client,
                               virtual public Sender
@@ -57,7 +53,4 @@ private:
     auto operator=(const Dealer&) -> Dealer& = delete;
     auto operator=(Dealer&&) -> Dealer& = delete;
 };
-}  // namespace socket
-}  // namespace zeromq
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::zeromq::socket

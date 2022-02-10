@@ -9,6 +9,7 @@
 
 #include <memory>
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -29,6 +30,7 @@ class SendPayment;
 }  // namespace request
 }  // namespace rpc
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::rpc::request
 {

@@ -34,17 +34,7 @@
 #include "util/storage/tree/Node.hpp"
 #include "util/storage/tree/Thread.hpp"
 
-namespace opentxs
-{
-namespace storage
-{
-class Mailbox;
-}  // namespace storage
-}  // namespace opentxs
-
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 Threads::Threads(
     const Driver& storage,
@@ -477,5 +467,4 @@ auto Threads::serialize() const -> proto::StorageNymList
 
     return output;
 }
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

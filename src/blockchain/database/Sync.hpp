@@ -33,6 +33,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -68,6 +69,7 @@ class LMDB;
 }  // namespace lmdb
 }  // namespace storage
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::database
 {

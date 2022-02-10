@@ -11,6 +11,7 @@
 
 #include "opentxs/blockchain/Types.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -23,6 +24,7 @@ namespace identifier
 class Nym;
 }  // namespace identifier
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::crypto::blockchain
 {

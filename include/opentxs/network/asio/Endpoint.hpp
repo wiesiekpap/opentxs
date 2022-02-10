@@ -12,11 +12,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
-{
-namespace network
-{
-namespace asio
+namespace opentxs::network::asio
 {
 class OPENTXS_EXPORT Endpoint
 {
@@ -52,6 +48,4 @@ public:
 private:
     Imp* imp_;
 };
-}  // namespace asio
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::asio

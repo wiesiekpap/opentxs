@@ -10,9 +10,7 @@
 
 #include <cstdint>
 
-namespace opentxs
-{
-namespace otx
+namespace opentxs::otx
 {
 enum class OperationType : std::uint16_t {
     Invalid = 0,
@@ -39,5 +37,4 @@ enum class OperationType : std::uint16_t {
     SendTransfer = 21,
     WithdrawCash = 22,
 };
-}  // namespace otx
-}  // namespace opentxs
+}  // namespace opentxs::otx

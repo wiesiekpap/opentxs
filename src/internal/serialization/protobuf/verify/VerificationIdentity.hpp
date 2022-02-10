@@ -11,6 +11,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -18,10 +19,9 @@ namespace proto
 class VerificationIdentity;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 using VerificationNymMap = UnallocatedMap<UnallocatedCString, std::uint64_t>;
 
@@ -125,5 +125,4 @@ auto CheckProto_20(
     const bool,
     VerificationNymMap&,
     const VerificationType) -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

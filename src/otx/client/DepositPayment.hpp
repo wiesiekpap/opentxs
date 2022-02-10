@@ -11,6 +11,7 @@
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace identifier
@@ -18,6 +19,7 @@ namespace identifier
 class UnitDefinition;
 }  // namespace identifier
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::otx::client::implementation
 {

@@ -8,11 +8,7 @@
 #include "opentxs/Version.hpp"                  // IWYU pragma: associated
 #include "opentxs/blockchain/crypto/Types.hpp"  // IWYU pragma: associated
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace crypto
+namespace opentxs::blockchain::crypto
 {
 enum class Subchain : std::uint8_t {
     Error = 0,
@@ -23,6 +19,4 @@ enum class Subchain : std::uint8_t {
     Notification = 5,
     None = 255,
 };
-}  // namespace crypto
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::crypto

@@ -14,6 +14,7 @@
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -27,12 +28,9 @@ class Claim;
 class ContactItem;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace identity
-{
-namespace credential
+namespace opentxs::identity::credential
 {
 class OPENTXS_EXPORT Contact : virtual public Base
 {
@@ -71,6 +69,4 @@ private:
     auto operator=(const Contact&) -> Contact& = delete;
     auto operator=(Contact&&) -> Contact& = delete;
 };
-}  // namespace credential
-}  // namespace identity
-}  // namespace opentxs
+}  // namespace opentxs::identity::credential

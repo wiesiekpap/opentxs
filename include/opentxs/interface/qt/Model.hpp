@@ -18,6 +18,7 @@
 class QByteArray;
 class QObject;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -41,6 +42,7 @@ class RowWrapper;
 }  // namespace qt
 }  // namespace ui
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class OPENTXS_EXPORT opentxs::ui::qt::RowWrapper final : public QObject
 {

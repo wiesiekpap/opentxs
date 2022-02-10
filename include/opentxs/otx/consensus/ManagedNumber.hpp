@@ -10,6 +10,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace otx
@@ -26,12 +27,9 @@ OPENTXS_EXPORT auto operator<(
     const OTManagedNumber& lhs,
     const OTManagedNumber& rhs) -> bool;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace otx
-{
-namespace context
+namespace opentxs::otx::context
 {
 class OPENTXS_EXPORT ManagedNumber
 {
@@ -51,6 +49,4 @@ private:
     auto operator=(const ManagedNumber&) -> ManagedNumber& = delete;
     auto operator=(ManagedNumber&&) -> ManagedNumber& = delete;
 };
-}  // namespace context
-}  // namespace otx
-}  // namespace opentxs
+}  // namespace opentxs::otx::context

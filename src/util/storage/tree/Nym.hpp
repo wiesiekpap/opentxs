@@ -27,6 +27,7 @@
 #include "serialization/protobuf/StorageNym.pb.h"
 #include "util/storage/tree/Node.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace identity
@@ -58,6 +59,7 @@ class Threads;
 class Data;
 class Identifier;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::storage
 {

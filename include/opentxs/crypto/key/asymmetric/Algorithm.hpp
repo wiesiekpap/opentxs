@@ -10,15 +10,8 @@
 
 #include <cstdint>
 
-namespace opentxs
+namespace opentxs::crypto::key::asymmetric
 {
-namespace crypto
-{
-namespace key
-{
-namespace asymmetric
-{
-
 enum class Algorithm : std::uint8_t {
     Error = 0,
     Null = 1,
@@ -26,7 +19,4 @@ enum class Algorithm : std::uint8_t {
     Secp256k1 = 3,
     ED25519 = 4,
 };
-}  // namespace asymmetric
-}  // namespace key
-}  // namespace crypto
-}  // namespace opentxs
+}  // namespace opentxs::crypto::key::asymmetric

@@ -10,6 +10,7 @@
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/util/Numbers.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace otx
@@ -20,6 +21,7 @@ class Server;
 }  // namespace context
 }  // namespace otx
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::otx::context::implementation
 {

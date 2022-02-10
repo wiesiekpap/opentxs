@@ -8,12 +8,14 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordCallback.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 class Factory;
 class OTPassword;
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

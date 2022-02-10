@@ -18,6 +18,7 @@
 #include "opentxs/interface/rpc/Types.hpp"
 #include "serialization/protobuf/RPCEnums.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -39,6 +40,7 @@ class Base;
 }  // namespace response
 }  // namespace rpc
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

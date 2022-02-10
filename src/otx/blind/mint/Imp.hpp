@@ -24,6 +24,7 @@
 #include "opentxs/util/Time.hpp"
 #include "otx/blind/mint/Mint.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -51,6 +52,7 @@ class Nym;
 class PasswordPrompt;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::otx::blind::mint
 {

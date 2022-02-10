@@ -14,6 +14,7 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace otx
@@ -38,6 +39,7 @@ class Account;
 using ExclusiveAccount = Exclusive<Account>;
 using SharedAccount = Shared<Account>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session::internal
 {

@@ -26,6 +26,7 @@
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/Token.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -68,6 +69,7 @@ class Token;
 
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 #define OT_TOKEN_VERSION 1
 

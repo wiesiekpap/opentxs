@@ -18,6 +18,7 @@
 
 class QObject;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace ui
@@ -31,6 +32,7 @@ class AccountActivityQt;
 class DisplayScaleQt;
 }  // namespace ui
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces
 
 class OPENTXS_EXPORT opentxs::ui::AccountActivityQt final : public qt::Model
 {

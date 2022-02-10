@@ -9,6 +9,7 @@
 
 #include "opentxs/blockchain/Blockchain.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace blockchain
@@ -16,12 +17,9 @@ namespace blockchain
 class GCS;
 }  // namespace blockchain
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace blockchain
-{
-namespace node
+namespace opentxs::blockchain::node
 {
 class OPENTXS_EXPORT FilterOracle
 {
@@ -46,6 +44,4 @@ private:
     auto operator=(const FilterOracle&) -> FilterOracle& = delete;
     auto operator=(FilterOracle&&) -> FilterOracle& = delete;
 };
-}  // namespace node
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::node

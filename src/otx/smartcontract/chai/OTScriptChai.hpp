@@ -11,6 +11,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace chaiscript
 {
 class ChaiScript;
@@ -23,6 +24,7 @@ class OTSmartContract;
 class OTVariable;
 class String;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

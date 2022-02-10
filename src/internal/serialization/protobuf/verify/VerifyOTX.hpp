@@ -8,13 +8,10 @@
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "opentxs/Version.hpp"
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto ServerReplyAllowedOTXPush() noexcept -> const VersionMap&;
 auto ServerReplyAllowedSignature() noexcept -> const VersionMap&;
 auto ServerRequestAllowedNym() noexcept -> const VersionMap&;
 auto ServerRequestAllowedSignature() noexcept -> const VersionMap&;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

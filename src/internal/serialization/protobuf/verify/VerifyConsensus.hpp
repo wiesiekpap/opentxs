@@ -11,9 +11,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 auto ContextAllowedServer() noexcept -> const VersionMap&;
 auto ContextAllowedClient() noexcept -> const VersionMap&;
@@ -23,5 +21,4 @@ auto ServerContextAllowedState() noexcept
     -> const UnallocatedMap<std::uint32_t, UnallocatedSet<int>>&;
 auto ServerContextAllowedStatus() noexcept
     -> const UnallocatedMap<std::uint32_t, UnallocatedSet<int>>&;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

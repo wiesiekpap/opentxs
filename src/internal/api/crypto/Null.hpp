@@ -12,6 +12,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -23,6 +24,7 @@ class Factory;
 }  // namespace session
 }  // namespace api
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::crypto::blank
 {

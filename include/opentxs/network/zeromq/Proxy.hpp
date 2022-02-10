@@ -9,6 +9,7 @@
 
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -27,12 +28,9 @@ class Proxy;
 
 using OTZMQProxy = Pimpl<network::zeromq::Proxy>;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace network
-{
-namespace zeromq
+namespace opentxs::network::zeromq
 {
 class OPENTXS_EXPORT Proxy
 {
@@ -57,6 +55,4 @@ private:
     auto operator=(const Proxy&) -> Proxy& = delete;
     auto operator=(Proxy&&) -> Proxy& = default;
 };
-}  // namespace zeromq
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::zeromq

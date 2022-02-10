@@ -13,6 +13,7 @@
 
 #include "opentxs/crypto/Types.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace crypto
@@ -28,6 +29,7 @@ class Seed;
 class Identifier;
 class Secret;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace std
 {

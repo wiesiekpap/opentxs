@@ -11,6 +11,7 @@
 
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace contract
@@ -20,14 +21,9 @@ class Server;
 
 class Data;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace network
-{
-namespace zeromq
-{
-namespace curve
+namespace opentxs::network::zeromq::curve
 {
 class OPENTXS_EXPORT Client : virtual public socket::Socket
 {
@@ -54,7 +50,4 @@ private:
     auto operator=(const Client&) -> Client& = delete;
     auto operator=(Client&&) -> Client& = delete;
 };
-}  // namespace curve
-}  // namespace zeromq
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::zeromq::curve

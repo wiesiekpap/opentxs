@@ -26,6 +26,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Context.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -47,6 +48,7 @@ class Factory;
 class NymFile;
 class PasswordPrompt;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::otx::context::implementation
 {

@@ -16,6 +16,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Types.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace api
@@ -38,6 +39,7 @@ class Contact;
 class Identifier;
 class PaymentCode;
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::session
 {

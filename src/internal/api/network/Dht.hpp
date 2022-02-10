@@ -13,6 +13,7 @@
 #include "opentxs/core/contract/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace network
@@ -27,6 +28,7 @@ class ServerContract;
 class UnitDefinition;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::api::network::internal
 {

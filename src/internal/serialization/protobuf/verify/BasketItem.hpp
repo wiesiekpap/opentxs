@@ -10,6 +10,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
 namespace proto
@@ -17,10 +18,9 @@ namespace proto
 class BasketItem;
 }  // namespace proto
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
-{
-namespace proto
+namespace opentxs::proto
 {
 using BasketItemMap = UnallocatedMap<UnallocatedCString, std::uint64_t>;
 
@@ -45,5 +45,4 @@ auto CheckProto_17(const BasketItem&, const bool, BasketItemMap&) -> bool;
 auto CheckProto_18(const BasketItem&, const bool, BasketItemMap&) -> bool;
 auto CheckProto_19(const BasketItem&, const bool, BasketItemMap&) -> bool;
 auto CheckProto_20(const BasketItem&, const bool, BasketItemMap&) -> bool;
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto
