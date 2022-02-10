@@ -22,7 +22,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -61,10 +63,11 @@ class NumList;
 class PasswordPrompt;
 class String;
 class Tag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 /*
 WHEN THE server receives a transaction request, it receives a MESSAGE containing
@@ -784,4 +787,4 @@ private:
     auto operator=(const OTTransaction&) -> OTTransaction& = delete;
     auto operator=(OTTransaction&&) -> OTTransaction& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

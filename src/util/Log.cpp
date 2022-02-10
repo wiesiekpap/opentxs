@@ -47,7 +47,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::internal
+namespace opentxs::v1::internal
 {
 auto Log::Endpoint() noexcept -> const char*
 {
@@ -71,9 +71,9 @@ auto Log::Shutdown() noexcept -> void
 }
 
 auto Log::Start() noexcept -> void {}
-}  // namespace opentxs::internal
+}  // namespace opentxs::v1::internal
 
-namespace opentxs
+namespace opentxs::v1
 {
 Log::Imp::Logger Log::Imp::logger_{};
 
@@ -240,9 +240,9 @@ auto Log::Imp::Trace(
 
     send(false);
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs
+namespace opentxs::v1
 {
 Log::Log(const int logLevel) noexcept
     : imp_(std::make_unique<Imp>(logLevel, *this).release())
@@ -465,9 +465,9 @@ Log::~Log()
         imp_ = nullptr;
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto LogConsole() noexcept -> Log&
 {
@@ -525,4 +525,4 @@ auto PrintStackTrace() noexcept -> UnallocatedCString
 
     return output.str();
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

@@ -23,7 +23,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -61,10 +63,11 @@ class Account;
 class Identifier;
 class Item;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 // transaction ID is a std::int64_t, assigned by the server. Each transaction
 // has one. FIRST the server issues the ID. THEN we create the blank transaction
@@ -301,4 +304,4 @@ private:  // Private prevents erroneous use by other classes.
         const identifier::Notary& theNotaryID);
     Ledger() = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

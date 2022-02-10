@@ -20,7 +20,7 @@
 #include "opentxs/util/Log.hpp"
 #include "util/Work.hpp"
 
-namespace opentxs::blockchain::p2p::peer
+namespace opentxs::v1::blockchain::p2p::peer
 {
 Activity::Activity(
     const api::Session& api,
@@ -83,4 +83,4 @@ auto Activity::reset_ping() noexcept -> void
         }
     });
 }
-}  // namespace opentxs::blockchain::p2p::peer
+}  // namespace opentxs::v1::blockchain::p2p::peer

@@ -14,7 +14,7 @@
 namespace bitcoin = opentxs::blockchain::p2p::bitcoin;
 namespace message = bitcoin::message;
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto BitcoinP2PFilterclear(
     const api::Session& api,
@@ -118,4 +118,4 @@ auto BitcoinP2PVerack(const api::Session& api, const blockchain::Type network)
 
     return new ReturnType(api, network, bitcoin::Command::verack);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

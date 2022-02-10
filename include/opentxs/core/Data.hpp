@@ -16,7 +16,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -30,6 +32,7 @@ class Armored;
 class Data;
 
 using OTData = Pimpl<Data>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -47,7 +50,7 @@ struct OPENTXS_EXPORT less<opentxs::OTData> {
 };
 }  // namespace std
 
-namespace opentxs
+namespace opentxs::v1
 {
 OPENTXS_EXPORT auto operator==(const OTData& lhs, const Data& rhs) noexcept
     -> bool;
@@ -66,9 +69,9 @@ OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint8_t rhs) -> OTData&;
 OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint16_t rhs) -> OTData&;
 OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint32_t rhs) -> OTData&;
 OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint64_t rhs) -> OTData&;
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs
+namespace opentxs::v1
 {
 class OPENTXS_EXPORT Data
 {
@@ -180,4 +183,4 @@ private:
     auto operator=(const Data& rhs) -> Data& = delete;
     auto operator=(Data&& rhs) -> Data& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

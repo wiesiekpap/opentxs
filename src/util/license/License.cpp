@@ -9,7 +9,7 @@
 
 #include "util/license/License.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto LicenseData() noexcept -> const LicenseMap&
 {
@@ -35,4 +35,4 @@ auto LicenseData() noexcept -> const LicenseMap&
 
     return map;
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

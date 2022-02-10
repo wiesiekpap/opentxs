@@ -14,7 +14,10 @@
 #include "serialization/protobuf/Credential.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -37,9 +40,11 @@ class Source;
 }  // namespace identity
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 template identity::credential::internal::Secondary* Factory::Credential(
     const api::Session&,
@@ -262,4 +267,4 @@ auto Factory::Credential(
 
     return output.release();
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

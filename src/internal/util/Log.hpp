@@ -8,13 +8,16 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Log;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::internal
+namespace opentxs::v1::internal
 {
 class Log
 {
@@ -34,4 +37,4 @@ private:
     auto operator=(const Log&) -> Log& = delete;
     auto operator=(Log&&) -> Log& = delete;
 };
-}  // namespace opentxs::internal
+}  // namespace opentxs::v1::internal

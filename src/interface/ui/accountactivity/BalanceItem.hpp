@@ -27,7 +27,9 @@
 class QVariant;
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -58,10 +60,11 @@ namespace ui
 {
 class BalanceItem;
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 using BalanceItemRow =
     Row<AccountActivityRowInternal,
@@ -132,6 +135,6 @@ private:
     auto operator=(const BalanceItem&) -> BalanceItem& = delete;
     auto operator=(BalanceItem&&) -> BalanceItem& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation
 
 template class opentxs::SharedPimpl<opentxs::ui::BalanceItem>;

@@ -56,7 +56,9 @@
 #include "opentxs/util/PasswordPrompt.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -134,10 +136,11 @@ class Server;
 
 class Secret;
 class PaymentCode;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session
+namespace opentxs::v1::api::session
 {
 class OPENTXS_EXPORT Factory : virtual public api::Factory
 {
@@ -610,4 +613,4 @@ private:
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
 };
-}  // namespace opentxs::api::session
+}  // namespace opentxs::v1::api::session

@@ -41,7 +41,7 @@ extern "C" {
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto MintLucre(const api::Session& api) noexcept -> otx::blind::Mint
 {
@@ -70,9 +70,9 @@ auto MintLucre(
 
     return std::make_unique<ReturnType>(api, notary, serverNym, unit).release();
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::otx::blind::mint
+namespace opentxs::v1::otx::blind::mint
 {
 Lucre::Lucre(const api::Session& api)
     : Mint(api)
@@ -370,4 +370,4 @@ auto Lucre::VerifyToken(
 
     return bank.Verify(coin);
 }
-}  // namespace opentxs::otx::blind::mint
+}  // namespace opentxs::v1::otx::blind::mint

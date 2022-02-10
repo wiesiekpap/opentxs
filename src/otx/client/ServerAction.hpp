@@ -16,7 +16,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -42,10 +44,11 @@ class Identifier;
 class OTPaymentPlan;
 class OTSmartContract;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::client::implementation
+namespace opentxs::v1::otx::client::implementation
 {
 class ServerAction final : virtual public opentxs::otx::client::ServerAction
 {
@@ -179,4 +182,4 @@ private:
     auto operator=(const ServerAction&) -> ServerAction& = delete;
     auto operator=(ServerAction&&) -> ServerAction& = delete;
 };
-}  // namespace opentxs::otx::client::implementation
+}  // namespace opentxs::v1::otx::client::implementation

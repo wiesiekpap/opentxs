@@ -9,7 +9,9 @@
 #include "internal/network/zeromq/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -19,10 +21,11 @@ class Frame;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::internal
+namespace opentxs::v1::network::zeromq::internal
 {
 class Message
 {
@@ -34,4 +37,4 @@ public:
 
     virtual ~Message() = default;
 };
-}  // namespace opentxs::network::zeromq::internal
+}  // namespace opentxs::v1::network::zeromq::internal

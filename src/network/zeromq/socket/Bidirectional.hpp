@@ -18,7 +18,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -27,10 +29,11 @@ namespace zeromq
 class Context;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::socket::implementation
+namespace opentxs::v1::network::zeromq::socket::implementation
 {
 template <typename InterfaceType, typename MessageType = zeromq::Message>
 class Bidirectional
@@ -85,4 +88,4 @@ private:
     auto operator=(const Bidirectional&) -> Bidirectional& = delete;
     auto operator=(Bidirectional&&) -> Bidirectional& = delete;
 };
-}  // namespace opentxs::network::zeromq::socket::implementation
+}  // namespace opentxs::v1::network::zeromq::socket::implementation

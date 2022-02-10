@@ -12,7 +12,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 struct CustodialDestionationValidator final : public DestinationValidator::Imp {
     const api::session::Client& api_;
@@ -51,4 +51,4 @@ auto DestinationValidator::Imp::Custodial(
 {
     return std::make_unique<CustodialDestionationValidator>(api, parent);
 }
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

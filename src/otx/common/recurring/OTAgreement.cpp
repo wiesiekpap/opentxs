@@ -46,7 +46,7 @@
 
 // OTAgreement is derived from OTCronItem.  It handles re-occuring billing.
 
-namespace opentxs
+namespace opentxs::v1
 {
 OTAgreement::OTAgreement(const api::Session& api)
     : ot_super(api)
@@ -1308,4 +1308,4 @@ auto OTAgreement::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 }
 
 OTAgreement::~OTAgreement() { Release_Agreement(); }
-}  // namespace opentxs
+}  // namespace opentxs::v1

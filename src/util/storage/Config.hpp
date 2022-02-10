@@ -20,7 +20,9 @@
 #define STORAGE_CONFIG_FS_ENCRYPTED_BACKUP_DIRECTORY_KEY "fs_encrypted_backup"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -30,10 +32,11 @@ class Settings;
 
 class Options;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 using InsertCB =
     std::function<void(const UnallocatedCString&, const UnallocatedCString&)>;
@@ -77,4 +80,4 @@ public:
         const Options& cli,
         const String& dataFolder) noexcept;
 };
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

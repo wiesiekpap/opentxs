@@ -20,7 +20,9 @@ class error_code;
 }  // namespace system
 }  // namespace boost
 
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -34,10 +36,11 @@ namespace zeromq
 class Pipeline;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::p2p::peer
+namespace opentxs::v1::blockchain::p2p::peer
 {
 class Activity
 {
@@ -63,4 +66,4 @@ private:
     auto reset_disconnect() noexcept -> void;
     auto reset_ping() noexcept -> void;
 };
-}  // namespace opentxs::blockchain::p2p::peer
+}  // namespace opentxs::v1::blockchain::p2p::peer

@@ -29,7 +29,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto AccountSummaryModel(
     const api::session::Client& api,
@@ -42,9 +42,9 @@ auto AccountSummaryModel(
 
     return std::make_unique<ReturnType>(api, nymID, currency, cb);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 AccountSummary::AccountSummary(
     const api::session::Client& api,
@@ -219,4 +219,4 @@ AccountSummary::~AccountSummary()
 {
     for (auto& it : listeners_) { delete it.second; }
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

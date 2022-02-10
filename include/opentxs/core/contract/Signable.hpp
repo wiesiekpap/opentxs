@@ -13,16 +13,19 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class Signature;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::contract
+namespace opentxs::v1::contract
 {
 class OPENTXS_EXPORT Signable
 {
@@ -59,4 +62,4 @@ private:
     auto operator=(const Signable&) -> Signable& = delete;
     auto operator=(Signable&&) -> Signable& = delete;
 };
-}  // namespace opentxs::contract
+}  // namespace opentxs::v1::contract

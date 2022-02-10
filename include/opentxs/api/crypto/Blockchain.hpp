@@ -25,7 +25,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -67,10 +69,11 @@ class Contact;
 class Identifier;
 class PasswordPrompt;
 class PaymentCode;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::crypto
+namespace opentxs::v1::api::crypto
 {
 class OPENTXS_EXPORT Blockchain
 {
@@ -221,4 +224,4 @@ private:
     auto operator=(const Blockchain&) -> Blockchain& = delete;
     auto operator=(Blockchain&&) -> Blockchain& = delete;
 };
-}  // namespace opentxs::api::crypto
+}  // namespace opentxs::v1::api::crypto

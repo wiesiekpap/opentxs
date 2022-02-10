@@ -30,7 +30,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -71,10 +73,11 @@ class StorageThread;
 
 class Contact;
 class PeerObject;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::imp
+namespace opentxs::v1::api::session::imp
 {
 class Activity final : virtual public internal::Activity, Lockable
 {
@@ -227,4 +230,4 @@ private:
     auto operator=(const Activity&) -> Activity& = delete;
     auto operator=(Activity&&) -> Activity& = delete;
 };
-}  // namespace opentxs::api::session::imp
+}  // namespace opentxs::v1::api::session::imp

@@ -20,7 +20,9 @@
 #include "serialization/protobuf/GCS.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -31,10 +33,11 @@ namespace proto
 {
 class GCS;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::implementation
+namespace opentxs::v1::blockchain::implementation
 {
 class GCS final : virtual public blockchain::GCS
 {
@@ -104,4 +107,4 @@ private:
     auto operator=(const GCS&) -> GCS& = delete;
     auto operator=(GCS&&) -> GCS& = delete;
 };
-}  // namespace opentxs::blockchain::implementation
+}  // namespace opentxs::v1::blockchain::implementation

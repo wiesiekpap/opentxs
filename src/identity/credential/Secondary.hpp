@@ -14,7 +14,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -43,10 +45,11 @@ class Credential;
 
 class Factory;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::credential::implementation
+namespace opentxs::v1::identity::credential::implementation
 {
 class Secondary final : virtual public credential::internal::Secondary,
                         credential::implementation::Key
@@ -83,4 +86,4 @@ private:
     auto operator=(const Secondary&) -> Secondary& = delete;
     auto operator=(Secondary&&) -> Secondary& = delete;
 };
-}  // namespace opentxs::identity::credential::implementation
+}  // namespace opentxs::v1::identity::credential::implementation

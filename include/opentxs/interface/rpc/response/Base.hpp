@@ -22,7 +22,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
@@ -41,10 +43,11 @@ class ListNyms;
 class SendPayment;
 }  // namespace response
 }  // namespace rpc
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::rpc::response
+namespace opentxs::v1::rpc::response
 {
 auto OPENTXS_EXPORT Factory(ReadView serialized) noexcept
     -> std::unique_ptr<Base>;
@@ -92,4 +95,4 @@ private:
     auto operator=(const Base&) -> Base& = delete;
     auto operator=(Base&&) -> Base& = delete;
 };
-}  // namespace opentxs::rpc::response
+}  // namespace opentxs::v1::rpc::response

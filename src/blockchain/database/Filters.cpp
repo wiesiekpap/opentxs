@@ -32,7 +32,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
-namespace opentxs::blockchain::database
+namespace opentxs::v1::blockchain::database
 {
 Filters::Filters(
     const api::Session& api,
@@ -263,4 +263,4 @@ auto Filters::StoreHeaders(
 {
     return common_.StoreFilterHeaders(type, headers);
 }
-}  // namespace opentxs::blockchain::database
+}  // namespace opentxs::v1::blockchain::database

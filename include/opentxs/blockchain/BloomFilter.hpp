@@ -11,7 +11,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -21,10 +23,11 @@ class BloomFilter;
 class Data;
 
 using OTBloomFilter = Pimpl<blockchain::BloomFilter>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain
+namespace opentxs::v1::blockchain
 {
 class OPENTXS_EXPORT BloomFilter
 {
@@ -49,4 +52,4 @@ private:
     auto operator=(const BloomFilter& rhs) -> BloomFilter& = delete;
     auto operator=(BloomFilter&& rhs) -> BloomFilter& = delete;
 };
-}  // namespace opentxs::blockchain
+}  // namespace opentxs::v1::blockchain

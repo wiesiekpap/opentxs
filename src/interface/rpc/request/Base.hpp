@@ -10,7 +10,9 @@
 #include <memory>
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
@@ -29,10 +31,11 @@ class ListNyms;
 class SendPayment;
 }  // namespace request
 }  // namespace rpc
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::rpc::request
+namespace opentxs::v1::rpc::request
 {
 struct Base::Imp {
     const Base* parent_;
@@ -109,4 +112,4 @@ private:
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
 };
-}  // namespace opentxs::rpc::request
+}  // namespace opentxs::v1::rpc::request

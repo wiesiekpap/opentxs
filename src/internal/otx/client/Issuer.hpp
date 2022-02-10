@@ -17,7 +17,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -34,10 +36,11 @@ namespace identifier
 class Nym;
 class UnitDefinition;
 }  // namespace identifier
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::client
+namespace opentxs::v1::otx::client
 {
 class Issuer
 {
@@ -120,4 +123,4 @@ private:
     auto operator=(const Issuer&) -> Issuer& = delete;
     auto operator=(Issuer&&) -> Issuer& = delete;
 };
-}  // namespace opentxs::otx::client
+}  // namespace opentxs::v1::otx::client

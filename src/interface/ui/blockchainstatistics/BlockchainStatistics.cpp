@@ -38,7 +38,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto BlockchainStatisticsModel(
     const api::session::Client& api,
@@ -49,9 +49,9 @@ auto BlockchainStatisticsModel(
 
     return std::make_unique<ReturnType>(api, cb);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 BlockchainStatistics::BlockchainStatistics(
     const api::session::Client& api,
@@ -214,4 +214,4 @@ BlockchainStatistics::~BlockchainStatistics()
     wait_for_startup();
     signal_shutdown().get();
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

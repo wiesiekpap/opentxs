@@ -9,15 +9,18 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Flag;
 
 using OTFlag = Pimpl<Flag>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 /** Wrapper for a std::atomic<bool> */
 class Flag
@@ -51,4 +54,4 @@ private:
     auto operator=(const Flag&) -> Flag& = delete;
     auto operator=(Flag&&) -> Flag& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

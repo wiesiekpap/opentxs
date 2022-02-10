@@ -13,7 +13,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
@@ -29,10 +31,11 @@ class GetAccountBalance;
 
 class AccountData;
 }  // namespace rpc
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::rpc::response
+namespace opentxs::v1::rpc::response
 {
 class OPENTXS_EXPORT GetAccountBalance final : public Base
 {
@@ -58,4 +61,4 @@ private:
     auto operator=(const GetAccountBalance&) -> GetAccountBalance& = delete;
     auto operator=(GetAccountBalance&&) -> GetAccountBalance& = delete;
 };
-}  // namespace opentxs::rpc::response
+}  // namespace opentxs::v1::rpc::response

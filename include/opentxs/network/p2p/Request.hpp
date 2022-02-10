@@ -13,7 +13,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -22,10 +24,11 @@ namespace p2p
 class State;
 }  // namespace p2p
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::p2p
+namespace opentxs::v1::network::p2p
 {
 class OPENTXS_EXPORT Request final : public Base
 {
@@ -49,4 +52,4 @@ private:
     auto operator=(const Request&) -> Request& = delete;
     auto operator=(Request&&) -> Request& = delete;
 };
-}  // namespace opentxs::network::p2p
+}  // namespace opentxs::v1::network::p2p

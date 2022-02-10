@@ -13,17 +13,20 @@
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace ui
 {
 class BlockchainStatistics;
 class BlockchainStatisticsItem;
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 class OPENTXS_EXPORT BlockchainStatistics : virtual public List
 {
@@ -45,4 +48,4 @@ private:
         -> BlockchainStatistics& = delete;
     auto operator=(BlockchainStatistics&&) -> BlockchainStatistics& = delete;
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

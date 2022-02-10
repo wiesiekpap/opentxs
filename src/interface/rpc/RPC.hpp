@@ -38,7 +38,9 @@
 #include "serialization/protobuf/RPCResponse.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -86,12 +88,13 @@ class AccountData;
 
 class Identifier;
 class Options;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::rpc::implementation
+namespace opentxs::v1::rpc::implementation
 {
 class RPC final : virtual public rpc::internal::RPC, Lockable
 {
@@ -323,4 +326,4 @@ private:
     auto operator=(const RPC&) -> RPC& = delete;
     auto operator=(RPC&&) -> RPC& = delete;
 };
-}  // namespace opentxs::rpc::implementation
+}  // namespace opentxs::v1::rpc::implementation

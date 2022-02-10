@@ -13,7 +13,9 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -25,10 +27,11 @@ struct HD;
 }  // namespace internal
 }  // namespace crypto
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::crypto
+namespace opentxs::v1::blockchain::crypto
 {
 class OPENTXS_EXPORT HD : virtual public Deterministic
 {
@@ -49,4 +52,4 @@ private:
     auto operator=(const HD&) -> HD& = delete;
     auto operator=(HD&&) -> HD& = delete;
 };
-}  // namespace opentxs::blockchain::crypto
+}  // namespace opentxs::v1::blockchain::crypto

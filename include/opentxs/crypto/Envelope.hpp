@@ -12,7 +12,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace crypto
 {
@@ -27,10 +29,11 @@ class Envelope;
 class PasswordPrompt;
 
 using OTEnvelope = Pimpl<crypto::Envelope>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 class OPENTXS_EXPORT Envelope
 {
@@ -71,4 +74,4 @@ private:
     auto operator=(const Envelope&) -> Envelope& = delete;
     auto operator=(Envelope&&) -> Envelope& = delete;
 };
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto

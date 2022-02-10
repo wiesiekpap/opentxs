@@ -32,7 +32,9 @@
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -64,10 +66,11 @@ class OTPayment;
 class OTPaymentPlan;
 class OTSmartContract;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto VerifyStringVal(const UnallocatedCString&) -> bool;
 
@@ -321,4 +324,4 @@ private:
         const OTAPI_Func_Type type);
     OTAPI_Func() = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

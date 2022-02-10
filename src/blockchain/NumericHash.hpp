@@ -14,7 +14,7 @@
 
 namespace bmp = boost::multiprecision;
 
-namespace opentxs::blockchain::implementation
+namespace opentxs::v1::blockchain::implementation
 {
 class NumericHash final : public blockchain::NumericHash
 {
@@ -55,4 +55,4 @@ private:
     auto operator=(const NumericHash& rhs) -> NumericHash& = delete;
     auto operator=(NumericHash&& rhs) -> NumericHash& = delete;
 };
-}  // namespace opentxs::blockchain::implementation
+}  // namespace opentxs::v1::blockchain::implementation

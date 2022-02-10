@@ -8,7 +8,9 @@
 #include <memory>
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identifier
 {
@@ -23,10 +25,11 @@ class Identifier;
 }  // namespace proto
 
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto IdentifierGeneric() noexcept -> std::unique_ptr<opentxs::Identifier>;
 auto IdentifierGeneric(const proto::Identifier& in) noexcept
@@ -42,4 +45,4 @@ auto IdentifierUnit() noexcept
     -> std::unique_ptr<opentxs::identifier::UnitDefinition>;
 auto IdentifierUnit(const proto::Identifier& in) noexcept
     -> std::unique_ptr<opentxs::identifier::UnitDefinition>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

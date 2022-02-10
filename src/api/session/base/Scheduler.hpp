@@ -19,7 +19,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -35,10 +37,11 @@ class Storage;
 }  // namespace api
 
 class Flag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session
+namespace opentxs::v1::api::session
 {
 class Scheduler : virtual public api::Periodic, public Lockable
 {
@@ -91,4 +94,4 @@ private:
 
     void thread();
 };
-}  // namespace opentxs::api::session
+}  // namespace opentxs::v1::api::session

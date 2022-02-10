@@ -20,7 +20,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto parse_header(
     const api::Session& api,
@@ -114,4 +114,4 @@ auto parse_transactions(
 
     return output;
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

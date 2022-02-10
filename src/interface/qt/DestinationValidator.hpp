@@ -16,7 +16,9 @@
 #include "opentxs/interface/qt/DestinationValidator.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -35,10 +37,11 @@ class AccountActivity;
 }  // namespace ui
 
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 struct DestinationValidator::Imp {
     using Parent = implementation::AccountActivity;
@@ -63,4 +66,4 @@ protected:
     static auto strip_invalid(QString& input, bool cashaddr = false) noexcept
         -> void;
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

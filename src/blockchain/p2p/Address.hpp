@@ -21,16 +21,19 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
 class Session;
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::p2p::implementation
+namespace opentxs::v1::blockchain::p2p::implementation
 {
 class Address final : public internal::Address
 {
@@ -143,4 +146,4 @@ private:
     auto operator=(const Address&) -> Address& = delete;
     auto operator=(Address&&) -> Address& = delete;
 };
-}  // namespace opentxs::blockchain::p2p::implementation
+}  // namespace opentxs::v1::blockchain::p2p::implementation

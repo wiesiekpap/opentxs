@@ -19,7 +19,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -31,10 +33,11 @@ class Request;
 }  // namespace zap
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::zap
+namespace opentxs::v1::network::zeromq::zap
 {
 class Reply::Imp final : public zeromq::Message::Imp
 {
@@ -81,4 +84,4 @@ private:
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
 };
-}  // namespace opentxs::network::zeromq::zap
+}  // namespace opentxs::v1::network::zeromq::zap

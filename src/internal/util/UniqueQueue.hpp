@@ -13,7 +13,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <class T>
 class UniqueQueue
@@ -153,4 +153,4 @@ private:
     auto operator=(const UniqueQueue&) -> UniqueQueue& = delete;
     auto operator=(UniqueQueue&&) -> UniqueQueue& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

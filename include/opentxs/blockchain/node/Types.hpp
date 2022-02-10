@@ -11,7 +11,7 @@
 
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 namespace blockchain::node
 {
@@ -23,4 +23,4 @@ OPENTXS_EXPORT auto print(blockchain::node::TxoState) noexcept
     -> UnallocatedCString;
 OPENTXS_EXPORT auto print(blockchain::node::TxoTag) noexcept
     -> UnallocatedCString;
-}  // namespace opentxs
+}  // namespace opentxs::v1

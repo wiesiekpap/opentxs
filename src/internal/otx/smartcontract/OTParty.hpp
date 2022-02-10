@@ -15,7 +15,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -54,10 +56,11 @@ class OTScript;
 class OTScriptable;
 class PasswordPrompt;
 class Tag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 // Party is always either an Owner Nym, or an Owner Entity formed by Contract.
 //
@@ -378,4 +381,4 @@ private:
     OTParty(const OTParty&) = delete;
     auto operator=(const OTParty&) -> OTParty& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

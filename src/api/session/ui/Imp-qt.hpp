@@ -49,7 +49,9 @@
 class QAbstractItemModel;
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -76,10 +78,11 @@ struct BlankModel;
 
 class Flag;
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::ui
+namespace opentxs::v1::api::session::ui
 {
 class ImpQt final : public session::imp::UI::Imp
 {
@@ -251,4 +254,4 @@ private:
     auto operator=(const ImpQt&) -> ImpQt& = delete;
     auto operator=(ImpQt&&) -> ImpQt& = delete;
 };
-}  // namespace opentxs::api::session::ui
+}  // namespace opentxs::v1::api::session::ui

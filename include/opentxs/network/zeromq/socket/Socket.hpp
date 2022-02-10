@@ -19,7 +19,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -37,10 +39,11 @@ class Context;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::socket
+namespace opentxs::v1::network::zeromq::socket
 {
 class OPENTXS_EXPORT Socket
 {
@@ -78,4 +81,4 @@ private:
     auto operator=(const Socket&) -> Socket& = delete;
     auto operator=(Socket&&) -> Socket& = default;
 };
-}  // namespace opentxs::network::zeromq::socket
+}  // namespace opentxs::v1::network::zeromq::socket

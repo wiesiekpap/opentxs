@@ -11,7 +11,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto TranslateAccountTypeStringToEnum(const String& acctTypeString) noexcept
     -> Account::AccountType
@@ -70,4 +70,4 @@ void TranslateAccountTypeToString(
             break;
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

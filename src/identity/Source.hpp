@@ -23,7 +23,9 @@
 #include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -56,10 +58,11 @@ class Signature;
 
 class Factory;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::implementation
+namespace opentxs::v1::identity::implementation
 {
 class Source final : virtual public identity::Source
 {
@@ -128,4 +131,4 @@ private:
     auto operator=(const Source&) -> Source&;
     auto operator=(Source&&) -> Source&;
 };
-}  // namespace opentxs::identity::implementation
+}  // namespace opentxs::v1::identity::implementation

@@ -7,7 +7,7 @@
 
 #include "opentxs/api/crypto/Util.hpp"
 
-namespace opentxs::api::crypto::internal
+namespace opentxs::v1::api::crypto::internal
 {
 class Util : virtual public api::crypto::Util
 {
@@ -18,4 +18,4 @@ public:
 
     ~Util() override = default;
 };
-}  // namespace opentxs::api::crypto::internal
+}  // namespace opentxs::v1::api::crypto::internal

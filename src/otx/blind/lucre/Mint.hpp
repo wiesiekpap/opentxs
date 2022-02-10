@@ -13,7 +13,9 @@
 #include "otx/blind/mint/Imp.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -43,10 +45,11 @@ class Token;
 
 class PasswordPrompt;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::blind::mint
+namespace opentxs::v1::otx::blind::mint
 {
 class Lucre final : public mint::Mint
 {
@@ -79,4 +82,4 @@ public:
 
     ~Lucre() final = default;
 };
-}  // namespace opentxs::otx::blind::mint
+}  // namespace opentxs::v1::otx::blind::mint

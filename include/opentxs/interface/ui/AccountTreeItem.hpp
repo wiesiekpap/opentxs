@@ -16,13 +16,16 @@
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Amount;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 class OPENTXS_EXPORT AccountTreeItem : virtual public ListRow
 {
@@ -49,4 +52,4 @@ private:
     auto operator=(const AccountTreeItem&) -> AccountTreeItem& = delete;
     auto operator=(AccountTreeItem&&) -> AccountTreeItem& = delete;
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

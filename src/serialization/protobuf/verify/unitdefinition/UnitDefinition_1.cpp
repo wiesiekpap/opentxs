@@ -27,7 +27,7 @@
 #include "serialization/protobuf/UnitDefinition.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 
 auto CheckProto_1(
@@ -168,4 +168,4 @@ auto CheckProto_1(
 
     return true;
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

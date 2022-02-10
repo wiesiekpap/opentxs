@@ -33,7 +33,7 @@
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 
-namespace opentxs::blockchain::database::common
+namespace opentxs::v1::blockchain::database::common
 {
 Wallet::Wallet(
     const api::Session& api,
@@ -368,4 +368,4 @@ auto Wallet::UpdateMergedContact(
 }
 
 Wallet::~Wallet() = default;
-}  // namespace opentxs::blockchain::database::common
+}  // namespace opentxs::v1::blockchain::database::common

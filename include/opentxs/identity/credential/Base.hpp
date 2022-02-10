@@ -17,7 +17,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
@@ -28,10 +30,11 @@ class VerificationSet;
 
 class PasswordPrompt;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::credential
+namespace opentxs::v1::identity::credential
 {
 class OPENTXS_EXPORT Base : virtual public opentxs::contract::Signable
 {
@@ -87,4 +90,4 @@ private:
     auto operator=(const Base&) -> Base& = delete;
     auto operator=(Base&&) -> Base& = delete;
 };
-}  // namespace opentxs::identity::credential
+}  // namespace opentxs::v1::identity::credential

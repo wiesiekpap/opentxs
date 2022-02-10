@@ -17,7 +17,9 @@
 struct zmq_msg_t;
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -31,6 +33,7 @@ class Frame;
 class Frame;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -43,7 +46,7 @@ struct hash<opentxs::network::zeromq::Frame> {
 };
 }  // namespace std
 
-namespace opentxs::network::zeromq
+namespace opentxs::v1::network::zeromq
 {
 OPENTXS_EXPORT auto swap(Frame& lhs, Frame& rhs) noexcept -> void;
 OPENTXS_EXPORT auto operator<(const Frame& lhs, const Frame& rhs) noexcept
@@ -102,4 +105,4 @@ private:
 
     Imp* imp_;
 };
-}  // namespace opentxs::network::zeromq
+}  // namespace opentxs::v1::network::zeromq

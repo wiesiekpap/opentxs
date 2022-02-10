@@ -17,7 +17,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -41,10 +43,11 @@ class Account;
 class Identifier;
 class Message;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 class OTClient
 {
@@ -65,4 +68,4 @@ public:
 protected:
     const api::Session& api_;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

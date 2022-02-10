@@ -14,7 +14,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -41,10 +43,11 @@ class Pipeline;
 class ReplyCallback;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto DealerSocket(
     const network::zeromq::Context& context,
@@ -105,4 +108,4 @@ auto ZMQSocket(
     const network::zeromq::socket::Type type) noexcept
     -> network::zeromq::socket::Raw;
 auto ZMQSocketNull() noexcept -> network::zeromq::socket::Raw;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

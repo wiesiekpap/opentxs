@@ -11,7 +11,9 @@
 #include "opentxs/network/zeromq/PairEventCallback.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -20,10 +22,11 @@ namespace zeromq
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::implementation
+namespace opentxs::v1::network::zeromq::implementation
 {
 class PairEventCallback final : virtual public zeromq::PairEventCallback
 {
@@ -54,4 +57,4 @@ private:
     auto operator=(const PairEventCallback&) -> PairEventCallback& = delete;
     auto operator=(PairEventCallback&&) -> PairEventCallback& = delete;
 };
-}  // namespace opentxs::network::zeromq::implementation
+}  // namespace opentxs::v1::network::zeromq::implementation

@@ -33,7 +33,9 @@
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -61,10 +63,11 @@ class Frame;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::node::implementation
+namespace opentxs::v1::blockchain::node::implementation
 {
 class BlockOracle final : public node::internal::BlockOracle,
                           public Worker<BlockOracle, api::Session>
@@ -210,4 +213,4 @@ private:
     auto operator=(const BlockOracle&) -> BlockOracle& = delete;
     auto operator=(BlockOracle&&) -> BlockOracle& = delete;
 };
-}  // namespace opentxs::blockchain::node::implementation
+}  // namespace opentxs::v1::blockchain::node::implementation

@@ -11,17 +11,20 @@
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace ui
 {
 class ActivitySummary;
 class ActivitySummaryItem;
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 class OPENTXS_EXPORT ActivitySummary : virtual public List
 {
@@ -42,4 +45,4 @@ private:
     auto operator=(const ActivitySummary&) -> ActivitySummary& = delete;
     auto operator=(ActivitySummary&&) -> ActivitySummary& = delete;
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

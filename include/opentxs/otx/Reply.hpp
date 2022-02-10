@@ -15,7 +15,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -34,10 +36,11 @@ class ServerReply;
 }  // namespace proto
 
 using OTXReply = Pimpl<otx::Reply>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx
+namespace opentxs::v1::otx
 {
 class OPENTXS_EXPORT Reply : virtual public opentxs::contract::Signable
 {
@@ -102,4 +105,4 @@ private:
     auto operator=(const Reply&) -> Reply& = delete;
     auto operator=(Reply&&) -> Reply& = delete;
 };
-}  // namespace opentxs::otx
+}  // namespace opentxs::v1::otx

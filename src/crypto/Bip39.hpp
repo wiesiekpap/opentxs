@@ -17,7 +17,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -27,10 +29,11 @@ class Session;
 
 class OTPassword;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto::implementation
+namespace opentxs::v1::crypto::implementation
 {
 class Bip39 final : public opentxs::crypto::Bip39
 {
@@ -98,4 +101,4 @@ private:
     auto operator=(const Bip39&) -> Bip39& = delete;
     auto operator=(Bip39&&) -> Bip39& = delete;
 };
-}  // namespace opentxs::crypto::implementation
+}  // namespace opentxs::v1::crypto::implementation

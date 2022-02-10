@@ -37,7 +37,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 // NOTE: these are only code defaults -- the values are actually loaded from
 // ~/.ot/server.cfg.
@@ -1139,4 +1139,4 @@ void OTCron::InitCron() { m_strContractType = String::Factory("CRON"); }
 void OTCron::Release() { Contract::Release(); }
 
 OTCron::~OTCron() { m_pServerNym = nullptr; }
-}  // namespace opentxs
+}  // namespace opentxs::v1

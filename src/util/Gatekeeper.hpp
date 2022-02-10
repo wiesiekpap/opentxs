@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace opentxs
+namespace opentxs::v1
 {
 class Ticket;
 
@@ -58,4 +58,4 @@ private:
     auto operator=(const Ticket&) -> Ticket& = delete;
     auto operator=(Ticket&&) -> Ticket& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

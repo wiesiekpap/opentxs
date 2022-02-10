@@ -13,7 +13,9 @@
 #include "opentxs/api/session/Endpoints.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -30,10 +32,11 @@ namespace zeromq
 class Context;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session
+namespace opentxs::v1::api::session
 {
 class ZMQ
 {
@@ -61,4 +64,4 @@ private:
     auto operator=(const ZMQ&) -> ZMQ& = delete;
     auto operator=(ZMQ&&) -> ZMQ& = delete;
 };
-}  // namespace opentxs::api::session
+}  // namespace opentxs::v1::api::session

@@ -13,7 +13,9 @@
 #include "opentxs/util/Log.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace ui
 {
@@ -22,10 +24,11 @@ namespace internal
 struct Row;
 }  // namespace internal
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 template <typename RowID, typename SortKey, typename RowPointer>
 class ListItems
@@ -248,4 +251,4 @@ private:
         }
     }
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

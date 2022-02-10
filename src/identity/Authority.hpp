@@ -37,7 +37,9 @@
 #include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -80,10 +82,11 @@ class OTPassword;
 class PasswordPrompt;
 class Secret;
 class Signature;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::implementation
+namespace opentxs::v1::identity::implementation
 {
 class Authority final : virtual public identity::internal::Authority
 {
@@ -337,4 +340,4 @@ private:
     auto operator=(const Authority&) -> Authority& = delete;
     auto operator=(Authority&&) -> Authority& = delete;
 };
-}  // namespace opentxs::identity::implementation
+}  // namespace opentxs::v1::identity::implementation

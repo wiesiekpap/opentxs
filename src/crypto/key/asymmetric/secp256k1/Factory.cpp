@@ -15,7 +15,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Secp256k1Key(
     const api::Session& api,
@@ -91,4 +91,4 @@ auto Secp256k1Key(
         return nullptr;
     }
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

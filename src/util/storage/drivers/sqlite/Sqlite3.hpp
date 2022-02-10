@@ -24,7 +24,9 @@ extern "C" {
 #include "util/storage/Plugin.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -46,10 +48,11 @@ namespace storage
 class Config;
 class Plugin;
 }  // namespace storage
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::storage::driver
+namespace opentxs::v1::storage::driver
 {
 // SQLite3 implementation of opentxs::storage
 class Sqlite3 final : public virtual implementation::Plugin,
@@ -125,4 +128,4 @@ private:
     auto operator=(const Sqlite3&) -> Sqlite3& = delete;
     auto operator=(Sqlite3&&) -> Sqlite3& = delete;
 };
-}  // namespace opentxs::storage::driver
+}  // namespace opentxs::v1::storage::driver

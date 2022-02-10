@@ -17,13 +17,16 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Amount;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::display
+namespace opentxs::v1::display
 {
 class Definition
 {
@@ -66,4 +69,4 @@ private:
 };
 
 auto GetDefinition(UnitType) noexcept -> const Definition&;
-}  // namespace opentxs::display
+}  // namespace opentxs::v1::display

@@ -18,7 +18,9 @@
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -51,10 +53,11 @@ class Seeds;
 class Servers;
 class Units;
 }  // namespace storage
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 class Tree final : public Node
 {
@@ -163,4 +166,4 @@ private:
     auto operator=(const Tree&) -> Tree = delete;
     auto operator=(Tree&&) -> Tree = delete;
 };
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

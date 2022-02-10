@@ -16,7 +16,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -41,10 +43,11 @@ class PasswordPrompt;
 class Secret;
 
 using OTSymmetricKey = Pimpl<crypto::key::Symmetric>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto::key
+namespace opentxs::v1::crypto::key
 {
 class OPENTXS_EXPORT Symmetric
 {
@@ -120,4 +123,4 @@ private:
     auto operator=(const Symmetric&) -> Symmetric& = delete;
     auto operator=(Symmetric&&) -> Symmetric& = delete;
 };
-}  // namespace opentxs::crypto::key
+}  // namespace opentxs::v1::crypto::key

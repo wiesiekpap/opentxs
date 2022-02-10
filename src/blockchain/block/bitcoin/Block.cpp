@@ -43,7 +43,7 @@
 
 namespace be = boost::endian;
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto BitcoinBlock(
     const api::Session& api,
@@ -219,9 +219,9 @@ auto parse_normal_block(
         std::move(transactions),
         std::move(sizeData));
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::blockchain::block::bitcoin::implementation
+namespace opentxs::v1::blockchain::block::bitcoin::implementation
 {
 const std::size_t Block::header_bytes_{80};
 const Block::value_type Block::null_tx_{};
@@ -566,4 +566,4 @@ auto Block::serialize_post_header(
 }
 
 Block::~Block() = default;
-}  // namespace opentxs::blockchain::block::bitcoin::implementation
+}  // namespace opentxs::v1::blockchain::block::bitcoin::implementation

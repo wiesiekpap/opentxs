@@ -12,15 +12,15 @@
 
 // template class opentxs::Pimpl<opentxs::Signature>;
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto Signature::Factory(const api::Session& api) -> OTSignature
 {
     return OTSignature(new implementation::Signature(api));
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::implementation
+namespace opentxs::v1::implementation
 {
 Signature::Signature(const api::Session& api)
     : opentxs::Signature()
@@ -28,4 +28,4 @@ Signature::Signature(const api::Session& api)
     , metadata_(api)
 {
 }
-}  // namespace opentxs::implementation
+}  // namespace opentxs::v1::implementation

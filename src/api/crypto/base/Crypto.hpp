@@ -35,7 +35,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -71,10 +73,11 @@ class Ripemd160;
 class Secp256k1;
 class Sodium;
 }  // namespace crypto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::imp
+namespace opentxs::v1::api::imp
 {
 class Crypto final : public internal::Crypto
 {
@@ -158,4 +161,4 @@ private:
     auto operator=(const Crypto&) -> Crypto& = delete;
     auto operator=(Crypto&&) -> Crypto& = delete;
 };
-}  // namespace opentxs::api::imp
+}  // namespace opentxs::v1::api::imp

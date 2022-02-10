@@ -16,7 +16,9 @@
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace contract
 {
@@ -34,10 +36,11 @@ class Amount;
 class PasswordPrompt;
 
 using OTUnitDefinition = SharedPimpl<contract::Unit>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::contract
+namespace opentxs::v1::contract
 {
 class OPENTXS_EXPORT Unit : virtual public opentxs::contract::Signable
 {
@@ -86,4 +89,4 @@ private:
     auto operator=(const Unit&) -> Unit& = delete;
     auto operator=(Unit&&) -> Unit& = delete;
 };
-}  // namespace opentxs::contract
+}  // namespace opentxs::v1::contract

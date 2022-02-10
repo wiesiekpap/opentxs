@@ -9,7 +9,7 @@
 
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs::server
+namespace opentxs::v1::server
 {
 struct ServerSettings {
     static auto GetMinMarketScale() -> std::int64_t
@@ -116,4 +116,4 @@ struct ServerSettings {
 
     static bool __cmd_request_admin;
 };
-}  // namespace opentxs::server
+}  // namespace opentxs::v1::server

@@ -16,7 +16,7 @@
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 struct SeedValidator::Imp {
     using State = QValidator::State;
@@ -116,4 +116,4 @@ auto SeedValidator::validate(QString& input, int& pos) const -> State
 }
 
 SeedValidator::~SeedValidator() = default;
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

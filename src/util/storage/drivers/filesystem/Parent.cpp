@@ -26,7 +26,7 @@ extern "C" {
 
 #define PATH_SEPERATOR "/"
 
-namespace opentxs::storage::driver::filesystem
+namespace opentxs::v1::storage::driver::filesystem
 {
 Filesystem::Common(
     const api::session::Storage& storage,
@@ -246,4 +246,4 @@ auto Filesystem::write_file(
 
 Filesystem::~Filesystem() { Cleanup_Filesystem(); }
 
-}  // namespace opentxs::storage::driver::filesystem
+}  // namespace opentxs::v1::storage::driver::filesystem

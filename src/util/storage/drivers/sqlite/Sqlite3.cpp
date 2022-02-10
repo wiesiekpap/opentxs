@@ -18,7 +18,7 @@
 #include "opentxs/util/Log.hpp"
 #include "util/storage/Config.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto StorageSqlite3(
     const api::Crypto& crypto,
@@ -31,9 +31,9 @@ auto StorageSqlite3(
 
     return std::make_unique<ReturnType>(crypto, asio, parent, config, bucket);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::storage::driver
+namespace opentxs::v1::storage::driver
 {
 Sqlite3::Sqlite3(
     const api::Crypto& crypto,
@@ -389,4 +389,4 @@ auto Sqlite3::Upsert(
 }
 
 Sqlite3::~Sqlite3() { Cleanup_Sqlite3(); }
-}  // namespace opentxs::storage::driver
+}  // namespace opentxs::v1::storage::driver

@@ -12,7 +12,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto AccountTreeItemBlockchain(
     const ui::implementation::AccountCurrencyInternalInterface& parent,
@@ -26,9 +26,9 @@ auto AccountTreeItemBlockchain(
 
     return std::make_shared<ReturnType>(parent, api, rowID, sortKey, custom);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 BlockchainAccountTreeItem::BlockchainAccountTreeItem(
     const AccountCurrencyInternalInterface& parent,
@@ -43,4 +43,4 @@ BlockchainAccountTreeItem::BlockchainAccountTreeItem(
 }
 
 BlockchainAccountTreeItem::~BlockchainAccountTreeItem() = default;
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

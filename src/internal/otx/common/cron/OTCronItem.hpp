@@ -27,7 +27,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -62,10 +64,11 @@ class Server;
 class NumList;
 class OTCron;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 class OTCronItem : public OTTrackable
 {
@@ -296,4 +299,4 @@ private:
     auto operator=(const OTCronItem&) -> OTCronItem& = delete;
     auto operator=(OTCronItem&&) -> OTCronItem& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

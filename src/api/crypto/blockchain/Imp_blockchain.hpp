@@ -46,7 +46,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -105,12 +107,13 @@ class Data;
 class Identifier;
 class Options;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::api::crypto::imp
+namespace opentxs::v1::api::crypto::imp
 {
 struct BlockchainImp final : public Blockchain::Imp {
     using Txid = opentxs::blockchain::block::Txid;
@@ -226,4 +229,4 @@ private:
         const opentxs::blockchain::block::bitcoin::Transaction& tx)
         const noexcept -> bool;
 };
-}  // namespace opentxs::api::crypto::imp
+}  // namespace opentxs::v1::api::crypto::imp

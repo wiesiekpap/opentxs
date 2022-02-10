@@ -22,7 +22,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs::ui::internal
+namespace opentxs::v1::ui::internal
 {
 auto Row::next_index() noexcept -> std::ptrdiff_t
 {
@@ -41,9 +41,9 @@ auto make_progress(
 
     return double(100 * actual) / double(target);
 }
-}  // namespace opentxs::ui::internal
+}  // namespace opentxs::v1::ui::internal
 
-namespace opentxs::ui::internal::blank
+namespace opentxs::v1::ui::internal::blank
 {
 auto blank_nym() noexcept -> const identifier::Nym&;
 
@@ -85,9 +85,9 @@ auto blank_nym() noexcept -> const identifier::Nym&
 
     return data;
 }
-}  // namespace opentxs::ui::internal::blank
+}  // namespace opentxs::v1::ui::internal::blank
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 auto account_name_blockchain(blockchain::Type chain) noexcept
     -> UnallocatedCString
@@ -116,4 +116,4 @@ auto account_name_custodial(
 
     return out.str();
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

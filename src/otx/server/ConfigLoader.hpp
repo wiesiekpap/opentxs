@@ -6,7 +6,9 @@
 #pragma once
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -15,10 +17,11 @@ class Settings;
 }  // namespace api
 
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::server
+namespace opentxs::v1::server
 {
 struct ConfigLoader {
     static auto load(
@@ -26,4 +29,4 @@ struct ConfigLoader {
         const api::Settings& config,
         String& walletFilename) -> bool;
 };
-}  // namespace opentxs::server
+}  // namespace opentxs::v1::server

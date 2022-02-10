@@ -37,7 +37,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs::blockchain::params
+namespace opentxs::v1::blockchain::params
 {
 struct Data {
     using ChainData = boost::container::flat_map<blockchain::Type, Data>;
@@ -95,4 +95,4 @@ struct Data {
     static auto Services() noexcept -> const ServiceBits&;
 #endif  // OT_BLOCKCHAIN
 };
-}  // namespace opentxs::blockchain::params
+}  // namespace opentxs::v1::blockchain::params

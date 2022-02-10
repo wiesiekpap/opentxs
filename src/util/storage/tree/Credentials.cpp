@@ -28,7 +28,7 @@
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 Credentials::Credentials(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
@@ -205,4 +205,4 @@ auto Credentials::Store(
 
     return save(lock);
 }
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

@@ -12,7 +12,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/core/String.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 namespace api
 {
@@ -108,4 +108,4 @@ private:  // Private prevents erroneous use by other classes.
 
     OTSignedFile() = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

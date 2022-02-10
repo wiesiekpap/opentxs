@@ -18,7 +18,7 @@ jobs:
           - compiler: clang-10
             platform: ubuntu-20.04
             command: /usr/bin/build-opentxs-clang
-            docker: 5
+            docker: 6
     runs-on:  ${{ matrix.platform }}
     steps:
     - uses: actions/checkout@v2.3.4

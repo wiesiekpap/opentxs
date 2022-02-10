@@ -19,7 +19,7 @@
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/util/Bytes.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto AccountListItem(
     const ui::implementation::AccountListInternalInterface& parent,
@@ -45,9 +45,9 @@ auto AccountListItem(
         }
     }
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 AccountListItem::AccountListItem(
     const AccountListInternalInterface& parent,
@@ -128,4 +128,4 @@ auto AccountListItem::reindex(
 }
 
 AccountListItem::~AccountListItem() = default;
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

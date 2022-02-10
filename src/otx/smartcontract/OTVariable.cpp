@@ -20,7 +20,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 void OTVariable::Serialize(Tag& parent, bool bCalculatingID) const
 {
@@ -355,4 +355,4 @@ auto OTVariable::Compare(OTVariable& rhs) -> bool
     return bMatch;
 }
 
-}  // namespace opentxs
+}  // namespace opentxs::v1

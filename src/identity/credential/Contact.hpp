@@ -15,7 +15,9 @@
 #include "serialization/protobuf/ContactData.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -44,10 +46,11 @@ class Credential;
 
 class Factory;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::credential::implementation
+namespace opentxs::v1::identity::credential::implementation
 {
 class Contact final : virtual public credential::internal::Contact,
                       public credential::implementation::Base
@@ -88,4 +91,4 @@ private:
     auto operator=(const Contact&) -> Contact& = delete;
     auto operator=(Contact&&) -> Contact& = delete;
 };
-}  // namespace opentxs::identity::credential::implementation
+}  // namespace opentxs::v1::identity::credential::implementation

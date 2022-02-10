@@ -15,7 +15,9 @@
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
@@ -27,10 +29,11 @@ namespace storage
 class Driver;
 class Nym;
 }  // namespace storage
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 class PeerRequests final : public Node
 {
@@ -63,4 +66,4 @@ public:
 
     ~PeerRequests() final = default;
 };
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

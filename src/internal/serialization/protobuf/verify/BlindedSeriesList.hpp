@@ -9,16 +9,19 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+namespace v1
 {
 namespace proto
 {
 class BlindedSeriesList;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_1(
     const BlindedSeriesList& input,
@@ -100,4 +103,4 @@ auto CheckProto_20(
     const BlindedSeriesList& input,
     const bool silent,
     const UnallocatedCString& notary) -> bool;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

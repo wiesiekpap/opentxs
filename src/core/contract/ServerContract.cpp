@@ -41,7 +41,7 @@
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto Factory::ServerContract(const api::Session& api) noexcept
     -> std::unique_ptr<contract::Server>
@@ -138,14 +138,14 @@ auto Factory::ServerContract(
 
     return std::move(contract);
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::contract
+namespace opentxs::v1::contract
 {
 const VersionNumber Server::DefaultVersion{2};
-}  // namespace opentxs::contract
+}  // namespace opentxs::v1::contract
 
-namespace opentxs::contract::implementation
+namespace opentxs::v1::contract::implementation
 {
 Server::Server(
     const api::Session& api,
@@ -484,4 +484,4 @@ auto Server::verify_signature(
 
     return nym_->Verify(serialized, sigProto);
 }
-}  // namespace opentxs::contract::implementation
+}  // namespace opentxs::v1::contract::implementation

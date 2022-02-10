@@ -65,7 +65,7 @@
 #include "util/HDIndex.hpp"  // IWYU pragma: keep
 #include "util/Work.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto SeedAPI(
     const api::Session& api,
@@ -92,9 +92,9 @@ auto SeedAPI(
         bip39,
         zmq);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::api::crypto::imp
+namespace opentxs::v1::api::crypto::imp
 {
 Seed::Seed(
     const api::Session& api,
@@ -895,4 +895,4 @@ auto Seed::Words(const UnallocatedCString& seedID, const PasswordPrompt& reason)
         return {};
     }
 }
-}  // namespace opentxs::api::crypto::imp
+}  // namespace opentxs::v1::api::crypto::imp

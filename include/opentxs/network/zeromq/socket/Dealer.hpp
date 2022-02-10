@@ -12,7 +12,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -26,10 +28,11 @@ class Dealer;
 }  // namespace network
 
 using OTZMQDealerSocket = Pimpl<network::zeromq::socket::Dealer>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::socket
+namespace opentxs::v1::network::zeromq::socket
 {
 class OPENTXS_EXPORT Dealer : virtual public curve::Client,
                               virtual public Sender
@@ -53,4 +56,4 @@ private:
     auto operator=(const Dealer&) -> Dealer& = delete;
     auto operator=(Dealer&&) -> Dealer& = delete;
 };
-}  // namespace opentxs::network::zeromq::socket
+}  // namespace opentxs::v1::network::zeromq::socket

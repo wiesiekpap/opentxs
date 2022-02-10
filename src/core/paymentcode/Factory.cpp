@@ -33,7 +33,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PaymentCode.pb.h"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto PaymentCode(
     const api::Session& api,
@@ -159,4 +159,4 @@ auto PaymentCode(
                std::move(pKey))
         .release();
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

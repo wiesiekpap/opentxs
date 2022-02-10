@@ -10,7 +10,10 @@
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -19,7 +22,9 @@ namespace session
 class Client;
 }  // namespace session
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace b = ot::blockchain;
 

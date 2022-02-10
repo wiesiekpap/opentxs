@@ -10,7 +10,7 @@
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
 
-namespace opentxs::network::zeromq::internal
+namespace opentxs::v1::network::zeromq::internal
 {
 Handle::Handle(
     const internal::Context& context,
@@ -37,4 +37,4 @@ auto Handle::Release() noexcept -> void
 }
 
 Handle::~Handle() { Release(); }
-}  // namespace opentxs::network::zeromq::internal
+}  // namespace opentxs::v1::network::zeromq::internal

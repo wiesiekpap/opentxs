@@ -16,16 +16,19 @@
 #include "opentxs/identity/credential/Base.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class Signature;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::credential
+namespace opentxs::v1::identity::credential
 {
 class OPENTXS_EXPORT Key : virtual public Base
 {
@@ -61,4 +64,4 @@ private:
     auto operator=(const Key&) -> Key& = delete;
     auto operator=(Key&&) -> Key& = delete;
 };
-}  // namespace opentxs::identity::credential
+}  // namespace opentxs::v1::identity::credential

@@ -10,7 +10,9 @@
 #include "opentxs/core/Secret.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -19,10 +21,11 @@ namespace internal
 class Factory;
 }  // namespace internal
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api
+namespace opentxs::v1::api
 {
 class OPENTXS_EXPORT Factory
 {
@@ -49,4 +52,4 @@ private:
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
 };
-}  // namespace opentxs::api
+}  // namespace opentxs::v1::api

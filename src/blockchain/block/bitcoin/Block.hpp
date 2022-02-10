@@ -26,7 +26,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -53,10 +55,11 @@ class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::block::bitcoin::implementation
+namespace opentxs::v1::blockchain::block::bitcoin::implementation
 {
 class Block : public bitcoin::Block, public block::implementation::Block
 {
@@ -145,4 +148,4 @@ private:
     auto operator=(const Block&) -> Block& = delete;
     auto operator=(Block&&) -> Block& = delete;
 };
-}  // namespace opentxs::blockchain::block::bitcoin::implementation
+}  // namespace opentxs::v1::blockchain::block::bitcoin::implementation

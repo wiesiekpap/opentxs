@@ -15,7 +15,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -59,10 +61,11 @@ class NumList;
 class OTAgent;
 class OTTransaction;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::server
+namespace opentxs::v1::server
 {
 class UserCommandProcessor
 {
@@ -224,4 +227,4 @@ private:
         -> UserCommandProcessor& = delete;
     auto operator=(UserCommandProcessor&&) -> UserCommandProcessor& = delete;
 };
-}  // namespace opentxs::server
+}  // namespace opentxs::v1::server

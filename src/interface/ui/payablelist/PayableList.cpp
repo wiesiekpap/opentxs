@@ -28,7 +28,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto PayableListModel(
     const api::session::Client& api,
@@ -41,9 +41,9 @@ auto PayableListModel(
 
     return std::make_unique<ReturnType>(api, nymID, currency, cb);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 PayableList::PayableList(
     const api::session::Client& api,
@@ -204,4 +204,4 @@ PayableList::~PayableList()
     wait_for_startup();
     signal_shutdown().get();
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

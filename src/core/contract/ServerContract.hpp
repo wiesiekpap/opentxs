@@ -23,7 +23,9 @@
 #include "serialization/protobuf/ServerContract.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -39,10 +41,11 @@ class Factory;
 class OTPassword;
 class PasswordPrompt;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::contract::implementation
+namespace opentxs::v1::contract::implementation
 {
 class Server final : public contract::Server,
                      public opentxs::contract::implementation::Signable
@@ -117,4 +120,4 @@ private:
     auto operator=(const Server&) -> Server& = delete;
     auto operator=(Server&&) -> Server& = delete;
 };
-}  // namespace opentxs::contract::implementation
+}  // namespace opentxs::v1::contract::implementation

@@ -10,16 +10,19 @@
 #include "internal/otx/common/crypto/Signature.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
 class Session;
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::implementation
+namespace opentxs::v1::implementation
 {
 class Signature final : virtual public opentxs::Signature, public Armored
 {
@@ -39,4 +42,4 @@ private:
 
     OTSignatureMetadata metadata_;
 };
-}  // namespace opentxs::implementation
+}  // namespace opentxs::v1::implementation

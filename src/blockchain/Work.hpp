@@ -12,15 +12,18 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Factory;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace bmp = boost::multiprecision;
 
-namespace opentxs::blockchain::implementation
+namespace opentxs::v1::blockchain::implementation
 {
 class Work final : public blockchain::Work
 {
@@ -58,4 +61,4 @@ private:
     auto operator=(const Work& rhs) -> Work& = delete;
     auto operator=(Work&& rhs) -> Work& = delete;
 };
-}  // namespace opentxs::blockchain::implementation
+}  // namespace opentxs::v1::blockchain::implementation

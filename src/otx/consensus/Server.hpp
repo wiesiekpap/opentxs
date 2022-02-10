@@ -48,7 +48,9 @@
 #include "serialization/protobuf/Context.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -104,12 +106,13 @@ class OTPayment;
 class PasswordPrompt;
 class PeerObject;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::otx::context::implementation
+namespace opentxs::v1::otx::context::implementation
 {
 class Server final : virtual public internal::Server,
                      public Base,
@@ -783,4 +786,4 @@ private:
     auto operator=(const Server&) -> Server& = delete;
     auto operator=(Server&&) -> Server& = delete;
 };
-}  // namespace opentxs::otx::context::implementation
+}  // namespace opentxs::v1::otx::context::implementation

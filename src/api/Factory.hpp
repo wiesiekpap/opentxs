@@ -16,17 +16,20 @@
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
 class Crypto;
 class Factory;
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::imp
+namespace opentxs::v1::api::imp
 {
 class Factory final : public internal::Factory
 {
@@ -49,4 +52,4 @@ private:
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
 };
-}  // namespace opentxs::api::imp
+}  // namespace opentxs::v1::api::imp

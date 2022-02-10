@@ -26,7 +26,9 @@
 #include "util/storage/Plugin.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
@@ -35,19 +37,17 @@ class Nym;
 class Seed;
 class StorageItemHash;
 }  // namespace proto
-}  // namespace opentxs
 
-namespace opentxs
-{
 namespace storage
 {
 class Driver;
 class Root;
 }  // namespace storage
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 using keyFunction = std::function<bool(const UnallocatedCString&)>;
 /** A set of metadata associated with a stored object
@@ -278,4 +278,4 @@ public:
 
     virtual ~Node() = default;
 };
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

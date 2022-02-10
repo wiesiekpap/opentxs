@@ -46,7 +46,9 @@
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -82,10 +84,11 @@ class PaymentWorkflow;
 
 class Data;
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 class BlockchainAccountActivity final : public AccountActivity
 {
@@ -246,4 +249,4 @@ private:
     auto operator=(BlockchainAccountActivity&&)
         -> BlockchainAccountActivity& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

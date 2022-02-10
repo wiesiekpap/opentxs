@@ -13,7 +13,9 @@
 #include "opentxs/util/Allocated.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -29,10 +31,11 @@ class Message;
 class Pipeline;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq
+namespace opentxs::v1::network::zeromq
 {
 class OPENTXS_EXPORT Pipeline final : virtual public Allocated
 {
@@ -73,4 +76,4 @@ public:
 private:
     Imp* imp_;
 };
-}  // namespace opentxs::network::zeromq
+}  // namespace opentxs::v1::network::zeromq

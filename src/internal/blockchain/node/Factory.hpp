@@ -13,7 +13,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -66,10 +68,11 @@ namespace internal
 struct Database;
 }  // namespace internal
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto BlockchainDatabase(
     const api::Session& api,
@@ -131,4 +134,4 @@ auto HeaderOracle(
     const blockchain::node::internal::HeaderDatabase& database,
     const blockchain::Type type) noexcept
     -> std::unique_ptr<blockchain::node::HeaderOracle>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

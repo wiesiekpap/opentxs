@@ -43,7 +43,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -54,10 +56,11 @@ class Blockchain;
 
 class Session;
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::block::bitcoin::implementation
+namespace opentxs::v1::blockchain::block::bitcoin::implementation
 {
 class Output final : public internal::Output
 {
@@ -270,4 +273,4 @@ private:
     auto operator=(const Output&) -> Output& = delete;
     auto operator=(Output&&) -> Output& = delete;
 };
-}  // namespace opentxs::blockchain::block::bitcoin::implementation
+}  // namespace opentxs::v1::blockchain::block::bitcoin::implementation

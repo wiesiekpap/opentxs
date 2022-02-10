@@ -16,7 +16,9 @@
 #include "opentxs/util/WorkType.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -36,13 +38,14 @@ namespace asio
 class Endpoint;
 }  // namespace asio
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace asio = boost::asio;
 namespace ip = asio::ip;
 
-namespace opentxs::network::asio
+namespace opentxs::v1::network::asio
 {
 struct Socket::Imp {
     using Asio = api::network::internal::Asio;
@@ -72,4 +75,4 @@ private:
     Imp& operator=(const Imp&) = delete;
     Imp& operator=(Imp&&) = delete;
 };
-}  // namespace opentxs::network::asio
+}  // namespace opentxs::v1::network::asio

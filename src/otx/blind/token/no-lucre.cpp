@@ -9,7 +9,7 @@
 
 #include "opentxs/otx/blind/Token.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto TokenLucre(const otx::blind::Token&, otx::blind::internal::Purse&) noexcept
     -> otx::blind::Token
@@ -35,4 +35,4 @@ auto TokenLucre(
 {
     return {};
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

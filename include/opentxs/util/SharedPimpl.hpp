@@ -13,7 +13,7 @@
 
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <class C>
 class OPENTXS_EXPORT SharedPimpl
@@ -61,4 +61,4 @@ private:
 
     SharedPimpl() = delete;
 };  // class SharedPimpl
-}  // namespace opentxs
+}  // namespace opentxs::v1

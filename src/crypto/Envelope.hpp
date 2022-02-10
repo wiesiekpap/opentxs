@@ -26,7 +26,9 @@
 #include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -45,10 +47,11 @@ class Ciphertext;
 
 class Armored;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto::implementation
+namespace opentxs::v1::crypto::implementation
 {
 class Envelope final : public crypto::Envelope
 {
@@ -165,4 +168,4 @@ private:
     auto operator=(const Envelope&) -> Envelope& = delete;
     auto operator=(Envelope&&) -> Envelope& = delete;
 };
-}  // namespace opentxs::crypto::implementation
+}  // namespace opentxs::v1::crypto::implementation

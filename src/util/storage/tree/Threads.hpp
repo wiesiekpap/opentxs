@@ -19,7 +19,9 @@
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace storage
 {
@@ -28,10 +30,11 @@ class Mailbox;
 class Nym;
 class Thread;
 }  // namespace storage
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 class Threads final : public Node
 {
@@ -110,4 +113,4 @@ private:
     auto operator=(const Threads&) -> Threads = delete;
     auto operator=(Threads&&) -> Threads = delete;
 };
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

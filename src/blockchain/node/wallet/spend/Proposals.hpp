@@ -52,7 +52,9 @@
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -70,10 +72,11 @@ struct WalletDatabase;
 }  // namespace internal
 }  // namespace node
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::node::wallet
+namespace opentxs::v1::blockchain::node::wallet
 {
 class Proposals
 {
@@ -97,4 +100,4 @@ private:
 
     std::unique_ptr<Imp> imp_;
 };
-}  // namespace opentxs::blockchain::node::wallet
+}  // namespace opentxs::v1::blockchain::node::wallet

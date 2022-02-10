@@ -25,7 +25,7 @@
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 auto Bip32::Imp::DeriveKey(
     const EcdsaCurve& curve,
@@ -270,4 +270,4 @@ auto Bip32::Imp::root_node(
         return false;
     }
 }
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto

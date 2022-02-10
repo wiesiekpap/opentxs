@@ -23,16 +23,19 @@ namespace dht
 class DhtRunner;
 }  // namespace dht
 
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
 class DhtConfig;
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::implementation
+namespace opentxs::v1::network::implementation
 {
 class OpenDHT final : virtual public network::OpenDHT
 {
@@ -67,4 +70,4 @@ private:
     auto operator=(const OpenDHT&) -> OpenDHT& = delete;
     auto operator=(OpenDHT&&) -> OpenDHT& = delete;
 };
-}  // namespace opentxs::network::implementation
+}  // namespace opentxs::v1::network::implementation

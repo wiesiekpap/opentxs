@@ -18,7 +18,7 @@
 
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <typename ViewType>
 class ViewWrapper
@@ -161,4 +161,4 @@ OPENTXS_EXPORT auto writer(UnallocatedCString& in) noexcept -> AllocateOutput;
 OPENTXS_EXPORT auto writer(UnallocatedCString* protobuf) noexcept
     -> AllocateOutput;
 OPENTXS_EXPORT auto writer(Space& in) noexcept -> AllocateOutput;
-}  // namespace opentxs
+}  // namespace opentxs::v1

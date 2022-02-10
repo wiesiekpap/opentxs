@@ -7,7 +7,7 @@
 
 #include "opentxs/api/Factory.hpp"
 
-namespace opentxs::api::internal
+namespace opentxs::v1::api::internal
 {
 class Factory : virtual public api::Factory
 {
@@ -18,4 +18,4 @@ public:
 
     ~Factory() override = default;
 };
-}  // namespace opentxs::api::internal
+}  // namespace opentxs::v1::api::internal

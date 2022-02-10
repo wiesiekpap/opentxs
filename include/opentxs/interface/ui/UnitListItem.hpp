@@ -12,7 +12,9 @@
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace ui
 {
@@ -20,10 +22,11 @@ class UnitListItem;
 }  // namespace ui
 
 using OTUIUnitListItem = SharedPimpl<ui::UnitListItem>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 class OPENTXS_EXPORT UnitListItem : virtual public ListRow
 {
@@ -42,4 +45,4 @@ private:
     auto operator=(const UnitListItem&) -> UnitListItem& = delete;
     auto operator=(UnitListItem&&) -> UnitListItem& = delete;
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

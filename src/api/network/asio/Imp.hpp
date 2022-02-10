@@ -64,7 +64,9 @@ class error_code;
 }  // namespace system
 }  // namespace boost
 
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -84,6 +86,7 @@ class Context;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -94,7 +97,7 @@ namespace ip = boost::asio::ip;
 namespace ssl = boost::asio::ssl;
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::api::network
+namespace opentxs::v1::api::network
 {
 struct Asio::Imp final : public api::network::internal::Asio,
                          public opentxs::internal::StateMachine {
@@ -208,4 +211,4 @@ private:
     Imp& operator=(const Imp&) = delete;
     Imp& operator=(Imp&&) = delete;
 };
-}  // namespace opentxs::api::network
+}  // namespace opentxs::v1::api::network

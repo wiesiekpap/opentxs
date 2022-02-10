@@ -22,7 +22,9 @@
 #include "opentxs/util/storage/Plugin.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -45,10 +47,11 @@ class Config;
 }  // namespace storage
 
 class Flag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::storage::implementation
+namespace opentxs::v1::storage::implementation
 {
 class Plugin : virtual public storage::Plugin
 {
@@ -119,9 +122,9 @@ private:
     auto operator=(const Plugin&) -> Plugin& = delete;
     auto operator=(Plugin&&) -> Plugin& = delete;
 };
-}  // namespace opentxs::storage::implementation
+}  // namespace opentxs::v1::storage::implementation
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 template <class T>
 auto Driver::LoadProto(
@@ -192,4 +195,4 @@ auto Driver::StoreProto(const T& data) const -> bool
 
     return StoreProto<T>(data, notUsed);
 }
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

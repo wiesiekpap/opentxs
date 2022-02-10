@@ -25,7 +25,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -54,10 +56,11 @@ class Data;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto::key::implementation
+namespace opentxs::v1::crypto::key::implementation
 {
 class EllipticCurve : virtual public key::EllipticCurve, public Asymmetric
 {
@@ -161,4 +164,4 @@ private:
     auto operator=(const EllipticCurve&) -> EllipticCurve& = delete;
     auto operator=(EllipticCurve&&) -> EllipticCurve& = delete;
 };
-}  // namespace opentxs::crypto::key::implementation
+}  // namespace opentxs::v1::crypto::key::implementation

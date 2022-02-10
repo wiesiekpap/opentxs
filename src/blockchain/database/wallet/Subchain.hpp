@@ -24,7 +24,9 @@
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -46,6 +48,7 @@ namespace lmdb
 class LMDB;
 }  // namespace lmdb
 }  // namespace storage
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -53,7 +56,7 @@ extern "C" {
 typedef struct MDB_txn MDB_txn;
 }
 
-namespace opentxs::blockchain::database::wallet
+namespace opentxs::v1::blockchain::database::wallet
 {
 class SubchainData
 {
@@ -104,4 +107,4 @@ private:
     auto operator=(const SubchainData&) -> SubchainData& = delete;
     auto operator=(SubchainData&&) -> SubchainData& = delete;
 };
-}  // namespace opentxs::blockchain::database::wallet
+}  // namespace opentxs::v1::blockchain::database::wallet

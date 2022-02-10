@@ -9,7 +9,7 @@
 
 #include <cstddef>
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto text_mpl_v2() noexcept -> std::string_view
 {
@@ -1415,4 +1415,4 @@ auto text_mpl_v2() noexcept -> std::string_view
 
     return {reinterpret_cast<const char*>(MPL_2_0), MPL_2_0_len};
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

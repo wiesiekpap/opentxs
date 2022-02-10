@@ -14,7 +14,9 @@
 #include "opentxs/crypto/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace crypto
 {
@@ -28,6 +30,7 @@ class Seed;
 
 class Identifier;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -47,7 +50,7 @@ struct OPENTXS_EXPORT less<opentxs::crypto::Seed> {
 };
 }  // namespace std
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 OPENTXS_EXPORT auto operator<(const Seed& lhs, const Seed& rhs) noexcept
     -> bool;
@@ -83,4 +86,4 @@ public:
 private:
     Imp* imp_;
 };
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto

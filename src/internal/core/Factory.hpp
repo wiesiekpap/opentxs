@@ -13,7 +13,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -36,10 +38,11 @@ class PaymentCode;
 class Amount;
 class PasswordPrompt;
 class PaymentCode;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Amount(std::string_view str, bool normalize = false) noexcept(false)
     -> opentxs::Amount;
@@ -59,4 +62,4 @@ auto PaymentCode(
     const std::uint8_t bitmessageVersion,
     const std::uint8_t bitmessageStream,
     const opentxs::PasswordPrompt& reason) noexcept -> opentxs::PaymentCode;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

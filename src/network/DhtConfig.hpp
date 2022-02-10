@@ -9,7 +9,7 @@
 
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs::network
+namespace opentxs::v1::network
 {
 class DhtConfig
 {
@@ -26,4 +26,4 @@ public:
     UnallocatedCString bootstrap_url_ = "bootstrap.ring.cx";
     UnallocatedCString bootstrap_port_ = "4222";
 };
-}  // namespace opentxs::network
+}  // namespace opentxs::v1::network

@@ -11,7 +11,7 @@
 
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs::server
+namespace opentxs::v1::server
 {
 // These are default values. There are configurable in ~/.ot/server.cfg
 // (static)
@@ -83,4 +83,4 @@ bool ServerSettings::__cmd_request_admin = true;
 // folder was found, before you start unlocking the server messages!
 //
 
-}  // namespace opentxs::server
+}  // namespace opentxs::v1::server

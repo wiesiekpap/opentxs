@@ -10,7 +10,9 @@
 #include "api/session/Factory.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -22,10 +24,11 @@ class Notary;
 }  // namespace api
 
 class OTCron;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::server
+namespace opentxs::v1::api::session::server
 {
 class Factory final : public session::imp::Factory
 {
@@ -45,4 +48,4 @@ private:
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
 };
-}  // namespace opentxs::api::session::server
+}  // namespace opentxs::v1::api::session::server

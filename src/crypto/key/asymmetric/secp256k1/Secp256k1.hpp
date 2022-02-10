@@ -23,7 +23,9 @@
 #include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -55,10 +57,11 @@ class Data;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto::key::implementation
+namespace opentxs::v1::crypto::key::implementation
 {
 class Secp256k1 final : virtual public key::Secp256k1, public HD
 {
@@ -144,4 +147,4 @@ private:
     auto operator=(const Secp256k1&) -> Secp256k1& = delete;
     auto operator=(Secp256k1&&) -> Secp256k1& = delete;
 };
-}  // namespace opentxs::crypto::key::implementation
+}  // namespace opentxs::v1::crypto::key::implementation

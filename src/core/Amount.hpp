@@ -24,7 +24,7 @@
 
 namespace be = boost::endian;
 
-namespace opentxs
+namespace opentxs::v1
 {
 class Amount::Imp final : virtual public internal::Amount
 {
@@ -302,4 +302,4 @@ public:
 private:
     amount::Integer amount_;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

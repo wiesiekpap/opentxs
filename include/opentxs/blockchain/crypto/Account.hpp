@@ -19,7 +19,9 @@
 #include "opentxs/util/Iterator.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -46,10 +48,11 @@ class Nym;
 class Identifier;
 class PasswordPrompt;
 class PaymentCode;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::crypto
+namespace opentxs::v1::blockchain::crypto
 {
 class OPENTXS_EXPORT Account
 {
@@ -159,4 +162,4 @@ private:
     auto operator=(const Account&) -> Account& = delete;
     auto operator=(Account&&) -> Account& = delete;
 };
-}  // namespace opentxs::blockchain::crypto
+}  // namespace opentxs::v1::blockchain::crypto

@@ -31,7 +31,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -72,10 +74,11 @@ class Server;
 }  // namespace otx
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::implementation
+namespace opentxs::v1::network::implementation
 {
 class ServerConnection final
     : virtual public opentxs::network::ServerConnection,
@@ -154,4 +157,4 @@ private:
     auto operator=(const ServerConnection&) -> ServerConnection& = delete;
     auto operator=(ServerConnection&&) -> ServerConnection& = delete;
 };
-}  // namespace opentxs::network::implementation
+}  // namespace opentxs::v1::network::implementation

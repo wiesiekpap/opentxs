@@ -14,7 +14,10 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -42,7 +45,9 @@ class Thread;
 }  // namespace internal
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class opentxs::network::p2p::Client
 {

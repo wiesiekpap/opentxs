@@ -9,7 +9,7 @@
 #include "serialization/protobuf/ChildCredentialParameters.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 
 auto CheckProto_1(const ChildCredentialParameters& input, const bool silent)
@@ -137,4 +137,4 @@ auto CheckProto_20(const ChildCredentialParameters& input, const bool silent)
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

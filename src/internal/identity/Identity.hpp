@@ -9,7 +9,9 @@
 #include "opentxs/identity/Nym.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identity
 {
@@ -18,10 +20,11 @@ namespace credential
 class Primary;
 }  // namespace credential
 }  // namespace identity
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::internal
+namespace opentxs::v1::identity::internal
 {
 struct Authority : virtual public identity::Authority {
     static auto NymToContactCredential(const VersionNumber nym) noexcept(false)
@@ -51,4 +54,4 @@ struct Nym : virtual public identity::Nym {
 
     ~Nym() override = default;
 };
-}  // namespace opentxs::identity::internal
+}  // namespace opentxs::v1::identity::internal

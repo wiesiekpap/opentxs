@@ -27,7 +27,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -41,12 +43,13 @@ namespace zeromq
 class Frame;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace ot = opentxs;
 
-namespace opentxs::blockchain::p2p::bitcoin::message::implementation
+namespace opentxs::v1::blockchain::p2p::bitcoin::message::implementation
 {
 class Message : virtual public bitcoin::Message
 {
@@ -89,4 +92,4 @@ private:
     auto operator=(const Message&) -> Message& = delete;
     auto operator=(Message&&) -> Message& = delete;
 };
-}  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation
+}  // namespace opentxs::v1::blockchain::p2p::bitcoin::message::implementation

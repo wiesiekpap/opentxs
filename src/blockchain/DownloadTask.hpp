@@ -20,7 +20,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 
-namespace opentxs::blockchain::download
+namespace opentxs::v1::blockchain::download
 {
 enum class State : std::uint8_t {
     New,
@@ -342,4 +342,4 @@ private:
     Batch(const Batch&) = delete;
     auto operator=(const Batch&) -> Batch& = delete;
 };
-}  // namespace opentxs::blockchain::download
+}  // namespace opentxs::v1::blockchain::download

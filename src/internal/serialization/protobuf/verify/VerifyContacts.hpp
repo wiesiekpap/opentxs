@@ -14,7 +14,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 enum class ClaimType : bool {
     Indexed = true,
@@ -69,4 +69,4 @@ auto NymRequiredVersion(
 auto RequiredAuthorityVersion(
     const std::uint32_t contactDataVersion,
     const std::uint32_t hint) -> std::uint32_t;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

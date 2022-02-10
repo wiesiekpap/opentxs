@@ -34,7 +34,7 @@
 namespace asio = boost::asio;
 using tcp = asio::ip::tcp;
 
-namespace opentxs::blockchain::p2p::peer
+namespace opentxs::v1::blockchain::p2p::peer
 {
 struct TCPConnectionManager : virtual public ConnectionManager {
     const api::Session& api_;
@@ -346,4 +346,4 @@ auto ConnectionManager::TCPIncoming(
         headerSize,
         std::move(socket));
 }
-}  // namespace opentxs::blockchain::p2p::peer
+}  // namespace opentxs::v1::blockchain::p2p::peer

@@ -12,7 +12,7 @@
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs::ui::identitymanager
+namespace opentxs::v1::ui::identitymanager
 {
 class NymType final : public QAbstractListModel
 {
@@ -104,4 +104,4 @@ private:
 
     const Data data_;
 };
-}  // namespace opentxs::ui::identitymanager
+}  // namespace opentxs::v1::ui::identitymanager

@@ -42,7 +42,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -121,12 +123,13 @@ class HDPath;
 class Contact;
 class PasswordPrompt;
 class PaymentCode;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::api::crypto::imp
+namespace opentxs::v1::api::crypto::imp
 {
 struct Blockchain::Imp {
     using IDLock = UnallocatedMap<OTIdentifier, std::mutex>;
@@ -342,4 +345,4 @@ private:
     {
     }
 };
-}  // namespace opentxs::api::crypto::imp
+}  // namespace opentxs::v1::api::crypto::imp

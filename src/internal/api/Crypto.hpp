@@ -14,7 +14,9 @@
 #include "opentxs/crypto/key/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -30,10 +32,11 @@ class Secp256k1;
 class Sodium;
 class SymmetricProvider;
 }  // namespace crypto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::internal
+namespace opentxs::v1::api::internal
 {
 class Crypto : virtual public api::Crypto
 {
@@ -65,4 +68,4 @@ public:
 
     ~Crypto() override = default;
 };
-}  // namespace opentxs::api::internal
+}  // namespace opentxs::v1::api::internal

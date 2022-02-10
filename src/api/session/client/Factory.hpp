@@ -69,7 +69,9 @@
 #include "serialization/protobuf/PeerEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -112,10 +114,11 @@ class Armored;
 class Data;
 class PasswordPrompt;
 class PeerObject;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::client
+namespace opentxs::v1::api::session::client
 {
 class Factory final : public session::imp::Factory
 {
@@ -199,4 +202,4 @@ private:
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
 };
-}  // namespace opentxs::api::session::client
+}  // namespace opentxs::v1::api::session::client

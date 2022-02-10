@@ -26,7 +26,7 @@
 
 #define ROOT_FILE_EXTENSION ".hash"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto StorageFSArchive(
     const api::Crypto& crypto,
@@ -42,9 +42,9 @@ auto StorageFSArchive(
     return std::make_unique<ReturnType>(
         crypto, asio, parent, config, bucket, folder, key);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::storage::driver::filesystem
+namespace opentxs::v1::storage::driver::filesystem
 {
 Archiving::Archiving(
     const api::Crypto& crypto,
@@ -169,4 +169,4 @@ auto Archiving::root_filename() const -> UnallocatedCString
 }
 
 Archiving::~Archiving() { Cleanup_Archiving(); }
-}  // namespace opentxs::storage::driver::filesystem
+}  // namespace opentxs::v1::storage::driver::filesystem

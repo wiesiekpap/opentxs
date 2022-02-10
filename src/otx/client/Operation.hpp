@@ -45,7 +45,9 @@
 #include "opentxs/util/PasswordPrompt.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -80,10 +82,11 @@ class Factory;
 class OTPayment;
 class OTTransaction;
 class PeerObject;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::client::implementation
+namespace opentxs::v1::otx::client::implementation
 {
 class Operation final : virtual public otx::client::internal::Operation,
                         public opentxs::internal::StateMachine
@@ -349,4 +352,4 @@ private:
     auto operator=(const Operation&) -> Operation& = delete;
     auto operator=(Operation&&) -> Operation& = delete;
 };
-}  // namespace opentxs::otx::client::implementation
+}  // namespace opentxs::v1::otx::client::implementation

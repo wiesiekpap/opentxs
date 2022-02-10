@@ -8,7 +8,7 @@
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 class Secp256k1 : virtual public EcdsaProvider
 {
@@ -26,4 +26,4 @@ private:
     auto operator=(const Secp256k1&) -> Secp256k1& = delete;
     auto operator=(Secp256k1&&) -> Secp256k1& = delete;
 };
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto

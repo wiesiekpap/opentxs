@@ -15,7 +15,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -28,10 +30,11 @@ class ServerConnection;
 }  // namespace network
 
 class Flag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::network
+namespace opentxs::v1::api::network
 {
 class OPENTXS_EXPORT ZMQ
 {
@@ -66,4 +69,4 @@ private:
     auto operator=(const ZMQ&) -> ZMQ& = delete;
     auto operator=(const ZMQ&&) -> ZMQ& = delete;
 };
-}  // namespace opentxs::api::network
+}  // namespace opentxs::v1::api::network

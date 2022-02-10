@@ -22,7 +22,9 @@
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -58,10 +60,11 @@ class StorageThreadItem;
 
 class Flag;
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 using ActivitySummaryList = List<
     ActivitySummaryExternalInterface,
@@ -110,4 +113,4 @@ private:
     auto operator=(const ActivitySummary&) -> ActivitySummary& = delete;
     auto operator=(ActivitySummary&&) -> ActivitySummary& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

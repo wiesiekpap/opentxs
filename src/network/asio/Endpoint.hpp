@@ -14,7 +14,7 @@
 namespace asio = boost::asio;
 namespace ip = asio::ip;
 
-namespace opentxs::network::asio
+namespace opentxs::v1::network::asio
 {
 struct Endpoint::Imp {
     using tcp = ip::tcp;
@@ -34,4 +34,4 @@ private:
     Imp& operator=(const Imp&) = delete;
     Imp& operator=(Imp&&) = delete;
 };
-}  // namespace opentxs::network::asio
+}  // namespace opentxs::v1::network::asio

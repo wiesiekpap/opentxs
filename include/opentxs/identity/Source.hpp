@@ -12,7 +12,9 @@
 #include "opentxs/identity/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identity
 {
@@ -27,10 +29,11 @@ namespace proto
 class Credential;
 class NymIDSource;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity
+namespace opentxs::v1::identity
 {
 class OPENTXS_EXPORT Source
 {
@@ -60,4 +63,4 @@ private:
     auto operator=(const Source&) -> Source&;
     auto operator=(Source&&) -> Source&;
 };
-}  // namespace opentxs::identity
+}  // namespace opentxs::v1::identity

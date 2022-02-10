@@ -10,7 +10,7 @@
 
 #include <cstdint>
 
-namespace opentxs::contract
+namespace opentxs::v1::contract
 {
 enum class UnitType : std::uint32_t {
     Error = 0,
@@ -18,4 +18,4 @@ enum class UnitType : std::uint32_t {
     Security = 2,
     Basket = 3,
 };
-}  // namespace opentxs::contract
+}  // namespace opentxs::v1::contract

@@ -25,7 +25,9 @@
 #include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -51,10 +53,11 @@ class HDPath;
 
 class Data;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto::key::implementation
+namespace opentxs::v1::crypto::key::implementation
 {
 class HD : virtual public key::HD, public EllipticCurve
 {
@@ -145,4 +148,4 @@ private:
     auto operator=(const HD&) -> HD& = delete;
     auto operator=(HD&&) -> HD& = delete;
 };
-}  // namespace opentxs::crypto::key::implementation
+}  // namespace opentxs::v1::crypto::key::implementation

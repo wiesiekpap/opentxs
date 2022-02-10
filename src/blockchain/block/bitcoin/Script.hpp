@@ -22,7 +22,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -35,10 +37,11 @@ class Session;
 }  // namespace api
 
 class PaymentCode;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::block::bitcoin::implementation
+namespace opentxs::v1::blockchain::block::bitcoin::implementation
 {
 class Script final : public internal::Script
 {
@@ -160,4 +163,4 @@ private:
     auto operator=(const Script&) -> Script& = delete;
     auto operator=(Script&&) -> Script& = delete;
 };
-}  // namespace opentxs::blockchain::block::bitcoin::implementation
+}  // namespace opentxs::v1::blockchain::block::bitcoin::implementation

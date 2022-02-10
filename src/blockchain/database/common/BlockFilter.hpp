@@ -19,7 +19,9 @@
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -46,10 +48,11 @@ namespace lmdb
 class LMDB;
 }  // namespace lmdb
 }  // namespace storage
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::database::common
+namespace opentxs::v1::blockchain::database::common
 {
 class BlockFilter
 {
@@ -106,4 +109,4 @@ private:
         const filter::Type type,
         const GCS& filter) const noexcept -> bool;
 };
-}  // namespace opentxs::blockchain::database::common
+}  // namespace opentxs::v1::blockchain::database::common

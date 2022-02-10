@@ -39,7 +39,9 @@
 #include "otx/client/PaymentTasks.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -61,6 +63,7 @@ class Server;
 class Flag;
 class OTPassword;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -176,7 +179,7 @@ struct less<PEERREQUESTTASK> {
 };
 }  // namespace std
 
-namespace opentxs::otx::client::implementation
+namespace opentxs::v1::otx::client::implementation
 {
 class StateMachine final : public opentxs::internal::StateMachine,
                            public otx::client::internal::StateMachine
@@ -443,4 +446,4 @@ private:
 
     StateMachine() = delete;
 };
-}  // namespace opentxs::otx::client::implementation
+}  // namespace opentxs::v1::otx::client::implementation

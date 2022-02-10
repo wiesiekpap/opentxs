@@ -31,7 +31,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -60,10 +62,11 @@ namespace identifier
 {
 class Nym;
 }  // namespace identifier
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::crypto::blockchain
+namespace opentxs::v1::api::crypto::blockchain
 {
 class Wallets
 {
@@ -101,4 +104,4 @@ private:
     auto populate() const noexcept -> void;
     auto populate(const Lock& lock) const noexcept -> void;
 };
-}  // namespace opentxs::api::crypto::blockchain
+}  // namespace opentxs::v1::api::crypto::blockchain

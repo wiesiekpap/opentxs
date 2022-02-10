@@ -293,7 +293,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto Factory::Operation(
     const api::session::Client& api,
@@ -303,9 +303,9 @@ auto Factory::Operation(
 {
     return new otx::client::implementation::Operation(api, nym, server, reason);
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::otx::client::implementation
+namespace opentxs::v1::otx::client::implementation
 {
 const UnallocatedMap<otx::OperationType, Operation::Category>
     Operation::category_{
@@ -2826,4 +2826,4 @@ Operation::~Operation()
 
     if (needPromise) { set_result({otx::LastReplyStatus::Unknown, nullptr}); }
 }
-}  // namespace opentxs::otx::client::implementation
+}  // namespace opentxs::v1::otx::client::implementation

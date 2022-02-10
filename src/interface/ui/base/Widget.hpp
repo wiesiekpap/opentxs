@@ -24,7 +24,9 @@
 #include "opentxs/util/Log.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -47,10 +49,11 @@ class Publish;
 }  // namespace socket
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 template <typename T>
 auto extract_custom_ptr(
@@ -175,5 +178,5 @@ private:
     Widget(Widget&&) = delete;
     auto operator=(const Widget&) -> Widget& = delete;
     auto operator=(Widget&&) -> Widget& = delete;
-};  // namespace opentxs::ui::implementation
-}  // namespace opentxs::ui::implementation
+};  // namespace opentxs::v1::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

@@ -35,7 +35,9 @@
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -76,10 +78,11 @@ class Data;
 class Contact;
 class Data;
 class Options;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::database::common
+namespace opentxs::v1::blockchain::database::common
 {
 class Database final
 {
@@ -205,4 +208,4 @@ private:
     auto operator=(const Database&) -> Database& = delete;
     auto operator=(Database&&) -> Database& = delete;
 };
-}  // namespace opentxs::blockchain::database::common
+}  // namespace opentxs::v1::blockchain::database::common

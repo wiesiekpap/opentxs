@@ -22,7 +22,7 @@
 #include "serialization/protobuf/VerificationGroup.pb.h"
 #include "serialization/protobuf/VerificationSet.pb.h"
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto Factory::VerificationSet(
     const api::Session& api,
@@ -64,14 +64,14 @@ auto Factory::VerificationSet(
         return nullptr;
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::identity::wot::verification
+namespace opentxs::v1::identity::wot::verification
 {
 const VersionNumber Set::DefaultVersion{1};
 }
 
-namespace opentxs::identity::wot::verification::implementation
+namespace opentxs::v1::identity::wot::verification::implementation
 {
 Set::Set(
     const api::Session& api,
@@ -225,4 +225,4 @@ auto Set::UpgradeGroupVersion(const VersionNumber groupVersion) noexcept -> bool
         return false;
     }
 }
-}  // namespace opentxs::identity::wot::verification::implementation
+}  // namespace opentxs::v1::identity::wot::verification::implementation

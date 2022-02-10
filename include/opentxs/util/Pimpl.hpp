@@ -10,7 +10,7 @@
 #include <cassert>
 #include <memory>
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <class C>
 class OPENTXS_EXPORT Pimpl
@@ -124,4 +124,4 @@ private:
     Pimpl() = delete;
 #endif
 };  // class Pimpl
-}  // namespace opentxs
+}  // namespace opentxs::v1

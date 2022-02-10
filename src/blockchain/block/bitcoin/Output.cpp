@@ -49,7 +49,7 @@
 #include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
 #include "serialization/protobuf/BlockchainWalletKey.pb.h"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto BitcoinTransactionOutput(
     const api::Session& api,
@@ -212,9 +212,9 @@ auto BitcoinTransactionOutput(
         return {};
     }
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::blockchain::block::bitcoin::implementation
+namespace opentxs::v1::blockchain::block::bitcoin::implementation
 {
 const VersionNumber Output::default_version_{1};
 const VersionNumber Output::key_version_{1};
@@ -578,4 +578,4 @@ auto Output::Serialize(SerializeType& out) const noexcept -> bool
 
     return true;
 }
-}  // namespace opentxs::blockchain::block::bitcoin::implementation
+}  // namespace opentxs::v1::blockchain::block::bitcoin::implementation

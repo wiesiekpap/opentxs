@@ -8,7 +8,9 @@
 #include "opentxs/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -40,10 +42,11 @@ class Issuer;
 }  // namespace proto
 
 class Flag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Issuer(
     const api::session::Wallet& wallet,
@@ -58,4 +61,4 @@ auto PairAPI(const Flag& running, const api::session::Client& client)
 auto ServerAction(
     const api::session::Client& api,
     const ContextLockCallback& lockCallback) -> otx::client::ServerAction*;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

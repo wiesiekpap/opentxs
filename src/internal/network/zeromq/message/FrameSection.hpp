@@ -6,7 +6,9 @@
 #pragma once
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -17,14 +19,15 @@ class FrameIterator;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::internal
+namespace opentxs::v1::network::zeromq::internal
 {
 class FrameSection
 {
 public:
     virtual ~FrameSection() = default;
 };
-}  // namespace opentxs::network::zeromq::internal
+}  // namespace opentxs::v1::network::zeromq::internal

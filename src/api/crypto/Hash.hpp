@@ -17,7 +17,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -47,10 +49,11 @@ class Frame;
 class Data;
 class OTPassword;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::crypto::imp
+namespace opentxs::v1::api::crypto::imp
 {
 class Hash final : public internal::Hash
 {
@@ -156,4 +159,4 @@ private:
     auto operator=(const Hash&) -> Hash& = delete;
     auto operator=(Hash&&) -> Hash& = delete;
 };
-}  // namespace opentxs::api::crypto::imp
+}  // namespace opentxs::v1::api::crypto::imp

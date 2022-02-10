@@ -16,7 +16,7 @@
 
 class QObject;
 
-namespace opentxs
+namespace opentxs::v1
 {
 struct Options::Imp final {
     UnallocatedSet<blockchain::Type> blockchain_disabled_chains_;
@@ -79,4 +79,4 @@ private:
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

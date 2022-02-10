@@ -12,7 +12,7 @@
 
 #include "opentxs/Types.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <class C>
 class Shared
@@ -91,4 +91,4 @@ private:
     std::unique_ptr<sLock> lock_{nullptr};
 
 };  // class Shared
-}  // namespace opentxs
+}  // namespace opentxs::v1

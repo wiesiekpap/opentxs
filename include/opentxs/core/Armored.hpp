@@ -15,16 +15,19 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Armored;
 class Data;
 
 using OTArmored = Pimpl<Armored>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 extern const char* OT_BEGIN_ARMORED;
 extern const char* OT_END_ARMORED;
@@ -136,4 +139,4 @@ private:
     auto operator=(const Armored&) -> Armored& = delete;
     auto operator=(Armored&&) -> Armored& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

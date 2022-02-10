@@ -10,15 +10,18 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class PasswordCallback;
 class PasswordPrompt;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 class OPENTXS_EXPORT PasswordCaller
 {
@@ -47,4 +50,4 @@ private:
     auto operator=(const PasswordCaller&) -> PasswordCaller& = delete;
     auto operator=(PasswordCaller&&) -> PasswordCaller& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

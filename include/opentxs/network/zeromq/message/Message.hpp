@@ -14,7 +14,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -31,6 +33,7 @@ class FrameSection;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -40,7 +43,7 @@ template <>
 struct hash<opentxs::network::zeromq::Message>;
 }  // namespace std
 
-namespace opentxs::network::zeromq
+namespace opentxs::v1::network::zeromq
 {
 OPENTXS_EXPORT auto operator<(const Message& lhs, const Message& rhs) noexcept
     -> bool;
@@ -136,4 +139,4 @@ protected:
 
     Imp* imp_;
 };
-}  // namespace opentxs::network::zeromq
+}  // namespace opentxs::v1::network::zeromq

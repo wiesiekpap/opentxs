@@ -21,7 +21,9 @@
 #include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -56,10 +58,11 @@ class SymmetricKey;
 class Data;
 class PasswordPrompt;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Ed25519Key(
     const api::Session& api,
@@ -192,4 +195,4 @@ auto SymmetricKey(
     const opentxs::Secret& raw,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

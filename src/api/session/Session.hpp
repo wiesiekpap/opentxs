@@ -41,10 +41,12 @@
 #include "serialization/protobuf/Ciphertext.pb.h"
 #include "util/storage/Config.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 class QObject;
 
-// NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -89,10 +91,11 @@ class Flag;
 class OTPassword;
 class Options;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::imp
+namespace opentxs::v1::api::session::imp
 {
 class Session : virtual public internal::Session,
                 public ZMQ,
@@ -206,4 +209,4 @@ private:
     auto operator=(const Session&) -> Session& = delete;
     auto operator=(Session&&) -> Session& = delete;
 };
-}  // namespace opentxs::api::session::imp
+}  // namespace opentxs::v1::api::session::imp

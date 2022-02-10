@@ -18,7 +18,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -34,10 +36,11 @@ class ListenCallback;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::socket::implementation
+namespace opentxs::v1::network::zeromq::socket::implementation
 {
 class Dealer final : public Bidirectional<zeromq::socket::Dealer>,
                      public zeromq::curve::implementation::Client
@@ -70,4 +73,4 @@ private:
     auto operator=(const Dealer&) -> Dealer& = delete;
     auto operator=(Dealer&&) -> Dealer& = delete;
 };
-}  // namespace opentxs::network::zeromq::socket::implementation
+}  // namespace opentxs::v1::network::zeromq::socket::implementation

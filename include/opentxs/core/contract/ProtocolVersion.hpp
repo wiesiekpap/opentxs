@@ -10,11 +10,11 @@
 
 #include <cstdint>
 
-namespace opentxs::contract
+namespace opentxs::v1::contract
 {
 enum class ProtocolVersion : std::uint32_t {
     Error = 0,
     Legacy = 1,
     Notify = 2,
 };
-}  // namespace opentxs::contract
+}  // namespace opentxs::v1::contract

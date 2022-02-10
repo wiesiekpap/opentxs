@@ -12,7 +12,9 @@
 #include "opentxs/util/Iterator.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
@@ -20,10 +22,11 @@ class VerificationIdentity;
 }  // namespace proto
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::wot::verification
+namespace opentxs::v1::identity::wot::verification
 {
 class OPENTXS_EXPORT Nym
 {
@@ -70,4 +73,4 @@ private:
     auto operator=(const Nym&) -> Nym& = delete;
     auto operator=(Nym&&) -> Nym& = delete;
 };
-}  // namespace opentxs::identity::wot::verification
+}  // namespace opentxs::v1::identity::wot::verification

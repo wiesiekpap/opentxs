@@ -13,7 +13,9 @@
 #include "opentxs/util/Allocator.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -25,10 +27,11 @@ class Raw;
 }  // namespace socket
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::internal
+namespace opentxs::v1::network::zeromq::internal
 {
 class Thread
 {
@@ -41,4 +44,4 @@ public:
 
     virtual ~Thread() = default;
 };
-}  // namespace opentxs::network::zeromq::internal
+}  // namespace opentxs::v1::network::zeromq::internal

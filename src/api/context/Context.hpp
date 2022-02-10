@@ -41,7 +41,9 @@
 class QObject;
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -83,6 +85,7 @@ class Flag;
 class PasswordCallback;
 class PasswordCaller;
 class Signals;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -90,7 +93,7 @@ extern "C" {
 struct rlimit;
 }
 
-namespace opentxs::api::imp
+namespace opentxs::v1::api::imp
 {
 class Context final : public internal::Context, Lockable, Periodic
 {
@@ -207,4 +210,4 @@ private:
     auto operator=(const Context&) -> Context& = delete;
     auto operator=(Context&&) -> Context& = delete;
 };
-}  // namespace opentxs::api::imp
+}  // namespace opentxs::v1::api::imp

@@ -12,7 +12,9 @@
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace ui
 {
@@ -20,10 +22,11 @@ class PayableListItem;
 }  // namespace ui
 
 using OTUIPayableListItem = SharedPimpl<ui::PayableListItem>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 class OPENTXS_EXPORT PayableListItem : virtual public ContactListItem
 {
@@ -41,4 +44,4 @@ private:
     auto operator=(const PayableListItem&) -> PayableListItem& = delete;
     auto operator=(PayableListItem&&) -> PayableListItem& = delete;
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

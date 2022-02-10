@@ -20,7 +20,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -37,10 +39,11 @@ class Header;
 }  // namespace bitcoin
 }  // namespace p2p
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::p2p::bitcoin::message::implementation
+namespace opentxs::v1::blockchain::p2p::bitcoin::message::implementation
 {
 class Headers final : virtual public internal::Headers,
                       public implementation::Message
@@ -83,4 +86,4 @@ private:
     auto operator=(const Headers&) -> Headers& = delete;
     auto operator=(Headers&&) -> Headers& = delete;
 };
-}  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation
+}  // namespace opentxs::v1::blockchain::p2p::bitcoin::message::implementation

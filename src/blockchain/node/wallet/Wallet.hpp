@@ -63,7 +63,9 @@
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -102,10 +104,11 @@ class BlockchainTransactionProposal;
 }  // namespace proto
 
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::node::implementation
+namespace opentxs::v1::blockchain::node::implementation
 {
 class Wallet final : virtual public node::internal::Wallet,
                      Worker<Wallet, api::Session>
@@ -190,4 +193,4 @@ private:
     auto operator=(const Wallet&) -> Wallet& = delete;
     auto operator=(Wallet&&) -> Wallet& = delete;
 };
-}  // namespace opentxs::blockchain::node::implementation
+}  // namespace opentxs::v1::blockchain::node::implementation

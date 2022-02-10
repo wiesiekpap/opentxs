@@ -93,7 +93,7 @@
 #define ACCOUNT_VERSION 1
 #define INDEX_VERSION 1
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 Accounts::Accounts(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
@@ -463,4 +463,4 @@ auto Accounts::Store(
 
     return store_raw(lock, data, id, alias);
 }
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

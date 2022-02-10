@@ -10,7 +10,7 @@
 
 #include <cstdint>
 
-namespace opentxs::otx
+namespace opentxs::v1::otx
 {
 enum class LastReplyStatus : std::uint8_t {
     Invalid = 0,
@@ -20,4 +20,4 @@ enum class LastReplyStatus : std::uint8_t {
     Unknown = 4,
     NotSent = 5,
 };
-}  // namespace opentxs::otx
+}  // namespace opentxs::v1::otx

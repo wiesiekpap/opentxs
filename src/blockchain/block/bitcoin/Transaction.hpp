@@ -32,7 +32,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -69,10 +71,11 @@ namespace proto
 {
 class BlockchainTransactionOutput;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::block::bitcoin::implementation
+namespace opentxs::v1::blockchain::block::bitcoin::implementation
 {
 class Transaction final : public internal::Transaction
 {
@@ -286,4 +289,4 @@ private:
     auto operator=(const Transaction&) -> Transaction& = delete;
     auto operator=(Transaction&&) -> Transaction& = delete;
 };
-}  // namespace opentxs::blockchain::block::bitcoin::implementation
+}  // namespace opentxs::v1::blockchain::block::bitcoin::implementation

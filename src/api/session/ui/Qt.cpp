@@ -10,7 +10,7 @@
 #include "api/session/ui/Imp-qt.hpp"
 #include "api/session/ui/UI.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto UI(
     const api::session::Client& api,
@@ -22,4 +22,4 @@ auto UI(
     return std::make_unique<ReturnType>(
         std::make_unique<api::session::ui::ImpQt>(api, blockchain, running));
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

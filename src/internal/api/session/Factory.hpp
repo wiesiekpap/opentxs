@@ -11,7 +11,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -62,10 +64,11 @@ class Config;
 
 class Flag;
 class Options;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto ActivityAPI(
     const api::Session& api,
@@ -130,4 +133,4 @@ auto Workflow(
     const api::session::Activity& activity,
     const api::session::Contacts& contact) noexcept
     -> std::unique_ptr<api::session::Workflow>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

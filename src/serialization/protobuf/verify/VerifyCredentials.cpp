@@ -5,7 +5,7 @@
 
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"  // IWYU pragma: associated
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto AsymmetricKeyAllowedCiphertext() noexcept -> const VersionMap&
 {
@@ -250,4 +250,4 @@ auto TaggedKeyAllowedSymmetricKey() noexcept -> const VersionMap&
 
     return output;
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

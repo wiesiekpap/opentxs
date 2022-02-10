@@ -10,7 +10,9 @@
 #include "opentxs/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -21,10 +23,11 @@ class Client;
 }  // namespace api
 
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::ui
+namespace opentxs::v1::api::session::ui
 {
 struct UpdateManager {
     auto ActivateUICallback(const Identifier& widget) const noexcept -> void;
@@ -41,4 +44,4 @@ private:
 
     std::unique_ptr<Imp> imp_;
 };
-}  // namespace opentxs::api::session::ui
+}  // namespace opentxs::v1::api::session::ui

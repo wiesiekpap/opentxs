@@ -25,7 +25,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -54,10 +56,11 @@ class Server;
 
 class NumList;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 // An Agreement occurs between TWO PEOPLE, and is for a CONSIDERATION.
 // Thus, we add the RECIPIENT (already have SENDER from OTTrackable.)
@@ -483,4 +486,4 @@ protected:
 
     OTAgreement() = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

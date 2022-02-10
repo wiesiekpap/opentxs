@@ -147,7 +147,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto OTX(
     const Flag& running,
@@ -159,9 +159,9 @@ auto OTX(
 
     return std::make_unique<ReturnType>(running, client, lockCallback);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::api::session::imp
+namespace opentxs::v1::api::session::imp
 {
 OTX::OTX(
     const Flag& running,
@@ -2480,4 +2480,4 @@ OTX::~OTX()
         }
     }
 }
-}  // namespace opentxs::api::session::imp
+}  // namespace opentxs::v1::api::session::imp

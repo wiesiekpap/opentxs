@@ -28,7 +28,9 @@
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -56,10 +58,11 @@ class Data;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto::implementation
+namespace opentxs::v1::crypto::implementation
 {
 class Sodium final : virtual public crypto::Sodium,
                      public AsymmetricProvider,
@@ -179,4 +182,4 @@ private:
     auto operator=(const Sodium&) -> Sodium& = delete;
     auto operator=(Sodium&&) -> Sodium& = delete;
 };
-}  // namespace opentxs::crypto::implementation
+}  // namespace opentxs::v1::crypto::implementation

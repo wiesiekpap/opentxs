@@ -12,7 +12,10 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -26,9 +29,11 @@ namespace zeromq
 class Context;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::p2p
+namespace opentxs::v1::network::p2p
 {
 class Server
 {
@@ -60,4 +65,4 @@ private:
     auto operator=(const Server&) -> Server& = delete;
     auto operator=(Server&&) -> Server& = delete;
 };
-}  // namespace opentxs::network::p2p
+}  // namespace opentxs::v1::network::p2p

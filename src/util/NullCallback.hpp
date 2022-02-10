@@ -9,20 +9,23 @@
 #include "opentxs/util/PasswordCallback.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Factory;
 class OTPassword;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto DefaultPassword() noexcept -> const char*;
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::implementation
+namespace opentxs::v1::implementation
 {
 class NullCallback final : virtual public PasswordCallback
 {
@@ -48,4 +51,4 @@ private:
     auto operator=(const NullCallback&) -> NullCallback& = delete;
     auto operator=(NullCallback&&) -> NullCallback& = delete;
 };
-}  // namespace opentxs::implementation
+}  // namespace opentxs::v1::implementation

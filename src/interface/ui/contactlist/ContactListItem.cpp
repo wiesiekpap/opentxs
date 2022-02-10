@@ -16,7 +16,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto ContactListItem(
     const ui::implementation::ContactListInternalInterface& parent,
@@ -29,9 +29,9 @@ auto ContactListItem(
 
     return std::make_shared<ReturnType>(parent, api, rowID, key);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 ContactListItem::ContactListItem(
     const ContactListInternalInterface& parent,
@@ -122,4 +122,4 @@ auto ContactListItem::translate_section(const Lock&) const noexcept
 
     return output;
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

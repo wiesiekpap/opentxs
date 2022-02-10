@@ -36,7 +36,7 @@ extern "C" {
 #include "serialization/protobuf/Ciphertext.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Sodium(const api::Crypto& crypto) noexcept
     -> std::unique_ptr<crypto::Sodium>
@@ -45,9 +45,9 @@ auto Sodium(const api::Crypto& crypto) noexcept
 
     return std::make_unique<ReturnType>(crypto);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::crypto::implementation
+namespace opentxs::v1::crypto::implementation
 {
 Sodium::Sodium(const api::Crypto& crypto) noexcept
     : AsymmetricProvider()
@@ -621,4 +621,4 @@ auto Sodium::TagSize(
     }
     return 0;
 }
-}  // namespace opentxs::crypto::implementation
+}  // namespace opentxs::v1::crypto::implementation

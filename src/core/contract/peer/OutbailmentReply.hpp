@@ -13,7 +13,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -29,10 +31,11 @@ class Nym;
 class Factory;
 class Identifier;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::contract::peer::reply::implementation
+namespace opentxs::v1::contract::peer::reply::implementation
 {
 class Outbailment final : public reply::Outbailment,
                           public peer::implementation::Reply
@@ -74,4 +77,4 @@ private:
     auto operator=(const Outbailment&) -> Outbailment& = delete;
     auto operator=(Outbailment&&) -> Outbailment& = delete;
 };
-}  // namespace opentxs::contract::peer::reply::implementation
+}  // namespace opentxs::v1::contract::peer::reply::implementation

@@ -17,16 +17,19 @@
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class BlockchainP2PSync;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::p2p
+namespace opentxs::v1::network::p2p
 {
 class OPENTXS_EXPORT Block
 {
@@ -65,4 +68,4 @@ private:
     auto operator=(const Block&) -> Block& = delete;
     auto operator=(Block&&) -> Block& = delete;
 };
-}  // namespace opentxs::network::p2p
+}  // namespace opentxs::v1::network::p2p

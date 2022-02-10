@@ -26,7 +26,9 @@
 #define DEFAULT_PROCESS_INBOX_ITEMS 5
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -53,10 +55,11 @@ class UnitDefinition;
 
 class Amount;
 class OTPayment;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session
+namespace opentxs::v1::api::session
 {
 class OPENTXS_EXPORT OTX
 {
@@ -308,4 +311,4 @@ private:
     auto operator=(const OTX&) -> OTX& = delete;
     auto operator=(OTX&&) -> OTX& = delete;
 };
-}  // namespace opentxs::api::session
+}  // namespace opentxs::v1::api::session

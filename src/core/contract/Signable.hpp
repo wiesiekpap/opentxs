@@ -14,7 +14,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -27,10 +29,11 @@ class Signature;
 }  // namespace proto
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::contract::implementation
+namespace opentxs::v1::contract::implementation
 {
 class Signable : virtual public opentxs::contract::Signable
 {
@@ -104,4 +107,4 @@ protected:
     auto operator=(const Signable&) -> Signable& = delete;
     auto operator=(Signable&&) -> Signable& = delete;
 };
-}  // namespace opentxs::contract::implementation
+}  // namespace opentxs::v1::contract::implementation

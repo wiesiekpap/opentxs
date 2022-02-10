@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto ContextAllowedServer() noexcept -> const VersionMap&
 {
@@ -64,4 +64,4 @@ auto ServerContextAllowedStatus() noexcept
 
     return output;
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

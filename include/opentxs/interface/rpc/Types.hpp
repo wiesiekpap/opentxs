@@ -11,7 +11,7 @@
 
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 namespace rpc
 {
@@ -68,4 +68,4 @@ constexpr auto value(rpc::ResponseCode type) noexcept
 {
     return static_cast<rpc::TypeEnum>(type);
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

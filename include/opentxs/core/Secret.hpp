@@ -13,15 +13,18 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Secret;
 
 using OTSecret = Pimpl<Secret>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 OPENTXS_EXPORT auto operator==(const OTSecret& lhs, const Secret& rhs) noexcept
     -> bool;
@@ -118,7 +121,7 @@ private:
     auto operator=(const Secret& rhs) -> Secret& = delete;
     auto operator=(Secret&& rhs) -> Secret& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
 namespace std
 {

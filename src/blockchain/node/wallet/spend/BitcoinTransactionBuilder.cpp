@@ -75,7 +75,7 @@
 
 namespace be = boost::endian;
 
-namespace opentxs::blockchain::node::wallet
+namespace opentxs::v1::blockchain::node::wallet
 {
 struct BitcoinTransactionBuilder::Imp {
     auto IsFunded() const noexcept -> bool
@@ -1330,4 +1330,4 @@ auto BitcoinTransactionBuilder::Spender() const noexcept
 }
 
 BitcoinTransactionBuilder::~BitcoinTransactionBuilder() = default;
-}  // namespace opentxs::blockchain::node::wallet
+}  // namespace opentxs::v1::blockchain::node::wallet

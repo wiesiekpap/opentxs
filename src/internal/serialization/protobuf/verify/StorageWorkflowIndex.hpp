@@ -8,16 +8,19 @@
 #include "opentxs/Version.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class StorageWorkflowIndex;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_1(const StorageWorkflowIndex& input, const bool silent) -> bool;
 auto CheckProto_2(const StorageWorkflowIndex& input, const bool silent) -> bool;
@@ -50,4 +53,4 @@ auto CheckProto_19(const StorageWorkflowIndex& input, const bool silent)
     -> bool;
 auto CheckProto_20(const StorageWorkflowIndex& input, const bool silent)
     -> bool;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

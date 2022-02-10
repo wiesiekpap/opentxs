@@ -21,7 +21,7 @@
 #include "serialization/protobuf/HDPath.pb.h"
 #include "util/HDIndex.hpp"
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 auto Print(const proto::HDPath& node) noexcept -> UnallocatedCString
 {
@@ -52,17 +52,17 @@ auto Print(const proto::HDPath& node, bool showSeedID) noexcept
 
     return output.str();
 }
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Bip32(const api::Crypto& crypto) noexcept -> crypto::Bip32
 {
     return {std::make_unique<crypto::Bip32::Imp>(crypto)};
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 Bip32::Bip32(std::unique_ptr<Imp> imp) noexcept
     : imp_(std::move(imp))
@@ -156,4 +156,4 @@ auto Bip32::SerializePublic(
 }
 
 Bip32::~Bip32() = default;
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto

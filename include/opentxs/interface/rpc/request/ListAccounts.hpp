@@ -13,16 +13,19 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class RPCCommand;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::rpc::request
+namespace opentxs::v1::rpc::request
 {
 class OPENTXS_EXPORT ListAccounts final : public Base
 {
@@ -51,4 +54,4 @@ private:
     auto operator=(const ListAccounts&) -> ListAccounts& = delete;
     auto operator=(ListAccounts&&) -> ListAccounts& = delete;
 };
-}  // namespace opentxs::rpc::request
+}  // namespace opentxs::v1::rpc::request

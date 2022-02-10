@@ -13,7 +13,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -29,10 +31,11 @@ class PairEvent;
 }  // namespace proto
 
 using OTZMQPairEventCallback = Pimpl<network::zeromq::PairEventCallback>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq
+namespace opentxs::v1::network::zeromq
 {
 class OPENTXS_EXPORT PairEventCallback : virtual public ListenCallback
 {
@@ -58,4 +61,4 @@ private:
     auto operator=(const PairEventCallback&) -> PairEventCallback& = delete;
     auto operator=(PairEventCallback&&) -> PairEventCallback& = delete;
 };
-}  // namespace opentxs::network::zeromq
+}  // namespace opentxs::v1::network::zeromq

@@ -10,7 +10,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -22,10 +24,11 @@ class Dht;
 }  // namespace internal
 }  // namespace network
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::network
+namespace opentxs::v1::api::network
 {
 class OPENTXS_EXPORT Dht
 {
@@ -55,4 +58,4 @@ private:
     auto operator=(const Dht&) -> Dht& = delete;
     auto operator=(Dht&&) -> Dht& = delete;
 };
-}  // namespace opentxs::api::network
+}  // namespace opentxs::v1::api::network

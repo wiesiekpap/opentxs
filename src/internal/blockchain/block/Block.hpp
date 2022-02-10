@@ -22,7 +22,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -37,10 +39,11 @@ class Header;
 class Outpoint;
 }  // namespace block
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::block
+namespace opentxs::v1::blockchain::block
 {
 using Subchain = blockchain::crypto::Subchain;
 using SubchainID = std::pair<Subchain, OTIdentifier>;
@@ -62,9 +65,9 @@ struct ParsedPatterns {
 
     ParsedPatterns(const Patterns& in) noexcept;
 };
-}  // namespace opentxs::blockchain::block
+}  // namespace opentxs::v1::blockchain::block
 
-namespace opentxs::blockchain::block::internal
+namespace opentxs::v1::blockchain::block::internal
 {
 struct Block : virtual public block::Block {
     virtual auto CalculateSize() const noexcept -> std::size_t = 0;
@@ -83,12 +86,12 @@ auto SetIntersection(
     const ReadView txid,
     const ParsedPatterns& patterns,
     const UnallocatedVector<Space>& compare) noexcept -> Matches;
-}  // namespace opentxs::blockchain::block::internal
+}  // namespace opentxs::v1::blockchain::block::internal
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto GenesisBlockHeader(
     const api::Session& api,
     const blockchain::Type type) noexcept
     -> std::unique_ptr<blockchain::block::Header>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

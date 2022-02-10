@@ -8,7 +8,9 @@
 #include "opentxs/api/crypto/Asymmetric.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -29,10 +31,11 @@ namespace proto
 {
 class AsymmetricKey;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::crypto::internal
+namespace opentxs::v1::api::crypto::internal
 {
 class Asymmetric : virtual public api::crypto::Asymmetric
 {
@@ -52,4 +55,4 @@ public:
 
     ~Asymmetric() override = default;
 };
-}  // namespace opentxs::api::crypto::internal
+}  // namespace opentxs::v1::api::crypto::internal

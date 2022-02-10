@@ -14,7 +14,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -52,10 +54,11 @@ class OTPartyAccount;
 class OTSmartContract;
 class PasswordPrompt;
 class Tag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 // Agent is always either the Owner Nym acting in his own interests,
 // or is an employee Nym acting actively in a role on behalf of an Entity formed
@@ -372,4 +375,4 @@ public:
         OTString pstrAttachment = String::Factory(),
         identity::Nym* pActualNym = nullptr) -> bool;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

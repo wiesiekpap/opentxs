@@ -12,7 +12,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -24,10 +26,11 @@ class Message;
 }  // namespace network
 
 using OTZMQListenCallback = Pimpl<network::zeromq::ListenCallback>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq
+namespace opentxs::v1::network::zeromq
 {
 class OPENTXS_EXPORT ListenCallback
 {
@@ -65,4 +68,4 @@ private:
     auto operator=(const ListenCallback&) -> ListenCallback& = delete;
     auto operator=(ListenCallback&&) -> ListenCallback& = default;
 };
-}  // namespace opentxs::network::zeromq
+}  // namespace opentxs::v1::network::zeromq

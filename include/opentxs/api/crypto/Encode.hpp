@@ -14,7 +14,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -26,10 +28,11 @@ class Encode;
 }  // namespace internal
 }  // namespace crypto
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::crypto
+namespace opentxs::v1::api::crypto
 {
 class Encode
 {
@@ -75,4 +78,4 @@ private:
     auto operator=(const Encode&) -> Encode& = delete;
     auto operator=(Encode&&) -> Encode& = delete;
 };
-}  // namespace opentxs::api::crypto
+}  // namespace opentxs::v1::api::crypto

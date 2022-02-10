@@ -10,7 +10,7 @@
 
 #include <cstdint>
 
-namespace opentxs::identifier
+namespace opentxs::v1::identifier
 {
 enum class Algorithm : std::uint8_t {
     invalid = 0,
@@ -18,4 +18,4 @@ enum class Algorithm : std::uint8_t {
     blake2b160 = 2,
     blake2b256 = 3,
 };
-}  // namespace opentxs::identifier
+}  // namespace opentxs::v1::identifier

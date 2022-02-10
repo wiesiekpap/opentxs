@@ -18,7 +18,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -35,10 +37,11 @@ class Element;
 }  // namespace blockchain
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::crypto
+namespace opentxs::v1::blockchain::crypto
 {
 class OPENTXS_EXPORT Subaccount
 {
@@ -69,4 +72,4 @@ private:
     auto operator=(const Subaccount&) -> Subaccount& = delete;
     auto operator=(Subaccount&&) -> Subaccount& = delete;
 };
-}  // namespace opentxs::blockchain::crypto
+}  // namespace opentxs::v1::blockchain::crypto

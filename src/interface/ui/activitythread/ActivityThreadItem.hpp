@@ -22,7 +22,9 @@
 class QVariant;
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -54,10 +56,11 @@ class ActivityThreadItem;
 }  // namespace ui
 
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 using ActivityThreadItemRow =
     Row<ActivityThreadRowInternal,
@@ -118,6 +121,6 @@ private:
     auto operator=(const ActivityThreadItem&) -> ActivityThreadItem& = delete;
     auto operator=(ActivityThreadItem&&) -> ActivityThreadItem& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation
 
 template class opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem>;

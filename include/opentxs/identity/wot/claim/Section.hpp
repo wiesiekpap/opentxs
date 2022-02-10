@@ -20,7 +20,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -45,10 +47,11 @@ class ContactSection;
 }  // namespace proto
 
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::wot::claim
+namespace opentxs::v1::identity::wot::claim
 {
 class OPENTXS_EXPORT Section
 {
@@ -112,4 +115,4 @@ private:
     auto operator=(const Section&) -> Section& = delete;
     auto operator=(Section&&) -> Section& = delete;
 };
-}  // namespace opentxs::identity::wot::claim
+}  // namespace opentxs::v1::identity::wot::claim

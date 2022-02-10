@@ -12,7 +12,9 @@
 #include "opentxs/api/session/Activity.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identifier
 {
@@ -23,10 +25,11 @@ class Cheque;
 class Item;
 class Message;
 class PeerObject;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::internal
+namespace opentxs::v1::api::session::internal
 {
 class Activity : virtual public session::Activity
 {
@@ -82,4 +85,4 @@ public:
 
     ~Activity() override = default;
 };
-}  // namespace opentxs::api::session::internal
+}  // namespace opentxs::v1::api::session::internal

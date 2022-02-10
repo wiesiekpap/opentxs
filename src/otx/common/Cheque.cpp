@@ -29,7 +29,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 Cheque::Cheque(const api::Session& api)
     : ot_super(api)
@@ -324,4 +324,4 @@ void Cheque::Release_Cheque()
 void Cheque::Release() { Release_Cheque(); }
 
 Cheque::~Cheque() { Release_Cheque(); }
-}  // namespace opentxs
+}  // namespace opentxs::v1

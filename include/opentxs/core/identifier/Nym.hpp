@@ -13,7 +13,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identifier
 {
@@ -21,6 +23,7 @@ class Nym;
 }  // namespace identifier
 
 using OTNymID = Pimpl<identifier::Nym>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -39,7 +42,7 @@ struct OPENTXS_EXPORT less<opentxs::OTNymID> {
 };
 }  // namespace std
 
-namespace opentxs
+namespace opentxs::v1
 {
 OPENTXS_EXPORT auto operator==(
     const OTNymID& lhs,
@@ -59,9 +62,9 @@ OPENTXS_EXPORT auto operator<=(
 OPENTXS_EXPORT auto operator>=(
     const OTNymID& lhs,
     const opentxs::Identifier& rhs) noexcept -> bool;
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::identifier
+namespace opentxs::v1::identifier
 {
 class OPENTXS_EXPORT Nym : virtual public opentxs::Identifier
 {
@@ -87,4 +90,4 @@ private:
     auto operator=(const Nym&) -> Nym& = delete;
     auto operator=(Nym&&) -> Nym& = delete;
 };
-}  // namespace opentxs::identifier
+}  // namespace opentxs::v1::identifier

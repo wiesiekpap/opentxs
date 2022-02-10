@@ -15,7 +15,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -51,10 +53,11 @@ class OTScript;
 class OTVariable;
 class PasswordPrompt;
 class Tag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 using mapOfBylaws = UnallocatedMap<UnallocatedCString, OTBylaw*>;
 using mapOfClauses = UnallocatedMap<UnallocatedCString, OTClause*>;
@@ -404,4 +407,4 @@ private:
 
     OTScriptable() = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

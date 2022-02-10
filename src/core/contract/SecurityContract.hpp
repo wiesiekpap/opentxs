@@ -20,7 +20,9 @@
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -34,10 +36,11 @@ class Definition;
 
 class Factory;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::contract::unit::implementation
+namespace opentxs::v1::contract::unit::implementation
 {
 class Security final : public unit::Security,
                        public contract::implementation::Unit
@@ -78,4 +81,4 @@ private:
     auto operator=(const Security&) -> Security& = delete;
     auto operator=(Security&&) -> Security& = delete;
 };
-}  // namespace opentxs::contract::unit::implementation
+}  // namespace opentxs::v1::contract::unit::implementation

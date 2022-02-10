@@ -32,7 +32,7 @@
 #include "otx/server/Server.hpp"
 #include "otx/server/Transactor.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 PayDividendVisitor::PayDividendVisitor(
     server::Server& server,
@@ -305,4 +305,4 @@ PayDividendVisitor::~PayDividendVisitor()
     m_lAmountPaidOut = 0;
     m_lAmountReturned = 0;
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

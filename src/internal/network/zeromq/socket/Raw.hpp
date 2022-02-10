@@ -12,7 +12,9 @@
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -26,10 +28,11 @@ class Raw;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::socket
+namespace opentxs::v1::network::zeromq::socket
 {
 auto swap(Raw& lhs, Raw& rhs) noexcept -> void;
 
@@ -87,4 +90,4 @@ private:
     Raw(const Raw&) = delete;
     auto operator=(const Raw&) -> Raw& = delete;
 };
-}  // namespace opentxs::network::zeromq::socket
+}  // namespace opentxs::v1::network::zeromq::socket

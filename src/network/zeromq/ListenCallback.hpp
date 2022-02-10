@@ -13,7 +13,9 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -22,10 +24,11 @@ namespace zeromq
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::implementation
+namespace opentxs::v1::network::zeromq::implementation
 {
 class ListenCallback final : virtual public zeromq::ListenCallback
 {
@@ -57,4 +60,4 @@ private:
     auto operator=(const ListenCallback&) -> ListenCallback& = delete;
     auto operator=(ListenCallback&&) -> ListenCallback& = delete;
 };
-}  // namespace opentxs::network::zeromq::implementation
+}  // namespace opentxs::v1::network::zeromq::implementation

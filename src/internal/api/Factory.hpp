@@ -10,7 +10,9 @@
 #include "opentxs/api/Context.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -42,10 +44,11 @@ class Flag;
 class Options;
 class PasswordCaller;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Context(
     Flag& running,
@@ -62,4 +65,4 @@ auto FactoryAPI(const api::Crypto& crypto) noexcept
     -> std::unique_ptr<api::Factory>;
 auto Settings(const api::Legacy& legacy, const String& path) noexcept
     -> std::unique_ptr<api::Settings>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

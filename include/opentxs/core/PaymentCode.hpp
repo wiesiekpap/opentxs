@@ -18,7 +18,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace crypto
 {
@@ -43,6 +45,7 @@ class PaymentCode;
 class Data;
 class PaymentCode;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -55,7 +58,7 @@ struct hash<opentxs::PaymentCode> {
 };
 }  // namespace std
 
-namespace opentxs
+namespace opentxs::v1
 {
 class OPENTXS_EXPORT PaymentCode
 {
@@ -144,4 +147,4 @@ auto swap(PaymentCode& lhs, PaymentCode& rhs) noexcept -> void;
 auto operator<(const PaymentCode& lhs, const PaymentCode& rhs) noexcept -> bool;
 auto operator==(const PaymentCode& lhs, const PaymentCode& rhs) noexcept
     -> bool;
-}  // namespace opentxs
+}  // namespace opentxs::v1

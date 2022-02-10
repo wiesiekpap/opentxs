@@ -17,7 +17,9 @@
 #include "opentxs/crypto/key/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -29,10 +31,11 @@ class Config;
 }  // namespace internal
 }  // namespace crypto
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::crypto
+namespace opentxs::v1::api::crypto
 {
 auto HaveHDKeys() noexcept -> bool;
 auto HaveSupport(opentxs::crypto::ParameterType) noexcept -> bool;
@@ -67,4 +70,4 @@ private:
     auto operator=(const Config&) -> Config& = delete;
     auto operator=(Config&&) -> Config& = delete;
 };
-}  // namespace opentxs::api::crypto
+}  // namespace opentxs::v1::api::crypto

@@ -11,7 +11,9 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -33,10 +35,11 @@ class HDPath;
 
 class Contact;
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::crypto::internal
+namespace opentxs::v1::api::crypto::internal
 {
 class Blockchain : virtual public api::crypto::Blockchain
 {
@@ -105,4 +108,4 @@ public:
 
     ~Blockchain() override = default;
 };
-}  // namespace opentxs::api::crypto::internal
+}  // namespace opentxs::v1::api::crypto::internal

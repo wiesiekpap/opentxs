@@ -9,7 +9,9 @@
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -22,10 +24,11 @@ class Request;
 }  // namespace zap
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto ZAPRequest(
     const ReadView address,
@@ -45,4 +48,4 @@ auto ZAPReply(
     const ReadView userID,
     const ReadView metadata,
     const ReadView version) noexcept -> network::zeromq::zap::Reply;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

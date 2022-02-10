@@ -19,7 +19,9 @@
 #include "serialization/protobuf/RPCEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
@@ -39,10 +41,11 @@ namespace response
 class Base;
 }  // namespace response
 }  // namespace rpc
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto translate(const rpc::AccountEventType type) noexcept
     -> proto::AccountEventType;
@@ -63,9 +66,9 @@ auto translate(const proto::RPCCommandType type) noexcept -> rpc::CommandType;
 auto translate(const proto::RPCPaymentType type) noexcept -> rpc::PaymentType;
 auto translate(const proto::RPCPushType type) noexcept -> rpc::PushType;
 auto translate(const proto::RPCResponseCode type) noexcept -> rpc::ResponseCode;
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::rpc::internal
+namespace opentxs::v1::rpc::internal
 {
 struct RPC {
     virtual auto Process(const proto::RPCCommand& command) const
@@ -75,4 +78,4 @@ struct RPC {
 
     virtual ~RPC() = default;
 };
-}  // namespace opentxs::rpc::internal
+}  // namespace opentxs::v1::rpc::internal

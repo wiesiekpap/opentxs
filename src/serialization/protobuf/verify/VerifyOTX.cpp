@@ -5,7 +5,7 @@
 
 #include "internal/serialization/protobuf/verify/VerifyOTX.hpp"  // IWYU pragma: associated
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto ServerReplyAllowedOTXPush() noexcept -> const VersionMap&
 {
@@ -43,4 +43,4 @@ auto ServerRequestAllowedSignature() noexcept -> const VersionMap&
 
     return output;
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

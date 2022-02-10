@@ -15,7 +15,7 @@ extern "C" {
 
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <typename T>
 struct SecureAllocator {
@@ -81,4 +81,4 @@ auto operator!=(
 {
     return !(lhs == rhs);
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

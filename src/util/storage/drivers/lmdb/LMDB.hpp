@@ -16,7 +16,9 @@
 #include "util/storage/Plugin.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -40,10 +42,11 @@ class Plugin;
 }  // namespace storage
 
 class Flag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::storage::driver
+namespace opentxs::v1::storage::driver
 {
 // LMDB implementation of opentxs::storage
 class LMDB final : public virtual implementation::Plugin,
@@ -99,4 +102,4 @@ private:
     auto operator=(const LMDB&) -> LMDB& = delete;
     auto operator=(LMDB&&) -> LMDB& = delete;
 };
-}  // namespace opentxs::storage::driver
+}  // namespace opentxs::v1::storage::driver

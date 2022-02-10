@@ -16,7 +16,7 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Time.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 namespace api
 {
@@ -82,4 +82,4 @@ protected:
 private:
     Instrument() = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

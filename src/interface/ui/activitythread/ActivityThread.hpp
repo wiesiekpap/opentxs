@@ -40,7 +40,9 @@
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -77,6 +79,7 @@ class StorageThreadItem;
 }  // namespace proto
 
 class Contact;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -107,7 +110,7 @@ struct less<STORAGEID> {
 };
 }  // namespace std
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <>
 struct make_blank<ui::implementation::ActivityThreadRowID> {
@@ -131,9 +134,9 @@ struct make_blank<DraftTask> {
             make_blank<api::session::OTX::BackgroundTask>::value(api)};
     }
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 using ActivityThreadList = List<
     ActivityThreadExternalInterface,
@@ -247,4 +250,4 @@ private:
     auto operator=(const ActivityThread&) -> ActivityThread& = delete;
     auto operator=(ActivityThread&&) -> ActivityThread& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

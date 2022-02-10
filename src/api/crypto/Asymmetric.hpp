@@ -26,7 +26,9 @@
 #include "serialization/protobuf/HDPath.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -59,10 +61,11 @@ class AsymmetricKey;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::crypto::imp
+namespace opentxs::v1::api::crypto::imp
 {
 class Asymmetric final : virtual public api::crypto::internal::Asymmetric
 {
@@ -259,4 +262,4 @@ private:
     auto operator=(const Asymmetric&) -> Asymmetric& = delete;
     auto operator=(Asymmetric&&) -> Asymmetric& = delete;
 };
-}  // namespace opentxs::api::crypto::imp
+}  // namespace opentxs::v1::api::crypto::imp

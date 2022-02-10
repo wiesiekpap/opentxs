@@ -10,7 +10,7 @@
 
 #include <cstdint>
 
-namespace opentxs::otx::client
+namespace opentxs::v1::otx::client
 {
 enum class PaymentWorkflowType : std::uint8_t {
     Error = 0,
@@ -24,4 +24,4 @@ enum class PaymentWorkflowType : std::uint8_t {
     OutgoingCash = 8,
     IncomingCash = 9,
 };
-}  // namespace opentxs::otx::client
+}  // namespace opentxs::v1::otx::client

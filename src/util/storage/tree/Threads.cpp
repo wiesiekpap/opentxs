@@ -34,7 +34,7 @@
 #include "util/storage/tree/Node.hpp"
 #include "util/storage/tree/Thread.hpp"
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 Threads::Threads(
     const Driver& storage,
@@ -467,4 +467,4 @@ auto Threads::serialize() const -> proto::StorageNymList
 
     return output;
 }
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

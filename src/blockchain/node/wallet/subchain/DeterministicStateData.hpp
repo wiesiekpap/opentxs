@@ -36,7 +36,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -90,10 +92,11 @@ class Push;
 }  // namespace network
 
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::node::wallet
+namespace opentxs::v1::blockchain::node::wallet
 {
 class DeterministicStateData final : public SubchainStateData
 {
@@ -167,4 +170,4 @@ private:
     DeterministicStateData& operator=(const DeterministicStateData&) = delete;
     DeterministicStateData& operator=(DeterministicStateData&&) = delete;
 };
-}  // namespace opentxs::blockchain::node::wallet
+}  // namespace opentxs::v1::blockchain::node::wallet

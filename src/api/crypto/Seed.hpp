@@ -37,7 +37,9 @@
 #include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -87,10 +89,11 @@ class Seed;
 
 class Identifier;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::crypto::imp
+namespace opentxs::v1::api::crypto::imp
 {
 class Seed final : public internal::Seed
 {
@@ -271,4 +274,4 @@ private:
     auto operator=(const Seed&) -> Seed& = delete;
     auto operator=(Seed&&) -> Seed& = delete;
 };
-}  // namespace opentxs::api::crypto::imp
+}  // namespace opentxs::v1::api::crypto::imp

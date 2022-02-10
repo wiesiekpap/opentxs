@@ -16,7 +16,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -29,10 +31,11 @@ class Nym;
 }  // namespace identifier
 
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::crypto
+namespace opentxs::v1::blockchain::crypto
 {
 class AccountIndex
 {
@@ -65,4 +68,4 @@ private:
     auto operator=(const AccountIndex&) -> AccountIndex& = delete;
     auto operator=(AccountIndex&&) -> AccountIndex& = delete;
 };
-}  // namespace opentxs::blockchain::crypto
+}  // namespace opentxs::v1::blockchain::crypto

@@ -11,7 +11,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/UnitType.hpp"
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 auto AmountValidator::Imp::unittype() const noexcept -> UnitType
 {
@@ -72,4 +72,4 @@ auto AmountValidator::validate(QString& input, int& pos) const -> State
 }
 
 AmountValidator::~AmountValidator() = default;
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

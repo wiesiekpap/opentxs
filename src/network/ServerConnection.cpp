@@ -64,7 +64,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::network
+namespace opentxs::v1::network
 {
 auto ServerConnection::Factory(
     const api::Session& api,
@@ -75,9 +75,9 @@ auto ServerConnection::Factory(
     return OTServerConnection(
         new implementation::ServerConnection(api, zmq, updates, contract));
 }
-}  // namespace opentxs::network
+}  // namespace opentxs::v1::network
 
-namespace opentxs::network::implementation
+namespace opentxs::v1::network::implementation
 {
 ServerConnection::ServerConnection(
     const api::Session& api,
@@ -596,4 +596,4 @@ ServerConnection::~ServerConnection()
 {
     if (thread_.joinable()) { thread_.join(); }
 }
-}  // namespace opentxs::network::implementation
+}  // namespace opentxs::v1::network::implementation

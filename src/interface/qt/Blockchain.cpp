@@ -22,7 +22,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 auto BlockchainAccountActivity::Send(
     const UnallocatedCString& address,
@@ -55,4 +55,4 @@ auto BlockchainAccountActivity::Send(
         return -1;
     }
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

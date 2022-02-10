@@ -25,7 +25,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -49,10 +51,11 @@ namespace proto
 {
 class ContactData;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::wot::claim
+namespace opentxs::v1::identity::wot::claim
 {
 class OPENTXS_EXPORT Data
 {
@@ -164,4 +167,4 @@ private:
     auto operator=(const Data&) -> Data& = delete;
     auto operator=(Data&&) -> Data& = delete;
 };
-}  // namespace opentxs::identity::wot::claim
+}  // namespace opentxs::v1::identity::wot::claim

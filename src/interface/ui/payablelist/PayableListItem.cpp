@@ -16,7 +16,7 @@
 #include "opentxs/core/Contact.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto PayableListItem(
     const ui::implementation::PayableInternalInterface& parent,
@@ -32,9 +32,9 @@ auto PayableListItem(
     return std::make_shared<ReturnType>(
         parent, api, rowID, key, paymentcode, currency);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 PayableListItem::PayableListItem(
     const PayableInternalInterface& parent,
@@ -85,4 +85,4 @@ auto PayableListItem::reindex(
 
     return output;
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

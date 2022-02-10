@@ -28,7 +28,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identity
 {
@@ -43,10 +45,11 @@ class Identifier;
 
 class Contract;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::implementation
+namespace opentxs::v1::implementation
 {
 class Identifier final : virtual public opentxs::Identifier,
                          virtual public opentxs::identifier::Nym,
@@ -179,4 +182,4 @@ private:
     auto operator=(const Identifier& rhs) -> Identifier& = delete;
     auto operator=(Identifier&& rhs) -> Identifier& = delete;
 };
-}  // namespace opentxs::implementation
+}  // namespace opentxs::v1::implementation

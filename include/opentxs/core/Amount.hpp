@@ -16,7 +16,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace internal
 {
@@ -24,6 +26,7 @@ class Amount;
 }  // namespace internal
 
 class Amount;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -35,7 +38,7 @@ struct hash<opentxs::Amount> {
 };
 }  // namespace std
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <typename T, std::enable_if_t<std::is_integral<T>::value, int> = 0>
 OPENTXS_EXPORT auto operator==(T lhs, const Amount& rhs) noexcept -> bool;
@@ -67,9 +70,9 @@ OPENTXS_EXPORT auto unsigned_amount(
     unsigned long long ip,
     unsigned long long fp = 0,
     unsigned long long div = 0) -> Amount;
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs
+namespace opentxs::v1
 {
 OPENTXS_EXPORT auto swap(Amount& lhs, Amount& rhs) noexcept -> void;
 
@@ -147,4 +150,4 @@ public:
 private:
     Imp* imp_;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

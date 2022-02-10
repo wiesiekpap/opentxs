@@ -13,7 +13,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -35,6 +37,7 @@ namespace identifier
 class Notary;
 class Nym;
 }  // namespace identifier
+}  // namespace v1
 }  // namespace opentxs
 
 namespace ottest

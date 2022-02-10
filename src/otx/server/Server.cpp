@@ -77,7 +77,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::server
+namespace opentxs::v1::server
 {
 Server::Server(
     const opentxs::api::session::Notary& manager,
@@ -944,4 +944,4 @@ auto Server::TransportKey(Data& pubkey) const -> OTSecret
 }
 
 Server::~Server() = default;
-}  // namespace opentxs::server
+}  // namespace opentxs::v1::server

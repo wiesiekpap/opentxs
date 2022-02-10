@@ -26,13 +26,13 @@
 #include "serialization/protobuf/Ciphertext.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
 
-namespace opentxs::crypto::key
+namespace opentxs::v1::crypto::key
 {
 const VersionNumber EllipticCurve::DefaultVersion{2};
 const VersionNumber EllipticCurve::MaxVersion{2};
-}  // namespace opentxs::crypto::key
+}  // namespace opentxs::v1::crypto::key
 
-namespace opentxs::crypto::key::implementation
+namespace opentxs::v1::crypto::key::implementation
 {
 EllipticCurve::EllipticCurve(
     const api::Session& api,
@@ -298,4 +298,4 @@ auto EllipticCurve::SignDER(
 
     return success;
 }
-}  // namespace opentxs::crypto::key::implementation
+}  // namespace opentxs::v1::crypto::key::implementation

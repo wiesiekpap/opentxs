@@ -9,7 +9,7 @@
 #include "serialization/protobuf/ZMQEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 
 auto CheckProto_1(const PairEvent& input, const bool silent) -> bool
@@ -125,4 +125,4 @@ auto CheckProto_20(const PairEvent& input, const bool silent) -> bool
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

@@ -13,7 +13,9 @@
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace ui
 {
@@ -21,10 +23,11 @@ class ContactItem;
 }  // namespace ui
 
 using OTUIContactItem = SharedPimpl<ui::ContactItem>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 class OPENTXS_EXPORT ContactItem : virtual public ListRow
 {
@@ -45,4 +48,4 @@ private:
     auto operator=(const ContactItem&) -> ContactItem& = delete;
     auto operator=(ContactItem&&) -> ContactItem& = delete;
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

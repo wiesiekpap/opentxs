@@ -15,7 +15,10 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -33,9 +36,11 @@ class FeeSource;
 }  // namespace wallet
 }  // namespace node
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto FeeOracle(
     const api::Session& api,
@@ -53,4 +58,4 @@ auto BTCFeeSources(
     const std::string_view endpoint,
     alloc::Resource* alloc = nullptr) noexcept
     -> ForwardList<blockchain::node::wallet::FeeSource>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

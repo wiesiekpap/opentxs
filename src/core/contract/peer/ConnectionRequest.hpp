@@ -15,7 +15,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -35,10 +37,11 @@ class PeerRequest;
 
 class Factory;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::contract::peer::request::implementation
+namespace opentxs::v1::contract::peer::request::implementation
 {
 class Connection final : public request::Connection,
                          public peer::implementation::Request
@@ -81,4 +84,4 @@ private:
     auto operator=(const Connection&) -> Connection& = delete;
     auto operator=(Connection&&) -> Connection& = delete;
 };
-}  // namespace opentxs::contract::peer::request::implementation
+}  // namespace opentxs::v1::contract::peer::request::implementation

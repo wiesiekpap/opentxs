@@ -24,7 +24,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -67,10 +69,11 @@ class ContactData;
 
 class Identifier;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 class OPENTXS_EXPORT NymData
 {
@@ -188,4 +191,4 @@ private:
     auto operator=(const NymData&) -> NymData& = delete;
     auto operator=(NymData&&) -> NymData& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

@@ -17,16 +17,19 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
 class Legacy;
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::imp
+namespace opentxs::v1::api::imp
 {
 class Settings final : public api::Settings
 {
@@ -200,4 +203,4 @@ private:
     Settings(const Settings&) = delete;
     auto operator=(const Settings&) -> Settings& = delete;
 };
-}  // namespace opentxs::api::imp
+}  // namespace opentxs::v1::api::imp

@@ -32,7 +32,9 @@
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -76,10 +78,11 @@ class Raw;
 }  // namespace network
 
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::node::wallet
+namespace opentxs::v1::blockchain::node::wallet
 {
 class Accounts::Imp final : public opentxs::Actor<Imp, AccountsJobs>
 {
@@ -180,4 +183,4 @@ private:
         CString&& fromChildren,
         allocator_type alloc) noexcept;
 };
-}  // namespace opentxs::blockchain::node::wallet
+}  // namespace opentxs::v1::blockchain::node::wallet

@@ -33,7 +33,9 @@
 #include "util/JobCounter.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -73,10 +75,11 @@ class Push;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::node::implementation
+namespace opentxs::v1::blockchain::node::implementation
 {
 using BlockDMFilter = download::Manager<
     FilterOracle::BlockIndexer,
@@ -163,4 +166,4 @@ struct FilterOracle::BlockIndexerData {
     {
     }
 };
-}  // namespace opentxs::blockchain::node::implementation
+}  // namespace opentxs::v1::blockchain::node::implementation

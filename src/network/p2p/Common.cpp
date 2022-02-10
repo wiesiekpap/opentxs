@@ -11,7 +11,7 @@
 
 #include "opentxs/network/p2p/MessageType.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 using Type = network::p2p::MessageType;
 
@@ -38,4 +38,4 @@ auto print(Type value) noexcept -> UnallocatedCString
         return "error";
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

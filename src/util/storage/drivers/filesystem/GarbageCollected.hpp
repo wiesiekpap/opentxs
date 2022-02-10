@@ -13,7 +13,9 @@
 #include "util/storage/drivers/filesystem/Common.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -37,10 +39,11 @@ class Plugin;
 }  // namespace storage
 
 class Flag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::storage::driver::filesystem
+namespace opentxs::v1::storage::driver::filesystem
 {
 // Simple filesystem implementation of opentxs::storage
 class GarbageCollected final : public Common, public virtual storage::Driver
@@ -80,4 +83,4 @@ private:
     auto operator=(const GarbageCollected&) -> GarbageCollected& = delete;
     auto operator=(GarbageCollected&&) -> GarbageCollected& = delete;
 };
-}  // namespace opentxs::storage::driver::filesystem
+}  // namespace opentxs::v1::storage::driver::filesystem

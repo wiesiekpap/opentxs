@@ -10,7 +10,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs::network
+namespace opentxs::v1::network
 {
 class OPENTXS_EXPORT OpenDHT
 {
@@ -35,4 +35,4 @@ private:
     auto operator=(const OpenDHT&) -> OpenDHT& = delete;
     auto operator=(OpenDHT&&) -> OpenDHT& = delete;
 };
-}  // namespace opentxs::network
+}  // namespace opentxs::v1::network

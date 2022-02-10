@@ -9,7 +9,9 @@
 #include "opentxs/api/session/Client.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identifier
 {
@@ -28,10 +30,11 @@ class ServerAction;
 
 class OT_API;
 class OTAPI_Exec;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::internal
+namespace opentxs::v1::api::session::internal
 {
 class Client : virtual public session::Client, virtual public Session
 {
@@ -56,4 +59,4 @@ public:
 
     ~Client() override = default;
 };
-}  // namespace opentxs::api::session::internal
+}  // namespace opentxs::v1::api::session::internal

@@ -34,7 +34,7 @@
 #error polymorphic allocator support is required
 #endif
 
-namespace opentxs
+namespace opentxs::v1
 {
 #if __has_include(<memory_resource>)
 using CString = std::pmr::string;
@@ -114,4 +114,4 @@ template <typename T>
 using UnallocatedUnorderedSet = std::unordered_set<T>;
 template <typename T>
 using UnallocatedVector = std::vector<T>;
-}  // namespace opentxs
+}  // namespace opentxs::v1

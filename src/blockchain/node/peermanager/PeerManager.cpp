@@ -35,7 +35,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto BlockchainPeerManager(
     const api::Session& api,
@@ -68,9 +68,9 @@ auto BlockchainPeerManager(
         seednode,
         shutdown);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::blockchain::node::implementation
+namespace opentxs::v1::blockchain::node::implementation
 {
 PeerManager::PeerManager(
     const api::Session& api,
@@ -464,4 +464,4 @@ auto PeerManager::VerifyPeer(const int id, const UnallocatedCString& address)
 }
 
 PeerManager::~PeerManager() { signal_shutdown().get(); }
-}  // namespace opentxs::blockchain::node::implementation
+}  // namespace opentxs::v1::blockchain::node::implementation

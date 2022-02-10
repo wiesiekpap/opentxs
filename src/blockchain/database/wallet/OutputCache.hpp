@@ -35,7 +35,9 @@
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -59,10 +61,11 @@ class Output;
 class Outpoint;
 }  // namespace block
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::database::wallet
+namespace opentxs::v1::blockchain::database::wallet
 {
 constexpr auto accounts_{Table::AccountOutputs};
 constexpr auto generation_{Table::GenerationOutputs};
@@ -242,4 +245,4 @@ private:
         const block::bitcoin::Output& output,
         MDB_txn* tx) noexcept -> bool;
 };
-}  // namespace opentxs::blockchain::database::wallet
+}  // namespace opentxs::v1::blockchain::database::wallet

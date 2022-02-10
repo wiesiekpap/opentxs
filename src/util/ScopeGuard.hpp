@@ -7,7 +7,7 @@
 
 #include "opentxs/Types.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 class ScopeGuard
 {
@@ -18,4 +18,4 @@ public:
 private:
     const SimpleCallback cb_;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

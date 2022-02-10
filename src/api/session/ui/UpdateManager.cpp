@@ -33,7 +33,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::api::session::ui
+namespace opentxs::v1::api::session::ui
 {
 struct UpdateManager::Imp {
     auto ActivateUICallback(const Identifier& id) const noexcept -> void
@@ -161,4 +161,4 @@ auto UpdateManager::RegisterUICallback(
 }
 
 UpdateManager::~UpdateManager() = default;
-}  // namespace opentxs::api::session::ui
+}  // namespace opentxs::v1::api::session::ui

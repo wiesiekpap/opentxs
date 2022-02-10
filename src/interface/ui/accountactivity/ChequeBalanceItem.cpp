@@ -28,7 +28,7 @@
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 ChequeBalanceItem::ChequeBalanceItem(
     const AccountActivityInternalInterface& parent,
@@ -216,4 +216,4 @@ auto ChequeBalanceItem::UUID() const noexcept -> UnallocatedCString
 
     return {};
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

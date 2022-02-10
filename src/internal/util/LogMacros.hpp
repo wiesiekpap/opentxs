@@ -10,7 +10,7 @@
 
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <typename T>
 auto pretty_function(const char* function) noexcept -> UnallocatedCString
@@ -27,7 +27,7 @@ auto pretty_function(T*, const char* function) noexcept -> UnallocatedCString
 {
     return pretty_function<T>(function);
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
 #define OT_PRETTY_CLASS() opentxs::pretty_function(this, __func__)
 #define OT_PRETTY_STATIC(C) opentxs::pretty_function<C>(__func__)

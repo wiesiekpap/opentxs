@@ -54,7 +54,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 // private and hopefully not needed
 OTTransaction::OTTransaction(const api::Session& api)
@@ -7000,4 +7000,4 @@ auto OTTransaction::GetMemo(String& strMemo) -> bool
     return bSuccess;
 }
 
-}  // namespace opentxs
+}  // namespace opentxs::v1

@@ -32,7 +32,9 @@ extern "C" {
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -54,10 +56,11 @@ class Data;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 using OpenSSL_BIO = std::unique_ptr<::BIO, decltype(&::BIO_free)>;
 using OpenSSL_BN = std::unique_ptr<::BIGNUM, decltype(&::BN_free)>;
@@ -73,9 +76,9 @@ using OpenSSL_EVP_MD_CTX =
 using OpenSSL_EVP_MD_CTX = std::unique_ptr<::EVP_MD_CTX>;
 #endif
 using OpenSSL_RSA = std::unique_ptr<::RSA, decltype(&::RSA_free)>;
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto
 
-namespace opentxs::crypto::implementation
+namespace opentxs::v1::crypto::implementation
 {
 class OpenSSL final : virtual public crypto::OpenSSL, public AsymmetricProvider
 {
@@ -245,4 +248,4 @@ private:
     auto operator=(const OpenSSL&) -> OpenSSL& = delete;
     auto operator=(OpenSSL&&) -> OpenSSL& = delete;
 };
-}  // namespace opentxs::crypto::implementation
+}  // namespace opentxs::v1::crypto::implementation

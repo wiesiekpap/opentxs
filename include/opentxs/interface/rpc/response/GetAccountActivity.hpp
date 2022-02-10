@@ -13,7 +13,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
@@ -29,10 +31,11 @@ class GetAccountActivity;
 
 class AccountEvent;
 }  // namespace rpc
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::rpc::response
+namespace opentxs::v1::rpc::response
 {
 class OPENTXS_EXPORT GetAccountActivity final : public Base
 {
@@ -58,4 +61,4 @@ private:
     auto operator=(const GetAccountActivity&) -> GetAccountActivity& = delete;
     auto operator=(GetAccountActivity&&) -> GetAccountActivity& = delete;
 };
-}  // namespace opentxs::rpc::response
+}  // namespace opentxs::v1::rpc::response

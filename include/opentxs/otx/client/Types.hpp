@@ -10,8 +10,8 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace opentxs::otx::client
+namespace opentxs::v1::otx::client
 {
 enum class PaymentWorkflowType : std::uint8_t;
 enum class PaymentWorkflowState : std::uint8_t;
-}  // namespace opentxs::otx::client
+}  // namespace opentxs::v1::otx::client

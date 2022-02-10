@@ -10,7 +10,7 @@
 
 #include <cstdint>
 
-namespace opentxs::contract::peer
+namespace opentxs::v1::contract::peer
 {
 enum class ConnectionInfoType : std::uint8_t {
     Error = 0,
@@ -21,4 +21,4 @@ enum class ConnectionInfoType : std::uint8_t {
     SSH = 5,
     CJDNS = 6,
 };
-}  // namespace  opentxs::contract::peer
+}  // namespace opentxs::v1::contract::peer

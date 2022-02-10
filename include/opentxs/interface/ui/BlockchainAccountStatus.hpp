@@ -14,7 +14,9 @@
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identifier
 {
@@ -25,10 +27,11 @@ namespace ui
 {
 class BlockchainSubaccountSource;
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 class OPENTXS_EXPORT BlockchainAccountStatus : virtual public List
 {
@@ -53,4 +56,4 @@ private:
     auto operator=(BlockchainAccountStatus&&)
         -> BlockchainAccountStatus& = delete;
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

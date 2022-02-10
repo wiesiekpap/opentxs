@@ -11,7 +11,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -25,10 +27,11 @@ class Subscribe;
 }  // namespace network
 
 using OTZMQSubscribeSocket = Pimpl<network::zeromq::socket::Subscribe>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::socket
+namespace opentxs::v1::network::zeromq::socket
 {
 class OPENTXS_EXPORT Subscribe : virtual public curve::Client
 {
@@ -51,4 +54,4 @@ private:
     auto operator=(const Subscribe&) -> Subscribe& = delete;
     auto operator=(Subscribe&&) -> Subscribe& = delete;
 };
-}  // namespace opentxs::network::zeromq::socket
+}  // namespace opentxs::v1::network::zeromq::socket

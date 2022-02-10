@@ -10,16 +10,16 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace opentxs::contract
+namespace opentxs::v1::contract
 {
 enum class ProtocolVersion : std::uint32_t;
 enum class Type : std::uint32_t;
 enum class UnitType : std::uint32_t;
-}  // namespace opentxs::contract
+}  // namespace opentxs::v1::contract
 
-namespace opentxs
+namespace opentxs::v1
 {
 OPENTXS_EXPORT auto print(contract::ProtocolVersion) noexcept -> const char*;
 OPENTXS_EXPORT auto print(contract::Type) noexcept -> const char*;
 OPENTXS_EXPORT auto print(contract::UnitType) noexcept -> const char*;
-}  // namespace opentxs
+}  // namespace opentxs::v1

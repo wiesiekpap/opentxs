@@ -13,7 +13,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto copy(const ReadView in, const AllocateOutput out) noexcept -> bool
 {
@@ -121,4 +121,4 @@ auto writer(Space& in) noexcept -> AllocateOutput
         return {in.data(), in.size()};
     };
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

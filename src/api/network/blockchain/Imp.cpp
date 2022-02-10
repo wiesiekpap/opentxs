@@ -36,7 +36,7 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
-namespace opentxs::api::network
+namespace opentxs::v1::api::network
 {
 BlockchainImp::BlockchainImp(
     const api::Session& api,
@@ -570,4 +570,4 @@ auto BlockchainImp::UpdatePeer(
 }
 
 BlockchainImp::~BlockchainImp() = default;
-}  // namespace opentxs::api::network
+}  // namespace opentxs::v1::api::network

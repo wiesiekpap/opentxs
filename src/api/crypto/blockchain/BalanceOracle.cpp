@@ -43,7 +43,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::api::crypto::blockchain
+namespace opentxs::v1::api::crypto::blockchain
 {
 struct BalanceOracle::Imp {
     auto RefreshBalance(const identifier::Nym& owner, const Chain chain)
@@ -270,4 +270,4 @@ auto BalanceOracle::UpdateBalance(
 }
 
 BalanceOracle::~BalanceOracle() = default;
-}  // namespace opentxs::api::crypto::blockchain
+}  // namespace opentxs::v1::api::crypto::blockchain

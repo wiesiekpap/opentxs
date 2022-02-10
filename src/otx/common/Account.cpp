@@ -41,7 +41,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 
 char const* const __TypeStringsAccount[] = {
@@ -1185,4 +1185,4 @@ void Account::Release()
 void Account::SetAlias(const UnallocatedCString& alias) { alias_ = alias; }
 
 Account::~Account() { Release_Account(); }
-}  // namespace opentxs
+}  // namespace opentxs::v1

@@ -15,7 +15,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/String.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 Instrument::Instrument(const api::Session& api)
     : OTScriptable(api)
@@ -142,4 +142,4 @@ Instrument::~Instrument()
     m_VALID_FROM = Time{};
     m_VALID_TO = Time{};
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

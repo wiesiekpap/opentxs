@@ -17,7 +17,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -47,10 +49,11 @@ class Server;
 
 class PasswordPrompt;
 class StringXML;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 /*
  I figured this one out, it's easy.
@@ -220,4 +223,4 @@ private:
 
     Basket() = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

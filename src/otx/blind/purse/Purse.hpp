@@ -32,7 +32,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -68,10 +70,11 @@ class Purse;
 }  // namespace proto
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::blind
+namespace opentxs::v1::otx::blind
 {
 class Purse::Imp : virtual public internal::Purse
 {
@@ -149,4 +152,4 @@ private:
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&& rhs) -> Imp& = delete;
 };
-}  // namespace opentxs::otx::blind
+}  // namespace opentxs::v1::otx::blind

@@ -27,7 +27,7 @@ extern "C" {
 #include "opentxs/util/WorkType.hpp"
 #include "util/LMDB.hpp"
 
-namespace opentxs::blockchain::database::common
+namespace opentxs::v1::blockchain::database::common
 {
 Configuration::Configuration(
     const api::Session& api,
@@ -117,4 +117,4 @@ auto Configuration::GetSyncServers() const noexcept -> Endpoints
 
     return output;
 }
-}  // namespace opentxs::blockchain::database::common
+}  // namespace opentxs::v1::blockchain::database::common

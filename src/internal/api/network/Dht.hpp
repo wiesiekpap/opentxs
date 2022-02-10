@@ -14,7 +14,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -27,10 +29,11 @@ class Nym;
 class ServerContract;
 class UnitDefinition;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::network::internal
+namespace opentxs::v1::api::network::internal
 {
 class Dht : virtual public network::Dht
 {
@@ -57,4 +60,4 @@ public:
 
     ~Dht() override = default;
 };
-}  // namespace opentxs::api::network::internal
+}  // namespace opentxs::v1::api::network::internal

@@ -30,7 +30,7 @@
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 
-namespace opentxs::blockchain::node
+namespace opentxs::v1::blockchain::node
 {
 struct Mempool::Imp {
     using Transactions =
@@ -264,4 +264,4 @@ auto Mempool::Submit(std::unique_ptr<const block::bitcoin::Transaction> tx)
 }
 
 Mempool::~Mempool() = default;
-}  // namespace opentxs::blockchain::node
+}  // namespace opentxs::v1::blockchain::node

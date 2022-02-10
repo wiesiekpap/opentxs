@@ -10,10 +10,10 @@
 
 #include <cstdint>
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 enum class Language : std::uint8_t {
     none = 0,
     en = 1,
 };
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto

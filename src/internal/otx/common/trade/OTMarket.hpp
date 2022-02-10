@@ -21,7 +21,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 namespace api
 {
@@ -275,4 +275,4 @@ private:
     auto operator=(const OTMarket&) -> OTMarket& = delete;
     auto operator=(OTMarket&&) -> OTMarket& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

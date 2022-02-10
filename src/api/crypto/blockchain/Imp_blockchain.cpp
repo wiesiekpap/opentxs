@@ -53,7 +53,7 @@
 #include "util/Container.hpp"
 #include "util/Work.hpp"
 
-namespace opentxs::api::crypto::imp
+namespace opentxs::v1::api::crypto::imp
 {
 BlockchainImp::BlockchainImp(
     const api::Session& api,
@@ -555,4 +555,4 @@ auto BlockchainImp::UpdateElement(
         std::end(transactions),
         [&](const auto& txid) { reconcile_activity_threads(lock, txid); });
 }
-}  // namespace opentxs::api::crypto::imp
+}  // namespace opentxs::v1::api::crypto::imp

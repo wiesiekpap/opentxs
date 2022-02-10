@@ -30,7 +30,7 @@ class QObject;
 
 namespace po = boost::program_options;
 
-namespace opentxs
+namespace opentxs::v1
 {
 struct Options::Imp::Parser {
     using Multistring = UnallocatedVector<UnallocatedCString>;
@@ -593,9 +593,9 @@ auto Options::Imp::to_bool(const char* value) noexcept -> bool
 }
 
 Options::Imp::~Imp() = default;
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options
 {
@@ -1094,4 +1094,4 @@ Options::~Options()
         imp_ = nullptr;
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

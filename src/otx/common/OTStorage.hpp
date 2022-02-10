@@ -16,7 +16,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 namespace api
 {
@@ -1796,4 +1796,4 @@ public:
     using IStorable::hookBeforePack;                                           \
     using IStorable::hookAfterUnpack
 
-}  // namespace opentxs
+}  // namespace opentxs::v1

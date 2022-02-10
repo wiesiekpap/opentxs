@@ -15,7 +15,9 @@
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
@@ -27,10 +29,11 @@ namespace storage
 class Driver;
 class Tree;
 }  // namespace storage
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 class Credentials final : public Node
 {
@@ -64,4 +67,4 @@ public:
 
     ~Credentials() final = default;
 };
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

@@ -5,7 +5,7 @@
 
 #include "internal/serialization/protobuf/verify/VerifyPeer.hpp"  // IWYU pragma: associated
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto PeerObjectAllowedNym() noexcept -> const VersionMap&
 {
@@ -207,4 +207,4 @@ auto PeerRequestAllowedVerificationOffer() noexcept -> const VersionMap&
 
     return output;
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto
