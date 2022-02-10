@@ -104,6 +104,8 @@ public:
         const Type chain,
         const PaymentCode& code) noexcept -> OTIdentifier;
 
+    auto ProcessStateMachine(bool enabled) noexcept -> bool final;
+
     NotificationStateData(
         const api::Session& api,
         const node::internal::Network& node,
@@ -157,10 +159,14 @@ private:
         const block::Matches& matches,
         std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept
         -> void final;
+    auto init_contacts() noexcept -> void;
     auto init_keys() noexcept -> OTPasswordPrompt;
     auto process(
         const block::Match match,
         const block::bitcoin::Transaction& tx,
+        const PasswordPrompt& reason) noexcept -> void;
+    auto process(
+        const opentxs::PaymentCode& remote,
         const PasswordPrompt& reason) noexcept -> void;
 
     NotificationStateData() = delete;

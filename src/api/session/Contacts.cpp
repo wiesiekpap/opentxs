@@ -7,16 +7,25 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "api/session/Contacts.hpp"  // IWYU pragma: associated
 
+#include <boost/system/error_code.hpp>
+#include <algorithm>
+#include <array>
+#include <chrono>
+#include <cstddef>
 #include <functional>
+#include <iterator>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
 #include <type_traits>
 
 #include "internal/api/crypto/Blockchain.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/api/session/Factory.hpp"
+#include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -36,6 +45,8 @@
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
@@ -73,7 +84,10 @@ Contacts::Contacts(const api::session::Client& api)
 
         return output;
     }())
-    , publisher_(api.Network().ZeroMQ().PublishSocket())
+    , publisher_(api_.Network().ZeroMQ().PublishSocket())
+    , pipeline_(api_.Factory().Pipeline(
+          [this](auto&& in) { pipeline(std::move(in)); }))
+    , timer_(api_.Network().Asio().Internal().GetTimer())
 {
     // WARNING: do not access api_.Wallet() during construction
     publisher_->Start(api_.Endpoints().ContactUpdate().data());
@@ -81,6 +95,10 @@ Contacts::Contacts(const api::session::Client& api)
     // TODO update Storage to record contact ids that need to be updated
     // in blockchain api in cases where the process was interrupted due to
     // library shutdown
+
+    pipeline_.SubscribeTo(api_.Endpoints().NymCreated());
+    pipeline_.SubscribeTo(api_.Endpoints().NymDownload());
+    pipeline_.SubscribeTo(api_.Endpoints().Shutdown());
 }
 
 auto Contacts::add_contact(const rLock& lock, opentxs::Contact* contact) const
@@ -114,6 +132,41 @@ void Contacts::check_identifiers(
     } else if (havePaymentCode) {
         haveNymID = true;
         outputNymID.Assign(paymentCode.ID());
+    }
+}
+
+auto Contacts::check_nyms() noexcept -> void
+{
+    auto buf = std::array<std::byte, 4096>{};
+    auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
+    const auto contacts = [&] {
+        auto out = Vector<OTIdentifier>{&alloc};
+        auto lock = rLock{lock_};
+        out.reserve(contact_name_map_.size());
+
+        for (auto& [key, value] : contact_name_map_) { out.emplace_back(key); }
+
+        return out;
+    }();
+    auto nyms = Vector<OTNymID>{&alloc};
+
+    for (const auto& id : contacts) {
+        const auto contact = Contact(id);
+
+        OT_ASSERT(contact);
+
+        auto ids = contact->Nyms();
+        std::move(ids.begin(), ids.end(), std::back_inserter(nyms));
+    }
+
+    for (const auto& id : nyms) {
+        const auto nym = api_.Wallet().Nym(id);
+
+        if (nym) {
+            LogInsane()(OT_PRETTY_CLASS())(id)("found").Flush();
+        } else {
+            LogInsane()(OT_PRETTY_CLASS())(id)("not found").Flush();
+        }
     }
 }
 
@@ -738,6 +791,56 @@ auto Contacts::PaymentCodeToContact(
     return id;
 }
 
+auto Contacts::pipeline(opentxs::network::zeromq::Message&& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    if (1 > body.size()) {
+        LogError()(OT_PRETTY_CLASS())("Invalid message").Flush();
+
+        OT_FAIL;
+    }
+
+    const auto work = [&] {
+        try {
+
+            return body.at(0).as<Work>();
+        } catch (...) {
+
+            OT_FAIL;
+        }
+    }();
+    switch (work) {
+        case Work::shutdown: {
+            pipeline_.Close();
+        } break;
+        case Work::nymcreated:
+        case Work::nymupdated: {
+            OT_ASSERT(1 < body.size());
+
+            const auto id = [&] {
+                auto out = api_.Factory().NymID();
+                out->Assign(body.at(1).Bytes());
+
+                return out;
+            }();
+            const auto nym = api_.Wallet().Nym(id);
+
+            OT_ASSERT(nym);
+
+            update(*nym);
+        } break;
+        case Work::refresh: {
+            check_nyms();
+        } break;
+        default: {
+            LogError()(OT_PRETTY_CLASS())("Unhandled type").Flush();
+
+            OT_FAIL;
+        }
+    }
+}
+
 auto Contacts::refresh_indices(const rLock& lock, opentxs::Contact& contact)
     const -> void
 {
@@ -760,6 +863,23 @@ auto Contacts::refresh_indices(const rLock& lock, opentxs::Contact& contact)
 
         return work;
     }());
+}
+
+auto Contacts::refresh_nyms() noexcept -> void
+{
+    static constexpr auto interval = std::chrono::minutes{5};
+    timer_.SetRelative(interval);
+    timer_.Wait([this](const auto& error) {
+        if (error) {
+            if (boost::system::errc::operation_canceled != error.value()) {
+                LogError()(OT_PRETTY_CLASS())(error).Flush();
+            }
+        } else {
+            pipeline_.Push(
+                opentxs::network::zeromq::tagged_message(Work::refresh));
+            refresh_nyms();
+        }
+    });
 }
 
 void Contacts::save(opentxs::Contact* contact) const
@@ -819,7 +939,7 @@ void Contacts::start()
     }
 }
 
-auto Contacts::Update(const identity::Nym& nym) const
+auto Contacts::update(const identity::Nym& nym) const
     -> std::shared_ptr<const opentxs::Contact>
 {
     auto& data = nym.Claims();
@@ -998,5 +1118,11 @@ auto Contacts::verify_write_lock(const rLock& lock) const -> bool
     }
 
     return true;
+}
+
+Contacts::~Contacts()
+{
+    timer_.Cancel();
+    pipeline_.Close();
 }
 }  // namespace opentxs::api::session::imp

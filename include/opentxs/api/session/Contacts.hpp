@@ -82,8 +82,6 @@ public:
     virtual auto PaymentCodeToContact(
         const UnallocatedCString& code,
         const opentxs::blockchain::Type currency) const -> OTIdentifier = 0;
-    virtual auto Update(const identity::Nym& nym) const
-        -> std::shared_ptr<const opentxs::Contact> = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Contacts& = 0;

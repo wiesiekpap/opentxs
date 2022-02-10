@@ -6,17 +6,19 @@
 #pragma once
 
 #include <atomic>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <functional>
 #include <iosfwd>
 #include <memory>
 #include <mutex>
 #include <thread>
-#include <thread>
 
 #include "api/session/Session.hpp"
 #include "internal/api/session/Notary.hpp"
+#include "internal/api/session/Session.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -31,6 +33,11 @@ namespace opentxs
 {
 namespace api
 {
+namespace session
+{
+class Contacts;
+}  // namespace session
+
 class Context;
 class Crypto;
 class Settings;
@@ -75,6 +82,7 @@ namespace opentxs::api::session::imp
 class Notary final : public session::internal::Notary, public Session
 {
 public:
+    auto Contacts() const -> const session::Contacts& final { abort(); }
     auto DropIncoming(const int count) const -> void final;
     auto DropOutgoing(const int count) const -> void final;
     auto GetAdminNym() const -> UnallocatedCString final;

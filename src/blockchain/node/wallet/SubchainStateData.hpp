@@ -137,7 +137,7 @@ public:
         storage::lmdb::LMDB::Transaction& tx,
         std::atomic_int& errors,
         const block::Position& ancestor) noexcept -> bool final;
-    auto ProcessStateMachine(bool enabled) noexcept -> bool final;
+    auto ProcessStateMachine(bool enabled) noexcept -> bool override;
     auto ProcessTaskComplete(
         const Identifier& id,
         const char* type,
