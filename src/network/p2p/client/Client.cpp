@@ -274,18 +274,21 @@ auto Client::Imp::flush_pending() noexcept -> void
 
 auto Client::Imp::flush_pending(Chain chain) noexcept -> void
 {
-    auto& pending = pending_chain_.at(chain);
-    auto& providers = providers_.at(chain);
+    try {
+        auto& pending = pending_chain_.at(chain);
+        auto& providers = providers_.at(chain);
 
-    OT_ASSERT(0 < providers.size());
+        OT_ASSERT(0 < providers.size());
 
-    LogTrace()(OT_PRETTY_CLASS())("sending ")(pending.size())(
-        " queued messages")
-        .Flush();
+        LogTrace()(OT_PRETTY_CLASS())("sending ")(pending.size())(
+            " queued messages")
+            .Flush();
 
-    while (0 < pending.size()) {
-        forward_to_all(std::move(pending.front()));
-        pending.pop_front();
+        while (0 < pending.size()) {
+            forward_to_all(std::move(pending.front()));
+            pending.pop_front();
+        }
+    } catch (...) {
     }
 }
 
@@ -773,6 +776,9 @@ auto Client::Imp::process_response(Message&& msg) noexcept -> void
             case Type::publish_ack:
             case Type::contract: {
                 wallet_.Send(std::move(msg));
+            } break;
+            case Type::pushtx_reply: {
+                // TODO notify mempool
             } break;
             case Type::error:
             case Type::sync_request:
