@@ -15,14 +15,18 @@
 #include "Proto.hpp"
 #include "internal/api/session/Contacts.hpp"
 #include "internal/util/Editor.hpp"
+#include "internal/util/Timer.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/WorkType.hpp"
+#include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
@@ -53,6 +57,14 @@ namespace identity
 {
 class Nym;
 }  // namespace identity
+
+namespace network
+{
+namespace zeromq
+{
+class Message;
+}  // namespace zeromq
+}  // namespace network
 
 namespace proto
 {
@@ -101,14 +113,19 @@ public:
     auto PaymentCodeToContact(
         const UnallocatedCString& code,
         const opentxs::blockchain::Type currency) const -> OTIdentifier final;
-    auto Update(const identity::Nym& nym) const
-        -> std::shared_ptr<const opentxs::Contact> final;
 
     Contacts(const api::session::Client& api);
 
-    ~Contacts() final = default;
+    ~Contacts() final;
 
 private:
+    enum class Work : OTZMQWorkType {
+        shutdown = value(WorkType::Shutdown),
+        nymcreated = value(WorkType::NymCreated),
+        nymupdated = value(WorkType::NymUpdated),
+        refresh = OT_ZMQ_INTERNAL_SIGNAL + 0,
+    };
+
     using ContactLock =
         std::pair<std::mutex, std::shared_ptr<opentxs::Contact>>;
     using Address =
@@ -122,6 +139,8 @@ private:
     mutable ContactMap contact_map_{};
     mutable ContactNameMap contact_name_map_;
     OTZMQPublishSocket publisher_;
+    opentxs::network::zeromq::Pipeline pipeline_;
+    Timer timer_;
 
     void check_identifiers(
         const Identifier& inputNymID,
@@ -129,6 +148,8 @@ private:
         bool& haveNymID,
         bool& havePaymentCode,
         identifier::Nym& outputNymID) const;
+    auto check_nyms() noexcept -> void;
+    auto refresh_nyms() noexcept -> void;
     auto verify_write_lock(const rLock& lock) const -> bool;
 
     // takes ownership
@@ -154,10 +175,14 @@ private:
         const identifier::Nym& nymID,
         const PaymentCode& paymentCode) const
         -> std::shared_ptr<const opentxs::Contact>;
-    void prepare_shutdown() final { blockchain_.reset(); }
-    void refresh_indices(const rLock& lock, opentxs::Contact& contact) const;
-    void save(opentxs::Contact* contact) const;
-    void start() final;
+    auto pipeline(opentxs::network::zeromq::Message&&) noexcept -> void;
+    auto prepare_shutdown() -> void final { blockchain_.reset(); }
+    auto refresh_indices(const rLock& lock, opentxs::Contact& contact) const
+        -> void;
+    auto save(opentxs::Contact* contact) const -> void;
+    auto start() -> void final;
+    auto update(const identity::Nym& nym) const
+        -> std::shared_ptr<const opentxs::Contact>;
     auto update_existing_contact(
         const rLock& lock,
         const UnallocatedCString& label,

@@ -22,7 +22,6 @@
 #include "internal/serialization/protobuf/verify/PeerObject.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -248,8 +247,6 @@ Object::Object(
 
     if (serialized.has_nym()) {
         objectNym = api_.Wallet().Internal().Nym(serialized.nym());
-
-        if (objectNym) { api.Contacts().Update(*objectNym); }
     }
 
     if (signerNym) {

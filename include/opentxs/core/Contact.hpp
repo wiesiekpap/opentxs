@@ -6,6 +6,7 @@
 #pragma once
 
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
+// IWYU pragma: no_include "opentxs/core/PaymentCode.hpp"
 // IWYU pragma: no_include "opentxs/identity/wot/claim/ClaimType.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
@@ -28,6 +29,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/Data.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -105,6 +107,8 @@ public:
         -> UnallocatedCString;
     auto PaymentCodes(const UnitType currency = UnitType::Btc) const
         -> UnallocatedVector<UnallocatedCString>;
+    auto PaymentCodes(alloc::Resource* alloc) const
+        -> Set<opentxs::PaymentCode>;
     auto PhoneNumbers(bool active = true) const -> UnallocatedCString;
     auto Print() const -> UnallocatedCString;
     OPENTXS_NO_EXPORT auto Serialize(proto::Contact& out) const -> bool;

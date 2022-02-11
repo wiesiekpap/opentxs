@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/NotificationStateData.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
@@ -18,10 +20,13 @@
 #include <utility>
 
 #include "internal/api/crypto/Blockchain.hpp"
+#include "internal/api/session/Session.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/core/PaymentCode.hpp"
+#include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -36,6 +41,7 @@
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
+#include "opentxs/core/Contact.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -154,6 +160,47 @@ auto NotificationStateData::handle_mempool_matches(
     }
 }
 
+auto NotificationStateData::init_contacts() noexcept -> void
+{
+    auto buf = std::array<std::byte, 4096>{};
+    auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
+    const auto& api = api_.Internal().Contacts();
+    const auto contacts = [&] {
+        auto out = Vector<OTIdentifier>{&alloc};
+        const auto data = api.ContactList();
+        std::transform(
+            data.begin(),
+            data.end(),
+            std::back_inserter(out),
+            [this](const auto& item) {
+                return api_.Factory().Identifier(item.first);
+            });
+
+        return out;
+    }();
+
+    for (const auto& id : contacts) {
+        const auto contact = api.Contact(id);
+
+        OT_ASSERT(contact);
+
+        for (const auto& remote : contact->PaymentCodes(&alloc)) {
+            const auto prompt = [&] {
+                // TODO use allocator when we upgrade to c++20
+                auto out = std::stringstream{};
+                out << "Generate keys for a ";
+                out << DisplayString(node_.Chain());
+                out << " payment code account for ";
+                out << api.ContactName(id);
+
+                return out;
+            }();
+            const auto reason = api_.Factory().PasswordPrompt(prompt.str());
+            process(remote, reason);
+        }
+    }
+}
+
 auto NotificationStateData::init_keys() noexcept -> OTPasswordPrompt
 {
     const auto reason = api_.Factory().PasswordPrompt(
@@ -203,7 +250,6 @@ auto NotificationStateData::process(
 
                 return out;
             }();
-
             auto sender =
                 code_.DecodeNotificationElements(version, elements, reason);
 
@@ -213,14 +259,31 @@ auto NotificationStateData::process(
                 "decoded incoming notification from ")(sender.asBase58())(
                 " on ")(DisplayString(node_.Chain()))(" for ")(code_.asBase58())
                 .Flush();
-            const auto& account =
-                api_.Crypto().Blockchain().Internal().PaymentCodeSubaccount(
-                    owner_, code_, sender, path_, node_.Chain(), reason);
-            LogVerbose()(OT_PRETTY_CLASS())("Created new account ")(
-                account.ID())
-                .Flush();
+            process(sender, reason);
         }
     }
+}
+
+auto NotificationStateData::process(
+    const opentxs::PaymentCode& remote,
+    const PasswordPrompt& reason) noexcept -> void
+{
+    if (remote == code_) { return; }
+
+    const auto& account =
+        api_.Crypto().Blockchain().Internal().PaymentCodeSubaccount(
+            owner_, code_, remote, path_, node_.Chain(), reason);
+    LogVerbose()(OT_PRETTY_CLASS())("Created or verified account ")(
+        account.ID())(" for ")(remote.asBase58())
+        .Flush();
+}
+
+auto NotificationStateData::ProcessStateMachine(bool enabled) noexcept -> bool
+{
+    auto again = SubchainStateData::ProcessStateMachine(enabled);
+    init_contacts();
+
+    return again;
 }
 
 auto NotificationStateData::type() const noexcept -> std::stringstream

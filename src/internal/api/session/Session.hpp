@@ -17,6 +17,11 @@ namespace opentxs
 {
 namespace api
 {
+namespace session
+{
+class Contacts;
+}  // namespace session
+
 class Legacy;
 }  // namespace api
 
@@ -53,6 +58,7 @@ namespace opentxs::api::session::internal
 class Session : virtual public api::Session
 {
 public:
+    virtual auto Contacts() const -> const session::Contacts& = 0;
     virtual auto GetInternalPasswordCallback() const
         -> INTERNAL_PASSWORD_CALLBACK* = 0;
     virtual auto GetSecret(

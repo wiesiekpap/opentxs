@@ -1857,9 +1857,7 @@ auto OTX::refresh_contacts() const -> bool
             const auto nym = api_.Wallet().Nym(nymID);
             LogVerbose()(OT_PRETTY_CLASS())("Considering nym: ")(nymID).Flush();
 
-            if (nym) {
-                api_.Contacts().Update(*nym);
-            } else {
+            if (!nym) {
                 LogVerbose()(OT_PRETTY_CLASS())(
                     ": We don't have credentials for this nym. "
                     " Will search on all servers.")

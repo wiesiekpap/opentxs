@@ -970,6 +970,35 @@ auto Contact::PaymentCodes(const UnitType currency) const
     return output;
 }
 
+auto Contact::PaymentCodes(alloc::Resource* alloc) const
+    -> Set<opentxs::PaymentCode>
+{
+    auto out = Set<opentxs::PaymentCode>{alloc};
+    const auto& api = imp_->api_;
+    const auto data = [this] {
+        auto lock = Lock{imp_->lock_};
+
+        return imp_->merged_data(lock);
+    }();
+
+    if (!data) { return out; }
+
+    using SectionType = identity::wot::claim::SectionType;
+    const auto section = data->Section(SectionType::Procedure);
+
+    if (!section) { return out; }
+
+    for (const auto& [type, group] : *section) {
+        for (const auto& [id, item] : *group) {
+            auto code = api.Factory().PaymentCode(item->Value());
+
+            if (code.Valid()) { out.emplace(std::move(code)); }
+        }
+    }
+
+    return out;
+}
+
 auto Contact::PhoneNumbers(bool active) const -> UnallocatedCString
 {
     auto lock = Lock{imp_->lock_};

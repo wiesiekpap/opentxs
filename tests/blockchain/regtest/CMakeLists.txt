@@ -35,3 +35,7 @@ endif()
 set_tests_properties(
   unittests-opentxs-blockchain-regtest-stress PROPERTIES DISABLED TRUE
 )
+
+set_tests_properties(
+  unittests-opentxs-blockchain-regtest-payment-code PROPERTIES DISABLED TRUE
+)
