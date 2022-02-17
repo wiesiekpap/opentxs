@@ -14,8 +14,8 @@
 #include "network/zeromq/socket/Sender.tpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Publish>;
@@ -34,7 +34,7 @@ auto PublishSocket(const opentxs::network::zeromq::Context& context)
 namespace opentxs::network::zeromq::socket::implementation
 {
 Publish::Publish(const zeromq::Context& context) noexcept
-    : Socket(context, socket::Type::Publish, Socket::Direction::Bind)
+    : Socket(context, socket::Type::Publish, Direction::Bind)
     , Sender()
     , Server(this->get())
 {

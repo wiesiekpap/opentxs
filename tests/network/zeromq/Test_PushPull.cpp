@@ -17,8 +17,8 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -64,7 +64,7 @@ TEST_F(Test_PushPull, Push_Pull)
     ASSERT_NE(nullptr, &pullCallback.get());
 
     auto pullSocket =
-        context_.PullSocket(pullCallback, zmq::socket::Socket::Direction::Bind);
+        context_.PullSocket(pullCallback, zmq::socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &pullSocket.get());
     ASSERT_EQ(zmq::socket::Type::Pull, pullSocket->Type());
@@ -75,8 +75,7 @@ TEST_F(Test_PushPull, Push_Pull)
         std::chrono::milliseconds(-1));
     pullSocket->Start(endpoint_);
 
-    auto pushSocket =
-        context_.PushSocket(zmq::socket::Socket::Direction::Connect);
+    auto pushSocket = context_.PushSocket(zmq::socket::Direction::Connect);
 
     ASSERT_NE(nullptr, &pushSocket.get());
     ASSERT_EQ(zmq::socket::Type::Push, pushSocket->Type());

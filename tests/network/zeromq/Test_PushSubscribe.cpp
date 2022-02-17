@@ -18,8 +18,8 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -73,7 +73,7 @@ TEST_F(Test_PushSubscribe, Push_Subscribe)
             }
         });
 
-    auto sender = context_.PushSocket(zmq::socket::Socket::Direction::Bind);
+    auto sender = context_.PushSocket(zmq::socket::Direction::Bind);
     auto receiver = context_.SubscribeSocket(callback);
     auto message = opentxs::network::zeromq::Message{};
     message.StartBody();
@@ -132,7 +132,7 @@ TEST_F(Test_PushSubscribe, Push_Publish_Subscribe)
         }
     });
     auto sender1 = context_.PublishSocket();
-    auto sender2 = context_.PushSocket(zmq::socket::Socket::Direction::Bind);
+    auto sender2 = context_.PushSocket(zmq::socket::Direction::Bind);
     auto receiver1 = context_.SubscribeSocket(callback1);
     auto receiver2 = context_.SubscribeSocket(callback2);
     auto receiver3 = context_.SubscribeSocket(callback3);

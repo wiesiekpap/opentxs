@@ -9,11 +9,14 @@
 #include <functional>
 #include <future>
 #include <iosfwd>
+#include <string_view>
+#include <thread>
 #include <tuple>
 
 #include "Proto.hpp"
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
+#include "internal/network/zeromq/Handle.hpp"
 #include "internal/network/zeromq/Thread.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "network/zeromq/context/Pool.hpp"
@@ -48,6 +51,16 @@ namespace network
 {
 namespace zeromq
 {
+namespace internal
+{
+class Handle;
+}  // namespace internal
+
+namespace socket
+{
+class Socket;
+}  // namespace socket
+
 class Context;
 class ListenCallback;
 class Message;
@@ -68,12 +81,14 @@ class Context final : virtual public internal::Context
 public:
     operator void*() const noexcept final;
 
+    auto BelongsToThreadPool(const std::thread::id) const noexcept
+        -> bool final;
     auto DealerSocket(
         const ListenCallback& callback,
-        const socket::Socket::Direction direction) const noexcept
+        const socket::Direction direction) const noexcept
         -> OTZMQDealerSocket final;
     auto MakeBatch(UnallocatedVector<socket::Type>&& types) const noexcept
-        -> internal::Batch& final;
+        -> internal::Handle final;
     auto Modify(SocketID id, ModifyCallback cb) const noexcept
         -> AsyncResult final;
     auto PairEventListener(
@@ -86,31 +101,32 @@ public:
         const socket::Pair& peer) const noexcept -> OTZMQPairSocket final;
     auto PairSocket(
         const zeromq::ListenCallback& callback,
-        const UnallocatedCString& endpoint) const noexcept
+        const std::string_view endpoint) const noexcept
         -> OTZMQPairSocket final;
     auto Pipeline(
-        const api::Session& api,
-        std::function<void(zeromq::Message&&)> callback) const noexcept
-        -> zeromq::Pipeline final;
+        std::function<void(zeromq::Message&&)> callback,
+        const EndpointArgs& subscribe,
+        const EndpointArgs& pull,
+        const EndpointArgs& dealer) const noexcept -> zeromq::Pipeline final;
     auto Proxy(socket::Socket& frontend, socket::Socket& backend) const noexcept
         -> OTZMQProxy final;
     auto PublishSocket() const noexcept -> OTZMQPublishSocket final;
-    auto PullSocket(const socket::Socket::Direction direction) const noexcept
+    auto PullSocket(const socket::Direction direction) const noexcept
         -> OTZMQPullSocket final;
     auto PullSocket(
         const ListenCallback& callback,
-        const socket::Socket::Direction direction) const noexcept
+        const socket::Direction direction) const noexcept
         -> OTZMQPullSocket final;
-    auto PushSocket(const socket::Socket::Direction direction) const noexcept
+    auto PushSocket(const socket::Direction direction) const noexcept
         -> OTZMQPushSocket final;
     auto ReplySocket(
         const ReplyCallback& callback,
-        const socket::Socket::Direction direction) const noexcept
+        const socket::Direction direction) const noexcept
         -> OTZMQReplySocket final;
     auto RequestSocket() const noexcept -> OTZMQRequestSocket final;
     auto RouterSocket(
         const ListenCallback& callback,
-        const socket::Socket::Direction direction) const noexcept
+        const socket::Direction direction) const noexcept
         -> OTZMQRouterSocket final;
     auto Start(BatchID id, StartArgs&& sockets) const noexcept
         -> internal::Thread* final;
@@ -118,6 +134,7 @@ public:
     auto SubscribeSocket(const ListenCallback& callback) const noexcept
         -> OTZMQSubscribeSocket final;
     auto Thread(BatchID id) const noexcept -> internal::Thread* final;
+    auto ThreadID(BatchID id) const noexcept -> std::thread::id final;
 
     Context() noexcept;
 

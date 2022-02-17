@@ -5,11 +5,13 @@
 
 #pragma once
 
+#include <cs_deferred_guarded.h>
 #include <zmq.h>
 #include <atomic>
 #include <future>
 #include <mutex>
 #include <queue>
+#include <shared_mutex>
 #include <thread>
 #include <tuple>
 #include <utility>
@@ -57,6 +59,10 @@ class Thread final : public zeromq::internal::Thread
 public:
     auto Add(BatchID id, StartArgs&& args) noexcept -> bool;
     auto Alloc() noexcept -> alloc::Resource* final { return &alloc_; }
+    auto ID() const noexcept -> std::thread::id final
+    {
+        return thread_.handle_.get_id();
+    }
     auto Modify(SocketID socket, ModifyCallback cb) noexcept
         -> AsyncResult final;
     auto Remove(BatchID id, UnallocatedVector<socket::Raw*>&& sockets) noexcept
@@ -69,7 +75,6 @@ public:
 
 private:
     struct Background {
-        mutable std::mutex lock_{};
         std::atomic_bool running_{false};
         std::thread handle_{};
     };
@@ -82,41 +87,21 @@ private:
 
         ~Items();
     };
-    struct Modification {
-        SocketID socket_;
-        ModifyCallback callback_;
-        std::promise<bool> promise_;
 
-        Modification(SocketID socket, ModifyCallback&& cb) noexcept
-            : socket_(socket)
-            , callback_(std::move(cb))
-            , promise_()
-        {
-        }
-
-    private:
-        Modification(const Modification&) = delete;
-        Modification(Modification&&) = delete;
-        auto operator=(const Modification&) -> Modification& = delete;
-        auto operator=(Modification&&) -> Modification& = delete;
-    };
-    struct Queue {
-        mutable std::mutex lock_{};
-        std::queue<Modification> queue_{};
-    };
+    using Data = libguarded::deferred_guarded<Items, std::shared_mutex>;
 
     zeromq::internal::Pool& parent_;
     alloc::BoostPool alloc_;
     socket::Raw null_;
     Gatekeeper gate_;
-    Items poll_;
     Background thread_;
-    Queue modify_;
+    Data data_;
 
-    auto modify() noexcept -> void;
     auto join() noexcept -> void;
+    auto poll(Items& data) noexcept -> void;
     auto receive_message(void* socket, Message& message) noexcept -> bool;
     auto run() noexcept -> void;
+    auto start() noexcept -> void;
     auto wait() noexcept -> void;
 
     Thread() = delete;

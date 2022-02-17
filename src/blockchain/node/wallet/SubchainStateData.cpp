@@ -375,25 +375,21 @@ auto SubchainStateData::ProcessReorg(
     return queued;
 }
 
-auto SubchainStateData::ProcessStateMachine(bool enabled) noexcept -> bool
+auto SubchainStateData::ProcessStateMachine() noexcept -> bool
 {
     auto again{false};
     get_index().Run();
     mempool_.Run();
-
-    if (enabled) {
-        scan_.Run();
-        rescan_.Run();
-        again = process_.Run();
-    }
+    scan_.Run();
+    rescan_.Run();
+    again = process_.Run();
 
     return again;
 }
 
 auto SubchainStateData::ProcessTaskComplete(
     const Identifier& id,
-    const char* type,
-    bool enabled) noexcept -> void
+    const char* type) noexcept -> void
 {
     auto again{true};
     const auto& log = LogTrace();
@@ -405,7 +401,7 @@ auto SubchainStateData::ProcessTaskComplete(
     static constexpr auto limit = std::chrono::minutes{1};
 
     while (again && ((Clock::now() - start) < limit)) {
-        again = ProcessStateMachine(enabled);
+        again = ProcessStateMachine();
     }
 
     if (again) {

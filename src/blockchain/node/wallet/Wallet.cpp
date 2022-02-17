@@ -49,7 +49,7 @@ auto BlockchainWallet(
     const blockchain::node::internal::WalletDatabase& db,
     const blockchain::node::internal::Mempool& mempool,
     const blockchain::Type chain,
-    const UnallocatedCString& shutdown)
+    const std::string_view shutdown)
     -> std::unique_ptr<blockchain::node::internal::Wallet>
 {
     using ReturnType = blockchain::node::implementation::Wallet;
@@ -67,7 +67,7 @@ Wallet::Wallet(
     const node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
     const Type chain,
-    const UnallocatedCString& shutdown) noexcept
+    const std::string_view shutdown) noexcept
     : Worker(api, std::chrono::milliseconds(10))
     , parent_(parent)
     , db_(db)
@@ -80,12 +80,11 @@ Wallet::Wallet(
         pipeline_.Push(std::move(work));
     })
     , fee_oracle_(factory::FeeOracle(api_, chain))
-    , enabled_(true)
     , accounts_(api, parent_, db_, chain_, task_finished_)
     , proposals_(api, parent_, db_, chain_)
 {
     init_executor({
-        shutdown,
+        UnallocatedCString{shutdown},
         UnallocatedCString{api.Endpoints().BlockchainReorg()},
         UnallocatedCString{api.Endpoints().NymCreated()},
         UnallocatedCString{api.Endpoints().BlockchainNewFilter()},
@@ -178,7 +177,6 @@ auto Wallet::Height() const noexcept -> block::Height
 
 auto Wallet::Init() noexcept -> void
 {
-    enabled_ = true;
     trigger_wallet();
     trigger();
 }
@@ -330,7 +328,7 @@ auto Wallet::process_filter(const zmq::Message& in) noexcept -> void
     const auto position = block::Position{
         body.at(3).as<block::Height>(), api_.Factory().Data(body.at(4))};
 
-    if (enabled_) { accounts_.ProcessNewFilter(position); }
+    accounts_.ProcessNewFilter(position);
 }
 
 auto Wallet::process_job_finished(const zmq::Message& in) noexcept -> void
@@ -341,7 +339,7 @@ auto Wallet::process_job_finished(const zmq::Message& in) noexcept -> void
 
     const auto id = api_.Factory().Identifier(body.at(1));
     const auto type = UnallocatedCString{body.at(2).Bytes()};
-    accounts_.ProcessTaskComplete(id, type.c_str(), enabled_);
+    accounts_.ProcessTaskComplete(id, type.c_str());
 }
 
 auto Wallet::process_key(const zmq::Message& in) noexcept -> void
@@ -442,7 +440,7 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
 
 auto Wallet::process_wallet() noexcept -> void
 {
-    accounts_.ProcessStateMachine(enabled_);
+    accounts_.ProcessStateMachine();
 }
 
 auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
@@ -460,11 +458,7 @@ auto Wallet::state_machine() noexcept -> bool
 {
     if (false == running_.load()) { return false; }
 
-    auto repeat{false};
-
-    if (enabled_) { repeat |= proposals_.Run(); }
-
-    return repeat;
+    return proposals_.Run();
 }
 
 auto Wallet::trigger_wallet() const noexcept -> void

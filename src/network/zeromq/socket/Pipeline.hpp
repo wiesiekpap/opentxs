@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "internal/network/zeromq/Context.hpp"
+#include "internal/network/zeromq/Handle.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
@@ -64,6 +65,7 @@ namespace opentxs::network::zeromq
 class Pipeline::Imp : virtual public internal::Pipeline
 {
 public:
+    virtual auto BatchID() const noexcept -> std::size_t { return {}; }
     virtual auto BindSubscriber(
         const std::string_view,
         std::function<Message(bool)>) const noexcept -> bool
@@ -118,6 +120,7 @@ namespace opentxs::network::zeromq::implementation
 class Pipeline final : virtual public zeromq::Pipeline::Imp
 {
 public:
+    auto BatchID() const noexcept -> std::size_t final;
     auto BindSubscriber(
         const std::string_view endpoint,
         std::function<Message(bool)> notify) const noexcept -> bool final;
@@ -136,15 +139,19 @@ public:
         -> bool final;
 
     Pipeline(
-        const api::Session& api,
         const zeromq::Context& context,
-        std::function<void(zeromq::Message&&)> callback) noexcept;
+        std::function<void(zeromq::Message&&)> callback,
+        const EndpointArgs& subscribe,
+        const EndpointArgs& pull,
+        const EndpointArgs& dealer) noexcept;
     Pipeline(
-        const api::Session& api,
         const zeromq::Context& context,
         std::function<void(zeromq::Message&&)> callback,
         const UnallocatedCString internalEndpoint,
-        const UnallocatedCString outgoingEndpoint) noexcept;
+        const UnallocatedCString outgoingEndpoint,
+        const EndpointArgs& subscribe,
+        const EndpointArgs& pull,
+        const EndpointArgs& dealer) noexcept;
 
     ~Pipeline() final;
 
@@ -155,6 +162,7 @@ private:
     const zeromq::Context& context_;
     mutable Gatekeeper gate_;
     mutable std::atomic<bool> shutdown_;
+    internal::Handle handle_;
     internal::Batch& batch_;
     socket::Raw& sub_;                   // NOTE activated by SubscribeTo()
     socket::Raw& pull_;                  // NOTE activated by PullFrom()
@@ -164,6 +172,10 @@ private:
     mutable GuardedSocket to_dealer_;    // NOTE activated by Send()
     mutable GuardedSocket to_internal_;  // NOTE activated by Push()
     internal::Thread* thread_;
+
+    static auto apply(
+        const EndpointArgs& endpoint,
+        socket::Raw& socket) noexcept -> void;
 
     auto bind(
         SocketID id,

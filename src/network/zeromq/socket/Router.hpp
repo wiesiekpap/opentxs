@@ -15,6 +15,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -52,7 +53,7 @@ public:
 
     Router(
         const zeromq::Context& context,
-        const Socket::Direction direction,
+        const Direction direction,
         const zeromq::ListenCallback& callback) noexcept;
 
     ~Router() final;

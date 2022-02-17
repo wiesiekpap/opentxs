@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/network/zeromq/Handle.hpp"
 #include "internal/util/Lockable.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -107,6 +108,7 @@ private:
     Server& server_;
     const PasswordPrompt& reason_;
     std::atomic<bool> running_;
+    zmq::internal::Handle zmq_handle_;
     zmq::internal::Batch& zmq_batch_;
     zmq::socket::Raw& frontend_;
     zmq::socket::Raw& notification_;

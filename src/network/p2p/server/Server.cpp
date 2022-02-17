@@ -17,10 +17,12 @@
 #include <type_traits>
 #include <utility>
 
+#include "core/Worker.hpp"
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/network/p2p/Factory.hpp"
+#include "internal/network/p2p/Types.hpp"
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Thread.hpp"
@@ -59,7 +61,7 @@ namespace opentxs::network::p2p
 Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
     : api_(api)
     , zmq_(zmq)
-    , batch_(zmq_.Internal().MakeBatch([&] {
+    , handle_(zmq_.Internal().MakeBatch([&] {
         auto out = UnallocatedVector<zeromq::socket::Type>{};
         out.emplace_back(zeromq::socket::Type::Router);
         out.emplace_back(zeromq::socket::Type::Publish);
@@ -69,24 +71,49 @@ Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
 
         return out;
     }()))
+    , batch_(handle_.batch_)
     , external_callback_(
           batch_.listen_callbacks_.emplace_back(zeromq::ListenCallback::Factory(
               [this](auto&& msg) { process_external(std::move(msg)); })))
     , internal_callback_(
           batch_.listen_callbacks_.emplace_back(zeromq::ListenCallback::Factory(
               [this](auto&& msg) { process_internal(std::move(msg)); })))
-    , sync_(batch_.sockets_.at(0))
+    , sync_([&]() -> auto& {
+        auto& out = batch_.sockets_.at(0);
+        const auto rc = out.SetExposedUntrusted();
+
+        OT_ASSERT(rc);
+
+        return out;
+    }())
     , update_(batch_.sockets_.at(1))
-    , wallet_(batch_.sockets_.at(2))
+    , wallet_([&]() -> auto& {
+        auto& out = batch_.sockets_.at(2);
+        const auto endpoint = CString{api_.Endpoints().Internal().P2PWallet()};
+        const auto rc = out.Connect(endpoint.c_str());
+
+        OT_ASSERT(rc);
+
+        LogTrace()(OT_PRETTY_CLASS())("wallet socket connected to ")(endpoint)
+            .Flush();
+        out.Send(MakeWork(Job::Register));
+
+        return out;
+    }())
     , map_lock_()
     , map_([&] {
         auto output = Map{};
+        // WARNING this must be kept up to date if new sockets are added to the
+        // batch
+        constexpr auto extraSockets = 3u;
 
         OT_ASSERT(
             batch_.sockets_.size() ==
-            opentxs::blockchain::DefinedChains().size() + 3u);
+            opentxs::blockchain::DefinedChains().size() + extraSockets);
 
-        auto it = std::next(batch_.sockets_.begin(), 2);
+        // NOTE adjust to one position before the first socket because the
+        // iterator will be preincremented
+        auto it = std::next(batch_.sockets_.begin(), extraSockets - 1u);
 
         for (const auto chain : opentxs::blockchain::DefinedChains()) {
             auto& [endpoint, enabled, socket] =
@@ -109,7 +136,7 @@ Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
           batch_.id_,
           [&] {
               auto out = zeromq::StartArgs{};
-              out.reserve(map_.size() + 1u);
+              out.reserve(map_.size() + 2u);
               out.emplace_back(
                   sync_.ID(), &sync_, [&cb = external_callback_](auto&& m) {
                       cb.Process(std::move(m));
@@ -141,6 +168,7 @@ Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
     , running_(true)
     , gate_()
 {
+    LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(batch_.id_).Flush();
 }
 
 auto Server::Imp::process_external(zeromq::Message&& incoming) noexcept -> void
@@ -189,10 +217,10 @@ auto Server::Imp::process_internal(zeromq::Message&& incoming) noexcept -> void
 
     if (0u < hSize) {
         LogTrace()(OT_PRETTY_CLASS())("transmitting sync reply").Flush();
-        sync_.Send(std::move(incoming));
+        sync_.SendExternal(std::move(incoming));
     } else {
         LogTrace()(OT_PRETTY_CLASS())("broadcasting push notification").Flush();
-        update_.Send(std::move(incoming));
+        update_.SendExternal(std::move(incoming));
     }
 }
 
@@ -219,7 +247,7 @@ auto Server::Imp::process_pushtx(
         success = false;
     }
 
-    sync_.Send([&] {
+    sync_.SendExternal([&] {
         auto out = opentxs::network::zeromq::reply_to_message(std::move(msg));
         const auto reply = factory::BlockchainSyncPushTransactionReply(
             chain, pushtx.ID(), success);
@@ -245,7 +273,7 @@ auto Server::Imp::process_sync(
             }();
             auto msg = zeromq::reply_to_message(incoming);
 
-            if (ack.Serialize(msg)) { sync_.Send(std::move(msg)); }
+            if (ack.Serialize(msg)) { sync_.SendExternal(std::move(msg)); }
         }
 
         namespace bcsync = opentxs::network::p2p;
@@ -273,12 +301,7 @@ auto Server::Imp::process_sync(
 Server::Imp::~Imp()
 {
     gate_.shutdown();
-
-    if (auto running = running_.exchange(false); running) {
-        batch_.ClearCallbacks();
-    }
-
-    zmq_.Internal().Stop(batch_.id_);
+    handle_.Release();
 }
 }  // namespace opentxs::network::p2p
 
@@ -350,8 +373,6 @@ auto Server::Start(
         const auto& endpointPublic = imp_->sync_public_endpoint_;
         const auto& endpointLocal = imp_->sync_endpoint_;
         const auto& endpointPublish = imp_->update_endpoint_;
-        const auto walletEndpoint =
-            CString{imp_->api_.Endpoints().Internal().P2PWallet()};
 
         if (socket.SetRoutingID(endpointPublic)) {
             LogTrace()("Sync socket identity set to public endpoint: ")(
@@ -379,14 +400,6 @@ auto Server::Start(
         } else {
             LogError()(OT_PRETTY_CLASS())("failed to bind sync publisher to ")(
                 endpointPublish)
-                .Flush();
-        }
-
-        if (imp_->wallet_.Connect(walletEndpoint.c_str())) {
-            LogTrace()("Wallet socket connected to ")(walletEndpoint).Flush();
-        } else {
-            LogError()(OT_PRETTY_CLASS())(
-                "failed to connect wallet socket to ")(walletEndpoint)
                 .Flush();
         }
     });

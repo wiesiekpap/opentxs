@@ -18,6 +18,9 @@ public:
         const noexcept -> std::string_view = 0;
     virtual auto BlockchainFilterUpdated(const opentxs::blockchain::Type chain)
         const noexcept -> std::string_view = 0;
+    virtual auto BlockchainStartupPublish() const noexcept
+        -> std::string_view = 0;
+    virtual auto BlockchainStartupPull() const noexcept -> std::string_view = 0;
     auto Internal() const noexcept -> const Endpoints& final { return *this; }
     virtual auto P2PWallet() const noexcept -> std::string_view = 0;
     virtual auto ProcessPushNotification() const noexcept

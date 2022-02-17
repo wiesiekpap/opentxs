@@ -11,6 +11,7 @@
 
 namespace opentxs::network::zeromq::socket
 {
+enum class Direction : bool { Bind = false, Connect = true };
 enum class Type : std::uint8_t;
 }  // namespace opentxs::network::zeromq::socket
 

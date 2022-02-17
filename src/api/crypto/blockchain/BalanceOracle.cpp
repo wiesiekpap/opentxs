@@ -35,7 +35,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"  // IWYU pragma: keep
-#include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -124,8 +124,7 @@ struct BalanceOracle::Imp {
         , cb_(zmq::ListenCallback::Factory(
               [this](auto&& in) { cb(std::move(in)); }))
         , socket_([&] {
-            auto out =
-                zmq_.RouterSocket(cb_, zmq::socket::Socket::Direction::Bind);
+            auto out = zmq_.RouterSocket(cb_, zmq::socket::Direction::Bind);
             const auto started =
                 out->Start(api_.Endpoints().BlockchainBalance().data());
 

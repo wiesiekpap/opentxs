@@ -19,6 +19,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/WorkType.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
@@ -147,6 +148,11 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     auto PeerUpdate() const noexcept -> const zmq::socket::Publish& override
     {
         OT_FAIL;
+    }
+    auto PublishStartup(const opentxs::blockchain::Type, OTZMQWorkType)
+        const noexcept -> bool override
+    {
+        return false;
     }
     auto Reorg() const noexcept -> const zmq::socket::Publish& override
     {

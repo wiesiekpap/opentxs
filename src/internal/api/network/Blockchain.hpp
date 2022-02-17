@@ -9,6 +9,7 @@
 
 #include "opentxs/network/p2p/State.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/WorkType.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
@@ -70,6 +71,9 @@ public:
         -> const opentxs::network::zeromq::socket::Publish& = 0;
     virtual auto PeerUpdate() const noexcept
         -> const opentxs::network::zeromq::socket::Publish& = 0;
+    virtual auto PublishStartup(
+        const opentxs::blockchain::Type chain,
+        OTZMQWorkType type) const noexcept -> bool = 0;
     virtual auto Reorg() const noexcept
         -> const opentxs::network::zeromq::socket::Publish& = 0;
     virtual auto ReportProgress(

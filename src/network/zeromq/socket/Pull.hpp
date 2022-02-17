@@ -13,6 +13,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -43,16 +44,14 @@ class Pull final : public Receiver<zeromq::socket::Pull>,
 public:
     Pull(
         const zeromq::Context& context,
-        const Socket::Direction direction,
+        const Direction direction,
         const zeromq::ListenCallback& callback,
         const bool startThread) noexcept;
     Pull(
         const zeromq::Context& context,
-        const Socket::Direction direction,
+        const Direction direction,
         const zeromq::ListenCallback& callback) noexcept;
-    Pull(
-        const zeromq::Context& context,
-        const Socket::Direction direction) noexcept;
+    Pull(const zeromq::Context& context, const Direction direction) noexcept;
 
     ~Pull() final;
 

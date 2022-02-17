@@ -11,8 +11,8 @@
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Reply.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -41,8 +41,8 @@ TEST_F(Test_ReplySocket, ReplySocket_Factory)
 
     ASSERT_NE(nullptr, &replyCallback.get());
 
-    auto replySocket = context_.ReplySocket(
-        replyCallback, zmq::socket::Socket::Direction::Bind);
+    auto replySocket =
+        context_.ReplySocket(replyCallback, zmq::socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());

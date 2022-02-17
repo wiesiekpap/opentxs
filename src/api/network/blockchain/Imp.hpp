@@ -17,6 +17,7 @@
 #include <tuple>
 
 #include "api/network/Blockchain.hpp"
+#include "api/network/blockchain/StartupPublisher.hpp"
 #include "blockchain/database/common/Database.hpp"
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -32,6 +33,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/WorkType.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
@@ -139,6 +141,9 @@ struct BlockchainImp final : public Blockchain::Imp {
     {
         return connected_peer_updates_;
     }
+    auto PublishStartup(
+        const opentxs::blockchain::Type chain,
+        OTZMQWorkType type) const noexcept -> bool final;
     auto Reorg() const noexcept -> const zmq::socket::Publish& final
     {
         return reorg_;
@@ -194,6 +199,7 @@ private:
     OTZMQPublishSocket reorg_;
     OTZMQPublishSocket sync_updates_;
     OTZMQPublishSocket mempool_;
+    blockchain::StartupPublisher startup_publisher_;
     const std::unique_ptr<Config> base_config_;
     mutable std::mutex lock_;
     mutable UnallocatedMap<Chain, Config> config_;

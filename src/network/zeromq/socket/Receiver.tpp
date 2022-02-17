@@ -29,7 +29,7 @@ template <typename InterfaceType, typename MessageType>
 Receiver<InterfaceType, MessageType>::Receiver(
     const zeromq::Context& context,
     const socket::Type type,
-    const Socket::Direction direction,
+    const Direction direction,
     const bool startThread) noexcept
     : Socket(context, type, direction)
     , start_thread_(startThread)

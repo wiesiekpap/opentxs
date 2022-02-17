@@ -37,7 +37,7 @@ namespace zeromq
 {
 namespace internal
 {
-class Batch;
+class Handle;
 class Thread;
 }  // namespace internal
 }  // namespace zeromq
@@ -62,7 +62,7 @@ private:
 
     Client(
         const api::Session& api,
-        opentxs::network::zeromq::internal::Batch& batch) noexcept;
+        opentxs::network::zeromq::internal::Handle&& batch) noexcept;
     Client() = delete;
     Client(const Client&) = delete;
     Client(Client&&) = delete;

@@ -66,7 +66,7 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/otx/blind/Token.hpp"
@@ -102,7 +102,7 @@ Notary::Notary(
     , reason_(reason)
     , manager_(manager)
     , notification_socket_(manager_.Network().ZeroMQ().PushSocket(
-          zmq::socket::Socket::Direction::Connect))
+          zmq::socket::Direction::Connect))
 {
     const auto bound = notification_socket_->Start(
         manager_.Endpoints().Internal().PushNotification().data());

@@ -10,6 +10,7 @@
 #include "api/session/Wallet.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <atomic>
 #include <functional>
 #include <iterator>
 #include <stdexcept>
@@ -89,8 +90,8 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"  // IWYU pragma: keep
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
@@ -148,14 +149,18 @@ Wallet::Wallet(const api::Session& api)
     , dht_server_requester_{api_.Network().ZeroMQ().RequestSocket()}
     , dht_unit_requester_{api_.Network().ZeroMQ().RequestSocket()}
     , find_nym_(api_.Network().ZeroMQ().PushSocket(
-          opentxs::network::zeromq::socket::Socket::Direction::Connect))
-    , batch_([&]() -> auto& {
+          opentxs::network::zeromq::socket::Direction::Connect))
+    , handle_([&] {
         using Type = opentxs::network::zeromq::socket::Type;
-        using Callback = opentxs::network::zeromq::ListenCallback;
-        auto& out = api_.Network().ZeroMQ().Internal().MakeBatch({
+
+        return api_.Network().ZeroMQ().Internal().MakeBatch({
             Type::Pair,
             Type::Pull,
         });
+    }())
+    , batch_([&]() -> auto& {
+        using Callback = opentxs::network::zeromq::ListenCallback;
+        auto& out = handle_.batch_;
         out.listen_callbacks_.emplace_back(Callback::Factory(
             [this](auto&& in) { process_p2p(std::move(in)); }));
 
@@ -188,10 +193,6 @@ Wallet::Wallet(const api::Session& api)
 
         OT_ASSERT(rc);
 
-        rc = socket.SetOutgoingHWM(0);
-
-        OT_ASSERT(rc);
-
         return socket;
     }())
     , thread_(api_.Network().ZeroMQ().Internal().Start(
@@ -204,11 +205,13 @@ Wallet::Wallet(const api::Session& api)
                }},
               {loopback_.ID(),
                &loopback_,
-               [id = loopback_.ID(), &socket = p2p_socket_](auto&& m) {
-                   socket.Send(std::move(m));
+               [id = loopback_.ID(), &socket = p2p_socket_, &batch = batch_](
+                   auto&& m) {
+                   if (batch.toggle_) { socket.Send(std::move(m)); }
                }},
           }))
 {
+    LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(batch_.id_).Flush();
     account_publisher_->Start(api_.Endpoints().AccountUpdate().data());
     issuer_publisher_->Start(api_.Endpoints().IssuerUpdate().data());
     nym_publisher_->Start(api_.Endpoints().NymDownload().data());
@@ -1989,6 +1992,9 @@ auto Wallet::process_p2p(opentxs::network::zeromq::Message&& msg) const noexcept
         case Job::QueryContract: {
             process_p2p_query_contract(std::move(msg));
         } break;
+        case Job::Register: {
+            batch_.toggle_ = true;
+        } break;
         case Job::Shutdown:
         case Job::BlockHeader:
         case Job::Reorg:
@@ -1996,7 +2002,6 @@ auto Wallet::process_p2p(opentxs::network::zeromq::Message&& msg) const noexcept
         case Job::SyncAck:
         case Job::SyncReply:
         case Job::SyncPush:
-        case Job::Register:
         case Job::Request:
         case Job::Processed:
         case Job::StateMachine:
@@ -3415,9 +3420,5 @@ auto Wallet::SaveCredential(const proto::Credential& credential) const -> bool
     return api_.Storage().Store(credential);
 }
 
-Wallet::~Wallet()
-{
-    batch_.ClearCallbacks();
-    api_.Network().ZeroMQ().Internal().Stop(batch_.id_);
-}
+Wallet::~Wallet() { handle_.Release(); }
 }  // namespace opentxs::api::session::imp

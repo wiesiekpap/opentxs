@@ -10,8 +10,8 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -34,8 +34,7 @@ public:
 TEST_F(Test_DealerSocket, DealerSocket_Factory)
 {
     auto dealerSocket = context_.DealerSocket(
-        zmq::ListenCallback::Factory(),
-        zmq::socket::Socket::Direction::Connect);
+        zmq::ListenCallback::Factory(), zmq::socket::Direction::Connect);
 
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());

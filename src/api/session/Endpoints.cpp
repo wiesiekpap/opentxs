@@ -65,6 +65,10 @@ Endpoints::Endpoints(const int instance) noexcept
     , blockchain_reorg_(build_inproc_path("blockchain/reorg", version_1_))
     , blockchain_scan_progress_(
           build_inproc_path("blockchain/scan", version_1_))
+    , blockchain_startup_publish_(
+          build_inproc_path("blockchain/startup/publish", version_1_))
+    , blockchain_startup_pull_(
+          build_inproc_path("blockchain/startup/pull", version_1_))
     , blockchain_state_change_(
           build_inproc_path("blockchain/state", version_1_))
     , blockchain_sync_progress_(
@@ -197,6 +201,16 @@ auto Endpoints::BlockchainReorg() const noexcept -> std::string_view
 auto Endpoints::BlockchainScanProgress() const noexcept -> std::string_view
 {
     return blockchain_scan_progress_;
+}
+
+auto Endpoints::BlockchainStartupPublish() const noexcept -> std::string_view
+{
+    return blockchain_startup_publish_;
+}
+
+auto Endpoints::BlockchainStartupPull() const noexcept -> std::string_view
+{
+    return blockchain_startup_pull_;
 }
 
 auto Endpoints::BlockchainStateChange() const noexcept -> std::string_view

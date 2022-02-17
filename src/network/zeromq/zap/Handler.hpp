@@ -6,6 +6,7 @@
 #pragma once
 
 #include <ostream>
+#include <string_view>
 
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Receiver.hpp"
@@ -40,7 +41,7 @@ class Handler final
       zeromq::curve::implementation::Server
 {
 public:
-    auto Start(const UnallocatedCString& endpoint) const noexcept -> bool final
+    auto Start(const std::string_view endpoint) const noexcept -> bool final
     {
         return false;
     }

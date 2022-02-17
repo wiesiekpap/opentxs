@@ -4,20 +4,30 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <QString>
+#include <QValidator>
+#include <future>
+#include <tuple>
+#include <type_traits>
+#include <utility>
 
-#include "Basic.hpp"
 #include "common/Client.hpp"
 #include "common/Notary.hpp"
 #include "integration/Helpers.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/otx/client/Pair.hpp"
-#include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/UI.hpp"
-#include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/interface/qt/AccountActivity.hpp"
+#include "opentxs/interface/qt/AmountValidator.hpp"
+#include "opentxs/util/Container.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "paymentcode/VectorsV3.hpp"
 
 namespace ot = opentxs;

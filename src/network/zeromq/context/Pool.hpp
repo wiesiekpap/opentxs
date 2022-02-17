@@ -5,9 +5,11 @@
 
 #include <cs_ordered_guarded.h>
 #include <robin_hood.h>
+#include <atomic>
 #include <future>
 #include <mutex>
 #include <shared_mutex>
+#include <thread>
 #include <tuple>
 #include <utility>
 
@@ -40,6 +42,7 @@ class Thread;
 namespace internal
 {
 class Batch;
+class Handle;
 class Thread;
 }  // namespace internal
 
@@ -65,19 +68,22 @@ using SocketIndex =
 class Pool final : public zeromq::internal::Pool
 {
 public:
+    auto BelongsToThreadPool(const std::thread::id) const noexcept
+        -> bool final;
     auto Parent() const noexcept -> const zeromq::Context& final
     {
         return parent_;
     }
+    auto Thread(BatchID id) const noexcept -> zeromq::internal::Thread* final;
+    auto ThreadID(BatchID id) const noexcept -> std::thread::id final;
 
     auto MakeBatch(UnallocatedVector<socket::Type>&& types) noexcept
-        -> internal::Batch&;
+        -> internal::Handle;
     auto Modify(SocketID id, ModifyCallback cb) noexcept -> AsyncResult;
-    auto DoModify(SocketID id, ModifyCallback& cb) noexcept -> bool final;
+    auto DoModify(SocketID id, const ModifyCallback& cb) noexcept -> bool final;
     auto Shutdown() noexcept -> void;
     auto Start(BatchID id, StartArgs&& sockets) noexcept
         -> zeromq::internal::Thread*;
-    auto Thread(BatchID id) const noexcept -> zeromq::internal::Thread* final;
     auto Stop(BatchID id) noexcept -> std::future<bool>;
     auto UpdateIndex(BatchID id, StartArgs&& sockets) noexcept -> void final;
     auto UpdateIndex(BatchID id) noexcept -> void final;
@@ -89,13 +95,17 @@ public:
 private:
     const Context& parent_;
     const unsigned int count_;
+    std::atomic<bool> running_;
     Gatekeeper gate_;
     robin_hood::unordered_node_map<unsigned int, context::Thread> threads_;
     libguarded::ordered_guarded<Batches, std::shared_mutex> batches_;
     libguarded::ordered_guarded<BatchIndex, std::shared_mutex> batch_index_;
     libguarded::ordered_guarded<SocketIndex, std::shared_mutex> socket_index_;
 
+    auto get(BatchID id) const noexcept -> const context::Thread&;
+
     auto get(BatchID id) noexcept -> context::Thread&;
+    auto stop() noexcept -> void;
 
     Pool() = delete;
     Pool(const Pool&) = delete;

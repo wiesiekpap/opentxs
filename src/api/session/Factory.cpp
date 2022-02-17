@@ -29,7 +29,6 @@
 #include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/key/Null.hpp"
 #include "internal/network/p2p/Factory.hpp"
-#include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/otx/Types.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Mint.hpp"
@@ -45,7 +44,6 @@
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -102,7 +100,6 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/network/p2p/Base.hpp"  // IWYU pragma: keep
-#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
@@ -1970,13 +1967,6 @@ auto Factory::PeerRequest(const Nym_p& nym, const ReadView& view) const
     noexcept(false) -> OTPeerRequest
 {
     return PeerRequest(nym, proto::Factory<proto::PeerRequest>(view));
-}
-
-auto Factory::Pipeline(
-    std::function<void(opentxs::network::zeromq::Message&&)> callback) const
-    -> opentxs::network::zeromq::Pipeline
-{
-    return factory::Pipeline(api_, api_.Network().ZeroMQ(), callback);
 }
 
 auto Factory::Purse(

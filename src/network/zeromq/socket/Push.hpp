@@ -10,6 +10,7 @@
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
@@ -35,9 +36,7 @@ class Push final : public Sender<zeromq::socket::Push>,
                    public zeromq::curve::implementation::Client
 {
 public:
-    Push(
-        const zeromq::Context& context,
-        const Socket::Direction direction) noexcept;
+    Push(const zeromq::Context& context, const Direction direction) noexcept;
 
     ~Push() final;
 

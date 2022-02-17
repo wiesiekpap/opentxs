@@ -50,8 +50,8 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -72,8 +72,7 @@ Asio::Imp::Imp(const zmq::Context& zmq) noexcept
           1))
     , data_cb_(zmq::ListenCallback::Factory(
           [this](auto&& in) { data_callback(std::move(in)); }))
-    , data_socket_(
-          zmq_.RouterSocket(data_cb_, zmq::socket::Socket::Direction::Bind))
+    , data_socket_(zmq_.RouterSocket(data_cb_, zmq::socket::Direction::Bind))
     , buffers_()
     , lock_()
     , io_context_()

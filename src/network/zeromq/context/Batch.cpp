@@ -24,6 +24,7 @@ Batch::Batch(
     , listen_callbacks_()
     , reply_callbacks_()
     , sockets_()
+    , toggle_(false)
 {
     sockets_.reserve(types.size());
     std::transform(

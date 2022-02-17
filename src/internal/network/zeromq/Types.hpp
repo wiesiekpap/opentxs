@@ -10,6 +10,7 @@
 #include <future>
 #include <tuple>
 
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -39,6 +40,8 @@ using ModifyCallback = std::function<void(socket::Raw&)>;
 using ThreadStartArgs = Vector<std::pair<socket::Raw*, ReceiveCallback>>;
 using StartArgs = Vector<std::tuple<SocketID, socket::Raw*, ReceiveCallback>>;
 using AsyncResult = std::pair<bool, std::future<bool>>;
+using EndpointArg = std::pair<CString, socket::Direction>;
+using EndpointArgs = Vector<EndpointArg>;
 
 auto GetBatchID() noexcept -> BatchID;
 auto GetSocketID() noexcept -> SocketID;

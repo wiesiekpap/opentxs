@@ -278,9 +278,9 @@ auto NotificationStateData::process(
         .Flush();
 }
 
-auto NotificationStateData::ProcessStateMachine(bool enabled) noexcept -> bool
+auto NotificationStateData::ProcessStateMachine() noexcept -> bool
 {
-    auto again = SubchainStateData::ProcessStateMachine(enabled);
+    auto again = SubchainStateData::ProcessStateMachine();
     init_contacts();
 
     return again;

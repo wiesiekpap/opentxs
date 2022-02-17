@@ -6,6 +6,7 @@
 #pragma once
 
 #include <future>
+#include <thread>
 #include <tuple>
 
 #include "internal/network/zeromq/Types.hpp"
@@ -22,8 +23,11 @@ namespace zeromq
 namespace internal
 {
 class Batch;
+class Handle;
 class Thread;
 }  // namespace internal
+
+class Pipeline;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
@@ -34,21 +38,34 @@ namespace opentxs::network::zeromq::internal
 class Context : virtual public zeromq::Context
 {
 public:
+    virtual auto BelongsToThreadPool(
+        const std::thread::id = std::this_thread::get_id()) const noexcept
+        -> bool = 0;
     auto Internal() const noexcept -> const internal::Context& final
     {
         return *this;
     }
-    virtual auto MakeBatch(UnallocatedVector<socket::Type>&& types)
-        const noexcept -> internal::Batch& = 0;
+    virtual auto MakeBatch(
+        UnallocatedVector<socket::Type>&& types) const noexcept -> Handle = 0;
     virtual auto Modify(SocketID id, ModifyCallback cb) const noexcept
         -> std::pair<bool, std::future<bool>> = 0;
+    virtual auto Pipeline(
+        std::function<void(zeromq::Message&&)> callback,
+        const EndpointArgs& subscribe = {},
+        const EndpointArgs& pull = {},
+        const EndpointArgs& dealer = {}) const noexcept -> zeromq::Pipeline = 0;
     virtual auto Start(BatchID id, StartArgs&& sockets) const noexcept
         -> Thread* = 0;
-    virtual auto Stop(BatchID id) const noexcept -> std::future<bool> = 0;
     virtual auto Thread(BatchID id) const noexcept -> Thread* = 0;
+    virtual auto ThreadID(BatchID id) const noexcept -> std::thread::id = 0;
 
     auto Internal() noexcept -> internal::Context& final { return *this; }
 
     ~Context() override = default;
+
+private:
+    friend Handle;
+
+    virtual auto Stop(BatchID id) const noexcept -> std::future<bool> = 0;
 };
 }  // namespace opentxs::network::zeromq::internal

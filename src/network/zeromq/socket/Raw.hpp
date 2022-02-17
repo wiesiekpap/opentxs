@@ -6,14 +6,18 @@
 #pragma once
 
 #include <zmq.h>
+#include <chrono>
+#include <cstddef>
 #include <memory>
 
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/ByteLiterals.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
@@ -46,27 +50,31 @@ public:
     {
         return socket::Type::Error;
     }
-    virtual auto Bind(const char* endpoint) noexcept -> bool { return {}; }
+    virtual auto Bind(const char*) noexcept -> bool { return {}; }
     virtual auto ClearSubscriptions() noexcept -> bool { return {}; }
     virtual auto Close() noexcept -> void {}
-    virtual auto Connect(const char* endpoint) noexcept -> bool { return {}; }
-    virtual auto Disconnect(const char* endpoint) noexcept -> bool
+    virtual auto Connect(const char*) noexcept -> bool { return {}; }
+    virtual auto Disconnect(const char*) noexcept -> bool { return {}; }
+    virtual auto DisconnectAll() noexcept -> bool { return {}; }
+    virtual auto Native() noexcept -> void* { return nullptr; }
+    virtual auto Send(Message&&) noexcept -> bool { return {}; }
+    virtual auto SendExternal(Message&&) noexcept -> bool { return {}; }
+    virtual auto SetExposedUntrusted() noexcept -> bool { return false; }
+    virtual auto SetIncomingHWM(int) noexcept -> bool { return {}; }
+    virtual auto SetLinger(int) noexcept -> bool { return {}; }
+    virtual auto SetMaxMessageSize(std::size_t) noexcept -> bool { return {}; }
+    virtual auto SetMonitor(const char*, int) noexcept -> bool { return {}; }
+    virtual auto SetOutgoingHWM(int) noexcept -> bool { return {}; }
+    virtual auto SetPrivateKey(ReadView) noexcept -> bool { return {}; }
+    virtual auto SetRouterHandover(bool) noexcept -> bool { return {}; }
+    virtual auto SetRoutingID(ReadView) noexcept -> bool { return {}; }
+    virtual auto SetSendTimeout(std::chrono::milliseconds) noexcept -> bool
     {
         return {};
     }
-    virtual auto DisconnectAll() noexcept -> bool { return {}; }
-    virtual auto Native() noexcept -> void* { return nullptr; }
-    virtual auto Send(Message&& msg) noexcept -> bool { return {}; }
-    virtual auto SetIncomingHWM(int value) noexcept -> bool { return {}; }
-    virtual auto SetLinger(int value) noexcept -> bool { return {}; }
-    virtual auto SetMonitor(const char*, int) noexcept -> bool { return {}; }
-    virtual auto SetOutgoingHWM(int value) noexcept -> bool { return {}; }
-    virtual auto SetPrivateKey(ReadView) noexcept -> bool { return {}; }
-    virtual auto SetRouterHandover(bool value) noexcept -> bool { return {}; }
-    virtual auto SetRoutingID(ReadView) noexcept -> bool { return {}; }
     virtual auto SetZAPDomain(ReadView) noexcept -> bool { return {}; }
     virtual auto Stop() noexcept -> void {}
-    virtual auto Unbind(const char* endpoint) noexcept -> bool { return {}; }
+    virtual auto Unbind(const char*) noexcept -> bool { return {}; }
     virtual auto UnbindAll() noexcept -> bool { return {}; }
 
     Imp() = default;
@@ -96,13 +104,17 @@ public:
     auto DisconnectAll() noexcept -> bool final;
     auto Native() noexcept -> void* final { return socket_.get(); }
     auto Send(Message&& msg) noexcept -> bool final;
+    auto SendExternal(Message&& msg) noexcept -> bool final;
+    auto SetExposedUntrusted() noexcept -> bool final;
     auto SetIncomingHWM(int value) noexcept -> bool final;
     auto SetLinger(int value) noexcept -> bool final;
+    auto SetMaxMessageSize(std::size_t bytes) noexcept -> bool final;
     auto SetMonitor(const char* endpoint, int events) noexcept -> bool final;
     auto SetOutgoingHWM(int value) noexcept -> bool final;
     auto SetPrivateKey(ReadView key) noexcept -> bool final;
     auto SetRouterHandover(bool value) noexcept -> bool final;
     auto SetRoutingID(ReadView key) noexcept -> bool final;
+    auto SetSendTimeout(std::chrono::milliseconds value) noexcept -> bool final;
     auto SetZAPDomain(ReadView domain) noexcept -> bool final;
     auto Stop() noexcept -> void final;
     auto Unbind(const char* endpoint) noexcept -> bool final;
@@ -116,7 +128,10 @@ private:
     using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
     using Endpoints = UnallocatedSet<UnallocatedCString>;
 
-    static constexpr auto default_hwm_ = int{16384};
+    static constexpr auto default_hwm_ = int{0};
+    static constexpr auto untrusted_hwm_ = int{1024};
+    static constexpr auto untrusted_max_message_size_ = std::size_t{32_MiB};
+    static constexpr auto default_send_timeout_ = std::chrono::milliseconds{0};
 
     const socket::Type type_;
     Socket socket_;
@@ -124,6 +139,7 @@ private:
     Endpoints connected_endpoints_;
 
     auto record_endpoint(Endpoints& out) noexcept -> void;
+    auto send(Message&& msg, const int flags) noexcept -> bool;
 
     Raw() = delete;
     Raw(const Raw&) = delete;

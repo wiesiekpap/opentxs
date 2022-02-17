@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "network/zeromq/PairEventListener.hpp"  // IWYU pragma: associated
 
+#include <string>
+
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/PairEventCallback.hpp"

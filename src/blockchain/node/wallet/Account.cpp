@@ -98,7 +98,7 @@ struct Account::Imp {
         outgoing_.clear();
         incoming_.clear();
     }
-    auto state_machine(bool enabled) noexcept -> bool
+    auto state_machine() noexcept -> bool
     {
         auto ticket = gatekeeper_.get();
 
@@ -106,22 +106,17 @@ struct Account::Imp {
 
         auto output{false};
 
-        for_each_subchain(
-            [&](auto& s) { output |= s.ProcessStateMachine(enabled); });
+        for_each_subchain([&](auto& s) { output |= s.ProcessStateMachine(); });
 
         return output;
     }
-    auto task_complete(
-        const Identifier& id,
-        const char* type,
-        bool enabled) noexcept -> void
+    auto task_complete(const Identifier& id, const char* type) noexcept -> void
     {
         auto ticket = gatekeeper_.get();
 
         if (ticket) { return; }
 
-        for_each_subchain(
-            [&](auto& s) { s.ProcessTaskComplete(id, type, enabled); });
+        for_each_subchain([&](auto& s) { s.ProcessTaskComplete(id, type); });
     }
 
     Imp(const api::Session& api,
@@ -305,17 +300,16 @@ auto Account::ProcessReorg(
     return imp_->reorg(headerOracleLock, tx, errors, parent);
 }
 
-auto Account::ProcessStateMachine(bool enabled) noexcept -> bool
+auto Account::ProcessStateMachine() noexcept -> bool
 {
-    return imp_->state_machine(enabled);
+    return imp_->state_machine();
 }
 
 auto Account::ProcessTaskComplete(
     const Identifier& id,
-    const char* type,
-    bool enabled) noexcept -> void
+    const char* type) noexcept -> void
 {
-    imp_->task_complete(id, type, enabled);
+    imp_->task_complete(id, type);
 }
 
 auto Account::Shutdown() noexcept -> void { imp_->shutdown(); }

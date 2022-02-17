@@ -18,9 +18,9 @@
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -45,11 +45,7 @@ namespace opentxs::network::zeromq::socket::implementation
 Subscribe::Subscribe(
     const zeromq::Context& context,
     const zeromq::ListenCallback& callback) noexcept
-    : Receiver(
-          context,
-          socket::Type::Subscribe,
-          Socket::Direction::Connect,
-          true)
+    : Receiver(context, socket::Type::Subscribe, Direction::Connect, true)
     , Client(this->get())
     , callback_(callback)
 {

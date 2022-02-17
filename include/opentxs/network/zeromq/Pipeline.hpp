@@ -39,6 +39,7 @@ class OPENTXS_EXPORT Pipeline
 public:
     class Imp;
 
+    auto BatchID() const noexcept -> std::size_t;
     auto BindSubscriber(
         const std::string_view endpoint,
         std::function<Message(bool)> notify = {}) const noexcept -> bool;

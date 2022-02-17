@@ -28,7 +28,7 @@ namespace opentxs::network::zeromq::socket::implementation
 Socket::Socket(
     const zeromq::Context& context,
     const socket::Type type,
-    const Socket::Direction direction) noexcept
+    const Direction direction) noexcept
     : context_(context)
     , direction_(direction)
     , id_(GetSocketID())
@@ -53,7 +53,7 @@ Socket::Socket(
 
 Socket::operator void*() const noexcept { return socket_; }
 
-void Socket::add_endpoint(const UnallocatedCString& endpoint) const noexcept
+void Socket::add_endpoint(const std::string_view endpoint) const noexcept
 {
     Lock lock(endpoint_lock_);
     endpoints_.emplace(endpoint);
@@ -103,12 +103,13 @@ auto Socket::apply_timeouts(const Lock& lock) const noexcept -> bool
     return true;
 }
 
-auto Socket::bind(const Lock& lock, const UnallocatedCString& endpoint)
+auto Socket::bind(const Lock& lock, const std::string_view endpoint)
     const noexcept -> bool
 {
     if (false == apply_timeouts(lock)) { return false; }
 
-    const auto output = (0 == zmq_bind(socket_, endpoint.c_str()));
+    const auto location = CString{endpoint};
+    const auto output = (0 == zmq_bind(socket_, location.c_str()));
 
     if (output) {
         add_endpoint(endpoint);
@@ -121,12 +122,13 @@ auto Socket::bind(const Lock& lock, const UnallocatedCString& endpoint)
     return output;
 }
 
-auto Socket::connect(const Lock& lock, const UnallocatedCString& endpoint)
+auto Socket::connect(const Lock& lock, const std::string_view endpoint)
     const noexcept -> bool
 {
     if (false == apply_timeouts(lock)) { return false; }
 
-    const auto output = (0 == zmq_connect(socket_, endpoint.c_str()));
+    const auto location = CString{endpoint};
+    const auto output = (0 == zmq_connect(socket_, location.c_str()));
 
     if (output) {
         add_endpoint(endpoint);
@@ -273,7 +275,7 @@ void Socket::shutdown(const Lock& lock) noexcept
     if (nullptr == socket_) { return; }
 
     for (const auto& endpoint : endpoints_) {
-        if (Socket::Direction::Connect == direction_) {
+        if (Direction::Connect == direction_) {
             zmq_disconnect(socket_, endpoint.c_str());
         } else {
             zmq_unbind(socket_, endpoint.c_str());
@@ -285,7 +287,7 @@ void Socket::shutdown(const Lock& lock) noexcept
     if (0 == zmq_close(socket_)) { socket_ = nullptr; }
 }
 
-auto Socket::Start(const UnallocatedCString& endpoint) const noexcept -> bool
+auto Socket::Start(const std::string_view endpoint) const noexcept -> bool
 {
     SocketCallback cb{
         [&](const Lock& lock) -> bool { return start(lock, endpoint); }};
@@ -293,17 +295,16 @@ auto Socket::Start(const UnallocatedCString& endpoint) const noexcept -> bool
     return apply_socket(std::move(cb));
 }
 
-auto Socket::StartAsync(const UnallocatedCString& endpoint) const noexcept
-    -> void
+auto Socket::StartAsync(const std::string_view endpoint) const noexcept -> void
 {
     Lock lock{endpoint_queue_.lock_};
-    endpoint_queue_.queue_.push(endpoint);
+    endpoint_queue_.queue_.push(CString{endpoint});
 }
 
-auto Socket::start(const Lock& lock, const UnallocatedCString& endpoint)
+auto Socket::start(const Lock& lock, const std::string_view endpoint)
     const noexcept -> bool
 {
-    if (Socket::Direction::Connect == direction_) {
+    if (Direction::Connect == direction_) {
 
         return connect(lock, endpoint);
     } else {

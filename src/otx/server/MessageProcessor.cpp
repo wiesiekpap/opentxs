@@ -71,11 +71,19 @@ MessageProcessor::MessageProcessor(
     , server_(server)
     , reason_(reason)
     , running_(true)
-    , zmq_batch_(api_.Network().ZeroMQ().Internal().MakeBatch({
+    , zmq_handle_(api_.Network().ZeroMQ().Internal().MakeBatch({
           zmq::socket::Type::Router,  // NOTE frontend_
           zmq::socket::Type::Pull,    // NOTE notification_
       }))
-    , frontend_(zmq_batch_.sockets_.at(0))
+    , zmq_batch_(zmq_handle_.batch_)
+    , frontend_([&]() -> auto& {
+        auto& out = zmq_batch_.sockets_.at(0);
+        const auto rc = out.SetExposedUntrusted();
+
+        OT_ASSERT(rc);
+
+        return out;
+    }())
     , notification_(zmq_batch_.sockets_.at(1))
     , zmq_thread_(nullptr)
     , frontend_id_(frontend_.ID())
@@ -113,6 +121,8 @@ MessageProcessor::MessageProcessor(
         });
 
     OT_ASSERT(nullptr != zmq_thread_);
+
+    LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(zmq_batch_.id_).Flush();
 }
 
 auto MessageProcessor::associate_connection(
@@ -157,9 +167,8 @@ auto MessageProcessor::associate_connection(
 
 auto MessageProcessor::cleanup() noexcept -> void
 {
-    if (auto running = running_.exchange(false); running) {
-        zmq_batch_.ClearCallbacks();
-    }
+    running_ = false;
+    zmq_handle_.Release();
 }
 
 auto MessageProcessor::DropIncoming(const int count) const noexcept -> void
@@ -395,7 +404,7 @@ auto MessageProcessor::process_internal(zmq::Message&& message) noexcept -> void
 
     if (drop) { return; }
 
-    const auto sent = frontend_.Send(std::move(message));
+    const auto sent = frontend_.SendExternal(std::move(message));
 
     if (sent) {
         LogTrace()(OT_PRETTY_CLASS())("Reply message delivered.").Flush();
@@ -532,7 +541,7 @@ auto MessageProcessor::process_notification(zmq::Message&& incoming) noexcept
     }
 
     const auto reply = api_.Factory().InternalSession().Data(serialized);
-    const auto sent = frontend_.Send([&] {
+    const auto sent = frontend_.SendExternal([&] {
         auto out = zmq::Message{};
         out.AddFrame(data.first);
         out.StartBody();
@@ -636,7 +645,5 @@ MessageProcessor::~MessageProcessor()
     cleanup();
 
     if (thread_.joinable()) { thread_.join(); }
-
-    api_.Network().ZeroMQ().Internal().Stop(zmq_batch_.id_);
 }
 }  // namespace opentxs::server

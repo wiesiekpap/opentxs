@@ -21,8 +21,8 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Reply.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -105,8 +105,8 @@ void Test_RequestReply::replySocketThread(
 
     ASSERT_NE(nullptr, &replyCallback.get());
 
-    auto replySocket = context_.ReplySocket(
-        replyCallback, zmq::socket::Socket::Direction::Bind);
+    auto replySocket =
+        context_.ReplySocket(replyCallback, zmq::socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
@@ -140,8 +140,8 @@ TEST_F(Test_RequestReply, Request_Reply)
 
     ASSERT_NE(nullptr, &replyCallback.get());
 
-    auto replySocket = context_.ReplySocket(
-        replyCallback, zmq::socket::Socket::Direction::Bind);
+    auto replySocket =
+        context_.ReplySocket(replyCallback, zmq::socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
@@ -194,8 +194,8 @@ TEST_F(Test_RequestReply, Request_2_Reply_1)
 
     ASSERT_NE(nullptr, &replyCallback.get());
 
-    auto replySocket = context_.ReplySocket(
-        replyCallback, zmq::socket::Socket::Direction::Bind);
+    auto replySocket =
+        context_.ReplySocket(replyCallback, zmq::socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
@@ -289,8 +289,8 @@ TEST_F(Test_RequestReply, Request_Reply_Multipart)
 
     ASSERT_NE(nullptr, &replyCallback.get());
 
-    auto replySocket = context_.ReplySocket(
-        replyCallback, zmq::socket::Socket::Direction::Bind);
+    auto replySocket =
+        context_.ReplySocket(replyCallback, zmq::socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());

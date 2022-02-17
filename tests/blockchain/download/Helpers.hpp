@@ -16,7 +16,7 @@ namespace b = ot::blockchain;
 namespace d = b::download;
 namespace bb = b::block;
 
-namespace
+namespace ottest
 {
 struct DownloadManager;
 
@@ -36,8 +36,7 @@ struct DownloadManager : public ManagerType {
     FinishedType best_data_;
     FinishedMap finished_;
 
-    [[maybe_unused]] auto GetFinished(const std::size_t index) const
-        -> FinishedMap::value_type
+    auto GetFinished(const std::size_t index) const -> FinishedMap::value_type
     {
         auto it = finished_.find(generated_positions_.at(index));
 
@@ -45,13 +44,12 @@ struct DownloadManager : public ManagerType {
 
         return *it;
     }
-    [[maybe_unused]] auto GetPosition(std::size_t index) const noexcept
-        -> const bb::Position&
+    auto GetPosition(std::size_t index) const noexcept -> const bb::Position&
     {
         return generated_positions_.at(index);
     }
 
-    [[maybe_unused]] auto GetBatch() noexcept -> BatchType
+    auto GetBatch() noexcept -> BatchType
     {
         auto output = allocate_batch();
 
@@ -59,7 +57,7 @@ struct DownloadManager : public ManagerType {
 
         return output;
     }
-    [[maybe_unused]] auto MakePositions(
+    auto MakePositions(
         bb::Height start,
         ot::UnallocatedVector<ot::UnallocatedCString> hashes) noexcept
     {
@@ -76,7 +74,7 @@ struct DownloadManager : public ManagerType {
 
         return output;
     }
-    [[maybe_unused]] auto ProcessData(
+    auto ProcessData(
         std::optional<std::size_t> items = std::nullopt,
         std::optional<FinishedType> output = std::nullopt) noexcept -> bool
     {
@@ -99,10 +97,8 @@ struct DownloadManager : public ManagerType {
 
         return true;
     }
-    [[maybe_unused]] auto RunStateMachine() noexcept { return state_machine(); }
-    [[maybe_unused]] auto UpdatePosition(
-        Positions&& in,
-        Previous prior = std::nullopt) noexcept
+    auto RunStateMachine() noexcept { return state_machine(); }
+    auto UpdatePosition(Positions&& in, Previous prior = std::nullopt) noexcept
     {
         update_position(std::move(in), 0, std::move(prior));
     }
@@ -161,4 +157,4 @@ private:
 const bb::Position DownloadManager::genesis_{
     0,
     ot::Data::Factory("0", ot::Data::Mode::Raw)};
-}  // namespace
+}  // namespace ottest

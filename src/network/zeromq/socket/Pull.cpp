@@ -33,8 +33,7 @@ auto PullSocket(const network::zeromq::Context& context, const bool direction)
     using ReturnType = network::zeromq::socket::implementation::Pull;
 
     return std::make_unique<ReturnType>(
-        context,
-        static_cast<network::zeromq::socket::Socket::Direction>(direction));
+        context, static_cast<network::zeromq::socket::Direction>(direction));
 }
 
 auto PullSocket(
@@ -47,7 +46,7 @@ auto PullSocket(
 
     return std::make_unique<ReturnType>(
         context,
-        static_cast<network::zeromq::socket::Socket::Direction>(direction),
+        static_cast<network::zeromq::socket::Direction>(direction),
         callback);
 }
 }  // namespace opentxs::factory
@@ -56,7 +55,7 @@ namespace opentxs::network::zeromq::socket::implementation
 {
 Pull::Pull(
     const zeromq::Context& context,
-    const Socket::Direction direction,
+    const Direction direction,
     const zeromq::ListenCallback& callback,
     const bool startThread) noexcept
     : Receiver(context, socket::Type::Pull, direction, startThread)
@@ -68,15 +67,13 @@ Pull::Pull(
 
 Pull::Pull(
     const zeromq::Context& context,
-    const Socket::Direction direction,
+    const Direction direction,
     const zeromq::ListenCallback& callback) noexcept
     : Pull(context, direction, callback, true)
 {
 }
 
-Pull::Pull(
-    const zeromq::Context& context,
-    const Socket::Direction direction) noexcept
+Pull::Pull(const zeromq::Context& context, const Direction direction) noexcept
     : Pull(context, direction, ListenCallback::Factory(), false)
 {
 }

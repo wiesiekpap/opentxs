@@ -14,6 +14,7 @@
 
 #include "blockchain/database/common/Database.hpp"
 #include "core/Worker.hpp"
+#include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Factory.hpp"
@@ -28,6 +29,8 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
+#include "opentxs/network/zeromq/socket/Push.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -118,6 +121,7 @@ BlockchainImp::BlockchainImp(
 
         return out;
     }())
+    , startup_publisher_(endpoints, zmq)
     , base_config_(nullptr)
     , lock_()
     , config_()
@@ -362,6 +366,24 @@ auto BlockchainImp::publish_chain_state(Chain type, bool state) const -> void
 
         return work;
     }());
+}
+
+auto BlockchainImp::PublishStartup(
+    const opentxs::blockchain::Type chain,
+    OTZMQWorkType type) const noexcept -> bool
+{
+    using Dir = opentxs::network::zeromq::socket::Direction;
+    auto push = api_.Network().ZeroMQ().PushSocket(Dir::Connect);
+    auto out =
+        push->Start(api_.Endpoints().Internal().BlockchainStartupPull().data());
+    out &= push->Send([&] {
+        auto out = MakeWork(type);
+        out.AddFrame(chain);
+
+        return out;
+    }());
+
+    return out;
 }
 
 auto BlockchainImp::ReportProgress(

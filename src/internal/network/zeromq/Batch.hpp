@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <mutex>
 
 #include "internal/network/zeromq/Types.hpp"
@@ -44,9 +45,10 @@ class Batch
 {
 public:
     const BatchID id_;
-    UnallocatedVector<OTZMQListenCallback> listen_callbacks_;
-    UnallocatedVector<OTZMQReplyCallback> reply_callbacks_;
-    UnallocatedVector<socket::Raw> sockets_;
+    Vector<OTZMQListenCallback> listen_callbacks_;
+    Vector<OTZMQReplyCallback> reply_callbacks_;
+    Vector<socket::Raw> sockets_;
+    std::atomic_bool toggle_;
 
     auto ClearCallbacks() noexcept -> void;
 

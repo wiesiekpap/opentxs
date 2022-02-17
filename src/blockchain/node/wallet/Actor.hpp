@@ -48,11 +48,10 @@ public:
         storage::lmdb::LMDB::Transaction& tx,
         std::atomic_int& errors,
         const block::Position& ancestor) noexcept -> bool = 0;
-    virtual auto ProcessStateMachine(bool enabled) noexcept -> bool = 0;
+    virtual auto ProcessStateMachine() noexcept -> bool = 0;
     virtual auto ProcessTaskComplete(
         const Identifier& id,
-        const char* type,
-        bool enabled) noexcept -> void = 0;
+        const char* type) noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 
     virtual ~Actor() = default;

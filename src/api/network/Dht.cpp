@@ -35,7 +35,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Reply.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
@@ -150,7 +150,7 @@ Dht::Dht(
           })}
     , request_nym_socket_{zeromq.ReplySocket(
           request_nym_callback_,
-          zmq::socket::Socket::Direction::Bind)}
+          zmq::socket::Direction::Bind)}
     , request_server_callback_{zmq::ReplyCallback::Factory(
           [=](const zmq::Message& incoming)
               -> opentxs::network::zeromq::Message {
@@ -158,7 +158,7 @@ Dht::Dht(
           })}
     , request_server_socket_{zeromq.ReplySocket(
           request_server_callback_,
-          zmq::socket::Socket::Direction::Bind)}
+          zmq::socket::Direction::Bind)}
     , request_unit_callback_{zmq::ReplyCallback::Factory(
           [=](const zmq::Message& incoming)
               -> opentxs::network::zeromq::Message {
@@ -166,7 +166,7 @@ Dht::Dht(
           })}
     , request_unit_socket_{zeromq.ReplySocket(
           request_unit_callback_,
-          zmq::socket::Socket::Direction::Bind)}
+          zmq::socket::Direction::Bind)}
 {
     request_nym_socket_->Start(endpoints.DhtRequestNym().data());
     request_server_socket_->Start(endpoints.DhtRequestServer().data());

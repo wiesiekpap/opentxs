@@ -5,16 +5,15 @@
 
 #pragma once
 
+#include <string_view>
+
+#include "internal/network/zeromq/Types.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
-namespace api
-{
-class Session;
-}  // namespace api
-
 namespace network
 {
 namespace zeromq
@@ -61,12 +60,14 @@ auto PairSocket(
 auto PairSocket(
     const network::zeromq::Context& context,
     const network::zeromq::ListenCallback& callback,
-    const UnallocatedCString& endpoint)
+    const std::string_view endpoint)
     -> std::unique_ptr<network::zeromq::socket::Pair>;
 auto Pipeline(
-    const api::Session& api,
     const network::zeromq::Context& context,
-    std::function<void(network::zeromq::Message&&)> callback)
+    std::function<void(network::zeromq::Message&&)> callback,
+    const network::zeromq::EndpointArgs& subscribe,
+    const network::zeromq::EndpointArgs& pull,
+    const network::zeromq::EndpointArgs& dealer)
     -> opentxs::network::zeromq::Pipeline;
 auto PublishSocket(const network::zeromq::Context& context)
     -> std::unique_ptr<network::zeromq::socket::Publish>;

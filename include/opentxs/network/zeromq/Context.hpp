@@ -8,6 +8,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <string_view>
 
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Pair.hpp"
@@ -53,7 +54,6 @@ class Frame;
 class ListenCallback;
 class Message;
 class PairEventCallback;
-class Pipeline;
 class Proxy;
 class ReplyCallback;
 }  // namespace zeromq
@@ -70,7 +70,7 @@ public:
 
     virtual auto DealerSocket(
         const ListenCallback& callback,
-        const socket::Socket::Direction direction) const noexcept
+        const socket::Direction direction) const noexcept
         -> Pimpl<socket::Dealer> = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Context& = 0;
@@ -84,31 +84,27 @@ public:
         const socket::Pair& peer) const noexcept -> Pimpl<socket::Pair> = 0;
     virtual auto PairSocket(
         const ListenCallback& callback,
-        const UnallocatedCString& endpoint) const noexcept
+        const std::string_view endpoint) const noexcept
         -> Pimpl<socket::Pair> = 0;
-    virtual auto Pipeline(
-        const api::Session& api,
-        std::function<void(zeromq::Message&&)> callback) const noexcept
-        -> zeromq::Pipeline = 0;
     virtual auto Proxy(socket::Socket& frontend, socket::Socket& backend)
         const noexcept -> Pimpl<zeromq::Proxy> = 0;
     virtual auto PublishSocket() const noexcept -> Pimpl<socket::Publish> = 0;
-    virtual auto PullSocket(const socket::Socket::Direction direction)
-        const noexcept -> Pimpl<socket::Pull> = 0;
+    virtual auto PullSocket(const socket::Direction direction) const noexcept
+        -> Pimpl<socket::Pull> = 0;
     virtual auto PullSocket(
         const ListenCallback& callback,
-        const socket::Socket::Direction direction) const noexcept
+        const socket::Direction direction) const noexcept
         -> Pimpl<socket::Pull> = 0;
-    virtual auto PushSocket(const socket::Socket::Direction direction)
-        const noexcept -> Pimpl<socket::Push> = 0;
+    virtual auto PushSocket(const socket::Direction direction) const noexcept
+        -> Pimpl<socket::Push> = 0;
     virtual auto ReplySocket(
         const ReplyCallback& callback,
-        const socket::Socket::Direction direction) const noexcept
+        const socket::Direction direction) const noexcept
         -> Pimpl<socket::Reply> = 0;
     virtual auto RequestSocket() const noexcept -> Pimpl<socket::Request> = 0;
     virtual auto RouterSocket(
         const ListenCallback& callback,
-        const socket::Socket::Direction direction) const noexcept
+        const socket::Direction direction) const noexcept
         -> Pimpl<socket::Router> = 0;
     virtual auto SubscribeSocket(const ListenCallback& callback) const noexcept
         -> Pimpl<socket::Subscribe> = 0;

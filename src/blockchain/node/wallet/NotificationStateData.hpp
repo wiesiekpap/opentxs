@@ -104,7 +104,7 @@ public:
         const Type chain,
         const PaymentCode& code) noexcept -> OTIdentifier;
 
-    auto ProcessStateMachine(bool enabled) noexcept -> bool final;
+    auto ProcessStateMachine() noexcept -> bool final;
 
     NotificationStateData(
         const api::Session& api,
