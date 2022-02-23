@@ -123,7 +123,12 @@ struct AmountValidator::Imp {
             add_prefix(scale, input, pos);
             add_suffix(scale, input, pos);
 
-            if (scale.MaximumDecimals() < whole) { return State::Invalid; }
+            const auto& maxDecimals{getMaxDecimals()};
+            const auto& minDecimals{getMinDecimals()};
+            if ((0 < maxDecimals && maxDecimals < fractional) ||
+                (0 < minDecimals && minDecimals > fractional)) {
+                return State::Invalid;
+            }
 
             return State::Acceptable;
         } catch (const std::exception& e) {
@@ -301,6 +306,7 @@ private:
         auto current{-1};
         auto revised = QString{};
         auto haveLeadingDigit{false};
+        const auto& maxDecimals{getMaxDecimals()};
 
         for (const auto& c : input) {
             ++current;
@@ -315,7 +321,10 @@ private:
                 if (leadingZero) {
                     keep = false;
                 } else {
-                    keep = true;
+                    if (fractional < maxDecimals || 0 == maxDecimals)
+                        keep = true;
+                    else
+                        keep = false;
 
                     if (0 < decimalCount) {
                         ++fractional;

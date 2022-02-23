@@ -177,7 +177,8 @@ auto check_account_activity_qt(
         EXPECT_EQ(validated.toStdString(), valid);
     }
 
-    const auto& amountValidator = *model.getAmountValidator();
+    auto& amountValidator = *model.getAmountValidator();
+    amountValidator.setScale(0);
     auto pos = 0;
     for (auto [input, valid] : expected.amounts_to_validate_) {
         auto inputString = QString{input.c_str()};
