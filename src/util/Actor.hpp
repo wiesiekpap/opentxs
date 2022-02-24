@@ -96,7 +96,8 @@ protected:
         const std::chrono::milliseconds rateLimit,
         const network::zeromq::EndpointArgs& subscribe = {},
         const network::zeromq::EndpointArgs& pull = {},
-        const network::zeromq::EndpointArgs& dealer = {}) noexcept
+        const network::zeromq::EndpointArgs& dealer = {},
+        const Vector<network::zeromq::SocketData>& extra = {}) noexcept
         : init_promise_()
         , init_future_(init_promise_.get_future())
         , running_(true)
@@ -112,7 +113,8 @@ protected:
                   return out;
               }(),
               pull,
-              dealer))
+              dealer,
+              extra))
         , rate_limit_(rateLimit)
         , shutdown_promise_()
         , shutdown_(shutdown_promise_.get_future())

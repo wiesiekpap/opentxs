@@ -5,11 +5,41 @@
 
 #pragma once
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs
+{
+namespace network
+{
+namespace zeromq
+{
+namespace socket
+{
+class Raw;
+}  // namespace socket
+}  // namespace zeromq
+}  // namespace network
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
+
 namespace opentxs::network::zeromq::internal
 {
 class Pipeline
 {
 public:
+    /**  Access and extra socket that was specified at construction time
+     *
+     *   \throws std::out_of_range for an invalid index
+     */
+    virtual auto ExtraSocket(std::size_t index) noexcept(false)
+        -> socket::Raw& = 0;
+
+    /**  Access and extra socket that was specified at construction time
+     *
+     *   \throws std::out_of_range for an invalid index
+     */
+    virtual auto ExtraSocket(std::size_t index) const noexcept(false)
+        -> const socket::Raw& = 0;
+
     virtual ~Pipeline() = default;
 };
 }  // namespace opentxs::network::zeromq::internal

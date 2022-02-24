@@ -9,6 +9,7 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "network/zeromq/socket/Pipeline.hpp"  // IWYU pragma: associated
 
+#include <iterator>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -36,11 +37,12 @@ auto Pipeline(
     std::function<void(network::zeromq::Message&&)> callback,
     const network::zeromq::EndpointArgs& subscribe,
     const network::zeromq::EndpointArgs& pull,
-    const network::zeromq::EndpointArgs& dealer)
+    const network::zeromq::EndpointArgs& dealer,
+    const Vector<network::zeromq::SocketData>& extra) noexcept
     -> opentxs::network::zeromq::Pipeline
 {
     return std::make_unique<network::zeromq::implementation::Pipeline>(
-               context, std::move(callback), subscribe, pull, dealer)
+               context, std::move(callback), subscribe, pull, dealer, extra)
         .release();
 }
 }  // namespace opentxs::factory
@@ -57,7 +59,8 @@ Pipeline::Pipeline(
     std::function<void(zeromq::Message&&)> callback,
     const EndpointArgs& subscribe,
     const EndpointArgs& pull,
-    const EndpointArgs& dealer) noexcept
+    const EndpointArgs& dealer,
+    const Vector<SocketData>& extra) noexcept
     : Pipeline(
           context,
           std::move(callback),
@@ -65,7 +68,8 @@ Pipeline::Pipeline(
           MakeArbitraryInproc(),
           subscribe,
           pull,
-          dealer)
+          dealer,
+          extra)
 {
 }
 
@@ -76,17 +80,24 @@ Pipeline::Pipeline(
     const UnallocatedCString outgoingEndpoint,
     const EndpointArgs& subscribe,
     const EndpointArgs& pull,
-    const EndpointArgs& dealer) noexcept
+    const EndpointArgs& dealer,
+    const Vector<SocketData>& extra) noexcept
     : context_(context)
     , gate_()
     , shutdown_(false)
-    , handle_(context_.Internal().MakeBatch({
-          socket::Type::Subscribe,  // NOTE sub_
-          socket::Type::Pull,       // NOTE pull_
-          socket::Type::Pair,       // NOTE outgoing_
-          socket::Type::Dealer,     // NOTE dealer_
-          socket::Type::Pair,       // NOTE internal_
-      }))
+    , handle_(context_.Internal().MakeBatch([&] {
+        auto out = UnallocatedVector<socket::Type>{
+            socket::Type::Subscribe,  // NOTE sub_
+            socket::Type::Pull,       // NOTE pull_
+            socket::Type::Pair,       // NOTE outgoing_
+            socket::Type::Dealer,     // NOTE dealer_
+            socket::Type::Pair,       // NOTE internal_
+        };
+
+        for (const auto& [type, args] : extra) { out.emplace_back(type); }
+
+        return out;
+    }()))
     , batch_([&]() -> auto& {
         auto& batch = handle_.batch_;
         batch.listen_callbacks_.emplace_back(ListenCallback::Factory(callback));
@@ -147,43 +158,64 @@ Pipeline::Pipeline(
 
         return socket;
     }())
-    , thread_(context_.Internal().Start(
-          batch_.id_,
-          {
-              {outgoing_.ID(),
-               &outgoing_,
-               [id = outgoing_.ID(), socket = &dealer_](auto&& m) {
-                   socket->Send(std::move(m));
-               }},
-              {internal_.ID(),
-               &internal_,
-               [id = internal_.ID(),
-                &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
-                   m.Internal().Prepend(id);
-                   cb.Process(std::move(m));
-               }},
-              {dealer_.ID(),
-               &dealer_,
-               [id = dealer_.ID(),
-                &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
-                   m.Internal().Prepend(id);
-                   cb.Process(std::move(m));
-               }},
-              {pull_.ID(),
-               &pull_,
-               [id = pull_.ID(),
-                &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
-                   m.Internal().Prepend(id);
-                   cb.Process(std::move(m));
-               }},
-              {sub_.ID(),
-               &sub_,
-               [id = sub_.ID(),
-                &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
-                   m.Internal().Prepend(id);
-                   cb.Process(std::move(m));
-               }},
-          }))
+    , thread_(context_.Internal().Start(batch_.id_, [&] {
+        auto out = StartArgs{
+            {outgoing_.ID(),
+             &outgoing_,
+             [id = outgoing_.ID(), socket = &dealer_](auto&& m) {
+                 socket->Send(std::move(m));
+             }},
+            {internal_.ID(),
+             &internal_,
+             [id = internal_.ID(),
+              &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                 m.Internal().Prepend(id);
+                 cb.Process(std::move(m));
+             }},
+            {dealer_.ID(),
+             &dealer_,
+             [id = dealer_.ID(),
+              &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                 m.Internal().Prepend(id);
+                 cb.Process(std::move(m));
+             }},
+            {pull_.ID(),
+             &pull_,
+             [id = pull_.ID(),
+              &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                 m.Internal().Prepend(id);
+                 cb.Process(std::move(m));
+             }},
+            {sub_.ID(),
+             &sub_,
+             [id = sub_.ID(),
+              &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                 m.Internal().Prepend(id);
+                 cb.Process(std::move(m));
+             }},
+        };
+
+        OT_ASSERT(batch_.sockets_.size() == fixed_sockets_ + extra.size());
+
+        // NOTE adjust to the last fixed socket because the iterator will be
+        // preincremented
+        auto s = std::next(batch_.sockets_.begin(), fixed_sockets_ - 1u);
+
+        for (const auto& [type, args] : extra) {
+            auto& socket = *(++s);
+            apply(args, socket);
+            out.emplace_back(
+                socket.ID(),
+                &socket,
+                [id = socket.ID(),
+                 &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                    m.Internal().Prepend(id);
+                    cb.Process(std::move(m));
+                });
+        }
+
+        return out;
+    }()))
 {
     OT_ASSERT(nullptr != thread_);
 }
@@ -301,6 +333,18 @@ auto Pipeline::ConnectionIDPull() const noexcept -> std::size_t
 auto Pipeline::ConnectionIDSubscribe() const noexcept -> std::size_t
 {
     return sub_.ID();
+}
+
+auto Pipeline::ExtraSocket(std::size_t index) noexcept(false) -> socket::Raw&
+{
+    if ((batch_.sockets_.size() - fixed_sockets_) < (index + 1u)) {
+
+        throw std::out_of_range{"invalid extra socket index"};
+    }
+
+    auto it = std::next(batch_.sockets_.begin(), fixed_sockets_ + index);
+
+    return *it;
 }
 
 auto Pipeline::PullFrom(const std::string_view endpoint) const noexcept -> bool

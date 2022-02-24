@@ -11,6 +11,7 @@
 #include <future>
 
 #include "internal/network/zeromq/Context.hpp"
+#include "internal/network/zeromq/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -22,6 +23,7 @@
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/Work.hpp"
 
@@ -95,13 +97,20 @@ protected:
         return shutdown_;
     }
 
-    Worker(const API& api, const std::chrono::milliseconds rateLimit) noexcept
+    Worker(
+        const API& api,
+        const std::chrono::milliseconds rateLimit,
+        const Vector<network::zeromq::SocketData>& extra = {}) noexcept
         : api_(api)
         , rate_limit_(rateLimit)
         , running_(true)
         , shutdown_promise_()
         , pipeline_(api.Network().ZeroMQ().Internal().Pipeline(
-              [this](auto&& in) { downcast().pipeline(std::move(in)); }))
+              [this](auto&& in) { downcast().pipeline(std::move(in)); },
+              {},
+              {},
+              {},
+              extra))
         , shutdown_(shutdown_promise_.get_future())
         , last_executed_(Clock::now())
         , state_machine_queued_(false)

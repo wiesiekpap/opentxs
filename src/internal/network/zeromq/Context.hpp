@@ -53,7 +53,9 @@ public:
         std::function<void(zeromq::Message&&)> callback,
         const EndpointArgs& subscribe = {},
         const EndpointArgs& pull = {},
-        const EndpointArgs& dealer = {}) const noexcept -> zeromq::Pipeline = 0;
+        const EndpointArgs& dealer = {},
+        const Vector<SocketData>& extra = {}) const noexcept
+        -> zeromq::Pipeline = 0;
     virtual auto Start(BatchID id, StartArgs&& sockets) const noexcept
         -> Thread* = 0;
     virtual auto Thread(BatchID id) const noexcept -> Thread* = 0;
