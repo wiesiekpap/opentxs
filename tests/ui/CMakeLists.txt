@@ -7,6 +7,14 @@ target_sources(opentxs-test-helpers PRIVATE "Helpers.hpp" "Helpers.cpp")
 
 if(OT_QT_EXPORT)
   target_sources(opentxs-test-helpers PRIVATE "Helpers-qt.cpp")
+  target_sources(
+  	opentxs-test-helpers PRIVATE 
+  	"${opentxs_SOURCE_DIR}/tests/common/Base.hpp" 
+  	"${opentxs_SOURCE_DIR}/tests/common/Client.hpp" 
+  	"${opentxs_SOURCE_DIR}/tests/common/Client.cpp"
+  	"${opentxs_SOURCE_DIR}/tests/common/Notary.hpp" 
+  	"${opentxs_SOURCE_DIR}/tests/common/Notary.cpp"
+  )
   target_link_libraries(opentxs-test-helpers PRIVATE Qt::Gui)
 else()
   target_sources(opentxs-test-helpers PRIVATE "Helpers-noqt.cpp")
@@ -16,10 +24,6 @@ add_opentx_test(unittests-opentxs-ui-account-tree Test_AccountTree.cpp)
 
 if(OT_QT_EXPORT)
   add_opentx_test(unittests-opentxs-ui-amountvalidator Test_AmountValidator.cpp)
-
-  set_tests_properties(
-    unittests-opentxs-ui-amountvalidator PROPERTIES DISABLED TRUE
-  )
 endif()
 
 add_opentx_test(
