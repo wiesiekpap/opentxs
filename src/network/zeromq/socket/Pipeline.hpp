@@ -13,6 +13,7 @@
 #include <future>
 #include <queue>
 #include <shared_mutex>
+#include <stdexcept>
 #include <string_view>
 #include <utility>
 
@@ -92,6 +93,11 @@ public:
     {
         return {};
     }
+    auto ExtraSocket(std::size_t) const noexcept(false)
+        -> const socket::Raw& override
+    {
+        throw std::out_of_range{"invalid extra socket index"};
+    }
     virtual auto PullFrom(const std::string_view) const noexcept -> bool
     {
         return false;
@@ -101,6 +107,11 @@ public:
     virtual auto SubscribeTo(const std::string_view) const noexcept -> bool
     {
         return false;
+    }
+
+    auto ExtraSocket(std::size_t) noexcept(false) -> socket::Raw& override
+    {
+        throw std::out_of_range{"invalid extra socket index"};
     }
 
     Imp() = default;
@@ -132,18 +143,26 @@ public:
     auto ConnectionIDInternal() const noexcept -> std::size_t final;
     auto ConnectionIDPull() const noexcept -> std::size_t final;
     auto ConnectionIDSubscribe() const noexcept -> std::size_t final;
+    auto ExtraSocket(std::size_t index) const noexcept(false)
+        -> const socket::Raw& final
+    {
+        return const_cast<Pipeline&>(*this).ExtraSocket(index);
+    }
     auto PullFrom(const std::string_view endpoint) const noexcept -> bool final;
     auto Push(zeromq::Message&& data) const noexcept -> bool final;
     auto Send(zeromq::Message&& data) const noexcept -> bool final;
     auto SubscribeTo(const std::string_view endpoint) const noexcept
         -> bool final;
 
+    auto ExtraSocket(std::size_t index) noexcept(false) -> socket::Raw& final;
+
     Pipeline(
         const zeromq::Context& context,
         std::function<void(zeromq::Message&&)> callback,
         const EndpointArgs& subscribe,
         const EndpointArgs& pull,
-        const EndpointArgs& dealer) noexcept;
+        const EndpointArgs& dealer,
+        const Vector<SocketData>& extra) noexcept;
     Pipeline(
         const zeromq::Context& context,
         std::function<void(zeromq::Message&&)> callback,
@@ -151,13 +170,16 @@ public:
         const UnallocatedCString outgoingEndpoint,
         const EndpointArgs& subscribe,
         const EndpointArgs& pull,
-        const EndpointArgs& dealer) noexcept;
+        const EndpointArgs& dealer,
+        const Vector<SocketData>& extra) noexcept;
 
     ~Pipeline() final;
 
 private:
     using GuardedSocket =
         libguarded::deferred_guarded<socket::Raw, std::shared_mutex>;
+
+    static constexpr auto fixed_sockets_ = std::size_t{5};
 
     const zeromq::Context& context_;
     mutable Gatekeeper gate_;

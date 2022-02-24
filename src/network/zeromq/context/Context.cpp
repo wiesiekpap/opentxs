@@ -135,9 +135,11 @@ auto Context::Pipeline(
     std::function<void(zeromq::Message&&)> callback,
     const EndpointArgs& subscribe,
     const EndpointArgs& pull,
-    const EndpointArgs& dealer) const noexcept -> zeromq::Pipeline
+    const EndpointArgs& dealer,
+    const Vector<SocketData>& extra) const noexcept -> zeromq::Pipeline
 {
-    return opentxs::factory::Pipeline(*this, callback, subscribe, pull, dealer);
+    return opentxs::factory::Pipeline(
+        *this, callback, subscribe, pull, dealer, extra);
 }
 
 auto Context::Proxy(socket::Socket& frontend, socket::Socket& backend)

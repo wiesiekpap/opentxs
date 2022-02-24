@@ -107,7 +107,9 @@ public:
         std::function<void(zeromq::Message&&)> callback,
         const EndpointArgs& subscribe,
         const EndpointArgs& pull,
-        const EndpointArgs& dealer) const noexcept -> zeromq::Pipeline final;
+        const EndpointArgs& dealer,
+        const Vector<SocketData>& extra) const noexcept
+        -> zeromq::Pipeline final;
     auto Proxy(socket::Socket& frontend, socket::Socket& backend) const noexcept
         -> OTZMQProxy final;
     auto PublishSocket() const noexcept -> OTZMQPublishSocket final;

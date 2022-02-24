@@ -42,6 +42,7 @@ using StartArgs = Vector<std::tuple<SocketID, socket::Raw*, ReceiveCallback>>;
 using AsyncResult = std::pair<bool, std::future<bool>>;
 using EndpointArg = std::pair<CString, socket::Direction>;
 using EndpointArgs = Vector<EndpointArg>;
+using SocketData = std::pair<socket::Type, EndpointArgs>;
 
 auto GetBatchID() noexcept -> BatchID;
 auto GetSocketID() noexcept -> SocketID;

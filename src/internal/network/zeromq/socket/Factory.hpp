@@ -67,7 +67,8 @@ auto Pipeline(
     std::function<void(network::zeromq::Message&&)> callback,
     const network::zeromq::EndpointArgs& subscribe,
     const network::zeromq::EndpointArgs& pull,
-    const network::zeromq::EndpointArgs& dealer)
+    const network::zeromq::EndpointArgs& dealer,
+    const Vector<network::zeromq::SocketData>& extra) noexcept
     -> opentxs::network::zeromq::Pipeline;
 auto PublishSocket(const network::zeromq::Context& context)
     -> std::unique_ptr<network::zeromq::socket::Publish>;
