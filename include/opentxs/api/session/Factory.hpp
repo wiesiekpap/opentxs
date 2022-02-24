@@ -115,7 +115,6 @@ namespace zeromq
 {
 class Frame;
 class Message;
-class Pipeline;
 }  // namespace zeromq
 }  // namespace network
 
@@ -468,9 +467,6 @@ public:
     virtual auto PeerRequest() const noexcept -> OTPeerRequest = 0;
     virtual auto PeerRequest(const Nym_p& nym, const ReadView& view) const
         noexcept(false) -> OTPeerRequest = 0;
-    virtual auto Pipeline(
-        std::function<void(opentxs::network::zeromq::Message&&)> callback) const
-        -> opentxs::network::zeromq::Pipeline = 0;
     virtual auto Purse(
         const otx::context::Server& context,
         const identifier::UnitDefinition& unit,

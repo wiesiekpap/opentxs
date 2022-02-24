@@ -93,22 +93,24 @@ template <typename InterfaceType, typename MessageType>
 auto Bidirectional<InterfaceType, MessageType>::bind(
     void* socket,
     std::mutex& socket_mutex,
-    const UnallocatedCString& endpoint) const noexcept -> bool
+    const std::string_view endpoint) const noexcept -> bool
 {
     apply_timeouts(socket, socket_mutex);
+    auto location = CString{endpoint};
 
-    return (0 == zmq_bind(socket, endpoint.c_str()));
+    return (0 == zmq_bind(socket, location.c_str()));
 }
 
 template <typename InterfaceType, typename MessageType>
 auto Bidirectional<InterfaceType, MessageType>::connect(
     void* socket,
     std::mutex& socket_mutex,
-    const UnallocatedCString& endpoint) const noexcept -> bool
+    const std::string_view endpoint) const noexcept -> bool
 {
     apply_timeouts(socket, socket_mutex);
+    auto location = CString{endpoint};
 
-    return (0 == zmq_connect(socket, endpoint.c_str()));
+    return (0 == zmq_connect(socket, location.c_str()));
 }
 
 template <typename InterfaceType, typename MessageType>

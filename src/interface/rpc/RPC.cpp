@@ -221,9 +221,8 @@ RPC::RPC(const api::Context& native)
     , push_callback_(zmq::ListenCallback::Factory([&](const zmq::Message& in) {
         rpc_publisher_->Send(network::zeromq::Message{in});
     }))
-    , push_receiver_(ot_.ZMQ().PullSocket(
-          push_callback_,
-          zmq::socket::Socket::Direction::Bind))
+    , push_receiver_(
+          ot_.ZMQ().PullSocket(push_callback_, zmq::socket::Direction::Bind))
     , rpc_publisher_(ot_.ZMQ().PublishSocket())
     , task_subscriber_(ot_.ZMQ().SubscribeSocket(task_callback_))
 {

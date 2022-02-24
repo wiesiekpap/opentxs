@@ -24,6 +24,7 @@
 #include "Proto.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/identity/Identity.hpp"
+#include "internal/network/zeromq/Handle.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
@@ -501,6 +502,7 @@ private:
     OTZMQRequestSocket dht_server_requester_;
     OTZMQRequestSocket dht_unit_requester_;
     OTZMQPushSocket find_nym_;
+    opentxs::network::zeromq::internal::Handle handle_;
     opentxs::network::zeromq::internal::Batch& batch_;
     opentxs::network::zeromq::ListenCallback& p2p_callback_;
     opentxs::network::zeromq::socket::Raw& p2p_socket_;

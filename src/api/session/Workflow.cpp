@@ -50,7 +50,7 @@
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
@@ -458,8 +458,8 @@ Workflow::Workflow(
     , activity_(activity)
     , contact_(contact)
     , account_publisher_(api_.Network().ZeroMQ().PublishSocket())
-    , rpc_publisher_(api_.Network().ZeroMQ().PushSocket(
-          zmq::socket::Socket::Direction::Connect))
+    , rpc_publisher_(
+          api_.Network().ZeroMQ().PushSocket(zmq::socket::Direction::Connect))
     , workflow_locks_()
 {
     // WARNING: do not access api_.Wallet() during construction

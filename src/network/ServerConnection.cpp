@@ -50,6 +50,7 @@
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/otx/Reply.hpp"
 #include "opentxs/otx/Request.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
@@ -94,10 +95,10 @@ ServerConnection::ServerConnection(
           [=](const auto& in) { process_incoming(in); }))
     , registration_socket_(zmq.Context().DealerSocket(
           callback_,
-          zmq::socket::Socket::Direction::Connect))
+          zmq::socket::Direction::Connect))
     , socket_(zmq.Context().RequestSocket())
     , notification_socket_(
-          zmq.Context().PushSocket(zmq::socket::Socket::Direction::Connect))
+          zmq.Context().PushSocket(zmq::socket::Direction::Connect))
     , last_activity_(std::time(nullptr))
     , sockets_ready_(Flag::Factory(false))
     , status_(Flag::Factory(false))
@@ -140,8 +141,8 @@ auto ServerConnection::activity_timer() -> void
 
 auto ServerConnection::async_socket(const Lock& lock) const -> OTZMQDealerSocket
 {
-    auto output = zmq_.Context().DealerSocket(
-        callback_, zmq::socket::Socket::Direction::Connect);
+    auto output =
+        zmq_.Context().DealerSocket(callback_, zmq::socket::Direction::Connect);
     set_proxy(lock, output);
     set_timeouts(lock, output);
     set_curve(lock, output);

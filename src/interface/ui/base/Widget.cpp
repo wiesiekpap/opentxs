@@ -8,6 +8,7 @@
 #include "interface/ui/base/Widget.hpp"  // IWYU pragma: associated
 
 #include <iosfwd>
+#include <type_traits>
 
 #include "internal/api/session/UI.hpp"
 #include "opentxs/Types.hpp"

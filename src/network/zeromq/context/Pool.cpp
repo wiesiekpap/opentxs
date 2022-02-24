@@ -10,21 +10,25 @@
 #include <zmq.h>  // IWYU pragma: keep
 #include <algorithm>
 #include <cassert>
-#include <functional>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <thread>
 
+#include "internal/network/zeromq/Batch.hpp"
+#include "internal/network/zeromq/Handle.hpp"
+#include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/context/Thread.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs::network::zeromq::context
 {
 Pool::Pool(const Context& parent) noexcept
     : parent_(parent)
     , count_(std::thread::hardware_concurrency())
+    , running_(true)
     , gate_()
     , threads_()
     , batches_()
@@ -34,7 +38,17 @@ Pool::Pool(const Context& parent) noexcept
     for (unsigned int n{0}; n < count_; ++n) { threads_.try_emplace(n, *this); }
 }
 
-auto Pool::DoModify(SocketID id, ModifyCallback& cb) noexcept -> bool
+auto Pool::BelongsToThreadPool(const std::thread::id id) const noexcept -> bool
+{
+    auto alloc = alloc::BoostMonotonic{1024};
+    auto threads = Set<std::thread::id>{&alloc};
+
+    for (const auto& [tid, thread] : threads_) { threads.emplace(thread.ID()); }
+
+    return 0 < threads.count(id);
+}
+
+auto Pool::DoModify(SocketID id, const ModifyCallback& cb) noexcept -> bool
 {
     const auto ticket = gate_.get();
 
@@ -52,13 +66,18 @@ auto Pool::DoModify(SocketID id, ModifyCallback& cb) noexcept -> bool
     }
 }
 
+auto Pool::get(BatchID id) const noexcept -> const context::Thread&
+{
+    return threads_.at(id % count_);
+}
+
 auto Pool::get(BatchID id) noexcept -> context::Thread&
 {
     return threads_.at(id % count_);
 }
 
 auto Pool::MakeBatch(UnallocatedVector<socket::Type>&& types) noexcept
-    -> internal::Batch&
+    -> internal::Handle
 {
     auto id = GetBatchID();
     Batches::iterator it;
@@ -67,9 +86,13 @@ auto Pool::MakeBatch(UnallocatedVector<socket::Type>&& types) noexcept
     batches_.modify([&](auto& batches) {
         result = batches.try_emplace(id, id, parent_, std::move(types));
     });
+
     assert(added);
 
-    return it->second;
+    auto& batch = it->second;
+    LogTrace()(OT_PRETTY_CLASS())("ZMQ batch ")(batch.id_)(" created").Flush();
+
+    return {parent_.Internal(), batch};
 }
 
 auto Pool::Modify(SocketID id, ModifyCallback cb) noexcept -> AsyncResult
@@ -91,7 +114,7 @@ auto Pool::Modify(SocketID id, ModifyCallback cb) noexcept -> AsyncResult
     }
 }
 
-auto Pool::Shutdown() noexcept -> void { gate_.shutdown(); }
+auto Pool::Shutdown() noexcept -> void { stop(); }
 
 auto Pool::Start(BatchID id, StartArgs&& sockets) noexcept
     -> zeromq::internal::Thread*
@@ -147,6 +170,28 @@ auto Pool::Stop(BatchID id) noexcept -> std::future<bool>
     }
 }
 
+auto Pool::stop() noexcept -> void
+{
+    if (auto running = running_.exchange(false); running) {
+        gate_.shutdown();
+
+        for (auto& [id, thread] : threads_) { thread.Shutdown(); }
+    }
+}
+
+auto Pool::Thread(BatchID id) const noexcept -> zeromq::internal::Thread*
+{
+    auto& thread = static_cast<zeromq::internal::Thread&>(
+        const_cast<Pool*>(this)->get(id));
+
+    return &thread;
+}
+
+auto Pool::ThreadID(BatchID id) const noexcept -> std::thread::id
+{
+    return get(id).ID();
+}
+
 auto Pool::UpdateIndex(BatchID id, StartArgs&& sockets) noexcept -> void
 {
     for (auto& [sID, socket, cb] : sockets) {
@@ -177,24 +222,13 @@ auto Pool::UpdateIndex(BatchID id) noexcept -> void
                 }
             });
             batch_index.erase(batch);
+            LogTrace()(OT_PRETTY_CLASS())("ZMQ batch ")(id)(" destroyed")
+                .Flush();
         }
     });
 
     batches_.modify([&](auto& batch) { batch.erase(id); });
 }
 
-auto Pool::Thread(BatchID id) const noexcept -> zeromq::internal::Thread*
-{
-    auto& thread = static_cast<zeromq::internal::Thread&>(
-        const_cast<Pool*>(this)->get(id));
-
-    return &thread;
-}
-
-Pool::~Pool()
-{
-    gate_.shutdown();
-
-    for (auto& [id, thread] : threads_) { thread.Shutdown(); }
-}
+Pool::~Pool() { stop(); }
 }  // namespace opentxs::network::zeromq::context

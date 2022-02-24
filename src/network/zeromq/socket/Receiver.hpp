@@ -59,7 +59,7 @@ protected:
     Receiver(
         const zeromq::Context& context,
         const socket::Type type,
-        const Socket::Direction direction,
+        const Direction direction,
         const bool startThread) noexcept;
 
     ~Receiver() override;

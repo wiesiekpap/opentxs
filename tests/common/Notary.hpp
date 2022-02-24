@@ -9,6 +9,8 @@
 
 #include "common/Base.hpp"
 #include "integration/Helpers.hpp"
+#include "opentxs/core/UnitType.hpp"
+#include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
@@ -22,15 +24,23 @@ class Crypto;
 class Notary;
 }  // namespace session
 }  // namespace api
+
 namespace display
 {
 class Definition;
 }  // namespace display
+
 namespace identifier
 {
+class Notary;
 class Nym;
 }  // namespace identifier
 }  // namespace opentxs
+
+namespace ottest
+{
+struct User;
+}  // namespace ottest
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace ot = opentxs;

@@ -10,15 +10,18 @@
 #include <robin_hood.h>
 #include <array>
 #include <cassert>
+#include <cstdint>
 #include <iostream>
-#include <mutex>
+#include <limits>
 #include <utility>
 
 #include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameIterator.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 
@@ -107,12 +110,13 @@ Raw::Raw(const Context& context, const socket::Type type) noexcept
     SetLinger(0);
     SetIncomingHWM(default_hwm_);
     SetOutgoingHWM(default_hwm_);
+    SetSendTimeout(default_send_timeout_);
 }
 
 auto Raw::Bind(const char* endpoint) noexcept -> bool
 {
     if (0 != ::zmq_bind(Native(), endpoint)) {
-        std::cerr << (OT_PRETTY_CLASS()) << zmq_strerror(zmq_errno())
+        std::cerr << (OT_PRETTY_CLASS()) << ::zmq_strerror(zmq_errno())
                   << std::endl;
 
         return false;
@@ -127,7 +131,7 @@ auto Raw::ClearSubscriptions() noexcept -> bool
 {
     if (0 != ::zmq_setsockopt(Native(), ZMQ_SUBSCRIBE, "", 0)) {
         std::cerr << "Failed to set ZMQ_SUBSCRIBE\n";
-        std::cerr << zmq_strerror(zmq_errno()) << '\n';
+        std::cerr << ::zmq_strerror(zmq_errno()) << '\n';
 
         return false;
     } else {
@@ -145,7 +149,7 @@ auto Raw::Close() noexcept -> void
 auto Raw::Connect(const char* endpoint) noexcept -> bool
 {
     if (0 != ::zmq_connect(Native(), endpoint)) {
-        std::cerr << (OT_PRETTY_CLASS()) << zmq_strerror(zmq_errno())
+        std::cerr << (OT_PRETTY_CLASS()) << ::zmq_strerror(zmq_errno())
                   << std::endl;
 
         return false;
@@ -161,7 +165,7 @@ auto Raw::Disconnect(const char* endpoint) noexcept -> bool
     const auto rc = ::zmq_disconnect(Native(), endpoint);
 
     if (0 != rc) {
-        std::cerr << (OT_PRETTY_CLASS()) << zmq_strerror(zmq_errno())
+        std::cerr << (OT_PRETTY_CLASS()) << ::zmq_strerror(zmq_errno())
                   << std::endl;
     }
 
@@ -195,34 +199,58 @@ auto Raw::record_endpoint(Endpoints& out) noexcept -> void
 
 auto Raw::Send(Message&& msg) noexcept -> bool
 {
-    std::mutex dummy{};
-    auto lock = Lock{dummy};
+    const auto sent = send(std::move(msg), ZMQ_DONTWAIT);
 
-    return socket::implementation::Socket::send_message(
-        lock, Native(), std::move(msg));
+    OT_ASSERT(sent);
+
+    return sent;
+}
+
+auto Raw::SendExternal(Message&& msg) noexcept -> bool
+{
+    return send(std::move(msg), ZMQ_DONTWAIT);
+}
+
+auto Raw::send(Message&& msg, const int baseFlags) noexcept -> bool
+{
+    auto sent{true};
+    const auto parts = msg.size();
+    auto counter = std::size_t{0};
+
+    for (auto& frame : msg) {
+        auto flags{baseFlags};
+
+        if (++counter < parts) { flags |= ZMQ_SNDMORE; }
+
+        sent &=
+            (-1 != ::zmq_msg_send(const_cast<Frame&>(frame), Native(), flags));
+    }
+
+    if (false == sent) {
+        std::cerr << (OT_PRETTY_CLASS())
+                  << "Send error: " << ::zmq_strerror(zmq_errno()) << '\n';
+    }
+
+    return sent;
+}
+
+auto Raw::SetExposedUntrusted() noexcept -> bool
+{
+    auto output = SetIncomingHWM(untrusted_hwm_);
+    output &= SetOutgoingHWM(untrusted_hwm_);
+    output &= SetMaxMessageSize(untrusted_max_message_size_);
+
+    return output;
 }
 
 auto Raw::SetIncomingHWM(int value) noexcept -> bool
 {
-    const auto rc = zmq_setsockopt(Native(), ZMQ_RCVHWM, &value, sizeof(value));
+    const auto rc =
+        ::zmq_setsockopt(Native(), ZMQ_RCVHWM, &value, sizeof(value));
 
     if (0 != rc) {
         std::cerr << (OT_PRETTY_CLASS()) << "Failed to set ZMQ_RCVHWM\n";
-        std::cerr << zmq_strerror(zmq_errno()) << '\n';
-
-        return false;
-    }
-
-    return true;
-}
-
-auto Raw::SetMonitor(const char* endpoint, int events) noexcept -> bool
-{
-    const auto rc = zmq_socket_monitor(Native(), endpoint, events);
-
-    if (0 != rc) {
-        std::cerr << (OT_PRETTY_CLASS()) << "Failed zmq_socket_monitor\n";
-        std::cerr << zmq_strerror(zmq_errno()) << '\n';
+        std::cerr << ::zmq_strerror(zmq_errno()) << '\n';
 
         return false;
     }
@@ -232,11 +260,49 @@ auto Raw::SetMonitor(const char* endpoint, int events) noexcept -> bool
 
 auto Raw::SetLinger(int value) noexcept -> bool
 {
-    const auto rc = zmq_setsockopt(Native(), ZMQ_LINGER, &value, sizeof(value));
+    const auto rc =
+        ::zmq_setsockopt(Native(), ZMQ_LINGER, &value, sizeof(value));
 
     if (0 != rc) {
         std::cerr << (OT_PRETTY_CLASS()) << "Failed to set ZMQ_LINGER\n";
-        std::cerr << zmq_strerror(zmq_errno()) << '\n';
+        std::cerr << ::zmq_strerror(zmq_errno()) << '\n';
+
+        return false;
+    }
+
+    return true;
+}
+
+auto Raw::SetMonitor(const char* endpoint, int events) noexcept -> bool
+{
+    const auto rc = ::zmq_socket_monitor(Native(), endpoint, events);
+
+    if (0 != rc) {
+        std::cerr << (OT_PRETTY_CLASS()) << "Failed zmq_socket_monitor\n";
+        std::cerr << ::zmq_strerror(zmq_errno()) << '\n';
+
+        return false;
+    }
+
+    return true;
+}
+
+auto Raw::SetMaxMessageSize(std::size_t arg) noexcept -> bool
+{
+    using ZMQArg = std::int64_t;
+
+    if (std::numeric_limits<ZMQArg>::max() < arg) {
+        std::cerr << (OT_PRETTY_CLASS()) << "Argument too large\n";
+
+        return false;
+    }
+
+    const auto rc =
+        ::zmq_setsockopt(Native(), ZMQ_MAXMSGSIZE, &arg, sizeof(arg));
+
+    if (0 != rc) {
+        std::cerr << (OT_PRETTY_CLASS()) << "Failed to set ZMQ_MAXMSGSIZE\n";
+        std::cerr << ::zmq_strerror(zmq_errno()) << '\n';
 
         return false;
     }
@@ -246,11 +312,12 @@ auto Raw::SetLinger(int value) noexcept -> bool
 
 auto Raw::SetOutgoingHWM(int value) noexcept -> bool
 {
-    const auto rc = zmq_setsockopt(Native(), ZMQ_SNDHWM, &value, sizeof(value));
+    const auto rc =
+        ::zmq_setsockopt(Native(), ZMQ_SNDHWM, &value, sizeof(value));
 
     if (0 != rc) {
         std::cerr << (OT_PRETTY_CLASS()) << "Failed to set ZMQ_SNDHWM\n";
-        std::cerr << zmq_strerror(zmq_errno()) << '\n';
+        std::cerr << ::zmq_strerror(zmq_errno()) << '\n';
 
         return false;
     }
@@ -268,7 +335,7 @@ auto Raw::SetPrivateKey(ReadView key) noexcept -> bool
 
     const int server{1};
     auto rc =
-        zmq_setsockopt(Native(), ZMQ_CURVE_SERVER, &server, sizeof(server));
+        ::zmq_setsockopt(Native(), ZMQ_CURVE_SERVER, &server, sizeof(server));
 
     if (0 != rc) {
         std::cerr << (OT_PRETTY_CLASS()) << "Failed to set ZMQ_CURVE_SERVER"
@@ -277,7 +344,8 @@ auto Raw::SetPrivateKey(ReadView key) noexcept -> bool
         return false;
     }
 
-    rc = zmq_setsockopt(Native(), ZMQ_CURVE_SECRETKEY, key.data(), key.size());
+    rc =
+        ::zmq_setsockopt(Native(), ZMQ_CURVE_SECRETKEY, key.data(), key.size());
 
     if (0 != rc) {
         std::cerr << (OT_PRETTY_CLASS()) << "Failed to set private key"
@@ -293,12 +361,12 @@ auto Raw::SetRouterHandover(bool value) noexcept -> bool
 {
     const auto data = value ? int{1} : int{0};
     const auto rc =
-        zmq_setsockopt(Native(), ZMQ_ROUTER_HANDOVER, &data, sizeof(data));
+        ::zmq_setsockopt(Native(), ZMQ_ROUTER_HANDOVER, &data, sizeof(data));
 
     if (0 != rc) {
         std::cerr << (OT_PRETTY_CLASS())
                   << "Failed to set ZMQ_ROUTER_HANDOVER\n";
-        std::cerr << zmq_strerror(zmq_errno()) << '\n';
+        std::cerr << ::zmq_strerror(zmq_errno()) << '\n';
 
         return false;
     }
@@ -309,10 +377,42 @@ auto Raw::SetRouterHandover(bool value) noexcept -> bool
 auto Raw::SetRoutingID(ReadView id) noexcept -> bool
 {
     const auto set =
-        zmq_setsockopt(Native(), ZMQ_ROUTING_ID, id.data(), id.size());
+        ::zmq_setsockopt(Native(), ZMQ_ROUTING_ID, id.data(), id.size());
 
     if (0 != set) {
-        std::cerr << (OT_PRETTY_CLASS()) << zmq_strerror(zmq_errno())
+        std::cerr << (OT_PRETTY_CLASS()) << ::zmq_strerror(zmq_errno())
+                  << std::endl;
+
+        return false;
+    }
+
+    return true;
+}
+
+auto Raw::SetSendTimeout(std::chrono::milliseconds value) noexcept -> bool
+{
+    const auto ms = value.count();
+    using ZMQArg = int;
+
+    if (std::numeric_limits<ZMQArg>::max() < ms) {
+        std::cerr << (OT_PRETTY_CLASS()) << "Argument too large\n";
+
+        return false;
+    }
+
+    const auto arg = [&]() -> ZMQArg {
+        if (0 > ms) {
+
+            return -1;
+        } else {
+            return static_cast<ZMQArg>(ms);
+        }
+    }();
+    const auto set =
+        ::zmq_setsockopt(Native(), ZMQ_SNDTIMEO, &arg, sizeof(arg));
+
+    if (0 != set) {
+        std::cerr << (OT_PRETTY_CLASS()) << ::zmq_strerror(zmq_errno())
                   << std::endl;
 
         return false;
@@ -323,11 +423,11 @@ auto Raw::SetRoutingID(ReadView id) noexcept -> bool
 
 auto Raw::SetZAPDomain(ReadView domain) noexcept -> bool
 {
-    const auto set =
-        zmq_setsockopt(Native(), ZMQ_ZAP_DOMAIN, domain.data(), domain.size());
+    const auto set = ::zmq_setsockopt(
+        Native(), ZMQ_ZAP_DOMAIN, domain.data(), domain.size());
 
     if (0 != set) {
-        std::cerr << (OT_PRETTY_CLASS()) << zmq_strerror(zmq_errno())
+        std::cerr << (OT_PRETTY_CLASS()) << ::zmq_strerror(zmq_errno())
                   << std::endl;
 
         return false;
@@ -347,7 +447,7 @@ auto Raw::Unbind(const char* endpoint) noexcept -> bool
     const auto rc = ::zmq_unbind(Native(), endpoint);
 
     if (0 != rc) {
-        std::cerr << (OT_PRETTY_CLASS()) << zmq_strerror(zmq_errno())
+        std::cerr << (OT_PRETTY_CLASS()) << ::zmq_strerror(zmq_errno())
                   << std::endl;
     }
 
@@ -364,7 +464,7 @@ auto Raw::UnbindAll() noexcept -> bool
         const auto rc = ::zmq_unbind(Native(), endpoint.c_str());
 
         if (0 != rc) {
-            std::cerr << (OT_PRETTY_CLASS()) << zmq_strerror(zmq_errno())
+            std::cerr << (OT_PRETTY_CLASS()) << ::zmq_strerror(zmq_errno())
                       << std::endl;
             output = false;
         }
@@ -434,6 +534,16 @@ auto Raw::Send(Message&& msg) noexcept -> bool
     return imp_->Send(std::move(msg));
 }
 
+auto Raw::SendExternal(Message&& msg) noexcept -> bool
+{
+    return imp_->SendExternal(std::move(msg));
+}
+
+auto Raw::SetExposedUntrusted() noexcept -> bool
+{
+    return imp_->SetExposedUntrusted();
+}
+
 auto Raw::SetIncomingHWM(int value) noexcept -> bool
 {
     return imp_->SetIncomingHWM(value);
@@ -467,6 +577,11 @@ auto Raw::SetRouterHandover(bool value) noexcept -> bool
 auto Raw::SetRoutingID(ReadView id) noexcept -> bool
 {
     return imp_->SetRoutingID(id);
+}
+
+auto Raw::SetSendTimeout(std::chrono::milliseconds value) noexcept -> bool
+{
+    return imp_->SetSendTimeout(value);
 }
 
 auto Raw::SetZAPDomain(ReadView domain) noexcept -> bool

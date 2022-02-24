@@ -17,6 +17,7 @@
 #include "network/zeromq/socket/Receiver.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Sender.tpp"
+#include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
@@ -38,7 +39,7 @@ auto DealerSocket(
 
     return std::make_unique<ReturnType>(
         context,
-        static_cast<network::zeromq::socket::Socket::Direction>(direction),
+        static_cast<network::zeromq::socket::Direction>(direction),
         callback);
 }
 }  // namespace opentxs::factory
@@ -47,7 +48,7 @@ namespace opentxs::network::zeromq::socket::implementation
 {
 Dealer::Dealer(
     const zeromq::Context& context,
-    const Socket::Direction direction,
+    const Direction direction,
     const zeromq::ListenCallback& callback) noexcept
     : Receiver(context, socket::Type::Dealer, direction, false)
     , Bidirectional(context, true)

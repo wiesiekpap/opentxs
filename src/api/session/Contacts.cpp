@@ -22,6 +22,7 @@
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/api/session/Factory.hpp"
+#include "internal/network/zeromq/Context.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -85,7 +86,7 @@ Contacts::Contacts(const api::session::Client& api)
         return output;
     }())
     , publisher_(api_.Network().ZeroMQ().PublishSocket())
-    , pipeline_(api_.Factory().Pipeline(
+    , pipeline_(api_.Network().ZeroMQ().Internal().Pipeline(
           [this](auto&& in) { pipeline(std::move(in)); }))
     , timer_(api_.Network().Asio().Internal().GetTimer())
 {
@@ -96,6 +97,8 @@ Contacts::Contacts(const api::session::Client& api)
     // in blockchain api in cases where the process was interrupted due to
     // library shutdown
 
+    LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(pipeline_.BatchID())
+        .Flush();
     pipeline_.SubscribeTo(api_.Endpoints().NymCreated());
     pipeline_.SubscribeTo(api_.Endpoints().NymDownload());
     pipeline_.SubscribeTo(api_.Endpoints().Shutdown());

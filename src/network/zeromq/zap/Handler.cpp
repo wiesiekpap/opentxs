@@ -13,8 +13,8 @@
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/network/zeromq/zap/Callback.hpp"
 #include "opentxs/network/zeromq/zap/Handler.hpp"
 #include "opentxs/network/zeromq/zap/Reply.hpp"
@@ -41,7 +41,7 @@ namespace opentxs::network::zeromq::zap::implementation
 Handler::Handler(
     const zeromq::Context& context,
     const zap::Callback& callback) noexcept
-    : Receiver(context, socket::Type::Router, Socket::Direction::Bind, true)
+    : Receiver(context, socket::Type::Router, socket::Direction::Bind, true)
     , Server(this->get())
     , callback_(callback)
 {

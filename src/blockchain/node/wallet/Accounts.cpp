@@ -138,7 +138,7 @@ struct Accounts::Imp {
         payment_codes_.clear();
         map_.clear();
     }
-    auto state_machine(bool enabled) noexcept -> bool
+    auto state_machine() noexcept -> bool
     {
         auto ticket = gatekeeper_.get();
 
@@ -147,25 +147,22 @@ struct Accounts::Imp {
         auto output{false};
 
         for (auto& [code, account] : payment_codes_) {
-            output |= account.ProcessStateMachine(enabled);
+            output |= account.ProcessStateMachine();
         }
 
         for (auto& [nym, account] : map_) {
-            output |= account.ProcessStateMachine(enabled);
+            output |= account.ProcessStateMachine();
         }
 
         return output;
     }
-    auto TaskComplete(
-        const Identifier& id,
-        const char* type,
-        bool enabled) noexcept -> void
+    auto TaskComplete(const Identifier& id, const char* type) noexcept -> void
     {
         auto ticket = gatekeeper_.get();
 
         if (ticket) { return; }
 
-        for_each([&](auto& a) { a.ProcessTaskComplete(id, type, enabled); });
+        for_each([&](auto& a) { a.ProcessTaskComplete(id, type); });
     }
 
     Imp(const api::Session& api,
@@ -319,17 +316,16 @@ auto Accounts::ProcessReorg(
     return imp_->Reorg(headerOracleLock, tx, errors, parent);
 }
 
-auto Accounts::ProcessStateMachine(bool enabled) noexcept -> bool
+auto Accounts::ProcessStateMachine() noexcept -> bool
 {
-    return imp_->state_machine(enabled);
+    return imp_->state_machine();
 }
 
 auto Accounts::ProcessTaskComplete(
     const Identifier& id,
-    const char* type,
-    bool enabled) noexcept -> void
+    const char* type) noexcept -> void
 {
-    imp_->TaskComplete(id, type, enabled);
+    imp_->TaskComplete(id, type);
 }
 
 auto Accounts::Shutdown() noexcept -> void { imp_->shutdown(); }

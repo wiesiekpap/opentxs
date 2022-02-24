@@ -21,6 +21,7 @@
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -41,7 +42,7 @@ auto RequestSocket(const network::zeromq::Context& context)
 namespace opentxs::network::zeromq::socket::implementation
 {
 Request::Request(const zeromq::Context& context) noexcept
-    : Socket(context, socket::Type::Request, Socket::Direction::Connect)
+    : Socket(context, socket::Type::Request, Direction::Connect)
     , Client(this->get())
 {
     init();

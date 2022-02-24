@@ -22,21 +22,19 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
 PeerManager::Jobs::Jobs(const api::Session& api) noexcept
     : zmq_(api.Network().ZeroMQ())
-    , getheaders_(zmq_.PushSocket(zmq::socket::Socket::Direction::Bind))
+    , getheaders_(zmq_.PushSocket(zmq::socket::Direction::Bind))
     , getcfheaders_(zmq_.PublishSocket())
     , getcfilters_(zmq_.PublishSocket())
     , getblocks_(zmq_.PublishSocket())
     , heartbeat_(zmq_.PublishSocket())
-    , getblock_(zmq_.PushSocket(zmq::socket::Socket::Direction::Bind))
-    , broadcast_transaction_(
-          zmq_.PushSocket(zmq::socket::Socket::Direction::Bind))
+    , getblock_(zmq_.PushSocket(zmq::socket::Direction::Bind))
+    , broadcast_transaction_(zmq_.PushSocket(zmq::socket::Direction::Bind))
     , broadcast_block_(zmq_.PublishSocket())
     , endpoint_map_([&] {
         auto map = EndpointMap{};

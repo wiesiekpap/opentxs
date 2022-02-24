@@ -85,11 +85,9 @@ public:
         storage::lmdb::LMDB::Transaction& tx,
         std::atomic_int& errors,
         const block::Position& parent) noexcept -> bool final;
-    auto ProcessStateMachine(bool enabled) noexcept -> bool final;
-    auto ProcessTaskComplete(
-        const Identifier& id,
-        const char* type,
-        bool enabled) noexcept -> void final;
+    auto ProcessStateMachine() noexcept -> bool final;
+    auto ProcessTaskComplete(const Identifier& id, const char* type) noexcept
+        -> void final;
     auto Shutdown() noexcept -> void final;
 
     Accounts(

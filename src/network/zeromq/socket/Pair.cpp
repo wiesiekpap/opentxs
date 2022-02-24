@@ -16,6 +16,7 @@
 #include "network/zeromq/socket/Receiver.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Sender.tpp"
+#include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -50,7 +51,7 @@ auto PairSocket(
 auto PairSocket(
     const network::zeromq::Context& context,
     const network::zeromq::ListenCallback& callback,
-    const UnallocatedCString& endpoint)
+    const std::string_view endpoint)
     -> std::unique_ptr<network::zeromq::socket::Pair>
 {
     using ReturnType = network::zeromq::socket::implementation::Pair;
@@ -64,8 +65,8 @@ namespace opentxs::network::zeromq::socket::implementation
 Pair::Pair(
     const zeromq::Context& context,
     const zeromq::ListenCallback& callback,
-    const UnallocatedCString& endpoint,
-    const Socket::Direction direction,
+    const std::string_view endpoint,
+    const Direction direction,
     const bool startThread) noexcept
     : Receiver(context, socket::Type::Pair, direction, startThread)
     , Bidirectional(context, true)
@@ -83,7 +84,7 @@ Pair::Pair(
           context,
           callback,
           MakeArbitraryInproc(),
-          Socket::Direction::Bind,
+          Direction::Bind,
           startThread)
 {
 }
@@ -96,7 +97,7 @@ Pair::Pair(
           peer.Context(),
           callback,
           peer.Endpoint(),
-          Socket::Direction::Connect,
+          Direction::Connect,
           startThread)
 {
 }
@@ -104,8 +105,8 @@ Pair::Pair(
 Pair::Pair(
     const zeromq::Context& context,
     const zeromq::ListenCallback& callback,
-    const UnallocatedCString& endpoint) noexcept
-    : Pair(context, callback, endpoint, Socket::Direction::Connect, true)
+    const std::string_view endpoint) noexcept
+    : Pair(context, callback, endpoint, Direction::Connect, true)
 {
 }
 
@@ -114,10 +115,7 @@ auto Pair::clone() const noexcept -> Pair*
     return new Pair(context_, callback_, endpoint_, direction_, false);
 }
 
-auto Pair::Endpoint() const noexcept -> const UnallocatedCString&
-{
-    return endpoint_;
-}
+auto Pair::Endpoint() const noexcept -> std::string_view { return endpoint_; }
 
 auto Pair::have_callback() const noexcept -> bool { return true; }
 

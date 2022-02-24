@@ -13,6 +13,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Reply.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -43,7 +44,7 @@ class Reply final : public Receiver<zeromq::socket::Reply>,
 public:
     Reply(
         const zeromq::Context& context,
-        const Socket::Direction direction,
+        const Direction direction,
         const ReplyCallback& callback) noexcept;
 
     ~Reply() final;

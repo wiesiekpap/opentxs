@@ -38,7 +38,7 @@ auto ReplySocket(
 
     return std::make_unique<ReturnType>(
         context,
-        static_cast<network::zeromq::socket::Socket::Direction>(direction),
+        static_cast<network::zeromq::socket::Direction>(direction),
         callback);
 }
 }  // namespace opentxs::factory
@@ -47,7 +47,7 @@ namespace opentxs::network::zeromq::socket::implementation
 {
 Reply::Reply(
     const zeromq::Context& context,
-    const Socket::Direction direction,
+    const Direction direction,
     const ReplyCallback& callback) noexcept
     : Receiver(context, socket::Type::Reply, direction, true)
     , Server(this->get())

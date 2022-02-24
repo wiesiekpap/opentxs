@@ -218,6 +218,8 @@ private:
     Progress progress_;
     blockchain::block::Height height_;
 
+    static auto print(Work type) noexcept -> const char*;
+
     auto display_balance(opentxs::Amount value) const noexcept
         -> UnallocatedCString final;
 

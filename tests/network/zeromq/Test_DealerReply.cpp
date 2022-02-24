@@ -10,7 +10,6 @@
 #include <thread>
 #include <utility>
 
-#include "internal/network/zeromq/Types.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -22,8 +21,8 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Reply.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -70,8 +69,8 @@ void Test_DealerReply::dealerSocketThread(const ot::UnallocatedCString& msg)
 
     ASSERT_NE(nullptr, &listenCallback.get());
 
-    auto dealerSocket = context_.DealerSocket(
-        listenCallback, zmq::socket::Socket::Direction::Connect);
+    auto dealerSocket =
+        context_.DealerSocket(listenCallback, zmq::socket::Direction::Connect);
 
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());
@@ -133,8 +132,8 @@ TEST_F(Test_DealerReply, Dealer_Reply)
 
     ASSERT_NE(nullptr, &replyCallback.get());
 
-    auto replySocket = context_.ReplySocket(
-        replyCallback, zmq::socket::Socket::Direction::Bind);
+    auto replySocket =
+        context_.ReplySocket(replyCallback, zmq::socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
@@ -163,8 +162,8 @@ TEST_F(Test_DealerReply, Dealer_Reply)
 
     ASSERT_NE(nullptr, &dealerCallback.get());
 
-    auto dealerSocket = context_.DealerSocket(
-        dealerCallback, zmq::socket::Socket::Direction::Connect);
+    auto dealerSocket =
+        context_.DealerSocket(dealerCallback, zmq::socket::Direction::Connect);
 
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());
@@ -221,8 +220,8 @@ TEST_F(Test_DealerReply, Dealer_2_Reply_1)
 
     ASSERT_NE(nullptr, &replyCallback.get());
 
-    auto replySocket = context_.ReplySocket(
-        replyCallback, zmq::socket::Socket::Direction::Bind);
+    auto replySocket =
+        context_.ReplySocket(replyCallback, zmq::socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
@@ -272,8 +271,8 @@ TEST_F(Test_DealerReply, Dealer_Reply_Multipart)
 
     ASSERT_NE(nullptr, &replyCallback.get());
 
-    auto replySocket = context_.ReplySocket(
-        replyCallback, zmq::socket::Socket::Direction::Bind);
+    auto replySocket =
+        context_.ReplySocket(replyCallback, zmq::socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
@@ -310,8 +309,8 @@ TEST_F(Test_DealerReply, Dealer_Reply_Multipart)
 
     ASSERT_NE(nullptr, &dealerCallback.get());
 
-    auto dealerSocket = context_.DealerSocket(
-        dealerCallback, zmq::socket::Socket::Direction::Connect);
+    auto dealerSocket =
+        context_.DealerSocket(dealerCallback, zmq::socket::Direction::Connect);
 
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());

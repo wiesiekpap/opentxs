@@ -69,13 +69,14 @@ namespace opentxs::network::p2p
 {
 Client::Imp::Imp(
     const api::Session& api,
-    opentxs::network::zeromq::internal::Batch& batch) noexcept
+    zeromq::internal::Handle&& handle) noexcept
     : api_(api)
-    , endpoint_(opentxs::network::zeromq::MakeArbitraryInproc())
-    , monitor_endpoint_(opentxs::network::zeromq::MakeArbitraryInproc())
-    , loopback_endpoint_(opentxs::network::zeromq::MakeArbitraryInproc())
+    , endpoint_(zeromq::MakeArbitraryInproc())
+    , monitor_endpoint_(zeromq::MakeArbitraryInproc())
+    , loopback_endpoint_(zeromq::MakeArbitraryInproc())
+    , handle_(std::move(handle))
     , batch_([&]() -> auto& {
-        auto& out = batch;
+        auto& out = handle_.batch_;
         out.listen_callbacks_.reserve(4);
         out.listen_callbacks_.emplace_back(Callback::Factory(
             [this](auto&& in) { process_external(std::move(in)); }));
@@ -103,6 +104,10 @@ Client::Imp::Imp(
 
         OT_ASSERT(rc);
 
+        rc = out.SetExposedUntrusted();
+
+        OT_ASSERT(rc);
+
         return out;
     }())
     , monitor_([&]() -> auto& {
@@ -116,6 +121,10 @@ Client::Imp::Imp(
     , external_sub_([&]() -> auto& {
         auto& out = batch_.sockets_.at(2);
         auto rc = out.ClearSubscriptions();
+
+        OT_ASSERT(rc);
+
+        rc = out.SetExposedUntrusted();
 
         OT_ASSERT(rc);
 
@@ -172,6 +181,7 @@ Client::Imp::Imp(
 
         LogTrace()(OT_PRETTY_CLASS())("wallet socket connected to ")(endpoint)
             .Flush();
+        out.Send(MakeWork(Job::Register));
 
         return out;
     }())
@@ -179,10 +189,6 @@ Client::Imp::Imp(
         const auto& context = api_.Network().ZeroMQ();
         auto socket = factory::ZMQSocket(context, SocketType::Pair);
         auto rc = socket.Connect(loopback_endpoint_.c_str());
-
-        OT_ASSERT(rc);
-
-        rc = socket.SetOutgoingHWM(0);
 
         OT_ASSERT(rc);
 
@@ -251,6 +257,8 @@ Client::Imp::Imp(
           }))
 {
     OT_ASSERT(nullptr != thread_);
+
+    LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(batch_.id_).Flush();
 }
 
 auto Client::Imp::Endpoint() const noexcept -> std::string_view
@@ -303,8 +311,8 @@ auto Client::Imp::forward_to_all(Message&& message) noexcept -> void
     for (const auto& id : connected_servers_) {
         auto& server = servers_.at(id);
         LogTrace()("Forwarding request to ")(id).Flush();
-        external_router_.Send([&] {
-            auto msg = opentxs::network::zeromq::Message{};
+        external_router_.SendExternal([&] {
+            auto msg = zeromq::Message{};
             msg.AddFrame(server.endpoint_);
             msg.StartBody();
 
@@ -332,8 +340,8 @@ auto Client::Imp::forward_to_all(Chain chain, Message&& message) noexcept
     for (const auto& id : providers) {
         auto& server = servers_.at(id);
         LogTrace()("Forwarding request to ")(id).Flush();
-        external_router_.Send([&] {
-            auto msg = opentxs::network::zeromq::Message{};
+        external_router_.SendExternal([&] {
+            auto msg = zeromq::Message{};
             msg.AddFrame(server.endpoint_);
             msg.StartBody();
 
@@ -399,8 +407,8 @@ auto Client::Imp::Init(const api::network::Blockchain& parent) noexcept -> void
 
 auto Client::Imp::ping_server(client::Server& server) noexcept -> void
 {
-    external_router_.Send([&] {
-        auto msg = opentxs::network::zeromq::Message{};
+    external_router_.SendExternal([&] {
+        auto msg = zeromq::Message{};
         msg.AddFrame(server.endpoint_);
         msg.StartBody();
         const auto query = factory::BlockchainSyncQuery(0);
@@ -533,7 +541,7 @@ auto Client::Imp::process_external(Message&& msg) noexcept -> void
                     const auto notification =
                         factory::BlockchainSyncAcknowledgement(
                             std::move(data), ep);
-                    auto msg = opentxs::network::zeromq::Message{};
+                    auto msg = zeromq::Message{};
                     msg.AddFrame(client);
                     msg.StartBody();
 
@@ -555,7 +563,7 @@ auto Client::Imp::process_external(Message&& msg) noexcept -> void
                     throw std::runtime_error{error.c_str()};
                 }
 
-                auto msg = opentxs::network::zeromq::Message{};
+                auto msg = zeromq::Message{};
                 msg.AddFrame(identity);
                 msg.StartBody();
 
@@ -747,8 +755,8 @@ auto Client::Imp::process_request(Message&& msg) noexcept -> void
 
         return factory::BlockchainSyncRequest(std::move(states));
     }();
-    external_router_.Send([&] {
-        auto out = opentxs::network::zeromq::Message{};
+    external_router_.SendExternal([&] {
+        auto out = zeromq::Message{};
         out.AddFrame(provider);
         out.StartBody();
 
@@ -845,7 +853,7 @@ auto Client::Imp::process_wallet(Message&& msg) noexcept -> void
 
     switch (type) {
         case Job::Response: {
-            external_router_.Send(std::move(msg));
+            external_router_.SendExternal(std::move(msg));
         } break;
         case Job::PublishContract:
         case Job::QueryContract: {
@@ -960,11 +968,7 @@ auto Client::Imp::state_machine() noexcept -> void
     }
 }
 
-Client::Imp::~Imp()
-{
-    shutdown();
-    api_.Network().ZeroMQ().Internal().Stop(batch_.id_);
-}
+Client::Imp::~Imp() { shutdown(); }
 }  // namespace opentxs::network::p2p
 
 namespace opentxs::network::p2p
@@ -989,8 +993,8 @@ Client::Client(const api::Session& api) noexcept
 
 Client::Client(
     const api::Session& api,
-    opentxs::network::zeromq::internal::Batch& batch) noexcept
-    : imp_(std::make_unique<Imp>(api, batch).release())
+    zeromq::internal::Handle&& handle) noexcept
+    : imp_(std::make_unique<Imp>(api, std::move(handle)).release())
 {
 }
 

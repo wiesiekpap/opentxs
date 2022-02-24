@@ -5,13 +5,6 @@
 
 #pragma once
 
-#include <future>
-#include <thread>
-#include <tuple>
-
-#include "internal/network/zeromq/Types.hpp"
-#include "opentxs/util/Allocator.hpp"
-
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
@@ -19,10 +12,11 @@ namespace network
 {
 namespace zeromq
 {
-namespace socket
+namespace internal
 {
-class Raw;
-}  // namespace socket
+class Batch;
+class Context;
+}  // namespace internal
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
@@ -30,15 +24,22 @@ class Raw;
 
 namespace opentxs::network::zeromq::internal
 {
-class Thread
+class Handle
 {
 public:
-    virtual auto ID() const noexcept -> std::thread::id = 0;
+    internal::Batch& batch_;
 
-    virtual auto Alloc() noexcept -> alloc::Resource* = 0;
-    virtual auto Modify(SocketID socket, ModifyCallback cb) noexcept
-        -> std::pair<bool, std::future<bool>> = 0;
+    auto Release() noexcept -> void;
 
-    virtual ~Thread() = default;
+    Handle(const internal::Context& context, internal::Batch& batch) noexcept;
+    Handle(const Handle&) = delete;
+    Handle(Handle&& rhs) noexcept;
+    auto operator=(const Handle&) -> Handle& = delete;
+    auto operator=(Handle&&) -> Handle& = delete;
+
+    ~Handle();
+
+private:
+    const internal::Context* context_;
 };
 }  // namespace opentxs::network::zeromq::internal

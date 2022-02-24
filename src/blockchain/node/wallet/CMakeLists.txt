@@ -8,6 +8,10 @@ add_subdirectory(feeoracle)
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/Factory.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/FeeOracle.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/FeeSource.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/Types.hpp"
     "Account.cpp"
     "Account.hpp"
     "Accounts.cpp"

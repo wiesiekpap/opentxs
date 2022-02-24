@@ -85,7 +85,7 @@
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/Reply.hpp"
@@ -203,12 +203,12 @@ Server::Server(
     , inbox_()
     , outbox_()
     , numbers_(nullptr)
-    , find_nym_(api.Network().ZeroMQ().PushSocket(
-          zmq::socket::Socket::Direction::Connect))
-    , find_server_(api.Network().ZeroMQ().PushSocket(
-          zmq::socket::Socket::Direction::Connect))
-    , find_unit_definition_(api.Network().ZeroMQ().PushSocket(
-          zmq::socket::Socket::Direction::Connect))
+    , find_nym_(
+          api.Network().ZeroMQ().PushSocket(zmq::socket::Direction::Connect))
+    , find_server_(
+          api.Network().ZeroMQ().PushSocket(zmq::socket::Direction::Connect))
+    , find_unit_definition_(
+          api.Network().ZeroMQ().PushSocket(zmq::socket::Direction::Connect))
 
 {
     {
@@ -263,12 +263,12 @@ Server::Server(
     , inbox_()
     , outbox_()
     , numbers_(nullptr)
-    , find_nym_(api.Network().ZeroMQ().PushSocket(
-          zmq::socket::Socket::Direction::Connect))
-    , find_server_(api.Network().ZeroMQ().PushSocket(
-          zmq::socket::Socket::Direction::Connect))
-    , find_unit_definition_(api.Network().ZeroMQ().PushSocket(
-          zmq::socket::Socket::Direction::Connect))
+    , find_nym_(
+          api.Network().ZeroMQ().PushSocket(zmq::socket::Direction::Connect))
+    , find_server_(
+          api.Network().ZeroMQ().PushSocket(zmq::socket::Direction::Connect))
+    , find_unit_definition_(
+          api.Network().ZeroMQ().PushSocket(zmq::socket::Direction::Connect))
 {
     for (const auto& it : serialized.servercontext().tentativerequestnumber()) {
         tentative_transaction_numbers_.insert(it);

@@ -16,6 +16,7 @@
 #include <string_view>
 
 #include "internal/network/p2p/Client.hpp"
+#include "internal/network/zeromq/Handle.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/Timer.hpp"
 #include "network/p2p/client/Server.hpp"
@@ -68,15 +69,14 @@ class opentxs::network::p2p::Client::Imp
 {
 public:
     using Chain = opentxs::blockchain::Type;
-    using Callback = opentxs::network::zeromq::ListenCallback;
-    using SocketType = opentxs::network::zeromq::socket::Type;
+    using Callback = zeromq::ListenCallback;
+    using SocketType = zeromq::socket::Type;
 
     auto Endpoint() const noexcept -> std::string_view;
 
     auto Init(const api::network::Blockchain& parent) noexcept -> void;
 
-    Imp(const api::Session& api,
-        opentxs::network::zeromq::internal::Batch& batch) noexcept;
+    Imp(const api::Session& api, zeromq::internal::Handle&& handle) noexcept;
 
     ~Imp();
 
@@ -87,10 +87,9 @@ private:
     using ActiveMap = Map<Chain, std::atomic<std::size_t>>;
     using Height = opentxs::blockchain::block::Height;
     using HeightMap = Map<Chain, Height>;
-    using Message = opentxs::network::zeromq::Message;
-    using GuardedSocket = libguarded::deferred_guarded<
-        opentxs::network::zeromq::socket::Raw,
-        std::shared_mutex>;
+    using Message = zeromq::Message;
+    using GuardedSocket =
+        libguarded::deferred_guarded<zeromq::socket::Raw, std::shared_mutex>;
     using QueuedMessages = Deque<Message>;
     using QueuedChainMessages = Map<Chain, QueuedMessages>;
 
@@ -98,18 +97,19 @@ private:
     const CString endpoint_;
     const CString monitor_endpoint_;
     const CString loopback_endpoint_;
-    opentxs::network::zeromq::internal::Batch& batch_;
+    zeromq::internal::Handle handle_;
+    zeromq::internal::Batch& batch_;
     const Callback& external_cb_;
     const Callback& internal_cb_;
     const Callback& monitor_cb_;
     const Callback& wallet_cb_;
-    opentxs::network::zeromq::socket::Raw& external_router_;
-    opentxs::network::zeromq::socket::Raw& monitor_;
-    opentxs::network::zeromq::socket::Raw& external_sub_;
-    opentxs::network::zeromq::socket::Raw& internal_router_;
-    opentxs::network::zeromq::socket::Raw& internal_sub_;
-    opentxs::network::zeromq::socket::Raw& loopback_;
-    opentxs::network::zeromq::socket::Raw& wallet_;
+    zeromq::socket::Raw& external_router_;
+    zeromq::socket::Raw& monitor_;
+    zeromq::socket::Raw& external_sub_;
+    zeromq::socket::Raw& internal_router_;
+    zeromq::socket::Raw& internal_sub_;
+    zeromq::socket::Raw& loopback_;
+    zeromq::socket::Raw& wallet_;
     mutable GuardedSocket to_loopback_;
     mutable std::random_device rd_;
     mutable std::default_random_engine eng_;
@@ -125,7 +125,7 @@ private:
     QueuedChainMessages pending_chain_;
     std::atomic<std::size_t> connected_count_;
     std::atomic_bool running_;
-    opentxs::network::zeromq::internal::Thread* thread_;
+    zeromq::internal::Thread* thread_;
 
     auto get_chain(Chain chain) const noexcept -> CString;
     auto get_provider(Chain chain) const noexcept -> CString;

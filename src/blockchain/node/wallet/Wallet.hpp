@@ -21,6 +21,7 @@
 #include <mutex>
 #include <optional>
 #include <queue>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -35,6 +36,7 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/FeeOracle.hpp"
+#include "internal/blockchain/node/wallet/Types.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -148,28 +150,15 @@ public:
         const node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const Type chain,
-        const UnallocatedCString& shutdown) noexcept;
+        const std::string_view shutdown) noexcept;
 
     ~Wallet() final;
 
 private:
     friend Worker<Wallet, api::Session>;
 
-    enum class Work : OTZMQWorkType {
-        shutdown = value(WorkType::Shutdown),
-        nym = value(WorkType::NymCreated),
-        header = value(WorkType::BlockchainNewHeader),
-        reorg = value(WorkType::BlockchainReorg),
-        filter = value(WorkType::BlockchainNewFilter),
-        mempool = value(WorkType::BlockchainMempoolUpdated),
-        block = value(WorkType::BlockchainBlockAvailable),
-        job_finished = OT_ZMQ_INTERNAL_SIGNAL + 0,
-        init_wallet = OT_ZMQ_INTERNAL_SIGNAL + 1,
-        key = OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL,
-        statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
-    };
-
     using TaskCallback = std::function<void(const Identifier&, const char*)>;
+    using Work = wallet::WalletJobs;
 
     const node::internal::Network& parent_;
     const node::internal::WalletDatabase& db_;
@@ -177,7 +166,6 @@ private:
     const Type chain_;
     const TaskCallback task_finished_;
     wallet::FeeOracle fee_oracle_;
-    std::atomic_bool enabled_;
     wallet::Accounts accounts_;
     wallet::Proposals proposals_;
 

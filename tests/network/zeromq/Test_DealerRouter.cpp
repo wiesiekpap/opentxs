@@ -21,8 +21,8 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -78,8 +78,8 @@ void Test_DealerRouter::dealerSocketThread(const ot::UnallocatedCString& msg)
 
     ASSERT_NE(nullptr, &dealerCallback.get());
 
-    auto dealerSocket = context_.DealerSocket(
-        dealerCallback, zmq::socket::Socket::Direction::Connect);
+    auto dealerSocket =
+        context_.DealerSocket(dealerCallback, zmq::socket::Direction::Connect);
 
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());
@@ -134,8 +134,8 @@ void Test_DealerRouter::routerSocketThread(
 
     ASSERT_NE(nullptr, &routerCallback.get());
 
-    auto routerSocket = context_.RouterSocket(
-        routerCallback, zmq::socket::Socket::Direction::Bind);
+    auto routerSocket =
+        context_.RouterSocket(routerCallback, zmq::socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &routerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Router, routerSocket->Type());
@@ -177,8 +177,8 @@ TEST_F(Test_DealerRouter, Dealer_Router)
 
     ASSERT_NE(nullptr, &routerCallback.get());
 
-    auto routerSocket = context_.RouterSocket(
-        routerCallback, zmq::socket::Socket::Direction::Bind);
+    auto routerSocket =
+        context_.RouterSocket(routerCallback, zmq::socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &routerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Router, routerSocket->Type());
@@ -204,8 +204,8 @@ TEST_F(Test_DealerRouter, Dealer_Router)
 
     ASSERT_NE(nullptr, &dealerCallback.get());
 
-    auto dealerSocket = context_.DealerSocket(
-        dealerCallback, zmq::socket::Socket::Direction::Connect);
+    auto dealerSocket =
+        context_.DealerSocket(dealerCallback, zmq::socket::Direction::Connect);
 
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());
@@ -276,8 +276,8 @@ TEST_F(Test_DealerRouter, Dealer_2_Router_1)
 
     ASSERT_NE(nullptr, &routerCallback.get());
 
-    auto routerSocket = context_.RouterSocket(
-        routerCallback, zmq::socket::Socket::Direction::Bind);
+    auto routerSocket =
+        context_.RouterSocket(routerCallback, zmq::socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &routerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Router, routerSocket->Type());
@@ -347,8 +347,8 @@ TEST_F(Test_DealerRouter, Dealer_1_Router_2)
 
     ASSERT_NE(nullptr, &dealerCallback.get());
 
-    auto dealerSocket = context_.DealerSocket(
-        dealerCallback, zmq::socket::Socket::Direction::Connect);
+    auto dealerSocket =
+        context_.DealerSocket(dealerCallback, zmq::socket::Direction::Connect);
 
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());
@@ -418,8 +418,8 @@ TEST_F(Test_DealerRouter, Dealer_Router_Multipart)
 
     ASSERT_NE(nullptr, &routerCallback.get());
 
-    auto routerSocket = context_.RouterSocket(
-        routerCallback, zmq::socket::Socket::Direction::Bind);
+    auto routerSocket =
+        context_.RouterSocket(routerCallback, zmq::socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &routerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Router, routerSocket->Type());
@@ -451,8 +451,8 @@ TEST_F(Test_DealerRouter, Dealer_Router_Multipart)
 
     ASSERT_NE(nullptr, &dealerCallback.get());
 
-    auto dealerSocket = context_.DealerSocket(
-        dealerCallback, zmq::socket::Socket::Direction::Connect);
+    auto dealerSocket =
+        context_.DealerSocket(dealerCallback, zmq::socket::Direction::Connect);
 
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());

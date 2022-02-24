@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "internal/network/zeromq/Factory.hpp"
+#include "internal/network/zeromq/Handle.hpp"
 #include "internal/network/zeromq/socket/Factory.hpp"
 #include "network/zeromq/PairEventListener.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -76,17 +77,22 @@ Context::operator void*() const noexcept
     return context_;
 }
 
+auto Context::BelongsToThreadPool(const std::thread::id id) const noexcept
+    -> bool
+{
+    return pool_.BelongsToThreadPool(id);
+}
+
 auto Context::DealerSocket(
     const ListenCallback& callback,
-    const socket::Socket::Direction direction) const noexcept
-    -> OTZMQDealerSocket
+    const socket::Direction direction) const noexcept -> OTZMQDealerSocket
 {
     return OTZMQDealerSocket{
         factory::DealerSocket(*this, static_cast<bool>(direction), callback)};
 }
 
 auto Context::MakeBatch(UnallocatedVector<socket::Type>&& types) const noexcept
-    -> internal::Batch&
+    -> internal::Handle
 {
     return pool_.MakeBatch(std::move(types));
 }
@@ -120,17 +126,18 @@ auto Context::PairSocket(
 
 auto Context::PairSocket(
     const zeromq::ListenCallback& callback,
-    const UnallocatedCString& endpoint) const noexcept -> OTZMQPairSocket
+    const std::string_view endpoint) const noexcept -> OTZMQPairSocket
 {
     return OTZMQPairSocket{factory::PairSocket(*this, callback, endpoint)};
 }
 
 auto Context::Pipeline(
-    const api::Session& api,
-    std::function<void(zeromq::Message&&)> callback) const noexcept
-    -> zeromq::Pipeline
+    std::function<void(zeromq::Message&&)> callback,
+    const EndpointArgs& subscribe,
+    const EndpointArgs& pull,
+    const EndpointArgs& dealer) const noexcept -> zeromq::Pipeline
 {
-    return opentxs::factory::Pipeline(api, *this, callback);
+    return opentxs::factory::Pipeline(*this, callback, subscribe, pull, dealer);
 }
 
 auto Context::Proxy(socket::Socket& frontend, socket::Socket& backend)
@@ -144,8 +151,8 @@ auto Context::PublishSocket() const noexcept -> OTZMQPublishSocket
     return OTZMQPublishSocket{factory::PublishSocket(*this)};
 }
 
-auto Context::PullSocket(
-    const socket::Socket::Direction direction) const noexcept -> OTZMQPullSocket
+auto Context::PullSocket(const socket::Direction direction) const noexcept
+    -> OTZMQPullSocket
 {
     return OTZMQPullSocket{
         factory::PullSocket(*this, static_cast<bool>(direction))};
@@ -153,14 +160,14 @@ auto Context::PullSocket(
 
 auto Context::PullSocket(
     const ListenCallback& callback,
-    const socket::Socket::Direction direction) const noexcept -> OTZMQPullSocket
+    const socket::Direction direction) const noexcept -> OTZMQPullSocket
 {
     return OTZMQPullSocket{
         factory::PullSocket(*this, static_cast<bool>(direction), callback)};
 }
 
-auto Context::PushSocket(
-    const socket::Socket::Direction direction) const noexcept -> OTZMQPushSocket
+auto Context::PushSocket(const socket::Direction direction) const noexcept
+    -> OTZMQPushSocket
 {
     return OTZMQPushSocket{
         factory::PushSocket(*this, static_cast<bool>(direction))};
@@ -168,8 +175,7 @@ auto Context::PushSocket(
 
 auto Context::ReplySocket(
     const ReplyCallback& callback,
-    const socket::Socket::Direction direction) const noexcept
-    -> OTZMQReplySocket
+    const socket::Direction direction) const noexcept -> OTZMQReplySocket
 {
     return OTZMQReplySocket{
         factory::ReplySocket(*this, static_cast<bool>(direction), callback)};
@@ -182,8 +188,7 @@ auto Context::RequestSocket() const noexcept -> OTZMQRequestSocket
 
 auto Context::RouterSocket(
     const ListenCallback& callback,
-    const socket::Socket::Direction direction) const noexcept
-    -> OTZMQRouterSocket
+    const socket::Direction direction) const noexcept -> OTZMQRouterSocket
 {
     return OTZMQRouterSocket{
         factory::RouterSocket(*this, static_cast<bool>(direction), callback)};
@@ -209,6 +214,11 @@ auto Context::SubscribeSocket(const ListenCallback& callback) const noexcept
 auto Context::Thread(BatchID id) const noexcept -> internal::Thread*
 {
     return pool_.Thread(id);
+}
+
+auto Context::ThreadID(BatchID id) const noexcept -> std::thread::id
+{
+    return pool_.ThreadID(id);
 }
 
 Context::~Context()

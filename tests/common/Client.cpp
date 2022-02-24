@@ -5,11 +5,31 @@
 
 #include "common/Client.hpp"  // IWYU pragma: associated
 
+#include <memory>
+#include <utility>
+
+#include "integration/Helpers.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/Context.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/OTX.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/core/Secret.hpp"
+#include "opentxs/core/contract/ServerContract.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/identity/IdentityType.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 namespace ottest
 {

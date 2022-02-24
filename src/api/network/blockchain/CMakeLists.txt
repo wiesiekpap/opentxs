@@ -10,6 +10,8 @@ if(OT_BLOCKCHAIN_EXPORT)
       "Factory.cpp"
       "Imp.cpp"
       "Imp.hpp"
+      "StartupPublisher.cpp"
+      "StartupPublisher.hpp"
   )
 else()
   target_sources(opentxs-common PRIVATE "Null.cpp")

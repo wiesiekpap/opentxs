@@ -40,7 +40,7 @@
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Log.hpp"
@@ -134,7 +134,7 @@ auto Log::Imp::get_buffer(UnallocatedCString& out) noexcept -> Logger::Source&
                 auto [it, added] = logger_.map_.try_emplace(
                     index_,
                     [] {
-                        using Direction = zmq::socket::Socket::Direction;
+                        using Direction = zmq::socket::Direction;
                         auto out =
                             Context().ZMQ().PushSocket(Direction::Connect);
                         const auto started =

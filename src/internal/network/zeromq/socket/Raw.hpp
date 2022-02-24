@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <chrono>
+
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -46,14 +48,26 @@ public:
     auto Disconnect(const char* endpoint) noexcept -> bool;
     auto DisconnectAll() noexcept -> bool;
     auto Native() noexcept -> void*;
+    /** Send to a recipient in the same process
+     *
+     *  This function aborts if the message can not be sent.
+     */
     auto Send(Message&& msg) noexcept -> bool;
+    /** Send to a remote recipient
+     *
+     *  This function returns false if the message can not be sent.
+     */
+    auto SendExternal(Message&& msg) noexcept -> bool;
+    auto SetExposedUntrusted() noexcept -> bool;
     auto SetIncomingHWM(int value) noexcept -> bool;
     auto SetLinger(int value) noexcept -> bool;
+    auto SetMaxMessageSize(std::size_t bytes) noexcept -> bool;
     auto SetMonitor(const char* endpoint, int events) noexcept -> bool;
     auto SetOutgoingHWM(int value) noexcept -> bool;
     auto SetPrivateKey(ReadView key) noexcept -> bool;
     auto SetRouterHandover(bool value) noexcept -> bool;
     auto SetRoutingID(ReadView id) noexcept -> bool;
+    auto SetSendTimeout(std::chrono::milliseconds value) noexcept -> bool;
     auto SetZAPDomain(ReadView domain) noexcept -> bool;
     auto Stop() noexcept -> void;
     auto swap(Raw& other) noexcept -> void;

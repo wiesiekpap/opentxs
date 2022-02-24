@@ -10,6 +10,7 @@
 #include "network/zeromq/socket/Pipeline.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "internal/network/zeromq/Batch.hpp"
@@ -24,19 +25,22 @@
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Gatekeeper.hpp"
 
 namespace opentxs::factory
 {
 auto Pipeline(
-    const api::Session& api,
     const network::zeromq::Context& context,
-    std::function<void(network::zeromq::Message&&)> callback)
+    std::function<void(network::zeromq::Message&&)> callback,
+    const network::zeromq::EndpointArgs& subscribe,
+    const network::zeromq::EndpointArgs& pull,
+    const network::zeromq::EndpointArgs& dealer)
     -> opentxs::network::zeromq::Pipeline
 {
     return std::make_unique<network::zeromq::implementation::Pipeline>(
-               api, context, callback)
+               context, std::move(callback), subscribe, pull, dealer)
         .release();
 }
 }  // namespace opentxs::factory
@@ -49,35 +53,42 @@ auto swap(Pipeline& lhs, Pipeline& rhs) noexcept -> void { lhs.swap(rhs); }
 namespace opentxs::network::zeromq::implementation
 {
 Pipeline::Pipeline(
-    const api::Session& api,
     const zeromq::Context& context,
-    std::function<void(zeromq::Message&&)> callback) noexcept
+    std::function<void(zeromq::Message&&)> callback,
+    const EndpointArgs& subscribe,
+    const EndpointArgs& pull,
+    const EndpointArgs& dealer) noexcept
     : Pipeline(
-          api,
           context,
           std::move(callback),
           MakeArbitraryInproc(),
-          MakeArbitraryInproc())
+          MakeArbitraryInproc(),
+          subscribe,
+          pull,
+          dealer)
 {
 }
 
 Pipeline::Pipeline(
-    const api::Session& api,
     const zeromq::Context& context,
     std::function<void(zeromq::Message&&)> callback,
     const UnallocatedCString internalEndpoint,
-    const UnallocatedCString outgoingEndpoint) noexcept
+    const UnallocatedCString outgoingEndpoint,
+    const EndpointArgs& subscribe,
+    const EndpointArgs& pull,
+    const EndpointArgs& dealer) noexcept
     : context_(context)
     , gate_()
     , shutdown_(false)
+    , handle_(context_.Internal().MakeBatch({
+          socket::Type::Subscribe,  // NOTE sub_
+          socket::Type::Pull,       // NOTE pull_
+          socket::Type::Pair,       // NOTE outgoing_
+          socket::Type::Dealer,     // NOTE dealer_
+          socket::Type::Pair,       // NOTE internal_
+      }))
     , batch_([&]() -> auto& {
-        auto& batch = context_.Internal().MakeBatch({
-            socket::Type::Subscribe,  // NOTE sub_
-            socket::Type::Pull,       // NOTE pull_
-            socket::Type::Pair,       // NOTE outgoing_
-            socket::Type::Dealer,     // NOTE dealer_
-            socket::Type::Pair,       // NOTE internal_
-        });
+        auto& batch = handle_.batch_;
         batch.listen_callbacks_.emplace_back(ListenCallback::Factory(callback));
 
         return batch;
@@ -88,17 +99,13 @@ Pipeline::Pipeline(
 
         OT_ASSERT(rc);
 
-        rc = socket.SetIncomingHWM(0);
-
-        OT_ASSERT(rc);
+        apply(subscribe, socket);
 
         return socket;
     }())
     , pull_([&]() -> auto& {
         auto& socket = batch_.sockets_.at(1);
-        const auto rc = socket.SetIncomingHWM(0);
-
-        OT_ASSERT(rc);
+        apply(pull, socket);
 
         return socket;
     }())
@@ -112,13 +119,7 @@ Pipeline::Pipeline(
     }())
     , dealer_([&]() -> auto& {
         auto& socket = batch_.sockets_.at(3);
-        auto rc = socket.SetIncomingHWM(0);
-
-        OT_ASSERT(rc);
-
-        rc = socket.SetOutgoingHWM(0);
-
-        OT_ASSERT(rc);
+        apply(dealer, socket);
 
         return socket;
     }())
@@ -132,11 +133,7 @@ Pipeline::Pipeline(
     }())
     , to_dealer_([&] {
         auto socket = factory::ZMQSocket(context_, socket::Type::Pair);
-        auto rc = socket.Connect(outgoingEndpoint.c_str());
-
-        OT_ASSERT(rc);
-
-        rc = socket.SetOutgoingHWM(0);
+        const auto rc = socket.Connect(outgoingEndpoint.c_str());
 
         OT_ASSERT(rc);
 
@@ -144,11 +141,7 @@ Pipeline::Pipeline(
     }())
     , to_internal_([&] {
         auto socket = factory::ZMQSocket(context_, socket::Type::Pair);
-        auto rc = socket.Connect(internalEndpoint.c_str());
-
-        OT_ASSERT(rc);
-
-        rc = socket.SetOutgoingHWM(0);
+        const auto rc = socket.Connect(internalEndpoint.c_str());
 
         OT_ASSERT(rc);
 
@@ -194,6 +187,24 @@ Pipeline::Pipeline(
 {
     OT_ASSERT(nullptr != thread_);
 }
+
+auto Pipeline::apply(const EndpointArgs& endpoint, socket::Raw& socket) noexcept
+    -> void
+{
+    for (const auto& [endpoint, direction] : endpoint) {
+        if (socket::Direction::Connect == direction) {
+            const auto rc = socket.Connect(endpoint.c_str());
+
+            OT_ASSERT(rc);
+        } else {
+            const auto rc = socket.Bind(endpoint.c_str());
+
+            OT_ASSERT(rc);
+        }
+    }
+}
+
+auto Pipeline::BatchID() const noexcept -> std::size_t { return batch_.id_; }
 
 auto Pipeline::bind(
     SocketID id,
@@ -329,11 +340,7 @@ auto Pipeline::SubscribeTo(const std::string_view endpoint) const noexcept
     return connect(sub_.ID(), endpoint).first;
 }
 
-Pipeline::~Pipeline()
-{
-    Close();
-    context_.Internal().Stop(batch_.id_);
-}
+Pipeline::~Pipeline() { Close(); }
 }  // namespace opentxs::network::zeromq::implementation
 
 namespace opentxs::network::zeromq
@@ -355,6 +362,11 @@ auto Pipeline::operator=(Pipeline&& rhs) noexcept -> Pipeline&
     swap(rhs);
 
     return *this;
+}
+
+auto Pipeline::BatchID() const noexcept -> std::size_t
+{
+    return imp_->BatchID();
 }
 
 auto Pipeline::BindSubscriber(

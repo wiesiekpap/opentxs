@@ -63,6 +63,8 @@ public:
     auto BlockchainPeerConnection() const noexcept -> std::string_view final;
     auto BlockchainReorg() const noexcept -> std::string_view final;
     auto BlockchainScanProgress() const noexcept -> std::string_view final;
+    auto BlockchainStartupPublish() const noexcept -> std::string_view final;
+    auto BlockchainStartupPull() const noexcept -> std::string_view final;
     auto BlockchainStateChange() const noexcept -> std::string_view final;
     auto BlockchainSyncProgress() const noexcept -> std::string_view final;
     auto BlockchainSyncServerUpdated() const noexcept -> std::string_view final;
@@ -127,6 +129,8 @@ private:
     const CString blockchain_peer_connection_;
     const CString blockchain_reorg_;
     const CString blockchain_scan_progress_;
+    const CString blockchain_startup_publish_;
+    const CString blockchain_startup_pull_;
     const CString blockchain_state_change_;
     const CString blockchain_sync_progress_;
     const CString blockchain_server_updated_;

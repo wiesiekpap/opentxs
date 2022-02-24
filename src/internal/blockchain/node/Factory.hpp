@@ -6,6 +6,7 @@
 #pragma once
 
 #include <memory>
+#include <string_view>
 
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
@@ -115,7 +116,7 @@ auto BlockchainWallet(
     const blockchain::node::internal::WalletDatabase& db,
     const blockchain::node::internal::Mempool& mempool,
     const blockchain::Type chain,
-    const UnallocatedCString& shutdown)
+    const std::string_view shutdown)
     -> std::unique_ptr<blockchain::node::internal::Wallet>;
 auto BlockOracle(
     const api::Session& api,

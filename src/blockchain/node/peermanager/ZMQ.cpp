@@ -99,10 +99,10 @@ public:
               [=](auto&& in) { this->internal(std::move(in)); }))
         , external_(api_.Network().ZeroMQ().RouterSocket(
               cb_ex_,
-              zmq::socket::Socket::Direction::Bind))
+              zmq::socket::Direction::Bind))
         , internal_(api_.Network().ZeroMQ().RouterSocket(
               cb_int_,
-              zmq::socket::Socket::Direction::Bind))
+              zmq::socket::Direction::Bind))
     {
     }
 

@@ -10,6 +10,8 @@
 #include <functional>
 #include <future>
 
+#include "internal/network/zeromq/Context.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -98,12 +100,14 @@ protected:
         , rate_limit_(rateLimit)
         , running_(true)
         , shutdown_promise_()
-        , pipeline_(api.Factory().Pipeline(
+        , pipeline_(api.Network().ZeroMQ().Internal().Pipeline(
               [this](auto&& in) { downcast().pipeline(std::move(in)); }))
         , shutdown_(shutdown_promise_.get_future())
         , last_executed_(Clock::now())
         , state_machine_queued_(false)
     {
+        LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(pipeline_.BatchID())
+            .Flush();
     }
 
     ~Worker() { stop_worker().get(); }

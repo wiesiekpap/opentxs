@@ -29,7 +29,7 @@ extern "C" {
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -50,7 +50,7 @@ namespace opentxs::api::imp
 Log::Log(const zmq::Context& zmq, const UnallocatedCString& endpoint)
     : callback_(opentxs::network::zeromq::ListenCallback::Factory(
           [&](auto&& msg) -> void { callback(std::move(msg)); }))
-    , socket_(zmq.PullSocket(callback_, zmq::socket::Socket::Direction::Bind))
+    , socket_(zmq.PullSocket(callback_, zmq::socket::Direction::Bind))
     , publish_socket_(zmq.PublishSocket())
     , publish_{!endpoint.empty()}
 {

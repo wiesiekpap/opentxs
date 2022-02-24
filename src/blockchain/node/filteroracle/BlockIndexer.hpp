@@ -29,6 +29,7 @@
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/JobCounter.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

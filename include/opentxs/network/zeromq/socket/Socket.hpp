@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <string_view>
 #include <tuple>
 
 #include "opentxs/Types.hpp"
@@ -45,7 +46,6 @@ class OPENTXS_EXPORT Socket
 {
 public:
     using SendResult = std::pair<opentxs::SendResult, Message>;
-    enum class Direction : bool { Bind = false, Connect = true };
 
     virtual operator void*() const noexcept = 0;
 
@@ -58,10 +58,10 @@ public:
         const std::chrono::milliseconds& send,
         const std::chrono::milliseconds& receive) const noexcept -> bool = 0;
     // Do not call Start during callback execution
-    virtual auto Start(const UnallocatedCString& endpoint) const noexcept
+    virtual auto Start(const std::string_view endpoint) const noexcept
         -> bool = 0;
     // StartAsync version may be called during callback execution
-    virtual auto StartAsync(const UnallocatedCString& endpoint) const noexcept
+    virtual auto StartAsync(const std::string_view endpoint) const noexcept
         -> void = 0;
     virtual auto Type() const noexcept -> socket::Type = 0;
 

@@ -11,6 +11,7 @@
 #include <tuple>
 
 #include "internal/network/p2p/Server.hpp"
+#include "internal/network/zeromq/Handle.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Gatekeeper.hpp"
 
@@ -64,6 +65,7 @@ public:
 
     const api::Session& api_;
     const zeromq::Context& zmq_;
+    zeromq::internal::Handle handle_;
     zeromq::internal::Batch& batch_;
     const zeromq::ListenCallback& external_callback_;
     const zeromq::ListenCallback& internal_callback_;

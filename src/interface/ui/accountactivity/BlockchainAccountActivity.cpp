@@ -48,7 +48,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -91,7 +91,7 @@ BlockchainAccountActivity::BlockchainAccountActivity(
           [this](auto&& in) { pipeline_.Push(std::move(in)); }))
     , balance_socket_(Widget::api_.Network().ZeroMQ().DealerSocket(
           balance_cb_,
-          zmq::socket::Socket::Direction::Connect))
+          zmq::socket::Direction::Connect))
     , progress_()
     , height_(0)
 {
@@ -230,6 +230,24 @@ auto BlockchainAccountActivity::pipeline(const Message& in) noexcept -> void
             OT_FAIL;
         }
     }
+}
+
+auto BlockchainAccountActivity::print(Work type) noexcept -> const char*
+{
+    static const auto map = Map<Work, const char*>{
+        {Work::shutdown, "shutdown"},
+        {Work::contact, "contact"},
+        {Work::balance, "balance"},
+        {Work::new_block, "new_block"},
+        {Work::txid, "txid"},
+        {Work::reorg, "reorg"},
+        {Work::statechange, "statechange"},
+        {Work::sync, "sync"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"},
+    };
+
+    return map.at(type);
 }
 
 auto BlockchainAccountActivity::process_balance(const Message& in) noexcept

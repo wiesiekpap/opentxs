@@ -10,15 +10,14 @@
 #include <functional>
 #include <mutex>
 #include <string_view>
-#include <type_traits>
 #include <utility>
 
+#include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -27,6 +26,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -86,11 +86,12 @@ struct UpdateManager::Imp {
         , lock_()
         , map_()
         , publisher_(api.Network().ZeroMQ().PublishSocket())
-        , pipeline_(api.Network().ZeroMQ().Pipeline(api, [this](auto&& in) {
-            pipeline(std::move(in));
-        }))
+        , pipeline_(api.Network().ZeroMQ().Internal().Pipeline(
+              [this](auto&& in) { pipeline(std::move(in)); }))
     {
         publisher_->Start(api_.Endpoints().WidgetUpdate().data());
+        LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(pipeline_.BatchID())
+            .Flush();
     }
 
 private:

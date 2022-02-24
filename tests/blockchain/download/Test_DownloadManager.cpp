@@ -11,6 +11,8 @@
 #include "blockchain/DownloadTask.hpp"
 #include "opentxs/util/Container.hpp"
 
+namespace ottest
+{
 constexpr auto batchSize{3};
 auto manager_ = DownloadManager{batchSize, 0, 0};
 
@@ -379,3 +381,4 @@ TEST(Test_DownloadManager, final_state)
     EXPECT_EQ(
         manager_.best_data_, "0 1 2 3 4 5 6 7 8 9 110 111 12 13 14 15 16 117");
 }
+}  // namespace ottest

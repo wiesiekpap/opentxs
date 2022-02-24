@@ -12,6 +12,7 @@
 #include "internal/network/zeromq/socket/Factory.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Sender.tpp"
+#include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -26,16 +27,13 @@ auto PushSocket(const network::zeromq::Context& context, const bool direction)
     using ReturnType = network::zeromq::socket::implementation::Push;
 
     return std::make_unique<ReturnType>(
-        context,
-        static_cast<network::zeromq::socket::Socket::Direction>(direction));
+        context, static_cast<network::zeromq::socket::Direction>(direction));
 }
 }  // namespace opentxs::factory
 
 namespace opentxs::network::zeromq::socket::implementation
 {
-Push::Push(
-    const zeromq::Context& context,
-    const Socket::Direction direction) noexcept
+Push::Push(const zeromq::Context& context, const Direction direction) noexcept
     : Socket(context, socket::Type::Push, direction)
     , Sender()
     , Client(this->get())

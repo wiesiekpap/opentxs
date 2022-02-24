@@ -80,7 +80,6 @@
 #include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
-#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
@@ -162,7 +161,6 @@ namespace zeromq
 {
 class Frame;
 class Message;
-class Pipeline;
 }  // namespace zeromq
 }  // namespace network
 
@@ -701,9 +699,6 @@ public:
         const noexcept(false) -> OTPeerRequest final;
     auto PeerRequest(const Nym_p& nym, const ReadView& view) const
         noexcept(false) -> OTPeerRequest final;
-    auto Pipeline(
-        std::function<void(opentxs::network::zeromq::Message&&)> callback) const
-        -> opentxs::network::zeromq::Pipeline final;
     auto Purse(
         const otx::context::Server& context,
         const identifier::UnitDefinition& unit,

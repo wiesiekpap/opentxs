@@ -155,6 +155,35 @@ constexpr auto coinbase_fun_{"The Industrial Revolution and its consequences "
 struct Server;
 struct User;
 
+class BlockchainStartup
+{
+public:
+    using Future = std::shared_future<void>;
+
+    auto BlockOracle() const noexcept -> Future;
+    auto BlockOracleDownloader() const noexcept -> Future;
+    auto FeeOracle() const noexcept -> Future;
+    auto FilterOracle() const noexcept -> Future;
+    auto FilterOracleFilterDownloader() const noexcept -> Future;
+    auto FilterOracleHeaderDownloader() const noexcept -> Future;
+    auto FilterOracleIndexer() const noexcept -> Future;
+    auto Node() const noexcept -> Future;
+    auto PeerManager() const noexcept -> Future;
+    auto SyncServer() const noexcept -> Future;
+    auto Wallet() const noexcept -> Future;
+
+    BlockchainStartup(
+        const ot::api::Session& api,
+        const ot::blockchain::Type chain) noexcept;
+
+    ~BlockchainStartup();
+
+private:
+    class Imp;
+
+    std::unique_ptr<Imp> imp_;
+};
+
 class PeerListener
 {
     std::promise<void> promise_;
@@ -400,6 +429,9 @@ protected:
     static Expected expected_;
     static Transactions transactions_;
     static ot::blockchain::block::Height height_;
+    static std::optional<BlockchainStartup> miner_startup_s_;
+    static std::optional<BlockchainStartup> client_1_startup_s_;
+    static std::optional<BlockchainStartup> client_2_startup_s_;
 
     const ot::api::Context& ot_;
     const ot::Options client_args_;
@@ -407,6 +439,9 @@ protected:
     const ot::api::session::Client& miner_;
     const ot::api::session::Client& client_1_;
     const ot::api::session::Client& client_2_;
+    const BlockchainStartup& miner_startup_;
+    const BlockchainStartup& client_1_startup_;
+    const BlockchainStartup& client_2_startup_;
     const b::p2p::Address& address_;
     const PeerListener& connection_;
     const Generator default_;

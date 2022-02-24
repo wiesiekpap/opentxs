@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <thread>
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
@@ -28,11 +30,15 @@ namespace opentxs::network::zeromq::internal
 class Pool
 {
 public:
+    virtual auto BelongsToThreadPool(const std::thread::id) const noexcept
+        -> bool = 0;
     virtual auto Parent() const noexcept -> const zeromq::Context& = 0;
     virtual auto Thread(BatchID id) const noexcept
         -> zeromq::internal::Thread* = 0;
+    virtual auto ThreadID(BatchID id) const noexcept -> std::thread::id = 0;
 
-    virtual auto DoModify(SocketID id, ModifyCallback& cb) noexcept -> bool = 0;
+    virtual auto DoModify(SocketID id, const ModifyCallback& cb) noexcept
+        -> bool = 0;
     virtual auto UpdateIndex(BatchID id, StartArgs&& sockets) noexcept
         -> void = 0;
     virtual auto UpdateIndex(BatchID id) noexcept -> void = 0;
