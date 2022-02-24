@@ -64,7 +64,7 @@ FilterOracle::BlockIndexer::BlockIndexer(
           "filter",
           2000,
           1000)
-    , BlockWorkerFilter(api, std::chrono::milliseconds{20})
+    , BlockWorkerFilter(api, 20ms)
     , db_(db)
     , header_(header)
     , block_(block)
@@ -115,7 +115,7 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
                 .Flush();
             auto& [blockHash, filterHeader, filterHashView] = data.header_data_;
             auto& previous = task.previous_;
-            static constexpr auto zero = std::chrono::seconds{0};
+            static constexpr auto zero = 0s;
             using State = std::future_status;
 
             if (auto status = previous.wait_for(zero); State::ready != status) {
@@ -156,7 +156,7 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
 auto FilterOracle::BlockIndexer::download() noexcept -> void
 {
     auto work = NextBatch();
-    constexpr auto none = std::chrono::seconds{0};
+    constexpr auto none = 0s;
 
     for (const auto& task : work.data_) {
         const auto& hash = task->position_.second;

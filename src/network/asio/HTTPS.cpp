@@ -74,7 +74,7 @@ auto HTTPS::get_stream() noexcept(false) -> Stream&
         }
 #pragma GCC diagnostic pop
 
-        static constexpr auto timeout = std::chrono::seconds{10};
+        static constexpr auto timeout = 10s;
         beast::get_lowest_layer(stream).expires_after(timeout);
     }
 

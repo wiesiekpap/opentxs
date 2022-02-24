@@ -54,7 +54,7 @@ auto Job::IsRunning() const noexcept -> bool
 
 auto Job::is_running(Lock& lock) const noexcept -> bool
 {
-    static constexpr auto zero = std::chrono::seconds{0};
+    static constexpr auto zero = 0s;
     cv_.wait_for(lock, zero);
 
     return (0 < running_);
@@ -109,7 +109,7 @@ auto Job::Shutdown() noexcept -> void { shutdown_ = true; }
 auto Job::wait(Lock& lock) const noexcept -> void
 {
     const auto start = Clock::now();
-    static constexpr auto limit = std::chrono::seconds{10};
+    static constexpr auto limit = 10s;
 
     while (true) {
         if (cv_.wait_for(lock, limit, [this] { return 0 == running_; })) {

@@ -218,8 +218,7 @@ auto Rescan::Run() noexcept -> bool
             last_scanned_ = std::nullopt;
             needScan = false;
         } else if (wait) {
-            needScan = queue_work(
-                [] { Sleep(std::chrono::milliseconds{250}); }, type(), true);
+            needScan = queue_work([] { Sleep(250ms); }, type(), true);
         }
     } catch (...) {
         needScan = true;

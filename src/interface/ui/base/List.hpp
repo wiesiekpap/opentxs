@@ -219,7 +219,7 @@ protected:
     }
     auto startup_complete() const noexcept -> bool
     {
-        static constexpr auto none = std::chrono::seconds{0};
+        static constexpr auto none = 0s;
 
         return std::future_status::ready == startup_future_.wait_for(none);
     }

@@ -92,6 +92,8 @@
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 using Dir = zmq::socket::Direction;
 
 constexpr auto sync_server_sync_{"inproc://sync_server_endpoint/sync"};
@@ -676,7 +678,7 @@ auto Regtest_fixture_base::Connect(const b::p2p::Address& address) noexcept
         }
     }();
 
-    static constexpr auto limit = std::chrono::seconds{30};
+    static constexpr auto limit = 30s;
     const auto status = connection_.done_.wait_for(limit);
     const auto future = (std::future_status::ready == status);
 
@@ -1812,13 +1814,12 @@ auto SyncRequestor::request(const otsync::Base& command) const noexcept -> bool
 
 auto SyncRequestor::wait(const bool hard) noexcept -> bool
 {
-    const auto limit =
-        hard ? std::chrono::seconds(300) : std::chrono::seconds(10);
+    const auto limit = hard ? 300s : 10s;
     auto start = ot::Clock::now();
 
     while ((imp_->updated_ < expected_) &&
            ((ot::Clock::now() - start) < limit)) {
-        ot::Sleep(std::chrono::milliseconds(100));
+        ot::Sleep(100ms);
     }
 
     if (false == hard) { imp_->updated_.store(expected_.load()); }
@@ -1885,13 +1886,12 @@ struct SyncSubscriber::Imp {
     }
     auto wait_for_counter(const bool hard = true) noexcept -> bool
     {
-        const auto limit =
-            hard ? std::chrono::seconds(300) : std::chrono::seconds(10);
+        const auto limit = hard ? 300s : 10s;
         auto start = ot::Clock::now();
         const auto& expected = parent_.expected_;
 
         while ((updated_ < expected) && ((ot::Clock::now() - start) < limit)) {
-            ot::Sleep(std::chrono::milliseconds(100));
+            ot::Sleep(100ms);
         }
 
         if (false == hard) { updated_.store(expected.load()); }

@@ -2103,8 +2103,7 @@ auto OT_API::ProposePaymentPlan(
     bool bSuccessSetInitialPayment = true;
     // the default, in case user chooses not to have a payment plan.
     bool bSuccessSetPaymentPlan = true;
-    if ((INITIAL_PAYMENT_AMOUNT > 0) &&
-        (INITIAL_PAYMENT_DELAY >= std::chrono::seconds{0})) {
+    if ((INITIAL_PAYMENT_AMOUNT > 0) && (INITIAL_PAYMENT_DELAY >= 0s)) {
         // The Initial payment delay is measured in seconds, starting from the
         // "Creation Date".
         bSuccessSetInitialPayment = pPlan->SetInitialPayment(
@@ -2133,18 +2132,15 @@ auto OT_API::ProposePaymentPlan(
         // "Creation Date".
         std::chrono::seconds PAYMENT_DELAY = std::chrono::hours{24 * 30};
 
-        if (PAYMENT_PLAN_DELAY > std::chrono::seconds{0})
-            PAYMENT_DELAY = PAYMENT_PLAN_DELAY;
+        if (PAYMENT_PLAN_DELAY > 0s) PAYMENT_DELAY = PAYMENT_PLAN_DELAY;
         // Defaults to 30 days, measured in seconds (if you pass 0.)
         std::chrono::seconds PAYMENT_PERIOD = std::chrono::hours{24 * 30};
 
-        if (PAYMENT_PLAN_PERIOD > std::chrono::seconds{0})
-            PAYMENT_PERIOD = PAYMENT_PLAN_PERIOD;
+        if (PAYMENT_PLAN_PERIOD > 0s) PAYMENT_PERIOD = PAYMENT_PLAN_PERIOD;
         // Defaults to 0 seconds (for no max length).
-        std::chrono::seconds PLAN_LENGTH = std::chrono::seconds{0};
+        std::chrono::seconds PLAN_LENGTH = 0s;
 
-        if (PAYMENT_PLAN_LENGTH > std::chrono::seconds{0})
-            PLAN_LENGTH = PAYMENT_PLAN_LENGTH;
+        if (PAYMENT_PLAN_LENGTH > 0s) PLAN_LENGTH = PAYMENT_PLAN_LENGTH;
         std::int32_t nMaxPayments =
             0;  // Defaults to 0 maximum payments (for no maximum).
 
@@ -4320,9 +4316,8 @@ auto OT_API::issueMarketOffer(
     // defaults to 24 hours (a "Day Order") aka OT_API_GetTime() + 86,400
     const auto VALID_TO =
         VALID_FROM + std::chrono::seconds{
-                         (std::chrono::seconds{0} == tLifespanInSeconds)
-                             ? std::chrono::hours{24}
-                             : tLifespanInSeconds};
+                         (0s == tLifespanInSeconds) ? std::chrono::hours{24}
+                                                    : tLifespanInSeconds};
     Amount lTotalAssetsOnOffer{1}, lMinimumIncrement{1},
         lPriceLimit{0},  // your price limit, per scale of assets.
         lMarketScale = 1, lActivationPrice = 0;

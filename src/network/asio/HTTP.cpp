@@ -14,6 +14,7 @@
 
 #include "api/network/asio/Context.hpp"
 #include "network/asio/WebRequest.tpp"
+#include "opentxs/util/Time.hpp"  // IWYU pragma: keep
 
 namespace opentxs::network::asio
 {
@@ -32,8 +33,7 @@ auto HTTP::get_stream() noexcept(false) -> Stream&
 {
     if (false == stream_.has_value()) {
         auto& stream = stream_.emplace(asio_.get());
-        static constexpr auto timeout = std::chrono::seconds{10};
-        stream.expires_after(timeout);
+        stream.expires_after(10s);
     }
 
     return stream_.value();

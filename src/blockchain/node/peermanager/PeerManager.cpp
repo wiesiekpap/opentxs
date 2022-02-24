@@ -86,7 +86,7 @@ PeerManager::PeerManager(
     const UnallocatedCString& seednode,
     const UnallocatedCString& shutdown) noexcept
     : internal::PeerManager()
-    , Worker(api, std::chrono::milliseconds(100))
+    , Worker(api, 100ms)
     , node_(node)
     , database_(database)
     , chain_(chain)
@@ -136,8 +136,7 @@ auto PeerManager::AddPeer(const p2p::Address& address) const noexcept -> bool
     pipeline_.Push(std::move(work));
 
     while (running_.load()) {
-        if (std::future_status::ready ==
-            future.wait_for(std::chrono::seconds(5))) {
+        if (std::future_status::ready == future.wait_for(5s)) {
 
             return future.get();
         }
@@ -248,8 +247,7 @@ auto PeerManager::Listen(const p2p::Address& address) const noexcept -> bool
     pipeline_.Push(std::move(work));
 
     while (running_.load()) {
-        if (std::future_status::ready ==
-            future.wait_for(std::chrono::seconds(10))) {
+        if (std::future_status::ready == future.wait_for(10s)) {
 
             return future.get();
         } else {

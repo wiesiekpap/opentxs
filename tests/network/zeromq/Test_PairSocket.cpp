@@ -30,6 +30,8 @@ namespace zmq = ot::network::zeromq;
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 class Test_PairSocket : public ::testing::Test
 {
 public:
@@ -101,9 +103,7 @@ void Test_PairSocket::pairSocketThread(
 
     promise->set_value();
     auto end = std::time(nullptr) + 15;
-    while (!callbackFinished && std::time(nullptr) < end) {
-        ot::Sleep(std::chrono::milliseconds(100));
-    }
+    while (!callbackFinished && std::time(nullptr) < end) { ot::Sleep(100ms); }
 
     ASSERT_TRUE(callbackFinished);
 }
@@ -181,9 +181,7 @@ TEST_F(Test_PairSocket, PairSocket_Send1)
     ASSERT_TRUE(sent);
 
     auto end = std::time(nullptr) + 15;
-    while (!callbackFinished && std::time(nullptr) < end) {
-        ot::Sleep(std::chrono::milliseconds(100));
-    }
+    while (!callbackFinished && std::time(nullptr) < end) { ot::Sleep(100ms); }
 
     ASSERT_TRUE(callbackFinished);
 }
@@ -226,9 +224,7 @@ TEST_F(Test_PairSocket, PairSocket_Send2)
     ASSERT_TRUE(sent);
 
     auto end = std::time(nullptr) + 15;
-    while (!callbackFinished && std::time(nullptr) < end) {
-        ot::Sleep(std::chrono::milliseconds(100));
-    }
+    while (!callbackFinished && std::time(nullptr) < end) { ot::Sleep(100ms); }
 
     ASSERT_TRUE(callbackFinished);
 }
@@ -271,9 +267,7 @@ TEST_F(Test_PairSocket, PairSocket_Send3)
     ASSERT_TRUE(sent);
 
     auto end = std::time(nullptr) + 15;
-    while (!callbackFinished && std::time(nullptr) < end) {
-        ot::Sleep(std::chrono::milliseconds(100));
-    }
+    while (!callbackFinished && std::time(nullptr) < end) { ot::Sleep(100ms); }
 
     ASSERT_TRUE(callbackFinished);
 }
@@ -342,7 +336,7 @@ TEST_F(Test_PairSocket, PairSocket_Send_Two_Way)
     auto end = std::time(nullptr) + 15;
     while (!peerCallbackFinished && !callbackFinished &&
            std::time(nullptr) < end) {
-        ot::Sleep(std::chrono::milliseconds(100));
+        ot::Sleep(100ms);
     }
 
     ASSERT_TRUE(peerCallbackFinished);

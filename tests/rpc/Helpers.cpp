@@ -65,6 +65,8 @@
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 RPC_fixture::SeedMap RPC_fixture::seed_map_{};
 RPC_fixture::LocalNymMap RPC_fixture::local_nym_map_{};
 RPC_fixture::IssuedUnits RPC_fixture::created_units_{};
@@ -91,7 +93,7 @@ struct RPCPushCounter::Imp {
         if (condition()) { return true; }
 
         static constexpr auto limit = std::chrono::minutes{1};
-        static constexpr auto wait = std::chrono::milliseconds{100};
+        static constexpr auto wait = 100ms;
         const auto start = ot::Clock::now();
 
         while ((!condition()) && ((ot::Clock::now() - start) < limit)) {

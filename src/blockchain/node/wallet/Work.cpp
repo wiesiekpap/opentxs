@@ -139,7 +139,7 @@ auto Work::GetResults(Results& out) noexcept -> void
 
 auto Work::IsReady() const noexcept -> bool
 {
-    static constexpr auto zero = std::chrono::microseconds{0};
+    static constexpr auto zero = 0us;
     using State = std::future_status;
 
     return State::ready == block_.wait_for(zero);

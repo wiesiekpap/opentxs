@@ -576,7 +576,7 @@ auto OTPaymentPlan::SetPaymentPlan(
     SetTimeBetweenPayments(tBetweenPayments);
     SetPaymentPlanStartDate(GetCreationDate() + tTimeUntilPlanStart);
 
-    if (std::chrono::seconds{0} > tPlanLength) {
+    if (0s > tPlanLength) {
         LogError()(OT_PRETTY_CLASS())(
             "Attempt to use negative number for plan length.")
             .Flush();
@@ -1522,7 +1522,7 @@ auto OTPaymentPlan::ProcessCron(const PasswordPrompt& reason) -> bool
         // Again, I check >0 because the plan length is optional and might just
         // be 0.
         else if (
-            (GetPaymentPlanLength() > std::chrono::seconds{0}) &&
+            (GetPaymentPlanLength() > 0s) &&
             (Clock::now() >=
              GetPaymentPlanStartDate() + GetPaymentPlanLength())) {
             LogDetail()(OT_PRETTY_CLASS())(
@@ -1610,7 +1610,7 @@ void OTPaymentPlan::InitPaymentPlan()
 {
     m_strContractType = String::Factory("PAYMENT PLAN");
 
-    SetProcessInterval(std::chrono::seconds(10));
+    SetProcessInterval(10s);
 
     // Initial Payment...
     m_bInitialPayment = false;       // Will there be an initial payment?
@@ -1636,9 +1636,8 @@ void OTPaymentPlan::InitPaymentPlan()
                                        // payment. Measured seconds after
                                        // creation.
 
-    m_tPaymentPlanLength =
-        std::chrono::seconds{0};  // Optional. Plan length measured in
-                                  // seconds since plan start.
+    m_tPaymentPlanLength = 0s;  // Optional. Plan length measured in
+                                // seconds since plan start.
     m_nMaximumNoPayments =
         0;  // Optional. The most number of payments that are authorized.
 

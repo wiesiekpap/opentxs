@@ -1126,11 +1126,11 @@ auto Wallet::Nym(
         } else {
             search_nym(id);
 
-            if (timeout > std::chrono::milliseconds(0)) {
+            if (timeout > 0ms) {
                 mapLock.unlock();
                 auto start = std::chrono::high_resolution_clock::now();
                 auto end = start + timeout;
-                const auto interval = std::chrono::milliseconds(100);
+                const auto interval = 100ms;
 
                 while (std::chrono::high_resolution_clock::now() < end) {
                     std::this_thread::sleep_for(interval);
@@ -2779,11 +2779,11 @@ auto Wallet::Server(
         } else {
             search_notary(id);
 
-            if (timeout > std::chrono::milliseconds(0)) {
+            if (timeout > 0ms) {
                 mapLock.unlock();
                 auto start = std::chrono::high_resolution_clock::now();
                 auto end = start + timeout;
-                const auto interval = std::chrono::milliseconds(100);
+                const auto interval = 100ms;
 
                 while (std::chrono::high_resolution_clock::now() < end) {
                     std::this_thread::sleep_for(interval);
@@ -3119,11 +3119,11 @@ auto Wallet::UnitDefinition(
         } else {
             search_unit(id);
 
-            if (timeout > std::chrono::milliseconds(0)) {
+            if (timeout > 0ms) {
                 mapLock.unlock();
                 auto start = std::chrono::high_resolution_clock::now();
                 auto end = start + timeout;
-                const auto interval = std::chrono::milliseconds(100);
+                const auto interval = 100ms;
 
                 while (std::chrono::high_resolution_clock::now() < end) {
                     std::this_thread::sleep_for(interval);

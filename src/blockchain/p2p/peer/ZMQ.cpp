@@ -84,7 +84,7 @@ struct ZMQConnectionManager : virtual public ConnectionManager {
     }
     auto is_initialized() const noexcept -> bool final
     {
-        static constexpr auto zero = std::chrono::nanoseconds{0};
+        static constexpr auto zero = 0ns;
         static constexpr auto ready = std::future_status::ready;
 
         return (ready == init_future_.wait_for(zero));

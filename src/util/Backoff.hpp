@@ -45,8 +45,8 @@ public:
     auto reset() noexcept -> void { last_ = never_; }
 
     Backoff(
-        const std::chrono::milliseconds& start = std::chrono::seconds{1},
-        const std::chrono::milliseconds& max = std::chrono::seconds{32},
+        const std::chrono::milliseconds& start = 1s,
+        const std::chrono::milliseconds& max = 32s,
         const unsigned int factor = 2) noexcept
         : factor_(factor)
         , max_interval_(max)

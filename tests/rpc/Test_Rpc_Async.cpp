@@ -778,7 +778,7 @@ TEST_F(Test_Rpc_Async, Get_Account_Activity)
             ot::otx::client::PaymentWorkflowType::OutgoingCheque,
             ot::otx::client::PaymentWorkflowState::Conveyed);
 
-        if (workflows.empty()) { ot::Sleep(std::chrono::milliseconds(100)); }
+        if (workflows.empty()) { ot::Sleep(100ms); }
     } while (workflows.empty() && std::time(nullptr) < end);
 
     ASSERT_TRUE(!workflows.empty());
@@ -845,9 +845,7 @@ TEST_F(Test_Rpc_Async, Get_Account_Activity)
             ot::otx::client::PaymentWorkflowType::IncomingCheque,
             ot::otx::client::PaymentWorkflowState::Completed);
 
-        if (receiverworkflows.empty()) {
-            ot::Sleep(std::chrono::milliseconds(100));
-        }
+        if (receiverworkflows.empty()) { ot::Sleep(100ms); }
     } while (receiverworkflows.empty() && std::time(nullptr) < end);
 
     ASSERT_TRUE(!receiverworkflows.empty());

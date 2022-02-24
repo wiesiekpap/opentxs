@@ -35,8 +35,7 @@ Socket::Socket(
     , socket_(zmq_socket(context, to_native(type)))
     , linger_(0)
     , send_timeout_(0)
-    , receive_timeout_(
-          std::chrono::milliseconds{std::chrono::seconds{5}}.count())
+    , receive_timeout_(std::chrono::milliseconds{5s}.count())
     , endpoint_lock_()
     , endpoints_()
     , running_(Flag::Factory(true))

@@ -63,8 +63,8 @@ auto Server::needs_query() noexcept -> bool
         return true;
     }
 
-    static constexpr auto zero = std::chrono::seconds{0};
-    static constexpr auto timeout = std::chrono::seconds{30};
+    static constexpr auto zero = 0s;
+    static constexpr auto timeout = 30s;
     static constexpr auto keepalive = std::chrono::minutes{2};
     const auto wait = Clock::now() - last_received_;
 

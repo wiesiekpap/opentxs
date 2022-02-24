@@ -8,6 +8,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs::api
 {
@@ -26,8 +27,7 @@ public:
     virtual auto Schedule(
         const std::chrono::seconds& interval,
         const opentxs::PeriodicTask& task,
-        const std::chrono::seconds& last = std::chrono::seconds(0)) const
-        -> int = 0;
+        const std::chrono::seconds& last = 0s) const -> int = 0;
 
     OPENTXS_NO_EXPORT virtual ~Periodic() = default;
 

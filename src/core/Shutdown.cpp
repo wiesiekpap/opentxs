@@ -26,10 +26,7 @@ ShutdownSender::ShutdownSender(
     : endpoint_(endpoint)
     , socket_(zmq.PublishSocket())
 {
-    auto init = socket_->SetTimeouts(
-        std::chrono::seconds(1),
-        std::chrono::seconds(10),
-        std::chrono::seconds(0));
+    auto init = socket_->SetTimeouts(1s, 10s, 0s);
 
     OT_ASSERT(init);
 

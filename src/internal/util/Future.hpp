@@ -15,7 +15,7 @@ template <typename Future>
 auto IsReady(const Future& future) noexcept -> bool
 {
     try {
-        static constexpr auto zero = std::chrono::nanoseconds{0};
+        static constexpr auto zero = 0ns;
         static constexpr auto ready = std::future_status::ready;
 
         return ready == future.wait_for(zero);

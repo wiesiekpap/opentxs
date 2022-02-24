@@ -631,7 +631,7 @@ auto MessageProcessor::run() noexcept -> void
             server_.ProcessCron();
         }
 
-        Sleep(std::chrono::milliseconds(50));
+        Sleep(50ms);
     }
 }
 

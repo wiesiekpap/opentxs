@@ -340,7 +340,7 @@ auto FilterOracle::Heartbeat() const noexcept -> void
     if (header_downloader_) { header_downloader_->Heartbeat(); }
     if (block_indexer_) { block_indexer_->Heartbeat(); }
 
-    constexpr auto limit = std::chrono::seconds{5};
+    constexpr auto limit = 5s;
 
     if ((Clock::now() - last_sync_progress_) > limit) {
         new_tip(lock, default_type_, database_.FilterTip(default_type_));
@@ -721,7 +721,7 @@ auto FilterOracle::ProcessSyncData(
             auto& previous = data.previous_header_;
             auto& [blockHashView, pGCS] = data.filter_data_;
             auto& [blockHash, filterHeader, filterHashView] = data.header_data_;
-            static constexpr auto zero = std::chrono::seconds{0};
+            static constexpr auto zero = 0s;
             using State = std::future_status;
 
             if (auto status = previous.wait_for(zero); State::ready != status) {

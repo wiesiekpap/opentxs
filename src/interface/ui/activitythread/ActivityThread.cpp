@@ -84,7 +84,7 @@ ActivityThread::ActivityThread(
     const Identifier& threadID,
     const SimpleCallback& cb) noexcept
     : ActivityThreadList(api, nymID, cb, false)
-    , Worker(api, std::chrono::milliseconds{100})
+    , Worker(api, 100ms)
     , threadID_(threadID)
     , self_contact_(api.Contacts().NymToContact(primary_id_))
     , contacts_()
@@ -494,7 +494,7 @@ auto ActivityThread::process_item(
                 Widget::api_.Factory().PasswordPrompt("Decrypting messages");
             auto message = Widget::api_.Activity().MailText(
                 primary_id_, itemID, box, reason);
-            static constexpr auto none = std::chrono::milliseconds{0};
+            static constexpr auto none = 0ms;
             using Status = std::future_status;
 
             if (const auto s = message.wait_for(none); Status::ready == s) {

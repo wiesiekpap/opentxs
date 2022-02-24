@@ -341,7 +341,7 @@ void Session::storage_gc_hook()
 //         }
 //
 //         lock.unlock();
-//         Sleep(std::chrono::milliseconds(250));
+//         Sleep(250ms);
 //     }
 // }
 

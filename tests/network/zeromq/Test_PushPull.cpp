@@ -28,6 +28,8 @@ namespace zmq = ot::network::zeromq;
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 class Test_PushPull : public ::testing::Test
 {
 public:
@@ -69,10 +71,7 @@ TEST_F(Test_PushPull, Push_Pull)
     ASSERT_NE(nullptr, &pullSocket.get());
     ASSERT_EQ(zmq::socket::Type::Pull, pullSocket->Type());
 
-    pullSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    pullSocket->SetTimeouts(0ms, 30000ms, -1ms);
     pullSocket->Start(endpoint_);
 
     auto pushSocket = context_.PushSocket(zmq::socket::Direction::Connect);
@@ -80,10 +79,7 @@ TEST_F(Test_PushPull, Push_Pull)
     ASSERT_NE(nullptr, &pushSocket.get());
     ASSERT_EQ(zmq::socket::Type::Push, pushSocket->Type());
 
-    pushSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    pushSocket->SetTimeouts(0ms, -1ms, 30000ms);
     pushSocket->Start(endpoint_);
 
     auto sent = pushSocket->Send([&] {
@@ -96,9 +92,7 @@ TEST_F(Test_PushPull, Push_Pull)
     ASSERT_TRUE(sent);
 
     auto end = std::time(nullptr) + 15;
-    while (!callbackFinished && std::time(nullptr) < end) {
-        ot::Sleep(std::chrono::milliseconds(100));
-    }
+    while (!callbackFinished && std::time(nullptr) < end) { ot::Sleep(100ms); }
 
     ASSERT_TRUE(callbackFinished);
 }

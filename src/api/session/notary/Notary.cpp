@@ -447,7 +447,7 @@ void Notary::mint() const
     OT_ASSERT(false == serverID.empty());
 
     while (running_) {
-        Sleep(std::chrono::milliseconds(250));
+        Sleep(250ms);
 
         if (false == opentxs::server::ServerSettings::__cmd_get_mint) {
             continue;

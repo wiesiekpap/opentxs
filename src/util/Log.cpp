@@ -214,7 +214,7 @@ auto Log::Imp::send(const bool terminate) const noexcept -> void
 
         socket->Send(std::move(message));
         buffer = std::stringstream{};
-        future.wait_for(std::chrono::seconds(10));
+        future.wait_for(10s);
     }
 
     if (terminate) { abort(); }
@@ -277,9 +277,9 @@ auto Log::operator()(const std::chrono::nanoseconds& in) const noexcept
     if (false == imp_->active()) { return *this; }
 
     auto value = std::stringstream{};
-    static constexpr auto nanoThreshold = std::chrono::microseconds{2};
-    static constexpr auto microThreshold = std::chrono::milliseconds{2};
-    static constexpr auto milliThreshold = std::chrono::seconds{2};
+    static constexpr auto nanoThreshold = 2us;
+    static constexpr auto microThreshold = 2ms;
+    static constexpr auto milliThreshold = 2s;
     static constexpr auto threshold = std::chrono::minutes{2};
     static constexpr auto minThreshold = std::chrono::hours{2};
     static constexpr auto usRatio = 1000ull;

@@ -28,6 +28,8 @@ namespace zmq = ot::network::zeromq;
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 class Test_PushSubscribe : public ::testing::Test
 {
 public:
@@ -83,7 +85,7 @@ TEST_F(Test_PushSubscribe, Push_Subscribe)
     ASSERT_TRUE(receiver->Start(endpoint_1_));
     ASSERT_TRUE(sender->Send(std::move(message)));
 
-    const auto result = future.wait_for(std::chrono::seconds(10));
+    const auto result = future.wait_for(10s);
 
     ASSERT_EQ(result, std::future_status::ready);
     EXPECT_TRUE(future.get());
@@ -158,9 +160,9 @@ TEST_F(Test_PushSubscribe, Push_Publish_Subscribe)
         return out;
     }()));
 
-    const auto result1 = future1.wait_for(std::chrono::seconds(10));
-    const auto result2 = future2.wait_for(std::chrono::seconds(2));
-    const auto result3 = future3.wait_for(std::chrono::seconds(2));
+    const auto result1 = future1.wait_for(10s);
+    const auto result2 = future2.wait_for(2s);
+    const auto result3 = future3.wait_for(2s);
 
     ASSERT_EQ(result1, std::future_status::ready);
     ASSERT_EQ(result2, std::future_status::ready);
@@ -177,7 +179,7 @@ TEST_F(Test_PushSubscribe, Push_Publish_Subscribe)
         return out;
     }()));
 
-    const auto result4 = future4.wait_for(std::chrono::seconds(10));
+    const auto result4 = future4.wait_for(10s);
 
     ASSERT_EQ(result4, std::future_status::ready);
     ASSERT_EQ(4, counter_1_.load() + counter_2_.load() + counter_3_.load());

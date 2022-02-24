@@ -36,6 +36,8 @@ namespace zmq = ot::network::zeromq;
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 class Test_RouterDealer : public ::testing::Test
 {
 public:
@@ -84,10 +86,7 @@ void Test_RouterDealer::requestSocketThread(
     ASSERT_NE(nullptr, &requestSocket.get());
     ASSERT_EQ(zmq::socket::Type::Request, requestSocket->Type());
 
-    requestSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    requestSocket->SetTimeouts(0ms, -1ms, 30000ms);
     requestSocket->Start(endpoint);
 
     auto [result, message] = requestSocket->Send([&] {
@@ -130,10 +129,7 @@ void Test_RouterDealer::dealerSocketThread(
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());
 
-    dealerSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    dealerSocket->SetTimeouts(0ms, -1ms, 30000ms);
     dealerSocket->Start(endpoint);
 
     auto sent = dealerSocket->Send([&] {
@@ -146,9 +142,7 @@ void Test_RouterDealer::dealerSocketThread(
     ASSERT_TRUE(sent);
 
     auto end = std::time(nullptr) + 15;
-    while (!replyProcessed && std::time(nullptr) < end) {
-        ot::Sleep(std::chrono::milliseconds(100));
-    }
+    while (!replyProcessed && std::time(nullptr) < end) { ot::Sleep(100ms); }
 
     ASSERT_TRUE(replyProcessed);
 }
@@ -178,10 +172,7 @@ TEST_F(Test_RouterDealer, Router_Dealer)
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());
 
-    dealerSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    dealerSocket->SetTimeouts(0ms, 30000ms, -1ms);
     dealerSocket->Start(dealerEndpoint_);
 
     dealerSocket_ = &dealerSocket;
@@ -209,10 +200,7 @@ TEST_F(Test_RouterDealer, Router_Dealer)
     ASSERT_NE(nullptr, &routerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Router, routerSocket->Type());
 
-    routerSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    routerSocket->SetTimeouts(0ms, -1ms, 30000ms);
     routerSocket->Start(routerEndpoint_);
 
     routerSocket_ = &routerSocket;
@@ -239,10 +227,7 @@ TEST_F(Test_RouterDealer, Router_Dealer)
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
 
-    replySocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    replySocket->SetTimeouts(0ms, 30000ms, -1ms);
     replySocket->Start(dealerEndpoint_);
 
     // Send the request on a separate thread so this thread can continue and
@@ -255,7 +240,7 @@ TEST_F(Test_RouterDealer, Router_Dealer)
 
     auto end = std::time(nullptr) + 30;
     while (callbackFinishedCount_ < 3 && std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(100ms);
 
     ASSERT_EQ(3, callbackFinishedCount_);
 
@@ -293,10 +278,7 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Reply)
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());
 
-    dealerSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    dealerSocket->SetTimeouts(0ms, 30000ms, -1ms);
     dealerSocket->Start(dealerEndpoint_);
 
     dealerSocket_ = &dealerSocket;
@@ -327,10 +309,7 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Reply)
     ASSERT_NE(nullptr, &routerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Router, routerSocket->Type());
 
-    routerSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    routerSocket->SetTimeouts(0ms, -1ms, 30000ms);
     routerSocket->Start(routerEndpoint_);
 
     routerSocket_ = &routerSocket;
@@ -360,10 +339,7 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Reply)
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
 
-    replySocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    replySocket->SetTimeouts(0ms, 30000ms, -1ms);
     replySocket->Start(dealerEndpoint_);
 
     // Send the requests on separate threads so this thread can continue and
@@ -388,7 +364,7 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Reply)
 
     auto end = std::time(nullptr) + 30;
     while (callbackFinishedCount_ < 9 && std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(100ms);
 
     ASSERT_EQ(9, callbackFinishedCount_);
 
@@ -428,10 +404,7 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Router)
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());
 
-    dealerSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    dealerSocket->SetTimeouts(0ms, 30000ms, -1ms);
     dealerSocket->Start(dealerEndpoint_);
 
     dealerSocket_ = &dealerSocket;
@@ -462,10 +435,7 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Router)
     ASSERT_NE(nullptr, &routerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Router, routerSocket->Type());
 
-    routerSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    routerSocket->SetTimeouts(0ms, -1ms, 30000ms);
     routerSocket->Start(routerEndpoint_);
 
     routerSocket_ = &routerSocket;
@@ -507,10 +477,7 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Router)
     ASSERT_NE(nullptr, &clientRouterSocket.get());
     ASSERT_EQ(zmq::socket::Type::Router, clientRouterSocket->Type());
 
-    clientRouterSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    clientRouterSocket->SetTimeouts(0ms, 30000ms, -1ms);
     clientRouterSocket->Start(dealerEndpoint_);
 
     // Send the requests on separate threads so this thread can continue and
@@ -535,7 +502,7 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Router)
 
     auto end = std::time(nullptr) + 30;
     while (callbackFinishedCount_ < 6 && std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(100ms);
 
     ASSERT_EQ(6, callbackFinishedCount_);
 
@@ -545,7 +512,7 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Router)
 
     end = std::time(nullptr) + 30;
     while (callbackFinishedCount_ < 9 && std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(100ms);
 
     ASSERT_EQ(9, callbackFinishedCount_);
 

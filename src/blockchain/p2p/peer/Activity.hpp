@@ -51,7 +51,7 @@ public:
         const network::zeromq::Pipeline& pipeline) noexcept;
 
 private:
-    static constexpr auto ping_interval_ = std::chrono::seconds{15};
+    static constexpr auto ping_interval_ = 15s;
     static constexpr auto activity_timeout_ = ping_interval_ * 3;
 
     const network::zeromq::Pipeline& pipeline_;

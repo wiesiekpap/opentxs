@@ -63,7 +63,7 @@ public:
               "block",
               2000,
               1000)
-        , BlockWorkerBlock(api, std::chrono::milliseconds{20})
+        , BlockWorkerBlock(api, 20ms)
         , db_(db)
         , header_(header)
         , node_(node)

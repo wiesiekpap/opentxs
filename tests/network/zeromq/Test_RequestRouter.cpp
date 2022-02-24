@@ -33,6 +33,8 @@ namespace zmq = ot::network::zeromq;
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 class Test_RequestRouter : public ::testing::Test
 {
 public:
@@ -65,10 +67,7 @@ void Test_RequestRouter::requestSocketThread(const ot::UnallocatedCString& msg)
     ASSERT_NE(nullptr, &requestSocket.get());
     ASSERT_EQ(zmq::socket::Type::Request, requestSocket->Type());
 
-    requestSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    requestSocket->SetTimeouts(0ms, -1ms, 30000ms);
     requestSocket->Start(endpoint_);
 
     auto [result, message] = requestSocket->Send([&] {
@@ -95,10 +94,7 @@ void Test_RequestRouter::requestSocketThreadMultipart()
     ASSERT_NE(nullptr, &requestSocket.get());
     ASSERT_EQ(zmq::socket::Type::Request, requestSocket->Type());
 
-    requestSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    requestSocket->SetTimeouts(0ms, -1ms, 30000ms);
     requestSocket->Start(endpoint_);
 
     auto multipartMessage = ot::network::zeromq::Message{};
@@ -159,10 +155,7 @@ TEST_F(Test_RequestRouter, Request_Router)
     ASSERT_NE(nullptr, &routerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Router, routerSocket->Type());
 
-    routerSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    routerSocket->SetTimeouts(0ms, 30000ms, -1ms);
     routerSocket->Start(endpoint_);
 
     // Send the request on a separate thread so this thread can continue and
@@ -172,7 +165,7 @@ TEST_F(Test_RequestRouter, Request_Router)
 
     auto end = std::time(nullptr) + 5;
     while (!callbackFinishedCount_ && std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(100ms);
 
     ASSERT_EQ(1, callbackFinishedCount_);
 
@@ -223,10 +216,7 @@ TEST_F(Test_RequestRouter, Request_2_Router_1)
     ASSERT_NE(nullptr, &routerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Router, routerSocket->Type());
 
-    routerSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    routerSocket->SetTimeouts(0ms, -1ms, 30000ms);
     routerSocket->Start(endpoint_);
 
     std::thread requestSocketThread1(
@@ -239,7 +229,7 @@ TEST_F(Test_RequestRouter, Request_2_Router_1)
 
     auto end = std::time(nullptr) + 15;
     while (!callbackFinishedCount_ && std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(100ms);
 
     bool message1Sent{false};
     if (0 != replyMessage1.size()) {
@@ -251,7 +241,7 @@ TEST_F(Test_RequestRouter, Request_2_Router_1)
 
     end = std::time(nullptr) + 15;
     while (callbackFinishedCount_ < callbackCount_ && std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(100ms);
 
     if (false == message1Sent) {
         routerSocket->Send(std::move(replyMessage1));
@@ -298,10 +288,7 @@ TEST_F(Test_RequestRouter, Request_Router_Multipart)
     ASSERT_NE(nullptr, &routerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Router, routerSocket->Type());
 
-    routerSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    routerSocket->SetTimeouts(0ms, 30000ms, -1ms);
     routerSocket->Start(endpoint_);
 
     // Send the request on a separate thread so this thread can continue and
@@ -311,7 +298,7 @@ TEST_F(Test_RequestRouter, Request_Router_Multipart)
 
     auto end = std::time(nullptr) + 15;
     while (0 == replyMessage.size() && std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(100ms);
 
     auto sent = routerSocket->Send(std::move(replyMessage));
 

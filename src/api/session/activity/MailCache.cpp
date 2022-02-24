@@ -299,7 +299,7 @@ private:
     auto finish_task(const Identifier& key) noexcept -> void
     {
         static constexpr auto limit = 250_MiB;
-        static constexpr auto wait = std::chrono::seconds{0};
+        static constexpr auto wait = 0s;
 
         auto lock = Lock{lock_};
         tasks_.erase(key);

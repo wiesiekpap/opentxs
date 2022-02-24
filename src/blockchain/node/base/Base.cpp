@@ -189,7 +189,7 @@ Base::Base(
     const node::internal::Config& config,
     const UnallocatedCString& seednode,
     const UnallocatedCString& syncEndpoint) noexcept
-    : Worker(api, std::chrono::seconds(0))
+    : Worker(api, 0s)
     , chain_(type)
     , filter_type_([&] {
         if (config.generate_cfilters_ || config.use_sync_server_) {
@@ -442,8 +442,7 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
 
     const auto& id = block.ID();
 
-    if (std::future_status::ready !=
-        block_.LoadBitcoin(id).wait_for(std::chrono::seconds(60))) {
+    if (std::future_status::ready != block_.LoadBitcoin(id).wait_for(60s)) {
         LogError()(OT_PRETTY_CLASS())("failed to load ")(DisplayString(chain_))(
             " block")
             .Flush();
@@ -1097,7 +1096,7 @@ auto Base::RequestBlocks(
 
 auto Base::reset_heartbeat() noexcept -> void
 {
-    static constexpr auto interval = std::chrono::seconds{5};
+    static constexpr auto interval = 5s;
     heartbeat_.SetRelative(interval);
     heartbeat_.Wait([this](const auto& error) {
         if (error) {
@@ -1263,8 +1262,8 @@ auto Base::state_machine() noexcept -> bool
 auto Base::state_machine_headers() noexcept -> void
 {
     constexpr auto limit = std::chrono::minutes{5};
-    constexpr auto timeout = std::chrono::seconds{30};
-    constexpr auto rateLimit = std::chrono::seconds{1};
+    constexpr auto timeout = 30s;
+    constexpr auto rateLimit = 1s;
     const auto requestInterval = Clock::now() - headers_requested_;
     const auto receiveInterval = Clock::now() - headers_received_;
     const auto requestHeaders = [&] {
