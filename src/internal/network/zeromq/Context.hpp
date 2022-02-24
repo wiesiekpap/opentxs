@@ -6,12 +6,15 @@
 #pragma once
 
 #include <future>
+#include <optional>
 #include <thread>
 #include <tuple>
 
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
+#include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
@@ -38,6 +41,7 @@ namespace opentxs::network::zeromq::internal
 class Context : virtual public zeromq::Context
 {
 public:
+    virtual auto Alloc(BatchID id) const noexcept -> alloc::Resource* = 0;
     virtual auto BelongsToThreadPool(
         const std::thread::id = std::this_thread::get_id()) const noexcept
         -> bool = 0;
@@ -45,16 +49,22 @@ public:
     {
         return *this;
     }
+    virtual auto MakeBatch(Vector<socket::Type>&& types) const noexcept
+        -> Handle = 0;
     virtual auto MakeBatch(
-        UnallocatedVector<socket::Type>&& types) const noexcept -> Handle = 0;
+        const BatchID preallocated,
+        Vector<socket::Type>&& types) const noexcept -> Handle = 0;
     virtual auto Modify(SocketID id, ModifyCallback cb) const noexcept
         -> std::pair<bool, std::future<bool>> = 0;
+    virtual auto PreallocateBatch() const noexcept -> BatchID = 0;
     virtual auto Pipeline(
-        std::function<void(zeromq::Message&&)> callback,
+        std::function<void(zeromq::Message&&)>&& callback,
         const EndpointArgs& subscribe = {},
         const EndpointArgs& pull = {},
         const EndpointArgs& dealer = {},
-        const Vector<SocketData>& extra = {}) const noexcept
+        const Vector<SocketData>& extra = {},
+        const std::optional<BatchID>& preallocated = std::nullopt,
+        alloc::Resource* pmr = alloc::System()) const noexcept
         -> zeromq::Pipeline = 0;
     virtual auto Start(BatchID id, StartArgs&& sockets) const noexcept
         -> Thread* = 0;

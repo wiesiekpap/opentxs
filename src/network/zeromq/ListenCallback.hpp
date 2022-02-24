@@ -5,9 +5,12 @@
 
 #pragma once
 
+#include <cs_plain_guarded.h>
 #include <mutex>
+#include <shared_mutex>
 
 #include "opentxs/network/zeromq/ListenCallback.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
@@ -30,14 +33,20 @@ public:
     auto Deactivate() const noexcept -> void final;
     auto Process(zeromq::Message&& message) const noexcept -> void final;
 
+    auto Replace(ReceiveCallback callback) noexcept -> void final;
+
     ~ListenCallback() final;
 
 private:
     friend zeromq::ListenCallback;
 
+    using Guarded =
+        libguarded::plain_guarded<zeromq::ListenCallback::ReceiveCallback>;
+
+    static constexpr auto null_ = [](zeromq::Message&&) {};
+
     mutable std::recursive_mutex execute_lock_;
-    mutable std::mutex callback_lock_;
-    mutable zeromq::ListenCallback::ReceiveCallback callback_;
+    mutable Guarded callback_;
 
     auto clone() const -> ListenCallback* final;
 

@@ -8,6 +8,8 @@
 #include <cstdint>
 
 #include "opentxs/util/WorkType.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 
 namespace opentxs
 {
@@ -42,4 +44,10 @@ constexpr auto OT_ZMQ_PEER_MANAGER_READY =                    OTZMQWorkType{OT_Z
 constexpr auto OT_ZMQ_BLOCKCHAIN_WALLET_READY =               OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 24};
 constexpr auto OT_ZMQ_FEE_ORACLE_READY =                      OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 25};
 // clang-format on
+
+template <typename Enum>
+auto MakeWork(const Enum type) noexcept -> network::zeromq::Message
+{
+    return network::zeromq::tagged_message<Enum>(type);
+}
 }  // namespace opentxs

@@ -32,8 +32,6 @@ class Pipeline;
 
 namespace opentxs::network::zeromq
 {
-OPENTXS_EXPORT auto swap(Pipeline& lhs, Pipeline& rhs) noexcept -> void;
-
 class OPENTXS_EXPORT Pipeline
 {
 public:
@@ -59,19 +57,17 @@ public:
     auto SubscribeTo(const std::string_view endpoint) const noexcept -> bool;
 
     OPENTXS_NO_EXPORT auto Internal() noexcept -> internal::Pipeline&;
-    virtual auto swap(Pipeline& rhs) noexcept -> void;
 
     OPENTXS_NO_EXPORT Pipeline(Imp* imp) noexcept;
+    Pipeline() = delete;
+    Pipeline(const Pipeline&) = delete;
     Pipeline(Pipeline&& rhs) noexcept;
-    auto operator=(Pipeline&& rhs) noexcept -> Pipeline&;
+    auto operator=(Pipeline&& rhs) noexcept -> Pipeline& = delete;
+    auto operator=(const Pipeline&) -> Pipeline& = delete;
 
     virtual ~Pipeline();
 
 private:
     Imp* imp_;
-
-    Pipeline() = delete;
-    Pipeline(const Pipeline&) = delete;
-    auto operator=(const Pipeline&) -> Pipeline& = delete;
 };
 }  // namespace opentxs::network::zeromq

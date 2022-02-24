@@ -27,7 +27,6 @@
 
 #include "1_Internal.hpp"
 #include "blockchain/node/wallet/Account.hpp"
-#include "blockchain/node/wallet/Accounts.hpp"
 #include "blockchain/node/wallet/DeterministicStateData.hpp"
 #include "blockchain/node/wallet/Proposals.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
@@ -35,6 +34,7 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/wallet/Accounts.hpp"
 #include "internal/blockchain/node/wallet/FeeOracle.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "opentxs/Types.hpp"
@@ -87,6 +87,11 @@ namespace network
 {
 namespace zeromq
 {
+namespace socket
+{
+class Raw;
+}  // namespace socket
+
 class Message;
 }  // namespace zeromq
 }  // namespace network
@@ -157,33 +162,28 @@ public:
 private:
     friend Worker<Wallet, api::Session>;
 
-    using TaskCallback = std::function<void(const Identifier&, const char*)>;
     using Work = wallet::WalletJobs;
 
     const node::internal::Network& parent_;
     const node::internal::WalletDatabase& db_;
-    const node::internal::Mempool& mempool_;
     const Type chain_;
-    const TaskCallback task_finished_;
+    network::zeromq::socket::Raw& to_accounts_;
     wallet::FeeOracle fee_oracle_;
     wallet::Accounts accounts_;
     wallet::Proposals proposals_;
 
-    auto trigger_wallet() const noexcept -> void;
-
     auto pipeline(const zmq::Message& in) noexcept -> void;
-    auto process_block_download(const zmq::Message& in) noexcept -> void;
-    auto process_block_header(const zmq::Message& in) noexcept -> void;
-    auto process_filter(const zmq::Message& in) noexcept -> void;
-    auto process_job_finished(const zmq::Message& in) noexcept -> void;
-    auto process_key(const zmq::Message& in) noexcept -> void;
-    auto process_mempool(const zmq::Message& in) noexcept -> void;
-    auto process_nym(const zmq::Message& in) noexcept -> void;
-    auto process_reorg(const zmq::Message& in) noexcept -> void;
-    auto process_wallet() noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;
     auto state_machine() noexcept -> bool;
 
+    Wallet(
+        const api::Session& api,
+        const node::internal::Network& parent,
+        const node::internal::WalletDatabase& db,
+        const node::internal::Mempool& mempool,
+        const Type chain,
+        const std::string_view shutdown,
+        const CString accounts) noexcept;
     Wallet() = delete;
     Wallet(const Wallet&) = delete;
     Wallet(Wallet&&) = delete;

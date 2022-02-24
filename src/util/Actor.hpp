@@ -9,9 +9,11 @@
 #include <chrono>
 #include <functional>
 #include <future>
+#include <memory>
 
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Types.hpp"
+#include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/util/Future.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -25,6 +27,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Gatekeeper.hpp"
@@ -51,17 +54,18 @@ private:
     std::atomic<bool> running_;
 
 public:
+    using allocator_type = alloc::PMR<CRTP>;
     using Message = network::zeromq::Message;
 
 protected:
     using Work = JobType;
 
-    Gatekeeper worker_gate_;
+    Gatekeeper gatekeeper_;
     network::zeromq::Pipeline pipeline_;
 
     auto trigger() const noexcept -> void
     {
-        auto shutdown = worker_gate_.get();
+        auto shutdown = gatekeeper_.get();
 
         if (shutdown) { return; }
 
@@ -71,15 +75,18 @@ protected:
             pipeline_.Push(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL));
         }
     }
-    auto signal_shutdown() const noexcept -> std::shared_future<void>
+    auto signal_shutdown() const noexcept -> void
     {
         if (running_) { pipeline_.Push(MakeWork(WorkType::Shutdown)); }
-
-        return shutdown_;
     }
-    auto signal_startup() const noexcept -> void
+    template <typename SharedPtr>
+    auto signal_startup(SharedPtr me) const noexcept -> void
     {
-        if (running_) { pipeline_.Push(MakeWork(OT_ZMQ_INIT_SIGNAL)); }
+        if (running_) {
+            pipeline_.Internal().SetCallback(
+                [=](auto&& m) { me->worker(std::move(m)); });
+            pipeline_.Push(MakeWork(OT_ZMQ_INIT_SIGNAL));
+        }
     }
     auto wait_for_init() const noexcept -> void { init_future_.get(); }
 
@@ -94,6 +101,8 @@ protected:
     Actor(
         const api::Session& api,
         const std::chrono::milliseconds rateLimit,
+        const network::zeromq::BatchID batch,
+        allocator_type alloc,
         const network::zeromq::EndpointArgs& subscribe = {},
         const network::zeromq::EndpointArgs& pull = {},
         const network::zeromq::EndpointArgs& dealer = {},
@@ -101,9 +110,9 @@ protected:
         : init_promise_()
         , init_future_(init_promise_.get_future())
         , running_(true)
-        , worker_gate_()
+        , gatekeeper_()
         , pipeline_(api.Network().ZeroMQ().Internal().Pipeline(
-              [this](auto&& in) { this->worker(std::move(in)); },
+              {},
               [&] {
                   using Direction = network::zeromq::socket::Direction;
                   auto out{subscribe};
@@ -114,10 +123,10 @@ protected:
               }(),
               pull,
               dealer,
-              extra))
+              extra,
+              batch,
+              alloc.resource()))
         , rate_limit_(rateLimit)
-        , shutdown_promise_()
-        , shutdown_(shutdown_promise_.get_future())
         , last_executed_(Clock::now())
         , state_machine_queued_(false)
     {
@@ -125,12 +134,10 @@ protected:
             .Flush();
     }
 
-    ~Actor() { signal_shutdown().get(); }
+    virtual ~Actor() = default;
 
 private:
     const std::chrono::milliseconds rate_limit_;
-    std::promise<void> shutdown_promise_;
-    std::shared_future<void> shutdown_;
     Time last_executed_;
     mutable std::atomic<bool> state_machine_queued_;
 
@@ -164,7 +171,6 @@ private:
         if (auto previous = running_.exchange(false); previous) {
             downcast().do_shutdown();
             pipeline_.Close();
-            shutdown_promise_.set_value();
         }
     }
     auto worker(network::zeromq::Message&& in) noexcept -> void
@@ -188,10 +194,10 @@ private:
                 OT_FAIL;
             }
         }();
-        const auto type = static_cast<OTZMQWorkType>(work);
+        const auto type = CString{print(work)};
         log(OT_PRETTY_CLASS())("message type is: ")(type).Flush();
 
-        if (OT_ZMQ_INIT_SIGNAL == type) {
+        if (OT_ZMQ_INIT_SIGNAL == static_cast<OTZMQWorkType>(work)) {
             log(OT_PRETTY_CLASS())("initializing").Flush();
             downcast().startup();
 
@@ -219,11 +225,11 @@ private:
 
         {
             // NOTE do not process any messages after shutdown is ordered
-            auto shutdown = worker_gate_.get();
+            auto shutdown = gatekeeper_.get();
 
             if (shutdown || (false == running_)) { return; }
 
-            switch (type) {
+            switch (static_cast<OTZMQWorkType>(work)) {
                 case value(WorkType::Shutdown): {
                     log(OT_PRETTY_CLASS())("shutting down").Flush();
                     this->shutdown();
@@ -241,7 +247,7 @@ private:
 
         log(OT_PRETTY_CLASS())("message processing complete").Flush();
 
-        if (false == running_) { worker_gate_.shutdown(); }
+        if (false == running_) { gatekeeper_.shutdown(); }
     }
 };
 }  // namespace opentxs

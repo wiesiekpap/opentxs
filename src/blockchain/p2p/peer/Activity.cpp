@@ -9,7 +9,6 @@
 
 #include <boost/system/error_code.hpp>
 
-#include "core/Worker.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -19,6 +18,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs::blockchain::p2p::peer
 {

@@ -130,9 +130,9 @@ public:
     {
         return {};
     }
-    auto KeyEndpoint() const noexcept -> const UnallocatedCString& final
+    auto KeyEndpoint() const noexcept -> std::string_view final
     {
-        static const auto null = UnallocatedCString{};
+        static const auto null = CString{};
 
         return null;
     }

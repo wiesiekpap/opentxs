@@ -30,7 +30,6 @@
 
 #include "api/network/asio/Acceptors.hpp"
 #include "core/StateMachine.hpp"
-#include "core/Worker.hpp"
 #include "internal/network/asio/HTTP.hpp"
 #include "internal/network/asio/HTTPS.hpp"
 #include "internal/network/zeromq/socket/Factory.hpp"

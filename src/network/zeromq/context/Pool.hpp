@@ -15,6 +15,7 @@
 
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
+#include "internal/network/zeromq/Handle.hpp"
 #include "internal/network/zeromq/Pool.hpp"
 #include "internal/network/zeromq/Thread.hpp"
 #include "internal/network/zeromq/Types.hpp"
@@ -22,6 +23,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Gatekeeper.hpp"
 
@@ -77,10 +79,13 @@ public:
     auto Thread(BatchID id) const noexcept -> zeromq::internal::Thread* final;
     auto ThreadID(BatchID id) const noexcept -> std::thread::id final;
 
-    auto MakeBatch(UnallocatedVector<socket::Type>&& types) noexcept
-        -> internal::Handle;
+    auto Alloc(BatchID id) noexcept -> alloc::Resource* final;
+    auto MakeBatch(Vector<socket::Type>&& types) noexcept -> internal::Handle;
+    auto MakeBatch(const BatchID id, Vector<socket::Type>&& types) noexcept
+        -> internal::Handle final;
     auto Modify(SocketID id, ModifyCallback cb) noexcept -> AsyncResult;
     auto DoModify(SocketID id, const ModifyCallback& cb) noexcept -> bool final;
+    auto PreallocateBatch() const noexcept -> BatchID final;
     auto Shutdown() noexcept -> void;
     auto Start(BatchID id, StartArgs&& sockets) noexcept
         -> zeromq::internal::Thread*;

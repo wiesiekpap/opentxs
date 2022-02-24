@@ -5,12 +5,25 @@
 
 #include "common/Notary.hpp"  // IWYU pragma: associated
 
+#include <future>
+#include <memory>
+#include <utility>
+
+#include "integration/Helpers.hpp"
 #include "internal/otx/common/Message.hpp"
-#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/Context.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/OTX.hpp"
-#include "opentxs/crypto/Language.hpp"
-#include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/core/String.hpp"
+#include "opentxs/core/contract/Unit.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 namespace ottest
 {

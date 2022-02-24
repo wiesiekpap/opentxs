@@ -11,6 +11,7 @@
 
 #include <iterator>
 #include <memory>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
@@ -27,6 +28,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Gatekeeper.hpp"
 
@@ -34,73 +36,97 @@ namespace opentxs::factory
 {
 auto Pipeline(
     const network::zeromq::Context& context,
-    std::function<void(network::zeromq::Message&&)> callback,
+    std::function<void(network::zeromq::Message&&)>&& callback,
     const network::zeromq::EndpointArgs& subscribe,
     const network::zeromq::EndpointArgs& pull,
     const network::zeromq::EndpointArgs& dealer,
-    const Vector<network::zeromq::SocketData>& extra) noexcept
-    -> opentxs::network::zeromq::Pipeline
+    const Vector<network::zeromq::SocketData>& extra,
+    const std::optional<network::zeromq::BatchID>& preallocated,
+    alloc::Resource* pmr) noexcept -> opentxs::network::zeromq::Pipeline
 {
-    return std::make_unique<network::zeromq::implementation::Pipeline>(
-               context, std::move(callback), subscribe, pull, dealer, extra)
-        .release();
+    auto alloc = alloc::PMR<network::zeromq::Pipeline::Imp>{pmr};
+    auto* imp = alloc.allocate(1);
+    alloc.construct(
+        imp,
+        context,
+        std::move(callback),
+        subscribe,
+        pull,
+        dealer,
+        extra,
+        preallocated);
+
+    return imp;
 }
 }  // namespace opentxs::factory
 
 namespace opentxs::network::zeromq
 {
-auto swap(Pipeline& lhs, Pipeline& rhs) noexcept -> void { lhs.swap(rhs); }
-}  // namespace opentxs::network::zeromq
-
-namespace opentxs::network::zeromq::implementation
-{
-Pipeline::Pipeline(
+Pipeline::Imp::Imp(
     const zeromq::Context& context,
-    std::function<void(zeromq::Message&&)> callback,
+    Callback&& callback,
     const EndpointArgs& subscribe,
     const EndpointArgs& pull,
     const EndpointArgs& dealer,
-    const Vector<SocketData>& extra) noexcept
-    : Pipeline(
-          context,
+    const Vector<SocketData>& extra,
+    const std::optional<zeromq::BatchID>& preallocated,
+    allocator_type pmr) noexcept
+    : Imp(context,
           std::move(callback),
-          MakeArbitraryInproc(),
-          MakeArbitraryInproc(),
+          MakeArbitraryInproc(pmr.resource()),
+          MakeArbitraryInproc(pmr.resource()),
           subscribe,
           pull,
           dealer,
-          extra)
+          extra,
+          preallocated,
+          pmr)
 {
 }
 
-Pipeline::Pipeline(
+Pipeline::Imp::Imp(
     const zeromq::Context& context,
-    std::function<void(zeromq::Message&&)> callback,
-    const UnallocatedCString internalEndpoint,
-    const UnallocatedCString outgoingEndpoint,
+    Callback&& callback,
+    const CString internalEndpoint,
+    const CString outgoingEndpoint,
     const EndpointArgs& subscribe,
     const EndpointArgs& pull,
     const EndpointArgs& dealer,
-    const Vector<SocketData>& extra) noexcept
-    : context_(context)
+    const Vector<SocketData>& extra,
+    const std::optional<zeromq::BatchID>& preallocated,
+    allocator_type pmr) noexcept
+    : Allocated(allocator_type{pmr})
+    , context_(context)
     , gate_()
     , shutdown_(false)
-    , handle_(context_.Internal().MakeBatch([&] {
-        auto out = UnallocatedVector<socket::Type>{
-            socket::Type::Subscribe,  // NOTE sub_
-            socket::Type::Pull,       // NOTE pull_
-            socket::Type::Pair,       // NOTE outgoing_
-            socket::Type::Dealer,     // NOTE dealer_
-            socket::Type::Pair,       // NOTE internal_
-        };
+    , handle_([&] {
+        auto sockets = [&] {
+            auto out = Vector<socket::Type>{pmr};
+            out.reserve(fixed_sockets_ + extra.size());
+            out.emplace_back(socket::Type::Subscribe);  // NOTE sub_
+            out.emplace_back(socket::Type::Pull);       // NOTE pull_
+            out.emplace_back(socket::Type::Pair);       // NOTE outgoing_
+            out.emplace_back(socket::Type::Dealer);     // NOTE dealer_
+            out.emplace_back(socket::Type::Pair);       // NOTE internal_
 
-        for (const auto& [type, args] : extra) { out.emplace_back(type); }
+            for (const auto& [type, args] : extra) { out.emplace_back(type); }
 
-        return out;
-    }()))
+            return out;
+        }();
+
+        if (preallocated.has_value()) {
+
+            return context_.Internal().MakeBatch(
+                preallocated.value(), std::move(sockets));
+        } else {
+
+            return context_.Internal().MakeBatch(std::move(sockets));
+        }
+    }())
     , batch_([&]() -> auto& {
         auto& batch = handle_.batch_;
-        batch.listen_callbacks_.emplace_back(ListenCallback::Factory(callback));
+        batch.listen_callbacks_.emplace_back(
+            ListenCallback::Factory(std::move(callback)));
 
         return batch;
     }())
@@ -220,8 +246,9 @@ Pipeline::Pipeline(
     OT_ASSERT(nullptr != thread_);
 }
 
-auto Pipeline::apply(const EndpointArgs& endpoint, socket::Raw& socket) noexcept
-    -> void
+auto Pipeline::Imp::apply(
+    const EndpointArgs& endpoint,
+    socket::Raw& socket) noexcept -> void
 {
     for (const auto& [endpoint, direction] : endpoint) {
         if (socket::Direction::Connect == direction) {
@@ -236,9 +263,12 @@ auto Pipeline::apply(const EndpointArgs& endpoint, socket::Raw& socket) noexcept
     }
 }
 
-auto Pipeline::BatchID() const noexcept -> std::size_t { return batch_.id_; }
+auto Pipeline::Imp::BatchID() const noexcept -> std::size_t
+{
+    return batch_.id_;
+}
 
-auto Pipeline::bind(
+auto Pipeline::Imp::bind(
     SocketID id,
     const std::string_view endpoint,
     std::function<Message(bool)> notify) const noexcept
@@ -264,14 +294,14 @@ auto Pipeline::bind(
         });
 }
 
-auto Pipeline::BindSubscriber(
+auto Pipeline::Imp::BindSubscriber(
     const std::string_view endpoint,
     std::function<Message(bool)> notify) const noexcept -> bool
 {
     return bind(sub_.ID(), endpoint, std::move(notify)).first;
 }
 
-auto Pipeline::Close() const noexcept -> bool
+auto Pipeline::Imp::Close() const noexcept -> bool
 {
     gate_.shutdown();
 
@@ -282,7 +312,7 @@ auto Pipeline::Close() const noexcept -> bool
     return true;
 }
 
-auto Pipeline::connect(
+auto Pipeline::Imp::connect(
     SocketID id,
     const std::string_view endpoint,
     std::function<Message(bool)> notify) const noexcept
@@ -308,34 +338,35 @@ auto Pipeline::connect(
         });
 }
 
-auto Pipeline::ConnectDealer(
+auto Pipeline::Imp::ConnectDealer(
     const std::string_view endpoint,
     std::function<Message(bool)> notify) const noexcept -> bool
 {
     return connect(dealer_.ID(), endpoint, std::move(notify)).first;
 }
 
-auto Pipeline::ConnectionIDDealer() const noexcept -> std::size_t
+auto Pipeline::Imp::ConnectionIDDealer() const noexcept -> std::size_t
 {
     return dealer_.ID();
 }
 
-auto Pipeline::ConnectionIDInternal() const noexcept -> std::size_t
+auto Pipeline::Imp::ConnectionIDInternal() const noexcept -> std::size_t
 {
     return internal_.ID();
 }
 
-auto Pipeline::ConnectionIDPull() const noexcept -> std::size_t
+auto Pipeline::Imp::ConnectionIDPull() const noexcept -> std::size_t
 {
     return pull_.ID();
 }
 
-auto Pipeline::ConnectionIDSubscribe() const noexcept -> std::size_t
+auto Pipeline::Imp::ConnectionIDSubscribe() const noexcept -> std::size_t
 {
     return sub_.ID();
 }
 
-auto Pipeline::ExtraSocket(std::size_t index) noexcept(false) -> socket::Raw&
+auto Pipeline::Imp::ExtraSocket(std::size_t index) noexcept(false)
+    -> socket::Raw&
 {
     if ((batch_.sockets_.size() - fixed_sockets_) < (index + 1u)) {
 
@@ -347,12 +378,13 @@ auto Pipeline::ExtraSocket(std::size_t index) noexcept(false) -> socket::Raw&
     return *it;
 }
 
-auto Pipeline::PullFrom(const std::string_view endpoint) const noexcept -> bool
+auto Pipeline::Imp::PullFrom(const std::string_view endpoint) const noexcept
+    -> bool
 {
     return connect(pull_.ID(), endpoint).first;
 }
 
-auto Pipeline::Push(zeromq::Message&& msg) const noexcept -> bool
+auto Pipeline::Imp::Push(zeromq::Message&& msg) const noexcept -> bool
 {
     const auto done = gate_.get();
 
@@ -365,7 +397,7 @@ auto Pipeline::Push(zeromq::Message&& msg) const noexcept -> bool
     return true;
 }
 
-auto Pipeline::Send(zeromq::Message&& msg) const noexcept -> bool
+auto Pipeline::Imp::Send(zeromq::Message&& msg) const noexcept -> bool
 {
     const auto done = gate_.get();
 
@@ -378,14 +410,21 @@ auto Pipeline::Send(zeromq::Message&& msg) const noexcept -> bool
     return true;
 }
 
-auto Pipeline::SubscribeTo(const std::string_view endpoint) const noexcept
+auto Pipeline::Imp::SetCallback(Callback&& cb) const noexcept -> void
+{
+    auto& listener =
+        const_cast<ListenCallback&>(batch_.listen_callbacks_.at(0).get());
+    listener.Replace(std::move(cb));
+}
+
+auto Pipeline::Imp::SubscribeTo(const std::string_view endpoint) const noexcept
     -> bool
 {
     return connect(sub_.ID(), endpoint).first;
 }
 
-Pipeline::~Pipeline() { Close(); }
-}  // namespace opentxs::network::zeromq::implementation
+Pipeline::Imp::~Imp() { Close(); }
+}  // namespace opentxs::network::zeromq
 
 namespace opentxs::network::zeromq
 {
@@ -396,16 +435,9 @@ Pipeline::Pipeline(Imp* imp) noexcept
 }
 
 Pipeline::Pipeline(Pipeline&& rhs) noexcept
-    : Pipeline(std::make_unique<Imp>().release())
+    : Pipeline(rhs.imp_)
 {
-    swap(rhs);
-}
-
-auto Pipeline::operator=(Pipeline&& rhs) noexcept -> Pipeline&
-{
-    swap(rhs);
-
-    return *this;
+    rhs.imp_ = nullptr;
 }
 
 auto Pipeline::BatchID() const noexcept -> std::size_t
@@ -477,15 +509,12 @@ auto Pipeline::SubscribeTo(const std::string_view endpoint) const noexcept
     return imp_->SubscribeTo(endpoint);
 }
 
-auto Pipeline::swap(Pipeline& rhs) noexcept -> void
-{
-    std::swap(imp_, rhs.imp_);
-}
-
 Pipeline::~Pipeline()
 {
     if (nullptr != imp_) {
-        delete imp_;
+        auto alloc = alloc::PMR<Imp>{imp_->GetAllocator()};
+        alloc.destroy(imp_);
+        alloc.deallocate(imp_, 1);
         imp_ = nullptr;
     }
 }

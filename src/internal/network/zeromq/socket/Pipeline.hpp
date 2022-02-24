@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <functional>
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
@@ -16,6 +18,8 @@ namespace socket
 {
 class Raw;
 }  // namespace socket
+
+class Message;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
@@ -26,12 +30,15 @@ namespace opentxs::network::zeromq::internal
 class Pipeline
 {
 public:
+    using Callback = std::function<void(zeromq::Message&&)>;
+
     /**  Access and extra socket that was specified at construction time
      *
      *   \throws std::out_of_range for an invalid index
      */
     virtual auto ExtraSocket(std::size_t index) noexcept(false)
         -> socket::Raw& = 0;
+    virtual auto SetCallback(Callback&& cb) const noexcept -> void = 0;
 
     /**  Access and extra socket that was specified at construction time
      *

@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <functional>
 #include <future>
+#include <optional>
 #include <queue>
 #include <shared_mutex>
 #include <stdexcept>
@@ -28,7 +29,9 @@
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/Allocated.hpp"
 #include "util/Gatekeeper.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -63,117 +66,55 @@ class Message;
 
 namespace opentxs::network::zeromq
 {
-class Pipeline::Imp : virtual public internal::Pipeline
+class Pipeline::Imp final : virtual public internal::Pipeline,
+                            public opentxs::implementation::Allocated
 {
 public:
-    virtual auto BatchID() const noexcept -> std::size_t { return {}; }
-    virtual auto BindSubscriber(
-        const std::string_view,
-        std::function<Message(bool)>) const noexcept -> bool
-    {
-        return false;
-    }
-    virtual auto Close() const noexcept -> bool { return false; }
-    virtual auto ConnectDealer(
-        const std::string_view,
-        std::function<Message(bool)>) const noexcept -> bool
-    {
-        return false;
-    }
-    virtual auto ConnectionIDDealer() const noexcept -> std::size_t
-    {
-        return {};
-    }
-    virtual auto ConnectionIDInternal() const noexcept -> std::size_t
-    {
-        return {};
-    }
-    virtual auto ConnectionIDPull() const noexcept -> std::size_t { return {}; }
-    virtual auto ConnectionIDSubscribe() const noexcept -> std::size_t
-    {
-        return {};
-    }
-    auto ExtraSocket(std::size_t) const noexcept(false)
-        -> const socket::Raw& override
-    {
-        throw std::out_of_range{"invalid extra socket index"};
-    }
-    virtual auto PullFrom(const std::string_view) const noexcept -> bool
-    {
-        return false;
-    }
-    virtual auto Push(Message&&) const noexcept -> bool { return false; }
-    virtual auto Send(Message&&) const noexcept -> bool { return false; }
-    virtual auto SubscribeTo(const std::string_view) const noexcept -> bool
-    {
-        return false;
-    }
-
-    auto ExtraSocket(std::size_t) noexcept(false) -> socket::Raw& override
-    {
-        throw std::out_of_range{"invalid extra socket index"};
-    }
-
-    Imp() = default;
-
-    ~Imp() override = default;
-
-private:
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
-};
-}  // namespace opentxs::network::zeromq
-
-namespace opentxs::network::zeromq::implementation
-{
-class Pipeline final : virtual public zeromq::Pipeline::Imp
-{
-public:
-    auto BatchID() const noexcept -> std::size_t final;
+    auto BatchID() const noexcept -> std::size_t;
     auto BindSubscriber(
         const std::string_view endpoint,
-        std::function<Message(bool)> notify) const noexcept -> bool final;
-    auto Close() const noexcept -> bool final;
+        std::function<Message(bool)> notify) const noexcept -> bool;
+    auto Close() const noexcept -> bool;
     auto ConnectDealer(
         const std::string_view endpoint,
-        std::function<Message(bool)> notify) const noexcept -> bool final;
-    auto ConnectionIDDealer() const noexcept -> std::size_t final;
-    auto ConnectionIDInternal() const noexcept -> std::size_t final;
-    auto ConnectionIDPull() const noexcept -> std::size_t final;
-    auto ConnectionIDSubscribe() const noexcept -> std::size_t final;
+        std::function<Message(bool)> notify) const noexcept -> bool;
+    auto ConnectionIDDealer() const noexcept -> std::size_t;
+    auto ConnectionIDInternal() const noexcept -> std::size_t;
+    auto ConnectionIDPull() const noexcept -> std::size_t;
+    auto ConnectionIDSubscribe() const noexcept -> std::size_t;
     auto ExtraSocket(std::size_t index) const noexcept(false)
         -> const socket::Raw& final
     {
-        return const_cast<Pipeline&>(*this).ExtraSocket(index);
+        return const_cast<Imp&>(*this).ExtraSocket(index);
     }
-    auto PullFrom(const std::string_view endpoint) const noexcept -> bool final;
-    auto Push(zeromq::Message&& data) const noexcept -> bool final;
-    auto Send(zeromq::Message&& data) const noexcept -> bool final;
-    auto SubscribeTo(const std::string_view endpoint) const noexcept
-        -> bool final;
+    auto PullFrom(const std::string_view endpoint) const noexcept -> bool;
+    auto Push(zeromq::Message&& data) const noexcept -> bool;
+    auto Send(zeromq::Message&& data) const noexcept -> bool;
+    auto SetCallback(Callback&& cb) const noexcept -> void final;
+    auto SubscribeTo(const std::string_view endpoint) const noexcept -> bool;
 
     auto ExtraSocket(std::size_t index) noexcept(false) -> socket::Raw& final;
 
-    Pipeline(
-        const zeromq::Context& context,
-        std::function<void(zeromq::Message&&)> callback,
+    Imp(const zeromq::Context& context,
+        Callback&& callback,
         const EndpointArgs& subscribe,
         const EndpointArgs& pull,
         const EndpointArgs& dealer,
-        const Vector<SocketData>& extra) noexcept;
-    Pipeline(
-        const zeromq::Context& context,
-        std::function<void(zeromq::Message&&)> callback,
-        const UnallocatedCString internalEndpoint,
-        const UnallocatedCString outgoingEndpoint,
+        const Vector<SocketData>& extra,
+        const std::optional<zeromq::BatchID>& preallocated,
+        allocator_type pmr) noexcept;
+    Imp(const zeromq::Context& context,
+        Callback&& callback,
+        const CString internalEndpoint,
+        const CString outgoingEndpoint,
         const EndpointArgs& subscribe,
         const EndpointArgs& pull,
         const EndpointArgs& dealer,
-        const Vector<SocketData>& extra) noexcept;
+        const Vector<SocketData>& extra,
+        const std::optional<zeromq::BatchID>& preallocated,
+        allocator_type pmr) noexcept;
 
-    ~Pipeline() final;
+    ~Imp() final;
 
 private:
     using GuardedSocket =
@@ -210,10 +151,10 @@ private:
         std::function<Message(bool)> notify = {}) const noexcept
         -> std::pair<bool, std::future<bool>>;
 
-    Pipeline() = delete;
-    Pipeline(const Pipeline&) = delete;
-    Pipeline(Pipeline&&) = delete;
-    auto operator=(const Pipeline&) -> Pipeline& = delete;
-    auto operator=(Pipeline&&) -> Pipeline& = delete;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
-}  // namespace opentxs::network::zeromq::implementation
+}  // namespace opentxs::network::zeromq

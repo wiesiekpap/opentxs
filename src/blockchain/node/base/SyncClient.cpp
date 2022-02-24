@@ -20,7 +20,6 @@
 #include <thread>
 #include <utility>
 
-#include "core/Worker.hpp"
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/network/p2p/Types.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
@@ -51,6 +50,7 @@
 #include "serialization/protobuf/BlockchainP2PChainState.pb.h"
 #include "util/Backoff.hpp"
 #include "util/ByteLiterals.hpp"
+#include "util/Work.hpp"
 
 namespace bcsync = opentxs::network::p2p;
 

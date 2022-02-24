@@ -28,6 +28,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <string_view>
 #include <thread>
 #include <tuple>
 #include <utility>
@@ -169,7 +170,7 @@ public:
     auto HDSubaccount(const identifier::Nym& nymID, const Identifier& accountID)
         const noexcept(false) -> const opentxs::blockchain::crypto::HD& final;
     auto IndexItem(const ReadView bytes) const noexcept -> PatternID final;
-    auto KeyEndpoint() const noexcept -> const UnallocatedCString& final;
+    auto KeyEndpoint() const noexcept -> std::string_view final;
     auto KeyGenerated(const Chain chain) const noexcept -> void final;
     auto LoadTransactionBitcoin(const TxidHex& id) const noexcept
         -> std::unique_ptr<

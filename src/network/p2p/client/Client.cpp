@@ -22,7 +22,6 @@
 #include <utility>
 
 #include "Proto.tpp"
-#include "core/Worker.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/network/p2p/Factory.hpp"
@@ -62,6 +61,7 @@
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/BlockchainP2PChainState.pb.h"
+#include "util/Work.hpp"
 
 namespace bc = opentxs::blockchain;
 
@@ -976,7 +976,7 @@ namespace opentxs::network::p2p
 Client::Client(const api::Session& api) noexcept
     : Client(api, api.Network().ZeroMQ().Internal().MakeBatch([] {
         using Type = Imp::SocketType;
-        auto out = UnallocatedVector<Type>{
+        auto out = Vector<Type>{
             Type::Router,
             Type::Pair,
             Type::Subscribe,

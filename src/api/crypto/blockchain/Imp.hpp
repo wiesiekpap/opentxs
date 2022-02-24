@@ -12,6 +12,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <string_view>
 
 #include "api/crypto/blockchain/AccountCache.hpp"
 #include "api/crypto/blockchain/Blockchain.hpp"
@@ -192,7 +193,7 @@ struct Blockchain::Imp {
         const noexcept(false) -> const opentxs::blockchain::crypto::HD&;
     using SyncState = UnallocatedVector<opentxs::network::p2p::State>;
     virtual auto IndexItem(const ReadView bytes) const noexcept -> PatternID;
-    virtual auto KeyEndpoint() const noexcept -> const UnallocatedCString&;
+    virtual auto KeyEndpoint() const noexcept -> std::string_view;
     virtual auto KeyGenerated(
         const opentxs::blockchain::Type chain) const noexcept -> void;
     virtual auto LoadTransactionBitcoin(const TxidHex& txid) const noexcept

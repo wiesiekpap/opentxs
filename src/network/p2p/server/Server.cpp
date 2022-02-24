@@ -17,7 +17,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "core/Worker.hpp"
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -55,6 +54,7 @@
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs::network::p2p
 {
@@ -62,7 +62,7 @@ Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
     : api_(api)
     , zmq_(zmq)
     , handle_(zmq_.Internal().MakeBatch([&] {
-        auto out = UnallocatedVector<zeromq::socket::Type>{};
+        auto out = Vector<zeromq::socket::Type>{};
         out.emplace_back(zeromq::socket::Type::Router);
         out.emplace_back(zeromq::socket::Type::Publish);
         out.emplace_back(zeromq::socket::Type::Pair);

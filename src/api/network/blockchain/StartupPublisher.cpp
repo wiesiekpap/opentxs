@@ -32,7 +32,7 @@ StartupPublisher::StartupPublisher(
     : zmq_(zmq.Internal())
     , handle_(zmq_.Internal().MakeBatch([] {
         using Type = opentxs::network::zeromq::socket::Type;
-        auto out = UnallocatedVector<Type>{
+        auto out = Vector<Type>{
             Type::Publish,
             Type::Pull,
         };

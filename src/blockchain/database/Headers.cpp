@@ -18,7 +18,6 @@
 #include "Proto.tpp"
 #include "blockchain/database/common/Database.hpp"
 #include "blockchain/node/UpdateTransaction.hpp"
-#include "core/Worker.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -40,6 +39,7 @@
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "serialization/protobuf/BlockchainBlockLocalData.pb.h"
 #include "util/LMDB.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs::blockchain::database
 {
