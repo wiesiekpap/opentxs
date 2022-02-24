@@ -3,12 +3,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+set_source_files_properties(Test_OT.cpp PROPERTIES COMPILE_FLAGS -Wno-effc++)
+
 target_sources(opentxs-test-helpers PRIVATE "Helpers.hpp" "Helpers.cpp")
 
 add_opentx_low_level_test(
   unittests-opentxs-context-client-session Test_ClientSession.cpp
 )
 add_opentx_low_level_test(unittests-opentxs-context-options Test_Options.cpp)
+add_opentx_low_level_test(unittests-opentxs-context-ot Test_OT.cpp)
 add_opentx_low_level_test(
   unittests-opentxs-context-startup-shutdown Test_StartupShutdown.cpp
 )

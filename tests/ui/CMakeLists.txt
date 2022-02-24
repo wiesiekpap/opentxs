@@ -22,6 +22,7 @@ else()
 endif()
 
 add_opentx_test(unittests-opentxs-ui-account-tree Test_AccountTree.cpp)
+set_tests_properties(unittests-opentxs-ui-account-tree PROPERTIES DISABLED TRUE)
 
 if(OT_QT_EXPORT)
   add_opentx_test(unittests-opentxs-ui-amountvalidator Test_AmountValidator.cpp)
