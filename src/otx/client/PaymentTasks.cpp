@@ -46,7 +46,7 @@ auto PaymentTasks::cleanup() -> bool
     for (auto i = tasks_.begin(); i != tasks_.end(); ++i) {
         auto& task = i->second;
         auto future = task.Wait();
-        auto status = future.wait_for(std::chrono::nanoseconds(10));
+        auto status = future.wait_for(10ns);
 
         if (std::future_status::ready == status) {
             LogInsane()(OT_PRETTY_CLASS())("Task for ")(i->first)(" is done")

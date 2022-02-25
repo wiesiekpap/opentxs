@@ -215,7 +215,7 @@ auto FeeSource::Imp::state_machine() noexcept -> bool
     if (false == future_.has_value()) { return false; }
 
     auto& future = future_.value();
-    static constexpr auto limit = std::chrono::milliseconds{25};
+    static constexpr auto limit = 25ms;
     static constexpr auto ready = std::future_status::ready;
 
     try {

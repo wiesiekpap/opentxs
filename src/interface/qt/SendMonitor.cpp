@@ -82,7 +82,7 @@ private:
     static auto process(Data& data) noexcept -> bool
     {
         auto& [key, future, cb] = data;
-        static constexpr auto wait = std::chrono::microseconds{1};
+        static constexpr auto wait = 1us;
         using Status = std::future_status;
 
         if (Status::ready != future.wait_for(wait)) { return false; }

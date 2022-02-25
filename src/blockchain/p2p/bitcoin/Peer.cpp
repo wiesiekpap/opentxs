@@ -1128,8 +1128,8 @@ auto Peer::process_getdata(
             case Type::MsgBlock: {
                 const auto& oracle = network_.BlockOracle();
                 auto future = oracle.LoadBitcoin(inv.hash_);
-                const auto have = std::future_status::ready ==
-                                  future.wait_for(std::chrono::milliseconds{0});
+                const auto have =
+                    std::future_status::ready == future.wait_for(0ms);
 
                 if (have) {
                     const auto pBlock = future.get();
@@ -1310,7 +1310,7 @@ auto Peer::process_headers(
             return work;
         }());
         using Status = std::future_status;
-        constexpr auto limit = std::chrono::seconds{10};
+        constexpr auto limit = 10s;
 
         if (Status::ready == future.wait_for(limit)) {
             if (false == network_.IsSynchronized()) { request_headers(); }
@@ -2093,7 +2093,7 @@ auto Peer::request_transactions(
 auto Peer::start_handshake() noexcept -> void
 {
     try {
-        const auto status = Connected().wait_for(std::chrono::seconds(5));
+        const auto status = Connected().wait_for(5s);
 
         if (std::future_status::ready != status) {
             LogVerbose()("Disconnecting ")(display_chain_)(" peer ")(

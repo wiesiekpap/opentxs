@@ -898,7 +898,7 @@ void OTSmartContract::SetRemainingTimer(
         const auto tPlus =
             std::chrono::seconds{String::StringToLong(str_seconds_from_now)};
 
-        if (tPlus > std::chrono::seconds{0}) {
+        if (tPlus > 0s) {
             SetNextProcessDate(Clock::now() + tPlus);
         } else {
             SetNextProcessDate(Time{});  // This way, you can deactivate

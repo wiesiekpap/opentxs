@@ -11,6 +11,8 @@
 
 namespace opentxs
 {
+using namespace std::literals::chrono_literals;
+
 using Clock = std::chrono::system_clock;
 using Time = Clock::time_point;
 

@@ -120,7 +120,7 @@ auto Thread::poll(Items& data) noexcept -> void
         return;
     }
 
-    static constexpr auto timeout = std::chrono::milliseconds{100};
+    static constexpr auto timeout = 100ms;
     const auto events = ::zmq_poll(
         data.items_.data(),
         static_cast<int>(data.items_.size()),

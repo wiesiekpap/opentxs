@@ -123,12 +123,11 @@ private:
 
         auto Running() noexcept -> bool
         {
-            static const auto limit = std::chrono::seconds(10);
+            static const auto limit = 10s;
 
             if ((Clock::now() - start_) > limit) { return false; }
 
-            return std::future_status::timeout ==
-                   future_.wait_for(std::chrono::milliseconds(1));
+            return std::future_status::timeout == future_.wait_for(1ms);
         }
 
         auto Start() noexcept -> void

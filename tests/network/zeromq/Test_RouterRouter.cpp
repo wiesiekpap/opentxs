@@ -29,6 +29,8 @@ namespace zmq = ot::network::zeromq;
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 class RouterRouterF : public ::testing::Test
 {
 protected:
@@ -83,7 +85,7 @@ private:
         }();
 
         while (running_) {
-            constexpr auto timeout = std::chrono::milliseconds{1000};
+            constexpr auto timeout = 1000ms;
             const auto events =
                 ::zmq_poll(poll.data(), poll.size(), timeout.count());
 
@@ -161,7 +163,7 @@ TEST_F(RouterRouterF, test)
     EXPECT_EQ(::zmq_bind(server_.get(), endpoint_.c_str()), 0);
     EXPECT_EQ(::zmq_connect(client_.get(), endpoint_.c_str()), 0);
 
-    ot::Sleep(std::chrono::seconds{1});
+    ot::Sleep(1s);
 
     auto msg = opentxs::network::zeromq::Message{};
     msg.AddFrame(endpoint_);

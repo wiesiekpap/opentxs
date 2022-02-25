@@ -213,8 +213,7 @@ public:
     auto LocalNyms() const -> UnallocatedSet<OTNymID> final;
     auto Nym(
         const identifier::Nym& id,
-        const std::chrono::milliseconds& timeout =
-            std::chrono::milliseconds(0)) const -> Nym_p final;
+        const std::chrono::milliseconds& timeout = 0ms) const -> Nym_p final;
     auto Nym(const proto::Nym& nym) const -> Nym_p final;
     auto Nym(const ReadView& bytes) const -> Nym_p final;
     auto Nym(
@@ -335,8 +334,8 @@ public:
         -> bool final;
     auto Server(
         const identifier::Notary& id,
-        const std::chrono::milliseconds& timeout =
-            std::chrono::milliseconds(0)) const -> OTServerContract final;
+        const std::chrono::milliseconds& timeout = 0ms) const
+        -> OTServerContract final;
     auto Server(const proto::ServerContract& contract) const
         -> OTServerContract final;
     auto Server(const ReadView& contract) const -> OTServerContract final;
@@ -360,8 +359,8 @@ public:
     auto UnitDefinitionList() const -> ObjectList final;
     auto UnitDefinition(
         const identifier::UnitDefinition& id,
-        const std::chrono::milliseconds& timeout =
-            std::chrono::milliseconds(0)) const -> OTUnitDefinition final;
+        const std::chrono::milliseconds& timeout = 0ms) const
+        -> OTUnitDefinition final;
     auto BasketContract(
         const identifier::UnitDefinition& id,
         const std::chrono::milliseconds& timeout = std::chrono::milliseconds(

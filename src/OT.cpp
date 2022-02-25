@@ -79,8 +79,6 @@ auto InitContext(const Options& args, PasswordCaller* externalPasswordCallback)
 
 auto Join() noexcept -> void
 {
-    while (nullptr != instance_pointer_) {
-        Sleep(std::chrono::milliseconds(250));
-    }
+    while (nullptr != instance_pointer_) { Sleep(250ms); }
 }
 }  // namespace opentxs

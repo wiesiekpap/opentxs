@@ -15,6 +15,8 @@
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 class QtApplication
 {
 private:
@@ -46,8 +48,8 @@ public:
             future_.get();
             // FIXME find correct way to shut down QCoreApplication without
             // getting random segfaults
-            static constexpr auto delay = std::chrono::seconds{4};
-            static constexpr auto zero = std::chrono::microseconds{0};
+            static constexpr auto delay = 4s;
+            static constexpr auto zero = 0us;
             const auto elapsed = opentxs::Clock::now() - started_;
             const auto wait =
                 std::chrono::duration_cast<std::chrono::microseconds>(

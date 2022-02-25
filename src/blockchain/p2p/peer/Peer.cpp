@@ -43,7 +43,7 @@ Peer::Peer(
     const std::size_t headerSize,
     const std::size_t bodySize,
     std::unique_ptr<internal::Address> address) noexcept
-    : Worker(api, std::chrono::milliseconds(10))
+    : Worker(api, 10ms)
     , network_(network)
     , filter_(filter)
     , block_(block)
@@ -116,7 +116,7 @@ auto Peer::check_init() noexcept -> void
         state_.value_.store(State::Connect);
         connect();
     } else {
-        static constexpr auto limit = std::chrono::seconds{30};
+        static constexpr auto limit = 30s;
         const auto elapsed = Clock::now() - init_start_;
 
         if (limit <= elapsed) {
@@ -569,7 +569,7 @@ auto Peer::state_machine() noexcept -> bool
                     "verifying incoming handshake protocol for ")(
                     address_.Display())
                     .Flush();
-                static constexpr auto timeout = std::chrono::seconds{20};
+                static constexpr auto timeout = 20s;
                 const auto disconnect = state_.handshake_.run(
                     timeout, [] {}, State::Verify);
 
@@ -586,7 +586,7 @@ auto Peer::state_machine() noexcept -> bool
                     "verifying outgoing handshake protocol for ")(
                     address_.Display())
                     .Flush();
-                static constexpr auto timeout = std::chrono::seconds{20};
+                static constexpr auto timeout = 20s;
                 const auto disconnect = state_.handshake_.run(
                     timeout, [this] { start_handshake(); }, State::Verify);
 
@@ -602,7 +602,7 @@ auto Peer::state_machine() noexcept -> bool
                 LogVerbose()(OT_PRETTY_CLASS())("verifying checkpoints for ")(
                     address_.Display())
                     .Flush();
-                static constexpr auto timeout = std::chrono::seconds{30};
+                static constexpr auto timeout = 30s;
                 const auto disconnect = state_.verify_.run(
                     timeout, [this] { start_verify(); }, State::Subscribe);
 
@@ -701,11 +701,11 @@ auto Peer::transmit(zmq::Message&& message) noexcept -> void
         std::move(header), std::move(payload), std::move(promise));
     auto result{false};
     const auto start = Clock::now();
-    static const auto limit = std::chrono::seconds{10};
+    static const auto limit = 10s;
 
     try {
         while (running_.load()) {
-            const auto status = future.wait_for(std::chrono::milliseconds(5));
+            const auto status = future.wait_for(5ms);
 
             if (std::future_status::ready == status) {
                 result = future.get();

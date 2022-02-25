@@ -17,6 +17,8 @@ namespace ot = opentxs;
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 class Test_State_Machine : public ::testing::Test,
                            public ot::internal::StateMachine
 {
@@ -27,9 +29,7 @@ public:
 
     bool callback()
     {
-        while (step_.load() <= counter_.load()) {
-            ot::Sleep(std::chrono::microseconds(10));
-        }
+        while (step_.load() <= counter_.load()) { ot::Sleep(10us); }
 
         ++counter_;
 

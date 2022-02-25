@@ -122,7 +122,7 @@ auto ServerConnection::activity_timer() -> void
         const auto duration = now - last;
 
         if (duration > limit) {
-            if (limit > std::chrono::seconds(0)) {
+            if (limit > 0s) {
                 const auto result = socket_->Send(zeromq::Message{});
 
                 if (SendResult::TIMEOUT != result.first) {
@@ -135,7 +135,7 @@ auto ServerConnection::activity_timer() -> void
             }
         }
 
-        Sleep(std::chrono::seconds(1));
+        Sleep(1s);
     }
 }
 

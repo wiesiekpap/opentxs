@@ -226,12 +226,12 @@ protected:
         ThreadStatus status{ThreadStatus::RUNNING};
 
         while (0 == std::get<0>(task)) {
-            ot::Sleep(std::chrono::milliseconds(100));
+            ot::Sleep(100ms);
             task = api.OTX().DownloadNym(nymID, serverID, nymID);
         }
 
         while (ThreadStatus::RUNNING == status) {
-            ot::Sleep(std::chrono::milliseconds(10));
+            ot::Sleep(10ms);
             status = api.OTX().Status(std::get<0>(task));
         }
 
@@ -248,12 +248,12 @@ protected:
         ThreadStatus status{ThreadStatus::RUNNING};
 
         while (0 == std::get<0>(task)) {
-            ot::Sleep(std::chrono::milliseconds(100));
+            ot::Sleep(100ms);
             task = api.OTX().ProcessInbox(nymID, serverID, accountID);
         }
 
         while (ThreadStatus::RUNNING == status) {
-            ot::Sleep(std::chrono::milliseconds(10));
+            ot::Sleep(10ms);
             status = api.OTX().Status(std::get<0>(task));
         }
 

@@ -63,7 +63,7 @@ SeedTree::SeedTree(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     : SeedTreeList(api, api.Factory().Identifier(), cb, false)
-    , Worker(api, std::chrono::milliseconds{100})
+    , Worker(api, 100ms)
     , callbacks_()
     , default_nym_(api.Factory().NymID())
     , default_seed_(api.Factory().Identifier())

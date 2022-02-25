@@ -1526,7 +1526,7 @@ void OTCronItem::Release_CronItem()
 {
     m_CREATION_DATE = Time{};
     m_LAST_PROCESS_DATE = Time{};
-    m_PROCESS_INTERVAL = std::chrono::seconds{1};
+    m_PROCESS_INTERVAL = 1s;
 
     ClearClosingNumbers();
 

@@ -90,7 +90,7 @@ public:
               "sync server",
               2000,
               1000)
-        , SyncWorker(api, std::chrono::milliseconds{20})
+        , SyncWorker(api, 20ms)
         , db_(db)
         , header_(header)
         , filter_(filter)
@@ -451,7 +451,7 @@ private:
         OT_ASSERT(std::numeric_limits<int>::max() >= poll.size());
 
         while (zmq_running_) {
-            constexpr auto timeout = std::chrono::milliseconds{250};
+            constexpr auto timeout = 250ms;
             const auto events = ::zmq_poll(
                 poll.data(), static_cast<int>(poll.size()), timeout.count());
 

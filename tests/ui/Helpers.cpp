@@ -60,6 +60,8 @@ auto check_seed_tree_items(
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 auto activity_thread_send_message(const User& user, const User& remote) noexcept
     -> bool
 {
@@ -1054,13 +1056,12 @@ auto print_seed_tree(const ot::api::session::Client& api) noexcept
 
 auto wait_for_counter(Counter& data, const bool hard) noexcept -> bool
 {
-    const auto limit =
-        hard ? std::chrono::seconds(300) : std::chrono::seconds(30);
+    const auto limit = hard ? 300s : 30s;
     auto start = ot::Clock::now();
     auto& [expected, updated] = data;
 
     while ((updated < expected) && ((ot::Clock::now() - start) < limit)) {
-        ot::Sleep(std::chrono::milliseconds(100));
+        ot::Sleep(100ms);
     }
 
     if (false == hard) { updated.store(expected.load()); }

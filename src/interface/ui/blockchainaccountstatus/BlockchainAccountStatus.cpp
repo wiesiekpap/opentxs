@@ -68,7 +68,7 @@ BlockchainAccountStatus::BlockchainAccountStatus(
     const blockchain::Type chain,
     const SimpleCallback& cb) noexcept
     : BlockchainAccountStatusType(api, id, cb, false)
-    , Worker(api, std::chrono::milliseconds{100})
+    , Worker(api, 100ms)
     , chain_(chain)
 {
     init_executor({

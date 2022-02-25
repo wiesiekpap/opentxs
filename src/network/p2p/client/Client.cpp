@@ -883,7 +883,7 @@ auto Client::Imp::process_wallet(Message&& msg) noexcept -> void
 
 auto Client::Imp::reset_timer() noexcept -> void
 {
-    static constexpr auto interval = std::chrono::seconds{10};
+    static constexpr auto interval = 10s;
     timer_.SetRelative(interval);
     timer_.Wait([this](const auto& error) {
         if (error) {

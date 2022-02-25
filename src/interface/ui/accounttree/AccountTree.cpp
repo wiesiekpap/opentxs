@@ -69,7 +69,7 @@ AccountTree::AccountTree(
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : AccountTreeList(api, nymID, cb, false)
-    , Worker(api, std::chrono::milliseconds{100})
+    , Worker(api, 100ms)
 {
     // TODO monitor for notary nym changes since this may affect custodial
     // account names

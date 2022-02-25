@@ -630,7 +630,7 @@ auto Asio::Imp::state_machine() noexcept -> bool
 
     auto result4 = Data::Factory();
     auto result6 = Data::Factory();
-    static constexpr auto limit = std::chrono::seconds{15};
+    static constexpr auto limit = 15s;
     static constexpr auto ready = std::future_status::ready;
 
     for (auto& future : futures4) {

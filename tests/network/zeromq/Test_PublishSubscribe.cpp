@@ -29,6 +29,8 @@ namespace zmq = ot::network::zeromq;
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 class Test_PublishSubscribe : public ::testing::Test
 {
 public:
@@ -82,17 +84,14 @@ void Test_PublishSubscribe::subscribeSocketThread(
     ASSERT_NE(nullptr, &subscribeSocket.get());
     ASSERT_EQ(zmq::socket::Type::Subscribe, subscribeSocket->Type());
 
-    subscribeSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    subscribeSocket->SetTimeouts(0ms, -1ms, 30000ms);
     for (auto endpoint : endpoints) { subscribeSocket->Start(endpoint); }
 
     ++subscribeThreadStartedCount_;
 
     auto end = std::time(nullptr) + 30;
     while (callbackFinishedCount_ < callbackCount_ && std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(1s);
 
     ASSERT_EQ(callbackCount_, callbackFinishedCount_);
 }
@@ -107,10 +106,7 @@ void Test_PublishSubscribe::publishSocketThread(
     ASSERT_NE(nullptr, &publishSocket.get());
     ASSERT_EQ(zmq::socket::Type::Publish, publishSocket->Type());
 
-    publishSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    publishSocket->SetTimeouts(0ms, 30000ms, -1ms);
     publishSocket->Start(endpoint);
 
     ++publishThreadStartedCount_;
@@ -118,7 +114,7 @@ void Test_PublishSubscribe::publishSocketThread(
     auto end = std::time(nullptr) + 15;
     while (subscribeThreadStartedCount_ < subscribeThreadCount_ &&
            std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(1s);
 
     bool sent = publishSocket->Send([&] {
         auto out = opentxs::network::zeromq::Message{};
@@ -131,7 +127,7 @@ void Test_PublishSubscribe::publishSocketThread(
 
     end = std::time(nullptr) + 15;
     while (callbackFinishedCount_ < callbackCount_ && std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(1s);
 
     ASSERT_EQ(callbackCount_, callbackFinishedCount_);
 }
@@ -144,10 +140,7 @@ TEST_F(Test_PublishSubscribe, Publish_Subscribe)
     ASSERT_NE(nullptr, &publishSocket.get());
     ASSERT_EQ(zmq::socket::Type::Publish, publishSocket->Type());
 
-    auto set = publishSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    auto set = publishSocket->SetTimeouts(0ms, 30000ms, -1ms);
 
     EXPECT_TRUE(set);
 
@@ -172,10 +165,7 @@ TEST_F(Test_PublishSubscribe, Publish_Subscribe)
     ASSERT_NE(nullptr, &subscribeSocket.get());
     ASSERT_EQ(zmq::socket::Type::Subscribe, subscribeSocket->Type());
 
-    set = subscribeSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    set = subscribeSocket->SetTimeouts(0ms, -1ms, 30000ms);
 
     EXPECT_TRUE(set);
 
@@ -195,7 +185,7 @@ TEST_F(Test_PublishSubscribe, Publish_Subscribe)
     auto end = std::time(nullptr) + 30;
 
     while ((1 > callbackFinishedCount_) && (std::time(nullptr) < end)) {
-        ot::Sleep(std::chrono::milliseconds(1));
+        ot::Sleep(1ms);
     }
 
     EXPECT_EQ(1, callbackFinishedCount_);
@@ -211,10 +201,7 @@ TEST_F(Test_PublishSubscribe, Publish_1_Subscribe_2)
     ASSERT_NE(nullptr, &publishSocket.get());
     ASSERT_EQ(zmq::socket::Type::Publish, publishSocket->Type());
 
-    publishSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    publishSocket->SetTimeouts(0ms, 30000ms, -1ms);
     publishSocket->Start(endpoint_);
 
     std::thread subscribeSocketThread1(
@@ -231,7 +218,7 @@ TEST_F(Test_PublishSubscribe, Publish_1_Subscribe_2)
     auto end = std::time(nullptr) + 30;
     while (subscribeThreadStartedCount_ < subscribeThreadCount_ &&
            std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(1s);
 
     ASSERT_EQ(subscribeThreadCount_, subscribeThreadStartedCount_);
 
@@ -266,7 +253,7 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_1)
 
     auto end = std::time(nullptr) + 15;
     while (publishThreadStartedCount_ < 2 && std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(1s);
 
     ASSERT_EQ(2, publishThreadStartedCount_);
 
@@ -287,10 +274,7 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_1)
     ASSERT_NE(nullptr, &subscribeSocket.get());
     ASSERT_EQ(zmq::socket::Type::Subscribe, subscribeSocket->Type());
 
-    subscribeSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    subscribeSocket->SetTimeouts(0ms, -1ms, 30000ms);
     subscribeSocket->Start(endpoint_);
     subscribeSocket->Start(endpoint2_);
 
@@ -298,7 +282,7 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_1)
 
     end = std::time(nullptr) + 30;
     while (callbackFinishedCount_ < callbackCount_ && std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(1s);
 
     ASSERT_EQ(callbackCount_, callbackFinishedCount_);
 
@@ -324,7 +308,7 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_2)
 
     auto end = std::time(nullptr) + 15;
     while (publishThreadStartedCount_ < 2 && std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(1s);
 
     ASSERT_EQ(2, publishThreadStartedCount_);
 
@@ -344,7 +328,7 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_2)
     end = std::time(nullptr) + 30;
     while (subscribeThreadStartedCount_ < subscribeThreadCount_ &&
            std::time(nullptr) < end)
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(1s);
 
     ASSERT_EQ(subscribeThreadCount_, subscribeThreadStartedCount_);
 

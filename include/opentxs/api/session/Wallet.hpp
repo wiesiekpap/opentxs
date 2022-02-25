@@ -183,8 +183,7 @@ public:
      */
     virtual auto Nym(
         const identifier::Nym& id,
-        const std::chrono::milliseconds& timeout =
-            std::chrono::milliseconds(0)) const -> Nym_p = 0;
+        const std::chrono::milliseconds& timeout = 0ms) const -> Nym_p = 0;
 
     /**   Instantiate a nym from serialized form
      *

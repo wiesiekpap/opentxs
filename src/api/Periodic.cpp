@@ -82,7 +82,7 @@ void Periodic::thread()
         }
 
         lock.unlock();
-        Sleep(std::chrono::milliseconds(100));
+        Sleep(100ms);
     }
 }
 

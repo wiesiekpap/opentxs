@@ -465,7 +465,7 @@ private:
 
         while (running_) {
             state_machine();
-            constexpr auto timeout = std::chrono::milliseconds{1000};
+            constexpr auto timeout = 1000ms;
             const auto events =
                 ::zmq_poll(poll.data(), poll.size(), timeout.count());
 

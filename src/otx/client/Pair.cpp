@@ -80,7 +80,7 @@
     {                                                                          \
         if (!running_) { return; }                                             \
                                                                                \
-        Sleep(std::chrono::milliseconds(50));                                  \
+        Sleep(50ms);                                                           \
     }
 
 namespace opentxs::factory
@@ -244,7 +244,7 @@ repeat:
     LogTrace()(OT_PRETTY_CLASS())("Repeating").Flush();
     // Rate limit state machine to reduce unproductive execution while waiting
     // on network activity
-    Sleep(std::chrono::milliseconds(50));
+    Sleep(50ms);
 
     return true;
 }
@@ -1281,7 +1281,7 @@ void Pair::state_machine(const IssuerID& id) const
 
     for (auto i = pending.begin(); i != pending.end();) {
         const auto& [task, future] = *i;
-        const auto state = future.wait_for(std::chrono::milliseconds(10));
+        const auto state = future.wait_for(10ms);
 
         if (std::future_status::ready == state) {
             const auto result = future.get();

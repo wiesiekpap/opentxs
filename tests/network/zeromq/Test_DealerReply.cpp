@@ -33,6 +33,8 @@ namespace zmq = ot::network::zeromq;
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 class Test_DealerReply : public ::testing::Test
 {
 public:
@@ -75,10 +77,7 @@ void Test_DealerReply::dealerSocketThread(const ot::UnallocatedCString& msg)
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());
 
-    dealerSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    dealerSocket->SetTimeouts(0ms, -1ms, 30000ms);
     dealerSocket->Start(endpoint_);
 
     auto message = opentxs::network::zeromq::Message{};
@@ -89,9 +88,7 @@ void Test_DealerReply::dealerSocketThread(const ot::UnallocatedCString& msg)
     ASSERT_TRUE(sent);
 
     auto end = std::time(nullptr) + 5;
-    while (!replyProcessed && std::time(nullptr) < end) {
-        ot::Sleep(std::chrono::milliseconds(100));
-    }
+    while (!replyProcessed && std::time(nullptr) < end) { ot::Sleep(100ms); }
 
     EXPECT_TRUE(replyProcessed);
 }
@@ -138,10 +135,7 @@ TEST_F(Test_DealerReply, Dealer_Reply)
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
 
-    replySocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    replySocket->SetTimeouts(0ms, 30000ms, -1ms);
     replySocket->Start(endpoint_);
 
     bool replyProcessed{false};
@@ -168,10 +162,7 @@ TEST_F(Test_DealerReply, Dealer_Reply)
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());
 
-    dealerSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    dealerSocket->SetTimeouts(0ms, -1ms, 30000ms);
     dealerSocket->Start(endpoint_);
 
     auto message = opentxs::network::zeromq::Message{};
@@ -189,16 +180,12 @@ TEST_F(Test_DealerReply, Dealer_Reply)
     ASSERT_TRUE(sent);
 
     auto end = std::time(nullptr) + 5;
-    while (!replyReturned && std::time(nullptr) < end) {
-        ot::Sleep(std::chrono::milliseconds(100));
-    }
+    while (!replyReturned && std::time(nullptr) < end) { ot::Sleep(100ms); }
 
     EXPECT_TRUE(replyReturned);
 
     end = std::time(nullptr) + 5;
-    while (!replyProcessed && std::time(nullptr) < end) {
-        ot::Sleep(std::chrono::milliseconds(100));
-    }
+    while (!replyProcessed && std::time(nullptr) < end) { ot::Sleep(100ms); }
 
     EXPECT_TRUE(replyProcessed);
 }
@@ -226,10 +213,7 @@ TEST_F(Test_DealerReply, Dealer_2_Reply_1)
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
 
-    replySocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    replySocket->SetTimeouts(0ms, 30000ms, -1ms);
     replySocket->Start(endpoint_);
 
     std::thread dealerSocketThread1(
@@ -277,10 +261,7 @@ TEST_F(Test_DealerReply, Dealer_Reply_Multipart)
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
 
-    replySocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    replySocket->SetTimeouts(0ms, 30000ms, -1ms);
     replySocket->Start(endpoint_);
 
     bool replyProcessed{false};
@@ -315,10 +296,7 @@ TEST_F(Test_DealerReply, Dealer_Reply_Multipart)
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(zmq::socket::Type::Dealer, dealerSocket->Type());
 
-    dealerSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    dealerSocket->SetTimeouts(0ms, -1ms, 30000ms);
     dealerSocket->Start(endpoint_);
 
     auto multipartMessage = opentxs::network::zeromq::Message{};
@@ -333,16 +311,12 @@ TEST_F(Test_DealerReply, Dealer_Reply_Multipart)
     ASSERT_TRUE(sent);
 
     auto end = std::time(nullptr) + 5;
-    while (!replyReturned && std::time(nullptr) < end) {
-        ot::Sleep(std::chrono::milliseconds(100));
-    }
+    while (!replyReturned && std::time(nullptr) < end) { ot::Sleep(100ms); }
 
     EXPECT_TRUE(replyReturned);
 
     end = std::time(nullptr) + 5;
-    while (!replyProcessed && std::time(nullptr) < end) {
-        ot::Sleep(std::chrono::milliseconds(100));
-    }
+    while (!replyProcessed && std::time(nullptr) < end) { ot::Sleep(100ms); }
 
     EXPECT_TRUE(replyProcessed);
 }

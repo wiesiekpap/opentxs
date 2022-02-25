@@ -68,7 +68,7 @@ Wallet::Wallet(
     const node::internal::Mempool& mempool,
     const Type chain,
     const std::string_view shutdown) noexcept
-    : Worker(api, std::chrono::milliseconds(10))
+    : Worker(api, 10ms)
     , parent_(parent)
     , db_(db)
     , mempool_(mempool)
@@ -265,7 +265,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
         }
     }
 
-    static constexpr auto limit = std::chrono::seconds{1};
+    static constexpr auto limit = 1s;
     const auto elapsed = std::chrono::nanoseconds{Clock::now() - start};
 
     if (elapsed > limit) {

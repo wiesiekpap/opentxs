@@ -84,7 +84,7 @@ public:
               "cfilter",
               20000,
               10000)
-        , FilterWorker(api, std::chrono::milliseconds{20})
+        , FilterWorker(api, 20ms)
         , db_(db)
         , header_(header)
         , node_(node)

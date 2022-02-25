@@ -16,6 +16,8 @@
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 TEST_F(Regtest_fixture_single, init_opentxs) {}
 
 TEST_F(Regtest_fixture_single, start_chains) { EXPECT_TRUE(Start()); }
@@ -36,7 +38,7 @@ TEST_F(Regtest_fixture_single, client_disconnection_timeout)
 
         if (0u == count) { break; }
 
-        ot::Sleep(std::chrono::seconds(1));
+        ot::Sleep(1s);
     }
 
     EXPECT_EQ(count, 0);

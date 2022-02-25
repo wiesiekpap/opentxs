@@ -815,7 +815,7 @@ auto OTX::CheckTransactionNumbers(
         auto status = Status(taskID);
 
         while (ThreadStatus::RUNNING == status) {
-            Sleep(std::chrono::milliseconds(100));
+            Sleep(100ms);
             status = Status(taskID);
         }
 

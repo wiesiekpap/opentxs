@@ -33,6 +33,8 @@ namespace zmq = ot::network::zeromq;
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 class Test_RequestReply : public ::testing::Test
 {
 public:
@@ -63,10 +65,7 @@ void Test_RequestReply::requestSocketThread(const ot::UnallocatedCString& msg)
     ASSERT_NE(nullptr, &requestSocket.get());
     ASSERT_EQ(zmq::socket::Type::Request, requestSocket->Type());
 
-    requestSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    requestSocket->SetTimeouts(0ms, -1ms, 30000ms);
     requestSocket->Start(endpoint_);
 
     auto [result, message] = requestSocket->Send([&] {
@@ -111,16 +110,11 @@ void Test_RequestReply::replySocketThread(
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
 
-    replySocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    replySocket->SetTimeouts(0ms, 30000ms, -1ms);
     replySocket->Start(endpoint);
 
     auto end = std::time(nullptr) + 15;
-    while (!replyReturned && std::time(nullptr) < end) {
-        ot::Sleep(std::chrono::milliseconds(100));
-    }
+    while (!replyReturned && std::time(nullptr) < end) { ot::Sleep(100ms); }
 
     EXPECT_TRUE(replyReturned);
 }
@@ -146,10 +140,7 @@ TEST_F(Test_RequestReply, Request_Reply)
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
 
-    replySocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    replySocket->SetTimeouts(0ms, 30000ms, -1ms);
     replySocket->Start(endpoint_);
 
     auto requestSocket = context_.RequestSocket();
@@ -157,10 +148,7 @@ TEST_F(Test_RequestReply, Request_Reply)
     ASSERT_NE(nullptr, &requestSocket.get());
     ASSERT_EQ(zmq::socket::Type::Request, requestSocket->Type());
 
-    requestSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    requestSocket->SetTimeouts(0ms, -1ms, 30000ms);
     requestSocket->Start(endpoint_);
 
     auto [result, message] = requestSocket->Send([&] {
@@ -200,10 +188,7 @@ TEST_F(Test_RequestReply, Request_2_Reply_1)
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
 
-    replySocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    replySocket->SetTimeouts(0ms, 30000ms, -1ms);
     replySocket->Start(endpoint_);
 
     std::thread requestSocketThread1(
@@ -227,10 +212,7 @@ TEST_F(Test_RequestReply, Request_1_Reply_2)
     ASSERT_NE(nullptr, &requestSocket.get());
     ASSERT_EQ(zmq::socket::Type::Request, requestSocket->Type());
 
-    requestSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    requestSocket->SetTimeouts(0ms, -1ms, 30000ms);
     requestSocket->Start(endpoint_);
     requestSocket->Start(endpoint2_);
 
@@ -295,10 +277,7 @@ TEST_F(Test_RequestReply, Request_Reply_Multipart)
     ASSERT_NE(nullptr, &replySocket.get());
     ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
 
-    replySocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(30000),
-        std::chrono::milliseconds(-1));
+    replySocket->SetTimeouts(0ms, 30000ms, -1ms);
     replySocket->Start(endpoint_);
 
     auto requestSocket = context_.RequestSocket();
@@ -306,10 +285,7 @@ TEST_F(Test_RequestReply, Request_Reply_Multipart)
     ASSERT_NE(nullptr, &requestSocket.get());
     ASSERT_EQ(zmq::socket::Type::Request, requestSocket->Type());
 
-    requestSocket->SetTimeouts(
-        std::chrono::milliseconds(0),
-        std::chrono::milliseconds(-1),
-        std::chrono::milliseconds(30000));
+    requestSocket->SetTimeouts(0ms, -1ms, 30000ms);
     requestSocket->Start(endpoint_);
 
     auto multipartMessage = opentxs::network::zeromq::Message{};

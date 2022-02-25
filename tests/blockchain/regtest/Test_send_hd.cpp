@@ -51,6 +51,8 @@
 
 namespace ottest
 {
+using namespace std::literals::chrono_literals;
+
 Counter account_list_{};
 Counter account_activity_{};
 
@@ -489,7 +491,7 @@ TEST_F(Regtest_fixture_hd, failed_spend)
     EXPECT_TRUE(txid->empty());
 
     // TODO ensure CancelProposal is finished processing with appropriate signal
-    ot::Sleep(std::chrono::seconds{5});
+    ot::Sleep(5s);
 }
 
 TEST_F(Regtest_fixture_hd, account_activity_failed_spend)
