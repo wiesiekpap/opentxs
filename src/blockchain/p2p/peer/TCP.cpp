@@ -13,7 +13,6 @@
 
 #include "blockchain/p2p/peer/Address.hpp"
 #include "blockchain/p2p/peer/Peer.hpp"
-#include "core/Worker.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
@@ -30,6 +29,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/Work.hpp"
 
 namespace asio = boost::asio;
 using tcp = asio::ip::tcp;

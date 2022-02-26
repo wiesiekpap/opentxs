@@ -23,7 +23,6 @@
 
 #include "1_Internal.hpp"
 #include "blockchain/node/wallet/Account.hpp"
-#include "blockchain/node/wallet/Accounts.hpp"
 #include "blockchain/node/wallet/DeterministicStateData.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "blockchain/node/wallet/Wallet.hpp"
@@ -31,6 +30,7 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/wallet/Accounts.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"

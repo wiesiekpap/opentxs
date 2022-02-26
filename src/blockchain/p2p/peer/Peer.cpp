@@ -25,6 +25,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/ScopeGuard.hpp"
+#include "util/Work.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 

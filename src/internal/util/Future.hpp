@@ -9,6 +9,8 @@
 #include <chrono>
 #include <future>
 
+#include "opentxs/util/Time.hpp"  // IWYU pragma: keep
+
 namespace opentxs
 {
 template <typename Future>

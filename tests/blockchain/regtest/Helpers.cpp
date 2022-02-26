@@ -678,8 +678,7 @@ auto Regtest_fixture_base::Connect(const b::p2p::Address& address) noexcept
         }
     }();
 
-    static constexpr auto limit = 30s;
-    const auto status = connection_.done_.wait_for(limit);
+    const auto status = connection_.done_.wait_for(1min);
     const auto future = (std::future_status::ready == status);
 
     OT_ASSERT(future);

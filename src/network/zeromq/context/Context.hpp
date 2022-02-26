@@ -9,6 +9,7 @@
 #include <functional>
 #include <future>
 #include <iosfwd>
+#include <optional>
 #include <string_view>
 #include <thread>
 #include <tuple>
@@ -36,6 +37,7 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -81,14 +83,17 @@ class Context final : virtual public internal::Context
 public:
     operator void*() const noexcept final;
 
+    auto Alloc(BatchID id) const noexcept -> alloc::Resource* final;
     auto BelongsToThreadPool(const std::thread::id) const noexcept
         -> bool final;
     auto DealerSocket(
         const ListenCallback& callback,
         const socket::Direction direction) const noexcept
         -> OTZMQDealerSocket final;
-    auto MakeBatch(UnallocatedVector<socket::Type>&& types) const noexcept
+    auto MakeBatch(Vector<socket::Type>&& types) const noexcept
         -> internal::Handle final;
+    auto MakeBatch(const BatchID preallocated, Vector<socket::Type>&& types)
+        const noexcept -> internal::Handle final;
     auto Modify(SocketID id, ModifyCallback cb) const noexcept
         -> AsyncResult final;
     auto PairEventListener(
@@ -104,12 +109,14 @@ public:
         const std::string_view endpoint) const noexcept
         -> OTZMQPairSocket final;
     auto Pipeline(
-        std::function<void(zeromq::Message&&)> callback,
+        std::function<void(zeromq::Message&&)>&& callback,
         const EndpointArgs& subscribe,
         const EndpointArgs& pull,
         const EndpointArgs& dealer,
-        const Vector<SocketData>& extra) const noexcept
-        -> zeromq::Pipeline final;
+        const Vector<SocketData>& extra,
+        const std::optional<BatchID>& preallocated,
+        alloc::Resource* pmr) const noexcept -> zeromq::Pipeline final;
+    auto PreallocateBatch() const noexcept -> BatchID final;
     auto Proxy(socket::Socket& frontend, socket::Socket& backend) const noexcept
         -> OTZMQProxy final;
     auto PublishSocket() const noexcept -> OTZMQPublishSocket final;

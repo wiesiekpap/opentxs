@@ -208,7 +208,7 @@ auto Blockchain::IndexItem(const ReadView bytes) const noexcept -> PatternID
 
 auto Blockchain::Init() noexcept -> void { imp_->Init(); }
 
-auto Blockchain::KeyEndpoint() const noexcept -> const UnallocatedCString&
+auto Blockchain::KeyEndpoint() const noexcept -> std::string_view
 {
     return imp_->KeyEndpoint();
 }

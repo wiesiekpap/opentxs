@@ -42,6 +42,8 @@ public:
     virtual auto Deactivate() const noexcept -> void = 0;
     virtual auto Process(Message&& message) const noexcept -> void = 0;
 
+    virtual auto Replace(ReceiveCallback callback) noexcept -> void = 0;
+
     virtual ~ListenCallback() = default;
 
 protected:

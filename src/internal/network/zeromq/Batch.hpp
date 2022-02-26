@@ -55,7 +55,7 @@ public:
     Batch(
         const BatchID id,
         const zeromq::Context& context,
-        UnallocatedVector<socket::Type>&& types) noexcept;
+        Vector<socket::Type>&& types) noexcept;
 
     ~Batch();
 

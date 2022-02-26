@@ -7,6 +7,10 @@
 
 #include <thread>
 
+#include "internal/network/zeromq/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
+#include "opentxs/util/Container.hpp"
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
@@ -33,12 +37,17 @@ public:
     virtual auto BelongsToThreadPool(const std::thread::id) const noexcept
         -> bool = 0;
     virtual auto Parent() const noexcept -> const zeromq::Context& = 0;
+    virtual auto PreallocateBatch() const noexcept -> BatchID = 0;
     virtual auto Thread(BatchID id) const noexcept
         -> zeromq::internal::Thread* = 0;
     virtual auto ThreadID(BatchID id) const noexcept -> std::thread::id = 0;
 
+    virtual auto Alloc(BatchID id) noexcept -> alloc::Resource* = 0;
     virtual auto DoModify(SocketID id, const ModifyCallback& cb) noexcept
         -> bool = 0;
+    virtual auto MakeBatch(
+        const BatchID preallocated,
+        Vector<socket::Type>&& types) noexcept -> Handle = 0;
     virtual auto UpdateIndex(BatchID id, StartArgs&& sockets) noexcept
         -> void = 0;
     virtual auto UpdateIndex(BatchID id) noexcept -> void = 0;

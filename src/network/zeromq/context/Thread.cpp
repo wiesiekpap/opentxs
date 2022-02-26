@@ -34,8 +34,8 @@ namespace opentxs::network::zeromq::context
 {
 Thread::Thread(zeromq::internal::Pool& parent) noexcept
     : parent_(parent)
-    , alloc_()
     , null_(factory::ZMQSocketNull())
+    , alloc_()
     , gate_()
     , thread_()
     , data_()

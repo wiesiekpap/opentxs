@@ -19,7 +19,7 @@ namespace opentxs::network::zeromq::internal
 Batch::Batch(
     const BatchID id,
     const zeromq::Context& context,
-    UnallocatedVector<socket::Type>&& types) noexcept
+    Vector<socket::Type>&& types) noexcept
     : id_(id)
     , listen_callbacks_()
     , reply_callbacks_()

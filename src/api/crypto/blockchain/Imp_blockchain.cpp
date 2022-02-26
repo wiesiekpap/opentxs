@@ -18,7 +18,6 @@
 
 #include "Proto.hpp"
 #include "blockchain/database/common/Database.hpp"
-#include "core/Worker.hpp"
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -283,7 +282,7 @@ auto BlockchainImp::IndexItem(const ReadView bytes) const noexcept -> PatternID
     return output;
 }
 
-auto BlockchainImp::KeyEndpoint() const noexcept -> const UnallocatedCString&
+auto BlockchainImp::KeyEndpoint() const noexcept -> std::string_view
 {
     return key_generated_endpoint_;
 }

@@ -11,7 +11,6 @@
 
 #include "blockchain/p2p/peer/Address.hpp"
 #include "blockchain/p2p/peer/Peer.hpp"
-#include "core/Worker.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -20,6 +19,7 @@
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Log.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs::blockchain::p2p::peer
 {

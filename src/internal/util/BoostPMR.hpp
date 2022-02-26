@@ -7,6 +7,7 @@
 
 #include <boost/container/pmr/memory_resource.hpp>  // IWYU pragma: export
 #include <boost/container/pmr/monotonic_buffer_resource.hpp>  // IWYU pragma: export
+#include <boost/container/pmr/synchronized_pool_resource.hpp>  // IWYU pragma: export
 #include <boost/container/pmr/unsynchronized_pool_resource.hpp>  // IWYU pragma: export
 #include <utility>
 
@@ -84,4 +85,5 @@ private:
 
 using BoostMonotonic = Boost<boost::container::pmr::monotonic_buffer_resource>;
 using BoostPool = Boost<boost::container::pmr::unsynchronized_pool_resource>;
+using BoostPoolSync = Boost<boost::container::pmr::synchronized_pool_resource>;
 }  // namespace opentxs::alloc

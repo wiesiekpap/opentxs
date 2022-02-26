@@ -15,7 +15,6 @@
 #include <queue>
 #include <utility>
 
-#include "core/Worker.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/otx/common/Message.hpp"
@@ -42,6 +41,7 @@
 #include "util/ByteLiterals.hpp"
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
+#include "util/Work.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 

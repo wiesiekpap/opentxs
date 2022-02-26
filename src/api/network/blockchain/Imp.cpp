@@ -13,7 +13,6 @@
 #include <utility>
 
 #include "blockchain/database/common/Database.hpp"
-#include "core/Worker.hpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/database/Database.hpp"
@@ -35,6 +34,7 @@
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs::api::network
 {

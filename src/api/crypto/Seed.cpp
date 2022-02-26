@@ -17,7 +17,6 @@
 
 #include "Proto.hpp"
 #include "Proto.tpp"
-#include "core/Worker.hpp"
 #include "internal/api/Crypto.hpp"
 #include "internal/api/crypto/Asymmetric.hpp"
 #include "internal/api/crypto/Factory.hpp"
@@ -64,6 +63,7 @@
 #include "serialization/protobuf/HDPath.pb.h"
 #include "serialization/protobuf/Seed.pb.h"
 #include "util/HDIndex.hpp"  // IWYU pragma: keep
+#include "util/Work.hpp"
 
 namespace opentxs::factory
 {

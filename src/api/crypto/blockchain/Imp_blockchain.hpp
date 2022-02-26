@@ -14,6 +14,7 @@
 #include <iterator>
 #include <memory>
 #include <mutex>
+#include <string_view>
 #include <thread>
 #include <tuple>
 #include <utility>
@@ -132,7 +133,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         const TxidHex& id,
         const UnallocatedCString& label) const noexcept -> bool final;
     auto IndexItem(const ReadView bytes) const noexcept -> PatternID final;
-    auto KeyEndpoint() const noexcept -> const UnallocatedCString& final;
+    auto KeyEndpoint() const noexcept -> std::string_view final;
     auto KeyGenerated(const opentxs::blockchain::Type chain) const noexcept
         -> void final;
     auto LoadTransactionBitcoin(const TxidHex& txid) const noexcept
@@ -187,7 +188,7 @@ struct BlockchainImp final : public Blockchain::Imp {
 
 private:
     const api::session::Activity& activity_;
-    const UnallocatedCString key_generated_endpoint_;
+    const CString key_generated_endpoint_;
     OTZMQPublishSocket transaction_updates_;
     OTZMQPublishSocket key_updates_;
     OTZMQPublishSocket scan_updates_;

@@ -7,6 +7,7 @@
 
 #include <mutex>
 
+#include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/PairEventCallback.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -29,6 +30,11 @@ class PairEventCallback final : virtual public zeromq::PairEventCallback
 public:
     auto Deactivate() const noexcept -> void final;
     auto Process(zeromq::Message&& message) const noexcept -> void final;
+
+    auto Replace(ListenCallback::ReceiveCallback callback) noexcept
+        -> void final
+    {
+    }
 
     ~PairEventCallback() final;
 

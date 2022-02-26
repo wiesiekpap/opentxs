@@ -71,5 +71,5 @@ auto PairEventCallback::Process(zeromq::Message&& message) const noexcept
     cb(event);
 }
 
-PairEventCallback::~PairEventCallback() {}
+PairEventCallback::~PairEventCallback() = default;
 }  // namespace opentxs::network::zeromq::implementation

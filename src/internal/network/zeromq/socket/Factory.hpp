@@ -5,10 +5,12 @@
 
 #pragma once
 
+#include <optional>
 #include <string_view>
 
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -64,12 +66,13 @@ auto PairSocket(
     -> std::unique_ptr<network::zeromq::socket::Pair>;
 auto Pipeline(
     const network::zeromq::Context& context,
-    std::function<void(network::zeromq::Message&&)> callback,
+    std::function<void(network::zeromq::Message&&)>&& callback,
     const network::zeromq::EndpointArgs& subscribe,
     const network::zeromq::EndpointArgs& pull,
     const network::zeromq::EndpointArgs& dealer,
-    const Vector<network::zeromq::SocketData>& extra) noexcept
-    -> opentxs::network::zeromq::Pipeline;
+    const Vector<network::zeromq::SocketData>& extra,
+    const std::optional<network::zeromq::BatchID>& preallocated,
+    alloc::Resource* pmr) noexcept -> opentxs::network::zeromq::Pipeline;
 auto PublishSocket(const network::zeromq::Context& context)
     -> std::unique_ptr<network::zeromq::socket::Publish>;
 auto PullSocket(const network::zeromq::Context& context, const bool direction)

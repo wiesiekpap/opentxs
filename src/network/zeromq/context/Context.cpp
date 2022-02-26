@@ -77,6 +77,11 @@ Context::operator void*() const noexcept
     return context_;
 }
 
+auto Context::Alloc(BatchID id) const noexcept -> alloc::Resource*
+{
+    return pool_.Alloc(id);
+}
+
 auto Context::BelongsToThreadPool(const std::thread::id id) const noexcept
     -> bool
 {
@@ -91,10 +96,17 @@ auto Context::DealerSocket(
         factory::DealerSocket(*this, static_cast<bool>(direction), callback)};
 }
 
-auto Context::MakeBatch(UnallocatedVector<socket::Type>&& types) const noexcept
+auto Context::MakeBatch(Vector<socket::Type>&& types) const noexcept
     -> internal::Handle
 {
     return pool_.MakeBatch(std::move(types));
+}
+
+auto Context::MakeBatch(
+    const BatchID preallocated,
+    Vector<socket::Type>&& types) const noexcept -> internal::Handle
+{
+    return pool_.MakeBatch(preallocated, std::move(types));
 }
 
 auto Context::Modify(SocketID id, ModifyCallback cb) const noexcept
@@ -132,14 +144,28 @@ auto Context::PairSocket(
 }
 
 auto Context::Pipeline(
-    std::function<void(zeromq::Message&&)> callback,
+    std::function<void(zeromq::Message&&)>&& callback,
     const EndpointArgs& subscribe,
     const EndpointArgs& pull,
     const EndpointArgs& dealer,
-    const Vector<SocketData>& extra) const noexcept -> zeromq::Pipeline
+    const Vector<SocketData>& extra,
+    const std::optional<BatchID>& preallocated,
+    alloc::Resource* pmr) const noexcept -> zeromq::Pipeline
 {
     return opentxs::factory::Pipeline(
-        *this, callback, subscribe, pull, dealer, extra);
+        *this,
+        std::move(callback),
+        subscribe,
+        pull,
+        dealer,
+        extra,
+        preallocated,
+        pmr);
+}
+
+auto Context::PreallocateBatch() const noexcept -> BatchID
+{
+    return pool_.PreallocateBatch();
 }
 
 auto Context::Proxy(socket::Socket& frontend, socket::Socket& backend)

@@ -8,6 +8,7 @@ add_subdirectory(feeoracle)
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/Accounts.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/Factory.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/FeeOracle.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/FeeSource.hpp"
@@ -55,3 +56,4 @@ target_sources(
     "Work.cpp"
     "Work.hpp"
 )
+target_link_libraries(opentxs-common PRIVATE Boost::headers)

@@ -38,6 +38,11 @@ Pool::Pool(const Context& parent) noexcept
     for (unsigned int n{0}; n < count_; ++n) { threads_.try_emplace(n, *this); }
 }
 
+auto Pool::Alloc(BatchID id) noexcept -> alloc::Resource*
+{
+    return get(id).Alloc();
+}
+
 auto Pool::BelongsToThreadPool(const std::thread::id id) const noexcept -> bool
 {
     auto alloc = alloc::BoostMonotonic{1024};
@@ -76,10 +81,14 @@ auto Pool::get(BatchID id) noexcept -> context::Thread&
     return threads_.at(id % count_);
 }
 
-auto Pool::MakeBatch(UnallocatedVector<socket::Type>&& types) noexcept
+auto Pool::MakeBatch(Vector<socket::Type>&& types) noexcept -> internal::Handle
+{
+    return MakeBatch(GetBatchID(), std::move(types));
+}
+
+auto Pool::MakeBatch(const BatchID id, Vector<socket::Type>&& types) noexcept
     -> internal::Handle
 {
-    auto id = GetBatchID();
     Batches::iterator it;
     auto added{false};
     std::pair<Batches::iterator&, bool&> result{it, added};
@@ -113,6 +122,8 @@ auto Pool::Modify(SocketID id, ModifyCallback cb) noexcept -> AsyncResult
         return {};
     }
 }
+
+auto Pool::PreallocateBatch() const noexcept -> BatchID { return GetBatchID(); }
 
 auto Pool::Shutdown() noexcept -> void { stop(); }
 

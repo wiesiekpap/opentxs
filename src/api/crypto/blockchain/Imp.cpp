@@ -751,9 +751,9 @@ auto Blockchain::Imp::init_path(
     }
 }
 
-auto Blockchain::Imp::KeyEndpoint() const noexcept -> const UnallocatedCString&
+auto Blockchain::Imp::KeyEndpoint() const noexcept -> std::string_view
 {
-    static const auto blank = UnallocatedCString{};
+    static const auto blank = CString{};
 
     return blank;
 }

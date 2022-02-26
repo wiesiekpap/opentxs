@@ -42,12 +42,6 @@ class Client;
 
 namespace opentxs
 {
-template <typename Enum>
-auto MakeWork(const Enum type) noexcept -> network::zeromq::Message
-{
-    return network::zeromq::tagged_message<Enum>(type);
-}
-
 template <typename Child, typename API = api::session::Client>
 class Worker
 {

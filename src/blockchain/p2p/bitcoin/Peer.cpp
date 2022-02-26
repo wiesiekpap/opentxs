@@ -27,7 +27,6 @@
 #include "blockchain/p2p/peer/Address.hpp"
 #include "blockchain/p2p/peer/ConnectionManager.hpp"
 #include "blockchain/p2p/peer/Peer.hpp"
-#include "core/Worker.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -66,6 +65,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 #include "util/ScopeGuard.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs::factory
 {
