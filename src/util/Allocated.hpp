@@ -14,7 +14,7 @@ namespace opentxs::implementation
 class Allocated : virtual public opentxs::Allocated
 {
 public:
-    auto GetAllocator() const noexcept -> allocator_type final
+    auto get_allocator() const noexcept -> allocator_type final
     {
         return allocator_;
     }

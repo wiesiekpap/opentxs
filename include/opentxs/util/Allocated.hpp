@@ -17,7 +17,7 @@ public:
     /// The resource returned by this function should be suitable for class
     /// users to call if they wish to allocate objects which will be passed in
     /// as member function arguments.
-    virtual auto GetAllocator() const noexcept -> allocator_type = 0;
+    virtual auto get_allocator() const noexcept -> allocator_type = 0;
 
     virtual ~Allocated() = default;
 };

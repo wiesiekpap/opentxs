@@ -10,6 +10,8 @@
 #include <functional>
 #include <string_view>
 
+#include "opentxs/util/Allocated.hpp"
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
 {
@@ -32,7 +34,7 @@ class Pipeline;
 
 namespace opentxs::network::zeromq
 {
-class OPENTXS_EXPORT Pipeline
+class OPENTXS_EXPORT Pipeline final : virtual public Allocated
 {
 public:
     class Imp;
@@ -49,6 +51,7 @@ public:
     auto ConnectionIDInternal() const noexcept -> std::size_t;
     auto ConnectionIDPull() const noexcept -> std::size_t;
     auto ConnectionIDSubscribe() const noexcept -> std::size_t;
+    auto get_allocator() const noexcept -> alloc::Default final;
     OPENTXS_NO_EXPORT auto Internal() const noexcept
         -> const internal::Pipeline&;
     auto PullFrom(const std::string_view endpoint) const noexcept -> bool;
@@ -65,7 +68,7 @@ public:
     auto operator=(Pipeline&& rhs) noexcept -> Pipeline& = delete;
     auto operator=(const Pipeline&) -> Pipeline& = delete;
 
-    virtual ~Pipeline();
+    ~Pipeline() final;
 
 private:
     Imp* imp_;

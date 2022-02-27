@@ -26,14 +26,14 @@
 #include <utility>
 
 #include "1_Internal.hpp"
-#include "blockchain/node/wallet/Account.hpp"
-#include "blockchain/node/wallet/DeterministicStateData.hpp"
-#include "blockchain/node/wallet/Proposals.hpp"
-#include "blockchain/node/wallet/SubchainStateData.hpp"
+#include "blockchain/node/wallet/spend/Proposals.hpp"
+#include "blockchain/node/wallet/subchain/DeterministicStateData.hpp"
+#include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/wallet/Account.hpp"
 #include "internal/blockchain/node/wallet/Accounts.hpp"
 #include "internal/blockchain/node/wallet/FeeOracle.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"

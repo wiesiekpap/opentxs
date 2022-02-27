@@ -57,15 +57,7 @@ auto print(WalletJobs job) noexcept -> std::string_view
 {
     static const auto map = Map<WalletJobs, CString>{
         {WalletJobs::shutdown, "shutdown"},
-        {WalletJobs::nym, "nym"},
-        {WalletJobs::header, "header"},
-        {WalletJobs::reorg, "reorg"},
-        {WalletJobs::filter, "filter"},
-        {WalletJobs::mempool, "mempool"},
-        {WalletJobs::block, "block"},
-        {WalletJobs::job_finished, "job_finished"},
         {WalletJobs::init, "init"},
-        {WalletJobs::key, "key"},
         {WalletJobs::statemachine, "statemachine"},
     };
 
@@ -232,18 +224,12 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            to_accounts_.Send(MakeWork(wallet::WalletJobs::shutdown));
+            to_accounts_.Send(MakeWork(wallet::AccountsJobs::shutdown));
             shutdown(shutdown_promise_);
         } break;
         case Work::statemachine: {
             do_work();
         } break;
-        case Work::nym:
-        case Work::filter:
-        case Work::mempool:
-        case Work::block:
-        case Work::job_finished:
-        case Work::key:
         default: {
             LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
                 ": unhandled type")
