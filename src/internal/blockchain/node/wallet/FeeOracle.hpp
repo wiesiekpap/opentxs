@@ -35,7 +35,7 @@ public:
     class Imp;
 
     auto EstimatedFee() const noexcept -> std::optional<Amount>;
-    auto GetAllocator() const noexcept -> allocator_type final;
+    auto get_allocator() const noexcept -> allocator_type final;
 
     auto Shutdown() noexcept -> void;
 

@@ -26,7 +26,7 @@ public:
     class Imp;
 
     auto Shutdown() noexcept -> void;
-    auto GetAllocator() const noexcept -> allocator_type final;
+    auto get_allocator() const noexcept -> allocator_type final;
 
     FeeSource(Imp* imp) noexcept;
     FeeSource(FeeSource&& rhs) noexcept;

@@ -226,9 +226,9 @@ auto FeeOracle::EstimatedFee() const noexcept -> std::optional<Amount>
     return imp_->EstimatedFee();
 }
 
-auto FeeOracle::GetAllocator() const noexcept -> allocator_type
+auto FeeOracle::get_allocator() const noexcept -> allocator_type
 {
-    return imp_->GetAllocator();
+    return imp_->get_allocator();
 }
 
 auto FeeOracle::Shutdown() noexcept -> void { imp_->Shutdown(); }
@@ -236,7 +236,7 @@ auto FeeOracle::Shutdown() noexcept -> void { imp_->Shutdown(); }
 FeeOracle::~FeeOracle()
 {
     if (nullptr != imp_) {
-        auto alloc = imp_->GetAllocator();
+        auto alloc = imp_->get_allocator();
         // TODO c++20 use delete_object
         imp_->~Imp();
         alloc.resource()->deallocate(imp_, sizeof(Imp), alignof(Imp));

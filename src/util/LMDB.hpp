@@ -56,6 +56,8 @@ public:
             const bool rw,
             std::unique_ptr<Lock> lock,
             MDB_txn* parent = nullptr) noexcept(false);
+        Transaction(Transaction&&) noexcept;
+
         ~Transaction();
 
     private:
@@ -63,7 +65,6 @@ public:
         MDB_txn* ptr_;
 
         Transaction(const Transaction&) = delete;
-        Transaction(Transaction&&) noexcept;
         auto operator=(const Transaction&) -> Transaction& = delete;
         auto operator=(Transaction&&) -> Transaction& = delete;
     };

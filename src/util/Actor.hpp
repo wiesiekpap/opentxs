@@ -27,7 +27,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
-#include "opentxs/util/Allocator.hpp"
+#include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Gatekeeper.hpp"
@@ -46,7 +46,7 @@ class Session;
 namespace opentxs
 {
 template <typename CRTP, typename JobType>
-class Actor
+class Actor : virtual public Allocated
 {
 private:
     std::promise<void> init_promise_;
@@ -54,14 +54,19 @@ private:
     std::atomic<bool> running_;
 
 public:
-    using allocator_type = alloc::PMR<CRTP>;
     using Message = network::zeromq::Message;
+
+    auto get_allocator() const noexcept -> allocator_type final
+    {
+        return pipeline_.get_allocator();
+    }
 
 protected:
     using Work = JobType;
 
     Gatekeeper gatekeeper_;
     network::zeromq::Pipeline pipeline_;
+    bool disable_automatic_processing_;
 
     auto trigger() const noexcept -> void
     {
@@ -94,7 +99,7 @@ protected:
     {
         rate_limit_state_machine();
         state_machine_queued_.store(false);
-        repeat(downcast().state_machine());
+        repeat(downcast().work());
     }
     auto init_complete() noexcept -> void { init_promise_.set_value(); }
 
@@ -126,6 +131,7 @@ protected:
               extra,
               batch,
               alloc.resource()))
+        , disable_automatic_processing_(false)
         , rate_limit_(rateLimit)
         , last_executed_(Clock::now())
         , state_machine_queued_(false)
@@ -134,7 +140,7 @@ protected:
             .Flush();
     }
 
-    virtual ~Actor() = default;
+    ~Actor() override = default;
 
 private:
     const std::chrono::milliseconds rate_limit_;
@@ -228,6 +234,13 @@ private:
             auto shutdown = gatekeeper_.get();
 
             if (shutdown || (false == running_)) { return; }
+
+            if (disable_automatic_processing_) {
+                log(OT_PRETTY_CLASS())("processing ")(type).Flush();
+                downcast().pipeline(work, std::move(in));
+
+                return;
+            }
 
             switch (static_cast<OTZMQWorkType>(work)) {
                 case value(WorkType::Shutdown): {

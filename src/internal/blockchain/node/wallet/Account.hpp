@@ -1,0 +1,91 @@
+// Copyright (c) 2010-2022 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#pragma once
+
+#include <boost/smart_ptr/shared_ptr.hpp>
+#include <atomic>
+#include <functional>
+#include <memory>
+#include <string_view>
+
+#include "blockchain/node/wallet/Actor.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
+#include "internal/blockchain/node/Node.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/FilterType.hpp"
+#include "util/LMDB.hpp"
+
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs
+{
+namespace api
+{
+class Session;
+}  // namespace api
+
+namespace blockchain
+{
+namespace crypto
+{
+class Account;
+}  // namespace crypto
+
+namespace node
+{
+namespace internal
+{
+struct Mempool;
+struct Network;
+struct WalletDatabase;
+}  // namespace internal
+}  // namespace node
+}  // namespace blockchain
+
+class Outstanding;
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
+
+namespace opentxs::blockchain::node::wallet
+{
+class Account
+{
+public:
+    auto ProcessReorg(
+        const Lock& headerOracleLock,
+        storage::lmdb::LMDB::Transaction& tx,
+        std::atomic_int& errors,
+        const block::Position& parent) noexcept -> bool;
+
+    Account(
+        Accounts& parent,
+        const api::Session& api,
+        const crypto::Account& account,
+        const node::internal::Network& node,
+        const node::internal::WalletDatabase& db,
+        const node::internal::Mempool& mempool,
+        const Type chain,
+        const filter::Type filter,
+        const std::string_view shutdown,
+        const std::string_view publish,
+        const std::string_view pull,
+        Outstanding&& jobs) noexcept;
+    Account(Account&&) noexcept;
+
+    ~Account();
+
+private:
+    class Imp;
+
+    // TODO switch to std::shared_ptr once the android ndk ships a version of
+    // libc++ with unfucked pmr / allocate_shared support
+    boost::shared_ptr<Imp> imp_;
+
+    Account(const Account&) = delete;
+    auto operator=(const Account&) -> Account& = delete;
+    auto operator=(Account&&) -> Account& = delete;
+};
+}  // namespace opentxs::blockchain::node::wallet

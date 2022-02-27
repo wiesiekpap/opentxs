@@ -7,9 +7,9 @@
 
 #include <cstdint>
 
-#include "opentxs/util/WorkType.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
+#include "opentxs/util/WorkType.hpp"
 
 namespace opentxs
 {

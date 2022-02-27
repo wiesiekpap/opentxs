@@ -202,8 +202,11 @@ IdentityManagerQt::IdentityManagerQt(Imp* imp) noexcept
     imp_->init(this);
 }
 
-// NOTE the move constructor is declared so that RVO can be used, however it
-// it is not defined because should never be called.
+IdentityManagerQt::IdentityManagerQt(IdentityManagerQt&& rhs) noexcept
+    : imp_(rhs.imp_)
+{
+    rhs.imp_ = nullptr;
+}
 
 auto IdentityManagerQt::getAccountActivity(
     const QString& accountID) const noexcept -> AccountActivityQt*

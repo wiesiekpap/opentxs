@@ -44,6 +44,8 @@ auto Pipeline(
     const std::optional<network::zeromq::BatchID>& preallocated,
     alloc::Resource* pmr) noexcept -> opentxs::network::zeromq::Pipeline
 {
+    OT_ASSERT(nullptr != pmr);
+
     auto alloc = alloc::PMR<network::zeromq::Pipeline::Imp>{pmr};
     auto* imp = alloc.allocate(1);
     alloc.construct(
@@ -481,6 +483,11 @@ auto Pipeline::ConnectionIDSubscribe() const noexcept -> std::size_t
     return imp_->ConnectionIDSubscribe();
 }
 
+auto Pipeline::get_allocator() const noexcept -> alloc::Default
+{
+    return imp_->get_allocator();
+}
+
 auto Pipeline::Internal() const noexcept -> const internal::Pipeline&
 {
     return *imp_;
@@ -512,7 +519,7 @@ auto Pipeline::SubscribeTo(const std::string_view endpoint) const noexcept
 Pipeline::~Pipeline()
 {
     if (nullptr != imp_) {
-        auto alloc = alloc::PMR<Imp>{imp_->GetAllocator()};
+        auto alloc = alloc::PMR<Imp>{imp_->get_allocator()};
         alloc.destroy(imp_);
         alloc.deallocate(imp_, 1);
         imp_ = nullptr;

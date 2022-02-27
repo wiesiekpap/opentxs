@@ -271,12 +271,12 @@ FeeSource::FeeSource(FeeSource&& rhs, allocator_type alloc) noexcept
 {
     rhs.imp_ = nullptr;
 
-    OT_ASSERT(imp_->GetAllocator() == alloc);
+    OT_ASSERT(imp_->get_allocator() == alloc);
 }
 
-auto FeeSource::GetAllocator() const noexcept -> allocator_type
+auto FeeSource::get_allocator() const noexcept -> allocator_type
 {
-    return imp_->GetAllocator();
+    return imp_->get_allocator();
 }
 
 auto FeeSource::Shutdown() noexcept -> void { return imp_->Shutdown(); }
@@ -284,7 +284,7 @@ auto FeeSource::Shutdown() noexcept -> void { return imp_->Shutdown(); }
 FeeSource::~FeeSource()
 {
     if (nullptr != imp_) {
-        auto alloc = imp_->GetAllocator();
+        auto alloc = imp_->get_allocator();
         // TODO c++20 use delete_object
         imp_->~Imp();
         alloc.resource()->deallocate(imp_, sizeof(Imp), alignof(Imp));
