@@ -25,11 +25,18 @@ enum class AccountsJobs : OTZMQWorkType {
     nym = value(WorkType::NymCreated),
     header = value(WorkType::BlockchainNewHeader),
     reorg = value(WorkType::BlockchainReorg),
-    filter = value(WorkType::BlockchainNewFilter),
-    mempool = value(WorkType::BlockchainMempoolUpdated),
-    block = value(WorkType::BlockchainBlockAvailable),
-    job_finished = OT_ZMQ_INTERNAL_SIGNAL + 0,
     reorg_begin_ack = OT_ZMQ_INTERNAL_SIGNAL + 2,
+    reorg_end_ack = OT_ZMQ_INTERNAL_SIGNAL + 4,
+    init = OT_ZMQ_INIT_SIGNAL,
+    statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
+};
+
+// WARNING update print function if new values are added or removed
+enum class AccountJobs : OTZMQWorkType {
+    shutdown = value(WorkType::Shutdown),
+    reorg_begin = OT_ZMQ_INTERNAL_SIGNAL + 1,
+    reorg_begin_ack = OT_ZMQ_INTERNAL_SIGNAL + 2,
+    reorg_end = OT_ZMQ_INTERNAL_SIGNAL + 3,
     reorg_end_ack = OT_ZMQ_INTERNAL_SIGNAL + 4,
     init = OT_ZMQ_INIT_SIGNAL,
     key = OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL,
@@ -37,7 +44,7 @@ enum class AccountsJobs : OTZMQWorkType {
 };
 
 // WARNING update print function if new values are added or removed
-enum class AccountJobs : OTZMQWorkType {
+enum class SubchainJobs : OTZMQWorkType {
     shutdown = value(WorkType::Shutdown),
     filter = value(WorkType::BlockchainNewFilter),
     mempool = value(WorkType::BlockchainMempoolUpdated),
@@ -55,4 +62,5 @@ enum class AccountJobs : OTZMQWorkType {
 auto print(WalletJobs) noexcept -> std::string_view;
 auto print(AccountsJobs) noexcept -> std::string_view;
 auto print(AccountJobs) noexcept -> std::string_view;
+auto print(SubchainJobs) noexcept -> std::string_view;
 }  // namespace opentxs::blockchain::node::wallet

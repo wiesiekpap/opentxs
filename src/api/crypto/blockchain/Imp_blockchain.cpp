@@ -14,7 +14,6 @@
 #include <mutex>
 #include <sstream>
 #include <string_view>
-#include <utility>
 
 #include "Proto.hpp"
 #include "blockchain/database/common/Database.hpp"
@@ -288,11 +287,22 @@ auto BlockchainImp::KeyEndpoint() const noexcept -> std::string_view
 }
 
 auto BlockchainImp::KeyGenerated(
-    const opentxs::blockchain::Type chain) const noexcept -> void
+    const opentxs::blockchain::Type chain,
+    const identifier::Nym& account,
+    const Identifier& subaccount,
+    const opentxs::blockchain::crypto::SubaccountType type,
+    const opentxs::blockchain::crypto::Subchain subchain) const noexcept -> void
 {
-    auto work = MakeWork(OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL);
-    work.AddFrame(chain);
-    key_updates_->Send(std::move(work));
+    key_updates_->Send([&] {
+        auto work = MakeWork(OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL);
+        work.AddFrame(chain);
+        work.AddFrame(account);
+        work.AddFrame(subaccount);
+        work.AddFrame(subchain);
+        work.AddFrame(type);
+
+        return work;
+    }());
 }
 
 auto BlockchainImp::LoadTransactionBitcoin(const TxidHex& txid) const noexcept

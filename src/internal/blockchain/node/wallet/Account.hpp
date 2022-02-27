@@ -11,7 +11,6 @@
 #include <memory>
 #include <string_view>
 
-#include "blockchain/node/wallet/Actor.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
@@ -44,8 +43,6 @@ struct WalletDatabase;
 }  // namespace internal
 }  // namespace node
 }  // namespace blockchain
-
-class Outstanding;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -58,10 +55,9 @@ public:
         const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         std::atomic_int& errors,
-        const block::Position& parent) noexcept -> bool;
+        const block::Position& parent) noexcept -> void;
 
     Account(
-        Accounts& parent,
         const api::Session& api,
         const crypto::Account& account,
         const node::internal::Network& node,
@@ -70,9 +66,8 @@ public:
         const Type chain,
         const filter::Type filter,
         const std::string_view shutdown,
-        const std::string_view publish,
-        const std::string_view pull,
-        Outstanding&& jobs) noexcept;
+        const std::string_view fromParent,
+        const std::string_view toParent) noexcept;
     Account(Account&&) noexcept;
 
     ~Account();

@@ -239,14 +239,21 @@ private:
         const PasswordPrompt& reason) const noexcept -> bool final;
     auto check_lookahead(
         const rLock& lock,
-        Batch& generated,
+        Batch& internal,
+        Batch& external,
         const PasswordPrompt& reason) const noexcept(false) -> void;
     auto confirm(
         const rLock& lock,
         const Subchain type,
         const Bip32Index index) noexcept -> void final;
-    [[nodiscard]] auto finish_allocation(const rLock& lock, Batch& generated)
-        const noexcept -> bool;
+    [[nodiscard]] auto finish_allocation(
+        const rLock& lock,
+        const Subchain type,
+        const Batch& batch) const noexcept -> bool;
+    [[nodiscard]] auto finish_allocation(
+        const rLock& lock,
+        const Batch& internal,
+        const Batch& external) const noexcept -> bool;
     [[nodiscard]] auto generate(
         const rLock& lock,
         const Subchain type,

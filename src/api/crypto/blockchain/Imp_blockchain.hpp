@@ -134,7 +134,12 @@ struct BlockchainImp final : public Blockchain::Imp {
         const UnallocatedCString& label) const noexcept -> bool final;
     auto IndexItem(const ReadView bytes) const noexcept -> PatternID final;
     auto KeyEndpoint() const noexcept -> std::string_view final;
-    auto KeyGenerated(const opentxs::blockchain::Type chain) const noexcept
+    auto KeyGenerated(
+        const opentxs::blockchain::Type chain,
+        const identifier::Nym& account,
+        const Identifier& subaccount,
+        const opentxs::blockchain::crypto::SubaccountType type,
+        const opentxs::blockchain::crypto::Subchain subchain) const noexcept
         -> void final;
     auto LoadTransactionBitcoin(const TxidHex& txid) const noexcept
         -> std::unique_ptr<

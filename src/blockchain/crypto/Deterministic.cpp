@@ -262,11 +262,12 @@ auto Deterministic::check_activity(
 
 void Deterministic::check_lookahead(
     const rLock& lock,
-    Batch& generated,
+    Batch& internal,
+    Batch& external,
     const PasswordPrompt& reason) const noexcept(false)
 {
-    check_lookahead(lock, data_.internal_.type_, generated, reason);
-    check_lookahead(lock, data_.external_.type_, generated, reason);
+    check_lookahead(lock, data_.internal_.type_, internal, reason);
+    check_lookahead(lock, data_.external_.type_, external, reason);
 }
 
 auto Deterministic::check_lookahead(
@@ -344,14 +345,38 @@ auto Deterministic::extract_contacts(
     }
 }
 
-auto Deterministic::finish_allocation(const rLock& lock, Batch& generated)
-    const noexcept -> bool
+auto Deterministic::finish_allocation(
+    const rLock& lock,
+    const Subchain subchain,
+    const Batch& generated) const noexcept -> bool
 {
-#if OT_BLOCKCHAIN
-    if (0u < generated.size()) {
-        parent_.Parent().Parent().Internal().KeyGenerated(chain_);
+    static const auto null = Batch{};
+
+    if (subchain == data_.internal_.type_) {
+
+        return finish_allocation(lock, generated, null);
+    } else if (subchain == data_.external_.type_) {
+
+        return finish_allocation(lock, null, generated);
+    } else {
+        OT_FAIL;
     }
-#endif  // OT_BLOCKCHAIN
+}
+
+auto Deterministic::finish_allocation(
+    const rLock& lock,
+    const Batch& internal,
+    const Batch& external) const noexcept -> bool
+{
+    if (0u < internal.size()) {
+        parent_.Parent().Parent().Internal().KeyGenerated(
+            chain_, parent_.NymID(), id_, type_, data_.internal_.type_);
+    }
+
+    if (0u < external.size()) {
+        parent_.Parent().Parent().Internal().KeyGenerated(
+            chain_, parent_.NymID(), id_, type_, data_.external_.type_);
+    }
 
     return save(lock);
 }
@@ -384,7 +409,7 @@ auto Deterministic::GenerateNext(
 
         OT_ASSERT(0u < generated.size());
 
-        if (finish_allocation(lock, generated)) {
+        if (finish_allocation(lock, type, generated)) {
 
             return generated.front();
         } else {
@@ -452,10 +477,11 @@ auto Deterministic::init(const PasswordPrompt& reason) noexcept(false) -> void
         throw std::runtime_error("Account already exists");
     }
 
-    auto generated = Batch{};
-    check_lookahead(lock, generated, reason);
+    auto internal = Batch{};
+    auto external = Batch{};
+    check_lookahead(lock, internal, external, reason);
 
-    if (false == finish_allocation(lock, generated)) {
+    if (false == finish_allocation(lock, internal, external)) {
         throw std::runtime_error("Failed to save new account");
     }
 
@@ -556,7 +582,7 @@ auto Deterministic::Reserve(
         output.emplace_back(out.value());
     }
 
-    if ((0u < output.size()) && (false == finish_allocation(lock, gen))) {
+    if ((0u < output.size()) && (false == finish_allocation(lock, type, gen))) {
 
         return {};
     }

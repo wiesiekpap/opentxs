@@ -213,9 +213,14 @@ auto Blockchain::KeyEndpoint() const noexcept -> std::string_view
     return imp_->KeyEndpoint();
 }
 
-auto Blockchain::KeyGenerated(const Chain chain) const noexcept -> void
+auto Blockchain::KeyGenerated(
+    const Chain chain,
+    const identifier::Nym& account,
+    const Identifier& subaccount,
+    const opentxs::blockchain::crypto::SubaccountType type,
+    const opentxs::blockchain::crypto::Subchain subchain) const noexcept -> void
 {
-    imp_->KeyGenerated(chain);
+    imp_->KeyGenerated(chain, account, subaccount, type, subchain);
 }
 
 auto Blockchain::LoadTransactionBitcoin(const TxidHex& txid) const noexcept

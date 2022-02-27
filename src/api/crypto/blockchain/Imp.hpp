@@ -195,7 +195,12 @@ struct Blockchain::Imp {
     virtual auto IndexItem(const ReadView bytes) const noexcept -> PatternID;
     virtual auto KeyEndpoint() const noexcept -> std::string_view;
     virtual auto KeyGenerated(
-        const opentxs::blockchain::Type chain) const noexcept -> void;
+        const opentxs::blockchain::Type chain,
+        const identifier::Nym& account,
+        const Identifier& subaccount,
+        const opentxs::blockchain::crypto::SubaccountType type,
+        const opentxs::blockchain::crypto::Subchain subchain) const noexcept
+        -> void;
     virtual auto LoadTransactionBitcoin(const TxidHex& txid) const noexcept
         -> std::unique_ptr<
             const opentxs::blockchain::block::bitcoin::Transaction>;

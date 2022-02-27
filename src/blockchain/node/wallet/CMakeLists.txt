@@ -20,7 +20,6 @@ target_sources(
     "Account.hpp"
     "Accounts.cpp"
     "Accounts.hpp"
-    "Actor.hpp"
     "Wallet.cpp"
     "Wallet.hpp"
 )

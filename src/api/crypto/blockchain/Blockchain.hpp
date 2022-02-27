@@ -171,7 +171,13 @@ public:
         const noexcept(false) -> const opentxs::blockchain::crypto::HD& final;
     auto IndexItem(const ReadView bytes) const noexcept -> PatternID final;
     auto KeyEndpoint() const noexcept -> std::string_view final;
-    auto KeyGenerated(const Chain chain) const noexcept -> void final;
+    auto KeyGenerated(
+        const Chain chain,
+        const identifier::Nym& account,
+        const Identifier& subaccount,
+        const opentxs::blockchain::crypto::SubaccountType type,
+        const opentxs::blockchain::crypto::Subchain subchain) const noexcept
+        -> void final;
     auto LoadTransactionBitcoin(const TxidHex& id) const noexcept
         -> std::unique_ptr<
             const opentxs::blockchain::block::bitcoin::Transaction> final;

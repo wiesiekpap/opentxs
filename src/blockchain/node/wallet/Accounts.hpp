@@ -17,6 +17,7 @@
 #include <string_view>
 #include <utility>
 
+#include "blockchain/node/wallet/subchain/NotificationStateData.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/node/wallet/Accounts.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
@@ -25,11 +26,9 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Actor.hpp"
-#include "util/JobCounter.hpp"
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -42,14 +41,6 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
-namespace bitcoin
-{
-class Transaction;
-}  // namespace bitcoin
-}  // namespace block
-
 namespace node
 {
 namespace internal
@@ -62,8 +53,8 @@ struct WalletDatabase;
 namespace wallet
 {
 class Account;
-class Actor;
 class NotificationStateData;
+class Subchain;
 }  // namespace wallet
 }  // namespace node
 }  // namespace blockchain
@@ -96,15 +87,14 @@ public:
     auto Init(boost::shared_ptr<Imp> me) noexcept -> void;
     auto Shutdown() noexcept -> void { signal_shutdown(); }
 
-    Imp(Accounts& parent,
-        const api::Session& api,
+    Imp(const api::Session& api,
         const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const network::zeromq::BatchID batch,
         const Type chain,
         const std::string_view shutdown,
-        const std::string_view endpoint,
+        const std::string_view toParent,
         allocator_type alloc) noexcept;
 
     ~Imp() final;
@@ -138,26 +128,22 @@ private:
         }
     };
 
-    using Direction = network::zeromq::socket::Direction;
     using AccountMap = Map<OTNymID, wallet::Account>;
-    using NotificationMap = Map<OTIdentifier, NotificationStateData>;
+    using NotificationMap =
+        Map<OTIdentifier, boost::shared_ptr<NotificationStateData>>;
 
-    Accounts& parent_;
     const api::Session& api_;
     const node::internal::Network& node_;
     const node::internal::WalletDatabase& db_;
     const node::internal::Mempool& mempool_;
-    const std::function<void(const Identifier&, const char*)> task_finished_;
     const Type chain_;
     const filter::Type filter_type_;
     const CString shutdown_endpoint_;
-    const CString publish_endpoint_;
-    const CString pull_endpoint_;
+    const CString to_children_endpoint_;
+    const CString from_children_endpoint_;
     network::zeromq::socket::Raw& to_parent_;
-    network::zeromq::socket::Raw& to_accounts_;
+    network::zeromq::socket::Raw& to_children_;
     State state_;
-    JobCounter job_counter_;
-    Outstanding pc_counter_;
     std::optional<ReorgData> reorg_;
     AccountMap accounts_;
     NotificationMap notification_channels_;
@@ -166,23 +152,10 @@ private:
 
     auto do_reorg() noexcept -> void;
     auto do_shutdown() noexcept -> void;
-    auto finish_background_tasks() noexcept -> void;
     auto finish_reorg() noexcept -> void;
     auto index_nym(const identifier::Nym& id) noexcept -> void;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
-    auto process_block(Message&& in) noexcept -> void;
-    auto process_block(const block::Hash& block) noexcept -> void;
     auto process_block_header(Message&& in) noexcept -> void;
-    auto process_filter(Message&& in) noexcept -> void;
-    auto process_filter(const block::Position& tip) noexcept -> void;
-    auto process_job_finished(Message&& in) noexcept -> void;
-    auto process_job_finished(const Identifier& id, const char* type) noexcept
-        -> void;
-    auto process_key(Message&& in) noexcept -> void;
-    auto process_mempool(Message&& in) noexcept -> void;
-    auto process_mempool(
-        std::shared_ptr<const block::bitcoin::Transaction>&& tx) noexcept
-        -> void;
     auto process_nym(Message&& in) noexcept -> bool;
     auto process_nym(const identifier::Nym& nym) noexcept -> bool;
     auto process_reorg_ready(Message&& in) noexcept -> void;
@@ -195,17 +168,16 @@ private:
     auto transition_state_reorg(Message&& in) noexcept -> void;
     auto work() noexcept -> bool;
 
-    Imp(Accounts& parent,
-        const api::Session& api,
+    Imp(const api::Session& api,
         const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const network::zeromq::BatchID batch,
         const Type chain,
         const std::string_view shutdown,
-        const std::string_view endpoint,
-        CString&& publish,
-        CString&& pull,
+        const std::string_view toParent,
+        CString&& toChildren,
+        CString&& fromChildren,
         allocator_type alloc) noexcept;
 };
 }  // namespace opentxs::blockchain::node::wallet
