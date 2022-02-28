@@ -16,6 +16,7 @@
 
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Signals.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -135,6 +136,8 @@ auto Receiver<InterfaceType, MessageType>::task_running(
 template <typename InterfaceType, typename MessageType>
 void Receiver<InterfaceType, MessageType>::thread() noexcept
 {
+    Signals::Block();
+
     while (running_.get()) {
         if (have_callback()) { break; }
 

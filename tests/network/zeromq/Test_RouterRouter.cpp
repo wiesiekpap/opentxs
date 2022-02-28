@@ -15,6 +15,7 @@
 #include <thread>
 
 #include "Helpers.hpp"
+#include "internal/util/Signals.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -72,6 +73,7 @@ private:
 
     auto thread() noexcept -> void
     {
+        ot::Signals::Block();
         auto poll = [&] {
             auto output = std::array<::zmq_pollitem_t, 1>{};
 
