@@ -26,6 +26,7 @@
 #include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Signals.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Container.hpp"
@@ -250,6 +251,8 @@ auto Thread::Remove(BatchID id, UnallocatedVector<socket::Raw*>&& data) noexcept
 
 auto Thread::run() noexcept -> void
 {
+    Signals::Block();
+
     while (thread_.running_) {
         data_.modify_detach([this](auto& data) { poll(data); });
     }

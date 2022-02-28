@@ -15,6 +15,7 @@
 #include <type_traits>
 
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Signals.hpp"
 #include "opentxs/Types.hpp"
 
 namespace opentxs::api::network::asio
@@ -75,6 +76,7 @@ private:
     auto run(ThreadPriority priority) noexcept -> void
     {
         SetThisThreadsPriority(priority);
+        Signals::Block();
         context_.run();
     }
 

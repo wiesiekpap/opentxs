@@ -13,6 +13,7 @@
 #include <thread>
 
 #include "internal/util/Flag.hpp"
+#include "internal/util/Signals.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Sender.tpp"
 #include "opentxs/Types.hpp"
@@ -228,6 +229,7 @@ void Bidirectional<InterfaceType, MessageType>::shutdown(
 template <typename InterfaceType, typename MessageType>
 void Bidirectional<InterfaceType, MessageType>::thread() noexcept
 {
+    Signals::Block();
     LogTrace()(OT_PRETTY_CLASS())("Starting listener").Flush();
 
     while (this->running_.get()) {

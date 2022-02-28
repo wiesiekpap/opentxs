@@ -24,6 +24,7 @@
 #include "internal/network/p2p/Types.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Signals.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
@@ -441,6 +442,7 @@ private:
     }
     auto thread() noexcept -> void
     {
+        Signals::Block();
         auto poll = [&] {
             auto output = std::array<::zmq_pollitem_t, 3>{};
 

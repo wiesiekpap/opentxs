@@ -23,6 +23,7 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Signals.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -436,6 +437,7 @@ private:
     }
     auto zmq_thread() noexcept -> void
     {
+        Signals::Block();
         auto poll = [&] {
             auto output = UnallocatedVector<::zmq_pollitem_t>{};
 
