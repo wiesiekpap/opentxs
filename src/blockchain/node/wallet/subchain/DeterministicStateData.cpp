@@ -49,29 +49,34 @@ namespace opentxs::blockchain::node::wallet
 DeterministicStateData::DeterministicStateData(
     const api::Session& api,
     const node::internal::Network& node,
-    Accounts& parent,
-    const WalletDatabase& db,
+    const node::internal::WalletDatabase& db,
+    const node::internal::Mempool& mempool,
     const crypto::Deterministic& subaccount,
-    const std::function<void(const Identifier&, const char*)>& taskFinished,
-    Outstanding& jobCounter,
     const filter::Type filter,
-    const Subchain subchain) noexcept
+    const Subchain subchain,
+    const network::zeromq::BatchID batch,
+    const std::string_view shutdown,
+    const std::string_view fromParent,
+    const std::string_view toParent,
+    allocator_type alloc) noexcept
     : SubchainStateData(
           api,
           node,
-          parent,
           db,
-          OTNymID{subaccount.Parent().NymID()},
+          mempool,
           subaccount.Type(),
-          OTIdentifier{subaccount.ID()},
-          taskFinished,
-          jobCounter,
           filter,
-          subchain)
+          subchain,
+          batch,
+          OTNymID{subaccount.Parent().NymID()},
+          OTIdentifier{subaccount.ID()},
+          shutdown,
+          fromParent,
+          toParent,
+          std::move(alloc))
     , subaccount_(subaccount)
     , index_(subaccount_, *this, scan_, rescan_, progress_)
 {
-    init();
 }
 
 auto DeterministicStateData::handle_confirmed_matches(

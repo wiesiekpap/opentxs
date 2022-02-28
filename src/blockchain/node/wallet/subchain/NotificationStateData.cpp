@@ -59,42 +59,37 @@ namespace opentxs::blockchain::node::wallet
 NotificationStateData::NotificationStateData(
     const api::Session& api,
     const node::internal::Network& node,
-    Accounts& parent,
-    const WalletDatabase& db,
-    const std::function<void(const Identifier&, const char*)>& taskFinished,
-    Outstanding& jobCounter,
-    const filter::Type filter,
-    const Type chain,
+    const node::internal::WalletDatabase& db,
+    const node::internal::Mempool& mempool,
     const identifier::Nym& nym,
+    const filter::Type filter,
+    const network::zeromq::BatchID batch,
+    const Type chain,
+    const std::string_view shutdown,
+    const std::string_view fromParent,
+    const std::string_view toParent,
     PaymentCode&& code,
-    proto::HDPath&& path) noexcept
+    proto::HDPath&& path,
+    allocator_type alloc) noexcept
     : SubchainStateData(
           api,
           node,
-          parent,
           db,
-          OTNymID{nym},
+          mempool,
           crypto::SubaccountType::Notification,
-          calculate_id(api, chain, code),
-          taskFinished,
-          jobCounter,
           filter,
-          Subchain::Notification)
+          Subchain::Notification,
+          batch,
+          OTNymID{nym},
+          calculate_id(api, chain, code),
+          shutdown,
+          fromParent,
+          toParent,
+          std::move(alloc))
     , path_(std::move(path))
     , index_(*this, scan_, rescan_, progress_, std::move(code))
     , code_(index_.code_)
 {
-    init();
-    auto reason =
-        api_.Factory().PasswordPrompt("Verifying / updating contact data");
-    auto mNym = api_.Wallet().mutable_Nym(nym, reason);
-    const auto type = BlockchainToUnit(chain);
-    const auto existing = mNym.PaymentCode(type);
-    const auto expected = code_.asBase58();
-
-    if (existing != expected) {
-        mNym.AddPaymentCode(expected, type, existing.empty(), true, reason);
-    }
 }
 
 auto NotificationStateData::calculate_id(
@@ -278,12 +273,19 @@ auto NotificationStateData::process(
         .Flush();
 }
 
-auto NotificationStateData::ProcessStateMachine() noexcept -> bool
+auto NotificationStateData::startup() noexcept -> void
 {
-    auto again = SubchainStateData::ProcessStateMachine();
-    init_contacts();
+    SubchainStateData::startup();
+    auto reason =
+        api_.Factory().PasswordPrompt("Verifying / updating contact data");
+    auto mNym = api_.Wallet().mutable_Nym(owner_, reason);
+    const auto type = BlockchainToUnit(chain_);
+    const auto existing = mNym.PaymentCode(type);
+    const auto expected = code_.asBase58();
 
-    return again;
+    if (existing != expected) {
+        mNym.AddPaymentCode(expected, type, existing.empty(), true, reason);
+    }
 }
 
 auto NotificationStateData::type() const noexcept -> std::stringstream
@@ -292,5 +294,13 @@ auto NotificationStateData::type() const noexcept -> std::stringstream
     output << "Payment code notification";
 
     return output;
+}
+
+auto NotificationStateData::work() noexcept -> bool
+{
+    auto again = SubchainStateData::work();
+    init_contacts();
+
+    return again;
 }
 }  // namespace opentxs::blockchain::node::wallet

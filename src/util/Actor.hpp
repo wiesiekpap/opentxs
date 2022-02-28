@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/network/zeromq/socket/SocketType.hpp"
+
 #pragma once
 
 #include <atomic>
@@ -27,6 +29,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -63,6 +66,8 @@ public:
 
 protected:
     using Work = JobType;
+    using Direction = network::zeromq::socket::Direction;
+    using SocketType = network::zeromq::socket::Type;
 
     Gatekeeper gatekeeper_;
     network::zeromq::Pipeline pipeline_;

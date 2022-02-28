@@ -8,6 +8,7 @@
 #include <string_view>
 
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
@@ -20,12 +21,18 @@ class Contacts;
 }  // namespace session
 }  // namespace api
 
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
 namespace proto
 {
 class HDPath;
 }  // namespace proto
 
 class Contact;
+class Identifier;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -36,7 +43,13 @@ class Blockchain : virtual public api::crypto::Blockchain
 public:
     virtual auto Contacts() const noexcept -> const api::session::Contacts& = 0;
     virtual auto KeyEndpoint() const noexcept -> std::string_view = 0;
-    virtual auto KeyGenerated(const Chain chain) const noexcept -> void = 0;
+    virtual auto KeyGenerated(
+        const Chain chain,
+        const identifier::Nym& account,
+        const Identifier& subaccount,
+        const opentxs::blockchain::crypto::SubaccountType type,
+        const opentxs::blockchain::crypto::Subchain subchain) const noexcept
+        -> void = 0;
     auto Internal() const noexcept -> const Blockchain& final { return *this; }
     virtual auto NewNym(const identifier::Nym& id) const noexcept -> void = 0;
     using crypto::Blockchain::NewPaymentCodeSubaccount;

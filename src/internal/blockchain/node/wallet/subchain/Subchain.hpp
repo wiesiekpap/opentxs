@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <boost/smart_ptr/shared_ptr.hpp>
 #include <atomic>
 #include <memory>
 
@@ -23,6 +24,14 @@ namespace bitcoin
 class Transaction;
 }  // namespace bitcoin
 }  // namespace block
+
+namespace node
+{
+namespace wallet
+{
+class SubchainStateData;
+}  // namespace wallet
+}  // namespace node
 }  // namespace blockchain
 
 class Identifier;
@@ -31,38 +40,26 @@ class Identifier;
 
 namespace opentxs::blockchain::node::wallet
 {
-class Actor
+class Subchain
 {
 public:
-    virtual auto FinishBackgroundTasks() noexcept -> void = 0;
-    virtual auto ProcessBlockAvailable(const block::Hash& block) noexcept
-        -> void = 0;
-    virtual auto ProcessKey() noexcept -> void = 0;
-    virtual auto ProcessMempool(
-        std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
-        -> void = 0;
-    virtual auto ProcessNewFilter(const block::Position& tip) noexcept
+    virtual auto Init(boost::shared_ptr<SubchainStateData> me) noexcept
         -> void = 0;
     virtual auto ProcessReorg(
         const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         std::atomic_int& errors,
-        const block::Position& ancestor) noexcept -> bool = 0;
-    virtual auto ProcessStateMachine() noexcept -> bool = 0;
-    virtual auto ProcessTaskComplete(
-        const Identifier& id,
-        const char* type) noexcept -> void = 0;
-    virtual auto Shutdown() noexcept -> void = 0;
+        const block::Position& ancestor) noexcept -> void = 0;
 
-    virtual ~Actor() = default;
+    virtual ~Subchain() = default;
 
 protected:
-    Actor() = default;
+    Subchain() = default;
 
 private:
-    Actor(const Actor&) = delete;
-    Actor(Actor&&) = delete;
-    Actor& operator=(const Actor&) = delete;
-    Actor& operator=(Actor&&) = delete;
+    Subchain(const Subchain&) = delete;
+    Subchain(Subchain&&) = delete;
+    Subchain& operator=(const Subchain&) = delete;
+    Subchain& operator=(Subchain&&) = delete;
 };
 }  // namespace opentxs::blockchain::node::wallet

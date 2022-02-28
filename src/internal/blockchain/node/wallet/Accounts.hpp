@@ -47,7 +47,7 @@ public:
         const node::internal::Mempool& mempool,
         const Type chain,
         const std::string_view shutdown,
-        const std::string_view endpoint) noexcept;
+        const std::string_view toParent) noexcept;
 
     ~Accounts();
 

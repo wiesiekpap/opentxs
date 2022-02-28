@@ -12,6 +12,7 @@
 #include <mutex>
 #include <optional>
 #include <queue>
+#include <string_view>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
@@ -19,6 +20,7 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/network/zeromq/Types.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -30,6 +32,7 @@
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -60,7 +63,9 @@ namespace node
 {
 namespace internal
 {
+struct Mempool;
 struct Network;
+struct WalletDatabase;
 }  // namespace internal
 
 namespace wallet
@@ -85,7 +90,6 @@ class Push;
 }  // namespace network
 
 class Identifier;
-class Outstanding;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -99,13 +103,16 @@ public:
     DeterministicStateData(
         const api::Session& api,
         const node::internal::Network& node,
-        Accounts& parent,
-        const WalletDatabase& db,
+        const node::internal::WalletDatabase& db,
+        const node::internal::Mempool& mempool,
         const crypto::Deterministic& subaccount,
-        const std::function<void(const Identifier&, const char*)>& taskFinished,
-        Outstanding& jobCounter,
         const filter::Type filter,
-        const Subchain subchain) noexcept;
+        const Subchain subchain,
+        const network::zeromq::BatchID batch,
+        const std::string_view shutdown,
+        const std::string_view fromParent,
+        const std::string_view toParent,
+        allocator_type alloc) noexcept;
 
     ~DeterministicStateData() final = default;
 

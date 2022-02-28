@@ -31,6 +31,7 @@
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
+#include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs::factory
@@ -55,13 +56,21 @@ namespace opentxs::blockchain::node::wallet
 {
 auto print(WalletJobs job) noexcept -> std::string_view
 {
-    static const auto map = Map<WalletJobs, CString>{
-        {WalletJobs::shutdown, "shutdown"},
-        {WalletJobs::init, "init"},
-        {WalletJobs::statemachine, "statemachine"},
-    };
+    try {
+        static const auto map = Map<WalletJobs, CString>{
+            {WalletJobs::shutdown, "shutdown"},
+            {WalletJobs::init, "init"},
+            {WalletJobs::statemachine, "statemachine"},
+        };
 
-    return map.at(job);
+        return map.at(job);
+    } catch (...) {
+        LogError()(__FUNCTION__)("invalid WalletJobs: ")(
+            static_cast<OTZMQWorkType>(job))
+            .Flush();
+
+        OT_FAIL;
+    }
 }
 }  // namespace opentxs::blockchain::node::wallet
 

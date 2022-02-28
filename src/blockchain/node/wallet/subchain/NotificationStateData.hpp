@@ -12,12 +12,14 @@
 #include <mutex>
 #include <optional>
 #include <queue>
+#include <string_view>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "blockchain/node/wallet/subchain/statemachine/Index.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/network/zeromq/Types.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -33,6 +35,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
@@ -60,7 +63,9 @@ namespace node
 {
 namespace internal
 {
+struct Mempool;
 struct Network;
+struct WalletDatabase;
 }  // namespace internal
 
 namespace wallet
@@ -89,7 +94,6 @@ class Push;
 }  // namespace zeromq
 }  // namespace network
 
-class Outstanding;
 class PaymentCode;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -104,20 +108,21 @@ public:
         const Type chain,
         const PaymentCode& code) noexcept -> OTIdentifier;
 
-    auto ProcessStateMachine() noexcept -> bool final;
-
     NotificationStateData(
         const api::Session& api,
         const node::internal::Network& node,
-        Accounts& parent,
-        const WalletDatabase& db,
-        const std::function<void(const Identifier&, const char*)>& taskFinished,
-        Outstanding& jobCounter,
-        const filter::Type filter,
-        const Type chain,
+        const node::internal::WalletDatabase& db,
+        const node::internal::Mempool& mempool,
         const identifier::Nym& nym,
+        const filter::Type filter,
+        const network::zeromq::BatchID batch,
+        const Type chain,
+        const std::string_view shutdown,
+        const std::string_view fromParent,
+        const std::string_view toParent,
         PaymentCode&& code,
-        proto::HDPath&& path) noexcept;
+        proto::HDPath&& path,
+        allocator_type alloc) noexcept;
 
     ~NotificationStateData() final = default;
 
@@ -168,6 +173,8 @@ private:
     auto process(
         const opentxs::PaymentCode& remote,
         const PasswordPrompt& reason) noexcept -> void;
+    auto startup() noexcept -> void final;
+    auto work() noexcept -> bool final;
 
     NotificationStateData() = delete;
     NotificationStateData(const NotificationStateData&) = delete;

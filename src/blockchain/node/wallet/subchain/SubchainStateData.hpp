@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <boost/smart_ptr/shared_ptr.hpp>
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -13,10 +14,10 @@
 #include <optional>
 #include <queue>
 #include <sstream>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
-#include "blockchain/node/wallet/Actor.hpp"
 #include "blockchain/node/wallet/subchain/statemachine/BlockIndex.hpp"
 #include "blockchain/node/wallet/subchain/statemachine/Mempool.hpp"
 #include "blockchain/node/wallet/subchain/statemachine/Process.hpp"
@@ -26,8 +27,12 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/wallet/Types.hpp"
+#include "internal/blockchain/node/wallet/subchain/Subchain.hpp"
+#include "internal/network/zeromq/Types.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -41,8 +46,11 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/Actor.hpp"
+#include "util/JobCounter.hpp"
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -73,12 +81,12 @@ namespace node
 {
 namespace internal
 {
+struct Mempool;
 struct WalletDatabase;
 }  // namespace internal
 
 namespace wallet
 {
-class Accounts;
 class Index;
 class Job;
 class ScriptForm;
@@ -94,17 +102,17 @@ namespace zeromq
 namespace socket
 {
 class Push;
+class Raw;
 }  // namespace socket
 }  // namespace zeromq
 }  // namespace network
-
-class Outstanding;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::node::wallet
 {
-class SubchainStateData : virtual public Actor
+class SubchainStateData : virtual public Subchain,
+                          public opentxs::Actor<SubchainStateData, SubchainJobs>
 {
 public:
     using WalletDatabase = node::internal::WalletDatabase;
@@ -113,34 +121,28 @@ public:
 
     const api::Session& api_;
     const node::internal::Network& node_;
-    Accounts& parent_;
-    const WalletDatabase& db_;
-    const std::function<void(const Identifier&, const char*)>& task_finished_;
+    const node::internal::WalletDatabase& db_;
+    const node::internal::Mempool& mempool_oracle_;
+    const std::function<void(const Identifier&, const char*)> task_finished_;
     const UnallocatedCString name_;
     const OTNymID owner_;
     const crypto::SubaccountType account_type_;
     const OTIdentifier id_;
     const Subchain subchain_;
+    const Type chain_;
     const filter::Type filter_type_;
     const SubchainIndex db_key_;
     const block::Position null_position_;
 
-    auto FinishBackgroundTasks() noexcept -> void final;
-    auto ProcessBlockAvailable(const block::Hash& block) noexcept -> void final;
-    auto ProcessKey() noexcept -> void final;
-    auto ProcessMempool(
-        std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
-        -> void final;
-    auto ProcessNewFilter(const block::Position& tip) noexcept -> void final;
+    auto Init(boost::shared_ptr<SubchainStateData> me) noexcept -> void final
+    {
+        signal_startup(me);
+    }
     auto ProcessReorg(
         const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         std::atomic_int& errors,
-        const block::Position& ancestor) noexcept -> bool final;
-    auto ProcessStateMachine() noexcept -> bool override;
-    auto ProcessTaskComplete(const Identifier& id, const char* type) noexcept
-        -> void final;
-    auto Shutdown() noexcept -> void final;
+        const block::Position& ancestor) noexcept -> void final;
 
     ~SubchainStateData() override;
 
@@ -153,8 +155,10 @@ protected:
     using Targets = GCS::Targets;
     using Tested = WalletDatabase::MatchingIndices;
 
-    Outstanding& job_counter_;
+    network::zeromq::socket::Raw& to_parent_;
     mutable BlockIndex block_index_;
+    JobCounter jobs_;
+    Outstanding job_counter_;
     Progress progress_;
     Process process_;
     Rescan rescan_;
@@ -188,32 +192,44 @@ protected:
         const block::bitcoin::Block& block,
         const block::Position& position,
         const block::Matches& confirmed) noexcept -> void = 0;
-    // NOTE call from all and only final constructor bodies
-    auto init() noexcept -> void;
+    virtual auto startup() noexcept -> void;
+    auto state_normal(const Work work, Message&& msg) noexcept -> void;
+    auto state_reorg(const Work work, Message&& msg) noexcept -> void;
+    virtual auto work() noexcept -> bool;
 
     SubchainStateData(
         const api::Session& api,
         const node::internal::Network& node,
-        Accounts& parent,
-        const WalletDatabase& db,
-        OTNymID&& owner,
-        crypto::SubaccountType accountType,
-        OTIdentifier&& id,
-        const std::function<void(const Identifier&, const char*)>& taskFinished,
-        Outstanding& jobCounter,
+        const node::internal::WalletDatabase& db,
+        const node::internal::Mempool& mempool,
+        const crypto::SubaccountType accountType,
         const filter::Type filter,
-        const Subchain subchain) noexcept;
+        const Subchain subchain,
+        const network::zeromq::BatchID batch,
+        OTNymID&& owner,
+        OTIdentifier&& id,
+        const std::string_view shutdown,
+        const std::string_view fromParent,
+        const std::string_view toParent,
+        allocator_type alloc) noexcept;
 
 private:
-    friend Index;
-    friend Job;
-    friend Mempool;
-    friend Process;
-    friend Progress;
-    friend Scan;
-    friend Work;
+    friend opentxs::Actor<SubchainStateData, SubchainJobs>;
+    friend wallet::Index;
+    friend wallet::Job;
+    friend wallet::Mempool;
+    friend wallet::Process;
+    friend wallet::Progress;
+    friend wallet::Scan;
+    friend wallet::Work;
+
+    enum class State {
+        normal,
+        reorg,
+    };
 
     Mempool mempool_;
+    State state_;
 
     auto get_targets(
         const Patterns& elements,
@@ -231,10 +247,26 @@ private:
         storage::lmdb::LMDB::Transaction& tx,
         std::atomic_int& errors,
         const block::Position ancestor) noexcept -> void;
+    auto do_shutdown() noexcept -> void;
+    auto finish_background_tasks() noexcept -> void;
     virtual auto handle_mempool_matches(
         const block::Matches& matches,
         std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept
         -> void = 0;
+    auto pipeline(const Work work, Message&& msg) noexcept -> void;
+    auto process_block(Message&& in) noexcept -> void;
+    auto process_block(const block::Hash& block) noexcept -> void;
+    auto process_filter(Message&& in) noexcept -> void;
+    auto process_filter(const block::Position& tip) noexcept -> void;
+    auto process_key(Message&& in) noexcept -> void;
+    auto process_job_finished(Message&& in) noexcept -> void;
+    auto process_job_finished(const Identifier& id, const char* type) noexcept
+        -> void;
+    auto process_mempool(Message&& in) noexcept -> void;
+    auto process_mempool(
+        std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept -> void;
+    auto transition_state_normal(Message&& in) noexcept -> void;
+    auto transition_state_reorg(Message&& in) noexcept -> void;
 
     SubchainStateData() = delete;
     SubchainStateData(const SubchainStateData&) = delete;

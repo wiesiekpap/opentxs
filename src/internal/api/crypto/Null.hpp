@@ -136,7 +136,15 @@ public:
 
         return null;
     }
-    auto KeyGenerated(const Chain chain) const noexcept -> void final {}
+    auto KeyGenerated(
+        const opentxs::blockchain::Type chain,
+        const identifier::Nym& account,
+        const Identifier& subaccount,
+        const opentxs::blockchain::crypto::SubaccountType type,
+        const opentxs::blockchain::crypto::Subchain subchain) const noexcept
+        -> void final
+    {
+    }
     auto LoadTransactionBitcoin(const Txid&) const noexcept -> std::unique_ptr<
         const opentxs::blockchain::block::bitcoin::Transaction> final
     {
