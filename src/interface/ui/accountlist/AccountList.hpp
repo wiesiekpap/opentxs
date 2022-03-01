@@ -95,6 +95,10 @@ private:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
+    static auto print(Work type) noexcept -> const char*;
+
+    UnallocatedSet<blockchain::Type> chains_;
+
     auto construct_row(
         const AccountListRowID& id,
         const AccountListSortKey& index,

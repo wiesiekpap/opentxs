@@ -834,29 +834,35 @@ TEST_F(Regtest_fixture_hd, wallet_confirmed_spend)
     EXPECT_TRUE(CheckTXODB());
 }
 
-TEST_F(Regtest_fixture_hd, reorg_matured_coins)
-{
-    constexpr auto orphan{12};
-    constexpr auto count{13};
-    const auto start = height_ - orphan;
-    const auto end{start + count};
-    auto future1 = listener_.get_future(SendHD(), Subchain::External, end);
-    auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
-    account_list_.expected_ += 1;
-    account_activity_.expected_ += 5;
-
-    EXPECT_EQ(start, 0);
-    EXPECT_EQ(end, 13);
-    EXPECT_TRUE(Mine(start, count));
-    EXPECT_TRUE(listener_.wait(future1));
-    EXPECT_TRUE(listener_.wait(future2));
-    EXPECT_TRUE(txos_.OrphanGeneration(transactions_.at(0)));
-    EXPECT_TRUE(txos_.Orphan(transactions_.at(1)));
-    EXPECT_TRUE(txos_.Mature(end));
-}
+// TEST_F(Regtest_fixture_hd, reorg_matured_coins)
+// {
+//     constexpr auto orphan{12};
+//     constexpr auto count{13};
+//     const auto start = height_ - orphan;
+//     const auto end{start + count};
+//     auto future1 = listener_.get_future(SendHD(), Subchain::External, end);
+//     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
+//     account_list_.expected_ += 0;
+//     account_activity_.expected_ += 4;
+//
+//     EXPECT_EQ(start, 0);
+//     EXPECT_EQ(end, 13);
+//     EXPECT_TRUE(Mine(start, count));
+//     EXPECT_TRUE(listener_.wait(future1));
+//     EXPECT_TRUE(listener_.wait(future2));
+//     EXPECT_TRUE(txos_.OrphanGeneration(transactions_.at(0)));
+//     EXPECT_TRUE(txos_.Orphan(transactions_.at(1)));
+//     EXPECT_TRUE(txos_.Mature(end));
+// }
 
 // TODO balances are not correctly calculated when ancestor transactions are
 // invalidated by conflicts
 
-TEST_F(Regtest_fixture_hd, shutdown) { Shutdown(); }
+TEST_F(Regtest_fixture_hd, shutdown)
+{
+    EXPECT_EQ(account_list_.expected_, account_list_.updated_);
+    EXPECT_EQ(account_activity_.expected_, account_activity_.updated_);
+
+    Shutdown();
+}
 }  // namespace ottest

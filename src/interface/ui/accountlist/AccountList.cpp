@@ -69,6 +69,7 @@ AccountList::AccountList(
     const SimpleCallback& cb) noexcept
     : AccountListList(api, nymID, cb, false)
     , Worker(api, {})
+    , chains_()
 {
     // TODO monitor for notary nym changes since this may affect custodial
     // account names
@@ -156,7 +157,10 @@ auto AccountList::load_blockchain_account(
         return out;
     }();
     add_item(id, index, custom);
-    subscribe(chain);
+    if (chains_.cend() == chains_.find(chain)) {
+        subscribe(chain);
+        chains_.emplace(chain);
+    }
 }
 
 auto AccountList::load_custodial() noexcept -> void
@@ -282,6 +286,20 @@ auto AccountList::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }
+}
+
+auto AccountList::print(Work type) noexcept -> const char*
+{
+    static const auto map = Map<Work, const char*>{
+        {Work::shutdown, "shutdown"},
+        {Work::custodial, "custodial"},
+        {Work::blockchain, "blockchain"},
+        {Work::balance, "balance"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"},
+    };
+
+    return map.at(type);
 }
 
 auto AccountList::process_blockchain(Message&& message) noexcept -> void

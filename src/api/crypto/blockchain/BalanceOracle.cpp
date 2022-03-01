@@ -60,29 +60,33 @@ struct BalanceOracle::Imp {
     auto UpdateBalance(const Chain chain, const Balance balance) const noexcept
         -> void
     {
-        const auto make = [&](auto& out, auto type) {
-            out.AddFrame();
-            out.AddFrame(value(type));
-            out.AddFrame(chain);
-            balance.first.Serialize(out.AppendBytes());
-            balance.second.Serialize(out.AppendBytes());
-        };
-        {
-            auto out = opentxs::network::zeromq::Message{};
-            make(out, WorkType::BlockchainWalletUpdated);
-            publisher_->Send(std::move(out));
-        }
-        const auto notify = [&](const auto& in) {
-            auto out = opentxs::network::zeromq::Message{};
-            out.AddFrame(in);
-            make(out, WorkType::BlockchainBalance);
-            socket_->Send(std::move(out));
-        };
-        {
-            auto lock = Lock{lock_};
-            const auto& subscribers = subscribers_[chain];
-            std::for_each(
-                std::begin(subscribers), std::end(subscribers), notify);
+        const auto it = balances_.find(chain);
+        if (it == balances_.end() || it->second != balance) {
+            const auto make = [&](auto& out, auto type) {
+                out.AddFrame();
+                out.AddFrame(value(type));
+                out.AddFrame(chain);
+                balance.first.Serialize(out.AppendBytes());
+                balance.second.Serialize(out.AppendBytes());
+            };
+            {
+                auto out = opentxs::network::zeromq::Message{};
+                make(out, WorkType::BlockchainWalletUpdated);
+                publisher_->Send(std::move(out));
+            }
+            const auto notify = [&](const auto& in) {
+                auto out = opentxs::network::zeromq::Message{};
+                out.AddFrame(in);
+                make(out, WorkType::BlockchainBalance);
+                socket_->Send(std::move(out));
+            };
+            {
+                auto lock = Lock{lock_};
+                const auto& subscribers = subscribers_[chain];
+                std::for_each(
+                    std::begin(subscribers), std::end(subscribers), notify);
+            }
+            balances_[chain] = balance;
         }
     }
 
@@ -91,30 +95,35 @@ struct BalanceOracle::Imp {
         const Chain chain,
         const Balance balance) const noexcept -> void
     {
-        const auto make = [&](auto& out, auto type) {
-            out.AddFrame();
-            out.AddFrame(value(type));
-            out.AddFrame(chain);
-            balance.first.Serialize(out.AppendBytes());
-            balance.second.Serialize(out.AppendBytes());
-            out.AddFrame(owner);
-        };
-        {
-            auto out = opentxs::network::zeromq::Message{};
-            make(out, WorkType::BlockchainWalletUpdated);
-            publisher_->Send(std::move(out));
-        }
-        const auto notify = [&](const auto& in) {
-            auto out = opentxs::network::zeromq::Message{};
-            out.AddFrame(in);
-            make(out, WorkType::BlockchainBalance);
-            socket_->Send(std::move(out));
-        };
-        {
-            auto lock = Lock{lock_};
-            const auto& subscribers = nym_subscribers_[chain][owner];
-            std::for_each(
-                std::begin(subscribers), std::end(subscribers), notify);
+        const auto key = std::pair<Chain, OTNymID>{chain, owner};
+        const auto it = nymBalances_.find(key);
+        if (it == nymBalances_.end() || it->second != balance) {
+            const auto make = [&](auto& out, auto type) {
+                out.AddFrame();
+                out.AddFrame(value(type));
+                out.AddFrame(chain);
+                balance.first.Serialize(out.AppendBytes());
+                balance.second.Serialize(out.AppendBytes());
+                out.AddFrame(owner);
+            };
+            {
+                auto out = opentxs::network::zeromq::Message{};
+                make(out, WorkType::BlockchainWalletUpdated);
+                publisher_->Send(std::move(out));
+            }
+            const auto notify = [&](const auto& in) {
+                auto out = opentxs::network::zeromq::Message{};
+                out.AddFrame(in);
+                make(out, WorkType::BlockchainBalance);
+                socket_->Send(std::move(out));
+            };
+            {
+                auto lock = Lock{lock_};
+                const auto& subscribers = nym_subscribers_[chain][owner];
+                std::for_each(
+                    std::begin(subscribers), std::end(subscribers), notify);
+            }
+            nymBalances_[key] = balance;
         }
     }
 
@@ -144,6 +153,8 @@ struct BalanceOracle::Imp {
         , lock_()
         , subscribers_()
         , nym_subscribers_()
+        , balances_()
+        , nymBalances_()
     {
     }
 
@@ -159,6 +170,11 @@ private:
     mutable UnallocatedMap<Chain, Subscribers> subscribers_;
     mutable UnallocatedMap<Chain, UnallocatedMap<OTNymID, Subscribers>>
         nym_subscribers_;
+    mutable UnallocatedMap<Chain, opentxs::blockchain::Balance> balances_;
+    mutable UnallocatedMap<
+        std::pair<Chain, OTNymID>,
+        opentxs::blockchain::Balance>
+        nymBalances_;
 
     auto cb(opentxs::network::zeromq::Message&& in) noexcept -> void
     {
@@ -183,6 +199,13 @@ private:
                 return api_.Factory().NymID();
             }
         }();
+        const auto chain = chainFrame.as<Chain>();
+        const auto unsupported =
+            (0 == opentxs::blockchain::SupportedChains().count(chain)) &&
+            (Chain::UnitTest != chain);
+
+        if (unsupported) { return; }
+
         auto postcondition = ScopeGuard{[&]() {
             socket_->Send([&] {
                 auto work = opentxs::network::zeromq::tagged_reply_to_message(
@@ -196,12 +219,6 @@ private:
                 return work;
             }());
         }};
-        const auto chain = chainFrame.as<Chain>();
-        const auto unsupported =
-            (0 == opentxs::blockchain::SupportedChains().count(chain)) &&
-            (Chain::UnitTest != chain);
-
-        if (unsupported) { return; }
 
         try {
             const auto& network = api_.Network().Blockchain().GetChain(chain);
