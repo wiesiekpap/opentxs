@@ -51,7 +51,9 @@
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace contract
 {
@@ -86,10 +88,11 @@ class Account;
 class AccountVisitor;
 class PasswordPrompt;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::contract::blank
+namespace opentxs::v1::contract::blank
 {
 struct Signable : virtual public opentxs::contract::Signable {
     auto Alias() const noexcept -> UnallocatedCString final { return {}; }
@@ -222,9 +225,9 @@ private:
     {
     }
 };
-}  // namespace opentxs::contract::blank
+}  // namespace opentxs::v1::contract::blank
 
-namespace opentxs::contract::peer::blank
+namespace opentxs::v1::contract::peer::blank
 {
 struct Reply : virtual public opentxs::contract::peer::Reply,
                public contract::blank::Signable {
@@ -309,9 +312,9 @@ protected:
     {
     }
 };
-}  // namespace opentxs::contract::peer::blank
+}  // namespace opentxs::v1::contract::peer::blank
 
-namespace opentxs::contract::peer::reply::blank
+namespace opentxs::v1::contract::peer::reply::blank
 {
 struct Acknowledgement final
     : virtual public opentxs::contract::peer::reply::Acknowledgement,
@@ -404,9 +407,9 @@ private:
     }
 };
 
-}  // namespace opentxs::contract::peer::reply::blank
+}  // namespace opentxs::v1::contract::peer::reply::blank
 
-namespace opentxs::contract::peer::request::blank
+namespace opentxs::v1::contract::peer::request::blank
 {
 struct Bailment final
     : virtual public opentxs::contract::peer::request::Bailment,
@@ -531,9 +534,9 @@ private:
     {
     }
 };
-}  // namespace opentxs::contract::peer::request::blank
+}  // namespace opentxs::v1::contract::peer::request::blank
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto translate(const contract::ProtocolVersion in) noexcept
     -> proto::ProtocolVersion;
@@ -541,4 +544,4 @@ auto translate(const contract::UnitType in) noexcept -> proto::UnitType;
 auto translate(const proto::ProtocolVersion in) noexcept
     -> contract::ProtocolVersion;
 auto translate(const proto::UnitType in) noexcept -> contract::UnitType;
-}  // namespace opentxs
+}  // namespace opentxs::v1

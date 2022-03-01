@@ -11,7 +11,10 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
@@ -21,9 +24,11 @@ class HDPath;
 }  // namespace proto
 
 class PaymentCode;
+}  // namespace v1
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::crypto::implementation
+namespace opentxs::v1::blockchain::crypto::implementation
 {
 template <>
 struct Account::Factory<crypto::HD, proto::HDPath, HDProtocol, PasswordPrompt> {
@@ -139,4 +144,4 @@ auto Account::NodeGroup<InterfaceType, PayloadType>::add(
 
     return true;
 }
-}  // namespace opentxs::blockchain::crypto::implementation
+}  // namespace opentxs::v1::blockchain::crypto::implementation

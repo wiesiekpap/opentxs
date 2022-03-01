@@ -6,7 +6,10 @@
 
 #include "opentxs/util/Allocated.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -18,7 +21,9 @@ class FeeSource;
 }  // namespace wallet
 }  // namespace node
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class opentxs::blockchain::node::wallet::FeeSource final : public Allocated
 {

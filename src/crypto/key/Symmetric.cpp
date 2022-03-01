@@ -44,7 +44,7 @@ template class opentxs::Pimpl<opentxs::crypto::key::Symmetric>;
 #define OT_SYMMETRIC_KEY_DEFAULT_DIFFICULTY 8388608
 #define OT_SYMMETRIC_KEY_DEFAULT_THREADS 1
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto SymmetricKey() noexcept -> std::unique_ptr<crypto::key::Symmetric>
 {
@@ -160,17 +160,17 @@ auto SymmetricKey(
 
     return std::move(output);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::crypto::key
+namespace opentxs::v1::crypto::key
 {
 auto Symmetric::Factory() -> OTSymmetricKey
 {
     return OTSymmetricKey{new blank::Symmetric};
 }
-}  // namespace opentxs::crypto::key
+}  // namespace opentxs::v1::crypto::key
 
-namespace opentxs::crypto::key::implementation
+namespace opentxs::v1::crypto::key::implementation
 {
 Symmetric::Symmetric(
     const api::Session& api,
@@ -831,4 +831,4 @@ auto Symmetric::Unlock(const opentxs::PasswordPrompt& reason) const -> bool
 
     return unlock(lock, reason);
 }
-}  // namespace opentxs::crypto::key::implementation
+}  // namespace opentxs::v1::crypto::key::implementation

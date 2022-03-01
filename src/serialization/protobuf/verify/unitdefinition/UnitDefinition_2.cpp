@@ -28,7 +28,7 @@
 #include "serialization/protobuf/UnitDefinition.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 
 auto CheckProto_2(
@@ -279,4 +279,4 @@ auto CheckProto_20(const UnitDefinition& input, const bool silent, const bool)
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

@@ -27,7 +27,9 @@
 #include "serialization/protobuf/Token.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -68,12 +70,13 @@ class Token;
 }  // namespace proto
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 #define OT_TOKEN_VERSION 1
 
-namespace opentxs::otx::blind::token
+namespace opentxs::v1::otx::blind::token
 {
 class Token : virtual public blind::Token::Imp
 {
@@ -163,4 +166,4 @@ private:
     auto operator=(const Token&) -> Token& = delete;
     auto operator=(Token&&) -> Token& = delete;
 };
-}  // namespace opentxs::otx::blind::token
+}  // namespace opentxs::v1::otx::blind::token

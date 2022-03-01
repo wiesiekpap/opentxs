@@ -6,20 +6,23 @@
 #pragma once
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
 class Factory;
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto::internal
+namespace opentxs::v1::crypto::internal
 {
 struct Bip32 {
     virtual auto Init(const api::Factory& factory) noexcept -> void = 0;
 
     virtual ~Bip32() = default;
 };
-}  // namespace opentxs::crypto::internal
+}  // namespace opentxs::v1::crypto::internal

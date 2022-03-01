@@ -7,7 +7,7 @@
 
 #include "opentxs/api/crypto/Config.hpp"
 
-namespace opentxs::api::crypto::internal
+namespace opentxs::v1::api::crypto::internal
 {
 class Config : virtual public api::crypto::Config
 {
@@ -21,4 +21,4 @@ public:
 
     ~Config() override = default;
 };
-}  // namespace opentxs::api::crypto::internal
+}  // namespace opentxs::v1::api::crypto::internal

@@ -98,7 +98,9 @@ class MessageLite;
 }  // namespace protobuf
 }  // namespace google
 
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -210,10 +212,11 @@ class OTSmartContract;
 class OTTrade;
 class OTTransactionType;
 class PeerObject;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::imp
+namespace opentxs::v1::api::session::imp
 {
 class Factory : virtual public internal::Factory
 {
@@ -935,4 +938,4 @@ private:
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
 };
-}  // namespace opentxs::api::session::imp
+}  // namespace opentxs::v1::api::session::imp

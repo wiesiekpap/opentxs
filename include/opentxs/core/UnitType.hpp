@@ -13,7 +13,7 @@
 
 #include "opentxs/identity/wot/claim/Types.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 enum class UnitType : std::uint32_t {
     Error = 0,
@@ -318,4 +318,4 @@ enum class UnitType : std::uint32_t {
 
     Unknown = std::numeric_limits<std::uint32_t>::max(),
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

@@ -17,7 +17,9 @@
 #include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -295,10 +297,11 @@ class Options;
 class PasswordPrompt;
 class PeerObject;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 class Factory
 {
@@ -702,4 +705,4 @@ public:
     static auto ZMQ(const api::Session& api, const Flag& running)
         -> api::network::ZMQ*;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

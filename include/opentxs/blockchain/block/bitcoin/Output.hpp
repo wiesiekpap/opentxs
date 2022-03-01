@@ -14,7 +14,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -36,10 +38,11 @@ namespace proto
 {
 class BlockchainTransactionOutput;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::block::bitcoin
+namespace opentxs::v1::blockchain::block::bitcoin
 {
 class OPENTXS_EXPORT Output
 {
@@ -69,4 +72,4 @@ private:
     auto operator=(const Output&) -> Output& = delete;
     auto operator=(Output&&) -> Output& = delete;
 };
-}  // namespace opentxs::blockchain::block::bitcoin
+}  // namespace opentxs::v1::blockchain::block::bitcoin

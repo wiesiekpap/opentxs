@@ -7,7 +7,7 @@
 
 #include "opentxs/util/Allocator.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 class Allocated
 {
@@ -21,4 +21,4 @@ public:
 
     virtual ~Allocated() = default;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

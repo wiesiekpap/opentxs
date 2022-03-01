@@ -14,7 +14,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -33,10 +35,11 @@ class Factory;
 class PasswordPrompt;
 
 using OTPasswordPrompt = Pimpl<PasswordPrompt>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 /*
  PasswordPrompt
@@ -91,4 +94,4 @@ private:
     auto operator=(const PasswordPrompt&) -> const PasswordPrompt& = delete;
     auto operator=(const PasswordPrompt&&) -> const PasswordPrompt& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

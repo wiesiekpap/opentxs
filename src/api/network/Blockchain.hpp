@@ -22,7 +22,9 @@
 #include "opentxs/util/WorkType.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -67,12 +69,13 @@ class Publish;
 }  // namespace network
 
 class Options;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::api::network
+namespace opentxs::v1::api::network
 {
 struct Blockchain::Imp : virtual public internal::Blockchain {
     using Chain = network::Blockchain::Chain;
@@ -216,4 +219,4 @@ private:
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
 };
-}  // namespace opentxs::api::network
+}  // namespace opentxs::v1::api::network

@@ -26,7 +26,7 @@
 #include "otx/server/MainFile.hpp"
 #include "otx/server/Server.hpp"
 
-namespace opentxs::server
+namespace opentxs::v1::server
 {
 Transactor::Transactor(Server& server, const PasswordPrompt& reason)
     : server_(server)
@@ -255,4 +255,4 @@ auto Transactor::getVoucherAccount(
 
     return pAccount;
 }
-}  // namespace opentxs::server
+}  // namespace opentxs::v1::server

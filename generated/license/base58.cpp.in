@@ -7,11 +7,11 @@
 #include "1_Internal.hpp"       // IWYU pragma: associated
 #include "util/license/License.hpp"  // IWYU pragma: associated
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto license_base58(LicenseMap& out) noexcept -> void
 {
     out.emplace(
         "base58 (via Bitcoin)", UnallocatedCString{R"~!~(@BASE58_LICENSE_TEXT@)~!~"});
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

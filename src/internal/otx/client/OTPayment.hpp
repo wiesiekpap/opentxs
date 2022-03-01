@@ -22,7 +22,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 namespace api
 {
@@ -274,4 +274,4 @@ private:
 
     OTPayment() = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

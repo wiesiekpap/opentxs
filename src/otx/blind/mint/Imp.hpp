@@ -25,7 +25,9 @@
 #include "otx/blind/mint/Mint.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -51,10 +53,11 @@ class Nym;
 
 class PasswordPrompt;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::blind::mint
+namespace opentxs::v1::otx::blind::mint
 {
 class Mint : public blind::Mint::Imp
 {
@@ -159,4 +162,4 @@ protected:
 private:
     Mint() = delete;
 };
-}  // namespace opentxs::otx::blind::mint
+}  // namespace opentxs::v1::otx::blind::mint

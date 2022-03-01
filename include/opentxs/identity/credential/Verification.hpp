@@ -10,7 +10,9 @@
 #include "opentxs/identity/credential/Base.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -21,10 +23,11 @@ namespace proto
 {
 class Verification;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::credential
+namespace opentxs::v1::identity::credential
 {
 class OPENTXS_EXPORT Verification : virtual public Base
 {
@@ -46,4 +49,4 @@ private:
     auto operator=(const Verification&) -> Verification& = delete;
     auto operator=(Verification&&) -> Verification& = delete;
 };
-}  // namespace opentxs::identity::credential
+}  // namespace opentxs::v1::identity::credential

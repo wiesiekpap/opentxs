@@ -37,7 +37,7 @@
 #include "opentxs/util/Container.hpp"
 #include "util/Polarity.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto AccountActivityQtModel(ui::internal::AccountActivity& parent) noexcept
     -> std::unique_ptr<ui::AccountActivityQt>
@@ -46,9 +46,9 @@ auto AccountActivityQtModel(ui::internal::AccountActivity& parent) noexcept
 
     return std::make_unique<ReturnType>(parent);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 struct AccountActivityQt::Imp {
     internal::AccountActivity& parent_;
@@ -247,9 +247,9 @@ AccountActivityQt::~AccountActivityQt()
         imp_ = nullptr;
     }
 }
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 struct AccountActivity::QT {
     ui::DisplayScaleQt scales_qt_;
@@ -398,4 +398,4 @@ auto BalanceItem::qt_data(const int column, const int role, QVariant& out)
         }
     };
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

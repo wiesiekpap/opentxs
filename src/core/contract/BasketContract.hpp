@@ -23,7 +23,9 @@
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -36,10 +38,11 @@ class Definition;
 }  // namespace display
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::contract::unit::implementation
+namespace opentxs::v1::contract::unit::implementation
 {
 class Basket final : public unit::Basket, public contract::implementation::Unit
 {
@@ -87,4 +90,4 @@ private:
     auto operator=(const Basket&) -> Basket& = delete;
     auto operator=(Basket&&) -> Basket& = delete;
 };
-}  // namespace opentxs::contract::unit::implementation
+}  // namespace opentxs::v1::contract::unit::implementation

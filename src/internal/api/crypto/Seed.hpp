@@ -8,16 +8,19 @@
 #include "opentxs/api/crypto/Seed.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class HDPath;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::crypto::internal
+namespace opentxs::v1::api::crypto::internal
 {
 class Seed : virtual public crypto::Seed
 {
@@ -51,4 +54,4 @@ public:
 
     ~Seed() override = default;
 };
-}  // namespace opentxs::api::crypto::internal
+}  // namespace opentxs::v1::api::crypto::internal

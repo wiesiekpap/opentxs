@@ -14,7 +14,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Secp256k1Key(
     const api::Session&,
@@ -77,4 +77,4 @@ auto Secp256k1Key(
 
     return output;
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

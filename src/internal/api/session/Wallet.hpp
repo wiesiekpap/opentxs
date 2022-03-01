@@ -15,7 +15,9 @@
 #include "opentxs/otx/blind/CashType.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace otx
 {
@@ -38,10 +40,11 @@ class Account;
 
 using ExclusiveAccount = Exclusive<Account>;
 using SharedAccount = Shared<Account>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::internal
+namespace opentxs::v1::api::session::internal
 {
 class Wallet : virtual public api::session::Wallet
 {
@@ -215,4 +218,4 @@ public:
 
     ~Wallet() override = default;
 };
-}  // namespace opentxs::api::session::internal
+}  // namespace opentxs::v1::api::session::internal

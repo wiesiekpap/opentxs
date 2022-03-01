@@ -10,7 +10,9 @@
 #include "opentxs/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
@@ -18,10 +20,11 @@ class VerificationSet;
 }  // namespace proto
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::wot::verification
+namespace opentxs::v1::identity::wot::verification
 {
 class OPENTXS_EXPORT Set
 {
@@ -64,4 +67,4 @@ private:
     auto operator=(const Set&) -> Set& = delete;
     auto operator=(Set&&) -> Set& = delete;
 };
-}  // namespace opentxs::identity::wot::verification
+}  // namespace opentxs::v1::identity::wot::verification

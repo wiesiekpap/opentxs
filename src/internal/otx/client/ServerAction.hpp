@@ -13,7 +13,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace client
 {
@@ -36,10 +38,11 @@ class Amount;
 class OTPaymentPlan;
 class OTSmartContract;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::client
+namespace opentxs::v1::otx::client
 {
 class ServerAction
 {
@@ -170,4 +173,4 @@ private:
     auto operator=(const ServerAction&) -> ServerAction& = delete;
     auto operator=(ServerAction&&) -> ServerAction& = delete;
 };
-}  // namespace opentxs::otx::client
+}  // namespace opentxs::v1::otx::client

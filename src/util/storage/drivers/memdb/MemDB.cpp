@@ -14,7 +14,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto StorageMemDB(
     const api::Crypto& crypto,
@@ -27,9 +27,9 @@ auto StorageMemDB(
 
     return std::make_unique<ReturnType>(crypto, asio, parent, config, bucket);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::storage::driver
+namespace opentxs::v1::storage::driver
 {
 MemDB::MemDB(
     const api::Crypto& crypto,
@@ -112,4 +112,4 @@ auto MemDB::StoreRoot(
 
     return true;
 }
-}  // namespace opentxs::storage::driver
+}  // namespace opentxs::v1::storage::driver

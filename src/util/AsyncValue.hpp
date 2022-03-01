@@ -7,7 +7,7 @@
 
 #include <future>
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <typename ValueType>
 class AsyncValue
@@ -40,4 +40,4 @@ public:
     {
     }
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

@@ -16,16 +16,19 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
 class Session;
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::database::wallet::db
+namespace opentxs::v1::blockchain::database::wallet::db
 {
 class SubchainID
 {
@@ -63,4 +66,4 @@ private:
     auto operator=(const SubchainID&) -> SubchainID& = delete;
     auto operator=(SubchainID&&) -> SubchainID& = delete;
 };
-}  // namespace opentxs::blockchain::database::wallet::db
+}  // namespace opentxs::v1::blockchain::database::wallet::db

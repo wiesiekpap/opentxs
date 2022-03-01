@@ -17,7 +17,9 @@
 #include "otx/client/DepositPayment.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace otx
 {
@@ -29,10 +31,11 @@ class DepositPayment;
 }  // namespace implementation
 }  // namespace client
 }  // namespace otx
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::client::implementation
+namespace opentxs::v1::otx::client::implementation
 {
 class PaymentTasks final : public opentxs::internal::StateMachine
 {
@@ -62,4 +65,4 @@ private:
 
     PaymentTasks() = delete;
 };
-}  // namespace opentxs::otx::client::implementation
+}  // namespace opentxs::v1::otx::client::implementation

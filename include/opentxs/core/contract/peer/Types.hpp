@@ -10,10 +10,10 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace opentxs::contract::peer
+namespace opentxs::v1::contract::peer
 {
 enum class ConnectionInfoType : std::uint8_t;
 enum class PeerObjectType : std::uint8_t;
 enum class PeerRequestType : std::uint8_t;
 enum class SecretType : std::uint8_t;
-}  // namespace opentxs::contract::peer
+}  // namespace opentxs::v1::contract::peer

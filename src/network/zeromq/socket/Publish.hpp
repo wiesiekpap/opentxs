@@ -10,7 +10,9 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -24,10 +26,11 @@ class Publish;
 class Context;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::socket::implementation
+namespace opentxs::v1::network::zeromq::socket::implementation
 {
 class Publish final : public Sender<zeromq::socket::Publish>,
                       public zeromq::curve::implementation::Server
@@ -49,4 +52,4 @@ private:
     auto operator=(const Publish&) -> Publish& = delete;
     auto operator=(Publish&&) -> Publish& = delete;
 };
-}  // namespace opentxs::network::zeromq::socket::implementation
+}  // namespace opentxs::v1::network::zeromq::socket::implementation

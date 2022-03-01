@@ -12,17 +12,20 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identifier
 {
 class Nym;
 class UnitDefinition;
 }  // namespace identifier
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::client
+namespace opentxs::v1::otx::client
 {
 class Pair
 {
@@ -60,4 +63,4 @@ private:
     auto operator=(const Pair&) -> Pair& = delete;
     auto operator=(Pair&&) -> Pair& = delete;
 };
-}  // namespace opentxs::otx::client
+}  // namespace opentxs::v1::otx::client

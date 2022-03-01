@@ -12,7 +12,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -23,10 +25,11 @@ class Context;
 }  // namespace network
 
 class Factory;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::network::imp
+namespace opentxs::v1::api::network::imp
 {
 class ZAP final : virtual public api::network::ZAP
 {
@@ -52,4 +55,4 @@ private:
     auto operator=(const ZAP&) -> ZAP& = delete;
     auto operator=(ZAP&&) -> ZAP& = delete;
 };
-}  // namespace opentxs::api::network::imp
+}  // namespace opentxs::v1::api::network::imp

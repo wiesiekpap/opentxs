@@ -27,7 +27,9 @@
 #include "serialization/protobuf/Ciphertext.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -43,10 +45,11 @@ class Data;
 class Factory;
 class PasswordPrompt;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto::key::implementation
+namespace opentxs::v1::crypto::key::implementation
 {
 class Symmetric final : virtual public key::Symmetric
 {
@@ -212,4 +215,4 @@ private:
     Symmetric(const Symmetric&);
     auto operator=(const Symmetric&) -> Symmetric& = delete;
 };
-}  // namespace opentxs::crypto::key::implementation
+}  // namespace opentxs::v1::crypto::key::implementation

@@ -23,7 +23,9 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -60,10 +62,11 @@ class Client;
 class OTMarket;
 class OTOffer;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 // An OTTrade is derived from OTCronItem. OTCron has a list of items,
 // which may be trades or agreements or who knows what next.
@@ -274,4 +277,4 @@ private:
 
     OTTrade() = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

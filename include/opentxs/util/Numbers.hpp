@@ -9,9 +9,9 @@
 
 #include <cstdint>
 
-namespace opentxs
+namespace opentxs::v1
 {
 using RequestNumber = std::int64_t;
 using TransactionNumber = std::int64_t;
 using VersionNumber = std::uint32_t;
-}  // namespace opentxs
+}  // namespace opentxs::v1

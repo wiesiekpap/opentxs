@@ -32,7 +32,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto NymListModel(
     const api::session::Client& api,
@@ -42,9 +42,9 @@ auto NymListModel(
 
     return std::make_unique<ReturnType>(api, cb);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 NymList::NymList(
     const api::session::Client& api,
@@ -176,4 +176,4 @@ NymList::~NymList()
     wait_for_startup();
     signal_shutdown().get();
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

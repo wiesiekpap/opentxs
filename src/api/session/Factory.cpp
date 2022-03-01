@@ -120,7 +120,7 @@
 #include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/HDIndex.hpp"
 
-namespace opentxs::api::session::imp
+namespace opentxs::v1::api::session::imp
 {
 Factory::Factory(const api::Session& api)
     : api::internal::Factory()
@@ -2687,4 +2687,4 @@ auto Factory::UnitID(const google::protobuf::MessageLite& proto) const
 
     return Identifier(id->str());
 }
-}  // namespace opentxs::api::session::imp
+}  // namespace opentxs::v1::api::session::imp

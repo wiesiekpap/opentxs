@@ -31,7 +31,9 @@
 #include "opentxs/util/Iterator.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -84,12 +86,13 @@ namespace zeromq
 class Frame;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::blockchain::p2p::bitcoin
+namespace opentxs::v1::blockchain::p2p::bitcoin
 {
 struct Message {
     static auto MaxPayload() -> std::size_t;
@@ -103,9 +106,9 @@ struct Message {
 
     virtual ~Message() = default;
 };
-}  // namespace opentxs::blockchain::p2p::bitcoin
+}  // namespace opentxs::v1::blockchain::p2p::bitcoin
 
-namespace opentxs::blockchain::p2p::bitcoin::message
+namespace opentxs::v1::blockchain::p2p::bitcoin::message
 {
 using ClientFilterTypeField = be::little_uint8_buf_t;
 using HashField = std::array<std::byte, 32>;
@@ -161,9 +164,9 @@ auto VerifyChecksum(
     const api::Session& api,
     const Header& header,
     const network::zeromq::Frame& payload) noexcept -> bool;
-}  // namespace opentxs::blockchain::p2p::bitcoin::message
+}  // namespace opentxs::v1::blockchain::p2p::bitcoin::message
 
-namespace opentxs::blockchain::p2p::bitcoin::message::internal
+namespace opentxs::v1::blockchain::p2p::bitcoin::message::internal
 {
 struct Addr : virtual public bitcoin::Message {
     using value_type = p2p::internal::Address;
@@ -377,9 +380,9 @@ struct Version : virtual public bitcoin::Message {
 
     ~Version() override = default;
 };
-}  // namespace opentxs::blockchain::p2p::bitcoin::message::internal
+}  // namespace opentxs::v1::blockchain::p2p::bitcoin::message::internal
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 #if OT_BLOCKCHAIN
 auto BitcoinP2PAddr(
@@ -767,4 +770,4 @@ auto BitcoinP2PVersion(
     const blockchain::block::Height height,
     const bool relay) -> blockchain::p2p::bitcoin::message::internal::Version*;
 #endif  // OT_BLOCKCHAIN
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

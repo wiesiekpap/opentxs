@@ -10,7 +10,9 @@
 #include "opentxs/api/crypto/Crypto.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -30,10 +32,11 @@ class Crypto;
 }  // namespace internal
 }  // namespace session
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session
+namespace opentxs::v1::api::session
 {
 class OPENTXS_EXPORT Crypto : virtual public api::Crypto
 {
@@ -59,4 +62,4 @@ private:
     auto operator=(const Crypto&) -> Crypto& = delete;
     auto operator=(Crypto&&) -> Crypto& = delete;
 };
-}  // namespace opentxs::api::session
+}  // namespace opentxs::v1::api::session

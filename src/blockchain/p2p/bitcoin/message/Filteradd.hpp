@@ -16,7 +16,9 @@
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -35,10 +37,11 @@ class Header;
 }  // namespace blockchain
 
 class Factory;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::p2p::bitcoin::message::implementation
+namespace opentxs::v1::blockchain::p2p::bitcoin::message::implementation
 {
 class Filteradd final : virtual public internal::Filteradd,
                         public implementation::Message
@@ -68,4 +71,4 @@ private:
     auto operator=(const Filteradd&) -> Filteradd& = delete;
     auto operator=(Filteradd&&) -> Filteradd& = delete;
 };
-}  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation
+}  // namespace opentxs::v1::blockchain::p2p::bitcoin::message::implementation

@@ -21,7 +21,7 @@
 #include "util/storage/tree/Node.hpp"
 #include "util/storage/tree/Tree.hpp"
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 Root::Root(
     const api::network::Asio& asio,
@@ -197,4 +197,4 @@ auto Root::tree() const -> storage::Tree*
 }
 
 auto Root::Tree() const -> const storage::Tree& { return *tree(); }
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

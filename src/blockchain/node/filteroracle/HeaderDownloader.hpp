@@ -22,7 +22,7 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs::blockchain::node::implementation
+namespace opentxs::v1::blockchain::node::implementation
 {
 using HeaderDM = download::Manager<
     FilterOracle::HeaderDownloader,
@@ -260,4 +260,4 @@ private:
         }
     }
 };
-}  // namespace opentxs::blockchain::node::implementation
+}  // namespace opentxs::v1::blockchain::node::implementation

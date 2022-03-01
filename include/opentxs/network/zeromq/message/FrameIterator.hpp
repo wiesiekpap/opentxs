@@ -14,7 +14,9 @@
 #include <string_view>
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -29,6 +31,7 @@ class Frame;
 class FrameIterator;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -41,7 +44,7 @@ struct hash<opentxs::network::zeromq::FrameIterator> {
 };
 }  // namespace std
 
-namespace opentxs::network::zeromq
+namespace opentxs::v1::network::zeromq
 {
 OPENTXS_EXPORT auto operator<(
     const FrameIterator& lhs,
@@ -93,4 +96,4 @@ private:
 
     Imp* imp_;
 };
-}  // namespace opentxs::network::zeromq
+}  // namespace opentxs::v1::network::zeromq

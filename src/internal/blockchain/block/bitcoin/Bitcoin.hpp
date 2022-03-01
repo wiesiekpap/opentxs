@@ -44,7 +44,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -108,10 +110,11 @@ class BlockchainTransactionOutput;
 }  // namespace proto
 
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::block::bitcoin::internal
+namespace opentxs::v1::blockchain::block::bitcoin::internal
 {
 auto DecodeBip34(const ReadView coinbase) noexcept -> block::Height;
 auto EncodeBip34(block::Height height) noexcept -> Space;
@@ -348,9 +351,9 @@ struct Transaction : virtual public bitcoin::Transaction {
 
     ~Transaction() override = default;
 };
-}  // namespace opentxs::blockchain::block::bitcoin::internal
+}  // namespace opentxs::v1::blockchain::block::bitcoin::internal
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 #if OT_BLOCKCHAIN
 using UTXO = std::pair<
@@ -486,4 +489,4 @@ auto BitcoinTransactionOutputs(
     std::optional<std::size_t> size = {}) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Outputs>;
 #endif  // OT_BLOCKCHAIN
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

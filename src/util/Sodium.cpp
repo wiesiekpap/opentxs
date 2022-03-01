@@ -21,7 +21,7 @@ extern "C" {
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs::crypto::sodium
+namespace opentxs::v1::crypto::sodium
 {
 auto ExpandSeed(
     const ReadView seed,
@@ -199,4 +199,4 @@ auto ToCurveKeypair(
 
     return true;
 }
-}  // namespace opentxs::crypto::sodium
+}  // namespace opentxs::v1::crypto::sodium

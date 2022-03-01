@@ -20,7 +20,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -49,10 +51,11 @@ class Definition;
 }  // namespace display
 
 class OT_API;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 class OTAPI_Exec : Lockable
 {
@@ -892,4 +895,4 @@ private:
     auto operator=(const OTAPI_Exec&) -> OTAPI_Exec = delete;
     auto operator=(OTAPI_Exec&&) -> OTAPI_Exec = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

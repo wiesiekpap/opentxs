@@ -6,7 +6,9 @@
 #pragma once
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -20,11 +22,12 @@ namespace ui
 {
 class IdentityManagerQt;
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto IdentityManagerQt(const api::session::Client& api) noexcept
     -> ui::IdentityManagerQt;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

@@ -17,7 +17,9 @@
 #include "opentxs/network/zeromq/socket/Push.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -62,10 +64,11 @@ class Server;
 class Identifier;
 class PasswordPrompt;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::server
+namespace opentxs::v1::server
 {
 class Notary
 {
@@ -303,4 +306,4 @@ private:
     auto operator=(const Notary&) -> Notary& = delete;
     auto operator=(Notary&&) -> Notary& = delete;
 };
-}  // namespace opentxs::server
+}  // namespace opentxs::v1::server

@@ -17,7 +17,9 @@
 #include "opentxs/core/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -38,10 +40,11 @@ class Nym;
 class Contact;
 class Identifier;
 class PaymentCode;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session
+namespace opentxs::v1::api::session
 {
 class OPENTXS_EXPORT Contacts
 {
@@ -97,4 +100,4 @@ private:
     auto operator=(const Contacts&) -> Contacts& = delete;
     auto operator=(Contacts&&) -> Contacts& = delete;
 };
-}  // namespace opentxs::api::session
+}  // namespace opentxs::v1::api::session

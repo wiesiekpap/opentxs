@@ -14,7 +14,7 @@
 #include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/crypto/library/SymmetricProvider.hpp"
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 class Sodium : virtual public api::crypto::Util,
                virtual public EcdsaProvider,
@@ -36,4 +36,4 @@ private:
     auto operator=(const Sodium&) -> Sodium& = delete;
     auto operator=(Sodium&&) -> Sodium& = delete;
 };
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto

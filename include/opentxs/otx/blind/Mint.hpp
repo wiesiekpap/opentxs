@@ -14,7 +14,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -41,10 +43,11 @@ class Mint;
 
 class Amount;
 class Armored;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::blind
+namespace opentxs::v1::otx::blind
 {
 OPENTXS_EXPORT auto swap(Mint& lhs, Mint& rhs) noexcept -> void;
 
@@ -88,4 +91,4 @@ private:
     Mint(const Mint&) = delete;
     auto operator=(const Mint&) -> Mint& = delete;
 };
-}  // namespace opentxs::otx::blind
+}  // namespace opentxs::v1::otx::blind

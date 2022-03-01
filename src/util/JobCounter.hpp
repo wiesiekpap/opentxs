@@ -5,7 +5,7 @@
 
 #pragma once
 
-namespace opentxs
+namespace opentxs::v1
 {
 class JobCounter;
 
@@ -55,4 +55,4 @@ private:
     auto operator=(const JobCounter&) -> JobCounter& = delete;
     auto operator=(JobCounter&&) -> JobCounter& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

@@ -16,7 +16,9 @@
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -31,6 +33,7 @@ struct Pattern;
 }  // namespace wallet
 }  // namespace database
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -43,7 +46,7 @@ struct hash<opentxs::blockchain::database::wallet::db::Pattern> {
 };
 }  // namespace std
 
-namespace opentxs::blockchain::database::wallet::db
+namespace opentxs::v1::blockchain::database::wallet::db
 {
 auto operator==(const Pattern& lhs, const Pattern& rhs) noexcept -> bool;
 
@@ -67,4 +70,4 @@ private:
     auto operator=(const Pattern&) -> Pattern& = delete;
     auto operator=(Pattern&&) -> Pattern& = delete;
 };
-}  // namespace opentxs::blockchain::database::wallet::db
+}  // namespace opentxs::v1::blockchain::database::wallet::db

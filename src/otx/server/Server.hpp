@@ -37,7 +37,9 @@
 #include "otx/server/UserCommandProcessor.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -60,10 +62,11 @@ class Nym;
 class Data;
 class OTPassword;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::server
+namespace opentxs::v1::server
 {
 class Server
 {
@@ -185,4 +188,4 @@ private:
     auto operator=(const Server&) -> Server& = delete;
     auto operator=(Server&&) -> Server& = delete;
 };
-}  // namespace opentxs::server
+}  // namespace opentxs::v1::server

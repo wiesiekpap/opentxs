@@ -28,7 +28,7 @@
 #include "serialization/protobuf/RPCEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_2(const RPCCommand& input, const bool silent) -> bool
 {
@@ -1305,4 +1305,4 @@ auto CheckProto_20(const RPCCommand& input, const bool silent) -> bool
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

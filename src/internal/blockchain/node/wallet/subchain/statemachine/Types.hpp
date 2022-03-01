@@ -13,7 +13,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -25,10 +27,11 @@ class Work;
 }  // namespace wallet
 }  // namespace node
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::node::wallet
+namespace opentxs::v1::blockchain::node::wallet
 {
 using Cookie = unsigned long long int;
 using BlockMap = UnallocatedMap<Cookie, Work*>;
@@ -37,4 +40,4 @@ using Result = std::pair<ReadView, Indices>;
 using Results = UnallocatedVector<Result>;
 using ProgressBatch = UnallocatedVector<
     std::pair<std::reference_wrapper<const block::Position>, std::size_t>>;
-}  // namespace opentxs::blockchain::node::wallet
+}  // namespace opentxs::v1::blockchain::node::wallet

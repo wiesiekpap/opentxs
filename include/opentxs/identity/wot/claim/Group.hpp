@@ -19,7 +19,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identity
 {
@@ -36,10 +38,11 @@ namespace proto
 {
 class ContactSection;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::wot::claim
+namespace opentxs::v1::identity::wot::claim
 {
 class OPENTXS_EXPORT Group
 {
@@ -86,4 +89,4 @@ private:
     auto operator=(const Group&) -> Group& = delete;
     auto operator=(Group&&) -> Group& = delete;
 };
-}  // namespace opentxs::identity::wot::claim
+}  // namespace opentxs::v1::identity::wot::claim

@@ -21,7 +21,7 @@ extern "C" {
 #include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs::crypto::implementation
+namespace opentxs::v1::crypto::implementation
 {
 auto OpenSSL::generate_dh(const Parameters& options, ::EVP_PKEY* output)
     const noexcept -> bool
@@ -533,4 +533,4 @@ auto OpenSSL::write_keypair(
 
     return true;
 }
-}  // namespace opentxs::crypto::implementation
+}  // namespace opentxs::v1::crypto::implementation

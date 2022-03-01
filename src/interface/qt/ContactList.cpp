@@ -15,7 +15,7 @@
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto ContactListQtModel(ui::internal::ContactList& parent) noexcept
     -> std::unique_ptr<ui::ContactListQt>
@@ -24,9 +24,9 @@ auto ContactListQtModel(ui::internal::ContactList& parent) noexcept
 
     return std::make_unique<ReturnType>(parent);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 struct ContactListQt::Imp {
     internal::ContactList& parent_;
@@ -70,9 +70,9 @@ ContactListQt::~ContactListQt()
         imp_ = nullptr;
     }
 }
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 auto ContactListItem::qt_data(const int column, const int role, QVariant& out)
     const noexcept -> void
@@ -116,4 +116,4 @@ auto ContactListItem::qt_data(const int column, const int role, QVariant& out)
         }
     }
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

@@ -3,7 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "Proto.tpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"  // IWYU pragma: associated
+#include "Proto.tpp"     // IWYU pragma: associated
 
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: keep
 #include <limits>
@@ -18,7 +19,7 @@ template class google::protobuf::RepeatedField<unsigned long>;
 // TODO I have no idea why those lines above are necessary to fix linking errors
 // on Windows but they are.
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto operator==(const ProtobufType& lhs, const ProtobufType& rhs) noexcept
     -> bool
@@ -30,9 +31,9 @@ auto operator==(const ProtobufType& lhs, const ProtobufType& rhs) noexcept
 
     return sLeft == sRight;
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto ToString(const ProtobufType& input) -> UnallocatedCString
 {
@@ -57,4 +58,4 @@ auto write(const ProtobufType& in, const AllocateOutput out) noexcept -> bool
 
     return in.SerializeToArray(dest.data(), static_cast<int>(dest.size()));
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

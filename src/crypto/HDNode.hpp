@@ -12,16 +12,19 @@
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
 class Crypto;
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto::implementation
+namespace opentxs::v1::crypto::implementation
 {
 class HDNode
 {
@@ -64,4 +67,4 @@ private:
     auto child() noexcept -> Secret&;
     auto parent() noexcept -> Secret&;
 };
-}  // namespace opentxs::crypto::implementation
+}  // namespace opentxs::v1::crypto::implementation

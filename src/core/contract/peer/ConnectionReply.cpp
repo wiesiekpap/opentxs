@@ -24,7 +24,7 @@
 #include "serialization/protobuf/PeerReply.pb.h"
 #include "serialization/protobuf/PeerRequest.pb.h"
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto Factory::ConnectionReply(
     const api::Session& api,
@@ -113,9 +113,9 @@ auto Factory::ConnectionReply(
         return {};
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::contract::peer::reply::implementation
+namespace opentxs::v1::contract::peer::reply::implementation
 {
 Connection::Connection(
     const api::Session& api,
@@ -184,4 +184,4 @@ auto Connection::IDVersion(const Lock& lock) const -> SerializedType
 
     return contract;
 }
-}  // namespace opentxs::contract::peer::reply::implementation
+}  // namespace opentxs::v1::contract::peer::reply::implementation

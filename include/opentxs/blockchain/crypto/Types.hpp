@@ -25,7 +25,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace crypto
 {
@@ -35,10 +37,11 @@ class EllipticCurve;
 class HD;
 }  // namespace key
 }  // namespace crypto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::crypto
+namespace opentxs::v1::blockchain::crypto
 {
 enum class AddressStyle : std::uint16_t;
 enum class HDProtocol : std::uint16_t;
@@ -52,7 +55,7 @@ using HDKey = std::shared_ptr<const opentxs::crypto::key::HD>;
 /// account id, chain, index
 using Key = std::tuple<UnallocatedCString, Subchain, Bip32Index>;
 using Activity = std::tuple<Coin, Key, Amount>;
-}  // namespace opentxs::blockchain::crypto
+}  // namespace opentxs::v1::blockchain::crypto
 
 namespace std
 {
@@ -63,7 +66,7 @@ struct hash<opentxs::blockchain::crypto::Key> {
 };
 }  // namespace std
 
-namespace opentxs
+namespace opentxs::v1
 {
 OPENTXS_EXPORT auto operator==(
     const blockchain::crypto::Key& lhs,
@@ -78,4 +81,4 @@ OPENTXS_EXPORT auto print(blockchain::crypto::Subchain) noexcept
     -> UnallocatedCString;
 OPENTXS_EXPORT auto print(const blockchain::crypto::Key&) noexcept
     -> UnallocatedCString;
-}  // namespace opentxs
+}  // namespace opentxs::v1

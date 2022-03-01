@@ -10,11 +10,11 @@
 
 #include <cstdint>
 
-namespace opentxs::identity
+namespace opentxs::v1::identity
 {
 enum class CredentialType : std::uint32_t {
     Error = 0,
     Legacy = 1,
     HD = 2,
 };
-}  // namespace opentxs::identity
+}  // namespace opentxs::v1::identity

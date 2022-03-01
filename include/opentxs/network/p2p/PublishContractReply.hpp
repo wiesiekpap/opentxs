@@ -10,13 +10,16 @@
 #include "opentxs/network/p2p/Base.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::p2p
+namespace opentxs::v1::network::p2p
 {
 class OPENTXS_EXPORT PublishContractReply final : public Base
 {
@@ -42,4 +45,4 @@ private:
         -> PublishContractReply& = delete;
     auto operator=(PublishContractReply&&) -> PublishContractReply& = delete;
 };
-}  // namespace opentxs::network::p2p
+}  // namespace opentxs::v1::network::p2p

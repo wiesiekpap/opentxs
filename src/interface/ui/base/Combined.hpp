@@ -9,7 +9,9 @@
 #include "interface/ui/base/RowType.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -18,10 +20,11 @@ namespace session
 class Client;
 }  // namespace session
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 template <typename ListTemplate, typename RowTemplate, typename SortKey>
 class Combined : public ListTemplate, public RowTemplate
@@ -67,4 +70,4 @@ private:
     auto operator=(const Combined&) -> Combined& = delete;
     auto operator=(Combined&&) -> Combined& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

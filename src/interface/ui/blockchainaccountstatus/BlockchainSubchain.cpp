@@ -14,7 +14,7 @@
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Types.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto BlockchainSubchainWidget(
     const ui::implementation::BlockchainSubaccountInternalInterface& parent,
@@ -28,9 +28,9 @@ auto BlockchainSubchainWidget(
 
     return std::make_shared<ReturnType>(parent, api, rowID, sortKey, custom);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 BlockchainSubchain::BlockchainSubchain(
     const BlockchainSubaccountInternalInterface& parent,
@@ -80,4 +80,4 @@ auto BlockchainSubchain::reindex(
 }
 
 BlockchainSubchain::~BlockchainSubchain() = default;
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

@@ -13,15 +13,18 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace fs = boost::filesystem;
 
-namespace opentxs::api::imp
+namespace opentxs::v1::api::imp
 {
 class Legacy final : public api::Legacy
 {
@@ -116,4 +119,4 @@ private:
     auto operator=(const Legacy&) -> Legacy& = delete;
     auto operator=(Legacy&&) -> Legacy& = delete;
 };
-}  // namespace opentxs::api::imp
+}  // namespace opentxs::v1::api::imp

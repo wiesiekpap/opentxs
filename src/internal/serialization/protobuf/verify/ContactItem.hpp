@@ -10,16 +10,19 @@
 #include "opentxs/Version.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class ContactItem;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_1(
     const ContactItem& contactItem,
@@ -121,4 +124,4 @@ auto CheckProto_20(
     const bool silent,
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

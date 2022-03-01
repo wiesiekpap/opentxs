@@ -16,7 +16,9 @@
 #include "util/Gatekeeper.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -48,10 +50,11 @@ class ListenCallback;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::p2p
+namespace opentxs::v1::network::p2p
 {
 class Server::Imp
 {
@@ -103,4 +106,4 @@ private:
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
 };
-}  // namespace opentxs::network::p2p
+}  // namespace opentxs::v1::network::p2p

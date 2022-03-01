@@ -22,7 +22,10 @@ namespace beast = boost::beast;
 namespace http = boost::beast::http;
 namespace ip = boost::asio::ip;
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -34,9 +37,11 @@ class Context;
 }  // namespace asio
 }  // namespace network
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::asio
+namespace opentxs::v1::network::asio
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
@@ -89,4 +94,4 @@ private:
     inline auto sp() noexcept { return this->shared_from_this(); }
 };
 #pragma GCC diagnostic pop
-}  // namespace opentxs::network::asio
+}  // namespace opentxs::v1::network::asio

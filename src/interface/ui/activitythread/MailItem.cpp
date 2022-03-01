@@ -14,7 +14,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto MailItem(
     const ui::implementation::ActivityThreadInternalInterface& parent,
@@ -30,9 +30,9 @@ auto MailItem(
     return std::make_shared<ReturnType>(
         parent, api, nymID, rowID, sortKey, custom);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 MailItem::MailItem(
     const ActivityThreadInternalInterface& parent,
@@ -48,4 +48,4 @@ MailItem::MailItem(
 }
 
 MailItem::~MailItem() = default;
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

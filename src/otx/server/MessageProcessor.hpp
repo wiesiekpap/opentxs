@@ -32,7 +32,9 @@
 #include "serialization/protobuf/ServerRequest.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -74,12 +76,13 @@ class Server;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::server
+namespace opentxs::v1::server
 {
 class MessageProcessor final : Lockable
 {
@@ -164,4 +167,4 @@ private:
     auto operator=(const MessageProcessor&) -> MessageProcessor& = delete;
     auto operator=(MessageProcessor&&) -> MessageProcessor& = delete;
 };
-}  // namespace opentxs::server
+}  // namespace opentxs::v1::server

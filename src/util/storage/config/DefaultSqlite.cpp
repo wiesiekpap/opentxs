@@ -7,8 +7,8 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "util/storage/Config.hpp"  // IWYU pragma: associated
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 const UnallocatedCString Config::default_plugin_{
     OT_STORAGE_PRIMARY_PLUGIN_SQLITE};
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

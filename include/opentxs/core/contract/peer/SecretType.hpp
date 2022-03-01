@@ -10,10 +10,10 @@
 
 #include <cstdint>
 
-namespace opentxs::contract::peer
+namespace opentxs::v1::contract::peer
 {
 enum class SecretType : std::uint8_t {
     Error = 0,
     Bip39 = 1,
 };
-}  // namespace opentxs::contract::peer
+}  // namespace opentxs::v1::contract::peer

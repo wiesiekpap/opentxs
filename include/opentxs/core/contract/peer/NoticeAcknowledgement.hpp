@@ -10,7 +10,9 @@
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace contract
 {
@@ -25,10 +27,11 @@ class Acknowledgement;
 
 using OTReplyAcknowledgement =
     SharedPimpl<contract::peer::reply::Acknowledgement>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::contract::peer::reply
+namespace opentxs::v1::contract::peer::reply
 {
 class OPENTXS_EXPORT Acknowledgement : virtual public peer::Reply
 {
@@ -50,4 +53,4 @@ private:
     auto operator=(const Acknowledgement&) -> Acknowledgement& = delete;
     auto operator=(Acknowledgement&&) -> Acknowledgement& = delete;
 };
-}  // namespace opentxs::contract::peer::reply
+}  // namespace opentxs::v1::contract::peer::reply

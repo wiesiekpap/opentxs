@@ -9,7 +9,7 @@
 
 #include "opentxs/util/Bytes.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 using ProtobufType = ::google::protobuf::MessageLite;
 
@@ -20,4 +20,4 @@ namespace proto
 {
 auto write(const ProtobufType& in, const AllocateOutput out) noexcept -> bool;
 }  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::v1

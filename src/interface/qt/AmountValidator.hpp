@@ -36,7 +36,9 @@
 #include "opentxs/util/Log.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace implementation
 {
@@ -45,10 +47,11 @@ namespace implementation
 class AccountActivity;
 }  // namespace implementation
 }  // namespace implementation
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 struct AmountValidator::Imp {
     using Parent = ui::AccountActivity;
@@ -361,4 +364,4 @@ private:
 
     auto unittype() const noexcept -> UnitType;
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

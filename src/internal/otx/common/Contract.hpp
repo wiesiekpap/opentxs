@@ -35,7 +35,9 @@ using IrrXMLReader = IIrrXMLReader<char, IXMLBase>;
 }  // namespace io
 }  // namespace irr
 
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -58,10 +60,11 @@ class Nym;
 class Armored;
 class PasswordPrompt;
 class Tag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 class Contract
 {
@@ -297,4 +300,4 @@ private:
 
     auto SetIdentifier(const Identifier& theID) -> void;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

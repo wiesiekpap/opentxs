@@ -18,7 +18,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identifier
 {
@@ -41,10 +43,11 @@ class Token;
 }  // namespace otx
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::blind
+namespace opentxs::v1::otx::blind
 {
 auto swap(Token& lhs, Token& rhs) noexcept -> void;
 
@@ -82,4 +85,4 @@ public:
 private:
     Imp* imp_;
 };
-}  // namespace opentxs::otx::blind
+}  // namespace opentxs::v1::otx::blind

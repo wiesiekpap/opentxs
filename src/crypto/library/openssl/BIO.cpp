@@ -21,7 +21,7 @@ extern "C" {
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs::crypto::openssl
+namespace opentxs::v1::crypto::openssl
 {
 auto BIO::assertBioNotNull(::BIO* pBIO) -> ::BIO*
 {
@@ -108,4 +108,4 @@ auto BIO::ToString() -> OTString
 
     return output;
 }
-}  // namespace opentxs::crypto::openssl
+}  // namespace opentxs::v1::crypto::openssl

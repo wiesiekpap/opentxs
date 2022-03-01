@@ -83,7 +83,7 @@
         Sleep(50ms);                                                           \
     }
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto PairAPI(const Flag& running, const api::session::Client& client)
     -> otx::client::Pair*
@@ -92,9 +92,9 @@ auto PairAPI(const Flag& running, const api::session::Client& client)
 
     return new ReturnType(running, client);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::otx::client::implementation
+namespace opentxs::v1::otx::client::implementation
 {
 Pair::Pair(const Flag& running, const api::session::Client& client)
     : otx::client::Pair()
@@ -1456,4 +1456,4 @@ auto Pair::store_secret(
 
     return output;
 }
-}  // namespace opentxs::otx::client::implementation
+}  // namespace opentxs::v1::otx::client::implementation

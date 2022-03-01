@@ -27,7 +27,9 @@
 #include "serialization/protobuf/Context.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -47,10 +49,11 @@ class Signature;
 class Factory;
 class NymFile;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::context::implementation
+namespace opentxs::v1::otx::context::implementation
 {
 class Base : virtual public internal::Base,
              public opentxs::contract::implementation::Signable
@@ -203,4 +206,4 @@ private:
     auto operator=(const Base&) -> Base& = delete;
     auto operator=(Base&&) -> Base& = delete;
 };
-}  // namespace opentxs::otx::context::implementation
+}  // namespace opentxs::v1::otx::context::implementation

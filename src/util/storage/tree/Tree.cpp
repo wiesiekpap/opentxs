@@ -31,7 +31,7 @@
 
 #define TREE_VERSION 6
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 Tree::Tree(
     const api::session::Factory& factory,
@@ -431,4 +431,4 @@ auto Tree::units() const -> storage::Units*
 }
 
 Tree::~Tree() = default;
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

@@ -21,7 +21,9 @@
 #include "serialization/protobuf/VerificationGroup.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -35,10 +37,11 @@ class Nym;
 
 class Factory;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::wot::verification::implementation
+namespace opentxs::v1::identity::wot::verification::implementation
 {
 class Set final : public internal::Set
 {
@@ -118,4 +121,4 @@ private:
     auto operator=(const Set&) -> Set& = delete;
     auto operator=(Set&&) -> Set& = delete;
 };
-}  // namespace opentxs::identity::wot::verification::implementation
+}  // namespace opentxs::v1::identity::wot::verification::implementation

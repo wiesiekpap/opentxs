@@ -37,7 +37,9 @@
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -77,10 +79,11 @@ class AmountValidator;
 class DestinationValidator;
 class DisplayScaleQt;
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <typename T>
 struct make_blank;
@@ -93,9 +96,9 @@ struct make_blank<ui::implementation::AccountActivityRowID> {
         return {api.Factory().Identifier(), proto::PAYMENTEVENTTYPE_ERROR};
     }
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 using AccountActivityList = List<
     AccountActivityExternalInterface,
@@ -294,4 +297,4 @@ private:
     auto operator=(const AccountActivity&) -> AccountActivity& = delete;
     auto operator=(AccountActivity&&) -> AccountActivity& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

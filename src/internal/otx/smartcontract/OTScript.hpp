@@ -11,7 +11,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class OTParty;
 class OTPartyAccount;
@@ -19,10 +21,11 @@ class OTScriptable;
 class OTSmartContract;
 class OTVariable;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 using mapOfParties = UnallocatedMap<UnallocatedCString, OTParty*>;
 using mapOfPartyAccounts = UnallocatedMap<UnallocatedCString, OTPartyAccount*>;
@@ -109,4 +112,4 @@ public:
 
     virtual auto ExecuteScript(OTVariable* pReturnVar = nullptr) -> bool;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

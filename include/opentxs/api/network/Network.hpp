@@ -8,7 +8,9 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -27,10 +29,11 @@ namespace zeromq
 class Context;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::network
+namespace opentxs::v1::api::network
 {
 class OPENTXS_EXPORT Network
 {
@@ -57,4 +60,4 @@ private:
     auto operator=(const Network&) -> Network& = delete;
     auto operator=(Network&&) -> Network& = delete;
 };
-}  // namespace opentxs::api::network
+}  // namespace opentxs::v1::api::network

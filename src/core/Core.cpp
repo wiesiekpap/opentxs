@@ -34,7 +34,7 @@
 #include "serialization/protobuf/ContractEnums.pb.h"
 #include "util/Container.hpp"
 
-namespace opentxs::blockchain
+namespace opentxs::v1::blockchain
 {
 auto AccountName(const blockchain::Type chain) noexcept -> UnallocatedCString
 {
@@ -189,9 +189,9 @@ auto UnitID(const api::Session& api, const blockchain::Type chain) noexcept
 
     return output;
 }
-}  // namespace opentxs::blockchain
+}  // namespace opentxs::v1::blockchain
 
-namespace opentxs
+namespace opentxs::v1
 {
 using AddressTypeMap =
     robin_hood::unordered_flat_map<AddressType, proto::AddressType>;
@@ -211,9 +211,9 @@ static auto addresstype_map() noexcept -> const AddressTypeMap&
 
     return map;
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto print(AccountType in) noexcept -> UnallocatedCString
 {
@@ -279,4 +279,4 @@ auto translate(proto::AddressType in) noexcept -> AddressType
         return AddressType::Error;
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

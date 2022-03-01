@@ -16,7 +16,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identifier
 {
@@ -39,10 +41,11 @@ class Server;
 
 class Identifier;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::server
+namespace opentxs::v1::server
 {
 class Transactor
 {
@@ -113,4 +116,4 @@ private:
 
     Transactor() = delete;
 };
-}  // namespace opentxs::server
+}  // namespace opentxs::v1::server

@@ -10,7 +10,9 @@
 #include "opentxs/otx/consensus/Base.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace otx
 {
@@ -24,10 +26,11 @@ class Client;
 class TransactionStatement;
 }  // namespace context
 }  // namespace otx
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::context
+namespace opentxs::v1::otx::context
 {
 class OPENTXS_EXPORT Client : virtual public Base
 {
@@ -68,4 +71,4 @@ private:
     auto operator=(const Client&) -> Client& = delete;
     auto operator=(Client&&) -> Client& = delete;
 };
-}  // namespace opentxs::otx::context
+}  // namespace opentxs::v1::otx::context

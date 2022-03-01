@@ -9,7 +9,7 @@
 
 #include "opentxs/util/Bytes.hpp"
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 class Scrypt
 {
@@ -34,4 +34,4 @@ private:
     auto operator=(const Scrypt&) -> Scrypt& = delete;
     auto operator=(Scrypt&&) -> Scrypt& = delete;
 };
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto

@@ -15,7 +15,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -27,10 +29,11 @@ namespace proto
 class Claim;
 class ContactItem;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::credential
+namespace opentxs::v1::identity::credential
 {
 class OPENTXS_EXPORT Contact : virtual public Base
 {
@@ -69,4 +72,4 @@ private:
     auto operator=(const Contact&) -> Contact& = delete;
     auto operator=(Contact&&) -> Contact& = delete;
 };
-}  // namespace opentxs::identity::credential
+}  // namespace opentxs::v1::identity::credential

@@ -26,7 +26,7 @@
 #include "serialization/protobuf/RPCStatus.pb.h"
 #include "serialization/protobuf/RPCTask.pb.h"
 
-namespace opentxs::rpc::response
+namespace opentxs::v1::rpc::response
 {
 Base::Imp::Imp(
     const Base* parent,
@@ -304,4 +304,4 @@ auto Base::Type() const noexcept -> CommandType { return imp_->type_; }
 auto Base::Version() const noexcept -> VersionNumber { return imp_->version_; }
 
 Base::~Base() = default;
-}  // namespace opentxs::rpc::response
+}  // namespace opentxs::v1::rpc::response

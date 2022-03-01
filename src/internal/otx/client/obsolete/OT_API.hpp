@@ -32,7 +32,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -91,10 +93,11 @@ class Message;
 class OTClient;
 class OTPaymentPlan;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 // The C++ high-level interface to the Open Transactions client-side.
 class OT_API : Lockable
@@ -688,4 +691,4 @@ private:
     auto operator=(const OT_API&) -> OT_API = delete;
     auto operator=(OT_API&&) -> OT_API = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

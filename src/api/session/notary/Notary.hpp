@@ -29,7 +29,9 @@
 #include "otx/server/Server.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -74,10 +76,11 @@ class MessageProcessor;
 class Factory;
 class Flag;
 class Options;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::imp
+namespace opentxs::v1::api::session::imp
 {
 class Notary final : public session::internal::Notary, public Session
 {
@@ -171,4 +174,4 @@ private:
     auto operator=(const Notary&) -> Notary& = delete;
     auto operator=(Notary&&) -> Notary& = delete;
 };
-}  // namespace opentxs::api::session::imp
+}  // namespace opentxs::v1::api::session::imp

@@ -61,7 +61,7 @@ template class std::
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto ActivityThreadModel(
     const api::session::Client& api,
@@ -74,9 +74,9 @@ auto ActivityThreadModel(
 
     return std::make_unique<ReturnType>(api, nymID, threadID, cb);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 ActivityThread::ActivityThread(
     const api::session::Client& api,
@@ -983,4 +983,4 @@ ActivityThread::~ActivityThread()
     wait_for_startup();
     signal_shutdown().get();
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

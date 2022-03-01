@@ -65,7 +65,7 @@
 
 namespace bc = opentxs::blockchain;
 
-namespace opentxs::network::p2p
+namespace opentxs::v1::network::p2p
 {
 Client::Imp::Imp(
     const api::Session& api,
@@ -969,9 +969,9 @@ auto Client::Imp::state_machine() noexcept -> void
 }
 
 Client::Imp::~Imp() { shutdown(); }
-}  // namespace opentxs::network::p2p
+}  // namespace opentxs::v1::network::p2p
 
-namespace opentxs::network::p2p
+namespace opentxs::v1::network::p2p
 {
 Client::Client(const api::Session& api) noexcept
     : Client(api, api.Network().ZeroMQ().Internal().MakeBatch([] {
@@ -1015,4 +1015,4 @@ Client::~Client()
         imp_ = nullptr;
     }
 }
-}  // namespace opentxs::network::p2p
+}  // namespace opentxs::v1::network::p2p

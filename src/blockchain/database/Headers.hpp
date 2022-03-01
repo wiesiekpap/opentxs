@@ -34,7 +34,9 @@
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -66,10 +68,11 @@ namespace node
 class UpdateTransaction;
 }  // namespace node
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::database
+namespace opentxs::v1::blockchain::database
 {
 struct Headers {
 public:
@@ -137,4 +140,4 @@ private:
     auto recent_hashes(const Lock& lock) const noexcept
         -> UnallocatedVector<block::pHash>;
 };
-}  // namespace opentxs::blockchain::database
+}  // namespace opentxs::v1::blockchain::database

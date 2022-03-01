@@ -10,7 +10,9 @@
 #include "internal/util/UniqueQueue.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identifier
 {
@@ -23,10 +25,11 @@ class Identifier;
 class OTPayment;
 template <class T>
 class UniqueQueue;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::internal
+namespace opentxs::v1::api::session::internal
 {
 class OTX : virtual public api::session::OTX
 {
@@ -56,4 +59,4 @@ public:
 
     auto Internal() noexcept -> internal::OTX& final { return *this; }
 };
-}  // namespace opentxs::api::session::internal
+}  // namespace opentxs::v1::api::session::internal

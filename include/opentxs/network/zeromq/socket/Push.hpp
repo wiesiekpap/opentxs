@@ -12,7 +12,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -26,10 +28,11 @@ class Push;
 }  // namespace network
 
 using OTZMQPushSocket = Pimpl<network::zeromq::socket::Push>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::socket
+namespace opentxs::v1::network::zeromq::socket
 {
 class OPENTXS_EXPORT Push : virtual public curve::Client, virtual public Sender
 {
@@ -49,4 +52,4 @@ private:
     auto operator=(const Push&) -> Push& = delete;
     auto operator=(Push&&) -> Push& = delete;
 };
-}  // namespace opentxs::network::zeromq::socket
+}  // namespace opentxs::v1::network::zeromq::socket

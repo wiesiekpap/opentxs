@@ -8,7 +8,9 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -31,10 +33,11 @@ namespace crypto
 class Bip32;
 class Bip39;
 }  // namespace crypto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api
+namespace opentxs::v1::api
 {
 class OPENTXS_EXPORT Crypto
 {
@@ -61,4 +64,4 @@ private:
     auto operator=(const Crypto&) -> Crypto& = delete;
     auto operator=(Crypto&&) -> Crypto& = delete;
 };
-}  // namespace opentxs::api
+}  // namespace opentxs::v1::api

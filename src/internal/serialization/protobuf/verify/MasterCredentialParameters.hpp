@@ -8,16 +8,19 @@
 #include "opentxs/Version.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class MasterCredentialParameters;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_1(
     const MasterCredentialParameters& master,
@@ -53,4 +56,4 @@ auto CheckProto_19(const MasterCredentialParameters&, const bool, bool&)
     -> bool;
 auto CheckProto_20(const MasterCredentialParameters&, const bool, bool&)
     -> bool;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

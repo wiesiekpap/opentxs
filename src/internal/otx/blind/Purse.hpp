@@ -8,7 +8,9 @@
 #include "opentxs/otx/blind/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace crypto
 {
@@ -43,10 +45,11 @@ class Purse;
 }  // namespace proto
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::blind::internal
+namespace opentxs::v1::otx::blind::internal
 {
 class Purse
 {
@@ -68,4 +71,4 @@ public:
 
     virtual ~Purse() = default;
 };
-}  // namespace opentxs::otx::blind::internal
+}  // namespace opentxs::v1::otx::blind::internal

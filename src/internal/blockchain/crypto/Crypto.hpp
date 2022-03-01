@@ -68,7 +68,9 @@ struct less<COIN> {
 }  // namespace std
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -116,23 +118,24 @@ class HDPath;
 class Identifier;
 class PasswordPrompt;
 class PaymentCode;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto blockchain_thread_item_id(
     const api::Crypto& crypto,
     const opentxs::blockchain::Type chain,
     const Data& txid) noexcept -> OTIdentifier;
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::blockchain::crypto
+namespace opentxs::v1::blockchain::crypto
 {
 using Chain = opentxs::blockchain::Type;
-}  // namespace opentxs::blockchain::crypto
+}  // namespace opentxs::v1::blockchain::crypto
 
-namespace opentxs::blockchain::crypto::internal
+namespace opentxs::v1::blockchain::crypto::internal
 {
 using ActivityMap = UnallocatedMap<Coin, std::pair<Key, Amount>>;
 
@@ -274,4 +277,4 @@ struct PaymentCode : virtual public crypto::PaymentCode,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote) noexcept -> OTIdentifier;
 };
-}  // namespace opentxs::blockchain::crypto::internal
+}  // namespace opentxs::v1::blockchain::crypto::internal

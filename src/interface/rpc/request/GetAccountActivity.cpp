@@ -12,7 +12,7 @@
 
 #include "opentxs/interface/rpc/CommandType.hpp"
 
-namespace opentxs::rpc::request::implementation
+namespace opentxs::v1::rpc::request::implementation
 {
 struct GetAccountActivity final : public Base::Imp {
     auto asGetAccountActivity() const noexcept
@@ -65,9 +65,9 @@ private:
     auto operator=(const GetAccountActivity&) -> GetAccountActivity& = delete;
     auto operator=(GetAccountActivity&&) -> GetAccountActivity& = delete;
 };
-}  // namespace opentxs::rpc::request::implementation
+}  // namespace opentxs::v1::rpc::request::implementation
 
-namespace opentxs::rpc::request
+namespace opentxs::v1::rpc::request
 {
 GetAccountActivity::GetAccountActivity(
     SessionIndex session,
@@ -104,4 +104,4 @@ auto GetAccountActivity::DefaultVersion() noexcept -> VersionNumber
 }
 
 GetAccountActivity::~GetAccountActivity() = default;
-}  // namespace opentxs::rpc::request
+}  // namespace opentxs::v1::rpc::request

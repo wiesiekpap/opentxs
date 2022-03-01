@@ -13,7 +13,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -29,10 +31,11 @@ class Request;
 }  // namespace network
 
 using OTZMQZAPCallback = Pimpl<network::zeromq::zap::Callback>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::zap
+namespace opentxs::v1::network::zeromq::zap
 {
 class OPENTXS_EXPORT Callback
 {
@@ -67,4 +70,4 @@ private:
     auto operator=(const Callback&) -> Callback& = delete;
     auto operator=(Callback&&) -> Callback& = default;
 };
-}  // namespace opentxs::network::zeromq::zap
+}  // namespace opentxs::v1::network::zeromq::zap

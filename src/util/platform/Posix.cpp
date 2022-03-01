@@ -32,7 +32,7 @@ extern "C" {
 #define PREDEF_MODE_DEBUG 1
 #endif
 
-namespace opentxs
+namespace opentxs::v1
 {
 
 auto Signals::Block() -> void
@@ -60,9 +60,9 @@ auto Signals::handle() -> void
         }
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::implementation
+namespace opentxs::v1::implementation
 {
 auto String::tokenize_basic(
     UnallocatedMap<UnallocatedCString, UnallocatedCString>& mapOutput) const
@@ -184,9 +184,9 @@ auto String::tokenize_enhanced(
     return false;
 #endif
 }
-}  // namespace opentxs::implementation
+}  // namespace opentxs::v1::implementation
 
-namespace opentxs::api::imp
+namespace opentxs::v1::api::imp
 {
 auto Context::HandleSignals(ShutdownCallback* callback) const noexcept -> void
 {
@@ -266,4 +266,4 @@ auto Legacy::get_home_platform() noexcept -> UnallocatedCString
 
     return {};
 }
-}  // namespace opentxs::api::imp
+}  // namespace opentxs::v1::api::imp

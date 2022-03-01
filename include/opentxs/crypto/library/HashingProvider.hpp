@@ -16,7 +16,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/Types.hpp"
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 class OPENTXS_EXPORT HashingProvider
 {
@@ -49,4 +49,4 @@ private:
     auto operator=(const HashingProvider&) -> HashingProvider& = delete;
     auto operator=(HashingProvider&&) -> HashingProvider& = delete;
 };
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto

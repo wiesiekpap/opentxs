@@ -11,7 +11,9 @@
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identifier
 {
@@ -23,10 +25,11 @@ namespace ui
 class AccountTree;
 class AccountCurrency;
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 class OPENTXS_EXPORT AccountTree : virtual public List
 {
@@ -49,4 +52,4 @@ private:
     auto operator=(const AccountTree&) -> AccountTree& = delete;
     auto operator=(AccountTree&&) -> AccountTree& = delete;
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

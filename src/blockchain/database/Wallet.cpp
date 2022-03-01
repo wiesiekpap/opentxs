@@ -19,7 +19,7 @@
 #include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
 #include "util/LMDB.hpp"
 
-namespace opentxs::blockchain::database
+namespace opentxs::v1::blockchain::database
 {
 Wallet::Wallet(
     const api::Session& api,
@@ -314,4 +314,4 @@ auto Wallet::SubchainSetLastScanned(
 {
     return subchains_.SubchainSetLastScanned(index, position);
 }
-}  // namespace opentxs::blockchain::database
+}  // namespace opentxs::v1::blockchain::database

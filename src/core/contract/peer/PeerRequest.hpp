@@ -23,7 +23,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -56,10 +58,11 @@ class Signature;
 }  // namespace proto
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::contract::peer::implementation
+namespace opentxs::v1::contract::peer::implementation
 {
 class Request : virtual public peer::Request,
                 public opentxs::contract::implementation::Signable
@@ -143,4 +146,4 @@ private:
 
     Request() = delete;
 };
-}  // namespace opentxs::contract::peer::implementation
+}  // namespace opentxs::v1::contract::peer::implementation

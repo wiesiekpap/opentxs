@@ -37,7 +37,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -88,12 +90,13 @@ class PeerRequest;
 
 class Flag;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::otx::client::implementation
+namespace opentxs::v1::otx::client::implementation
 {
 class Pair final : virtual public otx::client::Pair,
                    Lockable,
@@ -317,4 +320,4 @@ private:
     auto operator=(const Pair&) -> Pair& = delete;
     auto operator=(Pair&&) -> Pair& = delete;
 };
-}  // namespace opentxs::otx::client::implementation
+}  // namespace opentxs::v1::otx::client::implementation

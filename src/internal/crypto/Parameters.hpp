@@ -8,17 +8,20 @@
 #include "opentxs/core/Data.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class ContactData;
 class VerificationSet;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto::internal
+namespace opentxs::v1::crypto::internal
 {
 class Parameters
 {
@@ -39,4 +42,4 @@ public:
 
     virtual ~Parameters() = default;
 };
-}  // namespace opentxs::crypto::internal
+}  // namespace opentxs::v1::crypto::internal

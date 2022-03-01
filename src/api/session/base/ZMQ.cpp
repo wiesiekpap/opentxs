@@ -13,7 +13,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs::api::session
+namespace opentxs::v1::api::session
 {
 ZMQ::ZMQ(
     const opentxs::network::zeromq::Context& zmq,
@@ -26,4 +26,4 @@ ZMQ::ZMQ(
 {
     OT_ASSERT(endpoints_p_);
 }
-}  // namespace opentxs::api::session
+}  // namespace opentxs::v1::api::session

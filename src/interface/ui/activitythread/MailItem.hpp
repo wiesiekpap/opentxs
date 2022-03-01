@@ -13,7 +13,9 @@
 #include "internal/interface/ui/UI.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -38,10 +40,11 @@ class Publish;
 }  // namespace socket
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 class MailItem final : public ActivityThreadItem
 {
@@ -63,4 +66,4 @@ private:
     auto operator=(const MailItem&) -> MailItem& = delete;
     auto operator=(MailItem&&) -> MailItem& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

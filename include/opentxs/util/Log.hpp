@@ -33,7 +33,7 @@ class error_code;
 }  // namespace system
 }  // namespace boost
 
-namespace opentxs
+namespace opentxs::v1
 {
 namespace display
 {
@@ -54,10 +54,10 @@ class Log;
 
 class Amount;
 class StringXML;
-}  // namespace opentxs
+}  // namespace opentxs::v1
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 class OPENTXS_EXPORT Log
 {
@@ -134,4 +134,4 @@ OPENTXS_EXPORT auto LogInsane() noexcept -> Log&;
 OPENTXS_EXPORT auto LogTrace() noexcept -> Log&;
 OPENTXS_EXPORT auto LogVerbose() noexcept -> Log&;
 OPENTXS_EXPORT auto PrintStackTrace() noexcept -> UnallocatedCString;
-}  // namespace opentxs
+}  // namespace opentxs::v1

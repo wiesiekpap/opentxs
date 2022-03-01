@@ -8,7 +8,9 @@
 #include "Proto.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -18,13 +20,14 @@ class Frame;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto ZMQFrame(std::size_t size) noexcept -> network::zeromq::Frame;
 auto ZMQFrame(const void* data, const std::size_t size) noexcept
     -> network::zeromq::Frame;
 auto ZMQFrame(const ProtobufType& data) noexcept -> network::zeromq::Frame;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

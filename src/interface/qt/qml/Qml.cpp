@@ -9,10 +9,10 @@
 
 #include <QQmlEngine>
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 auto claim_ownership(QObject* object) noexcept -> void
 {
     QQmlEngine::setObjectOwnership(object, QQmlEngine::CppOwnership);
 }
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

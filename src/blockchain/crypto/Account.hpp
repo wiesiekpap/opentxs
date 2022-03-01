@@ -39,7 +39,9 @@
 #include "opentxs/util/Log.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -67,10 +69,11 @@ class HDPath;
 
 class PasswordPrompt;
 class PaymentCode;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::crypto::implementation
+namespace opentxs::v1::blockchain::crypto::implementation
 {
 class Account final : public internal::Account
 {
@@ -358,4 +361,4 @@ private:
     auto operator=(const Account&) -> Account& = delete;
     auto operator=(Account&&) -> Account& = delete;
 };
-}  // namespace opentxs::blockchain::crypto::implementation
+}  // namespace opentxs::v1::blockchain::crypto::implementation

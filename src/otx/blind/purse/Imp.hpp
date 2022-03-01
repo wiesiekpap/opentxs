@@ -28,7 +28,9 @@
 #include "serialization/protobuf/Envelope.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -65,10 +67,11 @@ class Purse;
 }  // namespace proto
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::blind::purse
+namespace opentxs::v1::otx::blind::purse
 {
 class Purse final : public blind::Purse::Imp
 {
@@ -207,4 +210,4 @@ private:
     auto operator=(const Purse&) -> Purse& = delete;
     auto operator=(Purse&&) -> Purse& = delete;
 };
-}  // namespace opentxs::otx::blind::purse
+}  // namespace opentxs::v1::otx::blind::purse

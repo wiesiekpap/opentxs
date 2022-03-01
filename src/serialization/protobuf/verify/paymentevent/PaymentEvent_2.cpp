@@ -14,7 +14,7 @@
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_2(
     const PaymentEvent& input,
@@ -92,4 +92,4 @@ auto CheckProto_2(
 
     return true;
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

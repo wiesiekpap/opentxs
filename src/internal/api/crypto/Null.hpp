@@ -13,7 +13,9 @@
 #include "opentxs/core/identifier/Nym.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -23,10 +25,11 @@ class Contacts;
 class Factory;
 }  // namespace session
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::crypto::blank
+namespace opentxs::v1::api::crypto::blank
 {
 class Blockchain final : public crypto::internal::Blockchain
 {
@@ -313,4 +316,4 @@ public:
 private:
     const OTNymID id_;
 };
-}  // namespace opentxs::api::crypto::blank
+}  // namespace opentxs::v1::api::crypto::blank

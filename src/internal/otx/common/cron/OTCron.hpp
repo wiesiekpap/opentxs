@@ -18,7 +18,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 namespace api
 {
@@ -214,4 +214,4 @@ private:
 
     OTCron() = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

@@ -18,13 +18,16 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Amount;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::display
+namespace opentxs::v1::display
 {
 class Scale
 {
@@ -71,4 +74,4 @@ private:
     auto operator=(const Scale&) -> Scale& = delete;
     auto operator=(Scale&&) -> Scale& = delete;
 };
-}  // namespace opentxs::display
+}  // namespace opentxs::v1::display

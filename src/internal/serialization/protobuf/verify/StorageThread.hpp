@@ -8,16 +8,19 @@
 #include "opentxs/Version.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class StorageThread;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_1(const StorageThread& thread, const bool silent) -> bool;
 auto CheckProto_2(const StorageThread&, const bool) -> bool;
@@ -39,4 +42,4 @@ auto CheckProto_17(const StorageThread&, const bool) -> bool;
 auto CheckProto_18(const StorageThread&, const bool) -> bool;
 auto CheckProto_19(const StorageThread&, const bool) -> bool;
 auto CheckProto_20(const StorageThread&, const bool) -> bool;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

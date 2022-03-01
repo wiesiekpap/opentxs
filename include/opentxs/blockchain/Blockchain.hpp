@@ -19,16 +19,19 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
 class Session;
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 namespace blockchain
 {
@@ -335,7 +338,7 @@ using SendOutcome = std::pair<SendResult, block::pTxid>;
 }  // namespace blockchain
 
 auto print(const blockchain::block::Position&) noexcept -> UnallocatedCString;
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
 namespace std
 {

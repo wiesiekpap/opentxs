@@ -9,16 +9,19 @@
 #include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class AsymmetricKey;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_1(
     const AsymmetricKey& key,
@@ -140,4 +143,4 @@ auto CheckProto_20(
     const CredentialType,
     const KeyMode,
     const KeyRole) -> bool;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

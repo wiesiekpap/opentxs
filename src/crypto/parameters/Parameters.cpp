@@ -27,7 +27,7 @@
 #include "opentxs/util/Container.hpp"
 #include "util/Container.hpp"
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 const UnallocatedMap<crypto::key::asymmetric::Algorithm, ParameterType>
     key_to_nym_{
@@ -321,4 +321,4 @@ Parameters::~Parameters()
         imp_ = nullptr;
     }
 }
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto

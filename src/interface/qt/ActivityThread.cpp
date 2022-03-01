@@ -27,7 +27,7 @@
 
 class QValidator;
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto ActivityThreadQtModel(ui::internal::ActivityThread& parent) noexcept
     -> std::unique_ptr<ui::ActivityThreadQt>
@@ -36,9 +36,9 @@ auto ActivityThreadQtModel(ui::internal::ActivityThread& parent) noexcept
 
     return std::make_unique<ReturnType>(parent);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 struct ActivityThreadQt::Imp {
     internal::ActivityThread& parent_;
@@ -177,9 +177,9 @@ ActivityThreadQt::~ActivityThreadQt()
         imp_ = nullptr;
     }
 }
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 auto ActivityThreadItem::qt_data(
     const int column,
@@ -263,4 +263,4 @@ auto ActivityThreadItem::qt_data(
         }
     }
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

@@ -14,7 +14,7 @@
 #include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/tree/Node.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 namespace proto
 {
@@ -57,4 +57,4 @@ public:
     ~Contexts() final = default;
 };
 }  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::v1

@@ -16,7 +16,9 @@ class io_context;
 }  // namespace asio
 }  // namespace boost
 
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -36,10 +38,11 @@ namespace asio
 class Endpoint;
 }  // namespace asio
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::network::asio
+namespace opentxs::v1::api::network::asio
 {
 class Acceptors
 {
@@ -70,4 +73,4 @@ private:
     Acceptors& operator=(const Acceptors&) = delete;
     Acceptors& operator=(Acceptors&&) = delete;
 };
-}  // namespace opentxs::api::network::asio
+}  // namespace opentxs::v1::api::network::asio

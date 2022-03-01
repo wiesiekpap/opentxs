@@ -17,7 +17,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -75,10 +77,11 @@ namespace zeromq
 class Frame;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto BitcoinP2PHeader(
     const api::Session& api,
@@ -103,4 +106,4 @@ auto BitcoinP2PPeerLegacy(
     std::unique_ptr<blockchain::p2p::internal::Address> address,
     const UnallocatedCString& shutdown)
     -> std::unique_ptr<blockchain::p2p::internal::Peer>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

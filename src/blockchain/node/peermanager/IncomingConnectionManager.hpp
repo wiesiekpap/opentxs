@@ -12,7 +12,9 @@
 #include <memory>
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -21,9 +23,10 @@ namespace asio
 class Socket;
 }  // namespace asio
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
-namespace opentxs::blockchain::node::implementation
+namespace opentxs::v1::blockchain::node::implementation
 {
 class PeerManager::IncomingConnectionManager
 {
@@ -63,4 +66,4 @@ private:
     auto operator=(IncomingConnectionManager&&)
         -> IncomingConnectionManager& = delete;
 };
-}  // namespace opentxs::blockchain::node::implementation
+}  // namespace opentxs::v1::blockchain::node::implementation

@@ -25,7 +25,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -34,6 +36,7 @@ namespace zeromq
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -46,7 +49,7 @@ class Message;
         shutdown(lock);                                                        \
     }
 
-namespace opentxs::network::zeromq::socket::implementation
+namespace opentxs::v1::network::zeromq::socket::implementation
 {
 class Socket : virtual public internal::Socket, public Lockable
 {
@@ -150,4 +153,4 @@ private:
     auto operator=(const Socket&) -> Socket& = delete;
     auto operator=(Socket&&) -> Socket& = delete;
 };
-}  // namespace opentxs::network::zeromq::socket::implementation
+}  // namespace opentxs::v1::network::zeromq::socket::implementation

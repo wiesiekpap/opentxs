@@ -21,7 +21,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Timer(boost::asio::io_context& asio) noexcept -> opentxs::Timer
 {
@@ -98,9 +98,9 @@ auto Timer(boost::asio::io_context& asio) noexcept -> opentxs::Timer
 
     return std::make_unique<DeadlineTimer>(asio).release();
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto operator<(const Timer& lhs, const Timer& rhs) noexcept -> bool
 {
@@ -113,9 +113,9 @@ auto operator==(const Timer& lhs, const Timer& rhs) noexcept -> bool
 }
 
 auto swap(Timer& lhs, Timer& rhs) noexcept -> void { lhs.swap(rhs); }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto Timer::Imp::Cancel() noexcept -> std::size_t { return {}; }
 
@@ -135,9 +135,9 @@ auto Timer::Imp::Wait(Handler&& handler) noexcept -> void
 }
 
 auto Timer::Imp::Wait() noexcept -> void {}
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs
+namespace opentxs::v1
 {
 Timer::Timer(Imp* imp) noexcept
     : imp_(imp)
@@ -202,4 +202,4 @@ Timer::~Timer()
         imp_ = nullptr;
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

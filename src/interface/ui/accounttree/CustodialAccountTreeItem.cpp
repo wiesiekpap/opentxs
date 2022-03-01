@@ -15,7 +15,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto AccountTreeItemCustodial(
     const ui::implementation::AccountCurrencyInternalInterface& parent,
@@ -29,9 +29,9 @@ auto AccountTreeItemCustodial(
 
     return std::make_shared<ReturnType>(parent, api, rowID, sortKey, custom);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 CustodialAccountTreeItem::CustodialAccountTreeItem(
     const AccountCurrencyInternalInterface& parent,
@@ -55,4 +55,4 @@ auto CustodialAccountTreeItem::NotaryName() const noexcept -> UnallocatedCString
 }
 
 CustodialAccountTreeItem::~CustodialAccountTreeItem() = default;
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

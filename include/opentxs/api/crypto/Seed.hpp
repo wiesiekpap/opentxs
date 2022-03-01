@@ -22,7 +22,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -49,10 +51,11 @@ class Seed;
 class Identifier;
 class PasswordPrompt;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::crypto
+namespace opentxs::v1::api::crypto
 {
 class OPENTXS_EXPORT Seed
 {
@@ -174,4 +177,4 @@ private:
     auto operator=(const Seed&) -> Seed& = delete;
     auto operator=(Seed&&) -> Seed& = delete;
 };
-}  // namespace opentxs::api::crypto
+}  // namespace opentxs::v1::api::crypto

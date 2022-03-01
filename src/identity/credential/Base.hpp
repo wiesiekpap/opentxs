@@ -23,7 +23,9 @@
 #include "serialization/protobuf/Credential.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -55,10 +57,11 @@ class VerificationSet;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::credential::implementation
+namespace opentxs::v1::identity::credential::implementation
 {
 class Base : virtual public credential::internal::Base,
              public opentxs::contract::implementation::Signable
@@ -197,4 +200,4 @@ private:
     auto operator=(const Base&) -> Base& = delete;
     auto operator=(Base&&) -> Base& = delete;
 };
-}  // namespace opentxs::identity::credential::implementation
+}  // namespace opentxs::v1::identity::credential::implementation

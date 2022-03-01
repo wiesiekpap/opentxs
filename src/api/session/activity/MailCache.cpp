@@ -45,7 +45,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::api::session::activity
+namespace opentxs::v1::api::session::activity
 {
 struct MailCache::Imp {
     struct Task {
@@ -375,4 +375,4 @@ auto MailCache::LoadMail(
 }
 
 MailCache::~MailCache() = default;
-}  // namespace opentxs::api::session::activity
+}  // namespace opentxs::v1::api::session::activity

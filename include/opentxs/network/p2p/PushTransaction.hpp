@@ -15,13 +15,16 @@
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::p2p
+namespace opentxs::v1::network::p2p
 {
 class OPENTXS_EXPORT PushTransaction final : public Base
 {
@@ -47,4 +50,4 @@ private:
     auto operator=(const PushTransaction&) -> PushTransaction& = delete;
     auto operator=(PushTransaction&&) -> PushTransaction& = delete;
 };
-}  // namespace opentxs::network::p2p
+}  // namespace opentxs::v1::network::p2p

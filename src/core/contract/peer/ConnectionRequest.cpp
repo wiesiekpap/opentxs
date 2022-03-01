@@ -23,7 +23,7 @@
 #include "serialization/protobuf/ConnectionInfo.pb.h"
 #include "serialization/protobuf/PeerRequest.pb.h"
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto Factory::ConnectionRequest(
     const api::Session& api,
@@ -93,9 +93,9 @@ auto Factory::ConnectionRequest(
         return {};
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::contract::peer::request::implementation
+namespace opentxs::v1::contract::peer::request::implementation
 {
 Connection::Connection(
     const api::Session& api,
@@ -142,4 +142,4 @@ auto Connection::IDVersion(const Lock& lock) const -> SerializedType
 
     return contract;
 }
-}  // namespace opentxs::contract::peer::request::implementation
+}  // namespace opentxs::v1::contract::peer::request::implementation

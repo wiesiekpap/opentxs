@@ -51,7 +51,7 @@
 // algorithms. All I have to do is change the return type.
 //
 
-namespace opentxs
+namespace opentxs::v1
 {
 OTCronItem::OTCronItem(const api::Session& api)
     : ot_super(api)
@@ -1593,4 +1593,4 @@ void OTCronItem::setNotaryID(const identifier::Notary& notaryID)
 }
 
 OTCronItem::~OTCronItem() { Release_CronItem(); }
-}  // namespace opentxs
+}  // namespace opentxs::v1

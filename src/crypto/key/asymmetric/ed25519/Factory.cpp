@@ -12,7 +12,7 @@
 #include "crypto/key/asymmetric/ed25519/Ed25519.hpp"
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Ed25519Key(
     const api::Session& api,
@@ -55,4 +55,4 @@ auto Ed25519Key(
         return nullptr;
     }
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

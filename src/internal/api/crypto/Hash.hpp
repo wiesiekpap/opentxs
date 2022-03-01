@@ -7,7 +7,7 @@
 
 #include "opentxs/api/crypto/Hash.hpp"
 
-namespace opentxs::api::crypto::internal
+namespace opentxs::v1::api::crypto::internal
 {
 class Hash : virtual public api::crypto::Hash
 {
@@ -18,4 +18,4 @@ public:
 
     ~Hash() override = default;
 };
-}  // namespace opentxs::api::crypto::internal
+}  // namespace opentxs::v1::api::crypto::internal

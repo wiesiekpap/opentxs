@@ -13,7 +13,9 @@
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace contract
 {
@@ -44,10 +46,11 @@ class PeerRequest;
 }  // namespace proto
 
 using OTPeerRequest = SharedPimpl<contract::peer::Request>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::contract::peer
+namespace opentxs::v1::contract::peer
 {
 class OPENTXS_EXPORT Request : virtual public opentxs::contract::Signable
 {
@@ -88,4 +91,4 @@ private:
     auto operator=(const Request&) -> Request& = delete;
     auto operator=(Request&&) -> Request& = delete;
 };
-}  // namespace opentxs::contract::peer
+}  // namespace opentxs::v1::contract::peer

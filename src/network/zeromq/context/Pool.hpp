@@ -30,7 +30,9 @@
 #pragma once
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -56,10 +58,11 @@ class Raw;
 class Context;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::context
+namespace opentxs::v1::network::zeromq::context
 {
 using Batches = robin_hood::unordered_node_map<BatchID, internal::Batch>;
 using BatchIndex =
@@ -118,4 +121,4 @@ private:
     auto operator=(const Pool&) -> Pool& = delete;
     auto operator=(Pool&&) -> Pool& = delete;
 };
-}  // namespace opentxs::network::zeromq::context
+}  // namespace opentxs::v1::network::zeromq::context

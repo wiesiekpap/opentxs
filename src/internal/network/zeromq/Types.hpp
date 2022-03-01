@@ -14,7 +14,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -28,10 +30,11 @@ class Raw;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq
+namespace opentxs::v1::network::zeromq
 {
 using BatchID = std::size_t;
 using SocketID = std::size_t;
@@ -46,4 +49,4 @@ using SocketData = std::pair<socket::Type, EndpointArgs>;
 
 auto GetBatchID() noexcept -> BatchID;
 auto GetSocketID() noexcept -> SocketID;
-}  // namespace opentxs::network::zeromq
+}  // namespace opentxs::v1::network::zeromq

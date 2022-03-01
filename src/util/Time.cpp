@@ -9,7 +9,7 @@
 
 #include <thread>
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto Sleep(const std::chrono::microseconds us) -> bool
 {
@@ -23,4 +23,4 @@ auto Sleep(const std::chrono::microseconds us) -> bool
 
     return true;
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1

@@ -8,7 +8,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace server
 {
@@ -17,10 +19,11 @@ class Server;
 
 class PasswordPrompt;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::server
+namespace opentxs::v1::server
 {
 class MainFile
 {
@@ -46,4 +49,4 @@ private:
     auto operator=(const MainFile&) -> MainFile& = delete;
     auto operator=(MainFile&&) -> MainFile& = delete;
 };
-}  // namespace opentxs::server
+}  // namespace opentxs::v1::server

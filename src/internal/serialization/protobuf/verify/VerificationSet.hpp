@@ -9,16 +9,19 @@
 #include "opentxs/Version.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class VerificationSet;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_1(
     const VerificationSet& verificationSet,
@@ -62,4 +65,4 @@ auto CheckProto_19(const VerificationSet&, const bool, const VerificationType)
     -> bool;
 auto CheckProto_20(const VerificationSet&, const bool, const VerificationType)
     -> bool;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

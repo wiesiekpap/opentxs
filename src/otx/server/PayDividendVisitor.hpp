@@ -16,7 +16,9 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identifier
 {
@@ -29,10 +31,11 @@ class Server;
 }  // namespace server
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 // Note: from OTUnitDefinition.h and .cpp.
 // This is a subclass of AccountVisitor, which is used whenever OTUnitDefinition
@@ -85,4 +88,4 @@ public:
 
     ~PayDividendVisitor() final;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

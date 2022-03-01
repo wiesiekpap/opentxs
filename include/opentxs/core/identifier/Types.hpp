@@ -13,15 +13,15 @@
 
 #include "opentxs/core/contract/Types.hpp"
 
-namespace opentxs::identifier
+namespace opentxs::v1::identifier
 {
 enum class Algorithm : std::uint8_t;
 enum class Type : std::uint16_t;
-}  // namespace opentxs::identifier
+}  // namespace opentxs::v1::identifier
 
-namespace opentxs
+namespace opentxs::v1
 {
 OPENTXS_EXPORT auto print(identifier::Algorithm) noexcept -> const char*;
 OPENTXS_EXPORT auto print(identifier::Type) noexcept -> const char*;
 OPENTXS_EXPORT auto translate(identifier::Type) noexcept -> contract::Type;
-}  // namespace opentxs
+}  // namespace opentxs::v1

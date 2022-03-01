@@ -10,7 +10,9 @@
 #include <future>
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -47,10 +49,11 @@ class Nym;
 }  // namespace identifier
 
 class PaymentCode;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::node
+namespace opentxs::v1::blockchain::node
 {
 class OPENTXS_EXPORT Manager
 {
@@ -112,4 +115,4 @@ private:
     auto operator=(const Manager&) -> Manager& = delete;
     auto operator=(Manager&&) -> Manager& = delete;
 };
-}  // namespace opentxs::blockchain::node
+}  // namespace opentxs::v1::blockchain::node

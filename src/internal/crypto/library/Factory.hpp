@@ -8,7 +8,9 @@
 #include <memory>
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -27,10 +29,11 @@ class Ripemd160;
 class Secp256k1;
 class Sodium;
 }  // namespace crypto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto OpenSSL() noexcept -> std::unique_ptr<crypto::OpenSSL>;
 auto Secp256k1(
@@ -39,4 +42,4 @@ auto Secp256k1(
     -> std::unique_ptr<crypto::Secp256k1>;
 auto Sodium(const api::Crypto& crypto) noexcept
     -> std::unique_ptr<crypto::Sodium>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

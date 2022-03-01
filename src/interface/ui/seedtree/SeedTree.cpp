@@ -44,7 +44,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto SeedTreeModel(
     const api::session::Client& api,
@@ -55,9 +55,9 @@ auto SeedTreeModel(
 
     return std::make_unique<ReturnType>(api, cb);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 SeedTree::SeedTree(
     const api::session::Client& api,
@@ -502,4 +502,4 @@ SeedTree::~SeedTree()
     wait_for_startup();
     signal_shutdown().get();
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

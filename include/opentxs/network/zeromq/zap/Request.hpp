@@ -14,7 +14,9 @@
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -26,10 +28,11 @@ class Request;
 }  // namespace zap
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::zap
+namespace opentxs::v1::network::zeromq::zap
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow-field"
@@ -65,4 +68,4 @@ protected:
     Imp* imp_;
 };
 #pragma GCC diagnostic pop
-}  // namespace opentxs::network::zeromq::zap
+}  // namespace opentxs::v1::network::zeromq::zap

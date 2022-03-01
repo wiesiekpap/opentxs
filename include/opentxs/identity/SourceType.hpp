@@ -10,11 +10,11 @@
 
 #include <cstdint>
 
-namespace opentxs::identity
+namespace opentxs::v1::identity
 {
 enum class SourceType : std::uint32_t {
     Error = 0,
     PubKey = 1,
     Bip47 = 2,
 };
-}  // namespace opentxs::identity
+}  // namespace opentxs::v1::identity

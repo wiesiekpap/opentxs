@@ -8,7 +8,9 @@
 #include "opentxs/crypto/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identity
 {
@@ -26,10 +28,11 @@ class Signature;
 }  // namespace proto
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::internal
+namespace opentxs::v1::internal
 {
 class PaymentCode
 {
@@ -54,4 +57,4 @@ public:
 
     virtual ~PaymentCode() = default;
 };
-}  // namespace opentxs::internal
+}  // namespace opentxs::v1::internal

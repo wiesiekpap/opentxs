@@ -12,7 +12,9 @@
 #include "opentxs/util/WorkType.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -47,10 +49,11 @@ class Publish;
 }  // namespace network
 
 class Options;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::network::internal
+namespace opentxs::v1::api::network::internal
 {
 class Blockchain
 {
@@ -105,4 +108,4 @@ private:
     Blockchain& operator=(const Blockchain&) = delete;
     Blockchain& operator=(Blockchain&&) = delete;
 };
-}  // namespace opentxs::api::network::internal
+}  // namespace opentxs::v1::api::network::internal

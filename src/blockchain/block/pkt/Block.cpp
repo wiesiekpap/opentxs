@@ -19,7 +19,7 @@
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto parse_pkt_block(
     const api::Session& api,
@@ -98,9 +98,9 @@ auto parse_pkt_block(
         static_cast<std::size_t>(std::distance(proofStart, proofEnd)),
         std::move(sizeData));
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::blockchain::block::pkt
+namespace opentxs::v1::blockchain::block::pkt
 {
 Block::Block(
     const api::Session& api,
@@ -195,4 +195,4 @@ auto Block::serialize_post_header(ByteIterator& it, std::size_t& remaining)
 }
 
 Block::~Block() = default;
-}  // namespace opentxs::blockchain::block::pkt
+}  // namespace opentxs::v1::blockchain::block::pkt

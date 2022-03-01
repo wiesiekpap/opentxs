@@ -19,7 +19,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -51,10 +53,11 @@ class Token;
 }  // namespace proto
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::blind
+namespace opentxs::v1::otx::blind
 {
 class Token::Imp : virtual public internal::Token
 {
@@ -102,4 +105,4 @@ public:
 
     ~Imp() override = default;
 };
-}  // namespace opentxs::otx::blind
+}  // namespace opentxs::v1::otx::blind

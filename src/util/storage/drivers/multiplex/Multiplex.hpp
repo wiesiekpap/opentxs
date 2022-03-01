@@ -17,7 +17,9 @@
 #include "opentxs/util/storage/Driver.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -44,10 +46,11 @@ class Root;
 
 class Flag;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::storage::driver
+namespace opentxs::v1::storage::driver
 {
 class Multiplex final : virtual public internal::Multiplex
 {
@@ -133,4 +136,4 @@ private:
     auto operator=(const Multiplex&) -> Multiplex& = delete;
     auto operator=(Multiplex&&) -> Multiplex& = delete;
 };
-}  // namespace opentxs::storage::driver
+}  // namespace opentxs::v1::storage::driver

@@ -35,7 +35,9 @@
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -65,10 +67,11 @@ class Message;
 
 class Amount;
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 using AccountTreeList = List<
     AccountTreeExternalInterface,
@@ -175,4 +178,4 @@ private:
     auto operator=(const AccountTree&) -> AccountTree& = delete;
     auto operator=(AccountTree&&) -> AccountTree& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

@@ -37,7 +37,9 @@
 #include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -73,10 +75,11 @@ class PasswordPrompt;
 class PaymentCode;
 class Signature;
 class Tag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::implementation
+namespace opentxs::v1::identity::implementation
 {
 class Nym final : virtual public identity::internal::Nym, Lockable
 {
@@ -352,4 +355,4 @@ private:
     auto operator=(const Nym&) -> Nym& = delete;
     auto operator=(Nym&&) -> Nym& = delete;
 };
-}  // namespace opentxs::identity::implementation
+}  // namespace opentxs::v1::identity::implementation

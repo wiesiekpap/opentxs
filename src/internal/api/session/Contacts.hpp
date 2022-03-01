@@ -11,7 +11,9 @@
 #include "opentxs/api/session/Contacts.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -22,10 +24,11 @@ class Blockchain;
 }  // namespace api
 
 class Contact;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::internal
+namespace opentxs::v1::api::session::internal
 {
 class Contacts : virtual public api::session::Contacts
 {
@@ -46,4 +49,4 @@ public:
 
     ~Contacts() override = default;
 };
-}  // namespace opentxs::api::session::internal
+}  // namespace opentxs::v1::api::session::internal

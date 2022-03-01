@@ -30,7 +30,7 @@
 #include "serialization/protobuf/ContactData.pb.h"
 #include "serialization/protobuf/VerificationSet.pb.h"
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 Parameters::Imp::Imp(
     const ParameterType type,
@@ -204,4 +204,4 @@ auto Parameters::Imp::SetVerificationSet(
 {
     verification_set_ = std::make_unique<proto::VerificationSet>(in);
 }
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto

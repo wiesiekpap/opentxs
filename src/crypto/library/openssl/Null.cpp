@@ -9,7 +9,7 @@
 
 #include "internal/crypto/library/OpenSSL.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto OpenSSL() noexcept -> std::unique_ptr<crypto::OpenSSL> { return {}; }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

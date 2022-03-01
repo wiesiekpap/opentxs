@@ -11,7 +11,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace otx
 {
@@ -20,10 +22,11 @@ namespace context
 class Server;
 }  // namespace context
 }  // namespace otx
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::context::implementation
+namespace opentxs::v1::otx::context::implementation
 {
 class ManagedNumber final : virtual public otx::context::ManagedNumber
 {
@@ -47,4 +50,4 @@ private:
     auto operator=(const ManagedNumber&) -> ManagedNumber& = delete;
     auto operator=(ManagedNumber&&) -> ManagedNumber& = delete;
 };
-}  // namespace opentxs::otx::context::implementation
+}  // namespace opentxs::v1::otx::context::implementation

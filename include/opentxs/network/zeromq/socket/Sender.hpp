@@ -10,7 +10,9 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -19,10 +21,11 @@ namespace zeromq
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::socket
+namespace opentxs::v1::network::zeromq::socket
 {
 class OPENTXS_EXPORT Sender : virtual public Socket
 {
@@ -40,4 +43,4 @@ private:
     auto operator=(const Sender&) -> Sender& = delete;
     auto operator=(Sender&&) -> Sender& = delete;
 };
-}  // namespace opentxs::network::zeromq::socket
+}  // namespace opentxs::v1::network::zeromq::socket

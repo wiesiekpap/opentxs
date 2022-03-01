@@ -9,7 +9,7 @@
 
 #include "opentxs/core/String.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 class Identifier;
 
@@ -37,4 +37,4 @@ public:
     virtual ~OTStashItem();
 };
 
-}  // namespace opentxs
+}  // namespace opentxs::v1

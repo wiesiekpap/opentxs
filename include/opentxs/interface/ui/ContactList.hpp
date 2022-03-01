@@ -11,17 +11,20 @@
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace ui
 {
 class ContactList;
 class ContactListItem;
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 class OPENTXS_EXPORT ContactList : virtual public List
 {
@@ -47,4 +50,4 @@ private:
     auto operator=(const ContactList&) -> ContactList& = delete;
     auto operator=(ContactList&&) -> ContactList& = delete;
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

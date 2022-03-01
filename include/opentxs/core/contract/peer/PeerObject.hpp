@@ -17,7 +17,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace otx
 {
@@ -35,10 +37,11 @@ class PeerObject;
 class PeerObject;
 
 using OTPeerObject = Pimpl<PeerObject>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 class OPENTXS_EXPORT PeerObject
 {
@@ -71,4 +74,4 @@ private:
     auto operator=(const PeerObject&) noexcept -> PeerObject& = delete;
     auto operator=(PeerObject&&) noexcept -> PeerObject& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

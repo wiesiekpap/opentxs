@@ -7,7 +7,7 @@
 
 #include "opentxs/api/crypto/Encode.hpp"
 
-namespace opentxs::api::crypto::internal
+namespace opentxs::v1::api::crypto::internal
 {
 class Encode : virtual public api::crypto::Encode
 {
@@ -21,4 +21,4 @@ public:
 
     ~Encode() override = default;
 };
-}  // namespace opentxs::api::crypto::internal
+}  // namespace opentxs::v1::api::crypto::internal

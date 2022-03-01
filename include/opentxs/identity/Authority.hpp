@@ -18,7 +18,9 @@
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identity
 {
@@ -39,10 +41,11 @@ class VerificationSet;
 }  // namespace proto
 
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity
+namespace opentxs::v1::identity
 {
 class OPENTXS_EXPORT Authority
 {
@@ -161,4 +164,4 @@ private:
     auto operator=(const Authority&) -> Authority& = delete;
     auto operator=(Authority&&) -> Authority& = delete;
 };
-}  // namespace opentxs::identity
+}  // namespace opentxs::v1::identity

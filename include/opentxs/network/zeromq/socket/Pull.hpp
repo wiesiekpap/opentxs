@@ -11,7 +11,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -25,10 +27,11 @@ class Pull;
 }  // namespace network
 
 using OTZMQPullSocket = Pimpl<network::zeromq::socket::Pull>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::socket
+namespace opentxs::v1::network::zeromq::socket
 {
 class OPENTXS_EXPORT Pull : virtual public curve::Server
 {
@@ -48,4 +51,4 @@ private:
     auto operator=(const Pull&) -> Pull& = delete;
     auto operator=(Pull&&) -> Pull& = delete;
 };
-}  // namespace opentxs::network::zeromq::socket
+}  // namespace opentxs::v1::network::zeromq::socket

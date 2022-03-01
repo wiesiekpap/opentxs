@@ -17,7 +17,7 @@
 
 namespace be = boost::endian;
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Amount(std::string_view str, bool normalize) noexcept(false)
     -> opentxs::Amount
@@ -29,9 +29,9 @@ auto Amount(const network::zeromq::Frame& in) noexcept(false) -> opentxs::Amount
 {
     return std::make_unique<opentxs::Amount::Imp>(in.Bytes()).release();
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto signed_amount(long long ip, unsigned long long fp, unsigned long long div)
     -> Amount
@@ -55,9 +55,9 @@ auto unsigned_amount(
 }
 
 auto swap(Amount& lhs, Amount& rhs) noexcept -> void { lhs.swap(rhs); }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
 auto operator==(T lhs, const Amount& rhs) noexcept -> bool
@@ -100,9 +100,9 @@ auto operator*(T lhs, const Amount& rhs) noexcept(false) -> Amount
 {
     return rhs.operator*(lhs);
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::amount
+namespace opentxs::v1::amount
 {
 auto FloatToInteger(const Float& rhs) noexcept(false) -> Integer
 {
@@ -120,9 +120,9 @@ auto IntegerToFloat(const Integer& rhs) noexcept -> Float
 {
     return rhs.convert_to<amount::Float>() / amount::GetScale();
 }
-}  // namespace opentxs::amount
+}  // namespace opentxs::v1::amount
 
-namespace opentxs::internal
+namespace opentxs::v1::internal
 {
 auto FloatToAmount(const amount::Float& rhs) noexcept(false)
     -> opentxs::Amount::Imp*
@@ -135,9 +135,9 @@ auto Amount::SerializeBitcoinSize() noexcept -> std::size_t
 {
     return sizeof(be::little_int64_buf_t);
 }
-}  // namespace opentxs::internal
+}  // namespace opentxs::v1::internal
 
-namespace opentxs
+namespace opentxs::v1
 {
 Amount::Amount(Imp* rhs) noexcept
     : imp_(rhs)
@@ -362,9 +362,9 @@ Amount::~Amount()
         imp_ = nullptr;
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs
+namespace opentxs::v1
 {
 // clang-format off
 template auto operator==
@@ -575,4 +575,4 @@ template auto Amount::operator%
 template auto Amount::operator%
     <unsigned long long>(unsigned long long) const -> Amount;
 // clang-format on
-}  // namespace opentxs
+}  // namespace opentxs::v1

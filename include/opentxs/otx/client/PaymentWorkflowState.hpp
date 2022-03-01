@@ -10,7 +10,7 @@
 
 #include <cstdint>
 
-namespace opentxs::otx::client
+namespace opentxs::v1::otx::client
 {
 enum class PaymentWorkflowState : std::uint8_t {
     Error = 0,
@@ -25,4 +25,4 @@ enum class PaymentWorkflowState : std::uint8_t {
     Acknowledged = 9,
     Rejected = 10,
 };
-}  // namespace opentxs::otx::client
+}  // namespace opentxs::v1::otx::client

@@ -33,7 +33,9 @@
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -65,10 +67,11 @@ class Publish;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 using BlockchainStatisticsList = List<
     BlockchainStatisticsExternalInterface,
@@ -129,4 +132,4 @@ private:
         -> BlockchainStatistics& = delete;
     auto operator=(BlockchainStatistics&&) -> BlockchainStatistics& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

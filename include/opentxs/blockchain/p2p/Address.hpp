@@ -14,7 +14,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -30,10 +32,11 @@ class BlockchainPeerAddress;
 }  // namespace proto
 
 using OTBlockchainAddress = Pimpl<blockchain::p2p::Address>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::p2p
+namespace opentxs::v1::blockchain::p2p
 {
 class OPENTXS_EXPORT Address
 {
@@ -73,4 +76,4 @@ private:
     auto operator=(const Address&) -> Address& = delete;
     auto operator=(Address&&) -> Address& = delete;
 };
-}  // namespace opentxs::blockchain::p2p
+}  // namespace opentxs::v1::blockchain::p2p

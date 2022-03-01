@@ -50,7 +50,7 @@
 
 #define OT_PURSE_VERSION 1
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Purse(
     const api::Session& api,
@@ -203,9 +203,9 @@ auto Purse(
 
     return output.release();
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::otx::blind::purse
+namespace opentxs::v1::otx::blind::purse
 {
 const opentxs::crypto::key::symmetric::Algorithm Purse::mode_{
     opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305};
@@ -1002,4 +1002,4 @@ auto Purse::Verify(const api::session::Notary& server) const -> bool
 
     return true;
 }
-}  // namespace opentxs::otx::blind::purse
+}  // namespace opentxs::v1::otx::blind::purse

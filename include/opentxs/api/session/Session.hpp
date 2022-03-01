@@ -12,7 +12,9 @@
 #include "opentxs/api/Periodic.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -47,12 +49,13 @@ class Settings;
 }  // namespace api
 
 class Options;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 class QObject;
 
-namespace opentxs::api
+namespace opentxs::v1::api
 {
 class OPENTXS_EXPORT Session : virtual public Periodic
 {
@@ -88,4 +91,4 @@ private:
     auto operator=(const Session&) -> Session& = delete;
     auto operator=(Session&&) -> Session& = delete;
 };
-}  // namespace opentxs::api
+}  // namespace opentxs::v1::api

@@ -17,7 +17,7 @@ class io_context;
 }  // namespace boost
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::network::asio
+namespace opentxs::v1::api::network::asio
 {
 class Context
 {
@@ -50,4 +50,4 @@ private:
     Context& operator=(const Context&) = delete;
     Context& operator=(Context&&) = delete;
 };
-}  // namespace opentxs::api::network::asio
+}  // namespace opentxs::v1::api::network::asio

@@ -20,7 +20,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -35,10 +37,11 @@ class Nym;
 class Factory;
 class Identifier;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::wot::verification::implementation
+namespace opentxs::v1::identity::wot::verification::implementation
 {
 class Nym final : public internal::Nym
 {
@@ -121,4 +124,4 @@ private:
     auto operator=(const Nym&) -> Nym& = delete;
     auto operator=(Nym&&) -> Nym& = delete;
 };
-}  // namespace opentxs::identity::wot::verification::implementation
+}  // namespace opentxs::v1::identity::wot::verification::implementation

@@ -42,7 +42,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -73,10 +75,11 @@ class ReplyCallback;
 }  // namespace network
 
 class Factory;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::implementation
+namespace opentxs::v1::network::zeromq::implementation
 {
 class Context final : virtual public internal::Context
 {
@@ -160,4 +163,4 @@ private:
     auto operator=(const Context&) -> Context& = delete;
     auto operator=(Context&&) -> Context& = delete;
 };
-}  // namespace opentxs::network::zeromq::implementation
+}  // namespace opentxs::v1::network::zeromq::implementation

@@ -22,7 +22,7 @@ using IrrXMLReader = IIrrXMLReader<char, IXMLBase>;
 }  // namespace io
 }  // namespace irr
 
-namespace opentxs
+namespace opentxs::v1
 {
 class Identifier;
 class OTStashItem;
@@ -70,4 +70,4 @@ public:
     virtual ~OTStash();
 };
 
-}  // namespace opentxs
+}  // namespace opentxs::v1

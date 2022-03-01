@@ -10,10 +10,10 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto formatBool(bool in) -> UnallocatedCString;
 auto formatTimestamp(const opentxs::Time in) -> UnallocatedCString;
 auto getTimestamp() -> UnallocatedCString;
 auto parseTimestamp(UnallocatedCString in) -> opentxs::Time;
-}  // namespace opentxs
+}  // namespace opentxs::v1

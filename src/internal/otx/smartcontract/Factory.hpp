@@ -10,13 +10,16 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class OTScript;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto OTScript(const UnallocatedCString& script_type = "")
     -> std::shared_ptr<opentxs::OTScript>;
@@ -27,4 +30,4 @@ auto OTScript(
 auto OTScriptChai() -> std::shared_ptr<opentxs::OTScript>;
 auto OTScriptChai(const UnallocatedCString& script_contents)
     -> std::shared_ptr<opentxs::OTScript>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

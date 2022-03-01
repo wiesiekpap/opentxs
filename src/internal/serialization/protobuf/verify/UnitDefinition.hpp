@@ -8,16 +8,19 @@
 #include "opentxs/Version.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+namespace v1
 {
 namespace proto
 {
 class UnitDefinition;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_1(
     const UnitDefinition& contract,
@@ -83,4 +86,4 @@ auto CheckProto_20(
     const UnitDefinition&,
     const bool,
     const bool checkSig = true) -> bool;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

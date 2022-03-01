@@ -47,7 +47,9 @@
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -108,12 +110,13 @@ class Context;
 }  // namespace network
 
 class Flag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::blockchain::node::implementation
+namespace opentxs::v1::blockchain::node::implementation
 {
 class PeerManager final : virtual public node::internal::PeerManager,
                           public Worker<PeerManager, api::Session>
@@ -352,4 +355,4 @@ private:
     auto operator=(const PeerManager&) -> PeerManager& = delete;
     auto operator=(PeerManager&&) -> PeerManager& = delete;
 };
-}  // namespace opentxs::blockchain::node::implementation
+}  // namespace opentxs::v1::blockchain::node::implementation

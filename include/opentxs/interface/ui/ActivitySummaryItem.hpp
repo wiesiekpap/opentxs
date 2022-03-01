@@ -16,7 +16,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace ui
 {
@@ -24,10 +26,11 @@ class ActivitySummaryItem;
 }  // namespace ui
 
 using OTUIActivitySummaryItem = SharedPimpl<ui::ActivitySummaryItem>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 class OPENTXS_EXPORT ActivitySummaryItem : virtual public ListRow
 {
@@ -50,4 +53,4 @@ private:
     auto operator=(const ActivitySummaryItem&) -> ActivitySummaryItem& = delete;
     auto operator=(ActivitySummaryItem&&) -> ActivitySummaryItem& = delete;
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

@@ -17,7 +17,9 @@
 #include "opentxs/util/WorkType.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -31,10 +33,11 @@ namespace p2p
 class State;
 }  // namespace p2p
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::p2p
+namespace opentxs::v1::network::p2p
 {
 class OPENTXS_EXPORT Data final : public Base
 {
@@ -64,4 +67,4 @@ private:
     auto operator=(const Data&) -> Data& = delete;
     auto operator=(Data&&) -> Data& = delete;
 };
-}  // namespace opentxs::network::p2p
+}  // namespace opentxs::v1::network::p2p

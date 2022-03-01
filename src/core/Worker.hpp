@@ -28,7 +28,9 @@
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -37,10 +39,11 @@ namespace session
 class Client;
 }  // namespace session
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <typename Child, typename API = api::session::Client>
 class Worker
@@ -139,4 +142,4 @@ private:
         last_executed_ = Clock::now();
     }
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

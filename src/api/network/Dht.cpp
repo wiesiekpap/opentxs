@@ -46,7 +46,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto DhtAPI(
     const api::Session& api,
@@ -129,9 +129,9 @@ auto DhtAPI(
     return std::make_unique<ReturnType>(
         api, zeromq, endpoints, std::move(config));
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::api::network::imp
+namespace opentxs::v1::api::network::imp
 {
 Dht::Dht(
     const api::Session& api,
@@ -440,4 +440,4 @@ auto Dht::RegisterCallbacks(const CallbackMap& callbacks) const noexcept -> void
     auto lock = eLock{lock_};
     callback_map_ = callbacks;
 }
-}  // namespace opentxs::api::network::imp
+}  // namespace opentxs::v1::api::network::imp

@@ -8,16 +8,19 @@
 #include "opentxs/Version.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+namespace v1
 {
 namespace proto
 {
 class Bailment;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_1(const Bailment& request, const bool silent) -> bool;
 auto CheckProto_2(const Bailment& request, const bool silent) -> bool;
@@ -39,4 +42,4 @@ auto CheckProto_17(const Bailment&, const bool) -> bool;
 auto CheckProto_18(const Bailment&, const bool) -> bool;
 auto CheckProto_19(const Bailment&, const bool) -> bool;
 auto CheckProto_20(const Bailment&, const bool) -> bool;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

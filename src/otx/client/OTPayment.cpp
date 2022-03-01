@@ -37,7 +37,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 char const* const __TypeStringsPayment[] = {
 
@@ -1927,4 +1927,4 @@ void OTPayment::UpdateContents(const PasswordPrompt& reason)
 }
 
 OTPayment::~OTPayment() { Release_Payment(); }
-}  // namespace opentxs
+}  // namespace opentxs::v1

@@ -12,7 +12,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace opentxs::iterator
+namespace opentxs::v1::iterator
 {
 template <typename P, typename C>
 class OPENTXS_EXPORT Bidirectional
@@ -91,4 +91,4 @@ private:
     std::size_t position_{0};
     P* parent_{nullptr};
 };
-}  // namespace opentxs::iterator
+}  // namespace opentxs::v1::iterator

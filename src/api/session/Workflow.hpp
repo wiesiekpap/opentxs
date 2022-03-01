@@ -34,7 +34,9 @@
 #include "serialization/protobuf/RPCEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -65,10 +67,11 @@ namespace proto
 {
 class PaymentWorkflow;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::imp
+namespace opentxs::v1::api::session::imp
 {
 class Workflow final : public internal::Workflow, Lockable
 {
@@ -413,4 +416,4 @@ private:
     auto operator=(const Workflow&) -> Workflow& = delete;
     auto operator=(Workflow&&) -> Workflow& = delete;
 };
-}  // namespace opentxs::api::session::imp
+}  // namespace opentxs::v1::api::session::imp

@@ -10,11 +10,11 @@
 
 #include <cstdint>
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 enum class Blockchains : std::uint8_t {
     All = 0,
     Main = 1,
     Test = 2,
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

@@ -12,7 +12,9 @@
 #include "opentxs/api/network/Network.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -39,10 +41,11 @@ namespace zeromq
 class Context;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto BlockchainNetworkAPI(
     const api::Session& api,
@@ -70,4 +73,4 @@ auto NetworkAPI(
     api::network::Blockchain::Imp* blockchain,
     api::session::Scheduler& config,
     bool dhtDefault) noexcept -> api::network::Network::Imp*;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

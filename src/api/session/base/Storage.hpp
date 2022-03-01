@@ -17,7 +17,9 @@
 #include "util/storage/Config.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -60,10 +62,11 @@ class Config;
 
 class Flag;
 class Options;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::base
+namespace opentxs::v1::api::session::base
 {
 class Storage
 {
@@ -115,4 +118,4 @@ private:
     auto operator=(const Storage&) -> Storage& = delete;
     auto operator=(Storage&&) -> Storage& = delete;
 };
-}  // namespace opentxs::api::session::base
+}  // namespace opentxs::v1::api::session::base

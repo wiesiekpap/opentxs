@@ -20,7 +20,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -33,10 +35,11 @@ class Nym;
 }  // namespace identifier
 
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::crypto::blockchain
+namespace opentxs::v1::api::crypto::blockchain
 {
 class AccountCache
 {
@@ -86,4 +89,4 @@ private:
         const identifier::Nym& nym,
         NymAccountMap& output) const noexcept -> void;
 };
-}  // namespace opentxs::api::crypto::blockchain
+}  // namespace opentxs::v1::api::crypto::blockchain

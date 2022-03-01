@@ -12,16 +12,19 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class VerificationIdentity;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 using VerificationNymMap = UnallocatedMap<UnallocatedCString, std::uint64_t>;
 
@@ -125,4 +128,4 @@ auto CheckProto_20(
     const bool,
     VerificationNymMap&,
     const VerificationType) -> bool;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

@@ -14,7 +14,9 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -25,10 +27,11 @@ class FrameIterator;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq
+namespace opentxs::v1::network::zeromq
 {
 class FrameSection::Imp : public internal::FrameSection
 {
@@ -54,9 +57,9 @@ private:
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&) -> Imp& = delete;
 };
-}  // namespace opentxs::network::zeromq
+}  // namespace opentxs::v1::network::zeromq
 
-namespace opentxs::network::zeromq::implementation
+namespace opentxs::v1::network::zeromq::implementation
 {
 class FrameSection final : public zeromq::FrameSection::Imp
 {
@@ -89,4 +92,4 @@ private:
     auto operator=(const FrameSection&) -> FrameSection& = delete;
     auto operator=(FrameSection&) -> FrameSection& = delete;
 };
-}  // namespace opentxs::network::zeromq::implementation
+}  // namespace opentxs::v1::network::zeromq::implementation

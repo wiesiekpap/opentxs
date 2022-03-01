@@ -12,7 +12,9 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -32,10 +34,11 @@ namespace p2p
 class Data;
 }  // namespace p2p
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::node::internal
+namespace opentxs::v1::blockchain::node::internal
 {
 class HeaderOracle : virtual public node::HeaderOracle
 {
@@ -68,5 +71,5 @@ public:
 
     ~HeaderOracle() override = default;
 };
-}  // namespace opentxs::blockchain::node::internal
+}  // namespace opentxs::v1::blockchain::node::internal
 #endif  // OT_BLOCKCHAIN

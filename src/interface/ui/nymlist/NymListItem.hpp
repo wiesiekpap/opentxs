@@ -21,7 +21,9 @@
 class QVariant;
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -46,10 +48,11 @@ namespace ui
 {
 class NymListItem;
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 using NymListItemRow =
     Row<NymListRowInternal, NymListInternalInterface, NymListRowID>;
@@ -81,4 +84,4 @@ private:
     auto operator=(const NymListItem&) -> NymListItem& = delete;
     auto operator=(NymListItem&&) -> NymListItem& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

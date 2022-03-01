@@ -37,16 +37,16 @@
 
 #define NYMFILE_VERSION "1.1"
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto Factory::NymFile(const api::Session& api, Nym_p targetNym, Nym_p signerNym)
     -> internal::NymFile*
 {
     return new implementation::NymFile(api, targetNym, signerNym);
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::implementation
+namespace opentxs::v1::implementation
 {
 NymFile::NymFile(const api::Session& api, Nym_p targetNym, Nym_p signerNym)
     : api_{api}
@@ -824,4 +824,4 @@ auto NymFile::SetOutboxHash(
 }
 
 NymFile::~NymFile() { ClearAll(); }
-}  // namespace opentxs::implementation
+}  // namespace opentxs::v1::implementation

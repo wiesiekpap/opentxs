@@ -37,7 +37,9 @@
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -72,10 +74,11 @@ class Message;
 
 class Amount;
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 using SeedTreeList = List<
     SeedTreeExternalInterface,
@@ -164,4 +167,4 @@ private:
     auto operator=(const SeedTree&) -> SeedTree& = delete;
     auto operator=(SeedTree&&) -> SeedTree& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

@@ -21,7 +21,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -48,10 +50,11 @@ class Ciphertext;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto::key::implementation
+namespace opentxs::v1::crypto::key::implementation
 {
 class RSA final : public key::RSA, public Asymmetric
 {
@@ -98,4 +101,4 @@ private:
     auto operator=(const RSA&) -> RSA& = delete;
     auto operator=(RSA&&) -> RSA& = delete;
 };
-}  // namespace opentxs::crypto::key::implementation
+}  // namespace opentxs::v1::crypto::key::implementation

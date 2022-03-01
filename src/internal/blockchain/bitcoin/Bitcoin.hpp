@@ -22,7 +22,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -42,17 +44,18 @@ struct Input;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace be = boost::endian;
 
-namespace opentxs::blockchain
+namespace opentxs::v1::blockchain
 {
 static constexpr auto standard_hash_size_ = std::size_t{32};
-}  // namespace opentxs::blockchain
+}  // namespace opentxs::v1::blockchain
 
-namespace opentxs::blockchain::bitcoin
+namespace opentxs::v1::blockchain::bitcoin
 {
 using Byte = const std::byte;
 using ByteIterator = Byte*;
@@ -185,4 +188,4 @@ private:
         const std::size_t total,
         const SigHash& sigHash) noexcept -> std::unique_ptr<Hash>;
 };
-}  // namespace opentxs::blockchain::bitcoin
+}  // namespace opentxs::v1::blockchain::bitcoin

@@ -10,7 +10,7 @@
 
 #include <cstdint>
 
-namespace opentxs::crypto::key::asymmetric
+namespace opentxs::v1::crypto::key::asymmetric
 {
 enum class Mode : std::uint8_t {
     Error = 0,
@@ -18,4 +18,4 @@ enum class Mode : std::uint8_t {
     Public = 2,
     Private = 3,
 };
-}  // namespace opentxs::crypto::key::asymmetric
+}  // namespace opentxs::v1::crypto::key::asymmetric

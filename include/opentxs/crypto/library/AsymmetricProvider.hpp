@@ -18,7 +18,9 @@
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -31,10 +33,11 @@ class Parameters;
 }  // namespace crypto
 
 class Signature;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 class OPENTXS_EXPORT AsymmetricProvider
 {
@@ -107,4 +110,4 @@ private:
     auto operator=(const AsymmetricProvider&) -> AsymmetricProvider& = delete;
     auto operator=(AsymmetricProvider&&) -> AsymmetricProvider& = delete;
 };
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto

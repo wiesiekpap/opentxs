@@ -14,7 +14,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
@@ -23,10 +25,11 @@ namespace zeromq
 class Context;
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::internal
+namespace opentxs::v1::internal
 {
 class ShutdownSender
 {
@@ -83,4 +86,4 @@ private:
     auto operator=(const ShutdownReceiver&) -> ShutdownReceiver& = delete;
     auto operator=(ShutdownReceiver&&) -> ShutdownReceiver& = delete;
 };
-}  // namespace opentxs::internal
+}  // namespace opentxs::v1::internal

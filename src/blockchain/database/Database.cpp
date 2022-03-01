@@ -19,7 +19,7 @@ extern "C" {
 #include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto BlockchainDatabase(
     const api::Session& api,
@@ -33,9 +33,9 @@ auto BlockchainDatabase(
 
     return std::make_unique<ReturnType>(api, network, common, chain, filter);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::blockchain::implementation
+namespace opentxs::v1::blockchain::implementation
 {
 const VersionNumber Database::db_version_{1};
 const storage::lmdb::TableNames Database::table_names_{
@@ -131,4 +131,4 @@ auto Database::init_db(storage::lmdb::LMDB& db) noexcept -> void
         OT_ASSERT(stored.first);
     }
 }
-}  // namespace opentxs::blockchain::implementation
+}  // namespace opentxs::v1::blockchain::implementation

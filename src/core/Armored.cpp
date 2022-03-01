@@ -34,7 +34,7 @@
 
 template class opentxs::Pimpl<opentxs::Armored>;
 
-namespace opentxs
+namespace opentxs::v1
 {
 const char* OT_BEGIN_ARMORED = "-----BEGIN OT ARMORED";
 const char* OT_END_ARMORED = "-----END OT ARMORED";
@@ -104,9 +104,9 @@ auto Factory::Armored(const crypto::Envelope& input) -> opentxs::Armored*
 {
     return new implementation::Armored(input);
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::implementation
+namespace opentxs::v1::implementation
 {
 // initializes blank.
 Armored::Armored()
@@ -606,4 +606,4 @@ auto Armored::WriteArmoredString(
 
     return true;
 }
-}  // namespace opentxs::implementation
+}  // namespace opentxs::v1::implementation

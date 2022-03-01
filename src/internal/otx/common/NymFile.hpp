@@ -9,7 +9,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identifier
 {
@@ -21,10 +23,11 @@ class Message;
 class OTPayment;
 class PasswordPrompt;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 class NymFile
 {
@@ -88,4 +91,4 @@ private:
     auto operator=(const NymFile&) -> NymFile& = delete;
     auto operator=(NymFile&&) -> NymFile& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

@@ -56,7 +56,7 @@
 #include "serialization/protobuf/Signature.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto Factory::UnitDefinition(const api::Session& api) noexcept
     -> std::shared_ptr<contract::Unit>
@@ -89,15 +89,15 @@ auto Factory::UnitDefinition(
         }
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::contract
+namespace opentxs::v1::contract
 {
 const VersionNumber Unit::DefaultVersion{2};
 const VersionNumber Unit::MaxVersion{2};
-}  // namespace opentxs::contract
+}  // namespace opentxs::v1::contract
 
-namespace opentxs::contract::implementation
+namespace opentxs::v1::contract::implementation
 {
 const UnallocatedMap<VersionNumber, VersionNumber>
     Unit::unit_of_account_version_map_{{2, 6}};
@@ -716,4 +716,4 @@ auto Unit::VisitAccountRecords(
 
     return true;
 }
-}  // namespace opentxs::contract::implementation
+}  // namespace opentxs::v1::contract::implementation

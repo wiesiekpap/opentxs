@@ -7,10 +7,10 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "crypto/library/EcdsaProvider.hpp"  // IWYU pragma: associated
 
-namespace opentxs::crypto::implementation
+namespace opentxs::v1::crypto::implementation
 {
 EcdsaProvider::EcdsaProvider(const api::Crypto& crypto)
     : crypto_(crypto)
 {
 }
-}  // namespace opentxs::crypto::implementation
+}  // namespace opentxs::v1::crypto::implementation

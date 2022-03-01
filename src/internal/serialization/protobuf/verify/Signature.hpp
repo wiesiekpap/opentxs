@@ -12,16 +12,19 @@
 #include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class Signature;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_1(
     const Signature& signature,
@@ -305,4 +308,4 @@ auto CheckProto_20(
     const Signature&,
     const bool,
     const SignatureRole role = SIGROLE_ERROR) -> bool;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

@@ -22,7 +22,7 @@
 
 template class opentxs::Pimpl<opentxs::crypto::key::Keypair>;
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Keypair() noexcept -> std::unique_ptr<crypto::key::Keypair>
 {
@@ -49,9 +49,9 @@ auto Keypair(
     return std::make_unique<ReturnType>(
         api, role, std::move(publicKey), std::move(privateKey));
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::crypto::key::implementation
+namespace opentxs::v1::crypto::key::implementation
 {
 Keypair::Keypair(
     const api::Session& api,
@@ -168,4 +168,4 @@ auto Keypair::GetTransportKey(
 {
     return m_pkeyPrivate->TransportKey(publicKey, privateKey, reason);
 }
-}  // namespace opentxs::crypto::key::implementation
+}  // namespace opentxs::v1::crypto::key::implementation

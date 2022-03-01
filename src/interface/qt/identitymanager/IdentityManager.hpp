@@ -14,7 +14,9 @@
 #include "opentxs/interface/qt/IdentityManager.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -35,6 +37,7 @@ class ContactListQt;
 class NymListQt;
 class ProfileQt;
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 

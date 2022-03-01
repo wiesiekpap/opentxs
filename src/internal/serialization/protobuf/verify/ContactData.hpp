@@ -9,16 +9,19 @@
 #include "opentxs/Version.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class ContactData;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_1(
     const ContactData& contactData,
@@ -52,4 +55,4 @@ auto CheckProto_17(const ContactData&, const bool, const ClaimType) -> bool;
 auto CheckProto_18(const ContactData&, const bool, const ClaimType) -> bool;
 auto CheckProto_19(const ContactData&, const bool, const ClaimType) -> bool;
 auto CheckProto_20(const ContactData&, const bool, const ClaimType) -> bool;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

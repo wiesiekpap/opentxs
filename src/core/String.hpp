@@ -14,17 +14,20 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Armored;
 class Contract;
 class Identifier;
 class NymFile;
 class Signature;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::implementation
+namespace opentxs::v1::implementation
 {
 class String : virtual public opentxs::String
 {
@@ -119,4 +122,4 @@ private:
     void Initialize();
     void zeroMemory();
 };
-}  // namespace opentxs::implementation
+}  // namespace opentxs::v1::implementation

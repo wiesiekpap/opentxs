@@ -12,7 +12,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -38,10 +40,11 @@ class Publish;
 class Identifier;
 class Message;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::activity
+namespace opentxs::v1::api::session::activity
 {
 class MailCache
 {
@@ -81,4 +84,4 @@ private:
     auto operator=(const MailCache&) -> MailCache& = delete;
     auto operator=(MailCache&&) -> MailCache& = delete;
 };
-}  // namespace opentxs::api::session::activity
+}  // namespace opentxs::v1::api::session::activity

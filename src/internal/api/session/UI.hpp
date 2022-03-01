@@ -8,13 +8,16 @@
 #include "opentxs/api/session/UI.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::internal
+namespace opentxs::v1::api::session::internal
 {
 class UI : virtual public opentxs::api::session::UI
 {
@@ -46,4 +49,4 @@ private:
     UI& operator=(const UI&) = delete;
     UI& operator=(UI&&) = delete;
 };
-}  // namespace opentxs::api::session::internal
+}  // namespace opentxs::v1::api::session::internal

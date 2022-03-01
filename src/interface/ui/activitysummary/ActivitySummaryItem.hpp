@@ -28,7 +28,9 @@
 class QVariant;
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -61,10 +63,11 @@ class ActivitySummaryItem;
 
 class Flag;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 using ActivitySummaryItemRow =
     Row<ActivitySummaryRowInternal,
@@ -130,6 +133,6 @@ private:
     auto operator=(const ActivitySummaryItem&) -> ActivitySummaryItem& = delete;
     auto operator=(ActivitySummaryItem&&) -> ActivitySummaryItem& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation
 
 template class opentxs::SharedPimpl<opentxs::ui::ActivitySummaryItem>;

@@ -13,7 +13,9 @@
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace ui
 {
@@ -21,10 +23,11 @@ class BlockchainSelectionItem;
 }  // namespace ui
 
 using OTUIBlockchainSelectionItem = SharedPimpl<ui::BlockchainSelectionItem>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui
+namespace opentxs::v1::ui
 {
 class OPENTXS_EXPORT BlockchainSelectionItem : virtual public ListRow
 {
@@ -47,4 +50,4 @@ private:
     auto operator=(BlockchainSelectionItem&&)
         -> BlockchainSelectionItem& = delete;
 };
-}  // namespace opentxs::ui
+}  // namespace opentxs::v1::ui

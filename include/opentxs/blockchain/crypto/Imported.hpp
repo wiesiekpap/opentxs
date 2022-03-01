@@ -10,7 +10,9 @@
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -22,10 +24,11 @@ struct Imported;
 }  // namespace internal
 }  // namespace crypto
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::crypto
+namespace opentxs::v1::blockchain::crypto
 {
 class OPENTXS_EXPORT Imported : virtual public Subaccount
 {
@@ -45,4 +48,4 @@ private:
     auto operator=(const Imported&) -> Imported& = delete;
     auto operator=(Imported&&) -> Imported& = delete;
 };
-}  // namespace opentxs::blockchain::crypto
+}  // namespace opentxs::v1::blockchain::crypto

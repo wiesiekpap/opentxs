@@ -31,7 +31,9 @@ class MessageLite;
 }  // namespace protobuf
 }  // namespace google
 
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace crypto
 {
@@ -74,10 +76,11 @@ class PasswordPrompt;
 class PaymentCode;
 class Signature;
 class Tag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity
+namespace opentxs::v1::identity
 {
 class OPENTXS_EXPORT Nym
 {
@@ -269,4 +272,4 @@ private:
     auto operator=(const Nym&) -> Nym& = delete;
     auto operator=(Nym&&) -> Nym& = delete;
 };
-}  // namespace opentxs::identity
+}  // namespace opentxs::v1::identity

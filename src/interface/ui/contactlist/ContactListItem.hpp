@@ -17,7 +17,9 @@
 class QVariant;
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -42,10 +44,11 @@ namespace ui
 {
 class ContactListItem;
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 using ContactListItemRow =
     Row<ContactListRowInternal, ContactListInternalInterface, ContactListRowID>;
@@ -93,6 +96,6 @@ private:
     auto operator=(const ContactListItem&) -> ContactListItem& = delete;
     auto operator=(ContactListItem&&) -> ContactListItem& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation
 
 template class opentxs::SharedPimpl<opentxs::ui::ContactListItem>;

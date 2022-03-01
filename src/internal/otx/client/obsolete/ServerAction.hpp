@@ -11,7 +11,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 namespace client
 {
@@ -36,4 +36,4 @@ private:
     auto operator=(ServerAction&&) -> ServerAction& = delete;
 };
 }  // namespace client
-}  // namespace opentxs
+}  // namespace opentxs::v1

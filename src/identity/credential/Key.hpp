@@ -28,7 +28,9 @@
 #include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -61,10 +63,11 @@ class Data;
 class OTPassword;
 class PasswordPrompt;
 class Signature;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::identity::credential::implementation
+namespace opentxs::v1::identity::credential::implementation
 {
 class Key : virtual public credential::internal::Key,
             public credential::implementation::Base
@@ -181,4 +184,4 @@ private:
     auto operator=(const Key&) -> Key& = delete;
     auto operator=(Key&&) -> Key& = delete;
 };
-}  // namespace opentxs::identity::credential::implementation
+}  // namespace opentxs::v1::identity::credential::implementation

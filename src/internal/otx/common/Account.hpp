@@ -23,7 +23,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -67,10 +69,11 @@ class Ledger;
 class OTWallet;
 class PasswordPrompt;
 class Tag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 class Account : public OTTransactionType
 {
@@ -244,4 +247,4 @@ private:
     Account(const api::Session& api);
     Account() = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

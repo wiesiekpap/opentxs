@@ -10,7 +10,7 @@
 
 #include "opentxs/Types.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 class Backoff
 {
@@ -72,4 +72,4 @@ private:
     auto operator=(const Backoff&) -> Backoff& = delete;
     auto operator=(Backoff&&) -> Backoff& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

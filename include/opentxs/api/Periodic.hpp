@@ -10,7 +10,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Time.hpp"
 
-namespace opentxs::api
+namespace opentxs::v1::api
 {
 class OPENTXS_EXPORT Periodic
 {
@@ -40,4 +40,4 @@ private:
     auto operator=(const Periodic&) -> Periodic& = delete;
     auto operator=(Periodic&&) -> Periodic& = delete;
 };
-}  // namespace opentxs::api
+}  // namespace opentxs::v1::api

@@ -10,11 +10,11 @@
 
 #include <cstdint>
 
-namespace opentxs::otx
+namespace opentxs::v1::otx
 {
 enum class ServerReplyType : std::uint8_t {
     Error = 0,
     Activate = 1,
     Push = 255,
 };
-}  // namespace opentxs::otx
+}  // namespace opentxs::v1::otx

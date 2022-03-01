@@ -8,18 +8,21 @@
 #include <memory>
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace network
 {
 class DhtConfig;
 class OpenDHT;
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto OpenDHT(const network::DhtConfig& config) noexcept
     -> std::unique_ptr<network::OpenDHT>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

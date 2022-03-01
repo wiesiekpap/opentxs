@@ -21,7 +21,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -41,12 +43,13 @@ class EcdsaProvider;
 
 class PasswordPrompt;
 class Secret;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace be = boost::endian;
 
-namespace opentxs::crypto
+namespace opentxs::v1::crypto
 {
 struct Bip32::Imp final : public internal::Bip32 {
 public:
@@ -146,4 +149,4 @@ private:
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
 };
-}  // namespace opentxs::crypto
+}  // namespace opentxs::v1::crypto

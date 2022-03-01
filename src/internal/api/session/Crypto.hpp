@@ -12,7 +12,9 @@
 #include "internal/api/Crypto.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -23,10 +25,11 @@ class Blockchain;
 
 class Session;
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::session::internal
+namespace opentxs::v1::api::session::internal
 {
 class Crypto : virtual public session::Crypto,
                virtual public api::internal::Crypto
@@ -47,4 +50,4 @@ public:
 
     ~Crypto() override = default;
 };
-}  // namespace opentxs::api::session::internal
+}  // namespace opentxs::v1::api::session::internal

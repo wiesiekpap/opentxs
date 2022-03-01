@@ -22,7 +22,9 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -68,10 +70,11 @@ class OTParty;
 class OTScript;
 class OTStash;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 class OTSmartContract : public OTCronItem
 {
@@ -462,4 +465,4 @@ private:
 
     OTSmartContract() = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

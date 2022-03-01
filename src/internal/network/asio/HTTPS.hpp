@@ -24,6 +24,7 @@ namespace http = boost::beast::http;
 namespace ip = boost::asio::ip;
 namespace ssl = boost::asio::ssl;
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace boost
 {
 namespace asio
@@ -35,7 +36,9 @@ class context;
 }  // namespace asio
 }  // namespace boost
 
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -55,7 +58,9 @@ namespace asio
 class HTTPS;
 }  // namespace asio
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class opentxs::network::asio::HTTPS final : public WebRequest<HTTPS>
 {

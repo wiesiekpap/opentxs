@@ -12,7 +12,7 @@
 #include "serialization/protobuf/Signature.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_2(
     const Signature& input,
@@ -105,4 +105,4 @@ auto CheckProto_2(
     return CheckProto_2(
         input, silent, "", "", unused, unused, unused, unused, role);
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

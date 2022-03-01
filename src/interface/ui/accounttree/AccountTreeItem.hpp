@@ -26,7 +26,9 @@
 class QVariant;
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -45,10 +47,11 @@ namespace ui
 {
 class AccountTreeItem;
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 using AccountTreeItemRow =
     Row<AccountCurrencyRowInternal,
@@ -112,6 +115,6 @@ private:
     auto operator=(const AccountTreeItem&) -> AccountTreeItem& = delete;
     auto operator=(AccountTreeItem&&) -> AccountTreeItem& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation
 
 template class opentxs::SharedPimpl<opentxs::ui::AccountTreeItem>;

@@ -48,7 +48,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto AccountTreeModel(
     const api::session::Client& api,
@@ -60,9 +60,9 @@ auto AccountTreeModel(
 
     return std::make_unique<ReturnType>(api, nymID, cb);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 AccountTree::AccountTree(
     const api::session::Client& api,
@@ -543,4 +543,4 @@ AccountTree::~AccountTree()
     wait_for_startup();
     signal_shutdown().get();
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

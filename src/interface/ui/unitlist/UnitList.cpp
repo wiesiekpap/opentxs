@@ -42,7 +42,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto UnitListModel(
     const api::session::Client& api,
@@ -54,9 +54,9 @@ auto UnitListModel(
 
     return std::make_unique<ReturnType>(api, nymID, cb);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 UnitList::UnitList(
     const api::session::Client& api,
@@ -178,4 +178,4 @@ UnitList::~UnitList()
 {
     for (auto& it : listeners_) { delete it.second; }
 }
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

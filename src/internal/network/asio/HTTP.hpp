@@ -23,7 +23,10 @@ namespace beast = boost::beast;
 namespace http = boost::beast::http;
 namespace ip = boost::asio::ip;
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -43,7 +46,9 @@ namespace asio
 class HTTP;
 }  // namespace asio
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class opentxs::network::asio::HTTP final : public WebRequest<HTTP>
 {

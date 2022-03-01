@@ -26,7 +26,9 @@
 #include "serialization/protobuf/ContactEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -62,10 +64,11 @@ namespace ui
 {
 class ContactSection;
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 using ContactSectionList = List<
     ContactSectionExternalInterface,
@@ -140,6 +143,6 @@ private:
     auto operator=(const ContactSection&) -> ContactSection& = delete;
     auto operator=(ContactSection&&) -> ContactSection& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation
 
 template class opentxs::SharedPimpl<opentxs::ui::ContactSection>;

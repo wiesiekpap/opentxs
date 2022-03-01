@@ -10,7 +10,9 @@
 #include "opentxs/util/Container.hpp"  // IWYU pragma: keep
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -52,10 +54,11 @@ class Plugin;
 
 class Flag;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto StorageFSArchive(
     const api::Crypto& crypto,
@@ -97,4 +100,4 @@ auto StorageSqlite3(
     const api::session::Storage& parent,
     const storage::Config& config,
     const Flag& bucket) noexcept -> std::unique_ptr<storage::Plugin>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

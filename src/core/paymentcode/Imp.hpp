@@ -27,7 +27,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -62,10 +64,11 @@ class Signature;
 }  // namespace proto
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::implementation
+namespace opentxs::v1::implementation
 {
 class PaymentCode final : public opentxs::PaymentCode::Imp
 {
@@ -263,4 +266,4 @@ private:
     auto operator=(const PaymentCode&) -> PaymentCode&;
     auto operator=(PaymentCode&&) -> PaymentCode&;
 };
-}  // namespace opentxs::implementation
+}  // namespace opentxs::v1::implementation

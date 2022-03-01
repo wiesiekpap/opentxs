@@ -12,14 +12,17 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Flag;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api
+namespace opentxs::v1::api
 {
 class OPENTXS_EXPORT Settings
 {
@@ -174,4 +177,4 @@ private:
     auto operator=(const Settings&) -> Settings& = delete;
     auto operator=(Settings&&) -> Settings& = delete;
 };
-}  // namespace opentxs::api
+}  // namespace opentxs::v1::api

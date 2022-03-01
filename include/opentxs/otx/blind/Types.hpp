@@ -14,12 +14,17 @@
 
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Amount;
+}  // namespace v1
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::blind
+namespace opentxs::v1::otx::blind
 {
 enum class CashType : std::uint8_t;
 enum class PurseType : std::uint8_t;
@@ -27,11 +32,11 @@ enum class TokenState : std::uint8_t;
 
 using Denomination = Amount;
 using MintSeries = std::uint64_t;
-}  // namespace opentxs::otx::blind
+}  // namespace opentxs::v1::otx::blind
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto print(otx::blind::CashType) noexcept -> UnallocatedCString;
 auto supported_otx_token_types() noexcept
     -> UnallocatedSet<otx::blind::CashType>;
-}  // namespace opentxs
+}  // namespace opentxs::v1

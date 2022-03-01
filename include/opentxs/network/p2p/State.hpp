@@ -13,7 +13,9 @@
 #include "opentxs/blockchain/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -24,10 +26,11 @@ namespace proto
 {
 class BlockchainP2PChainState;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::p2p
+namespace opentxs::v1::network::p2p
 {
 class OPENTXS_EXPORT State
 {
@@ -58,4 +61,4 @@ private:
     auto operator=(const State&) -> State& = delete;
     auto operator=(State&&) -> State& = delete;
 };
-}  // namespace opentxs::network::p2p
+}  // namespace opentxs::v1::network::p2p

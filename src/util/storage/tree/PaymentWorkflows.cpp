@@ -29,7 +29,7 @@
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 PaymentWorkflows::PaymentWorkflows(
     const Driver& storage,
@@ -356,4 +356,4 @@ auto PaymentWorkflows::Store(
 
     return store_proto(lock, data, id, alias, plaintext);
 }
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

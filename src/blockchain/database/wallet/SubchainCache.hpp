@@ -27,7 +27,9 @@
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -49,10 +51,11 @@ struct Position;
 }  // namespace wallet
 }  // namespace database
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::database::wallet
+namespace opentxs::v1::blockchain::database::wallet
 {
 using Mode = storage::lmdb::LMDB::Mode;
 
@@ -163,4 +166,4 @@ private:
     auto load_pattern_index(const SubchainIndex& key) noexcept
         -> const dbPatternIndex&;
 };
-}  // namespace opentxs::blockchain::database::wallet
+}  // namespace opentxs::v1::blockchain::database::wallet

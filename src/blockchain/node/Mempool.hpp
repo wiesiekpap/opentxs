@@ -15,7 +15,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -59,10 +61,11 @@ class Publish;
 }  // namespace socket
 }  // namespace zeromq
 }  // namespace network
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::node
+namespace opentxs::v1::blockchain::node
 {
 class Mempool final : public internal::Mempool
 {
@@ -97,4 +100,4 @@ private:
     auto operator=(const Mempool&) -> Mempool& = delete;
     auto operator=(Mempool&&) -> Mempool& = delete;
 };
-}  // namespace opentxs::blockchain::node
+}  // namespace opentxs::v1::blockchain::node

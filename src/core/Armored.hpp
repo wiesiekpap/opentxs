@@ -14,7 +14,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace OTDB
 {
@@ -29,10 +31,11 @@ class Envelope;
 class Data;
 class Factory;
 class String;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::implementation
+namespace opentxs::v1::implementation
 {
 class Armored : virtual public opentxs::Armored, public String
 {
@@ -87,4 +90,4 @@ private:
     auto operator=(const opentxs::String& strValue) -> Armored&;
     auto operator=(const Armored& strValue) -> Armored&;
 };
-}  // namespace opentxs::implementation
+}  // namespace opentxs::v1::implementation

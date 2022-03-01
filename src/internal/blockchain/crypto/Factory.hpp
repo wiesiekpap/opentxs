@@ -12,7 +12,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -57,10 +59,11 @@ class Data;
 class Identifier;
 class PasswordPrompt;
 class PaymentCode;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto BlockchainAccountKeys(
     const api::Session& api,
@@ -109,4 +112,4 @@ auto BlockchainWalletKeys(
     const blockchain::crypto::AccountIndex& index,
     const blockchain::Type chain) noexcept
     -> std::unique_ptr<blockchain::crypto::Wallet>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

@@ -24,13 +24,16 @@ class error_code;
 }  // namespace system
 }  // namespace boost
 
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Timer;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 auto operator<(const Timer& lhs, const Timer& rhs) noexcept -> bool;
 auto operator==(const Timer& lhs, const Timer& rhs) noexcept -> bool;
@@ -66,9 +69,9 @@ private:
     Timer(const Timer&) = delete;
     auto operator=(const Timer&) -> Timer& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Timer(boost::asio::io_context& asio) noexcept -> opentxs::Timer;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

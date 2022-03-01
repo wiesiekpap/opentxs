@@ -15,7 +15,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace contract
 {
@@ -37,10 +39,11 @@ class Socket;
 }  // namespace network
 
 class Data;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::network::zeromq::curve::implementation
+namespace opentxs::v1::network::zeromq::curve::implementation
 {
 class Client : virtual public zeromq::curve::Client
 {
@@ -83,4 +86,4 @@ private:
     auto operator=(const Client&) -> Client& = delete;
     auto operator=(Client&&) -> Client& = delete;
 };
-}  // namespace opentxs::network::zeromq::curve::implementation
+}  // namespace opentxs::v1::network::zeromq::curve::implementation

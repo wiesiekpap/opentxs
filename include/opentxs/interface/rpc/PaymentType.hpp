@@ -10,7 +10,7 @@
 
 #include <limits>
 
-namespace opentxs::rpc
+namespace opentxs::v1::rpc
 {
 enum class PaymentType : TypeEnum {
     error = 0,
@@ -21,4 +21,4 @@ enum class PaymentType : TypeEnum {
     blinded = 5,
     blockchain = 6,
 };
-}  // namespace opentxs::rpc
+}  // namespace opentxs::v1::rpc

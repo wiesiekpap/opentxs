@@ -19,7 +19,9 @@ class QByteArray;
 class QObject;
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace ui
 {
@@ -41,6 +43,7 @@ class ModelHelper;
 class RowWrapper;
 }  // namespace qt
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -66,7 +69,7 @@ Q_DECLARE_OPAQUE_POINTER(opentxs::ui::internal::Row*)
 Q_DECLARE_METATYPE(opentxs::ui::qt::RowWrapper)
 Q_DECLARE_METATYPE(opentxs::ui::internal::Row*)
 
-namespace opentxs::ui::qt
+namespace opentxs::v1::ui::qt
 {
 class ModelHelper final : public QObject
 {
@@ -162,4 +165,4 @@ private:
     Model& operator=(const Model&) = delete;
     Model& operator=(Model&&) = delete;
 };
-}  // namespace opentxs::ui::qt
+}  // namespace opentxs::v1::ui::qt

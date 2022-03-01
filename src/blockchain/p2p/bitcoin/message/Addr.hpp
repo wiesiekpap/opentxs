@@ -23,7 +23,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -45,10 +47,11 @@ struct Address;
 }  // namespace internal
 }  // namespace p2p
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::p2p::bitcoin::message::implementation
+namespace opentxs::v1::blockchain::p2p::bitcoin::message::implementation
 {
 class Addr final : public internal::Addr, public implementation::Message
 {
@@ -116,4 +119,4 @@ private:
     auto operator=(const Addr&) -> Addr& = delete;
     auto operator=(Addr&&) -> Addr& = delete;
 };
-}  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation
+}  // namespace opentxs::v1::blockchain::p2p::bitcoin::message::implementation

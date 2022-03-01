@@ -28,7 +28,9 @@
 #include "serialization/protobuf/Issuer.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -46,10 +48,11 @@ class Issuer;
 }  // namespace proto
 
 class Factory;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::client::implementation
+namespace opentxs::v1::otx::client::implementation
 {
 class Issuer final : virtual public otx::client::Issuer, Lockable
 {
@@ -161,4 +164,4 @@ private:
     auto operator=(const Issuer&) -> Issuer& = delete;
     auto operator=(Issuer&&) -> Issuer& = delete;
 };
-}  // namespace opentxs::otx::client::implementation
+}  // namespace opentxs::v1::otx::client::implementation

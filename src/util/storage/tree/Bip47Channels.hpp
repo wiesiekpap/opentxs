@@ -21,7 +21,9 @@
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
@@ -36,10 +38,11 @@ class Nym;
 }  // namespace storage
 
 class Identifier;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 class Bip47Channels final : public Node
 {
@@ -94,4 +97,4 @@ private:
     auto operator=(const Bip47Channels&) -> Bip47Channels = delete;
     auto operator=(Bip47Channels&&) -> Bip47Channels = delete;
 };
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

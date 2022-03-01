@@ -10,10 +10,10 @@
 
 #include <cstdint>
 
-namespace opentxs::otx
+namespace opentxs::v1::otx
 {
 enum class ServerRequestType : std::uint8_t {
     Error = 0,
     Activate = 1,
 };
-}  // namespace opentxs::otx
+}  // namespace opentxs::v1::otx

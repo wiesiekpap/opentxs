@@ -33,7 +33,7 @@
 #define STORAGE_MINT_SERIES_HASH_VERSION 2
 #define STORAGE_MINT_SPENT_LIST_VERSION 1
 
-namespace opentxs::storage
+namespace opentxs::v1::storage
 {
 Notary::Notary(
     const Driver& storage,
@@ -210,4 +210,4 @@ auto Notary::serialize() const -> proto::StorageNotary
 
     return serialized;
 }
-}  // namespace opentxs::storage
+}  // namespace opentxs::v1::storage

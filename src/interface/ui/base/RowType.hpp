@@ -8,7 +8,9 @@
 #include "internal/interface/ui/UI.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace ui
 {
@@ -17,10 +19,11 @@ namespace internal
 struct Row;
 }  // namespace internal
 }  // namespace ui
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::ui::implementation
+namespace opentxs::v1::ui::implementation
 {
 template <typename InterfaceType, typename ParentType, typename IdentifierType>
 class RowType : virtual public InterfaceType
@@ -60,4 +63,4 @@ private:
     auto operator=(const RowType&) -> RowType& = delete;
     auto operator=(RowType&&) -> RowType& = delete;
 };
-}  // namespace opentxs::ui::implementation
+}  // namespace opentxs::v1::ui::implementation

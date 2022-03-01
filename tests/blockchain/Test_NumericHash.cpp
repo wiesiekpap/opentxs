@@ -18,7 +18,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-namespace opentxs
+namespace opentxs::v1
 {
 namespace api
 {
@@ -27,7 +27,7 @@ namespace session
 class Client;
 }  // namespace session
 }  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
 namespace be = boost::endian;
 namespace ot = opentxs;

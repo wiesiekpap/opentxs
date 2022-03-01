@@ -21,7 +21,7 @@
 #include "opentxs/util/Log.hpp"
 #include "util/Work.hpp"
 
-namespace opentxs::blockchain::p2p::peer
+namespace opentxs::v1::blockchain::p2p::peer
 {
 struct ZMQConnectionManager : virtual public ConnectionManager {
     const api::Session& api_;
@@ -229,4 +229,4 @@ auto ConnectionManager::ZMQIncoming(
     return std::make_unique<ZMQIncomingConnectionManager>(
         api, id, parent, pipeline, running, address, headerSize);
 }
-}  // namespace opentxs::blockchain::p2p::peer
+}  // namespace opentxs::v1::blockchain::p2p::peer

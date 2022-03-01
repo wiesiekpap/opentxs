@@ -20,7 +20,9 @@
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -37,10 +39,11 @@ class Header;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::block::implementation
+namespace opentxs::v1::blockchain::block::implementation
 {
 class Header : virtual public block::Header
 {
@@ -119,4 +122,4 @@ private:
     auto operator=(const Header&) -> Header& = delete;
     auto operator=(Header&&) -> Header& = delete;
 };
-}  // namespace opentxs::blockchain::block::implementation
+}  // namespace opentxs::v1::blockchain::block::implementation

@@ -16,7 +16,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -37,10 +39,11 @@ class Nym;
 
 class PasswordPrompt;
 class Tag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::internal
+namespace opentxs::v1::otx::internal
 {
 /** The server needs to store a list of accounts, by instrument definition ID,
  * to store the backing funds for vouchers. The below class is useful for that.
@@ -91,4 +94,4 @@ private:
 
     AccountList() = delete;
 };
-}  // namespace opentxs::otx::internal
+}  // namespace opentxs::v1::otx::internal

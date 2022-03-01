@@ -15,7 +15,9 @@
 #include "opentxs/util/Iterator.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -27,10 +29,11 @@ class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::block::bitcoin
+namespace opentxs::v1::blockchain::block::bitcoin
 {
 class OPENTXS_EXPORT Block : virtual public block::Block
 {
@@ -60,4 +63,4 @@ private:
     auto operator=(const Block&) -> Block& = delete;
     auto operator=(Block&&) -> Block& = delete;
 };
-}  // namespace opentxs::blockchain::block::bitcoin
+}  // namespace opentxs::v1::blockchain::block::bitcoin

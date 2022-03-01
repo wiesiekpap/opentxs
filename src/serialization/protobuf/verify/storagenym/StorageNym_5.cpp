@@ -13,7 +13,7 @@
 #include "serialization/protobuf/StorageNym.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_5(const StorageNym& input, const bool silent) -> bool
 {
@@ -41,4 +41,4 @@ auto CheckProto_5(const StorageNym& input, const bool silent) -> bool
 
     return true;
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

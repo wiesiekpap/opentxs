@@ -24,7 +24,9 @@
 #include "serialization/protobuf/Context.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -38,10 +40,11 @@ class Nym;
 }  // namespace identifier
 
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::context::implementation
+namespace opentxs::v1::otx::context::implementation
 {
 class ClientContext final : virtual public internal::Client, public Base
 {
@@ -114,4 +117,4 @@ private:
         -> otx::context::Client& = delete;
     auto operator=(ClientContext&&) -> otx::context::Client& = delete;
 };
-}  // namespace opentxs::otx::context::implementation
+}  // namespace opentxs::v1::otx::context::implementation

@@ -37,7 +37,7 @@
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/HDPath.pb.h"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto AsymmetricAPI(const api::Session& api) noexcept
     -> std::unique_ptr<api::crypto::Asymmetric>
@@ -46,9 +46,9 @@ auto AsymmetricAPI(const api::Session& api) noexcept
 
     return std::make_unique<ReturnType>(api);
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory
 
-namespace opentxs::api::crypto::imp
+namespace opentxs::v1::api::crypto::imp
 {
 const VersionNumber Asymmetric::serialized_path_version_{1};
 
@@ -626,4 +626,4 @@ auto Asymmetric::serialize_path(
 
     return output;
 }
-}  // namespace opentxs::api::crypto::imp
+}  // namespace opentxs::v1::api::crypto::imp

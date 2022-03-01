@@ -28,7 +28,7 @@
 // directly
 // to said agent.)
 
-namespace opentxs
+namespace opentxs::v1
 {
 OTClause::OTClause()
     : m_strName(String::Factory())
@@ -107,4 +107,4 @@ auto OTClause::Compare(const OTClause& rhs) const -> bool
     return true;
 }
 
-}  // namespace opentxs
+}  // namespace opentxs::v1

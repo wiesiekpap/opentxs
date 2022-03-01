@@ -15,7 +15,9 @@
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace blockchain
 {
@@ -27,10 +29,11 @@ struct Deterministic;
 }  // namespace internal
 }  // namespace crypto
 }  // namespace blockchain
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::crypto
+namespace opentxs::v1::blockchain::crypto
 {
 class OPENTXS_EXPORT Deterministic : virtual public Subaccount
 {
@@ -78,4 +81,4 @@ private:
     auto operator=(const Deterministic&) -> Deterministic& = delete;
     auto operator=(Deterministic&&) -> Deterministic& = delete;
 };
-}  // namespace opentxs::blockchain::crypto
+}  // namespace opentxs::v1::blockchain::crypto

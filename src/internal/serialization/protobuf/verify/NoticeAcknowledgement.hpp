@@ -8,16 +8,19 @@
 #include "opentxs/Version.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace proto
 {
 class NoticeAcknowledgement;
 }  // namespace proto
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto CheckProto_1(
     const NoticeAcknowledgement& acknowledgement,
@@ -63,4 +66,4 @@ auto CheckProto_19(const NoticeAcknowledgement& acknowledgement, const bool)
     -> bool;
 auto CheckProto_20(const NoticeAcknowledgement& acknowledgement, const bool)
     -> bool;
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

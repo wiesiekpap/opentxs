@@ -5,7 +5,7 @@
 
 #pragma once
 
-namespace opentxs
+namespace opentxs::v1
 {
 enum class ThreadPriority {
     Idle,
@@ -19,4 +19,4 @@ enum class ThreadPriority {
 
 auto print(ThreadPriority priority) noexcept -> const char*;
 auto SetThisThreadsPriority(ThreadPriority priority) noexcept -> void;
-}  // namespace opentxs
+}  // namespace opentxs::v1

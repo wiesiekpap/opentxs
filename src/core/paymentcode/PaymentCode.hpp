@@ -32,7 +32,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -68,10 +70,11 @@ class Signature;
 
 class Data;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 class PaymentCode::Imp : virtual public internal::PaymentCode
 {
@@ -155,9 +158,9 @@ private:
     auto operator=(const Imp&) -> Imp&;
     auto operator=(Imp&&) -> Imp&;
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::blank
+namespace opentxs::v1::blank
 {
 class PaymentCode final : public opentxs::PaymentCode::Imp
 {
@@ -295,4 +298,4 @@ public:
     PaymentCode() = default;
     ~PaymentCode() override = default;
 };
-}  // namespace opentxs::blank
+}  // namespace opentxs::v1::blank

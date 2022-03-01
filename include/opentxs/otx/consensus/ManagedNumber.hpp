@@ -11,7 +11,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace otx
 {
@@ -26,10 +28,11 @@ using OTManagedNumber = Pimpl<otx::context::ManagedNumber>;
 OPENTXS_EXPORT auto operator<(
     const OTManagedNumber& lhs,
     const OTManagedNumber& rhs) -> bool;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::otx::context
+namespace opentxs::v1::otx::context
 {
 class OPENTXS_EXPORT ManagedNumber
 {
@@ -49,4 +52,4 @@ private:
     auto operator=(const ManagedNumber&) -> ManagedNumber& = delete;
     auto operator=(ManagedNumber&&) -> ManagedNumber& = delete;
 };
-}  // namespace opentxs::otx::context
+}  // namespace opentxs::v1::otx::context

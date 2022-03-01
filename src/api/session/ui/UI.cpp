@@ -15,7 +15,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 
-namespace opentxs::api::session::imp
+namespace opentxs::v1::api::session::imp
 {
 UI::UI(std::unique_ptr<Imp> imp) noexcept
     : imp_(std::move(imp))
@@ -315,4 +315,4 @@ auto UI::UnitListQt(const identifier::Nym& nym, const SimpleCallback cb)
 }
 
 UI::~UI() = default;
-}  // namespace opentxs::api::session::imp
+}  // namespace opentxs::v1::api::session::imp

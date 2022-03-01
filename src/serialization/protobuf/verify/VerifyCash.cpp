@@ -5,7 +5,7 @@
 
 #include "internal/serialization/protobuf/verify/VerifyCash.hpp"  // IWYU pragma: associated
 
-namespace opentxs::proto
+namespace opentxs::v1::proto
 {
 auto LucreTokenDataAllowedCiphertext() noexcept -> const VersionMap&
 {
@@ -63,4 +63,4 @@ auto TokenAllowedLucreTokenData() noexcept -> const VersionMap&
 
     return output;
 }
-}  // namespace opentxs::proto
+}  // namespace opentxs::v1::proto

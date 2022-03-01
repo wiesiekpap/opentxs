@@ -6,7 +6,9 @@
 #pragma once
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -55,10 +57,11 @@ class Context;
 }  // namespace network
 
 class Options;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto AsymmetricAPI(const api::Session& api) noexcept
     -> std::unique_ptr<api::crypto::Asymmetric>;
@@ -96,4 +99,4 @@ auto SeedAPI(
     -> std::unique_ptr<api::crypto::Seed>;
 auto Symmetric(const api::Session& api) noexcept
     -> std::unique_ptr<api::crypto::Symmetric>;
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

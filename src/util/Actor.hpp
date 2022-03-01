@@ -37,16 +37,19 @@
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
 class Session;
 }  // namespace api
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs
+namespace opentxs::v1
 {
 template <typename CRTP, typename JobType>
 class Actor : virtual public Allocated
@@ -268,4 +271,4 @@ private:
         if (false == running_) { gatekeeper_.shutdown(); }
     }
 };
-}  // namespace opentxs
+}  // namespace opentxs::v1

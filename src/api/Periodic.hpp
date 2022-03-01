@@ -19,13 +19,16 @@
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 class Flag;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::imp
+namespace opentxs::v1::api::imp
 {
 class Periodic : virtual public api::Periodic
 {
@@ -65,4 +68,4 @@ private:
 
     void thread();
 };
-}  // namespace opentxs::api::imp
+}  // namespace opentxs::v1::api::imp

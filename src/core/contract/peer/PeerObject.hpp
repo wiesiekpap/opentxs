@@ -21,7 +21,9 @@
 #include "serialization/protobuf/PeerObject.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace api
 {
@@ -49,10 +51,11 @@ class PeerObject;
 class Armored;
 class Factory;
 class PasswordPrompt;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::peer::implementation
+namespace opentxs::v1::peer::implementation
 {
 class Object final : virtual public opentxs::PeerObject
 {
@@ -145,4 +148,4 @@ private:
 
     Object() = delete;
 };
-}  // namespace opentxs::peer::implementation
+}  // namespace opentxs::v1::peer::implementation

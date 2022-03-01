@@ -9,11 +9,11 @@
 
 #include "internal/crypto/library/Secp256k1.hpp"
 
-namespace opentxs::factory
+namespace opentxs::v1::factory
 {
 auto Secp256k1(const api::Crypto&, const api::crypto::Util&) noexcept
     -> std::unique_ptr<crypto::Secp256k1>
 {
     return {};
 }
-}  // namespace opentxs::factory
+}  // namespace opentxs::v1::factory

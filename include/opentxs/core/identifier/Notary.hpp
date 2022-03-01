@@ -13,7 +13,9 @@
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs
+namespace opentxs  // NOLINT
+{
+inline namespace v1
 {
 namespace identifier
 {
@@ -21,6 +23,7 @@ class Notary;
 }  // namespace identifier
 
 using OTNotaryID = Pimpl<identifier::Notary>;
+}  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -40,7 +43,7 @@ struct OPENTXS_EXPORT less<opentxs::OTNotaryID> {
 };
 }  // namespace std
 
-namespace opentxs
+namespace opentxs::v1
 {
 OPENTXS_EXPORT auto operator==(
     const OTNotaryID& lhs,
@@ -60,9 +63,9 @@ OPENTXS_EXPORT auto operator<=(
 OPENTXS_EXPORT auto operator>=(
     const OTNotaryID& lhs,
     const opentxs::Identifier& rhs) noexcept -> bool;
-}  // namespace opentxs
+}  // namespace opentxs::v1
 
-namespace opentxs::identifier
+namespace opentxs::v1::identifier
 {
 class OPENTXS_EXPORT Notary : virtual public opentxs::Identifier
 {
@@ -87,4 +90,4 @@ private:
     auto operator=(const Notary&) -> Notary& = delete;
     auto operator=(Notary&&) -> Notary& = delete;
 };
-}  // namespace opentxs::identifier
+}  // namespace opentxs::v1::identifier
