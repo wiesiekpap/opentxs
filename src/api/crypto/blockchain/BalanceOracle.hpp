@@ -14,8 +14,8 @@
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
-inline namespace v1
-{
+// inline namespace v1
+// {
 namespace api
 {
 class Session;
@@ -25,11 +25,11 @@ namespace identifier
 {
 class Nym;
 }  // namespace identifier
-}  // namespace v1
+// }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::v1::api::crypto::blockchain
+namespace opentxs::api::crypto::blockchain
 {
 class BalanceOracle
 {
@@ -57,4 +57,4 @@ private:
 
     BalanceOracle() = delete;
 };
-}  // namespace opentxs::v1::api::crypto::blockchain
+}  // namespace opentxs::api::crypto::blockchain

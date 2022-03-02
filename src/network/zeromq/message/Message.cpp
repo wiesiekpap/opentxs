@@ -22,7 +22,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs::v1::network::zeromq
+namespace opentxs::network::zeromq
 {
 auto operator<(const Message& lhs, const Message& rhs) noexcept -> bool
 {
@@ -106,9 +106,9 @@ auto tagged_message(const void* tag, const std::size_t tagBytes) noexcept
 
     return output;
 }
-}  // namespace opentxs::v1::network::zeromq
+}  // namespace opentxs::network::zeromq
 
-namespace opentxs::v1::network::zeromq
+namespace opentxs::network::zeromq
 {
 Message::Imp::Imp() noexcept
     : parent_(nullptr)
@@ -405,9 +405,9 @@ auto Message::Imp::Total() const noexcept -> std::size_t
         std::size_t{0},
         [](const auto& lhs, const auto& rhs) { return lhs + rhs.size(); });
 }
-}  // namespace opentxs::v1::network::zeromq
+}  // namespace opentxs::network::zeromq
 
-namespace opentxs::v1::network::zeromq
+namespace opentxs::network::zeromq
 {
 Message::Message(Imp* imp) noexcept
     : imp_(imp)
@@ -569,4 +569,4 @@ Message::~Message()
         imp_ = nullptr;
     }
 }
-}  // namespace opentxs::v1::network::zeromq
+}  // namespace opentxs::network::zeromq

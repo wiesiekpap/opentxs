@@ -26,7 +26,6 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -42,7 +41,7 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::v1::factory
+namespace opentxs::factory
 {
 auto UnitListModel(
     const api::session::Client& api,
@@ -54,9 +53,9 @@ auto UnitListModel(
 
     return std::make_unique<ReturnType>(api, nymID, cb);
 }
-}  // namespace opentxs::v1::factory
+}  // namespace opentxs::factory
 
-namespace opentxs::v1::ui::implementation
+namespace opentxs::ui::implementation
 {
 UnitList::UnitList(
     const api::session::Client& api,
@@ -178,4 +177,4 @@ UnitList::~UnitList()
 {
     for (auto& it : listeners_) { delete it.second; }
 }
-}  // namespace opentxs::v1::ui::implementation
+}  // namespace opentxs::ui::implementation

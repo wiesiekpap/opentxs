@@ -57,7 +57,7 @@
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Container.hpp"
 
-namespace opentxs::v1::factory
+namespace opentxs::factory
 {
 auto BlockchainAccountActivityModel(
     const api::session::Client& api,
@@ -74,9 +74,9 @@ auto BlockchainAccountActivityModel(
 
     return std::make_unique<ReturnType>(api, chain, nymID, accountID, cb);
 }
-}  // namespace opentxs::v1::factory
+}  // namespace opentxs::factory
 
-namespace opentxs::v1::ui::implementation
+namespace opentxs::ui::implementation
 {
 BlockchainAccountActivity::BlockchainAccountActivity(
     const api::session::Client& api,
@@ -546,4 +546,4 @@ BlockchainAccountActivity::~BlockchainAccountActivity()
     wait_for_startup();
     signal_shutdown().get();
 }
-}  // namespace opentxs::v1::ui::implementation
+}  // namespace opentxs::ui::implementation
