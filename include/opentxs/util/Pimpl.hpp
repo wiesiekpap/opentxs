@@ -88,6 +88,8 @@ public:
         return *this;
     }
 
+    explicit operator bool() const noexcept { return pimpl_ != nullptr; }
+
     auto operator=(const C& rhs) noexcept -> Pimpl&
     {
         pimpl_.reset(

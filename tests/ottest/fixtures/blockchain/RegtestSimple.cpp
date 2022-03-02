@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <string_view>
 #include <tuple>
+#include <thread>
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "ottest/fixtures/blockchain/Regtest.hpp"
@@ -402,7 +403,7 @@ auto Regtest_fixture_simple::WaitForSynchro(
                 .Flush();
             break;
         }
-        ot::Sleep(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 }
 auto Regtest_fixture_simple::GetDisplayBalance(
@@ -639,8 +640,7 @@ void Regtest_fixture_simple::advance_blockchain(
     std::vector<std::unique_ptr<ScanListener>> scan_listeners;
     std::vector<std::unique_ptr<std::future<void>>> external_scan_listeners;
     std::vector<std::unique_ptr<std::future<void>>> internal_scan_listeners;
-    // Safety mechanism
-    ot::Sleep(100ms);
+
     for (const auto& user : users) {
         auto scan_listener = std::make_unique<ScanListener>(*user.get().api_);
         scan_listeners.push_back(std::move(scan_listener));

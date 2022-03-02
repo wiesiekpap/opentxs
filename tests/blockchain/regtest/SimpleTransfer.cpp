@@ -18,7 +18,7 @@
 namespace ottest
 {
 
-TEST_F(Regtest_fixture_simple, DISABLED_send_to_client)
+TEST_F(Regtest_fixture_simple, send_to_client)
 {
     EXPECT_TRUE(Start());
     EXPECT_TRUE(Connect());
@@ -28,7 +28,7 @@ TEST_F(Regtest_fixture_simple, DISABLED_send_to_client)
 
     Height begin = 0;
     const auto blocks_number = 2;
-    const auto coin_to_send = 100000;
+    auto coin_to_send = 100000;
 
     auto [user_alice, success_alice] = CreateClient(
         opentxs::Options{},
@@ -42,44 +42,28 @@ TEST_F(Regtest_fixture_simple, DISABLED_send_to_client)
         opentxs::Options{}, 4, name_bob, GetVectors3().bob_.words_, address_);
     EXPECT_TRUE(success_bob);
 
-    auto scan_listener_alice = std::make_unique<ScanListener>(*user_alice.api_);
-    auto scan_listener_bob = std::make_unique<ScanListener>(*user_bob.api_);
-
     std::vector<std::reference_wrapper<const User>> users{user_alice, user_bob};
     MineBlocksForUsers(users, target_height, blocks_number);
     begin = target_height;
     target_height += static_cast<int>(MaturationInterval()) + 1;
 
-    auto scan_listener_external_alice_f = scan_listener_alice->get_future(
-        GetHDAccount(user_alice), bca::Subchain::External, target_height);
-    auto scan_listener_internal_alice_f = scan_listener_alice->get_future(
-        GetHDAccount(user_alice), bca::Subchain::Internal, target_height);
-    auto scan_listener_external_bob_f = scan_listener_bob->get_future(
-        GetHDAccount(user_bob), bca::Subchain::External, target_height);
-    auto scan_listener_internal_bob_f = scan_listener_bob->get_future(
-        GetHDAccount(user_bob), bca::Subchain::Internal, target_height);
-
     // mine MaturationInterval number block with
     MineBlocks(begin, static_cast<int>(MaturationInterval()) + 1);
     begin += MaturationInterval() + 1;
 
-    EXPECT_TRUE(scan_listener_alice->wait(scan_listener_external_alice_f));
-    EXPECT_TRUE(scan_listener_alice->wait(scan_listener_internal_alice_f));
     EXPECT_EQ(
         GetBalance(user_alice),
         amount_in_transaction_ * blocks_number * transaction_in_block_);
 
-    EXPECT_TRUE(scan_listener_bob->wait(scan_listener_external_bob_f));
-    EXPECT_TRUE(scan_listener_bob->wait(scan_listener_internal_bob_f));
     EXPECT_EQ(
         GetBalance(user_bob),
         amount_in_transaction_ * blocks_number * transaction_in_block_);
 
-    const User* sender = &user_alice;
-    const User* receiver = &user_bob;
-    Amount sender_amount =
+    User* sender = &users_.at(name_alice);
+    User* receiver = &users_.at(name_bob);
+    sender->expected_balance_ =
         amount_in_transaction_ * blocks_number * transaction_in_block_;
-    Amount receiver_amount =
+    receiver->expected_balance_ =
         amount_in_transaction_ * blocks_number * transaction_in_block_;
 
     const size_t numbers_of_test = 2;
@@ -88,18 +72,20 @@ TEST_F(Regtest_fixture_simple, DISABLED_send_to_client)
          number_of_test++) {
 
         SendCoins(*receiver, *sender, target_height, coin_to_send);
-        std::this_thread::sleep_for(std::chrono::seconds(20));
 
         auto loaded_transactions = CollectTransactionsForFeeCalculations(
             *sender, send_transactions_, transactions_);
         auto fee = CalculateFee(send_transactions_, loaded_transactions);
         send_transactions_.clear();
 
-        EXPECT_EQ(GetBalance(*sender), sender_amount - coin_to_send - fee);
-        EXPECT_EQ(GetBalance(*receiver), receiver_amount + coin_to_send);
+        sender->expected_balance_ -= Amount{coin_to_send} + fee;
+        receiver->expected_balance_ += coin_to_send;
+        WaitForSynchro(*sender, target_height, sender->expected_balance_);
+        WaitForSynchro(*receiver, target_height, receiver->expected_balance_);
 
-        receiver_amount = GetBalance(*sender);
-        sender_amount = GetBalance(*receiver);
+        EXPECT_EQ(GetBalance(*sender), sender->expected_balance_);
+        EXPECT_EQ(GetBalance(*receiver), receiver->expected_balance_);
+
         std::swap(sender, receiver);
     }
 

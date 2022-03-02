@@ -34,6 +34,7 @@ using Subchain = ot::blockchain::crypto::Subchain;
 Counter account_list_{};
 Counter account_activity_{};
 Counter account_status_{};
+std::string separator = "";
 
 TEST_F(Regtest_fixture_hd, init_opentxs) {}
 
@@ -50,6 +51,9 @@ TEST_F(Regtest_fixture_hd, init_ui_models)
         alice_, SendHD().Parent().AccountID(), account_activity_);
     init_account_list(alice_, account_list_);
     init_blockchain_account_status(alice_, test_chain_, account_status_);
+    std::cout.imbue(std::locale(""));
+    separator =
+        std::use_facet<std::numpunct<char>>(std::cout.getloc()).decimal_point();
 }
 
 TEST_F(Regtest_fixture_hd, account_activity_initial)
@@ -140,9 +144,9 @@ TEST_F(Regtest_fixture_hd, account_status_initial)
                  {"BIP-44: m / 44' / 1' / 0'",
                   SendHD().ID().str(),
                   {
-                      {"external subchain: 0 of 1 (0.000000 %)",
+                      {"external subchain: 0 of 1 (0" + separator + "000000 %)",
                        Subchain::External},
-                      {"internal subchain: 0 of 1 (0.000000 %)",
+                      {"internal subchain: 0 of 1 (0" + separator + "000000 %)",
                        Subchain::Internal},
                   }},
              }},
@@ -157,7 +161,8 @@ TEST_F(Regtest_fixture_hd, account_status_initial)
                       .ID()
                       .str(),
                   {
-                      {"version 3 subchain: 0 of 1 (0.000000 %)",
+                      {"version 3 subchain: 0 of 1 (0" + separator +
+                           "000000 %)",
                        Subchain::NotificationV3},
                   }},
              }},
@@ -299,9 +304,11 @@ TEST_F(Regtest_fixture_hd, account_status_immature)
                  {"BIP-44: m / 44' / 1' / 0'",
                   SendHD().ID().str(),
                   {
-                      {"external subchain: 1 of 1 (100.000000 %)",
+                      {"external subchain: 1 of 1 (100" + separator +
+                           "000000 %)",
                        Subchain::External},
-                      {"internal subchain: 1 of 1 (100.000000 %)",
+                      {"internal subchain: 1 of 1 (100" + separator +
+                           "000000 %)",
                        Subchain::Internal},
                   }},
              }},
@@ -316,7 +323,8 @@ TEST_F(Regtest_fixture_hd, account_status_immature)
                       .ID()
                       .str(),
                   {
-                      {"version 3 subchain: 1 of 1 (100.000000 %)",
+                      {"version 3 subchain: 1 of 1 (100" + separator +
+                           "000000 %)",
                        Subchain::NotificationV3},
                   }},
              }},
@@ -430,9 +438,11 @@ TEST_F(Regtest_fixture_hd, DISABLED_account_status_one_block_before_maturation)
                  {"BIP-44: m / 44' / 1' / 0'",
                   SendHD().ID().str(),
                   {
-                      {"external subchain: 10 of 10 (100.000000 %)",
+                      {"external subchain: 10 of 10 (100" + separator +
+                           "000000 %)",
                        Subchain::External},
-                      {"internal subchain: 10 of 10 (100.000000 %)",
+                      {"internal subchain: 10 of 10 (100" + separator +
+                           "000000 %)",
                        Subchain::Internal},
                   }},
              }},
@@ -447,7 +457,8 @@ TEST_F(Regtest_fixture_hd, DISABLED_account_status_one_block_before_maturation)
                       .ID()
                       .str(),
                   {
-                      {"version 3 subchain: 10 of 10 (100.000000 %)",
+                      {"version 3 subchain: 10 of 10 (100" + separator +
+                           "000000 %)",
                        Subchain::NotificationV3},
                   }},
              }},
@@ -598,9 +609,11 @@ TEST_F(Regtest_fixture_hd, DISABLED_account_status_mature)
                  {"BIP-44: m / 44' / 1' / 0'",
                   SendHD().ID().str(),
                   {
-                      {"external subchain: 11 of 11 (100.000000 %)",
+                      {"external subchain: 11 of 11 (100" + separator +
+                           "000000 %)",
                        Subchain::External},
-                      {"internal subchain: 11 of 11 (100.000000 %)",
+                      {"internal subchain: 11 of 11 (100" + separator +
+                           "000000 %)",
                        Subchain::Internal},
                   }},
              }},
@@ -615,7 +628,8 @@ TEST_F(Regtest_fixture_hd, DISABLED_account_status_mature)
                       .ID()
                       .str(),
                   {
-                      {"version 3 subchain: 11 of 11 (100.000000 %)",
+                      {"version 3 subchain: 11 of 11 (100" + separator +
+                           "000000 %)",
                        Subchain::NotificationV3},
                   }},
              }},
@@ -995,9 +1009,11 @@ TEST_F(Regtest_fixture_hd, account_status_confirmed_spend)
                  {"BIP-44: m / 44' / 1' / 0'",
                   SendHD().ID().str(),
                   {
-                      {"external subchain: 12 of 12 (100.000000 %)",
+                      {"external subchain: 12 of 12 (100" + separator +
+                           "000000 %)",
                        Subchain::External},
-                      {"internal subchain: 12 of 12 (100.000000 %)",
+                      {"internal subchain: 12 of 12 (100" + separator +
+                           "000000 %)",
                        Subchain::Internal},
                   }},
              }},
@@ -1012,7 +1028,8 @@ TEST_F(Regtest_fixture_hd, account_status_confirmed_spend)
                       .ID()
                       .str(),
                   {
-                      {"version 3 subchain: 12 of 12 (100.000000 %)",
+                      {"version 3 subchain: 12 of 12 (100" + separator +
+                           "000000 %)",
                        Subchain::NotificationV3},
                   }},
              }},
