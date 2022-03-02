@@ -163,6 +163,13 @@ if(OT_BUNDLED_SECP256K1 AND OT_CRYPTO_USING_LIBSECP256K1)
         ""
         FORCE
   )
+  set(SECP256K1_ENABLE_MODULE_RECOVERY
+      ON
+      CACHE
+        BOOL
+        ""
+        FORCE
+  )
   add_subdirectory(secp256k1)
   set_target_properties(
     secp256k1-obj PROPERTIES C_INCLUDE_WHAT_YOU_USE "" CXX_INCLUDE_WHAT_YOU_USE
