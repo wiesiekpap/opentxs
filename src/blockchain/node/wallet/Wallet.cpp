@@ -98,7 +98,7 @@ Wallet::Wallet(
     , chain_(chain)
     , to_accounts_(pipeline_.Internal().ExtraSocket(0))
     , fee_oracle_(factory::FeeOracle(api_, chain))
-    , accounts_(api, parent_, db_, mempool, chain_, shutdown, accounts)
+    , accounts_(api, parent_, db_, mempool, chain_, accounts)
     , proposals_(api, parent_, db_, chain_)
 {
     init_executor({
@@ -204,7 +204,11 @@ auto Wallet::Height() const noexcept -> block::Height
     return db_.GetWalletHeight();
 }
 
-auto Wallet::Init() noexcept -> void { trigger(); }
+auto Wallet::Init() noexcept -> void
+{
+    accounts_.Init();
+    trigger();
+}
 
 auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
 {
@@ -233,7 +237,6 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            to_accounts_.Send(MakeWork(wallet::AccountsJobs::shutdown));
             shutdown(shutdown_promise_);
         } break;
         case Work::statemachine: {
@@ -262,6 +265,7 @@ auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
 {
     if (auto previous = running_.exchange(false); previous) {
         LogDetail()("Shutting down ")(DisplayString(chain_))(" wallet").Flush();
+        to_accounts_.Send(MakeWork(wallet::AccountsJobs::shutdown));
         pipeline_.Close();
         fee_oracle_.Shutdown();
         promise.set_value();

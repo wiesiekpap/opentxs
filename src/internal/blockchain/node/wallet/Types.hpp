@@ -34,6 +34,7 @@ enum class AccountsJobs : OTZMQWorkType {
 // WARNING update print function if new values are added or removed
 enum class AccountJobs : OTZMQWorkType {
     shutdown = value(WorkType::Shutdown),
+    subaccount = value(WorkType::BlockchainAccountCreated),
     reorg_begin = OT_ZMQ_INTERNAL_SIGNAL + 1,
     reorg_begin_ack = OT_ZMQ_INTERNAL_SIGNAL + 2,
     reorg_end = OT_ZMQ_INTERNAL_SIGNAL + 3,
@@ -49,11 +50,13 @@ enum class SubchainJobs : OTZMQWorkType {
     filter = value(WorkType::BlockchainNewFilter),
     mempool = value(WorkType::BlockchainMempoolUpdated),
     block = value(WorkType::BlockchainBlockAvailable),
-    job_finished = OT_ZMQ_INTERNAL_SIGNAL + 0,
     reorg_begin = OT_ZMQ_INTERNAL_SIGNAL + 1,
     reorg_begin_ack = OT_ZMQ_INTERNAL_SIGNAL + 2,
     reorg_end = OT_ZMQ_INTERNAL_SIGNAL + 3,
     reorg_end_ack = OT_ZMQ_INTERNAL_SIGNAL + 4,
+    startup = OT_ZMQ_INTERNAL_SIGNAL + 5,
+    do_reorg = OT_ZMQ_INTERNAL_SIGNAL + 6,
+    update = OT_ZMQ_INTERNAL_SIGNAL + 7,
     init = OT_ZMQ_INIT_SIGNAL,
     key = OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL,
     statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,

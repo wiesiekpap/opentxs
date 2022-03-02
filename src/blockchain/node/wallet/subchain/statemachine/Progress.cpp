@@ -3,231 +3,253 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include <boost/smart_ptr/detail/operator_bool.hpp>
+
 #include "0_stdafx.hpp"    // IWYU pragma: associated
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/statemachine/Progress.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
+#include <boost/smart_ptr/make_shared.hpp>
+#include <chrono>
 #include <iterator>
-#include <memory>
-#include <mutex>
 #include <optional>
-#include <type_traits>
+#include <string_view>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
+#include "internal/network/zeromq/Context.hpp"
+#include "internal/network/zeromq/socket/Pipeline.hpp"
+#include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
-struct Progress::Imp {
-    auto Dirty() const noexcept -> std::optional<block::Position>
-    {
-        auto lock = Lock{lock_};
+Progress::Imp::Imp(
+    const boost::shared_ptr<const SubchainStateData>& parent,
+    const network::zeromq::BatchID batch,
+    allocator_type alloc) noexcept
+    : Actor(
+          parent->api_,
+          LogTrace(),
+          0ms,
+          batch,
+          alloc,
+          {
+              {parent->to_children_endpoint_, Direction::Connect},
+          },
+          {
+              {parent->to_progress_endpoint_, Direction::Bind},
+          },
+          {},
+          {
+              {SocketType::Push,
+               {
+                   {parent->from_children_endpoint_, Direction::Connect},
+               }},
+              {SocketType::Push,
+               {
+                   {parent->to_rescan_endpoint_, Direction::Connect},
+               }},
+          })
+    , to_parent_(pipeline_.Internal().ExtraSocket(0))
+    , to_rescan_(pipeline_.Internal().ExtraSocket(1))
+    , parent_p_(parent)
+    , parent_(*parent_p_)
+    , state_(State::normal)
+    , last_reported_(std::nullopt)
+{
+}
 
-        return lowest_dirty(lock);
-    }
-    auto Get() const noexcept -> block::Position
-    {
-        auto lock = Lock{lock_};
+auto Progress::Imp::notify(const block::Position& pos) const noexcept -> void
+{
+    parent_.ReportScan(pos);
+}
 
-        return last_reported_.value_or(parent_.null_position_);
-    }
-
-    auto Init() noexcept -> void
-    {
-        auto lock = Lock{lock_};
-
-        if (highest_clean_.has_value()) {
-            parent_.report_scan(highest_clean_.value());
+auto Progress::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
+{
+    switch (state_) {
+        case State::normal: {
+            state_normal(work, std::move(msg));
+        } break;
+        case State::reorg: {
+            state_reorg(work, std::move(msg));
+        } break;
+        default: {
+            OT_FAIL;
         }
     }
-    auto Reorg(const block::Position& parent) noexcept -> void
-    {
-        auto lock = Lock{lock_};
-        last_reported_ = std::nullopt;
+}
 
-        if (highest_clean_.has_value() && highest_clean_.value() > parent) {
-            highest_clean_ = parent;
-        }
+auto Progress::Imp::process_reorg(Message&& msg) noexcept -> void
+{
+    const auto body = msg.Body();
 
-        for (auto i = dirty_blocks_.begin(); i != dirty_blocks_.end();) {
-            const auto& position = *i;
+    OT_ASSERT(2 < body.size());
 
-            if (position > parent) {
-                i = dirty_blocks_.erase(i);
-            } else {
-                ++i;
-            }
-        }
+    const auto parent = block::Position{
+        body.at(1).as<block::Height>(),
+        parent_.api_.Factory().Data(body.at(2))};
+    process_reorg(parent);
+}
 
-        report(lock, true);
+auto Progress::Imp::process_reorg(const block::Position& parent) noexcept
+    -> void
+{
+    if (last_reported_.has_value() && last_reported_.value() > parent) {
+        last_reported_ = parent;
+        notify(parent);
     }
-    auto UpdateProcess(const ProgressBatch& data) noexcept -> void
-    {
-        auto lock = Lock{lock_};
+}
 
-        for (const auto& [position, matches] : data) {
-            dirty_blocks_.erase(position);
-        }
+auto Progress::Imp::process_update(Message&& msg) noexcept -> void
+{
+    auto clean = Set<ScanStatus>{get_allocator()};
+    auto dirty = Set<block::Position>{get_allocator()};
+    decode(parent_.api_, msg, clean, dirty);
 
-        report(lock, false);
+    OT_ASSERT(0u == dirty.size());
+    OT_ASSERT(0u < clean.size());
+
+    const auto& best = clean.crbegin()->second;
+    auto& last = last_reported_;
+
+    if ((false == last.has_value()) || (last.value() != best)) {
+        parent_.db_.SubchainSetLastScanned(parent_.db_key_, best);
+        last = best;
+        notify(best);
     }
-    auto UpdateScan(
-        const std::optional<block::Position>& highestClean,
-        const UnallocatedVector<block::Position>& in) noexcept -> void
-    {
-        auto lock = Lock{lock_};
-        std::copy(
-            in.begin(),
-            in.end(),
-            std::inserter(dirty_blocks_, dirty_blocks_.end()));
+}
 
-        if (highestClean.has_value()) {
-            set_highest_clean(lock, highestClean.value());
-        }
-
-        report(lock, false);
-    }
-
-    Imp(const SubchainStateData& parent) noexcept
-        : parent_(parent)
-        , lock_()
-        , last_reported_(std::nullopt)
-        , highest_clean_([&]() -> std::optional<block::Position> {
-            const auto pos = parent_.db_.SubchainLastScanned(parent_.db_key_);
-
-            if (pos == parent_.null_position_) { return std::nullopt; }
-
-            return std::move(pos);
-        }())
-        , dirty_blocks_()
-    {
-    }
-
-    ~Imp() = default;
-
-private:
-    using Map = UnallocatedMap<block::Position, long long int>;
-
-    const SubchainStateData& parent_;
-    mutable std::mutex lock_;
-    std::optional<block::Position> last_reported_;
-    std::optional<block::Position> highest_clean_;
-    UnallocatedSet<block::Position> dirty_blocks_;
-
-    auto lowest_dirty(const Lock&) const noexcept
-        -> std::optional<block::Position>
-    {
-        if (dirty_blocks_.empty()) { return std::nullopt; }
-
-        return *dirty_blocks_.begin();
-    }
-
-    auto report(const Lock& lock, bool reorg) noexcept -> void
-    {
-        const auto& best = highest_clean_.value_or(parent_.null_position_);
-        const auto report = [&] {
-            if (last_reported_.has_value()) {
-                const auto& value = last_reported_.value();
-
-                return value != best;
-            } else {
-
-                return true;
-            }
-        }();
-
-        if (report) {
-            LogVerbose()(OT_PRETTY_CLASS())(parent_.name_)(" progress: ")(
-                best.first)
+auto Progress::Imp::state_normal(const Work work, Message&& msg) noexcept
+    -> void
+{
+    switch (work) {
+        case Work::reorg_begin: {
+            transition_state_reorg(std::move(msg));
+        } break;
+        case Work::reorg_end:
+        case Work::do_reorg: {
+            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
+                CString{print(work), get_allocator()})
                 .Flush();
-            parent_.update_scan(best, reorg);
-            last_reported_ = std::move(best);
+
+            OT_FAIL;
+        }
+        case Work::update: {
+            process_update(std::move(msg));
+        } break;
+        case Work::shutdown:
+        case Work::filter:
+        case Work::mempool:
+        case Work::block:
+        case Work::reorg_begin_ack:
+        case Work::reorg_end_ack:
+        case Work::startup:
+        case Work::init:
+        case Work::key:
+        case Work::statemachine:
+        default: {
+            LogError()(OT_PRETTY_CLASS())("unhandled type").Flush();
+
+            OT_FAIL;
         }
     }
-    auto set_highest_clean(
-        const Lock& lock,
-        const block::Position& pos) noexcept -> void
-    {
-        const bool wantHighestClean = [&] {
-            if (highest_clean_.has_value()) {
-
-                return pos > highest_clean_.value();
-            } else {
-
-                return true;
-            }
-        }();
-        const bool setHighestClean = [&] {
-            if (wantHighestClean) {
-                const auto dirty = lowest_dirty(lock);
-
-                if (dirty.has_value()) {
-
-                    return dirty.value() > pos;
-                } else {
-
-                    return true;
-                }
-            } else {
-
-                return false;
-            }
-        }();
-
-        if (setHighestClean) { highest_clean_ = pos; }
-    }
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
-};
-
-Progress::Progress(const SubchainStateData& parent) noexcept
-    : imp_(std::make_unique<Imp>(parent).release())
-{
 }
 
-auto Progress::Dirty() const noexcept -> std::optional<block::Position>
+auto Progress::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
 {
-    return imp_->Dirty();
-}
+    switch (work) {
+        case Work::shutdown:
+        case Work::update:
+        case Work::statemachine: {
+            // NOTE defer processing of non-reorg messages until after reorg is
+            // complete
+            pipeline_.Push(std::move(msg));
+        } break;
+        case Work::reorg_end: {
+            transition_state_normal(std::move(msg));
+        } break;
+        case Work::reorg_begin: {
+            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
+                CString{print(work), get_allocator()})
+                .Flush();
 
-auto Progress::Get() const noexcept -> block::Position { return imp_->Get(); }
+            OT_FAIL;
+        }
+        case Work::do_reorg: {
+            process_reorg(std::move(msg));
+        } break;
+        case Work::filter:
+        case Work::mempool:
+        case Work::block:
+        case Work::reorg_begin_ack:
+        case Work::reorg_end_ack:
+        case Work::startup:
+        case Work::init:
+        case Work::key:
+        default: {
+            LogError()(OT_PRETTY_CLASS())("unhandled type").Flush();
 
-auto Progress::Init() noexcept -> void { imp_->Init(); }
-
-auto Progress::Reorg(const block::Position& parent) noexcept -> void
-{
-    imp_->Reorg(parent);
-}
-
-auto Progress::UpdateProcess(const ProgressBatch& processed) noexcept -> void
-{
-    imp_->UpdateProcess(processed);
-}
-
-auto Progress::UpdateScan(
-    const std::optional<block::Position>& highestClean,
-    const UnallocatedVector<block::Position>& dirtyBlocks) noexcept -> void
-{
-    imp_->UpdateScan(highestClean, dirtyBlocks);
-}
-
-Progress::~Progress()
-{
-    if (nullptr != imp_) {
-        delete imp_;
-        imp_ = nullptr;
+            OT_FAIL;
+        }
     }
 }
+
+auto Progress::Imp::transition_state_normal(Message&& msg) noexcept -> void
+{
+    disable_automatic_processing_ = false;
+    state_ = State::normal;
+    to_rescan_.Send(std::move(msg));
+}
+
+auto Progress::Imp::transition_state_reorg(Message&& msg) noexcept -> void
+{
+    disable_automatic_processing_ = true;
+    state_ = State::reorg;
+    to_parent_.Send(MakeWork(Work::reorg_begin_ack));
+}
+
+auto Progress::Imp::work() noexcept -> bool
+{
+    OT_FAIL;  // NOTE not used
+}
+}  // namespace opentxs::blockchain::node::wallet
+
+namespace opentxs::blockchain::node::wallet
+{
+Progress::Progress(
+    const boost::shared_ptr<const SubchainStateData>& parent) noexcept
+    : imp_([&] {
+        const auto& asio = parent->api_.Network().ZeroMQ().Internal();
+        const auto batchID = asio.PreallocateBatch();
+        // TODO the version of libc++ present in android ndk 23.0.7599858
+        // has a broken std::allocate_shared function so we're using
+        // boost::shared_ptr instead of std::shared_ptr
+
+        return boost::allocate_shared<Imp>(
+            alloc::PMR<Imp>{asio.Alloc(batchID)}, parent, batchID);
+    }())
+{
+    imp_->Init(imp_);
+}
+
+Progress::~Progress() = default;
 }  // namespace opentxs::blockchain::node::wallet

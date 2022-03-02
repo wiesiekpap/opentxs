@@ -471,6 +471,7 @@ struct Network : virtual public node::Manager {
         Heartbeat = OT_ZMQ_INTERNAL_SIGNAL + 3,
         SendToAddress = OT_ZMQ_INTERNAL_SIGNAL + 4,
         SendToPaymentCode = OT_ZMQ_INTERNAL_SIGNAL + 5,
+        StartWallet = OT_ZMQ_INTERNAL_SIGNAL + 6,
         FilterUpdate = OT_ZMQ_NEW_FILTER_SIGNAL,
         StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
@@ -512,6 +513,7 @@ struct Network : virtual public node::Manager {
 
     virtual auto FilterOracleInternal() noexcept -> internal::FilterOracle& = 0;
     virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
+    virtual auto StartWallet() noexcept -> void = 0;
 
     ~Network() override = default;
 };

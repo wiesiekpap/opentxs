@@ -3,68 +3,61 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
-
 #pragma once
 
 #include <boost/smart_ptr/shared_ptr.hpp>
-#include <string_view>
 
-#include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
-namespace api
-{
-class Session;
-}  // namespace api
-
 namespace blockchain
 {
 namespace node
 {
-namespace internal
+namespace wallet
 {
-struct Mempool;
-struct Network;
-struct WalletDatabase;
-}  // namespace internal
+class DeterministicStateData;
+class SubchainStateData;
+}  // namespace wallet
 }  // namespace node
 }  // namespace blockchain
+
+class PaymentCode;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::node::wallet
 {
-class Accounts
+class Index
 {
 public:
-    auto Init() noexcept -> void;
-
-    Accounts(
-        const api::Session& api,
-        const node::internal::Network& node,
-        const node::internal::WalletDatabase& db,
-        const node::internal::Mempool& mempool,
-        const Type chain,
-        const std::string_view toParent) noexcept;
-
-    ~Accounts();
-
-private:
     class Imp;
 
+    static auto DeterministicFactory(
+        const boost::shared_ptr<const SubchainStateData>& parent,
+        const DeterministicStateData& deterministic) noexcept -> Index;
+    static auto NotificationFactory(
+        const boost::shared_ptr<const SubchainStateData>& parent,
+        const PaymentCode& code) noexcept -> Index;
+
+    Index() = delete;
+    Index(const Index&) = delete;
+    Index(Index&&) noexcept;
+    Index& operator=(const Index&) = delete;
+    Index& operator=(Index&&) = delete;
+
+    ~Index();
+
+private:
     // TODO switch to std::shared_ptr once the android ndk ships a version of
     // libc++ with unfucked pmr / allocate_shared support
     boost::shared_ptr<Imp> imp_;
 
-    Accounts(const Accounts&) = delete;
-    Accounts(Accounts&&) = delete;
-    auto operator=(const Accounts&) -> Accounts& = delete;
-    auto operator=(Accounts&&) -> Accounts& = delete;
+    Index(boost::shared_ptr<Imp>&& imp) noexcept;
 };
 }  // namespace opentxs::blockchain::node::wallet

@@ -85,10 +85,13 @@ BalanceOracle::Imp::Imp(
     allocator_type alloc) noexcept
     : Actor(
           api,
+          LogTrace(),
           0ms,
           batch,
           alloc,
-          {},
+          {
+              {CString{api.Endpoints().Shutdown(), alloc}, Direction::Connect},
+          },
           {},
           {},
           {
@@ -385,6 +388,8 @@ auto BalanceOracle::Imp::UpdateBalance(
         return out;
     }());
 }
+
+auto BalanceOracle::Imp::work() noexcept -> bool { OT_FAIL; }
 
 BalanceOracle::Imp::~Imp() { signal_shutdown(); }
 }  // namespace opentxs::api::crypto::blockchain

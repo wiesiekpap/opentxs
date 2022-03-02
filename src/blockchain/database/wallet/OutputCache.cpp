@@ -456,6 +456,12 @@ auto OutputCache::ChangeState(
                 .Flush();
         }
 
+        if (1u != deleted.size()) {
+            LogError()(OT_PRETTY_CLASS())("Warning: output ")(id.str())(
+                " found in multiple state indices")
+                .Flush();
+        }
+
         auto rc = lmdb_
                       .Store(
                           wallet::states_,
@@ -468,12 +474,17 @@ auto OutputCache::ChangeState(
             throw std::runtime_error{"Failed to add new state index"};
         }
 
-        auto& from = states_[oldState];
-        auto& to = states_[newState];
-        from.erase(id);
-        to.emplace(id);
+        for (const auto& state : all_states()) {
+            if (auto it = states_.find(state); states_.end() != it) {
+                auto& from = it->second;
+                from.erase(id);
 
-        if (0u == from.size()) { states_.erase(oldState); }
+                if (0u == from.size()) { states_.erase(it); }
+            }
+        }
+
+        auto& to = states_[newState];
+        to.emplace(id);
 
         return rc;
     } catch (const std::exception& e) {
@@ -661,6 +672,21 @@ auto OutputCache::GetOutput(const eLock&, const block::Outpoint& id) noexcept(
 #endif  // defined OPENTXS_DETAILED_DEBUG
 
     return load_output(id);
+}
+
+auto OutputCache::GetOutput(
+    const eLock& lock,
+    const SubchainID& subchain,
+    const block::Outpoint& id) noexcept(false)
+    -> block::bitcoin::internal::Output&
+{
+    const auto& relevant = GetSubchain(lock, subchain);
+
+    if (0u == relevant.count(id)) {
+        throw std::out_of_range{"outpoint not found in this subchain"};
+    }
+
+    return GetOutput(lock, id);
 }
 
 auto OutputCache::GetPosition(const eLock&) noexcept -> const db::Position&

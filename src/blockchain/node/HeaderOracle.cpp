@@ -459,25 +459,31 @@ auto HeaderOracle::best_hashes(
     auto output = Hashes{};
     const auto limitIsZero = (0 == limit);
     auto current{start};
-    const auto last{
-        current + static_cast<block::Height>(limit) -
-        static_cast<block::Height>(1)};
+    const auto tip = best_chain(lock);
+    const auto last = [&] {
+        if (limitIsZero) {
 
-    while (limitIsZero || (current <= last)) {
-        try {
-            auto hash = database_.BestBlock(current++);
+            return tip.first;
+        } else {
+            const auto requestedEnd = block::Height{
+                current + static_cast<block::Height>(limit) -
+                static_cast<block::Height>(1)};
 
-            // TODO this check shouldn't be necessary but BestBlock doesn't
-            // throw the exception documented in its declaration.
-            if (hash->empty()) { break; }
-
-            const auto stopHere = stop.empty() ? false : (stop == hash);
-            output.emplace_back(std::move(hash));
-
-            if (stopHere) { break; }
-        } catch (...) {
-            break;
+            return std::min<block::Height>(requestedEnd, tip.first);
         }
+    }();
+
+    while (current <= last) {
+        auto hash = database_.BestBlock(current++);
+
+        // TODO this check shouldn't be necessary but BestBlock doesn't
+        // throw the exception documented in its declaration.
+        if (hash->empty()) { break; }
+
+        const auto stopHere = stop.empty() ? false : (stop == hash);
+        output.emplace_back(std::move(hash));
+
+        if (stopHere) { break; }
     }
 
     return output;

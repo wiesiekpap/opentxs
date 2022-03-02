@@ -42,6 +42,7 @@
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
@@ -197,7 +198,9 @@ struct Test_BitcoinBlock : public ::testing::Test {
     }
 
     Test_BitcoinBlock()
-        : api_(ot::Context().StartClientSession(0))
+        : api_(ot::Context().StartClientSession(
+              ot::Options{}.SetBlockchainWalletEnabled(false),
+              0))
     {
     }
 };
@@ -214,6 +217,8 @@ TEST_F(Test_BitcoinBlock, regtest)
         ot::blockchain::filter::Type::Basic_BCHVariant));
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::UnitTest, ot::blockchain::filter::Type::ES));
+
+    api_.Network().Blockchain().Stop(ot::blockchain::Type::UnitTest);
 }
 
 TEST_F(Test_BitcoinBlock, btc_genesis_mainnet)
@@ -223,6 +228,8 @@ TEST_F(Test_BitcoinBlock, btc_genesis_mainnet)
         ot::blockchain::filter::Type::Basic_BIP158));
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::Bitcoin, ot::blockchain::filter::Type::ES));
+
+    api_.Network().Blockchain().Stop(ot::blockchain::Type::Bitcoin);
 }
 
 TEST_F(Test_BitcoinBlock, btc_genesis_testnet)
@@ -233,6 +240,8 @@ TEST_F(Test_BitcoinBlock, btc_genesis_testnet)
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::Bitcoin_testnet3,
         ot::blockchain::filter::Type::ES));
+
+    api_.Network().Blockchain().Stop(ot::blockchain::Type::Bitcoin_testnet3);
 }
 
 TEST_F(Test_BitcoinBlock, bch_genesis_mainnet)
@@ -242,6 +251,8 @@ TEST_F(Test_BitcoinBlock, bch_genesis_mainnet)
         ot::blockchain::filter::Type::Basic_BCHVariant));
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::BitcoinCash, ot::blockchain::filter::Type::ES));
+
+    api_.Network().Blockchain().Stop(ot::blockchain::Type::BitcoinCash);
 }
 
 TEST_F(Test_BitcoinBlock, bch_genesis_testnet)
@@ -252,12 +263,17 @@ TEST_F(Test_BitcoinBlock, bch_genesis_testnet)
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::BitcoinCash_testnet3,
         ot::blockchain::filter::Type::ES));
+
+    api_.Network().Blockchain().Stop(
+        ot::blockchain::Type::BitcoinCash_testnet3);
 }
 
 TEST_F(Test_BitcoinBlock, ltc_genesis_mainnet)
 {
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::Litecoin, ot::blockchain::filter::Type::ES));
+
+    api_.Network().Blockchain().Stop(ot::blockchain::Type::Litecoin);
 }
 
 TEST_F(Test_BitcoinBlock, ltc_genesis_testnet)
@@ -265,6 +281,8 @@ TEST_F(Test_BitcoinBlock, ltc_genesis_testnet)
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::Litecoin_testnet4,
         ot::blockchain::filter::Type::ES));
+
+    api_.Network().Blockchain().Stop(ot::blockchain::Type::Litecoin_testnet4);
 }
 
 TEST_F(Test_BitcoinBlock, pkt_mainnet)
@@ -286,6 +304,8 @@ TEST_F(Test_BitcoinBlock, pkt_mainnet)
 
     EXPECT_TRUE(block.Serialize(raw->WriteInto()));
     EXPECT_EQ(raw.get(), bytes.get());
+
+    api_.Network().Blockchain().Stop(chain);
 }
 
 TEST_F(Test_BitcoinBlock, bip158)

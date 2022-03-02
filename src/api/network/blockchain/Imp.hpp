@@ -224,7 +224,8 @@ private:
     auto start(
         const Lock& lock,
         const Chain type,
-        const UnallocatedCString& seednode) const noexcept -> bool;
+        const UnallocatedCString& seednode,
+        const bool startWallet = true) const noexcept -> bool;
     auto stop(const Lock& lock, const Chain type) const noexcept -> bool;
 
     BlockchainImp() = delete;

@@ -230,6 +230,7 @@ public:
     {
         return signal_shutdown();
     }
+    auto StartWallet() noexcept -> void final;
     auto Wallet() const noexcept -> const node::Wallet& final
     {
         return wallet_;

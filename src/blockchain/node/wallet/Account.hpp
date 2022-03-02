@@ -30,6 +30,7 @@
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
+#include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Allocated.hpp"
@@ -113,7 +114,6 @@ public:
         const network::zeromq::BatchID batch,
         const Type chain,
         const filter::Type filter,
-        const std::string_view shutdown,
         const std::string_view fromParent,
         const std::string_view toParent,
         allocator_type alloc) noexcept;
@@ -153,7 +153,6 @@ private:
     const node::internal::Mempool& mempool_;
     const Type chain_;
     const filter::Type filter_type_;
-    const CString shutdown_endpoint_;
     const CString to_children_endpoint_;
     const CString from_children_endpoint_;
     network::zeromq::socket::Raw& to_parent_;
@@ -182,6 +181,10 @@ private:
         Subchains& map) noexcept -> Subchain&;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
     auto process_key(Message&& in) noexcept -> void;
+    auto process_subaccount(Message&& in) noexcept -> void;
+    auto process_subaccount(
+        const Identifier& id,
+        const crypto::SubaccountType type) noexcept -> void;
     auto ready_for_normal() noexcept -> void;
     auto ready_for_reorg() noexcept -> void;
     auto scan_subchains() noexcept -> void;
@@ -194,7 +197,7 @@ private:
     auto transition_state_post_reorg(Message&& in) noexcept -> void;
     auto transition_state_pre_reorg(Message&& in) noexcept -> void;
     auto transition_state_reorg(Message&& in) noexcept -> void;
-    auto work() noexcept -> bool;
+    [[noreturn]] auto work() noexcept -> bool;
 
     Imp(const api::Session& api,
         const crypto::Account& account,
@@ -204,7 +207,6 @@ private:
         const network::zeromq::BatchID batch,
         const Type chain,
         const filter::Type filter,
-        const std::string_view shutdown,
         const std::string_view fromParent,
         const std::string_view toParent,
         CString&& fromChildren,
