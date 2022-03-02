@@ -19,10 +19,10 @@
 #include <tuple>
 #include <utility>
 
-#include "api/crypto/blockchain/BalanceOracle.hpp"
 #include "api/crypto/blockchain/Blockchain.hpp"
 #include "api/crypto/blockchain/Imp.hpp"
 #include "blockchain/database/common/Database.hpp"
+#include "internal/api/crypto/blockchain/BalanceOracle.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"

@@ -16,6 +16,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/message/FrameIterator.hpp"
 #include "network/zeromq/message/FrameSection.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
@@ -125,6 +126,13 @@ Message::Imp::Imp(const Imp& rhs) noexcept
 auto Message::Imp::AddFrame() noexcept -> Frame&
 {
     return frames_.emplace_back();
+}
+
+auto Message::Imp::AddFrame(const Amount& amount) noexcept -> Frame&
+{
+    amount.Serialize(AppendBytes());
+
+    return frames_.back();
 }
 
 auto Message::Imp::AddFrame(Frame&& frame) noexcept -> Frame&
@@ -450,6 +458,11 @@ auto Message::operator=(Message&& rhs) noexcept -> Message&
 }
 
 auto Message::AddFrame() noexcept -> Frame& { return imp_->AddFrame(); }
+
+auto Message::AddFrame(const Amount& in) noexcept -> Frame&
+{
+    return imp_->AddFrame(in);
+}
 
 auto Message::AddFrame(const char* in) noexcept -> Frame&
 {

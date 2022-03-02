@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "interface/ui/base/List.hpp"
+#include "internal/api/crypto/blockchain/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/core/Factory.hpp"                // IWYU pragma: keep
@@ -527,8 +528,8 @@ auto AccountTree::subscribe(SubscribeSet&& chains) const noexcept -> void
 {
     for (const auto chain : chains) {
         pipeline_.Send([&] {
-            auto work =
-                network::zeromq::tagged_message(WorkType::BlockchainBalance);
+            using Job = api::crypto::blockchain::BalanceOracleJobs;
+            auto work = network::zeromq::tagged_message(Job::registration);
             work.AddFrame(chain);
             work.AddFrame(primary_id_);
 

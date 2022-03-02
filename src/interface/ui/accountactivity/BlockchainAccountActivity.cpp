@@ -17,6 +17,7 @@
 
 #include "interface/ui/base/List.hpp"
 #include "interface/ui/base/Widget.hpp"
+#include "internal/api/crypto/blockchain/Types.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -109,8 +110,8 @@ BlockchainAccountActivity::BlockchainAccountActivity(
         UnallocatedCString{api.Endpoints().ContactUpdate()},
     });
     balance_socket_->Send([&] {
-        auto work =
-            network::zeromq::tagged_message(WorkType::BlockchainBalance);
+        using Job = api::crypto::blockchain::BalanceOracleJobs;
+        auto work = network::zeromq::tagged_message(Job::registration);
         work.AddFrame(chain_);
         work.AddFrame(nymID);
 

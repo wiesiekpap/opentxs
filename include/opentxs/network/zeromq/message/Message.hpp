@@ -33,6 +33,8 @@ class FrameSection;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+
+class Amount;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -90,6 +92,7 @@ public:
     auto Total() const noexcept -> std::size_t;
 
     auto AddFrame() noexcept -> Frame&;
+    auto AddFrame(const Amount& amount) noexcept -> Frame&;
     auto AddFrame(Frame&& frame) noexcept -> Frame&;
     auto AddFrame(const char*) noexcept -> Frame&;
     template <

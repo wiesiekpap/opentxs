@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "interface/ui/base/List.hpp"
+#include "internal/api/crypto/blockchain/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/core/Factory.hpp"
@@ -76,7 +77,6 @@ AccountList::AccountList(
         UnallocatedCString{api.Endpoints().AccountUpdate()},
         UnallocatedCString{api.Endpoints().BlockchainAccountCreated()},
     });
-    // TODO this model might never initialize if blockchain support is disabled
     pipeline_.ConnectDealer(api.Endpoints().BlockchainBalance(), [](auto) {
         return MakeWork(Work::init);
     });
@@ -364,8 +364,8 @@ auto AccountList::startup() noexcept -> void
 auto AccountList::subscribe(const blockchain::Type chain) const noexcept -> void
 {
     pipeline_.Send([&] {
-        auto work =
-            network::zeromq::tagged_message(WorkType::BlockchainBalance);
+        using Job = api::crypto::blockchain::BalanceOracleJobs;
+        auto work = network::zeromq::tagged_message(Job::registration);
         work.AddFrame(chain);
         work.AddFrame(primary_id_);
 

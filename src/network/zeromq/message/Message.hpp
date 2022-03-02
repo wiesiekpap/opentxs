@@ -14,6 +14,7 @@
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/message/Factory.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
@@ -47,6 +48,7 @@ public:
     auto Total() const noexcept -> std::size_t;
 
     auto AddFrame() noexcept -> Frame&;
+    auto AddFrame(const Amount& amount) noexcept -> Frame&;
     auto AddFrame(Frame&& frame) noexcept -> Frame&;
     auto AddFrame(const char* in) noexcept -> Frame&;
     auto AddFrame(const ProtobufType& input) noexcept -> Frame& final;

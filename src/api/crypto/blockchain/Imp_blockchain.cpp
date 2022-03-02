@@ -359,8 +359,6 @@ auto BlockchainImp::notify_new_account(
 
         return work;
     }());
-
-    balances_.RefreshBalance(owner, chain);
 }
 
 auto BlockchainImp::ProcessContact(const Contact& contact) const noexcept

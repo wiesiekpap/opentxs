@@ -15,11 +15,9 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#if OT_BLOCKCHAIN
+#include "opentxs/interface/ui/UnitList.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
-#endif  // OT_BLOCKCHAIN
-#include "opentxs/interface/ui/UnitList.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
@@ -82,10 +80,8 @@ public:
     ~UnitList() final;
 
 private:
-#if OT_BLOCKCHAIN
     OTZMQListenCallback blockchain_balance_cb_;
     OTZMQDealerSocket blockchain_balance_;
-#endif  // OT_BLOCKCHAIN
     const ListenerDefinitions listeners_;
 
     auto construct_row(
@@ -95,14 +91,10 @@ private:
 
     auto process_account(const Message& message) noexcept -> void;
     auto process_account(const Identifier& id) noexcept -> void;
-#if OT_BLOCKCHAIN
     auto process_blockchain_balance(const Message& message) noexcept -> void;
-#endif  // OT_BLOCKCHAIN
     auto process_unit(const UnitListRowID& id) noexcept -> void;
-#if OT_BLOCKCHAIN
     auto setup_listeners(const ListenerDefinitions& definitions) noexcept
         -> void final;
-#endif  // OT_BLOCKCHAIN
     auto startup() noexcept -> void;
 
     UnitList() = delete;
