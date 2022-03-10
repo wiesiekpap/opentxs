@@ -75,7 +75,7 @@ constexpr auto SERVER_CONTRACT_FILE = "NEW_SERVER_CONTRACT.otc";
 constexpr auto SERVER_CONFIG_LISTEN_SECTION = "listen";
 constexpr auto SERVER_CONFIG_BIND_KEY = "bindip";
 constexpr auto SERVER_CONFIG_PORT_KEY = "command";
-}
+}  // namespace
 
 namespace zmq = opentxs::network::zeromq;
 

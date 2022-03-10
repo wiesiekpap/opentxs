@@ -41,7 +41,6 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
-#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
@@ -551,6 +550,7 @@ auto SubchainStateData::ready_for_normal() noexcept -> void
     reorg_ = std::nullopt;
     state_ = State::normal;
     to_parent_.Send(MakeWork(AccountJobs::reorg_end_ack));
+    flush_cache();
 }
 
 auto SubchainStateData::ready_for_reorg() noexcept -> void
@@ -751,9 +751,7 @@ auto SubchainStateData::state_post_reorg(
     switch (work) {
         case Work::shutdown:
         case Work::statemachine: {
-            // NOTE defer processing of non-reorg messages until after reorg is
-            // complete
-            pipeline_.Push(std::move(msg));
+            defer(std::move(msg));
         } break;
         case Work::reorg_end_ack: {
             transition_state_normal(std::move(msg));
@@ -791,9 +789,7 @@ auto SubchainStateData::state_pre_reorg(const Work work, Message&& msg) noexcept
     switch (work) {
         case Work::shutdown:
         case Work::statemachine: {
-            // NOTE defer processing of non-reorg messages until after reorg is
-            // complete
-            pipeline_.Push(std::move(msg));
+            defer(std::move(msg));
         } break;
         case Work::reorg_begin_ack: {
             transition_state_reorg(std::move(msg));
@@ -831,9 +827,7 @@ auto SubchainStateData::state_reorg(const Work work, Message&& msg) noexcept
     switch (work) {
         case Work::shutdown:
         case Work::statemachine: {
-            // NOTE defer processing of non-reorg messages until after reorg is
-            // complete
-            pipeline_.Push(std::move(msg));
+            defer(std::move(msg));
         } break;
         case Work::reorg_end: {
             transition_state_normal(std::move(msg));

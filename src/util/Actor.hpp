@@ -9,9 +9,11 @@
 
 #include <atomic>
 #include <chrono>
+#include <deque>
 #include <functional>
 #include <future>
 #include <memory>
+#include <queue>
 
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Types.hpp"
@@ -106,11 +108,26 @@ protected:
     }
     auto wait_for_init() const noexcept -> void { init_future_.get(); }
 
-    auto do_work() noexcept
+    auto defer(Message&& message) noexcept -> void
+    {
+        cache_.emplace(std::move(message));
+    }
+    auto do_work() noexcept -> void
     {
         rate_limit_state_machine();
         state_machine_queued_.store(false);
         repeat(downcast().work());
+    }
+    auto flush_cache() noexcept -> void
+    {
+        log_(OT_PRETTY_CLASS())("flushing ")(cache_.size())(" cached messages")
+            .Flush();
+
+        while (0u < cache_.size()) {
+            auto message = Message{std::move(cache_.front())};
+            cache_.pop();
+            worker(std::move(message));
+        }
     }
     auto init_complete() noexcept -> void { init_promise_.set_value(); }
 
@@ -123,7 +140,8 @@ protected:
         const network::zeromq::EndpointArgs& subscribe = {},
         const network::zeromq::EndpointArgs& pull = {},
         const network::zeromq::EndpointArgs& dealer = {},
-        const Vector<network::zeromq::SocketData>& extra = {}) noexcept
+        const Vector<network::zeromq::SocketData>& extra = {},
+        Set<Work>&& neverDrop = {}) noexcept
         : init_promise_()
         , init_future_(init_promise_.get_future())
         , running_(true)
@@ -139,7 +157,9 @@ protected:
               alloc.resource()))
         , disable_automatic_processing_(false)
         , rate_limit_(rateLimit)
+        , never_drop_(std::move(neverDrop))
         , last_executed_(Clock::now())
+        , cache_(alloc)
         , state_machine_queued_(false)
     {
         LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(pipeline_.BatchID())
@@ -150,7 +170,9 @@ protected:
 
 private:
     const std::chrono::milliseconds rate_limit_;
+    const Set<Work> never_drop_;
     Time last_executed_;
+    std::queue<Message, Deque<Message>> cache_;
     mutable std::atomic<bool> state_machine_queued_;
 
     auto rate_limit_state_machine() const noexcept
@@ -215,6 +237,7 @@ private:
             try {
                 init_promise_.set_value();
                 log_(OT_PRETTY_CLASS())("initialization complete").Flush();
+                flush_cache();
             } catch (...) {
                 LogError()(OT_PRETTY_CLASS())("init message received twice")
                     .Flush();
@@ -227,9 +250,16 @@ private:
 
         // NOTE: do not process any messages until init is received
         if (false == IsReady(init_future_)) {
-            log_(OT_PRETTY_CLASS())("dropping message of type ")(
-                type)(" until init is processed")
-                .Flush();
+            if (0u < never_drop_.count(work)) {
+                log_(OT_PRETTY_CLASS())("queueing message of type ")(
+                    type)(" until init is processed")
+                    .Flush();
+                defer(std::move(in));
+            } else {
+                log_(OT_PRETTY_CLASS())("dropping message of type ")(
+                    type)(" until init is processed")
+                    .Flush();
+            }
 
             return;
         }

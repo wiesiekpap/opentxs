@@ -90,7 +90,7 @@ constexpr auto ISSUE_NUMBER_BATCH = 100;
 constexpr auto NYMBOX_DEPTH = 0;
 constexpr auto INBOX_DEPTH = 1;
 constexpr auto OUTBOX_DEPTH = 2;
-}
+}  // namespace
 
 namespace opentxs::server
 {

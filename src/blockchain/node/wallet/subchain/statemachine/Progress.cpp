@@ -180,9 +180,7 @@ auto Progress::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::shutdown:
         case Work::update:
         case Work::statemachine: {
-            // NOTE defer processing of non-reorg messages until after reorg is
-            // complete
-            pipeline_.Push(std::move(msg));
+            defer(std::move(msg));
         } break;
         case Work::reorg_end: {
             transition_state_normal(std::move(msg));
@@ -218,6 +216,7 @@ auto Progress::Imp::transition_state_normal(Message&& msg) noexcept -> void
     disable_automatic_processing_ = false;
     state_ = State::normal;
     to_rescan_.Send(std::move(msg));
+    flush_cache();
 }
 
 auto Progress::Imp::transition_state_reorg(Message&& msg) noexcept -> void
