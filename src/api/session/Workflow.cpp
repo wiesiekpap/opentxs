@@ -71,7 +71,7 @@ namespace
 {
 constexpr auto RPC_ACCOUNT_EVENT_VERSION = 1;
 constexpr auto RPC_PUSH_VERSION = 1;
-}
+}  // namespace
 
 namespace zmq = opentxs::network::zeromq;
 

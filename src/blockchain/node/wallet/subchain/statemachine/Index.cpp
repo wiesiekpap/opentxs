@@ -168,6 +168,8 @@ auto Index::Imp::startup() noexcept -> void
 {
     last_indexed_ = parent_.db_.SubchainLastIndexed(parent_.db_key_);
     do_work();
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" notifying scan task to begin work")
+        .Flush();
     to_scan_.Send(MakeWork(Work::startup));
 }
 
@@ -215,9 +217,7 @@ auto Index::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::update:
         case Work::key:
         case Work::statemachine: {
-            // NOTE defer processing of non-reorg messages until after reorg is
-            // complete
-            pipeline_.Push(std::move(msg));
+            defer(std::move(msg));
         } break;
         case Work::reorg_end: {
             transition_state_normal(std::move(msg));
@@ -252,6 +252,7 @@ auto Index::Imp::transition_state_normal(Message&& msg) noexcept -> void
     disable_automatic_processing_ = false;
     state_ = State::normal;
     to_process_.Send(std::move(msg));
+    flush_cache();
     do_work();
 }
 

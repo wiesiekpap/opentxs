@@ -15,7 +15,6 @@
 #include <cstddef>
 #include <limits>
 #include <string_view>
-#include <type_traits>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
@@ -81,7 +80,8 @@ Scan::Imp::Imp(
                {
                    {parent->to_process_endpoint_, Direction::Connect},
                }},
-          })
+          },
+          {Work::startup})
     , to_parent_(pipeline_.Internal().ExtraSocket(0))
     , to_progress_(pipeline_.Internal().ExtraSocket(1))
     , to_process_(pipeline_.Internal().ExtraSocket(2))
@@ -177,6 +177,7 @@ auto Scan::Imp::process_reorg(const block::Position& parent) noexcept -> void
 auto Scan::Imp::process_startup(Message&& msg) noexcept -> void
 {
     state_ = State::normal;
+    flush_cache();
     do_work();
 }
 
@@ -224,8 +225,10 @@ auto Scan::Imp::state_init(const Work work, Message&& msg) noexcept -> void
         case Work::filter:
         case Work::reorg_begin:
         case Work::statemachine: {
-            // NOTE defer processing of non-startup messages
-            pipeline_.Push(std::move(msg));
+            log_(OT_PRETTY_CLASS())(parent_.name_)(
+                " deferring message processing until startup message received")
+                .Flush();
+            defer(std::move(msg));
         } break;
         case Work::reorg_end:
         case Work::do_reorg: {
@@ -269,12 +272,18 @@ auto Scan::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
 
             OT_FAIL;
         }
+        case Work::startup: {
+            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
+                CString{print(work), get_allocator()})
+                .Flush();
+
+            OT_FAIL;
+        }
         case Work::shutdown:
         case Work::mempool:
         case Work::block:
         case Work::reorg_begin_ack:
         case Work::reorg_end_ack:
-        case Work::startup:
         case Work::init:
         case Work::key:
         case Work::statemachine:
@@ -292,14 +301,19 @@ auto Scan::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::shutdown:
         case Work::filter:
         case Work::statemachine: {
-            // NOTE defer processing of non-reorg messages until after reorg is
-            // complete
-            pipeline_.Push(std::move(msg));
+            defer(std::move(msg));
         } break;
         case Work::reorg_end: {
             transition_state_normal(std::move(msg));
         } break;
         case Work::reorg_begin: {
+            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
+                CString{print(work), get_allocator()})
+                .Flush();
+
+            OT_FAIL;
+        }
+        case Work::startup: {
             LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
@@ -313,7 +327,6 @@ auto Scan::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::block:
         case Work::reorg_begin_ack:
         case Work::reorg_end_ack:
-        case Work::startup:
         case Work::init:
         case Work::key:
         default: {
@@ -328,7 +341,8 @@ auto Scan::Imp::transition_state_normal(Message&& msg) noexcept -> void
 {
     disable_automatic_processing_ = false;
     state_ = State::normal;
-    to_parent_.Send(std::move(msg));
+    to_parent_.Send(MakeWork(Work::reorg_end_ack));
+    flush_cache();
     do_work();
 }
 

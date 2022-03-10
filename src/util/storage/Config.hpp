@@ -17,7 +17,8 @@ constexpr auto OT_STORAGE_PRIMARY_PLUGIN_MEMDB = "mem";
 constexpr auto OT_STORAGE_PRIMARY_PLUGIN_FS = "fs";
 constexpr auto STORAGE_CONFIG_PRIMARY_PLUGIN_KEY = "primary_plugin";
 constexpr auto STORAGE_CONFIG_FS_BACKUP_DIRECTORY_KEY = "fs_backup_directory";
-constexpr auto STORAGE_CONFIG_FS_ENCRYPTED_BACKUP_DIRECTORY_KEY = "fs_encrypted_backup";
+constexpr auto STORAGE_CONFIG_FS_ENCRYPTED_BACKUP_DIRECTORY_KEY =
+    "fs_encrypted_backup";
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

@@ -145,7 +145,7 @@ namespace
 constexpr auto CONTACT_REFRESH_DAYS = 1;
 constexpr auto INTRODUCTION_SERVER_KEY = "introduction_server_id";
 constexpr auto MASTER_SECTION = "Master";
-}
+}  // namespace
 
 namespace zmq = opentxs::network::zeromq;
 

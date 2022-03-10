@@ -233,6 +233,7 @@ auto Accounts::Imp::finish_reorg() noexcept -> void
     reorg_ = std::nullopt;
     disable_automatic_processing_ = false;
     state_ = State::normal;
+    flush_cache();
 }
 
 auto Accounts::Imp::index_nym(const identifier::Nym& id) noexcept -> void
@@ -398,6 +399,9 @@ auto Accounts::Imp::state_normal(const Work work, Message&& msg) noexcept
 
             OT_FAIL;
         }
+        case Work::shutdown:
+        case Work::init:
+        case Work::statemachine:
         default: {
             LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
                 ": unhandled type")
@@ -419,9 +423,7 @@ auto Accounts::Imp::state_post_reorg(const Work work, Message&& msg) noexcept
         case Work::header:
         case Work::reorg:
         case Work::statemachine: {
-            // NOTE defer processing of non-reorg messages until after reorg is
-            // complete
-            pipeline_.Push(std::move(msg));
+            defer(std::move(msg));
         } break;
         case Work::reorg_end_ack: {
             transition_state_normal(std::move(msg));
@@ -433,6 +435,7 @@ auto Accounts::Imp::state_post_reorg(const Work work, Message&& msg) noexcept
 
             OT_FAIL;
         }
+        case Work::init:
         default: {
             LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
                 ": unhandled type")
@@ -453,9 +456,7 @@ auto Accounts::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::header:
         case Work::reorg:
         case Work::statemachine: {
-            // NOTE defer processing of non-reorg messages until after reorg is
-            // complete
-            pipeline_.Push(std::move(msg));
+            defer(std::move(msg));
         } break;
         case Work::reorg_begin_ack: {
             transition_state_post_reorg(std::move(msg));
@@ -467,6 +468,7 @@ auto Accounts::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
 
             OT_FAIL;
         }
+        case Work::init:
         default: {
             LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
                 ": unhandled type")

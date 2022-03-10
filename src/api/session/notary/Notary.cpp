@@ -63,7 +63,7 @@ constexpr auto MAX_MINT_SERIES = 10000;
 constexpr auto MINT_EXPIRE_MONTHS = 6;
 constexpr auto MINT_VALID_MONTHS = 12;
 constexpr auto MINT_GENERATE_DAYS = 7;
-}
+}  // namespace
 
 namespace opentxs::factory
 {

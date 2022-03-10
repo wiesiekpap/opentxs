@@ -363,6 +363,7 @@ auto Account::Imp::ready_for_normal() noexcept -> void
     reorg_ = std::nullopt;
     state_ = State::normal;
     to_parent_.Send(MakeWork(AccountsJobs::reorg_end_ack));
+    flush_cache();
 }
 
 auto Account::Imp::ready_for_reorg() noexcept -> void
@@ -415,6 +416,8 @@ auto Account::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::key: {
             process_key(std::move(msg));
         } break;
+        case Work::init:
+        case Work::shutdown:
         default: {
             LogError()(OT_PRETTY_CLASS())(": unhandled type").Flush();
 
@@ -433,9 +436,7 @@ auto Account::Imp::state_post_reorg(const Work work, Message&& msg) noexcept
         case Work::subaccount:
         case Work::key:
         case Work::statemachine: {
-            // NOTE defer processing of non-reorg messages until after reorg is
-            // complete
-            pipeline_.Push(std::move(msg));
+            defer(std::move(msg));
         } break;
         case Work::reorg_end_ack: {
             transition_state_normal(std::move(msg));
@@ -449,6 +450,7 @@ auto Account::Imp::state_post_reorg(const Work work, Message&& msg) noexcept
 
             OT_FAIL;
         }
+        case Work::init:
         default: {
             LogError()(OT_PRETTY_CLASS())(": unhandled type").Flush();
 
@@ -467,9 +469,7 @@ auto Account::Imp::state_pre_reorg(const Work work, Message&& msg) noexcept
         case Work::subaccount:
         case Work::key:
         case Work::statemachine: {
-            // NOTE defer processing of non-reorg messages until after reorg is
-            // complete
-            pipeline_.Push(std::move(msg));
+            defer(std::move(msg));
         } break;
         case Work::reorg_begin_ack: {
             transition_state_reorg(std::move(msg));
@@ -499,9 +499,7 @@ auto Account::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::shutdown:
         case Work::key:
         case Work::statemachine: {
-            // NOTE defer processing of non-reorg messages until after reorg is
-            // complete
-            pipeline_.Push(std::move(msg));
+            defer(std::move(msg));
         } break;
         case Work::reorg_end: {
             transition_state_post_reorg(std::move(msg));
