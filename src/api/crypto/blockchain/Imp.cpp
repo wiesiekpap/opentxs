@@ -407,6 +407,7 @@ auto Blockchain::Imp::Confirm(
 
         return get_node(accountID).Internal().Confirm(subchain, index, tx);
     } catch (...) {
+        LogError()(OT_PRETTY_CLASS())("Invalid key index").Flush();
 
         return false;
     }

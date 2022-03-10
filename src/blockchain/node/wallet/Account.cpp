@@ -23,6 +23,7 @@
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -32,6 +33,7 @@
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -56,6 +58,7 @@ auto print(AccountJobs job) noexcept -> std::string_view
     try {
         static const auto map = Map<AccountJobs, CString>{
             {AccountJobs::shutdown, "shutdown"},
+            {AccountJobs::subaccount, "subaccount"},
             {AccountJobs::reorg_begin, "reorg_begin"},
             {AccountJobs::reorg_begin_ack, "reorg_begin_ack"},
             {AccountJobs::reorg_end, "reorg_end"},
@@ -87,7 +90,6 @@ Account::Imp::Imp(
     const network::zeromq::BatchID batch,
     const Type chain,
     const filter::Type filter,
-    const std::string_view shutdown,
     const std::string_view fromParent,
     const std::string_view toParent,
     CString&& fromChildren,
@@ -95,15 +97,17 @@ Account::Imp::Imp(
     allocator_type alloc) noexcept
     : Actor(
           api,
+          LogTrace(),
           0ms,
           batch,
           alloc,
           {
-              {CString{shutdown, alloc}, Direction::Connect},
               {CString{fromParent, alloc}, Direction::Connect},
               {CString{
                    api.Crypto().Blockchain().Internal().KeyEndpoint(),
                    alloc},
+               Direction::Connect},
+              {CString{api.Endpoints().BlockchainAccountCreated(), alloc},
                Direction::Connect},
           },
           {
@@ -127,7 +131,6 @@ Account::Imp::Imp(
     , mempool_(mempool)
     , chain_(chain)
     , filter_type_(node_.FilterOracleInternal().DefaultType())
-    , shutdown_endpoint_(shutdown, alloc)
     , to_children_endpoint_(std::move(toChildren))
     , from_children_endpoint_(std::move(fromChildren))
     , to_parent_(pipeline_.Internal().ExtraSocket(0))
@@ -150,7 +153,6 @@ Account::Imp::Imp(
     const network::zeromq::BatchID batch,
     const Type chain,
     const filter::Type filter,
-    const std::string_view shutdown,
     const std::string_view fromParent,
     const std::string_view toParent,
     allocator_type alloc) noexcept
@@ -162,7 +164,6 @@ Account::Imp::Imp(
           batch,
           chain,
           filter,
-          shutdown,
           fromParent,
           toParent,
           network::zeromq::MakeArbitraryInproc(alloc.resource()),
@@ -225,6 +226,10 @@ auto Account::Imp::instantiate(
     const Subtype subchain,
     Subchains& map) noexcept -> Subchain&
 {
+    LogTrace()("Instantiating ")(DisplayString(chain_))(" subaccount ")(
+        subaccount.ID())(" ")(opentxs::print(subchain))(" subchain for ")(
+        subaccount.Parent().NymID())
+        .Flush();
     const auto& asio = api_.Network().ZeroMQ().Internal();
     const auto batchID = asio.PreallocateBatch();
     auto [it, added] = map.try_emplace(
@@ -239,7 +244,6 @@ auto Account::Imp::instantiate(
             filter_type_,
             subchain,
             batchID,
-            shutdown_endpoint_,
             to_children_endpoint_,
             from_children_endpoint_));
     auto& ptr = it->second;
@@ -288,15 +292,40 @@ auto Account::Imp::process_key(Message&& in) noexcept -> void
 
     if (owner != account_.NymID()) { return; }
 
-    const auto subaccount = api_.Factory().Identifier(body.at(3));
+    const auto id = api_.Factory().Identifier(body.at(3));
     const auto type = body.at(5).as<crypto::SubaccountType>();
+    process_subaccount(id, type);
+}
 
+auto Account::Imp::process_subaccount(Message&& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(4 < body.size());
+
+    const auto chain = body.at(1).as<blockchain::Type>();
+
+    if (chain != chain_) { return; }
+
+    const auto owner = api_.Factory().NymID(body.at(2));
+
+    if (owner != account_.NymID()) { return; }
+
+    const auto type = body.at(3).as<crypto::SubaccountType>();
+    const auto id = api_.Factory().Identifier(body.at(4));
+    process_subaccount(id, type);
+}
+
+auto Account::Imp::process_subaccount(
+    const Identifier& id,
+    const crypto::SubaccountType type) noexcept -> void
+{
     switch (type) {
         case crypto::SubaccountType::HD: {
-            check_hd(subaccount);
+            check_hd(id);
         } break;
         case crypto::SubaccountType::PaymentCode: {
-            check_pc(subaccount);
+            check_pc(id);
         } break;
         default: {
 
@@ -368,6 +397,9 @@ auto Account::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
     OT_ASSERT(false == reorg_.has_value());
 
     switch (work) {
+        case Work::subaccount: {
+            process_subaccount(std::move(msg));
+        } break;
         case Work::reorg_begin: {
             transition_state_pre_reorg(std::move(msg));
         } break;
@@ -398,6 +430,7 @@ auto Account::Imp::state_post_reorg(const Work work, Message&& msg) noexcept
 
     switch (work) {
         case Work::shutdown:
+        case Work::subaccount:
         case Work::key:
         case Work::statemachine: {
             // NOTE defer processing of non-reorg messages until after reorg is
@@ -431,6 +464,7 @@ auto Account::Imp::state_pre_reorg(const Work work, Message&& msg) noexcept
 
     switch (work) {
         case Work::shutdown:
+        case Work::subaccount:
         case Work::key:
         case Work::statemachine: {
             // NOTE defer processing of non-reorg messages until after reorg is
@@ -554,12 +588,7 @@ auto Account::Imp::transition_state_reorg(Message&& in) noexcept -> void
     }
 }
 
-auto Account::Imp::work() noexcept -> bool
-{
-    to_children_.Send(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL));
-
-    return false;
-}
+auto Account::Imp::work() noexcept -> bool { OT_FAIL; }
 
 Account::Imp::~Imp() { signal_shutdown(); }
 }  // namespace opentxs::blockchain::node::wallet
@@ -574,7 +603,6 @@ Account::Account(
     const node::internal::Mempool& mempool,
     const Type chain,
     const filter::Type filter,
-    const std::string_view shutdown,
     const std::string_view fromParent,
     const std::string_view toParent) noexcept
     : imp_([&] {
@@ -594,7 +622,6 @@ Account::Account(
             batchID,
             chain,
             filter,
-            shutdown,
             fromParent,
             toParent);
     }())

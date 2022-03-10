@@ -96,7 +96,6 @@ public:
         const node::internal::Mempool& mempool,
         const network::zeromq::BatchID batch,
         const Type chain,
-        const std::string_view shutdown,
         const std::string_view toParent,
         allocator_type alloc) noexcept;
 
@@ -141,7 +140,6 @@ private:
     const node::internal::Mempool& mempool_;
     const Type chain_;
     const filter::Type filter_type_;
-    const CString shutdown_endpoint_;
     const CString to_children_endpoint_;
     const CString from_children_endpoint_;
     network::zeromq::socket::Raw& to_parent_;
@@ -169,7 +167,7 @@ private:
     auto transition_state_normal(Message&& in) noexcept -> void;
     auto transition_state_post_reorg(Message&& in) noexcept -> void;
     auto transition_state_reorg(Message&& in) noexcept -> void;
-    auto work() noexcept -> bool;
+    [[noreturn]] auto work() noexcept -> bool;
 
     Imp(const api::Session& api,
         const node::internal::Network& node,
@@ -177,7 +175,6 @@ private:
         const node::internal::Mempool& mempool,
         const network::zeromq::BatchID batch,
         const Type chain,
-        const std::string_view shutdown,
         const std::string_view toParent,
         CString&& toChildren,
         CString&& fromChildren,

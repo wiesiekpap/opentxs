@@ -707,6 +707,9 @@ auto Base::pipeline(zmq::Message&& in) noexcept -> void
         case Task::SendToPaymentCode: {
             process_send_to_payment_code(std::move(in));
         } break;
+        case Task::StartWallet: {
+            wallet_.Init();
+        } break;
         case Task::FilterUpdate: {
             process_filter_update(std::move(in));
         } break;
@@ -1172,6 +1175,11 @@ auto Base::shutdown(std::promise<void>& promise) noexcept -> void
     }
 }
 
+auto Base::StartWallet() noexcept -> void
+{
+    pipeline_.Push(MakeWork(Task::StartWallet));
+}
+
 auto Base::state_machine() noexcept -> bool
 {
     if (false == running_.load()) { return false; }
@@ -1307,8 +1315,6 @@ auto Base::state_transition_filters() noexcept -> void
 
 auto Base::state_transition_normal() noexcept -> void
 {
-    if (false == config_.disable_wallet_) { wallet_.Init(); }
-
     state_.store(State::Normal);
 }
 

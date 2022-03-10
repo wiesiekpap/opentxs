@@ -225,7 +225,7 @@ struct Output::Imp {
                 }
 
                 try {
-                    auto& existing = cache_.GetOutput(lock, outpoint);
+                    auto& existing = cache_.GetOutput(lock, subchain, outpoint);
 
                     if (!copy.AssociatePreviousOutput(inputIndex, existing)) {
                         LogError()(OT_PRETTY_CLASS())(
@@ -236,9 +236,13 @@ struct Output::Imp {
                         return false;
                     }
 
-                    if (false ==
-                        change_state(
+                    if (change_state(
                             lock, tx, outpoint, existing, consumed, block)) {
+                        LogTrace()(OT_PRETTY_CLASS())("output ")(
+                            outpoint.str())(" marked as ")(
+                            opentxs::print(consumed))
+                            .Flush();
+                    } else {
                         LogError()(OT_PRETTY_CLASS())(
                             "Error updating consumed output state")
                             .Flush();
@@ -247,6 +251,11 @@ struct Output::Imp {
                         return false;
                     }
                 } catch (...) {
+                    const auto& log = LogInsane();
+                    const auto& outpoint = input.PreviousOutput();
+                    log(OT_PRETTY_CLASS())("outpoint ")(outpoint.str())(
+                        " does not belong to this subchain")
+                        .Flush();
                 }
 
                 // NOTE consider the case of parallel chain scanning where one
@@ -349,7 +358,7 @@ struct Output::Imp {
                     "Failed to commit database transaction"};
             }
 
-            // NOTE uncomment this for detailed debugging: print(lock);
+            // NOTE uncomment this for detailed debugging: cache_.Print(lock);
             publish_balance(lock);
 
             return true;
@@ -551,7 +560,7 @@ struct Output::Imp {
                     "Failed to commit database transaction"};
             }
 
-            // NOTE uncomment this for detailed debugging: print(lock);
+            // NOTE uncomment this for detailed debugging: cache_.Print(lock);
             publish_balance(lock);
 
             return true;

@@ -68,7 +68,6 @@ public:
         const node::internal::Mempool& mempool,
         const Type chain,
         const filter::Type filter,
-        const std::string_view shutdown,
         const std::string_view fromParent,
         const std::string_view toParent) noexcept;
     Account(Account&&) noexcept;

@@ -91,18 +91,17 @@ Accounts::Imp::Imp(
     const node::internal::Mempool& mempool,
     const network::zeromq::BatchID batch,
     const Type chain,
-    const std::string_view shutdown,
     const std::string_view toParent,
     CString&& toChildren,
     CString&& fromChildren,
     allocator_type alloc) noexcept
     : Actor(
           api,
+          LogTrace(),
           0ms,
           batch,
           alloc,
           {
-              {CString{shutdown, alloc}, Direction::Connect},
               {CString{api.Endpoints().BlockchainReorg(), alloc},
                Direction::Connect},
               {CString{api.Endpoints().NymCreated(), alloc},
@@ -128,7 +127,6 @@ Accounts::Imp::Imp(
     , mempool_(mempool)
     , chain_(chain)
     , filter_type_(node_.FilterOracleInternal().DefaultType())
-    , shutdown_endpoint_(shutdown, alloc)
     , to_children_endpoint_(std::move(toChildren))
     , from_children_endpoint_(std::move(fromChildren))
     , to_parent_(pipeline_.Internal().ExtraSocket(0))
@@ -147,7 +145,6 @@ Accounts::Imp::Imp(
     const node::internal::Mempool& mempool,
     const network::zeromq::BatchID batch,
     const Type chain,
-    const std::string_view shutdown,
     const std::string_view toParent,
     allocator_type alloc) noexcept
     : Imp(api,
@@ -156,7 +153,6 @@ Accounts::Imp::Imp(
           mempool,
           batch,
           chain,
-          shutdown,
           toParent,
           network::zeromq::MakeArbitraryInproc(alloc.resource()),
           network::zeromq::MakeArbitraryInproc(alloc.resource()),
@@ -268,7 +264,6 @@ auto Accounts::Imp::index_nym(const identifier::Nym& id) noexcept -> void
             filter_type_,
             batchID,
             chain_,
-            shutdown_endpoint_,
             to_children_endpoint_,
             from_children_endpoint_,
             std::move(code),
@@ -343,7 +338,6 @@ auto Accounts::Imp::process_nym(const identifier::Nym& nym) noexcept -> bool
         mempool_,
         chain_,
         filter_type_,
-        shutdown_endpoint_,
         to_children_endpoint_,
         from_children_endpoint_);
 
@@ -379,8 +373,6 @@ auto Accounts::Imp::reorg_children() const noexcept -> std::size_t
 auto Accounts::Imp::startup() noexcept -> void
 {
     for (const auto& id : api_.Wallet().LocalNyms()) { process_nym(id); }
-
-    do_work();
 }
 
 auto Accounts::Imp::state_normal(const Work work, Message&& msg) noexcept
@@ -562,12 +554,7 @@ auto Accounts::Imp::transition_state_reorg(Message&& in) noexcept -> void
     }
 }
 
-auto Accounts::Imp::work() noexcept -> bool
-{
-    to_children_.Send(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL));
-
-    return false;
-}
+auto Accounts::Imp::work() noexcept -> bool { OT_FAIL; }
 
 Accounts::Imp::~Imp() = default;
 }  // namespace opentxs::blockchain::node::wallet
@@ -580,7 +567,6 @@ Accounts::Accounts(
     const node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
     const Type chain,
-    const std::string_view shutdown,
     const std::string_view toParent) noexcept
     : imp_([&] {
         const auto& asio = api.Network().ZeroMQ().Internal();
@@ -597,14 +583,13 @@ Accounts::Accounts(
             mempool,
             batchID,
             chain,
-            shutdown,
             toParent);
     }())
 {
     OT_ASSERT(imp_);
-
-    imp_->Init(imp_);
 }
+
+auto Accounts::Init() noexcept -> void { imp_->Init(imp_); }
 
 Accounts::~Accounts() { imp_->Shutdown(); }
 }  // namespace opentxs::blockchain::node::wallet

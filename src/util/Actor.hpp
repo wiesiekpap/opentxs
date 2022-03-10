@@ -45,6 +45,8 @@ namespace api
 {
 class Session;
 }  // namespace api
+
+class Log;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -72,6 +74,7 @@ protected:
     using Direction = network::zeromq::socket::Direction;
     using SocketType = network::zeromq::socket::Type;
 
+    const Log& log_;
     Gatekeeper gatekeeper_;
     network::zeromq::Pipeline pipeline_;
     bool disable_automatic_processing_;
@@ -113,6 +116,7 @@ protected:
 
     Actor(
         const api::Session& api,
+        const Log& logger,
         const std::chrono::milliseconds rateLimit,
         const network::zeromq::BatchID batch,
         allocator_type alloc,
@@ -123,17 +127,11 @@ protected:
         : init_promise_()
         , init_future_(init_promise_.get_future())
         , running_(true)
+        , log_(logger)
         , gatekeeper_()
         , pipeline_(api.Network().ZeroMQ().Internal().Pipeline(
               {},
-              [&] {
-                  using Direction = network::zeromq::socket::Direction;
-                  auto out{subscribe};
-                  out.emplace_back(
-                      api.Endpoints().Shutdown(), Direction::Connect);
-
-                  return out;
-              }(),
+              subscribe,
               pull,
               dealer,
               extra,
@@ -189,8 +187,7 @@ private:
     }
     auto worker(network::zeromq::Message&& in) noexcept -> void
     {
-        const auto& log = LogTrace();
-        log(OT_PRETTY_CLASS())("Message received").Flush();
+        log_(OT_PRETTY_CLASS())("Message received").Flush();
         const auto body = in.Body();
 
         if (1 > body.size()) {
@@ -209,15 +206,15 @@ private:
             }
         }();
         const auto type = CString{print(work)};
-        log(OT_PRETTY_CLASS())("message type is: ")(type).Flush();
+        log_(OT_PRETTY_CLASS())("message type is: ")(type).Flush();
 
         if (OT_ZMQ_INIT_SIGNAL == static_cast<OTZMQWorkType>(work)) {
-            log(OT_PRETTY_CLASS())("initializing").Flush();
+            log_(OT_PRETTY_CLASS())("initializing").Flush();
             downcast().startup();
 
             try {
                 init_promise_.set_value();
-                log(OT_PRETTY_CLASS())("initialization complete").Flush();
+                log_(OT_PRETTY_CLASS())("initialization complete").Flush();
             } catch (...) {
                 LogError()(OT_PRETTY_CLASS())("init message received twice")
                     .Flush();
@@ -230,7 +227,7 @@ private:
 
         // NOTE: do not process any messages until init is received
         if (false == IsReady(init_future_)) {
-            log(OT_PRETTY_CLASS())("dropping message of type ")(
+            log_(OT_PRETTY_CLASS())("dropping message of type ")(
                 type)(" until init is processed")
                 .Flush();
 
@@ -244,7 +241,7 @@ private:
             if (shutdown || (false == running_)) { return; }
 
             if (disable_automatic_processing_) {
-                log(OT_PRETTY_CLASS())("processing ")(type).Flush();
+                log_(OT_PRETTY_CLASS())("processing ")(type).Flush();
                 downcast().pipeline(work, std::move(in));
 
                 return;
@@ -252,21 +249,21 @@ private:
 
             switch (static_cast<OTZMQWorkType>(work)) {
                 case value(WorkType::Shutdown): {
-                    log(OT_PRETTY_CLASS())("shutting down").Flush();
+                    log_(OT_PRETTY_CLASS())("shutting down").Flush();
                     this->shutdown();
                 } break;
                 case OT_ZMQ_STATE_MACHINE_SIGNAL: {
-                    log(OT_PRETTY_CLASS())("executing state machine").Flush();
+                    log_(OT_PRETTY_CLASS())("executing state machine").Flush();
                     do_work();
                 } break;
                 default: {
-                    log(OT_PRETTY_CLASS())("processing ")(type).Flush();
+                    log_(OT_PRETTY_CLASS())("processing ")(type).Flush();
                     downcast().pipeline(work, std::move(in));
                 }
             }
         }
 
-        log(OT_PRETTY_CLASS())("message processing complete").Flush();
+        log_(OT_PRETTY_CLASS())("message processing complete").Flush();
 
         if (false == running_) { gatekeeper_.shutdown(); }
     }

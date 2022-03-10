@@ -164,6 +164,11 @@ public:
         -> const block::bitcoin::internal::Output&;
     auto GetOutput(const eLock&, const block::Outpoint& id) noexcept(false)
         -> block::bitcoin::internal::Output&;
+    auto GetOutput(
+        const eLock&,
+        const SubchainID& subchain,
+        const block::Outpoint& id) noexcept(false)
+        -> block::bitcoin::internal::Output&;
     auto GetPosition(const eLock&) noexcept -> const db::Position&;
     auto GetPosition(const sLock&, const block::Position& id) noexcept
         -> const Outpoints&;
