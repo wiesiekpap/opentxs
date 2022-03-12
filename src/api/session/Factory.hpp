@@ -36,6 +36,9 @@
 #include "opentxs/blockchain/Types.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/Header.hpp"
+#endif  // OT_BLOCKCHAIN
+#include "opentxs/blockchain/block/Types.hpp"
+#if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"

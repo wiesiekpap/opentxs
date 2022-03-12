@@ -174,7 +174,7 @@ private:
 
         OT_ASSERT(saved);
 
-        LogDetail()(DisplayString(chain_))(" sync data updated to height ")(
+        LogDetail()(print(chain_))(" sync data updated to height ")(
             position.first)
             .Flush();
     }

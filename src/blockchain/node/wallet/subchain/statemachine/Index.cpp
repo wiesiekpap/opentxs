@@ -23,8 +23,8 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -99,6 +99,8 @@ auto Index::Imp::done(
     db.SubchainAddElements(index, elements);
     last_indexed_ = parent_.db_.SubchainLastIndexed(index);
 }
+
+auto Index::Imp::do_shutdown() noexcept -> void { parent_p_.reset(); }
 
 auto Index::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
@@ -181,7 +183,8 @@ auto Index::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::reorg_end:
         case Work::do_reorg: {
-            LogError()(OT_PRETTY_CLASS())(": wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -203,7 +206,8 @@ auto Index::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::init:
         case Work::statemachine:
         default: {
-            LogError()(OT_PRETTY_CLASS())(": unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+                .Flush();
 
             OT_FAIL;
         }
@@ -223,7 +227,8 @@ auto Index::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
             transition_state_normal(std::move(msg));
         } break;
         case Work::reorg_begin: {
-            LogError()(OT_PRETTY_CLASS())(": wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -240,7 +245,8 @@ auto Index::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::startup:
         case Work::init:
         default: {
-            LogError()(OT_PRETTY_CLASS())(": unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+                .Flush();
 
             OT_FAIL;
         }
@@ -251,6 +257,8 @@ auto Index::Imp::transition_state_normal(Message&& msg) noexcept -> void
 {
     disable_automatic_processing_ = false;
     state_ = State::normal;
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" transitioned to normal state ")
+        .Flush();
     to_process_.Send(std::move(msg));
     flush_cache();
     do_work();
@@ -260,7 +268,14 @@ auto Index::Imp::transition_state_reorg(Message&& msg) noexcept -> void
 {
     disable_automatic_processing_ = true;
     state_ = State::reorg;
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" transitioned to reorg state ")
+        .Flush();
     to_rescan_.Send(std::move(msg));
+}
+
+auto Index::Imp::VerifyState(const State state) const noexcept -> void
+{
+    OT_ASSERT(state == state_);
 }
 
 auto Index::Imp::work() noexcept -> bool
@@ -284,6 +299,11 @@ Index::Index(boost::shared_ptr<Imp>&& imp) noexcept
 Index::Index(Index&& rhs) noexcept
     : imp_(std::move(rhs.imp_))
 {
+}
+
+auto Index::VerifyState(const State state) const noexcept -> void
+{
+    imp_->VerifyState(state);
 }
 
 Index::~Index() = default;

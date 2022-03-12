@@ -19,11 +19,6 @@
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
-#include "internal/blockchain/node/wallet/subchain/statemachine/Index.hpp"
-#include "internal/blockchain/node/wallet/subchain/statemachine/Process.hpp"
-#include "internal/blockchain/node/wallet/subchain/statemachine/Progress.hpp"
-#include "internal/blockchain/node/wallet/subchain/statemachine/Rescan.hpp"
-#include "internal/blockchain/node/wallet/subchain/statemachine/Scan.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -32,6 +27,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
@@ -168,6 +164,11 @@ SubchainStateData::SubchainStateData(
     , to_progress_(pipeline_.Internal().ExtraSocket(3))
     , state_(State::normal)
     , reorg_(std::nullopt)
+    , progress_(std::nullopt)
+    , rescan_(std::nullopt)
+    , index_(std::nullopt)
+    , process_(std::nullopt)
+    , scan_(std::nullopt)
     , me_()
 {
     OT_ASSERT(false == owner_->empty());
@@ -220,7 +221,7 @@ auto SubchainStateData::describe(
 {
     // TODO c++20 use allocator
     auto out = std::stringstream{};
-    out << DisplayString(chain) << ' ';
+    out << print(chain) << ' ';
     out << type;
     out << " account ";
     out << id.str();
@@ -312,6 +313,11 @@ auto SubchainStateData::do_reorg(
 
 auto SubchainStateData::do_shutdown() noexcept -> void
 {
+    scan_.reset();
+    process_.reset();
+    index_.reset();
+    rescan_.reset();
+    progress_.reset();
     to_children_.Send(MakeWork(WorkType::Shutdown));
 }
 
@@ -559,8 +565,9 @@ auto SubchainStateData::ProcessReorg(
 auto SubchainStateData::ready_for_normal() noexcept -> void
 {
     disable_automatic_processing_ = false;
-    reorg_ = std::nullopt;
+    reorg_.reset();
     state_ = State::normal;
+    log_(OT_PRETTY_CLASS())(name_)(" transitioned to normal state ").Flush();
     to_parent_.Send(MakeWork(AccountJobs::reorg_end_ack));
     flush_cache();
 }
@@ -568,6 +575,7 @@ auto SubchainStateData::ready_for_normal() noexcept -> void
 auto SubchainStateData::ready_for_reorg() noexcept -> void
 {
     state_ = State::reorg;
+    log_(OT_PRETTY_CLASS())(name_)(" transitioned to reorg state ").Flush();
     to_parent_.Send(MakeWork(AccountJobs::reorg_begin_ack));
 }
 
@@ -708,11 +716,11 @@ auto SubchainStateData::set_key_data(
 
 auto SubchainStateData::startup() noexcept -> void
 {
-    wallet::Progress{me_};
-    wallet::Rescan{me_};
-    wallet::Process{me_};
-    wallet::Scan{me_};
-    get_index(me_);
+    progress_.emplace(me_);
+    rescan_.emplace(me_);
+    index_.emplace(get_index(me_));
+    process_.emplace(me_);
+    scan_.emplace(me_);
     me_.reset();
     do_work();
 }
@@ -729,7 +737,7 @@ auto SubchainStateData::state_normal(const Work work, Message&& msg) noexcept
         case Work::reorg_end:
         case Work::reorg_begin_ack:
         case Work::reorg_end_ack: {
-            LogError()(OT_PRETTY_CLASS())(": wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(name_)(" wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -746,7 +754,7 @@ auto SubchainStateData::state_normal(const Work work, Message&& msg) noexcept
         case Work::key:
         case Work::statemachine:
         default: {
-            LogError()(OT_PRETTY_CLASS())(": unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(name_)("unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -770,7 +778,7 @@ auto SubchainStateData::state_post_reorg(
         case Work::reorg_begin:
         case Work::reorg_begin_ack:
         case Work::reorg_end: {
-            LogError()(OT_PRETTY_CLASS())(": wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(name_)(" wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -785,7 +793,7 @@ auto SubchainStateData::state_post_reorg(
         case Work::init:
         case Work::key:
         default: {
-            LogError()(OT_PRETTY_CLASS())(": unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(name_)("unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -808,7 +816,7 @@ auto SubchainStateData::state_pre_reorg(const Work work, Message&& msg) noexcept
         case Work::reorg_begin:
         case Work::reorg_end:
         case Work::reorg_end_ack: {
-            LogError()(OT_PRETTY_CLASS())(": wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(name_)(" wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -823,7 +831,7 @@ auto SubchainStateData::state_pre_reorg(const Work work, Message&& msg) noexcept
         case Work::init:
         case Work::key:
         default: {
-            LogError()(OT_PRETTY_CLASS())(": unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(name_)("unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -841,12 +849,12 @@ auto SubchainStateData::state_reorg(const Work work, Message&& msg) noexcept
             defer(std::move(msg));
         } break;
         case Work::reorg_end: {
-            transition_state_normal(std::move(msg));
+            transition_state_post_reorg(std::move(msg));
         } break;
         case Work::reorg_begin:
         case Work::reorg_begin_ack:
         case Work::reorg_end_ack: {
-            LogError()(OT_PRETTY_CLASS())(": wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(name_)(" wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -861,7 +869,7 @@ auto SubchainStateData::state_reorg(const Work work, Message&& msg) noexcept
         case Work::init:
         case Work::key:
         default: {
-            LogError()(OT_PRETTY_CLASS())(": unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(name_)("unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -891,15 +899,20 @@ auto SubchainStateData::transition_state_normal(Message&& in) noexcept -> void
     ++counter;
 
     if (counter < target) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(counter)(" of ")(
+        log_(OT_PRETTY_CLASS())(name_)(" ")(counter)(" of ")(
             target)(" children finished with reorg")
             .Flush();
 
         return;
     } else if (counter == target) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" all ")(
+        log_(OT_PRETTY_CLASS())(name_)(" all ")(
             target)(" children finished with reorg")
             .Flush();
+        scan_->VerifyState(Scan::State::normal);
+        process_->VerifyState(Process::State::normal);
+        index_->VerifyState(Index::State::normal);
+        rescan_->VerifyState(Rescan::State::normal);
+        progress_->VerifyState(Progress::State::normal);
         ready_for_normal();
     } else {
 
@@ -913,14 +926,14 @@ auto SubchainStateData::transition_state_post_reorg(Message&& in) noexcept
     const auto& reorg = reorg_.value();
 
     if (0u < reorg.target_) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
-            " waiting for acknowledgements from ")(reorg_->target_)(
+        log_(OT_PRETTY_CLASS())(name_)(" waiting for acknowledgements from ")(
+            reorg_->target_)(
             " children prior to acknowledging reorg completion")
             .Flush();
         to_progress_.Send(MakeWork(SubchainJobs::reorg_end));
         state_ = State::post_reorg;
     } else {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+        log_(OT_PRETTY_CLASS())(name_)(
             " no children instantiated therefore reorg may be completed "
             "immediately")
             .Flush();
@@ -936,14 +949,13 @@ auto SubchainStateData::transition_state_pre_reorg(Message&& in) noexcept
     const auto& reorg = reorg_.value();
 
     if (0u < reorg.target_) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
-            " waiting for acknowledgements from ")(reorg_->target_)(
-            " children prior to acknowledging reorg")
+        log_(OT_PRETTY_CLASS())(name_)(" waiting for acknowledgements from ")(
+            reorg_->target_)(" children prior to acknowledging reorg")
             .Flush();
         to_scan_.Send(MakeWork(SubchainJobs::reorg_begin));
         state_ = State::pre_reorg;
     } else {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+        log_(OT_PRETTY_CLASS())(name_)(
             " no children instantiated therefore reorg may be acknowledged "
             "immediately")
             .Flush();
@@ -961,15 +973,20 @@ auto SubchainStateData::transition_state_reorg(Message&& in) noexcept -> void
     ++counter;
 
     if (counter < target) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(counter)(" of ")(
+        log_(OT_PRETTY_CLASS())(name_)(" ")(counter)(" of ")(
             target)(" children ready for reorg")
             .Flush();
 
         return;
     } else if (counter == target) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" all ")(
+        log_(OT_PRETTY_CLASS())(name_)(" all ")(
             target)(" children ready for reorg")
             .Flush();
+        progress_->VerifyState(Progress::State::reorg);
+        rescan_->VerifyState(Rescan::State::reorg);
+        index_->VerifyState(Index::State::reorg);
+        process_->VerifyState(Process::State::reorg);
+        scan_->VerifyState(Scan::State::reorg);
         ready_for_reorg();
     } else {
 
@@ -1007,6 +1024,11 @@ auto SubchainStateData::translate(
                 space(outpoint.Bytes()));
         }
     }
+}
+
+auto SubchainStateData::VerifyState(const State state) const noexcept -> void
+{
+    OT_ASSERT(state == state_);
 }
 
 auto SubchainStateData::work() noexcept -> bool { return false; }

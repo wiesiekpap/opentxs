@@ -33,6 +33,13 @@ namespace opentxs::blockchain::node::wallet
 class Progress
 {
 public:
+    enum class State {
+        normal,
+        reorg,
+    };
+
+    auto VerifyState(const State state) const noexcept -> void;
+
     Progress(const boost::shared_ptr<const SubchainStateData>& parent) noexcept;
     Progress() = delete;
     Progress(const Progress&) = delete;

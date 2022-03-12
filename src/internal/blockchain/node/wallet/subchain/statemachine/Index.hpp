@@ -38,12 +38,19 @@ class Index
 public:
     class Imp;
 
+    enum class State {
+        normal,
+        reorg,
+    };
+
     static auto DeterministicFactory(
         const boost::shared_ptr<const SubchainStateData>& parent,
         const DeterministicStateData& deterministic) noexcept -> Index;
     static auto NotificationFactory(
         const boost::shared_ptr<const SubchainStateData>& parent,
         const PaymentCode& code) noexcept -> Index;
+
+    auto VerifyState(const State state) const noexcept -> void;
 
     Index() = delete;
     Index(const Index&) = delete;

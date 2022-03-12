@@ -10,6 +10,7 @@
 #include <atomic>
 #include <mutex>
 #include <optional>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -28,6 +29,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/Unit.hpp"
@@ -123,7 +125,7 @@ public:
     }
     auto NotaryName() const noexcept -> UnallocatedCString final
     {
-        return blockchain::DisplayString(chain_);
+        return UnallocatedCString{blockchain::print(chain_)};
     }
     using AccountActivity::Send;
     auto Send(

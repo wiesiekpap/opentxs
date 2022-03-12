@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/DeterministicStateData.hpp"  // IWYU pragma: associated
 
+#include <boost/smart_ptr/shared_ptr.hpp>
 #include <chrono>
 #include <memory>
 #include <optional>
@@ -23,6 +24,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
@@ -77,12 +79,12 @@ DeterministicStateData::DeterministicStateData(
                   case Subchain::External: {
 
                       return "HD"sv;
-                  } break;
+                  }
                   case Subchain::Incoming:
                   case Subchain::Outgoing: {
 
                       return "payment code"sv;
-                  } break;
+                  }
                   default: {
                       OT_FAIL;
                   }
@@ -211,9 +213,8 @@ auto DeterministicStateData::process(
 
                 if (key.PublicKey() == script.Pubkey().value()) {
                     log_(OT_PRETTY_CLASS())(name_)(" element ")(
-                        index)(": P2PK match found for ")(
-                        DisplayString(node_.Chain()))(" transaction ")(
-                        txid->asHex())(" output ")(i)(" via ")(
+                        index)(": P2PK match found for ")(print(node_.Chain()))(
+                        " transaction ")(txid->asHex())(" output ")(i)(" via ")(
                         api_.Factory().Data(key.PublicKey())->asHex())
                         .Flush();
                     outputs.emplace_back(i);
@@ -233,8 +234,8 @@ auto DeterministicStateData::process(
                 if (hash->Bytes() == script.PubkeyHash().value()) {
                     log_(OT_PRETTY_CLASS())(name_)(" element ")(
                         index)(": P2PKH match found for ")(
-                        DisplayString(node_.Chain()))(" transaction ")(
-                        txid->asHex())(" output ")(i)(" via ")(hash->asHex())
+                        print(node_.Chain()))(" transaction ")(txid->asHex())(
+                        " output ")(i)(" via ")(hash->asHex())
                         .Flush();
                     outputs.emplace_back(i);
                     const auto confirmed = api_.Crypto().Blockchain().Confirm(
@@ -253,8 +254,8 @@ auto DeterministicStateData::process(
                 if (hash->Bytes() == script.PubkeyHash().value()) {
                     log_(OT_PRETTY_CLASS())(name_)(" element ")(
                         index)(": P2WPKH match found for ")(
-                        DisplayString(node_.Chain()))(" transaction ")(
-                        txid->asHex())(" output ")(i)(" via ")(hash->asHex())
+                        print(node_.Chain()))(" transaction ")(txid->asHex())(
+                        " output ")(i)(" via ")(hash->asHex())
                         .Flush();
                     outputs.emplace_back(i);
                     const auto confirmed = api_.Crypto().Blockchain().Confirm(
@@ -287,8 +288,8 @@ auto DeterministicStateData::process(
                 if (key.PublicKey() == script.MultisigPubkey(0).value()) {
                     log_(OT_PRETTY_CLASS())(name_)(" element ")(index)(": ")(
                         m.value())(" of ")(n.value())(" P2MS match found for ")(
-                        DisplayString(node_.Chain()))(" transaction ")(
-                        txid->asHex())(" output ")(i)(" via ")(
+                        print(node_.Chain()))(" transaction ")(txid->asHex())(
+                        " output ")(i)(" via ")(
                         api_.Factory().Data(key.PublicKey())->asHex())
                         .Flush();
                     outputs.emplace_back(i);

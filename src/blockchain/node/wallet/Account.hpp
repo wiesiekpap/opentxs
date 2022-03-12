@@ -27,6 +27,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
@@ -98,6 +99,8 @@ namespace opentxs::blockchain::node::wallet
 class Account::Imp final : public opentxs::Actor<Imp, AccountJobs>
 {
 public:
+    auto VerifyState(const State state) const noexcept -> void;
+
     auto Init(boost::shared_ptr<Imp> me) noexcept -> void;
     auto ProcessReorg(
         const Lock& headerOracleLock,
@@ -122,13 +125,6 @@ public:
 
 private:
     friend opentxs::Actor<Imp, AccountJobs>;
-
-    enum class State {
-        normal,
-        pre_reorg,
-        reorg,
-        post_reorg,
-    };
 
     struct ReorgData {
         const std::size_t target_;
@@ -157,7 +153,7 @@ private:
     const CString from_children_endpoint_;
     network::zeromq::socket::Raw& to_parent_;
     network::zeromq::socket::Raw& to_children_;
-    State state_;
+    std::atomic<State> state_;
     std::optional<ReorgData> reorg_;
     Subchains internal_;
     Subchains external_;
@@ -165,6 +161,7 @@ private:
     Subchains incoming_;
 
     auto reorg_children() const noexcept -> std::size_t;
+    auto verify_child_state(const Subchain::State state) const noexcept -> void;
 
     auto check_hd(const Identifier& subaccount) noexcept -> void;
     auto check_hd(const crypto::HD& subaccount) noexcept -> void;

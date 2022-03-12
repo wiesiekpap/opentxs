@@ -33,6 +33,14 @@ namespace opentxs::blockchain::node::wallet
 class Scan
 {
 public:
+    enum class State {
+        init,
+        normal,
+        reorg,
+    };
+
+    auto VerifyState(const State state) const noexcept -> void;
+
     Scan(const boost::shared_ptr<const SubchainStateData>& parent) noexcept;
     Scan() = delete;
     Scan(const Scan&) = delete;

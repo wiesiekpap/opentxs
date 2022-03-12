@@ -8,6 +8,7 @@
 #include "internal/blockchain/node/wallet/subchain/statemachine/Index.hpp"
 
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <atomic>
 #include <optional>
 
 #include "internal/blockchain/node/Node.hpp"
@@ -53,6 +54,8 @@ namespace opentxs::blockchain::node::wallet
 class Index::Imp : public Actor<Imp, SubchainJobs>
 {
 public:
+    auto VerifyState(const State state) const noexcept -> void;
+
     auto Init(boost::shared_ptr<Imp> me) noexcept -> void
     {
         signal_startup(me);
@@ -73,16 +76,11 @@ public:
 private:
     friend Actor<Imp, SubchainJobs>;
 
-    enum class State {
-        normal,
-        reorg,
-    };
-
     network::zeromq::socket::Raw& to_parent_;
     network::zeromq::socket::Raw& to_scan_;
     network::zeromq::socket::Raw& to_rescan_;
     network::zeromq::socket::Raw& to_process_;
-    const boost::shared_ptr<const SubchainStateData> parent_p_;
+    boost::shared_ptr<const SubchainStateData> parent_p_;
 
 protected:
     const SubchainStateData& parent_;
@@ -92,13 +90,13 @@ protected:
         -> void;
 
 private:
-    State state_;
+    std::atomic<State> state_;
     std::optional<Bip32Index> last_indexed_;
 
     virtual auto need_index(const std::optional<Bip32Index>& current)
         const noexcept -> std::optional<Bip32Index> = 0;
 
-    auto do_shutdown() noexcept -> void {}
+    auto do_shutdown() noexcept -> void;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
     virtual auto process(
         const std::optional<Bip32Index>& current,

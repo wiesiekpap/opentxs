@@ -12,7 +12,6 @@
 #include <iterator>
 #include <optional>
 #include <stdexcept>
-#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -24,6 +23,7 @@
 #include "internal/util/TSV.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Contact.hpp"
 #include "opentxs/util/Bytes.hpp"

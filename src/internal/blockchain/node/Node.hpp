@@ -31,6 +31,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/node/BlockOracle.hpp"

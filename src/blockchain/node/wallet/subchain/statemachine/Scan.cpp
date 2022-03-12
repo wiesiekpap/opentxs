@@ -99,6 +99,8 @@ auto Scan::Imp::caught_up() const noexcept -> bool
            filter_tip_.value_or(parent_.null_position_);
 }
 
+auto Scan::Imp::do_shutdown() noexcept -> void { parent_p_.reset(); }
+
 auto Scan::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
     switch (state_) {
@@ -177,6 +179,8 @@ auto Scan::Imp::process_reorg(const block::Position& parent) noexcept -> void
 auto Scan::Imp::process_startup(Message&& msg) noexcept -> void
 {
     state_ = State::normal;
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" transitioned to normal state ")
+        .Flush();
     flush_cache();
     do_work();
 }
@@ -229,7 +233,8 @@ auto Scan::Imp::state_init(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::reorg_end:
         case Work::do_reorg: {
-            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -245,7 +250,8 @@ auto Scan::Imp::state_init(const Work work, Message&& msg) noexcept -> void
         case Work::init:
         case Work::key:
         default: {
-            LogError()(OT_PRETTY_CLASS())("unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+                .Flush();
 
             OT_FAIL;
         }
@@ -263,14 +269,16 @@ auto Scan::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::reorg_end:
         case Work::do_reorg: {
-            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
             OT_FAIL;
         }
         case Work::startup: {
-            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -285,7 +293,8 @@ auto Scan::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::key:
         case Work::statemachine:
         default: {
-            LogError()(OT_PRETTY_CLASS())("unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+                .Flush();
 
             OT_FAIL;
         }
@@ -304,14 +313,16 @@ auto Scan::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
             transition_state_normal(std::move(msg));
         } break;
         case Work::reorg_begin: {
-            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
             OT_FAIL;
         }
         case Work::startup: {
-            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -327,7 +338,8 @@ auto Scan::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::init:
         case Work::key:
         default: {
-            LogError()(OT_PRETTY_CLASS())("unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+                .Flush();
 
             OT_FAIL;
         }
@@ -338,6 +350,8 @@ auto Scan::Imp::transition_state_normal(Message&& msg) noexcept -> void
 {
     disable_automatic_processing_ = false;
     state_ = State::normal;
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" transitioned to normal state ")
+        .Flush();
     to_parent_.Send(MakeWork(Work::reorg_end_ack));
     flush_cache();
     do_work();
@@ -347,7 +361,14 @@ auto Scan::Imp::transition_state_reorg(Message&& msg) noexcept -> void
 {
     disable_automatic_processing_ = true;
     state_ = State::reorg;
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" transitioned to reorg state ")
+        .Flush();
     to_process_.Send(std::move(msg));
+}
+
+auto Scan::Imp::VerifyState(const State state) const noexcept -> void
+{
+    OT_ASSERT(state == state_);
 }
 
 auto Scan::Imp::work() noexcept -> bool
@@ -425,6 +446,11 @@ Scan::Scan(const boost::shared_ptr<const SubchainStateData>& parent) noexcept
     }())
 {
     imp_->Init(imp_);
+}
+
+auto Scan::VerifyState(const State state) const noexcept -> void
+{
+    imp_->VerifyState(state);
 }
 
 Scan::~Scan() = default;

@@ -12,6 +12,7 @@
 #include <string_view>
 
 #include "Proto.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/BlockchainP2PSync.pb.h"

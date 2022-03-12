@@ -12,7 +12,6 @@
 
 #include "blockchain/database/common/Database.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"

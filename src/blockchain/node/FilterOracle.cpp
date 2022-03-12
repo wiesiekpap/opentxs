@@ -219,7 +219,7 @@ auto FilterOracle::compare_header_to_checkpoint(
             api_.Factory().Data(ReadView{bytes.data(), bytes.size()});
 
         if (expectedHeader == receivedHeader) {
-            LogConsole()(DisplayString(chain_))(" filter header at height ")(
+            LogConsole()(print(chain_))(" filter header at height ")(
                 height)(" verified against checkpoint")
                 .Flush();
 
@@ -230,7 +230,7 @@ auto FilterOracle::compare_header_to_checkpoint(
             std::advance(it, -1);
             const auto rollback =
                 block::Position{it->first, header_.BestHash(it->first)};
-            LogConsole()(DisplayString(chain_))(" filter header at height ")(
+            LogConsole()(print(chain_))(" filter header at height ")(
                 height)(" does not match checkpoint. Resetting to previous "
                         "checkpoint at height ")(rollback.first)
                 .Flush();
@@ -272,14 +272,13 @@ auto FilterOracle::compare_tips_to_checkpoint() noexcept -> void
     }
 
     if (changed) {
-        LogConsole()(DisplayString(chain_))(
+        LogConsole()(print(chain_))(
             " filter header chain did not match checkpoint. Resetting to last "
             "known good position")
             .Flush();
         reset_tips_to(default_type_, headerTip, checkPosition, changed);
     } else {
-        LogVerbose()(DisplayString(chain_))(
-            " filter header chain matched checkpoint")
+        LogVerbose()(print(chain_))(" filter header chain matched checkpoint")
             .Flush();
     }
 }
@@ -290,14 +289,14 @@ auto FilterOracle::compare_tips_to_header_chain() noexcept -> bool
     const auto [parent, best] = header_.CommonParent(current);
 
     if ((parent.first == current.first) && (parent.second == current.second)) {
-        LogVerbose()(DisplayString(chain_))(
+        LogVerbose()(print(chain_))(
             " filter header chain is following the best chain")
             .Flush();
 
         return false;
     }
 
-    LogConsole()(DisplayString(chain_))(
+    LogConsole()(print(chain_))(
         " filter header chain is following a sibling chain. Resetting to "
         "common ancestor at height ")(parent.first)
         .Flush();
@@ -422,8 +421,8 @@ auto FilterOracle::ProcessBlock(
             .second;
 
     if (false == bool(pGCS)) {
-        LogError()(OT_PRETTY_CLASS())("Failed to calculate ")(
-            DisplayString(chain_))(" cfilter")
+        LogError()(OT_PRETTY_CLASS())("Failed to calculate ")(print(chain_))(
+            " cfilter")
             .Flush();
 
         return false;
@@ -434,8 +433,8 @@ auto FilterOracle::ProcessBlock(
         LoadFilterHeader(default_type_, header.ParentHash());
 
     if (previousHeader->empty()) {
-        LogError()(OT_PRETTY_CLASS())("failed to load previous")(
-            DisplayString(chain_))(" cfheader")
+        LogError()(OT_PRETTY_CLASS())("failed to load previous")(print(chain_))(
+            " cfheader")
             .Flush();
 
         return false;
@@ -446,8 +445,8 @@ auto FilterOracle::ProcessBlock(
         id, gcs.Header(previousHeader->Bytes()), filterHash->Bytes()));
 
     if (cfheader->empty()) {
-        LogError()(OT_PRETTY_CLASS())("failed to calculate ")(
-            DisplayString(chain_))(" cfheader")
+        LogError()(OT_PRETTY_CLASS())("failed to calculate ")(print(chain_))(
+            " cfheader")
             .Flush();
 
         return false;
@@ -475,7 +474,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
 
     try {
         LogTrace()(OT_PRETTY_CLASS())("Calculating cfilter for ")(
-            DisplayString(chain_))(" block at height ")(height)
+            print(chain_))(" block at height ")(height)
             .Flush();
         auto& [blockHashView, pGCS] = data.filter_data_;
         auto& [blockHash, filterHeader, filterHashView] = data.header_data_;
@@ -484,8 +483,8 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
         const auto pBlock = task.data_.get();
 
         if (false == bool(pBlock)) {
-            LogError()(OT_PRETTY_CLASS())("Failed to load ")(
-                DisplayString(chain_))(" block #")(height)
+            LogError()(OT_PRETTY_CLASS())("Failed to load ")(print(chain_))(
+                " block #")(height)
                 .Flush();
 
             throw std::runtime_error(
@@ -497,7 +496,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
 
         if (false == bool(pGCS)) {
             LogError()(OT_PRETTY_CLASS())("Failed to instantiate ")(
-                DisplayString(chain_))(" cfilter #")(height)
+                print(chain_))(" cfilter #")(height)
                 .Flush();
 
             throw std::runtime_error("Failed to instantiate gcs");
@@ -506,7 +505,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
         const auto& gcs = *pGCS;
         data.filter_hash_ = gcs.Hash();
         LogTrace()(OT_PRETTY_CLASS())("Finished calculating cfilter for ")(
-            DisplayString(chain_))(" block at height ")(height)
+            print(chain_))(" block at height ")(height)
             .Flush();
         filterHashView = data.filter_hash_->Bytes();
     } catch (...) {
@@ -536,16 +535,16 @@ auto FilterOracle::ProcessSyncData(
         return;
     }
 
-    LogVerbose()(OT_PRETTY_CLASS())("current ")(DisplayString(chain_))(
+    LogVerbose()(OT_PRETTY_CLASS())("current ")(print(chain_))(
         " filter tip height is ")(current.first)
         .Flush();
-    LogVerbose()(OT_PRETTY_CLASS())("incoming ")(DisplayString(chain_))(
+    LogVerbose()(OT_PRETTY_CLASS())("incoming ")(print(chain_))(
         " sync data provides heights ")(incoming)(" to ")(finalFilter.first)
         .Flush();
 
     if (incoming > (current.first + 1)) {
-        LogVerbose()(OT_PRETTY_CLASS())("cannot connect ")(
-            DisplayString(chain_))(" sync data to current tip")
+        LogVerbose()(OT_PRETTY_CLASS())("cannot connect ")(print(chain_))(
+            " sync data to current tip")
             .Flush();
 
         return;
@@ -555,8 +554,8 @@ auto FilterOracle::ProcessSyncData(
                            (finalFilter.second == current.second);
 
     if (redundant) {
-        LogVerbose()(OT_PRETTY_CLASS())("ignoring redundant ")(
-            DisplayString(chain_))(" sync data")
+        LogVerbose()(OT_PRETTY_CLASS())("ignoring redundant ")(print(chain_))(
+            " sync data")
             .Flush();
 
         return;
@@ -582,8 +581,7 @@ auto FilterOracle::ProcessSyncData(
 
                 if (output->empty()) {
                     LogError()(OT_PRETTY_CLASS())("cfheader for ")(
-                        DisplayString(chain_))(" block ")(prior.asHex())(
-                        " not found")
+                        print(chain_))(" block ")(prior.asHex())(" not found")
                         .Flush();
 
                     throw std::runtime_error(
@@ -650,7 +648,7 @@ auto FilterOracle::ProcessSyncData(
             database_.StoreFilters(filterType, headers, filters, tip);
 
         if (stored) {
-            LogDetail()(DisplayString(chain_))(
+            LogDetail()(print(chain_))(
                 " cfheader and cfilter chain updated to height ")(tip.first)
                 .Flush();
             cb_(filterType, tip);
@@ -675,8 +673,8 @@ auto FilterOracle::ProcessSyncData(SyncClientFilterData& data) const noexcept
         const auto type = data.incoming_data_.FilterType();
         const auto count = data.incoming_data_.FilterElements();
         const auto bytes = data.incoming_data_.Filter();
-        LogTrace()(OT_PRETTY_CLASS())("Received filter for ")(
-            DisplayString(chain_))(" block at height ")(height)
+        LogTrace()(OT_PRETTY_CLASS())("Received filter for ")(print(chain_))(
+            " block at height ")(height)
             .Flush();
         auto& [blockHashView, pGCS] = data.filter_data_;
         auto& [blockHash, filterHeader, filterHashView] = data.header_data_;
@@ -693,7 +691,7 @@ auto FilterOracle::ProcessSyncData(SyncClientFilterData& data) const noexcept
 
         if (false == bool(pGCS)) {
             LogError()(OT_PRETTY_CLASS())("Failed to instantiate ")(
-                DisplayString(chain_))(" cfilter #")(height)
+                print(chain_))(" cfilter #")(height)
                 .Flush();
 
             throw std::runtime_error("Failed to instantiate gcs");
@@ -703,7 +701,7 @@ auto FilterOracle::ProcessSyncData(SyncClientFilterData& data) const noexcept
         data.filter_hash_ = gcs.Hash();
         filterHashView = data.filter_hash_->Bytes();
         LogTrace()(OT_PRETTY_CLASS())("Finished calculating cfilter for ")(
-            DisplayString(chain_))(" block at height ")(height)
+            print(chain_))(" block at height ")(height)
             .Flush();
     } catch (...) {
         data.calculated_header_.set_exception(std::current_exception());
@@ -726,7 +724,7 @@ auto FilterOracle::ProcessSyncData(
 
             if (auto status = previous.wait_for(zero); State::ready != status) {
                 LogError()(OT_PRETTY_CLASS())("Timeout waiting for previous ")(
-                    DisplayString(chain_))(" cfheader #")(height - 1)
+                    print(chain_))(" cfheader #")(height - 1)
                     .Flush();
 
                 throw std::runtime_error("timeout");
@@ -739,7 +737,7 @@ auto FilterOracle::ProcessSyncData(
 
             if (filterHeader->empty()) {
                 LogError()(OT_PRETTY_CLASS())("failed to calculate ")(
-                    DisplayString(chain_))(" cfheader #")(height)
+                    print(chain_))(" cfheader #")(height)
                     .Flush();
 
                 throw std::runtime_error("Failed to calculate cfheader");
@@ -747,7 +745,7 @@ auto FilterOracle::ProcessSyncData(
 
             data.calculated_header_.set_value(filterHeader);
             LogTrace()(OT_PRETTY_CLASS())("Finished calculating cfheader for ")(
-                DisplayString(chain_))(" block at height ")(height)
+                print(chain_))(" block at height ")(height)
                 .Flush();
         } catch (...) {
             data.calculated_header_.set_exception(std::current_exception());

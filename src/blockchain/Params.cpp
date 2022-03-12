@@ -13,6 +13,7 @@
 #include <iosfwd>
 #include <memory>
 #include <sstream>
+#include <string_view>
 #include <type_traits>
 
 #include "opentxs/api/crypto/Hash.hpp"
@@ -103,11 +104,6 @@ auto print(Code code) noexcept -> UnallocatedCString
     }
 }
 
-auto print(blockchain::Type type) noexcept -> UnallocatedCString
-{
-    return blockchain::DisplayString(type);
-}
-
 auto print(const blockchain::block::Position& in) noexcept -> UnallocatedCString
 {
     const auto& [height, hash] = in;
@@ -161,11 +157,6 @@ auto DefinedChains() noexcept -> const UnallocatedSet<Type>&
     }();
 
     return output;
-}
-
-auto DisplayString(const Type type) noexcept -> UnallocatedCString
-{
-    return opentxs::print(BlockchainToUnit(type));
 }
 
 auto FilterHash(
@@ -262,6 +253,11 @@ auto P2PMessageHash(
                 opentxs::crypto::HashType::Sha256DC, input, output);
         }
     }
+}
+
+auto print(Type type) noexcept -> std::string_view
+{
+    return opentxs::print(BlockchainToUnit(type));
 }
 
 auto ProofOfWorkHash(

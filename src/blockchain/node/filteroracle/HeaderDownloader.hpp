@@ -120,8 +120,8 @@ private:
 
         OT_ASSERT(saved);
 
-        LogDetail()(DisplayString(chain_))(
-            " cfheader chain updated to height ")(position.first)
+        LogDetail()(print(chain_))(" cfheader chain updated to height ")(
+            position.first)
             .Flush();
         filter_.UpdatePosition(position);
     }

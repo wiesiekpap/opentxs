@@ -18,12 +18,14 @@
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/NotificationStateData.hpp"  // IWYU pragma: keep
+#include "internal/blockchain/node/wallet/Account.hpp"
 #include "internal/blockchain/node/wallet/Accounts.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Allocated.hpp"
@@ -150,6 +152,9 @@ private:
     NotificationMap notification_channels_;
 
     auto reorg_children() const noexcept -> std::size_t;
+    auto verify_child_state(
+        const Subchain::State subchain,
+        const Account::State account) const noexcept -> void;
 
     auto do_reorg() noexcept -> void;
     auto do_shutdown() noexcept -> void;
