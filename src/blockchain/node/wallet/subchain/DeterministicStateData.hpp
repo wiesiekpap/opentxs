@@ -143,7 +143,6 @@ private:
         const block::bitcoin::Transaction& tx,
         MatchedTransaction& output) const noexcept -> void;
     auto ReportScan(const block::Position& pos) const noexcept -> void final;
-    auto type() const noexcept -> std::stringstream final;
 
     DeterministicStateData() = delete;
     DeterministicStateData(const DeterministicStateData&) = delete;

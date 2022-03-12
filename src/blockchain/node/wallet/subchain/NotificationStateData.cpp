@@ -9,8 +9,10 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <iosfwd>
 #include <iterator>
 #include <memory>
 #include <optional>
@@ -81,6 +83,11 @@ NotificationStateData::NotificationStateData(
           batch,
           OTNymID{nym},
           calculate_id(api, chain, code),
+          [] {
+              using namespace std::literals;
+
+              return "payment code notification"sv;
+          }(),
           fromParent,
           toParent,
           std::move(alloc))
@@ -296,14 +303,6 @@ auto NotificationStateData::startup() noexcept -> void
     if (existing != expected) {
         mNym.AddPaymentCode(expected, type, existing.empty(), true, reason);
     }
-}
-
-auto NotificationStateData::type() const noexcept -> std::stringstream
-{
-    auto output = std::stringstream{};
-    output << "Payment code notification";
-
-    return output;
 }
 
 auto NotificationStateData::work() noexcept -> bool

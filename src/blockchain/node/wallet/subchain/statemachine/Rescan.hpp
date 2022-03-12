@@ -107,7 +107,7 @@ private:
     auto process_reorg(const block::Position& parent) noexcept -> void;
     auto process_update(Message&& msg) noexcept -> void;
     auto prune() noexcept -> void;
-    auto startup() noexcept -> void { do_work(); }
+    auto startup() noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto state_reorg(const Work work, Message&& msg) noexcept -> void;
     auto transition_state_normal(Message&& msg) noexcept -> void;

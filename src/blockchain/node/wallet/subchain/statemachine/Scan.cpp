@@ -183,39 +183,36 @@ auto Scan::Imp::process_startup(Message&& msg) noexcept -> void
 
 auto Scan::Imp::startup() noexcept -> void
 {
-    last_scanned_ = parent_.db_.SubchainLastScanned(parent_.db_key_);
     const auto& node = parent_.node_;
     const auto& filters = node.FilterOracleInternal();
+    last_scanned_ = parent_.db_.SubchainLastScanned(parent_.db_key_);
     filter_tip_ = filters.FilterTip(parent_.filter_type_);
 
-    if (last_scanned_.has_value()) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(
-            " loaded last scanned value of ")(
-            opentxs::print(last_scanned_.value()))(" from database")
-            .Flush();
-        to_process_.Send([&] {
-            auto out = MakeWork(Work::update);
-            auto clean = Vector<ScanStatus>{get_allocator()};
-            clean.emplace_back(ScanState::scan_clean, last_scanned_.value());
-            encode(clean, out);
+    OT_ASSERT(last_scanned_.has_value());
+    OT_ASSERT(filter_tip_.has_value());
 
-            return out;
-        }());
-    } else {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(
-            " no previous value for last scanned in database")
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" loaded last scanned value of ")(
+        opentxs::print(last_scanned_.value()))(" from database")
+        .Flush();
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" loaded filter tip value of ")(
+        opentxs::print(last_scanned_.value()))(" from filter oracle")
+        .Flush();
+
+    if (last_scanned_.value() > filter_tip_.value()) {
+        log_(OT_PRETTY_CLASS())(parent_.name_)(" last scanned reset to ")(
+            opentxs::print(filter_tip_.value()))
             .Flush();
+        last_scanned_ = filter_tip_;
     }
 
-    if (filter_tip_.has_value()) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" loaded filter value of ")(
-            opentxs::print(last_scanned_.value()))(" from filter oracle")
-            .Flush();
-    } else {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(
-            " no filter tip value available from oracle")
-            .Flush();
-    }
+    to_process_.Send([&] {
+        auto out = MakeWork(Work::update);
+        auto clean = Vector<ScanStatus>{get_allocator()};
+        clean.emplace_back(ScanState::scan_clean, last_scanned_.value());
+        encode(clean, out);
+
+        return out;
+    }());
 }
 
 auto Scan::Imp::state_init(const Work work, Message&& msg) noexcept -> void

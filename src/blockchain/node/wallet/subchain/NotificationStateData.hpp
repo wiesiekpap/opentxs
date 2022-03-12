@@ -162,7 +162,6 @@ private:
     auto process(
         const opentxs::PaymentCode& remote,
         const PasswordPrompt& reason) const noexcept -> void;
-    auto type() const noexcept -> std::stringstream final;
 
     auto init_contacts() noexcept -> void;
     auto startup() noexcept -> void final;

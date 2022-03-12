@@ -11,6 +11,7 @@
 #include <chrono>
 #include <iterator>
 #include <memory>
+#include <sstream>
 #include <type_traits>
 #include <utility>
 
@@ -99,6 +100,7 @@ SubchainStateData::SubchainStateData(
     const network::zeromq::BatchID batch,
     OTNymID&& owner,
     OTIdentifier&& id,
+    const std::string_view display,
     const std::string_view fromParent,
     const std::string_view toParent,
     CString&& fromChildren,
@@ -141,13 +143,13 @@ SubchainStateData::SubchainStateData(
     , node_(node)
     , db_(db)
     , mempool_oracle_(mempool)
-    , name_(alloc)
     , owner_(std::move(owner))
     , account_type_(accountType)
     , id_(std::move(id))
     , subchain_(subchain)
     , chain_(node_.Chain())
     , filter_type_(filter)
+    , name_(describe(chain_, id_, display, subchain_, alloc))
     , db_key_(db.GetSubchainID(id_, subchain_))
     , null_position_(make_blank<block::Position>::value(api_))
     , genesis_(node_.HeaderOracle().GetPosition(0))
@@ -183,6 +185,7 @@ SubchainStateData::SubchainStateData(
     const network::zeromq::BatchID batch,
     OTNymID&& owner,
     OTIdentifier&& id,
+    const std::string_view display,
     const std::string_view fromParent,
     const std::string_view toParent,
     allocator_type alloc) noexcept
@@ -197,6 +200,7 @@ SubchainStateData::SubchainStateData(
           batch,
           std::move(owner),
           std::move(id),
+          display,
           fromParent,
           toParent,
           network::zeromq::MakeArbitraryInproc(alloc.resource()),
@@ -207,14 +211,22 @@ SubchainStateData::SubchainStateData(
 {
 }
 
-auto SubchainStateData::describe() const noexcept -> UnallocatedCString
+auto SubchainStateData::describe(
+    const blockchain::Type chain,
+    const Identifier& id,
+    const std::string_view type,
+    const Subchain subchain,
+    allocator_type alloc) noexcept -> CString
 {
-    auto out = type();
+    // TODO c++20 use allocator
+    auto out = std::stringstream{};
+    out << DisplayString(chain) << ' ';
+    out << type;
     out << " account ";
-    out << id_->str();
+    out << id.str();
     out << ' ';
 
-    switch (subchain_) {
+    switch (subchain) {
         case Subchain::Internal: {
             out << "internal";
         } break;
@@ -238,7 +250,7 @@ auto SubchainStateData::describe() const noexcept -> UnallocatedCString
 
     out << " subchain";
 
-    return out.str();
+    return CString{alloc} + out.str().c_str();
 }
 
 auto SubchainStateData::do_reorg(
@@ -696,12 +708,11 @@ auto SubchainStateData::set_key_data(
 
 auto SubchainStateData::startup() noexcept -> void
 {
-    const_cast<CString&>(name_) = describe();
-    get_index(me_);
-    wallet::Scan{me_};
-    wallet::Process{me_};
-    wallet::Rescan{me_};
     wallet::Progress{me_};
+    wallet::Rescan{me_};
+    wallet::Process{me_};
+    wallet::Scan{me_};
+    get_index(me_);
     me_.reset();
     do_work();
 }
@@ -872,7 +883,7 @@ auto SubchainStateData::supported_scripts(const crypto::Element& element)
 
 auto SubchainStateData::transition_state_normal(Message&& in) noexcept -> void
 {
-    OT_ASSERT(0u < reorg_children());
+    OT_ASSERT(0u < reorg_->target_);
 
     auto& reorg = reorg_.value();
     const auto& target = reorg.target_;
@@ -880,9 +891,15 @@ auto SubchainStateData::transition_state_normal(Message&& in) noexcept -> void
     ++counter;
 
     if (counter < target) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(counter)(" of ")(
+            target)(" children finished with reorg")
+            .Flush();
 
         return;
     } else if (counter == target) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" all ")(
+            target)(" children finished with reorg")
+            .Flush();
         ready_for_normal();
     } else {
 
@@ -896,9 +913,17 @@ auto SubchainStateData::transition_state_post_reorg(Message&& in) noexcept
     const auto& reorg = reorg_.value();
 
     if (0u < reorg.target_) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            " waiting for acknowledgements from ")(reorg_->target_)(
+            " children prior to acknowledging reorg completion")
+            .Flush();
         to_progress_.Send(MakeWork(SubchainJobs::reorg_end));
         state_ = State::post_reorg;
     } else {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            " no children instantiated therefore reorg may be completed "
+            "immediately")
+            .Flush();
         ready_for_normal();
     }
 }
@@ -911,16 +936,24 @@ auto SubchainStateData::transition_state_pre_reorg(Message&& in) noexcept
     const auto& reorg = reorg_.value();
 
     if (0u < reorg.target_) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            " waiting for acknowledgements from ")(reorg_->target_)(
+            " children prior to acknowledging reorg")
+            .Flush();
         to_scan_.Send(MakeWork(SubchainJobs::reorg_begin));
         state_ = State::pre_reorg;
     } else {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            " no children instantiated therefore reorg may be acknowledged "
+            "immediately")
+            .Flush();
         ready_for_reorg();
     }
 }
 
 auto SubchainStateData::transition_state_reorg(Message&& in) noexcept -> void
 {
-    OT_ASSERT(0u < reorg_children());
+    OT_ASSERT(0u < reorg_->target_);
 
     auto& reorg = reorg_.value();
     const auto& target = reorg.target_;
@@ -928,9 +961,15 @@ auto SubchainStateData::transition_state_reorg(Message&& in) noexcept -> void
     ++counter;
 
     if (counter < target) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(counter)(" of ")(
+            target)(" children ready for reorg")
+            .Flush();
 
         return;
     } else if (counter == target) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" all ")(
+            target)(" children ready for reorg")
+            .Flush();
         ready_for_reorg();
     } else {
 
