@@ -288,6 +288,31 @@ auto Rescan::Imp::prune() noexcept -> void
     }
 }
 
+auto Rescan::Imp::startup() noexcept -> void
+{
+    const auto& node = parent_.node_;
+    const auto& filters = node.FilterOracleInternal();
+    last_scanned_ = parent_.db_.SubchainLastScanned(parent_.db_key_);
+    filter_tip_ = filters.FilterTip(parent_.filter_type_);
+
+    OT_ASSERT(last_scanned_.has_value());
+    OT_ASSERT(filter_tip_.has_value());
+
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" loaded last scanned value of ")(
+        opentxs::print(last_scanned_.value()))(" from database")
+        .Flush();
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" loaded filter tip value of ")(
+        opentxs::print(last_scanned_.value()))(" from filter oracle")
+        .Flush();
+
+    if (last_scanned_.value() > filter_tip_.value()) {
+        log_(OT_PRETTY_CLASS())(parent_.name_)(" last scanned reset to ")(
+            opentxs::print(filter_tip_.value()))
+            .Flush();
+        last_scanned_ = filter_tip_;
+    }
+}
+
 auto Rescan::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
 {
     switch (work) {

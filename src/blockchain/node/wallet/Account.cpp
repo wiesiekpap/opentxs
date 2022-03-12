@@ -504,6 +504,7 @@ auto Account::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::reorg_end: {
             transition_state_post_reorg(std::move(msg));
         } break;
+        case Work::reorg_begin:
         case Work::reorg_begin_ack:
         case Work::reorg_end_ack: {
             LogError()(OT_PRETTY_CLASS())(": wrong state for message ")(
@@ -522,7 +523,7 @@ auto Account::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
 
 auto Account::Imp::transition_state_normal(Message&& in) noexcept -> void
 {
-    OT_ASSERT(0u < reorg_children());
+    OT_ASSERT(0u < reorg_->target_);
 
     auto& reorg = reorg_.value();
     const auto& target = reorg.target_;
@@ -530,9 +531,15 @@ auto Account::Imp::transition_state_normal(Message&& in) noexcept -> void
     ++counter;
 
     if (counter < target) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(counter)(" of ")(
+            target)(" children finished with reorg")
+            .Flush();
 
         return;
     } else if (counter == target) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" all ")(
+            target)(" children finished with reorg")
+            .Flush();
         ready_for_normal();
     } else {
 
@@ -545,9 +552,17 @@ auto Account::Imp::transition_state_post_reorg(Message&& in) noexcept -> void
     const auto& reorg = reorg_.value();
 
     if (0u < reorg.target_) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            " waiting for acknowledgements from ")(reorg_->target_)(
+            " children prior to acknowledging reorg completion")
+            .Flush();
         to_children_.Send(MakeWork(SubchainJobs::reorg_end));
         state_ = State::post_reorg;
     } else {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            " no children instantiated therefore reorg may be completed "
+            "immediately")
+            .Flush();
         ready_for_normal();
     }
 }
@@ -559,16 +574,24 @@ auto Account::Imp::transition_state_pre_reorg(Message&& in) noexcept -> void
     const auto& reorg = reorg_.value();
 
     if (0u < reorg.target_) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            " waiting for acknowledgements from ")(reorg_->target_)(
+            " children prior to acknowledging reorg")
+            .Flush();
         to_children_.Send(MakeWork(SubchainJobs::reorg_begin));
         state_ = State::pre_reorg;
     } else {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            " no children instantiated therefore reorg may be acknowledged "
+            "immediately")
+            .Flush();
         ready_for_reorg();
     }
 }
 
 auto Account::Imp::transition_state_reorg(Message&& in) noexcept -> void
 {
-    OT_ASSERT(0u < reorg_children());
+    OT_ASSERT(0u < reorg_->target_);
 
     auto& reorg = reorg_.value();
     const auto& target = reorg.target_;
@@ -576,9 +599,15 @@ auto Account::Imp::transition_state_reorg(Message&& in) noexcept -> void
     ++counter;
 
     if (counter < target) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(counter)(" of ")(
+            target)(" children ready for reorg")
+            .Flush();
 
         return;
     } else if (counter == target) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" all ")(
+            target)(" children ready for reorg")
+            .Flush();
         ready_for_reorg();
     } else {
 

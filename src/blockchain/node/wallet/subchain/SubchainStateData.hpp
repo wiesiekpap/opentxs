@@ -14,7 +14,6 @@
 #include <mutex>
 #include <optional>
 #include <queue>
-#include <sstream>
 #include <string_view>
 #include <tuple>
 #include <utility>
@@ -124,13 +123,13 @@ public:
     const node::internal::Network& node_;
     const node::internal::WalletDatabase& db_;
     const node::internal::Mempool& mempool_oracle_;
-    const CString name_;
     const OTNymID owner_;
     const crypto::SubaccountType account_type_;
     const OTIdentifier id_;
     const Subchain subchain_;
     const Type chain_;
     const filter::Type filter_type_;
+    const CString name_;
     const SubchainIndex db_key_;
     const block::Position null_position_;
     const block::Position genesis_;
@@ -178,7 +177,6 @@ protected:
     using Targets = GCS::Targets;
     using Tested = WalletDatabase::MatchingIndices;
 
-    auto describe() const noexcept -> UnallocatedCString;
     auto get_account_targets() const noexcept
         -> std::tuple<Patterns, UTXOs, Targets>;
     auto get_block_targets(const block::Hash& id, const UTXOs& utxos)
@@ -191,7 +189,6 @@ protected:
     auto translate(
         const UnallocatedVector<WalletDatabase::UTXO>& utxos,
         Patterns& outpoints) const noexcept -> void;
-    virtual auto type() const noexcept -> std::stringstream = 0;
 
     virtual auto startup() noexcept -> void;
     virtual auto work() noexcept -> bool;
@@ -207,6 +204,7 @@ protected:
         const network::zeromq::BatchID batch,
         OTNymID&& owner,
         OTIdentifier&& id,
+        const std::string_view display,
         const std::string_view fromParent,
         const std::string_view toParent,
         allocator_type alloc) noexcept;
@@ -241,6 +239,13 @@ private:
     State state_;
     std::optional<ReorgData> reorg_;
     boost::shared_ptr<SubchainStateData> me_;
+
+    static auto describe(
+        const blockchain::Type chain,
+        const Identifier& id,
+        const std::string_view type,
+        const Subchain subchain,
+        allocator_type alloc) noexcept -> CString;
 
     virtual auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
         const noexcept -> Index = 0;
@@ -293,6 +298,7 @@ private:
         const network::zeromq::BatchID batch,
         OTNymID&& owner,
         OTIdentifier&& id,
+        const std::string_view display,
         const std::string_view fromParent,
         const std::string_view toParent,
         CString&& fromChildren,

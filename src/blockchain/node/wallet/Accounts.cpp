@@ -210,9 +210,17 @@ auto Accounts::Imp::do_reorg() noexcept -> void
     // TODO ensure filter oracle has processed the reorg before proceeding
     state_ = State::post_reorg;
 
-    if (0u < reorg_children()) {
+    if (0u < reorg_->target_) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            " waiting for acknowledgements from ")(reorg_->target_)(
+            " children prior to returning to normal state")
+            .Flush();
         to_children_.Send(MakeWork(AccountJobs::reorg_end));
     } else {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            " no children instantiated therefore reorg can be completed "
+            "immediately")
+            .Flush();
         finish_reorg();
     }
 }
@@ -481,7 +489,7 @@ auto Accounts::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
 
 auto Accounts::Imp::transition_state_normal(Message&& in) noexcept -> void
 {
-    OT_ASSERT(0u < reorg_children());
+    OT_ASSERT(0u < reorg_->target_);
 
     auto& reorg = reorg_.value();
     const auto& target = reorg.target_;
@@ -489,9 +497,15 @@ auto Accounts::Imp::transition_state_normal(Message&& in) noexcept -> void
     ++counter;
 
     if (counter < target) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(counter)(" of ")(
+            target)(" children finished with reorg")
+            .Flush();
 
         return;
     } else if (counter == target) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" all ")(
+            target)(" children finished with reorg")
+            .Flush();
         finish_reorg();
     } else {
 
@@ -501,7 +515,7 @@ auto Accounts::Imp::transition_state_normal(Message&& in) noexcept -> void
 
 auto Accounts::Imp::transition_state_post_reorg(Message&& in) noexcept -> void
 {
-    OT_ASSERT(0u < reorg_children());
+    OT_ASSERT(0u < reorg_->target_);
 
     auto& reorg = reorg_.value();
     const auto& target = reorg.target_;
@@ -509,9 +523,15 @@ auto Accounts::Imp::transition_state_post_reorg(Message&& in) noexcept -> void
     ++counter;
 
     if (counter < target) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(counter)(" of ")(
+            target)(" children ready for reorg")
+            .Flush();
 
         return;
     } else if (counter == target) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" all ")(
+            target)(" children ready for reorg")
+            .Flush();
         do_reorg();
     } else {
 
@@ -549,9 +569,17 @@ auto Accounts::Imp::transition_state_reorg(Message&& in) noexcept -> void
     disable_automatic_processing_ = true;
     state_ = State::reorg;
 
-    if (0u < reorg_children()) {
+    if (0u < reorg_->target_) {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            " waiting for acknowledgements from ")(reorg_->target_)(
+            " children prior to executing reorg")
+            .Flush();
         to_children_.Send(MakeWork(AccountJobs::reorg_begin));
     } else {
+        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            " no children instantiated therefore reorg can be processed "
+            "immediately")
+            .Flush();
         do_reorg();
     }
 }

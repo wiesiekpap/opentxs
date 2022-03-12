@@ -7,9 +7,9 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/DeterministicStateData.hpp"  // IWYU pragma: associated
 
+#include <chrono>
 #include <memory>
 #include <optional>
-#include <sstream>
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -69,6 +69,25 @@ DeterministicStateData::DeterministicStateData(
           batch,
           OTNymID{subaccount.Parent().NymID()},
           OTIdentifier{subaccount.ID()},
+          [&] {
+              using namespace std::literals;
+
+              switch (subchain) {
+                  case Subchain::Internal:
+                  case Subchain::External: {
+
+                      return "HD"sv;
+                  } break;
+                  case Subchain::Incoming:
+                  case Subchain::Outgoing: {
+
+                      return "payment code"sv;
+                  } break;
+                  default: {
+                      OT_FAIL;
+                  }
+              }
+          }(),
           fromParent,
           toParent,
           std::move(alloc))
@@ -293,26 +312,5 @@ auto DeterministicStateData::ReportScan(
 {
     subaccount_.Internal().SetScanProgress(pos, subchain_);
     SubchainStateData::ReportScan(pos);
-}
-
-auto DeterministicStateData::type() const noexcept -> std::stringstream
-{
-    auto output = std::stringstream{};
-
-    switch (subchain_) {
-        case Subchain::Internal:
-        case Subchain::External: {
-            output << "HD";
-        } break;
-        case Subchain::Incoming:
-        case Subchain::Outgoing: {
-            output << "Payment code";
-        } break;
-        default: {
-            OT_FAIL;
-        }
-    }
-
-    return output;
 }
 }  // namespace opentxs::blockchain::node::wallet
