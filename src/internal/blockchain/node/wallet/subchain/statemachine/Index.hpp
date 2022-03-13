@@ -7,7 +7,7 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -41,6 +41,7 @@ public:
     enum class State {
         normal,
         reorg,
+        shutdown,
     };
 
     static auto DeterministicFactory(
@@ -51,6 +52,8 @@ public:
         const PaymentCode& code) noexcept -> Index;
 
     auto VerifyState(const State state) const noexcept -> void;
+
+    auto ProcessReorg(const block::Position& parent) noexcept -> void;
 
     Index() = delete;
     Index(const Index&) = delete;

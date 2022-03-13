@@ -23,9 +23,9 @@
 #include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
@@ -139,11 +139,11 @@ struct Input : virtual public bitcoin::Input {
     virtual auto CalculateSize(const bool normalized = false) const noexcept
         -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Input> = 0;
-    virtual auto ExtractElements(const filter::Type style) const noexcept
+    virtual auto ExtractElements(const cfilter::Type style) const noexcept
         -> UnallocatedVector<Space> = 0;
     virtual auto FindMatches(
         const ReadView txid,
-        const filter::Type type,
+        const cfilter::Type type,
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
     virtual auto GetBytes(std::size_t& base, std::size_t& witness)
@@ -185,11 +185,11 @@ struct Inputs : virtual public bitcoin::Inputs {
     virtual auto CalculateSize(const bool normalized = false) const noexcept
         -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Inputs> = 0;
-    virtual auto ExtractElements(const filter::Type style) const noexcept
+    virtual auto ExtractElements(const cfilter::Type style) const noexcept
         -> UnallocatedVector<Space> = 0;
     virtual auto FindMatches(
         const ReadView txid,
-        const filter::Type type,
+        const cfilter::Type type,
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
     virtual auto GetPatterns() const noexcept
@@ -225,11 +225,11 @@ struct Output : virtual public bitcoin::Output {
         UnallocatedVector<OTIdentifier>& output) const noexcept -> void = 0;
     virtual auto CalculateSize() const noexcept -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Output> = 0;
-    virtual auto ExtractElements(const filter::Type style) const noexcept
+    virtual auto ExtractElements(const cfilter::Type style) const noexcept
         -> UnallocatedVector<Space> = 0;
     virtual auto FindMatches(
         const ReadView txid,
-        const filter::Type type,
+        const cfilter::Type type,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
     virtual auto GetPatterns() const noexcept
         -> UnallocatedVector<PatternID> = 0;
@@ -270,11 +270,11 @@ struct Outputs : virtual public bitcoin::Outputs {
         UnallocatedVector<OTIdentifier>& output) const noexcept -> void = 0;
     virtual auto CalculateSize() const noexcept -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Outputs> = 0;
-    virtual auto ExtractElements(const filter::Type style) const noexcept
+    virtual auto ExtractElements(const cfilter::Type style) const noexcept
         -> UnallocatedVector<Space> = 0;
     virtual auto FindMatches(
         const ReadView txid,
-        const filter::Type type,
+        const cfilter::Type type,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
     virtual auto GetPatterns() const noexcept
         -> UnallocatedVector<PatternID> = 0;
@@ -328,10 +328,10 @@ struct Transaction : virtual public bitcoin::Transaction {
         const std::size_t inputIndex,
         const Output& output) noexcept -> bool = 0;
     virtual auto CalculateSize() const noexcept -> std::size_t = 0;
-    virtual auto ExtractElements(const filter::Type style) const noexcept
+    virtual auto ExtractElements(const cfilter::Type style) const noexcept
         -> UnallocatedVector<Space> = 0;
     virtual auto FindMatches(
-        const filter::Type type,
+        const cfilter::Type type,
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
     virtual auto GetPatterns() const noexcept

@@ -39,8 +39,9 @@
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
-#include "opentxs/blockchain/GCS.hpp"
+#include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
@@ -65,7 +66,7 @@ auto BlockchainFilterOracle(
     const blockchain::node::internal::BlockOracle& block,
     const blockchain::node::internal::FilterDatabase& database,
     const blockchain::Type chain,
-    const blockchain::filter::Type filter,
+    const blockchain::cfilter::Type filter,
     const UnallocatedCString& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::FilterOracle>
 {
@@ -79,12 +80,12 @@ auto BlockchainFilterOracle(
 namespace opentxs::blockchain::node::implementation
 {
 struct FilterOracle::SyncClientFilterData {
-    using Future = std::future<filter::pHeader>;
-    using Promise = std::promise<filter::pHeader>;
+    using Future = std::future<cfilter::pHeader>;
+    using Promise = std::promise<cfilter::pHeader>;
 
     const block::Hash& block_hash_;
     const network::p2p::Block& incoming_data_;
-    filter::pHash filter_hash_;
+    cfilter::pHash filter_hash_;
     internal::FilterDatabase::Filter& filter_data_;
     internal::FilterDatabase::Header& header_data_;
     Outstanding& job_counter_;
@@ -119,7 +120,7 @@ FilterOracle::FilterOracle(
     const internal::BlockOracle& block,
     const internal::FilterDatabase& database,
     const blockchain::Type chain,
-    const blockchain::filter::Type filter,
+    const blockchain::cfilter::Type filter,
     const UnallocatedCString& shutdown) noexcept
     : internal::FilterOracle()
     , api_(api)
@@ -208,7 +209,7 @@ FilterOracle::FilterOracle(
 
 auto FilterOracle::compare_header_to_checkpoint(
     const block::Position& block,
-    const filter::Header& receivedHeader) noexcept -> block::Position
+    const cfilter::Header& receivedHeader) noexcept -> block::Position
 {
     const auto& cp = filter_checkpoints_.at(chain_);
     const auto height = block.first;
@@ -347,7 +348,7 @@ auto FilterOracle::Heartbeat() const noexcept -> void
 }
 
 auto FilterOracle::LoadFilterOrResetTip(
-    const filter::Type type,
+    const cfilter::Type type,
     const block::Position& position) const noexcept
     -> std::unique_ptr<const GCS>
 {
@@ -371,7 +372,7 @@ auto FilterOracle::LoadFilterOrResetTip(
 
 auto FilterOracle::new_tip(
     const rLock&,
-    const filter::Type type,
+    const cfilter::Type type,
     const block::Position& tip) const noexcept -> void
 {
     auto last = last_broadcast_.find(type);
@@ -608,7 +609,7 @@ auto FilterOracle::ProcessSyncData(
                 [&] {
                     if (first) {
                         first = false;
-                        auto promise = std::promise<filter::pHeader>{};
+                        auto promise = std::promise<cfilter::pHeader>{};
                         auto post = ScopeGuard{
                             [&] { promise.set_value(std::move(previous)); }};
 
@@ -757,7 +758,7 @@ auto FilterOracle::ProcessSyncData(
 }
 
 auto FilterOracle::process_block(
-    const filter::Type filterType,
+    const cfilter::Type filterType,
     const block::bitcoin::Block& block) const noexcept
     -> std::unique_ptr<const GCS>
 {
@@ -786,7 +787,7 @@ auto FilterOracle::process_block(
 }
 
 auto FilterOracle::reset_tips_to(
-    const filter::Type type,
+    const cfilter::Type type,
     const block::Position& position,
     const std::optional<bool> resetHeader,
     const std::optional<bool> resetfilter) const noexcept -> bool
@@ -801,7 +802,7 @@ auto FilterOracle::reset_tips_to(
 }
 
 auto FilterOracle::reset_tips_to(
-    const filter::Type type,
+    const cfilter::Type type,
     const block::Position& headerTip,
     const block::Position& position,
     const std::optional<bool> resetHeader) const noexcept -> bool
@@ -815,7 +816,7 @@ auto FilterOracle::reset_tips_to(
 }
 
 auto FilterOracle::reset_tips_to(
-    const filter::Type type,
+    const cfilter::Type type,
     const block::Position& headerTip,
     const block::Position& filterTip,
     const block::Position& position,
@@ -836,13 +837,13 @@ auto FilterOracle::reset_tips_to(
     OT_ASSERT(resetfilter.has_value());
 
     auto lock = rLock{lock_};
-    using Future = std::shared_future<filter::pHeader>;
+    using Future = std::shared_future<cfilter::pHeader>;
     auto previous = [&]() -> Future {
         const auto& block = header_.LoadHeader(position.second);
 
         OT_ASSERT(block);
 
-        auto promise = std::promise<filter::pHeader>{};
+        auto promise = std::promise<cfilter::pHeader>{};
         promise.set_value(database_.LoadFilterHeader(
             default_type_, block->ParentHash().Bytes()));
 

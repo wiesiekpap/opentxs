@@ -9,7 +9,6 @@
 #include <atomic>
 #include <memory>
 
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -51,6 +50,8 @@ public:
         pre_reorg,
         reorg,
         post_reorg,
+        pre_shutdown,
+        shutdown,
     };
 
     virtual auto VerifyState(const State state) const noexcept -> void = 0;

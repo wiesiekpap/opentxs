@@ -23,10 +23,9 @@
 #include "internal/blockchain/node/wallet/subchain/statemachine/Index.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
@@ -126,7 +125,7 @@ public:
         const node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const identifier::Nym& nym,
-        const filter::Type filter,
+        const cfilter::Type filter,
         const network::zeromq::BatchID batch,
         const Type chain,
         const std::string_view fromParent,

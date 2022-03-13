@@ -14,8 +14,7 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -59,6 +58,8 @@ public:
         pre_reorg,
         reorg,
         post_reorg,
+        pre_shutdown,
+        shutdown,
     };
 
     auto VerifyState(const State state) const noexcept -> void;
@@ -76,7 +77,7 @@ public:
         const node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const Type chain,
-        const filter::Type filter,
+        const cfilter::Type filter,
         const std::string_view fromParent,
         const std::string_view toParent) noexcept;
     Account(Account&&) noexcept;

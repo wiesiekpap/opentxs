@@ -12,7 +12,7 @@
 #include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/blockchain/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"

@@ -8,7 +8,7 @@
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 
-#include "opentxs/blockchain/Work.hpp"
+#include "opentxs/blockchain/bitcoin/Work.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

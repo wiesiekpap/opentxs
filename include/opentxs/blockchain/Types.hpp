@@ -36,8 +36,6 @@ namespace opentxs::blockchain
 using TypeEnum = std::uint32_t;
 
 enum class Type : TypeEnum;
-enum class BloomUpdateFlag : std::uint8_t;
-enum class SendResult : TypeEnum;
 
 using Amount = opentxs::Amount;
 using ChainHeight = std::int64_t;
@@ -52,24 +50,10 @@ using pHash = OTData;
 OPENTXS_EXPORT auto print(Type) noexcept -> std::string_view;
 }  // namespace opentxs::blockchain
 
-namespace opentxs::blockchain::filter
-{
-using TypeEnum = std::uint32_t;
-
-enum class Type : TypeEnum;
-
-using Hash = blockchain::Hash;
-using pHash = blockchain::pHash;
-using Header = Hash;
-using pHeader = pHash;
-}  // namespace opentxs::blockchain::filter
-
 namespace opentxs
 {
 OPENTXS_EXPORT auto BlockchainToUnit(const blockchain::Type type) noexcept
     -> UnitType;
 OPENTXS_EXPORT auto UnitToBlockchain(const UnitType type) noexcept
     -> blockchain::Type;
-OPENTXS_EXPORT auto print(blockchain::SendResult) noexcept
-    -> UnallocatedCString;
 }  // namespace opentxs

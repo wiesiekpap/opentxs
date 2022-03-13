@@ -25,14 +25,14 @@ struct Block::Imp {
 
     const opentxs::blockchain::Type chain_;
     const opentxs::blockchain::block::Height height_;
-    const opentxs::blockchain::filter::Type type_;
+    const opentxs::blockchain::cfilter::Type type_;
     const std::uint32_t count_;
     const Space header_;
     const Space filter_;
 
     Imp(opentxs::blockchain::Type chain,
         opentxs::blockchain::block::Height height,
-        opentxs::blockchain::filter::Type type,
+        opentxs::blockchain::cfilter::Type type,
         std::uint32_t count,
         ReadView header,
         ReadView filter) noexcept(false)
@@ -64,7 +64,7 @@ Block::Block(const proto::BlockchainP2PSync& in) noexcept(false)
     : Block(
           static_cast<opentxs::blockchain::Type>(in.chain()),
           in.height(),
-          static_cast<opentxs::blockchain::filter::Type>(in.filter_type()),
+          static_cast<opentxs::blockchain::cfilter::Type>(in.filter_type()),
           in.filter_element_count(),
           in.header(),
           in.filter())
@@ -74,7 +74,7 @@ Block::Block(const proto::BlockchainP2PSync& in) noexcept(false)
 Block::Block(
     opentxs::blockchain::Type chain,
     opentxs::blockchain::block::Height height,
-    opentxs::blockchain::filter::Type type,
+    opentxs::blockchain::cfilter::Type type,
     std::uint32_t count,
     ReadView header,
     ReadView filter) noexcept(false)
@@ -104,7 +104,7 @@ auto Block::FilterElements() const noexcept -> std::uint32_t
     return imp_->count_;
 }
 
-auto Block::FilterType() const noexcept -> opentxs::blockchain::filter::Type
+auto Block::FilterType() const noexcept -> opentxs::blockchain::cfilter::Type
 {
     return imp_->type_;
 }

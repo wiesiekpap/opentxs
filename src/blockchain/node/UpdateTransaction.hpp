@@ -9,7 +9,6 @@
 #include <optional>
 
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

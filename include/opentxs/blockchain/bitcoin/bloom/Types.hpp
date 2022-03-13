@@ -5,10 +5,13 @@
 
 #pragma once
 
-#include "opentxs/Version.hpp"           // IWYU pragma: associated
-#include "opentxs/blockchain/Types.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
+#include <cstdint>
 
 namespace opentxs::blockchain
 {
-enum class BloomUpdateFlag : std::uint8_t { None = 0, All = 1, PubkeyOnly = 2 };
+using TypeEnum = std::uint32_t;
+
+enum class BloomUpdateFlag : std::uint8_t;
 }  // namespace opentxs::blockchain

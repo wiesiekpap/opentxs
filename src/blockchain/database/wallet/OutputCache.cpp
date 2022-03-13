@@ -14,6 +14,7 @@
 #include <iosfwd>
 #include <ostream>
 #include <stdexcept>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -313,7 +314,7 @@ auto OutputCache::AddToState(
             id,
             static_cast<std::size_t>(id),
             "state",
-            opentxs::print(id),
+            UnallocatedCString{print(id)},
             states_);
         auto rc = lmdb_
                       .Store(
@@ -775,7 +776,7 @@ auto OutputCache::GetState(const sLock&, const node::TxoState id) noexcept
             id,
             static_cast<std::size_t>(id),
             "state",
-            opentxs::print(id),
+            UnallocatedCString{print(id)},
             states_);
     } catch (...) {
 
@@ -798,7 +799,7 @@ auto OutputCache::GetState(const eLock&, const node::TxoState id) noexcept
             id,
             static_cast<std::size_t>(id),
             "state",
-            opentxs::print(id),
+            UnallocatedCString{print(id)},
             states_);
     } catch (...) {
 
@@ -1020,7 +1021,7 @@ auto OutputCache::Print(const eLock&) const noexcept -> void
             }
         }
 
-        out.text_ << ", state: " << opentxs::print(item.State());
+        out.text_ << ", state: " << print(item.State());
     }
 
     const auto& unconfirmed = output[node::TxoState::UnconfirmedNew];
@@ -1115,7 +1116,7 @@ auto OutputCache::Print(const eLock&) const noexcept -> void
     log(OT_PRETTY_CLASS())("Outputs by state:\n");
 
     for (const auto& [state, outputs] : states_) {
-        log("  * ")(opentxs::print(state))("\n");
+        log("  * ")(print(state))("\n");
 
         for (const auto& outpoint : outputs) {
             log("    * ")(outpoint.str())("\n");

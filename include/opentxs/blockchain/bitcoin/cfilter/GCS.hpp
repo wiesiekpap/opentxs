@@ -9,7 +9,7 @@
 
 #include <cstdint>
 
-#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -40,9 +40,9 @@ public:
     virtual auto ElementCount() const noexcept -> std::uint32_t = 0;
     /// Element count as CompactSize followed by serialized filter
     virtual auto Encode() const noexcept -> OTData = 0;
-    virtual auto Hash() const noexcept -> filter::pHash = 0;
+    virtual auto Hash() const noexcept -> cfilter::pHash = 0;
     virtual auto Header(const ReadView previous) const noexcept
-        -> filter::pHeader = 0;
+        -> cfilter::pHeader = 0;
     virtual auto Match(const Targets&) const noexcept -> Matches = 0;
     OPENTXS_NO_EXPORT virtual auto Serialize(proto::GCS& out) const noexcept
         -> bool = 0;

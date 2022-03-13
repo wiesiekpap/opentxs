@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"         // IWYU pragma: associated
-#include "1_Internal.hpp"       // IWYU pragma: associated
-#include "blockchain/Work.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                 // IWYU pragma: associated
+#include "1_Internal.hpp"               // IWYU pragma: associated
+#include "blockchain/bitcoin/Work.hpp"  // IWYU pragma: associated
 
 #include <boost/exception/exception.hpp>
 #include <iterator>
@@ -15,8 +15,8 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/NumericHash.hpp"
-#include "opentxs/blockchain/Work.hpp"
+#include "opentxs/blockchain/bitcoin/NumericHash.hpp"
+#include "opentxs/blockchain/bitcoin/Work.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"

@@ -13,7 +13,6 @@
 
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "util/Actor.hpp"
@@ -87,8 +86,6 @@ private:
 
     auto do_shutdown() noexcept -> void;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
-    auto process_reorg(Message&& msg) noexcept -> void;
-    auto process_reorg(const block::Position& parent) noexcept -> void;
     auto process_update(Message&& msg) noexcept -> void;
     auto startup() noexcept -> void {}
     auto state_normal(const Work work, Message&& msg) noexcept -> void;

@@ -25,7 +25,7 @@ Wallet::Wallet(
     const common::Database& common,
     const storage::lmdb::LMDB& lmdb,
     const blockchain::Type chain,
-    const blockchain::filter::Type filter) noexcept
+    const blockchain::cfilter::Type filter) noexcept
     : api_(api)
     , common_(common)
     , lmdb_(lmdb)
