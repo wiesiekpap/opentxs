@@ -10,6 +10,7 @@
 #include "blockchain/node/wallet/Accounts.hpp"  // IWYU pragma: associated
 
 #include <boost/smart_ptr/make_shared.hpp>
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <memory>
@@ -18,7 +19,6 @@
 
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "internal/blockchain/node/wallet/Account.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
@@ -33,6 +33,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
@@ -188,7 +189,7 @@ auto Accounts::Imp::do_reorg() noexcept -> void
                 throw std::runtime_error{"Finalize transaction failed"};
             }
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(": ")(e.what())
+            LogError()(OT_PRETTY_CLASS())(print(chain_))(": ")(e.what())
                 .Flush();
 
             OT_FAIL;
@@ -201,8 +202,7 @@ auto Accounts::Imp::do_reorg() noexcept -> void
             throw std::runtime_error{"Advance chain failed"};
         }
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(e.what())
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())(print(chain_))(" ")(e.what()).Flush();
 
         OT_FAIL;
     }
@@ -211,13 +211,13 @@ auto Accounts::Imp::do_reorg() noexcept -> void
     state_ = State::post_reorg;
 
     if (0u < reorg_->target_) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+        log_(OT_PRETTY_CLASS())(print(chain_))(
             " waiting for acknowledgements from ")(reorg_->target_)(
             " children prior to returning to normal state")
             .Flush();
         to_children_.Send(MakeWork(AccountJobs::reorg_end));
     } else {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+        log_(OT_PRETTY_CLASS())(print(chain_))(
             " no children instantiated therefore reorg can be completed "
             "immediately")
             .Flush();
@@ -235,12 +235,13 @@ auto Accounts::Imp::do_shutdown() noexcept -> void
 auto Accounts::Imp::finish_reorg() noexcept -> void
 {
     const auto& tip = reorg_->tip_;
-    LogConsole()(DisplayString(chain_))(": reorg to ")(tip.second->asHex())(
+    LogConsole()(print(chain_))(": reorg to ")(tip.second->asHex())(
         " at height ")(tip.first)(" finished")
         .Flush();
     reorg_ = std::nullopt;
     disable_automatic_processing_ = false;
     state_ = State::normal;
+    log_(OT_PRETTY_CLASS())("transitioned to normal state").Flush();
     flush_cache();
 }
 
@@ -256,7 +257,7 @@ auto Accounts::Imp::index_nym(const identifier::Nym& id) noexcept -> void
     if (3 > code.Version()) { return; }
 
     LogConsole()("Initializing payment code ")(code.asBase58())(" on ")(
-        DisplayString(chain_))
+        print(chain_))
         .Flush();
     auto accountID = NotificationStateData::calculate_id(api_, chain_, code);
     const auto& asio = api_.Network().ZeroMQ().Internal();
@@ -319,8 +320,7 @@ auto Accounts::Imp::process_block_header(Message&& in) noexcept -> void
     const auto body = in.Body();
 
     if (3 >= body.size()) {
-        LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
-            ": invalid message")
+        LogError()(OT_PRETTY_CLASS())(print(chain_))(": invalid message")
             .Flush();
 
         OT_FAIL;
@@ -351,8 +351,7 @@ auto Accounts::Imp::process_nym(const identifier::Nym& nym) noexcept -> bool
         from_children_endpoint_);
 
     if (added) {
-        LogConsole()("Initializing ")(DisplayString(chain_))(" wallet for ")(
-            nym)
+        LogConsole()("Initializing ")(print(chain_))(" wallet for ")(nym)
             .Flush();
     }
 
@@ -401,7 +400,7 @@ auto Accounts::Imp::state_normal(const Work work, Message&& msg) noexcept
         } break;
         case Work::reorg_begin_ack:
         case Work::reorg_end_ack: {
-            LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            LogError()(OT_PRETTY_CLASS())(print(chain_))(
                 ": received reorg status while in normal state")
                 .Flush();
 
@@ -411,8 +410,7 @@ auto Accounts::Imp::state_normal(const Work work, Message&& msg) noexcept
         case Work::init:
         case Work::statemachine:
         default: {
-            LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
-                ": unhandled type")
+            LogError()(OT_PRETTY_CLASS())(print(chain_))(": unhandled type")
                 .Flush();
 
             OT_FAIL;
@@ -437,7 +435,7 @@ auto Accounts::Imp::state_post_reorg(const Work work, Message&& msg) noexcept
             transition_state_normal(std::move(msg));
         } break;
         case Work::reorg_begin_ack: {
-            LogError()(OT_PRETTY_CLASS())(": wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -445,8 +443,7 @@ auto Accounts::Imp::state_post_reorg(const Work work, Message&& msg) noexcept
         }
         case Work::init:
         default: {
-            LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
-                ": unhandled type")
+            LogError()(OT_PRETTY_CLASS())(print(chain_))(": unhandled type")
                 .Flush();
 
             OT_FAIL;
@@ -470,7 +467,7 @@ auto Accounts::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
             transition_state_post_reorg(std::move(msg));
         } break;
         case Work::reorg_end_ack: {
-            LogError()(OT_PRETTY_CLASS())(": wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -478,8 +475,7 @@ auto Accounts::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         }
         case Work::init:
         default: {
-            LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
-                ": unhandled type")
+            LogError()(OT_PRETTY_CLASS())(print(chain_))(": unhandled type")
                 .Flush();
 
             OT_FAIL;
@@ -497,13 +493,14 @@ auto Accounts::Imp::transition_state_normal(Message&& in) noexcept -> void
     ++counter;
 
     if (counter < target) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(counter)(" of ")(
+        log_(OT_PRETTY_CLASS())(print(chain_))(" ")(counter)(" of ")(
             target)(" children finished with reorg")
             .Flush();
 
         return;
     } else if (counter == target) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" all ")(
+        verify_child_state(Subchain::State::normal, Account::State::normal);
+        log_(OT_PRETTY_CLASS())(print(chain_))(" all ")(
             target)(" children finished with reorg")
             .Flush();
         finish_reorg();
@@ -523,13 +520,14 @@ auto Accounts::Imp::transition_state_post_reorg(Message&& in) noexcept -> void
     ++counter;
 
     if (counter < target) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(counter)(" of ")(
+        log_(OT_PRETTY_CLASS())(print(chain_))(" ")(counter)(" of ")(
             target)(" children ready for reorg")
             .Flush();
 
         return;
     } else if (counter == target) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" all ")(
+        verify_child_state(Subchain::State::reorg, Account::State::reorg);
+        log_(OT_PRETTY_CLASS())(print(chain_))(" all ")(
             target)(" children ready for reorg")
             .Flush();
         do_reorg();
@@ -544,8 +542,7 @@ auto Accounts::Imp::transition_state_reorg(Message&& in) noexcept -> void
     const auto body = in.Body();
 
     if (6 > body.size()) {
-        LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
-            ": invalid message")
+        LogError()(OT_PRETTY_CLASS())(print(chain_))(": invalid message")
             .Flush();
 
         OT_FAIL;
@@ -563,25 +560,36 @@ auto Accounts::Imp::transition_state_reorg(Message&& in) noexcept -> void
             body.at(5).as<block::Height>(),
             api_.Factory().Data(body.at(4).Bytes())},
         reorg_children());
-    LogConsole()("Processing ")(DisplayString(chain_))(" reorg to ")(
+    LogConsole()("Processing ")(print(chain_))(" reorg to ")(
         reorg_->tip_.second->asHex())(" at height ")(reorg_->tip_.first)
         .Flush();
     disable_automatic_processing_ = true;
     state_ = State::reorg;
 
     if (0u < reorg_->target_) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+        log_(OT_PRETTY_CLASS())(print(chain_))(
             " waiting for acknowledgements from ")(reorg_->target_)(
             " children prior to executing reorg")
             .Flush();
         to_children_.Send(MakeWork(AccountJobs::reorg_begin));
     } else {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+        log_(OT_PRETTY_CLASS())(print(chain_))(
             " no children instantiated therefore reorg can be processed "
             "immediately")
             .Flush();
         do_reorg();
     }
+}
+
+auto Accounts::Imp::verify_child_state(
+    const Subchain::State sub,
+    const Account::State account) const noexcept -> void
+{
+    const auto a = [&](const auto& data) { data.second.VerifyState(account); };
+    const auto s = [&](const auto& data) { data.second->VerifyState(sub); };
+    std::for_each(accounts_.begin(), accounts_.end(), a);
+    std::for_each(
+        notification_channels_.begin(), notification_channels_.end(), s);
 }
 
 auto Accounts::Imp::work() noexcept -> bool { OT_FAIL; }

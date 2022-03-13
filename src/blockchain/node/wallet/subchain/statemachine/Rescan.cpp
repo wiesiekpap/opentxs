@@ -30,6 +30,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -123,6 +124,8 @@ auto Rescan::Imp::caught_up() const noexcept -> bool
     return last_scanned_.value_or(parent_.null_position_) ==
            filter_tip_.value_or(parent_.null_position_);
 }
+
+auto Rescan::Imp::do_shutdown() noexcept -> void { parent_p_.reset(); }
 
 auto Rescan::Imp::highest_clean(const Set<block::Position>& clean)
     const noexcept -> std::optional<block::Position>
@@ -324,7 +327,8 @@ auto Rescan::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::reorg_end:
         case Work::do_reorg: {
-            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -343,7 +347,8 @@ auto Rescan::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::key:
         case Work::statemachine:
         default: {
-            LogError()(OT_PRETTY_CLASS())("unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+                .Flush();
 
             OT_FAIL;
         }
@@ -363,7 +368,8 @@ auto Rescan::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
             transition_state_normal(std::move(msg));
         } break;
         case Work::reorg_begin: {
-            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -380,7 +386,8 @@ auto Rescan::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::init:
         case Work::key:
         default: {
-            LogError()(OT_PRETTY_CLASS())("unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+                .Flush();
 
             OT_FAIL;
         }
@@ -401,6 +408,8 @@ auto Rescan::Imp::transition_state_normal(Message&& msg) noexcept -> void
 {
     disable_automatic_processing_ = false;
     state_ = State::normal;
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" transitioned to normal state ")
+        .Flush();
     to_index_.Send(std::move(msg));
     flush_cache();
     do_work();
@@ -410,7 +419,14 @@ auto Rescan::Imp::transition_state_reorg(Message&& msg) noexcept -> void
 {
     disable_automatic_processing_ = true;
     state_ = State::reorg;
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" transitioned to reorg state ")
+        .Flush();
     to_progress_.Send(std::move(msg));
+}
+
+auto Rescan::Imp::VerifyState(const State state) const noexcept -> void
+{
+    OT_ASSERT(state == state_);
 }
 
 auto Rescan::Imp::work() noexcept -> bool
@@ -525,6 +541,11 @@ Rescan::Rescan(
     }())
 {
     imp_->Init(imp_);
+}
+
+auto Rescan::VerifyState(const State state) const noexcept -> void
+{
+    imp_->VerifyState(state);
 }
 
 Rescan::~Rescan() = default;

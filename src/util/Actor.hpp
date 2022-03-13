@@ -271,7 +271,8 @@ private:
             if (shutdown || (false == running_)) { return; }
 
             if (disable_automatic_processing_) {
-                log_(OT_PRETTY_CLASS())("processing ")(type).Flush();
+                log_(OT_PRETTY_CLASS())("processing ")(type)(" in bypass mode")
+                    .Flush();
                 downcast().pipeline(work, std::move(in));
 
                 return;

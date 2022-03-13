@@ -26,6 +26,7 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"

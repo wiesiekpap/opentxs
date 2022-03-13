@@ -217,8 +217,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
-            ": invalid message")
+        LogError()(OT_PRETTY_CLASS())(print(chain_))(": invalid message")
             .Flush();
 
         OT_FAIL;
@@ -243,8 +242,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
-                ": unhandled type")
+            LogError()(OT_PRETTY_CLASS())(print(chain_))(": unhandled type")
                 .Flush();
 
             OT_FAIL;
@@ -255,8 +253,8 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
     const auto elapsed = std::chrono::nanoseconds{Clock::now() - start};
 
     if (elapsed > limit) {
-        LogTrace()(OT_PRETTY_CLASS())(DisplayString(chain_))(": spent ")(
-            elapsed)(" processing ")(CString{print(work)})(" signal")
+        LogTrace()(OT_PRETTY_CLASS())(print(chain_))(": spent ")(
+            elapsed)(" processing ")(print(work))(" signal")
             .Flush();
     }
 }
@@ -264,7 +262,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
 auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
 {
     if (auto previous = running_.exchange(false); previous) {
-        LogDetail()("Shutting down ")(DisplayString(chain_))(" wallet").Flush();
+        LogDetail()("Shutting down ")(print(chain_))(" wallet").Flush();
         to_accounts_.Send(MakeWork(wallet::AccountsJobs::shutdown));
         pipeline_.Close();
         fee_oracle_.Shutdown();

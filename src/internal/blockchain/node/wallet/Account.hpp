@@ -54,6 +54,15 @@ namespace opentxs::blockchain::node::wallet
 class Account
 {
 public:
+    enum class State {
+        normal,
+        pre_reorg,
+        reorg,
+        post_reorg,
+    };
+
+    auto VerifyState(const State state) const noexcept -> void;
+
     auto ProcessReorg(
         const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,

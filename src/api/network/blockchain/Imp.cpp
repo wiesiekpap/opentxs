@@ -21,6 +21,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
@@ -459,7 +460,7 @@ auto BlockchainImp::start(
 
         return true;
     } else {
-        LogConsole()("Starting ")(DisplayString(type))(" client").Flush();
+        LogConsole()("Starting ")(print(type))(" client").Flush();
     }
 
     namespace p2p = opentxs::blockchain::p2p;
@@ -492,7 +493,7 @@ auto BlockchainImp::start(
                 type,
                 factory::BlockchainNetworkBitcoin(
                     api_, type, config, seednode, endpoint));
-            LogConsole()(DisplayString(type))(" client is running").Flush();
+            LogConsole()(print(type))(" client is running").Flush();
             publish_chain_state(type, true);
             auto& node = *(it->second);
 
@@ -548,8 +549,7 @@ auto BlockchainImp::stop(const Lock& lock, const Chain type) const noexcept
     sync_server_.Disable(type);
     it->second->Shutdown().get();
     networks_.erase(it);
-    LogVerbose()(OT_PRETTY_CLASS())("stopped chain ")(opentxs::print(type))
-        .Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("stopped chain ")(print(type)).Flush();
     publish_chain_state(type, false);
 
     return true;

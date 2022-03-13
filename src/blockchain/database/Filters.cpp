@@ -24,7 +24,6 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"

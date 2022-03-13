@@ -14,6 +14,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"

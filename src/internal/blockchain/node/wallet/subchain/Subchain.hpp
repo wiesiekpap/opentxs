@@ -46,6 +46,15 @@ namespace opentxs::blockchain::node::wallet
 class Subchain
 {
 public:
+    enum class State {
+        normal,
+        pre_reorg,
+        reorg,
+        post_reorg,
+    };
+
+    virtual auto VerifyState(const State state) const noexcept -> void = 0;
+
     virtual auto Init(boost::shared_ptr<SubchainStateData> me) noexcept
         -> void = 0;
     virtual auto ProcessReorg(

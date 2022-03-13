@@ -23,6 +23,11 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/Subchain.hpp"
+#include "internal/blockchain/node/wallet/subchain/statemachine/Index.hpp"
+#include "internal/blockchain/node/wallet/subchain/statemachine/Process.hpp"
+#include "internal/blockchain/node/wallet/subchain/statemachine/Progress.hpp"
+#include "internal/blockchain/node/wallet/subchain/statemachine/Rescan.hpp"
+#include "internal/blockchain/node/wallet/subchain/statemachine/Scan.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/Types.hpp"
@@ -32,6 +37,7 @@
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -158,6 +164,7 @@ public:
         block::Position& highestTested,
         Vector<ScanStatus>& out) const noexcept
         -> std::optional<block::Position>;
+    auto VerifyState(const State state) const noexcept -> void final;
 
     auto Init(boost::shared_ptr<SubchainStateData> me) noexcept -> void final;
     auto ProcessReorg(
@@ -212,13 +219,6 @@ protected:
 private:
     friend opentxs::Actor<SubchainStateData, SubchainJobs>;
 
-    enum class State {
-        normal,
-        pre_reorg,
-        reorg,
-        post_reorg,
-    };
-
     struct ReorgData {
         const std::size_t target_;
         std::size_t ready_;
@@ -236,8 +236,13 @@ private:
     network::zeromq::socket::Raw& to_children_;
     network::zeromq::socket::Raw& to_scan_;
     network::zeromq::socket::Raw& to_progress_;
-    State state_;
+    std::atomic<State> state_;
     std::optional<ReorgData> reorg_;
+    std::optional<wallet::Progress> progress_;
+    std::optional<wallet::Rescan> rescan_;
+    std::optional<wallet::Index> index_;
+    std::optional<wallet::Process> process_;
+    std::optional<wallet::Scan> scan_;
     boost::shared_ptr<SubchainStateData> me_;
 
     static auto describe(

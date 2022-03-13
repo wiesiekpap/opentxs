@@ -22,6 +22,7 @@
 #include "network/p2p/client/Server.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"

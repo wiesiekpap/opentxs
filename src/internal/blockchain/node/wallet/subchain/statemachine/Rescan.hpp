@@ -33,6 +33,13 @@ namespace opentxs::blockchain::node::wallet
 class Rescan
 {
 public:
+    enum class State {
+        normal,
+        reorg,
+    };
+
+    auto VerifyState(const State state) const noexcept -> void;
+
     Rescan(const boost::shared_ptr<const SubchainStateData>& parent) noexcept;
     Rescan() = delete;
     Rescan(const Rescan&) = delete;

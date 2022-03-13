@@ -8,12 +8,14 @@
 #include "internal/blockchain/node/wallet/subchain/statemachine/Rescan.hpp"
 
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <atomic>
 #include <optional>
 
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Actor.hpp"
@@ -53,6 +55,8 @@ namespace opentxs::blockchain::node::wallet
 class Rescan::Imp final : public Actor<Imp, SubchainJobs>
 {
 public:
+    auto VerifyState(const State state) const noexcept -> void;
+
     auto Init(boost::shared_ptr<Imp> me) noexcept -> void
     {
         signal_startup(me);
@@ -74,18 +78,13 @@ public:
 private:
     friend Actor<Imp, SubchainJobs>;
 
-    enum class State {
-        normal,
-        reorg,
-    };
-
     network::zeromq::socket::Raw& to_parent_;
     network::zeromq::socket::Raw& to_process_;
     network::zeromq::socket::Raw& to_progress_;
     network::zeromq::socket::Raw& to_index_;
-    const boost::shared_ptr<const SubchainStateData> parent_p_;
+    boost::shared_ptr<const SubchainStateData> parent_p_;
     const SubchainStateData& parent_;
-    State state_;
+    std::atomic<State> state_;
     bool active_;
     std::optional<block::Position> last_scanned_;
     std::optional<block::Position> filter_tip_;
@@ -98,7 +97,7 @@ private:
 
     auto adjust_last_scanned(
         std::optional<block::Position>&& highestClean) noexcept -> void;
-    auto do_shutdown() noexcept -> void {}
+    auto do_shutdown() noexcept -> void;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
     auto process(const Set<ScanStatus>& clean) noexcept -> void;
     auto process_filter(Message&& in) noexcept -> void;

@@ -16,6 +16,7 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/util/Container.hpp"
 

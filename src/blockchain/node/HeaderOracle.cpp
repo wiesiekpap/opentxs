@@ -22,6 +22,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"  // IWYU pragma: keep
@@ -817,7 +818,7 @@ auto HeaderOracle::Init() noexcept -> void
 
     // Remove existing checkpoint if it is set
     if (existingHeight != null.first) {
-        LogConsole()(DisplayString(chain_))(
+        LogConsole()(print(chain_))(
             ": Removing obsolete checkpoint at height ")(existingHeight)
             .Flush();
         const auto deleted = DeleteCheckpoint();
@@ -826,7 +827,7 @@ auto HeaderOracle::Init() noexcept -> void
     }
 
     if (1 < defaultHeight) {
-        LogConsole()(DisplayString(chain_))(": Updating checkpoint to hash ")(
+        LogConsole()(print(chain_))(": Updating checkpoint to hash ")(
             defaultBlockhash->asHex())(" at height ")(defaultHeight)
             .Flush();
 

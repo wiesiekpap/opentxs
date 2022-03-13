@@ -25,6 +25,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"

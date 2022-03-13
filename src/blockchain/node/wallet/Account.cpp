@@ -10,6 +10,7 @@
 #include "blockchain/node/wallet/Account.hpp"  // IWYU pragma: associated
 
 #include <boost/smart_ptr/make_shared.hpp>
+#include <algorithm>
 #include <chrono>
 #include <utility>
 
@@ -28,6 +29,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
@@ -226,7 +228,7 @@ auto Account::Imp::instantiate(
     const Subtype subchain,
     Subchains& map) noexcept -> Subchain&
 {
-    LogTrace()("Instantiating ")(DisplayString(chain_))(" subaccount ")(
+    LogTrace()("Instantiating ")(print(chain_))(" subaccount ")(
         subaccount.ID())(" ")(opentxs::print(subchain))(" subchain for ")(
         subaccount.Parent().NymID())
         .Flush();
@@ -362,6 +364,7 @@ auto Account::Imp::ready_for_normal() noexcept -> void
     disable_automatic_processing_ = false;
     reorg_ = std::nullopt;
     state_ = State::normal;
+    log_(OT_PRETTY_CLASS())("transitioned to normal state").Flush();
     to_parent_.Send(MakeWork(AccountsJobs::reorg_end_ack));
     flush_cache();
 }
@@ -369,6 +372,7 @@ auto Account::Imp::ready_for_normal() noexcept -> void
 auto Account::Imp::ready_for_reorg() noexcept -> void
 {
     state_ = State::reorg;
+    log_(OT_PRETTY_CLASS())("transitioned to reorg state").Flush();
     to_parent_.Send(MakeWork(AccountsJobs::reorg_begin_ack));
 }
 
@@ -407,7 +411,7 @@ auto Account::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::reorg_begin_ack:
         case Work::reorg_end:
         case Work::reorg_end_ack: {
-            LogError()(OT_PRETTY_CLASS())(": wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -419,7 +423,7 @@ auto Account::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::init:
         case Work::shutdown:
         default: {
-            LogError()(OT_PRETTY_CLASS())(": unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())("unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -444,7 +448,7 @@ auto Account::Imp::state_post_reorg(const Work work, Message&& msg) noexcept
         case Work::reorg_begin:
         case Work::reorg_begin_ack:
         case Work::reorg_end: {
-            LogError()(OT_PRETTY_CLASS())(": wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -452,7 +456,7 @@ auto Account::Imp::state_post_reorg(const Work work, Message&& msg) noexcept
         }
         case Work::init:
         default: {
-            LogError()(OT_PRETTY_CLASS())(": unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())("unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -477,14 +481,14 @@ auto Account::Imp::state_pre_reorg(const Work work, Message&& msg) noexcept
         case Work::reorg_begin:
         case Work::reorg_end:
         case Work::reorg_end_ack: {
-            LogError()(OT_PRETTY_CLASS())(": wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
             OT_FAIL;
         }
         default: {
-            LogError()(OT_PRETTY_CLASS())(": unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())("unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -507,14 +511,14 @@ auto Account::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::reorg_begin:
         case Work::reorg_begin_ack:
         case Work::reorg_end_ack: {
-            LogError()(OT_PRETTY_CLASS())(": wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
             OT_FAIL;
         }
         default: {
-            LogError()(OT_PRETTY_CLASS())(": unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())("unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -531,13 +535,14 @@ auto Account::Imp::transition_state_normal(Message&& in) noexcept -> void
     ++counter;
 
     if (counter < target) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(counter)(" of ")(
+        log_(OT_PRETTY_CLASS())(print(chain_))(" ")(counter)(" of ")(
             target)(" children finished with reorg")
             .Flush();
 
         return;
     } else if (counter == target) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" all ")(
+        verify_child_state(Subchain::State::normal);
+        log_(OT_PRETTY_CLASS())(print(chain_))(" all ")(
             target)(" children finished with reorg")
             .Flush();
         ready_for_normal();
@@ -552,14 +557,14 @@ auto Account::Imp::transition_state_post_reorg(Message&& in) noexcept -> void
     const auto& reorg = reorg_.value();
 
     if (0u < reorg.target_) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+        log_(OT_PRETTY_CLASS())(print(chain_))(
             " waiting for acknowledgements from ")(reorg_->target_)(
             " children prior to acknowledging reorg completion")
             .Flush();
         to_children_.Send(MakeWork(SubchainJobs::reorg_end));
         state_ = State::post_reorg;
     } else {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+        log_(OT_PRETTY_CLASS())(print(chain_))(
             " no children instantiated therefore reorg may be completed "
             "immediately")
             .Flush();
@@ -574,14 +579,14 @@ auto Account::Imp::transition_state_pre_reorg(Message&& in) noexcept -> void
     const auto& reorg = reorg_.value();
 
     if (0u < reorg.target_) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+        log_(OT_PRETTY_CLASS())(print(chain_))(
             " waiting for acknowledgements from ")(reorg_->target_)(
             " children prior to acknowledging reorg")
             .Flush();
         to_children_.Send(MakeWork(SubchainJobs::reorg_begin));
         state_ = State::pre_reorg;
     } else {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(
+        log_(OT_PRETTY_CLASS())(print(chain_))(
             " no children instantiated therefore reorg may be acknowledged "
             "immediately")
             .Flush();
@@ -599,13 +604,14 @@ auto Account::Imp::transition_state_reorg(Message&& in) noexcept -> void
     ++counter;
 
     if (counter < target) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(counter)(" of ")(
+        log_(OT_PRETTY_CLASS())(print(chain_))(" ")(counter)(" of ")(
             target)(" children ready for reorg")
             .Flush();
 
         return;
     } else if (counter == target) {
-        log_(OT_PRETTY_CLASS())(DisplayString(chain_))(" all ")(
+        verify_child_state(Subchain::State::reorg);
+        log_(OT_PRETTY_CLASS())(print(chain_))(" all ")(
             target)(" children ready for reorg")
             .Flush();
         ready_for_reorg();
@@ -613,6 +619,21 @@ auto Account::Imp::transition_state_reorg(Message&& in) noexcept -> void
 
         OT_FAIL;
     }
+}
+
+auto Account::Imp::VerifyState(const State state) const noexcept -> void
+{
+    OT_ASSERT(state == state_);
+}
+
+auto Account::Imp::verify_child_state(
+    const Subchain::State state) const noexcept -> void
+{
+    const auto cb = [&](const auto& data) { data.second->VerifyState(state); };
+    std::for_each(internal_.begin(), internal_.end(), cb);
+    std::for_each(external_.begin(), external_.end(), cb);
+    std::for_each(outgoing_.begin(), outgoing_.end(), cb);
+    std::for_each(incoming_.begin(), incoming_.end(), cb);
 }
 
 auto Account::Imp::work() noexcept -> bool { OT_FAIL; }
@@ -671,6 +692,11 @@ auto Account::ProcessReorg(
     const block::Position& parent) noexcept -> void
 {
     imp_->ProcessReorg(headerOracleLock, tx, errors, parent);
+}
+
+auto Account::VerifyState(const State state) const noexcept -> void
+{
+    imp_->VerifyState(state);
 }
 
 Account::~Account() { imp_->Shutdown(); }

@@ -14,6 +14,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/core/Armored.hpp"

@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/NotificationStateData.hpp"  // IWYU pragma: associated
 
+#include <boost/smart_ptr/shared_ptr.hpp>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -124,7 +125,7 @@ auto NotificationStateData::handle_confirmed_matches(
 {
     const auto& [utxo, general] = confirmed;
     log_(OT_PRETTY_CLASS())(general.size())(" confirmed matches for ")(
-        pc_display_)(" on ")(DisplayString(node_.Chain()))
+        pc_display_)(" on ")(print(node_.Chain()))
         .Flush();
 
     if (0u == general.size()) { return; }
@@ -134,7 +135,7 @@ auto NotificationStateData::handle_confirmed_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        log_(OT_PRETTY_CLASS())(DisplayString(node_.Chain()))(" transaction ")(
+        log_(OT_PRETTY_CLASS())(print(node_.Chain()))(" transaction ")(
             txid->asHex())(" contains a version ")(
             version)(" notification for ")(pc_display_)
             .Flush();
@@ -160,8 +161,8 @@ auto NotificationStateData::handle_mempool_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        log_(OT_PRETTY_CLASS())(DisplayString(node_.Chain()))(
-            " mempool transaction ")(txid->asHex())(" contains a version ")(
+        log_(OT_PRETTY_CLASS())(print(node_.Chain()))(" mempool transaction ")(
+            txid->asHex())(" contains a version ")(
             version)(" notification for ")(pc_display_)
             .Flush();
         process(match, *tx, reason);
@@ -197,7 +198,7 @@ auto NotificationStateData::init_contacts() noexcept -> void
                 // TODO use allocator when we upgrade to c++20
                 auto out = std::stringstream{};
                 out << "Generate keys for a ";
-                out << DisplayString(node_.Chain());
+                out << print(node_.Chain());
                 out << " payment code account for ";
                 out << api.ContactName(id);
 
@@ -266,8 +267,8 @@ auto NotificationStateData::process(
             if (0u == sender.Version()) { continue; }
 
             log_(OT_PRETTY_CLASS())("decoded incoming notification from ")(
-                sender.asBase58())(" on ")(DisplayString(node_.Chain()))(
-                " for ")(pc_display_)
+                sender.asBase58())(" on ")(print(node_.Chain()))(" for ")(
+                pc_display_)
                 .Flush();
             process(sender, reason);
         }

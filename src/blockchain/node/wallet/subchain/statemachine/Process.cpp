@@ -96,6 +96,8 @@ Process::Imp::Imp(
     txid_cache_.reserve(1024);
 }
 
+auto Process::Imp::do_shutdown() noexcept -> void { parent_p_.reset(); }
+
 auto Process::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
     switch (state_) {
@@ -266,7 +268,8 @@ auto Process::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::reorg_end:
         case Work::do_reorg: {
-            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -284,7 +287,8 @@ auto Process::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::key:
         case Work::statemachine:
         default: {
-            LogError()(OT_PRETTY_CLASS())("unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+                .Flush();
 
             OT_FAIL;
         }
@@ -305,7 +309,8 @@ auto Process::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
             transition_state_normal(std::move(msg));
         } break;
         case Work::reorg_begin: {
-            LogError()(OT_PRETTY_CLASS())("wrong state for message ")(
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " wrong state for message ")(
                 CString{print(work), get_allocator()})
                 .Flush();
 
@@ -321,7 +326,8 @@ auto Process::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::init:
         case Work::key:
         default: {
-            LogError()(OT_PRETTY_CLASS())("unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+                .Flush();
 
             OT_FAIL;
         }
@@ -332,6 +338,8 @@ auto Process::Imp::transition_state_normal(Message&& msg) noexcept -> void
 {
     disable_automatic_processing_ = false;
     state_ = State::normal;
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" transitioned to normal state ")
+        .Flush();
     to_scan_.Send(std::move(msg));
     flush_cache();
     do_work();
@@ -341,7 +349,14 @@ auto Process::Imp::transition_state_reorg(Message&& msg) noexcept -> void
 {
     disable_automatic_processing_ = true;
     state_ = State::reorg;
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" transitioned to reorg state ")
+        .Flush();
     to_index_.Send(std::move(msg));
+}
+
+auto Process::Imp::VerifyState(const State state) const noexcept -> void
+{
+    OT_ASSERT(state == state_);
 }
 
 auto Process::Imp::work() noexcept -> bool
@@ -378,6 +393,11 @@ Process::Process(
     }())
 {
     imp_->Init(imp_);
+}
+
+auto Process::VerifyState(const State state) const noexcept -> void
+{
+    imp_->VerifyState(state);
 }
 
 Process::~Process() = default;

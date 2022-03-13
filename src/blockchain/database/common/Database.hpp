@@ -24,6 +24,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

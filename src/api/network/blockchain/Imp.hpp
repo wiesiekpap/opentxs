@@ -28,6 +28,7 @@
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Amount.hpp"

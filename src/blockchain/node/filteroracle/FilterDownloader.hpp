@@ -137,7 +137,7 @@ private:
 
         OT_ASSERT(saved);
 
-        LogDetail()(DisplayString(chain_))(" cfilter chain updated to height ")(
+        LogDetail()(print(chain_))(" cfilter chain updated to height ")(
             position.first)
             .Flush();
         notify_(type_, position);

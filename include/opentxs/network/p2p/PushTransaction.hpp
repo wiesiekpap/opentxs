@@ -11,6 +11,7 @@
 
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/util/Bytes.hpp"
 

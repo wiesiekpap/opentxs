@@ -11,10 +11,12 @@
 
 #include <cstring>
 #include <iterator>
+#include <type_traits>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"

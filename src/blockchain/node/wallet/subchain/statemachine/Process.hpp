@@ -9,12 +9,14 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <robin_hood.h>
+#include <atomic>
 #include <cstddef>
 #include <queue>
 
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
@@ -55,6 +57,8 @@ namespace opentxs::blockchain::node::wallet
 class Process::Imp final : public Actor<Imp, SubchainJobs>
 {
 public:
+    auto VerifyState(const State state) const noexcept -> void;
+
     auto Init(boost::shared_ptr<Imp> me) noexcept -> void
     {
         signal_startup(me);
@@ -76,11 +80,6 @@ public:
 private:
     friend Actor<Imp, SubchainJobs>;
 
-    enum class State {
-        normal,
-        reorg,
-    };
-
     using Waiting = Deque<block::Position>;
     using Downloading = Map<block::Position, BlockOracle::BitcoinBlockFuture>;
     using Index = Map<block::pHash, Downloading::iterator>;
@@ -90,16 +89,16 @@ private:
     network::zeromq::socket::Raw& to_parent_;
     network::zeromq::socket::Raw& to_scan_;
     network::zeromq::socket::Raw& to_index_;
-    const boost::shared_ptr<const SubchainStateData> parent_p_;
+    boost::shared_ptr<const SubchainStateData> parent_p_;
     const SubchainStateData& parent_;
-    State state_;
+    std::atomic<State> state_;
     Waiting waiting_;
     Downloading downloading_;
     Index index_;
     Downloading downloaded_;
     robin_hood::unordered_flat_set<block::pHash> txid_cache_;
 
-    auto do_shutdown() noexcept -> void {}
+    auto do_shutdown() noexcept -> void;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
     auto process_block(Message&& in) noexcept -> void;
     auto process_block(const block::Hash& block) noexcept -> void;

@@ -12,6 +12,7 @@
 #include <exception>
 #include <optional>
 #include <stdexcept>
+#include <string_view>
 #include <tuple>
 
 #include "blockchain/DownloadManager.hpp"
@@ -26,6 +27,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/GCS.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -111,7 +113,7 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
 
         try {
             LogTrace()(OT_PRETTY_CLASS())("Calculating cfheader for ")(
-                DisplayString(chain_))(" block at height ")(height)
+                print(chain_))(" block at height ")(height)
                 .Flush();
             auto& [blockHash, filterHeader, filterHashView] = data.header_data_;
             auto& previous = task.previous_;
@@ -120,7 +122,7 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
 
             if (auto status = previous.wait_for(zero); State::ready != status) {
                 LogError()(OT_PRETTY_CLASS())("Timeout waiting for previous ")(
-                    DisplayString(chain_))(" cfheader #")(height - 1)
+                    print(chain_))(" cfheader #")(height - 1)
                     .Flush();
 
                 throw std::runtime_error("timeout");
@@ -133,7 +135,7 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
 
             if (filterHeader->empty()) {
                 LogError()(OT_PRETTY_CLASS())("failed to calculate ")(
-                    DisplayString(chain_))(" cfheader #")(height)
+                    print(chain_))(" cfheader #")(height)
                     .Flush();
 
                 throw std::runtime_error("Failed to calculate cfheader");
@@ -141,7 +143,7 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
 
             LogTrace()(OT_PRETTY_CLASS())(
                 "Finished calculating cfheader and cfilter "
-                "for ")(DisplayString(chain_))(" block at height ")(height)
+                "for ")(print(chain_))(" block at height ")(height)
                 .Flush();
             task.process(filter::pHeader{filterHeader});
         } catch (...) {
@@ -350,7 +352,9 @@ auto FilterOracle::BlockIndexer::queue_processing(
             db_.StoreFilters(type_, headers, filters, tip->position_);
 
         if (false == stored) {
-            throw std::runtime_error(DisplayString(chain_) + " database error");
+            const auto error = CString{print(chain_)} + " database error";
+
+            throw std::runtime_error{error.c_str()};
         }
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
@@ -390,7 +394,7 @@ auto FilterOracle::BlockIndexer::update_tip(
 
     OT_ASSERT(saved);
 
-    LogDetail()(DisplayString(chain_))(
+    LogDetail()(print(chain_))(
         " cfheader and cfilter chain updated to height ")(position.first)
         .Flush();
     notify_(type_, position);

@@ -58,6 +58,14 @@ if(OT_BLOCKCHAIN_EXPORT)
   )
   target_link_libraries(opentxs-common PRIVATE lmdb)
   target_link_libraries(opentxs PUBLIC lmdb)
+else()
+  # TODO move to appropriate subdirectories
+  list(
+    APPEND
+    cxx-install-headers
+    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Types.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/Types.hpp"
+  )
 endif()
 
 target_sources(opentxs-common PRIVATE ${cxx-install-headers})
