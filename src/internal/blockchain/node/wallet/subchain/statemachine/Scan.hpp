@@ -7,7 +7,7 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -37,9 +37,12 @@ public:
         init,
         normal,
         reorg,
+        shutdown,
     };
 
     auto VerifyState(const State state) const noexcept -> void;
+
+    auto ProcessReorg(const block::Position& parent) noexcept -> void;
 
     Scan(const boost::shared_ptr<const SubchainStateData>& parent) noexcept;
     Scan() = delete;

@@ -16,6 +16,7 @@ namespace opentxs::blockchain::node::wallet
 enum class WalletJobs : OTZMQWorkType {
     shutdown = value(WorkType::Shutdown),
     init = OT_ZMQ_INIT_SIGNAL,
+    shutdown_ready = OT_ZMQ_ACKNOWLEDGE_SHUTDOWN,
     statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
 };
 
@@ -28,6 +29,8 @@ enum class AccountsJobs : OTZMQWorkType {
     reorg_begin_ack = OT_ZMQ_INTERNAL_SIGNAL + 2,
     reorg_end_ack = OT_ZMQ_INTERNAL_SIGNAL + 4,
     init = OT_ZMQ_INIT_SIGNAL,
+    shutdown_begin = OT_ZMQ_PREPARE_SHUTDOWN,
+    shutdown_ready = OT_ZMQ_ACKNOWLEDGE_SHUTDOWN,
     statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
 };
 
@@ -41,6 +44,8 @@ enum class AccountJobs : OTZMQWorkType {
     reorg_end_ack = OT_ZMQ_INTERNAL_SIGNAL + 4,
     init = OT_ZMQ_INIT_SIGNAL,
     key = OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL,
+    shutdown_begin = OT_ZMQ_PREPARE_SHUTDOWN,
+    shutdown_ready = OT_ZMQ_ACKNOWLEDGE_SHUTDOWN,
     statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
 };
 
@@ -55,10 +60,11 @@ enum class SubchainJobs : OTZMQWorkType {
     reorg_end = OT_ZMQ_INTERNAL_SIGNAL + 3,
     reorg_end_ack = OT_ZMQ_INTERNAL_SIGNAL + 4,
     startup = OT_ZMQ_INTERNAL_SIGNAL + 5,
-    do_reorg = OT_ZMQ_INTERNAL_SIGNAL + 6,
-    update = OT_ZMQ_INTERNAL_SIGNAL + 7,
+    update = OT_ZMQ_INTERNAL_SIGNAL + 6,
     init = OT_ZMQ_INIT_SIGNAL,
     key = OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL,
+    shutdown_begin = OT_ZMQ_PREPARE_SHUTDOWN,
+    shutdown_ready = OT_ZMQ_ACKNOWLEDGE_SHUTDOWN,
     statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
 };
 

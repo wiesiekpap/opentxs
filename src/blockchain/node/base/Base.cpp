@@ -47,7 +47,6 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/blockchain/SendResult.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
@@ -59,6 +58,7 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/blockchain/node/SendResult.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -195,7 +195,7 @@ Base::Base(
     , filter_type_([&] {
         if (config.generate_cfilters_ || config.use_sync_server_) {
 
-            return filter::Type::ES;
+            return cfilter::Type::ES;
         }
 
         return blockchain::internal::DefaultFilter(chain_);

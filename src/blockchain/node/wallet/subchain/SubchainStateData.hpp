@@ -31,11 +31,10 @@
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
-#include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
@@ -134,7 +133,7 @@ public:
     const OTIdentifier id_;
     const Subchain subchain_;
     const Type chain_;
-    const filter::Type filter_type_;
+    const cfilter::Type filter_type_;
     const CString name_;
     const SubchainIndex db_key_;
     const block::Position null_position_;
@@ -148,7 +147,7 @@ public:
     const CString to_progress_endpoint_;
 
     auto IndexElement(
-        const filter::Type type,
+        const cfilter::Type type,
         const blockchain::crypto::Element& input,
         const Bip32Index index,
         WalletDatabase::ElementMap& output) const noexcept -> void;
@@ -206,7 +205,7 @@ protected:
         const node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const crypto::SubaccountType accountType,
-        const filter::Type filter,
+        const cfilter::Type filter,
         const Subchain subchain,
         const network::zeromq::BatchID batch,
         OTNymID&& owner,
@@ -281,16 +280,21 @@ private:
         const block::Position ancestor) noexcept -> void;
     auto do_shutdown() noexcept -> void;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
+    auto process_shutdown_begin(Message&& msg) noexcept -> void;
+    auto process_shutdown_ready(Message&& msg) noexcept -> void;
     auto ready_for_normal() noexcept -> void;
     auto ready_for_reorg() noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto state_post_reorg(const Work work, Message&& msg) noexcept -> void;
     auto state_pre_reorg(const Work work, Message&& msg) noexcept -> void;
+    auto state_pre_shutdown(const Work work, Message&& msg) noexcept -> void;
     auto state_reorg(const Work work, Message&& msg) noexcept -> void;
     auto transition_state_normal(Message&& in) noexcept -> void;
     auto transition_state_post_reorg(Message&& in) noexcept -> void;
     auto transition_state_pre_reorg(Message&& in) noexcept -> void;
+    auto transition_state_pre_shutdown(Message&& in) noexcept -> void;
     auto transition_state_reorg(Message&& in) noexcept -> void;
+    auto transition_state_shutdown(Message&& in) noexcept -> void;
 
     SubchainStateData(
         const api::Session& api,
@@ -298,7 +302,7 @@ private:
         const node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const crypto::SubaccountType accountType,
-        const filter::Type filter,
+        const cfilter::Type filter,
         const Subchain subchain,
         const network::zeromq::BatchID batch,
         OTNymID&& owner,

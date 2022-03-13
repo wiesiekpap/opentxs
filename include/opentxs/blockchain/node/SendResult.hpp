@@ -5,12 +5,12 @@
 
 #pragma once
 
-#include "opentxs/Version.hpp"           // IWYU pragma: associated
-#include "opentxs/blockchain/Types.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"                // IWYU pragma: associated
+#include "opentxs/blockchain/node/Types.hpp"  // IWYU pragma: associated
 
 #include <limits>
 
-namespace opentxs::blockchain
+namespace opentxs::blockchain::node
 {
 enum class SendResult : TypeEnum {
     UnspecifiedError = 0,
@@ -30,4 +30,4 @@ enum class SendResult : TypeEnum {
     SendFailed = 14,
     Sent = std::numeric_limits<TypeEnum>::max(),
 };
-}  // namespace opentxs::blockchain
+}  // namespace opentxs::blockchain::node

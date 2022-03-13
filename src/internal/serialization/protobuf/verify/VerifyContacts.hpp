@@ -7,8 +7,8 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <utility>
 #include <string_view>
+#include <utility>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Contact.hpp"

@@ -23,8 +23,8 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
@@ -54,7 +54,7 @@ DeterministicStateData::DeterministicStateData(
     const node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
     const crypto::Deterministic& subaccount,
-    const filter::Type filter,
+    const cfilter::Type filter,
     const Subchain subchain,
     const network::zeromq::BatchID batch,
     const std::string_view fromParent,

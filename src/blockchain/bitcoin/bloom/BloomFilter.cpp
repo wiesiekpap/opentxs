@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                // IWYU pragma: associated
-#include "1_Internal.hpp"              // IWYU pragma: associated
-#include "blockchain/BloomFilter.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                              // IWYU pragma: associated
+#include "1_Internal.hpp"                            // IWYU pragma: associated
+#include "blockchain/bitcoin/bloom/BloomFilter.hpp"  // IWYU pragma: associated
 
 #include <boost/endian/buffers.hpp>
 #include <algorithm>
@@ -24,7 +24,7 @@
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/blockchain/BloomFilter.hpp"
+#include "opentxs/blockchain/bitcoin/bloom/BloomFilter.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"

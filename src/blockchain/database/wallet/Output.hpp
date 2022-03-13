@@ -19,7 +19,6 @@
 
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/Types.hpp"

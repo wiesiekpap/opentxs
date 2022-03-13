@@ -14,7 +14,6 @@
 #include <chrono>
 #include <cstddef>
 #include <limits>
-#include <string_view>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
@@ -30,7 +29,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -44,6 +43,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -113,9 +113,29 @@ auto Scan::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
         case State::reorg: {
             state_reorg(work, std::move(msg));
         } break;
+        case State::shutdown: {
+            // NOTE do not process any messages
+        } break;
         default: {
             OT_FAIL;
         }
+    }
+}
+
+auto Scan::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
+{
+    if (last_scanned_.has_value() && (last_scanned_.value() > parent)) {
+        log_(OT_PRETTY_CLASS())(parent_.name_)(" last scanned reset to ")(
+            opentxs::print(parent))
+            .Flush();
+        last_scanned_ = parent;
+    }
+
+    if (filter_tip_.has_value() && (filter_tip_.value() > parent)) {
+        log_(OT_PRETTY_CLASS())(parent_.name_)(" filter tip reset to ")(
+            opentxs::print(parent))
+            .Flush();
+        filter_tip_ = parent;
     }
 }
 
@@ -129,7 +149,7 @@ auto Scan::Imp::process_filter(Message&& in) noexcept -> void
 
     if (parent_.chain_ != chain) { return; }
 
-    const auto type = body.at(2).as<filter::Type>();
+    const auto type = body.at(2).as<cfilter::Type>();
 
     if (type != parent_.node_.FilterOracleInternal().DefaultType()) { return; }
 
@@ -145,35 +165,6 @@ auto Scan::Imp::process_filter(block::Position&& tip) noexcept -> void
         .Flush();
     filter_tip_ = std::move(tip);
     do_work();
-}
-
-auto Scan::Imp::process_reorg(Message&& msg) noexcept -> void
-{
-    const auto body = msg.Body();
-
-    OT_ASSERT(2 < body.size());
-
-    const auto parent = block::Position{
-        body.at(1).as<block::Height>(),
-        parent_.api_.Factory().Data(body.at(2))};
-    process_reorg(parent);
-}
-
-auto Scan::Imp::process_reorg(const block::Position& parent) noexcept -> void
-{
-    if (last_scanned_.has_value() && (last_scanned_.value() > parent)) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" last scanned reset to ")(
-            opentxs::print(parent))
-            .Flush();
-        last_scanned_ = parent;
-    }
-
-    if (filter_tip_.has_value() && (filter_tip_.value() > parent)) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" filter tip reset to ")(
-            opentxs::print(parent))
-            .Flush();
-        filter_tip_ = parent;
-    }
 }
 
 auto Scan::Imp::process_startup(Message&& msg) noexcept -> void
@@ -225,17 +216,16 @@ auto Scan::Imp::state_init(const Work work, Message&& msg) noexcept -> void
         case Work::shutdown:
         case Work::filter:
         case Work::reorg_begin:
+        case Work::shutdown_begin:
         case Work::statemachine: {
-            log_(OT_PRETTY_CLASS())(parent_.name_)(
-                " deferring message processing until startup message received")
+            log_(OT_PRETTY_CLASS())(parent_.name_)(" deferring ")(print(work))(
+                " message processing until startup message received")
                 .Flush();
             defer(std::move(msg));
         } break;
-        case Work::reorg_end:
-        case Work::do_reorg: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
-                " wrong state for message ")(
-                CString{print(work), get_allocator()})
+        case Work::reorg_end: {
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(" wrong state for ")(
+                print(work))(" message")
                 .Flush();
 
             OT_FAIL;
@@ -249,8 +239,10 @@ auto Scan::Imp::state_init(const Work work, Message&& msg) noexcept -> void
         case Work::reorg_end_ack:
         case Work::init:
         case Work::key:
+        case Work::shutdown_ready:
         default: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " unhandled message type ")(static_cast<OTZMQWorkType>(work))
                 .Flush();
 
             OT_FAIL;
@@ -268,22 +260,18 @@ auto Scan::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
             transition_state_reorg(std::move(msg));
         } break;
         case Work::reorg_end:
-        case Work::do_reorg: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
-                " wrong state for message ")(
-                CString{print(work), get_allocator()})
-                .Flush();
-
-            OT_FAIL;
-        }
         case Work::startup: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
-                " wrong state for message ")(
-                CString{print(work), get_allocator()})
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(" wrong state for ")(
+                print(work))(" message")
                 .Flush();
 
             OT_FAIL;
         }
+        case Work::shutdown_begin: {
+            state_ = State::shutdown;
+            parent_p_.reset();
+            to_process_.Send(std::move(msg));
+        } break;
         case Work::shutdown:
         case Work::mempool:
         case Work::block:
@@ -291,9 +279,11 @@ auto Scan::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::reorg_end_ack:
         case Work::init:
         case Work::key:
+        case Work::shutdown_ready:
         case Work::statemachine:
         default: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " unhandled message type ")(static_cast<OTZMQWorkType>(work))
                 .Flush();
 
             OT_FAIL;
@@ -307,38 +297,33 @@ auto Scan::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::shutdown:
         case Work::filter:
         case Work::statemachine: {
+            log_(OT_PRETTY_CLASS())(parent_.name_)(" deferring ")(print(work))(
+                " message processing until reorg is complete")
+                .Flush();
             defer(std::move(msg));
         } break;
         case Work::reorg_end: {
             transition_state_normal(std::move(msg));
         } break;
-        case Work::reorg_begin: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
-                " wrong state for message ")(
-                CString{print(work), get_allocator()})
+        case Work::reorg_begin:
+        case Work::startup:
+        case Work::shutdown_begin: {
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(" wrong state for ")(
+                print(work))(" message")
                 .Flush();
 
             OT_FAIL;
         }
-        case Work::startup: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
-                " wrong state for message ")(
-                CString{print(work), get_allocator()})
-                .Flush();
-
-            OT_FAIL;
-        }
-        case Work::do_reorg: {
-            process_reorg(std::move(msg));
-        } break;
         case Work::mempool:
         case Work::block:
         case Work::reorg_begin_ack:
         case Work::reorg_end_ack:
         case Work::init:
         case Work::key:
+        case Work::shutdown_ready:
         default: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " unhandled message type ")(static_cast<OTZMQWorkType>(work))
                 .Flush();
 
             OT_FAIL;
@@ -446,6 +431,11 @@ Scan::Scan(const boost::shared_ptr<const SubchainStateData>& parent) noexcept
     }())
 {
     imp_->Init(imp_);
+}
+
+auto Scan::ProcessReorg(const block::Position& parent) noexcept -> void
+{
+    imp_->ProcessReorg(parent);
 }
 
 auto Scan::VerifyState(const State state) const noexcept -> void

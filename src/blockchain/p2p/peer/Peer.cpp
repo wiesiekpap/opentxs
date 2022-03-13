@@ -17,6 +17,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/asio/Socket.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/Pipeline.hpp"

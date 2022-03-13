@@ -239,8 +239,7 @@ struct Output::Imp {
                     if (change_state(
                             lock, tx, outpoint, existing, consumed, block)) {
                         LogTrace()(OT_PRETTY_CLASS())("output ")(
-                            outpoint.str())(" marked as ")(
-                            opentxs::print(consumed))
+                            outpoint.str())(" marked as ")(print(consumed))
                             .Flush();
                     } else {
                         LogError()(OT_PRETTY_CLASS())(
@@ -1409,14 +1408,14 @@ private:
                 return change_state(lock, tx, id, existing, newState, blank_);
             } else if (state == newState) {
                 LogVerbose()(OT_PRETTY_CLASS())("Warning: outpoint ")(id.str())(
-                    " already in desired state: ")(opentxs::print(newState))
+                    " already in desired state: ")(print(newState))
                     .Flush();
 
                 return true;
             } else {
                 LogError()(OT_PRETTY_CLASS())("incorrect state for outpoint ")(
-                    id.str())(". Expected: ")(opentxs::print(oldState))(
-                    ", actual: ")(opentxs::print(state))
+                    id.str())(". Expected: ")(print(oldState))(", actual: ")(
+                    print(state))
                     .Flush();
 
                 return false;
@@ -1555,11 +1554,11 @@ private:
 
                 if (changed) {
                     LogTrace()(OT_PRETTY_CLASS())("Updated ")(outpoint.str())(
-                        " to state ")(opentxs::print(state))
+                        " to state ")(print(state))
                         .Flush();
                 } else {
                     LogError()(OT_PRETTY_CLASS())("Failed to update ")(
-                        outpoint.str())(" to state ")(opentxs::print(state))
+                        outpoint.str())(" to state ")(print(state))
                         .Flush();
 
                     return false;

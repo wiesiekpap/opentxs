@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <chrono>
 #include <memory>
-#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -40,6 +39,7 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -107,8 +107,39 @@ auto Process::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
         case State::reorg: {
             state_reorg(work, std::move(msg));
         } break;
+        case State::shutdown: {
+            // NOTE do not process any messages
+        } break;
         default: {
             OT_FAIL;
+        }
+    }
+}
+
+auto Process::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
+{
+    txid_cache_.clear();
+    waiting_.erase(
+        std::remove_if(
+            waiting_.begin(),
+            waiting_.end(),
+            [&](const auto& pos) { return pos > parent; }),
+        waiting_.end());
+
+    {
+        auto erase{false};
+        auto& map = downloading_;
+
+        for (auto i = map.begin(), end = map.end(); i != end;) {
+            const auto& [position, future] = *i;
+
+            if (erase || (position > parent)) {
+                erase = true;
+                index_.erase(position.second);
+                i = map.erase(i);
+            } else {
+                ++i;
+            }
         }
     }
 }
@@ -188,46 +219,6 @@ auto Process::Imp::process_mempool(Message&& in) noexcept -> void
     }
 }
 
-auto Process::Imp::process_reorg(Message&& msg) noexcept -> void
-{
-    const auto body = msg.Body();
-
-    OT_ASSERT(2 < body.size());
-
-    const auto parent = block::Position{
-        body.at(1).as<block::Height>(),
-        parent_.api_.Factory().Data(body.at(2))};
-    process_reorg(parent);
-}
-
-auto Process::Imp::process_reorg(const block::Position& parent) noexcept -> void
-{
-    txid_cache_.clear();
-    waiting_.erase(
-        std::remove_if(
-            waiting_.begin(),
-            waiting_.end(),
-            [&](const auto& pos) { return pos > parent; }),
-        waiting_.end());
-
-    {
-        auto erase{false};
-        auto& map = downloading_;
-
-        for (auto i = map.begin(), end = map.end(); i != end;) {
-            const auto& [position, future] = *i;
-
-            if (erase || (position > parent)) {
-                erase = true;
-                index_.erase(position.second);
-                i = map.erase(i);
-            } else {
-                ++i;
-            }
-        }
-    }
-}
-
 auto Process::Imp::process_update(Message&& msg) noexcept -> void
 {
     auto dirty = Vector<ScanStatus>{get_allocator()};
@@ -266,17 +257,20 @@ auto Process::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::reorg_begin: {
             transition_state_reorg(std::move(msg));
         } break;
-        case Work::reorg_end:
-        case Work::do_reorg: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
-                " wrong state for message ")(
-                CString{print(work), get_allocator()})
+        case Work::reorg_end: {
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(" wrong state for ")(
+                print(work))(" message")
                 .Flush();
 
             OT_FAIL;
         }
         case Work::update: {
             process_update(std::move(msg));
+        } break;
+        case Work::shutdown_begin: {
+            state_ = State::shutdown;
+            parent_p_.reset();
+            to_index_.Send(std::move(msg));
         } break;
         case Work::shutdown:
         case Work::filter:
@@ -285,9 +279,11 @@ auto Process::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::startup:
         case Work::init:
         case Work::key:
+        case Work::shutdown_ready:
         case Work::statemachine:
         default: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " unhandled message type ")(static_cast<OTZMQWorkType>(work))
                 .Flush();
 
             OT_FAIL;
@@ -303,30 +299,32 @@ auto Process::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::block:
         case Work::update:
         case Work::statemachine: {
+            log_(OT_PRETTY_CLASS())(parent_.name_)(" deferring ")(print(work))(
+                " message processing until reorg is complete")
+                .Flush();
             defer(std::move(msg));
         } break;
         case Work::reorg_end: {
             transition_state_normal(std::move(msg));
         } break;
-        case Work::reorg_begin: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
-                " wrong state for message ")(
-                CString{print(work), get_allocator()})
+        case Work::reorg_begin:
+        case Work::shutdown_begin: {
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(" wrong state for ")(
+                print(work))(" message")
                 .Flush();
 
             OT_FAIL;
         }
-        case Work::do_reorg: {
-            process_reorg(std::move(msg));
-        } break;
         case Work::filter:
         case Work::reorg_begin_ack:
         case Work::reorg_end_ack:
         case Work::startup:
         case Work::init:
         case Work::key:
+        case Work::shutdown_ready:
         default: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " unhandled message type ")(static_cast<OTZMQWorkType>(work))
                 .Flush();
 
             OT_FAIL;
@@ -393,6 +391,11 @@ Process::Process(
     }())
 {
     imp_->Init(imp_);
+}
+
+auto Process::ProcessReorg(const block::Position& parent) noexcept -> void
+{
+    imp_->ProcessReorg(parent);
 }
 
 auto Process::VerifyState(const State state) const noexcept -> void

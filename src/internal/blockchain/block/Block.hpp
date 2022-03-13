@@ -10,8 +10,8 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -72,10 +72,10 @@ namespace opentxs::blockchain::block::internal
 {
 struct Block : virtual public block::Block {
     virtual auto CalculateSize() const noexcept -> std::size_t = 0;
-    virtual auto ExtractElements(const filter::Type style) const noexcept
+    virtual auto ExtractElements(const cfilter::Type style) const noexcept
         -> UnallocatedVector<Space> = 0;
     virtual auto FindMatches(
-        const filter::Type type,
+        const cfilter::Type type,
         const Patterns& txos,
         const Patterns& elements) const noexcept -> Matches = 0;
 

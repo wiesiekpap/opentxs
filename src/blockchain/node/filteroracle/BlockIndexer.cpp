@@ -26,7 +26,8 @@
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/blockchain/GCS.hpp"
+#include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
@@ -51,13 +52,13 @@ FilterOracle::BlockIndexer::BlockIndexer(
     const internal::Network& node,
     FilterOracle& parent,
     const blockchain::Type chain,
-    const filter::Type type,
+    const cfilter::Type type,
     const UnallocatedCString& shutdown,
     const NotifyCallback& notify) noexcept
     : BlockDMFilter(
           [&] { return db.FilterTip(type); }(),
           [&] {
-              auto promise = std::promise<filter::pHeader>{};
+              auto promise = std::promise<cfilter::pHeader>{};
               const auto tip = db.FilterTip(type);
               promise.set_value(db.LoadFilterHeader(type, tip.second->Bytes()));
 
@@ -145,7 +146,7 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
                 "Finished calculating cfheader and cfilter "
                 "for ")(print(chain_))(" block at height ")(height)
                 .Flush();
-            task.process(filter::pHeader{filterHeader});
+            task.process(cfilter::pHeader{filterHeader});
         } catch (...) {
             task.process(std::current_exception());
             ++failures;
@@ -287,7 +288,7 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
         }
 
         if (filter && (false == header->empty())) {
-            auto promise = std::promise<filter::pHeader>{};
+            auto promise = std::promise<cfilter::pHeader>{};
             promise.set_value(std::move(header));
             prior.emplace(std::move(first), promise.get_future());
             searching = false;
@@ -368,7 +369,7 @@ auto FilterOracle::BlockIndexer::reset_to_genesis() noexcept -> void
     LogError()(OT_PRETTY_CLASS())("Performing full reset").Flush();
     static const auto genesis =
         block::Position{0, header_.GenesisBlockHash(chain_)};
-    auto promise = std::promise<filter::pHeader>{};
+    auto promise = std::promise<cfilter::pHeader>{};
     promise.set_value(db_.LoadFilterHeader(type_, genesis.second->Bytes()));
     Reset(genesis, promise.get_future());
 }
@@ -384,7 +385,7 @@ auto FilterOracle::BlockIndexer::shutdown(std::promise<void>& promise) noexcept
 
 auto FilterOracle::BlockIndexer::update_tip(
     const Position& position,
-    const filter::pHeader&) const noexcept -> void
+    const cfilter::pHeader&) const noexcept -> void
 {
     auto saved = db_.SetFilterTip(type_, position);
 

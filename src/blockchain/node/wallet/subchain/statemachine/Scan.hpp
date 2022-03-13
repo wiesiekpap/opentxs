@@ -14,7 +14,6 @@
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
@@ -95,8 +94,6 @@ private:
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
     auto process_filter(Message&& in) noexcept -> void;
     auto process_filter(block::Position&& tip) noexcept -> void;
-    auto process_reorg(Message&& msg) noexcept -> void;
-    auto process_reorg(const block::Position& parent) noexcept -> void;
     auto process_startup(Message&& msg) noexcept -> void;
     auto scan(Vector<ScanStatus>& out) noexcept -> void;
     auto startup() noexcept -> void;

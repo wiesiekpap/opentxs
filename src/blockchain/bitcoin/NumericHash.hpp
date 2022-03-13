@@ -9,7 +9,7 @@
 #include <cstddef>
 #include <iosfwd>
 
-#include "opentxs/blockchain/NumericHash.hpp"
+#include "opentxs/blockchain/bitcoin/NumericHash.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace bmp = boost::multiprecision;

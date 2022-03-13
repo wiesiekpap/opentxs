@@ -29,11 +29,12 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
-#include "opentxs/blockchain/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
@@ -79,9 +80,9 @@ struct Test_BitcoinBlock : public ::testing::Test {
 
     auto CompareToOracle(
         const ot::blockchain::Type chain,
-        const ot::blockchain::filter::Type filterType,
+        const ot::blockchain::cfilter::Type filterType,
         const ot::Data& filter,
-        const ot::blockchain::filter::Header& header) const -> bool
+        const ot::blockchain::cfilter::Header& header) const -> bool
     {
         constexpr auto seednode{"do not init peers"};
         const auto started = api_.Network().Blockchain().Start(chain, seednode);
@@ -117,7 +118,7 @@ struct Test_BitcoinBlock : public ::testing::Test {
         auto output = ot::UnallocatedVector<ot::OTData>{};
 
         for (const auto& bytes : block.Internal().ExtractElements(
-                 ot::blockchain::filter::Type::Basic_BIP158)) {
+                 ot::blockchain::cfilter::Type::Basic_BIP158)) {
             output.emplace_back(api_.Factory().Data(ot::reader(bytes)));
         }
 
@@ -145,7 +146,7 @@ struct Test_BitcoinBlock : public ::testing::Test {
 
     auto GenerateGenesisFilter(
         const ot::blockchain::Type chain,
-        const ot::blockchain::filter::Type filterType) const noexcept -> bool
+        const ot::blockchain::cfilter::Type filterType) const noexcept -> bool
     {
         const auto& [genesisHex, filterMap] = genesis_block_data_.at(chain);
         const auto bytes =
@@ -156,8 +157,8 @@ struct Test_BitcoinBlock : public ::testing::Test {
 
         if (false == bool(block)) { return false; }
 
-        constexpr auto masked{ot::blockchain::filter::Type::Basic_BIP158};
-        constexpr auto replace{ot::blockchain::filter::Type::Basic_BCHVariant};
+        constexpr auto masked{ot::blockchain::cfilter::Type::Basic_BIP158};
+        constexpr auto replace{ot::blockchain::cfilter::Type::Basic_BCHVariant};
 
         const auto gcs = ot::factory::GCS(
             api_, (filterType == masked) ? replace : filterType, *block);
@@ -211,12 +212,12 @@ TEST_F(Test_BitcoinBlock, regtest)
 {
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::UnitTest,
-        ot::blockchain::filter::Type::Basic_BIP158));
+        ot::blockchain::cfilter::Type::Basic_BIP158));
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::UnitTest,
-        ot::blockchain::filter::Type::Basic_BCHVariant));
+        ot::blockchain::cfilter::Type::Basic_BCHVariant));
     EXPECT_TRUE(GenerateGenesisFilter(
-        ot::blockchain::Type::UnitTest, ot::blockchain::filter::Type::ES));
+        ot::blockchain::Type::UnitTest, ot::blockchain::cfilter::Type::ES));
 
     api_.Network().Blockchain().Stop(ot::blockchain::Type::UnitTest);
 }
@@ -225,9 +226,9 @@ TEST_F(Test_BitcoinBlock, btc_genesis_mainnet)
 {
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::Bitcoin,
-        ot::blockchain::filter::Type::Basic_BIP158));
+        ot::blockchain::cfilter::Type::Basic_BIP158));
     EXPECT_TRUE(GenerateGenesisFilter(
-        ot::blockchain::Type::Bitcoin, ot::blockchain::filter::Type::ES));
+        ot::blockchain::Type::Bitcoin, ot::blockchain::cfilter::Type::ES));
 
     api_.Network().Blockchain().Stop(ot::blockchain::Type::Bitcoin);
 }
@@ -236,10 +237,10 @@ TEST_F(Test_BitcoinBlock, btc_genesis_testnet)
 {
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::Bitcoin_testnet3,
-        ot::blockchain::filter::Type::Basic_BIP158));
+        ot::blockchain::cfilter::Type::Basic_BIP158));
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::Bitcoin_testnet3,
-        ot::blockchain::filter::Type::ES));
+        ot::blockchain::cfilter::Type::ES));
 
     api_.Network().Blockchain().Stop(ot::blockchain::Type::Bitcoin_testnet3);
 }
@@ -248,9 +249,9 @@ TEST_F(Test_BitcoinBlock, bch_genesis_mainnet)
 {
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::BitcoinCash,
-        ot::blockchain::filter::Type::Basic_BCHVariant));
+        ot::blockchain::cfilter::Type::Basic_BCHVariant));
     EXPECT_TRUE(GenerateGenesisFilter(
-        ot::blockchain::Type::BitcoinCash, ot::blockchain::filter::Type::ES));
+        ot::blockchain::Type::BitcoinCash, ot::blockchain::cfilter::Type::ES));
 
     api_.Network().Blockchain().Stop(ot::blockchain::Type::BitcoinCash);
 }
@@ -259,10 +260,10 @@ TEST_F(Test_BitcoinBlock, bch_genesis_testnet)
 {
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::BitcoinCash_testnet3,
-        ot::blockchain::filter::Type::Basic_BCHVariant));
+        ot::blockchain::cfilter::Type::Basic_BCHVariant));
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::BitcoinCash_testnet3,
-        ot::blockchain::filter::Type::ES));
+        ot::blockchain::cfilter::Type::ES));
 
     api_.Network().Blockchain().Stop(
         ot::blockchain::Type::BitcoinCash_testnet3);
@@ -271,7 +272,7 @@ TEST_F(Test_BitcoinBlock, bch_genesis_testnet)
 TEST_F(Test_BitcoinBlock, ltc_genesis_mainnet)
 {
     EXPECT_TRUE(GenerateGenesisFilter(
-        ot::blockchain::Type::Litecoin, ot::blockchain::filter::Type::ES));
+        ot::blockchain::Type::Litecoin, ot::blockchain::cfilter::Type::ES));
 
     api_.Network().Blockchain().Stop(ot::blockchain::Type::Litecoin);
 }
@@ -280,7 +281,7 @@ TEST_F(Test_BitcoinBlock, ltc_genesis_testnet)
 {
     EXPECT_TRUE(GenerateGenesisFilter(
         ot::blockchain::Type::Litecoin_testnet4,
-        ot::blockchain::filter::Type::ES));
+        ot::blockchain::cfilter::Type::ES));
 
     api_.Network().Blockchain().Stop(ot::blockchain::Type::Litecoin_testnet4);
 }
@@ -290,8 +291,9 @@ TEST_F(Test_BitcoinBlock, pkt_mainnet)
     constexpr auto chain = ot::blockchain::Type::PKT;
 
     EXPECT_TRUE(GenerateGenesisFilter(
-        chain, ot::blockchain::filter::Type::Basic_BIP158));
-    EXPECT_TRUE(GenerateGenesisFilter(chain, ot::blockchain::filter::Type::ES));
+        chain, ot::blockchain::cfilter::Type::Basic_BIP158));
+    EXPECT_TRUE(
+        GenerateGenesisFilter(chain, ot::blockchain::cfilter::Type::ES));
 
     const auto& [genesisHex, filterMap] = genesis_block_data_.at(chain);
     const auto bytes = api_.Factory().Data(genesisHex, ot::StringStyle::Hex);
@@ -334,7 +336,7 @@ TEST_F(Test_BitcoinBlock, bip158)
         }
 
         static const auto params = ot::blockchain::internal::GetFilterParams(
-            ot::blockchain::filter::Type::Basic_BIP158);
+            ot::blockchain::cfilter::Type::Basic_BIP158);
         const auto pGCS = ot::factory::GCS(
             api_,
             params.first,
@@ -365,7 +367,7 @@ TEST_F(Test_BitcoinBlock, gcs_headers)
 
         const auto pGCS = ot::factory::GCS(
             api_,
-            ot::blockchain::filter::Type::Basic_BIP158,
+            ot::blockchain::cfilter::Type::Basic_BIP158,
             ot::blockchain::internal::BlockHashToFilterKey(blockHash->Bytes()),
             encodedFilter->Bytes());
 
@@ -415,7 +417,7 @@ TEST_F(Test_BitcoinBlock, bch_filter_1307544)
 
     const auto pGCS = ot::factory::GCS(
         api_,
-        ot::blockchain::filter::Type::Basic_BCHVariant,
+        ot::blockchain::cfilter::Type::Basic_BCHVariant,
         ot::blockchain::internal::BlockHashToFilterKey(blockHash->Bytes()),
         encodedFilter);
 
@@ -447,7 +449,7 @@ TEST_F(Test_BitcoinBlock, bch_filter_1307723)
 
     const auto pGCS = ot::factory::GCS(
         api_,
-        ot::blockchain::filter::Type::Basic_BCHVariant,
+        ot::blockchain::cfilter::Type::Basic_BCHVariant,
         ot::blockchain::internal::BlockHashToFilterKey(blockHash->Bytes()),
         encodedFilter);
 

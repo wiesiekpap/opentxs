@@ -11,7 +11,6 @@
 
 #include <cstring>
 #include <iterator>
-#include <type_traits>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"

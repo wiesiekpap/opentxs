@@ -13,7 +13,6 @@
 #include <chrono>
 #include <iterator>
 #include <optional>
-#include <string_view>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
@@ -24,20 +23,17 @@
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
-#include "opentxs/network/zeromq/message/FrameSection.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -94,26 +90,16 @@ auto Progress::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
         case State::reorg: {
             state_reorg(work, std::move(msg));
         } break;
+        case State::shutdown: {
+            // NOTE do not process any messages
+        } break;
         default: {
             OT_FAIL;
         }
     }
 }
 
-auto Progress::Imp::process_reorg(Message&& msg) noexcept -> void
-{
-    const auto body = msg.Body();
-
-    OT_ASSERT(2 < body.size());
-
-    const auto parent = block::Position{
-        body.at(1).as<block::Height>(),
-        parent_.api_.Factory().Data(body.at(2))};
-    process_reorg(parent);
-}
-
-auto Progress::Imp::process_reorg(const block::Position& parent) noexcept
-    -> void
+auto Progress::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
 {
     if (last_reported_.has_value() && last_reported_.value() > parent) {
         last_reported_ = parent;
@@ -147,17 +133,20 @@ auto Progress::Imp::state_normal(const Work work, Message&& msg) noexcept
         case Work::reorg_begin: {
             transition_state_reorg(std::move(msg));
         } break;
-        case Work::reorg_end:
-        case Work::do_reorg: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
-                " wrong state for message ")(
-                CString{print(work), get_allocator()})
+        case Work::reorg_end: {
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(" wrong state for ")(
+                print(work))(" message")
                 .Flush();
 
             OT_FAIL;
         }
         case Work::update: {
             process_update(std::move(msg));
+        } break;
+        case Work::shutdown_begin: {
+            state_ = State::shutdown;
+            parent_p_.reset();
+            to_parent_.Send(MakeWork(Work::shutdown_ready));
         } break;
         case Work::shutdown:
         case Work::filter:
@@ -168,9 +157,11 @@ auto Progress::Imp::state_normal(const Work work, Message&& msg) noexcept
         case Work::startup:
         case Work::init:
         case Work::key:
+        case Work::shutdown_ready:
         case Work::statemachine:
         default: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " unhandled message type ")(static_cast<OTZMQWorkType>(work))
                 .Flush();
 
             OT_FAIL;
@@ -184,22 +175,22 @@ auto Progress::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::shutdown:
         case Work::update:
         case Work::statemachine: {
+            log_(OT_PRETTY_CLASS())(parent_.name_)(" deferring ")(print(work))(
+                " message processing until reorg is complete")
+                .Flush();
             defer(std::move(msg));
         } break;
         case Work::reorg_end: {
             transition_state_normal(std::move(msg));
         } break;
-        case Work::reorg_begin: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
-                " wrong state for message ")(
-                CString{print(work), get_allocator()})
+        case Work::reorg_begin:
+        case Work::shutdown_begin: {
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(" wrong state for ")(
+                print(work))(" message")
                 .Flush();
 
             OT_FAIL;
         }
-        case Work::do_reorg: {
-            process_reorg(std::move(msg));
-        } break;
         case Work::filter:
         case Work::mempool:
         case Work::block:
@@ -208,8 +199,10 @@ auto Progress::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::startup:
         case Work::init:
         case Work::key:
+        case Work::shutdown_ready:
         default: {
-            LogError()(OT_PRETTY_CLASS())(parent_.name_)("unhandled type")
+            LogError()(OT_PRETTY_CLASS())(parent_.name_)(
+                " unhandled message type ")(static_cast<OTZMQWorkType>(work))
                 .Flush();
 
             OT_FAIL;
@@ -263,6 +256,11 @@ Progress::Progress(
     }())
 {
     imp_->Init(imp_);
+}
+
+auto Progress::ProcessReorg(const block::Position& parent) noexcept -> void
+{
+    imp_->ProcessReorg(parent);
 }
 
 auto Progress::VerifyState(const State state) const noexcept -> void

@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"        // IWYU pragma: associated
-#include "1_Internal.hpp"      // IWYU pragma: associated
-#include "blockchain/GCS.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                        // IWYU pragma: associated
+#include "1_Internal.hpp"                      // IWYU pragma: associated
+#include "blockchain/bitcoin/cfilter/GCS.hpp"  // IWYU pragma: associated
 
 #include <boost/cstdint.hpp>
 #include <boost/endian/buffers.hpp>
@@ -35,7 +35,7 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -149,7 +149,7 @@ auto GCS(
 
 auto GCS(
     const api::Session& api,
-    const blockchain::filter::Type type,
+    const blockchain::cfilter::Type type,
     const ReadView key,
     const ReadView encoded) noexcept -> std::unique_ptr<blockchain::GCS>
 {
@@ -171,13 +171,13 @@ auto GCS(
 
 auto GCS(
     const api::Session& api,
-    const blockchain::filter::Type type,
+    const blockchain::cfilter::Type type,
     const blockchain::block::Block& block) noexcept
     -> std::unique_ptr<blockchain::GCS>
 {
     using ReturnType = blockchain::implementation::GCS;
 
-    if (blockchain::filter::Type::Basic_BIP158 == type) {
+    if (blockchain::cfilter::Type::Basic_BIP158 == type) {
         LogError()("opentxs::factory::")(__func__)(
             ": Filter can not be constructed without previous outputs")
             .Flush();

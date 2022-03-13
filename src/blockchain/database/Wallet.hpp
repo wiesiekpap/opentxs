@@ -27,10 +27,9 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
@@ -222,7 +221,7 @@ public:
         const common::Database& common,
         const storage::lmdb::LMDB& lmdb,
         const blockchain::Type chain,
-        const blockchain::filter::Type filter) noexcept;
+        const blockchain::cfilter::Type filter) noexcept;
 
 private:
     const api::Session& api_;

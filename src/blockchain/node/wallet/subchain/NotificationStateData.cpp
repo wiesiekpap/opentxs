@@ -34,8 +34,8 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
@@ -65,7 +65,7 @@ NotificationStateData::NotificationStateData(
     const node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
     const identifier::Nym& nym,
-    const filter::Type filter,
+    const cfilter::Type filter,
     const network::zeromq::BatchID batch,
     const Type chain,
     const std::string_view fromParent,

@@ -57,10 +57,12 @@ namespace opentxs::blockchain::node::wallet
 auto print(WalletJobs job) noexcept -> std::string_view
 {
     try {
-        static const auto map = Map<WalletJobs, CString>{
-            {WalletJobs::shutdown, "shutdown"},
-            {WalletJobs::init, "init"},
-            {WalletJobs::statemachine, "statemachine"},
+        using Job = WalletJobs;
+        static const auto map = Map<Job, CString>{
+            {Job::shutdown, "shutdown"},
+            {Job::init, "init"},
+            {Job::shutdown_ready, "shutdown_ready"},
+            {Job::statemachine, "statemachine"},
         };
 
         return map.at(job);
@@ -100,6 +102,7 @@ Wallet::Wallet(
     , fee_oracle_(factory::FeeOracle(api_, chain))
     , accounts_(api, parent_, db_, mempool, chain_, accounts)
     , proposals_(api, parent_, db_, chain_)
+    , shutdown_sent_(false)
 {
     init_executor({
         UnallocatedCString{shutdown},
@@ -236,6 +239,9 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
+            process_shutdown();
+        } break;
+        case Work::shutdown_ready: {
             shutdown(shutdown_promise_);
         } break;
         case Work::statemachine: {
@@ -259,10 +265,18 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
     }
 }
 
+auto Wallet::process_shutdown() noexcept -> void
+{
+    if (auto previous = shutdown_sent_.exchange(true); false == previous) {
+        to_accounts_.Send(MakeWork(wallet::AccountsJobs::shutdown_begin));
+    }
+}
+
 auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
 {
     if (auto previous = running_.exchange(false); previous) {
         LogDetail()("Shutting down ")(print(chain_))(" wallet").Flush();
+        process_shutdown();
         to_accounts_.Send(MakeWork(wallet::AccountsJobs::shutdown));
         pipeline_.Close();
         fee_oracle_.Shutdown();
@@ -277,5 +291,5 @@ auto Wallet::state_machine() noexcept -> bool
     return proposals_.Run();
 }
 
-Wallet::~Wallet() { signal_shutdown().get(); }
+Wallet::~Wallet() { stop_worker().get(); }
 }  // namespace opentxs::blockchain::node::implementation

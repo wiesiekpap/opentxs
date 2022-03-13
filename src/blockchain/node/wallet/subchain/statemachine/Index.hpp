@@ -14,7 +14,7 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "util/Actor.hpp"
@@ -60,6 +60,7 @@ public:
     {
         signal_startup(me);
     }
+    auto ProcessReorg(const block::Position& parent) noexcept -> void;
     auto Shutdown() noexcept -> void { signal_shutdown(); }
 
     Imp(const boost::shared_ptr<const SubchainStateData>& parent,
@@ -102,7 +103,6 @@ private:
         const std::optional<Bip32Index>& current,
         Bip32Index target) noexcept -> void = 0;
     auto process_key(Message&& in) noexcept -> void;
-    auto process_reorg(Message&& msg) noexcept -> void;
     auto process_update(Message&& msg) noexcept -> void;
     auto startup() noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;

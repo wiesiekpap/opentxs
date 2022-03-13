@@ -5,12 +5,12 @@
 
 #pragma once
 
-#include "opentxs/Version.hpp"           // IWYU pragma: associated
-#include "opentxs/blockchain/Types.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+#include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"  // IWYU pragma: associated
 
 #include <limits>
 
-namespace opentxs::blockchain::filter
+namespace opentxs::blockchain::cfilter
 {
 enum class Type : TypeEnum {
     Basic_BIP158 = 0,
@@ -18,4 +18,4 @@ enum class Type : TypeEnum {
     ES = 88,
     Unknown = std::numeric_limits<TypeEnum>::max(),
 };
-}  // namespace opentxs::blockchain::filter
+}  // namespace opentxs::blockchain::cfilter
