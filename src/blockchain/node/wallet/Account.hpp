@@ -22,7 +22,6 @@
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/Subchain.hpp"
 #include "internal/network/zeromq/Types.hpp"
-#include "internal/network/zeromq/Types.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -96,7 +95,7 @@ class Identifier;
 
 namespace opentxs::blockchain::node::wallet
 {
-class Account::Imp final : public opentxs::Actor<Imp, AccountJobs>
+class Account::Imp final : public Actor<Imp, AccountJobs>
 {
 public:
     auto VerifyState(const State state) const noexcept -> void;
@@ -124,7 +123,7 @@ public:
     ~Imp() final;
 
 private:
-    friend opentxs::Actor<Imp, AccountJobs>;
+    friend Actor<Imp, AccountJobs>;
 
     struct ReorgData {
         const std::size_t target_;

@@ -123,7 +123,8 @@ auto PeerManager::AddIncomingPeer(const int id, std::uintptr_t endpoint)
     pipeline_.Push(std::move(work));
 }
 
-auto PeerManager::AddPeer(const p2p::Address& address) const noexcept -> bool
+auto PeerManager::AddPeer(
+    const blockchain::p2p::Address& address) const noexcept -> bool
 {
     if (false == running_.load()) { return false; }
 
@@ -234,7 +235,8 @@ auto PeerManager::JobReady(const Task type) const noexcept -> void
     }
 }
 
-auto PeerManager::Listen(const p2p::Address& address) const noexcept -> bool
+auto PeerManager::Listen(const blockchain::p2p::Address& address) const noexcept
+    -> bool
 {
     if (false == running_.load()) { return false; }
 
@@ -365,8 +367,8 @@ auto PeerManager::pipeline(zmq::Message&& message) noexcept -> void
             OT_ASSERT(2 < body.size());
 
             const auto id = body.at(1).as<int>();
-            auto endpoint =
-                Peers::Endpoint{reinterpret_cast<p2p::internal::Address*>(
+            auto endpoint = Peers::Endpoint{
+                reinterpret_cast<blockchain::p2p::internal::Address*>(
                     body.at(2).as<std::uintptr_t>())};
 
             OT_ASSERT(0 <= id);
