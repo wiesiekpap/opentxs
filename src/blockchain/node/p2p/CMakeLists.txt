@@ -6,9 +6,8 @@
 target_sources(
   opentxs-common
   PRIVATE
-    "Base.cpp"
-    "Base.hpp"
-    "SyncServer.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/p2p/Requestor.hpp"
+    "Requestor.cpp"
+    "Requestor.cpp"
 )
-target_link_libraries(opentxs-common PRIVATE "${OT_ZMQ_TARGET}")
-target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")
+target_link_libraries(opentxs-common PRIVATE Boost::headers)

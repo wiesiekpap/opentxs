@@ -386,10 +386,10 @@ struct Mempool {
 };
 
 struct PeerDatabase {
-    using Address = std::unique_ptr<p2p::internal::Address>;
-    using Protocol = p2p::Protocol;
-    using Service = p2p::Service;
-    using Type = p2p::Network;
+    using Address = std::unique_ptr<blockchain::p2p::internal::Address>;
+    using Protocol = blockchain::p2p::Protocol;
+    using Service = blockchain::p2p::Service;
+    using Type = blockchain::p2p::Network;
 
     virtual auto AddOrUpdate(Address address) const noexcept -> bool = 0;
     virtual auto Get(
@@ -431,7 +431,7 @@ struct PeerManager {
 
     virtual auto AddIncomingPeer(const int id, std::uintptr_t endpoint)
         const noexcept -> void = 0;
-    virtual auto AddPeer(const p2p::Address& address) const noexcept
+    virtual auto AddPeer(const blockchain::p2p::Address& address) const noexcept
         -> bool = 0;
     virtual auto BroadcastBlock(const block::Block& block) const noexcept
         -> bool = 0;
@@ -446,7 +446,8 @@ struct PeerManager {
     virtual auto GetVerifiedPeerCount() const noexcept -> std::size_t = 0;
     virtual auto Heartbeat() const noexcept -> void = 0;
     virtual auto JobReady(const Task type) const noexcept -> void = 0;
-    virtual auto Listen(const p2p::Address& address) const noexcept -> bool = 0;
+    virtual auto Listen(const blockchain::p2p::Address& address) const noexcept
+        -> bool = 0;
     virtual auto LookupIncomingSocket(const int id) const noexcept(false)
         -> opentxs::network::asio::Socket = 0;
     virtual auto RequestBlock(const block::Hash& block) const noexcept

@@ -86,7 +86,7 @@ class Identifier;
 
 namespace opentxs::blockchain::node::wallet
 {
-class Accounts::Imp final : public opentxs::Actor<Imp, AccountsJobs>
+class Accounts::Imp final : public Actor<Imp, AccountsJobs>
 {
 public:
     auto Init(boost::shared_ptr<Imp> me) noexcept -> void;
@@ -104,7 +104,7 @@ public:
     ~Imp() final;
 
 private:
-    friend opentxs::Actor<Imp, AccountsJobs>;
+    friend Actor<Imp, AccountsJobs>;
 
     enum class State {
         normal,

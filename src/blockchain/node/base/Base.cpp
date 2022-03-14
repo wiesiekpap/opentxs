@@ -22,7 +22,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "blockchain/node/base/SyncClient.hpp"
 #include "blockchain/node/base/SyncServer.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/network/Asio.hpp"
@@ -33,6 +32,7 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
+#include "internal/blockchain/node/p2p/Requestor.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
@@ -268,6 +268,7 @@ Base::Base(
     , wallet_(*wallet_p_)
     , start_(Clock::now())
     , sync_endpoint_(syncEndpoint)
+    , requestor_endpoint_(network::zeromq::MakeArbitraryInproc())
     , sync_server_([&] {
         if (config_.provide_sync_server_) {
             return std::make_unique<base::SyncServer>(
@@ -284,33 +285,20 @@ Base::Base(
             return std::unique_ptr<base::SyncServer>{};
         }
     }())
-    , sync_client_([&] {
+    , p2p_requestor_([&] {
         if (config_.use_sync_server_) {
 
-            return std::make_unique<base::SyncClient>(api_, chain_);
+            return std::make_unique<p2p::Requestor>(
+                api_, chain_, requestor_endpoint_);
         } else {
 
-            return std::unique_ptr<base::SyncClient>{};
+            return std::unique_ptr<p2p::Requestor>{};
         }
     }())
     , sync_cb_(zmq::ListenCallback::Factory(
           [&](auto&& m) { pipeline_.Push(std::move(m)); }))
-    , sync_socket_([&] {
-        auto out = api_.Network().ZeroMQ().PairSocket(
-            sync_cb_, [&]() -> auto& {
-                if (sync_client_) {
-
-                    return sync_client_->Endpoint();
-                } else {
-                    static const auto dummy =
-                        network::zeromq::MakeArbitraryInproc();
-
-                    return dummy;
-                }
-            }());
-
-        return out;
-    }())
+    , sync_socket_(
+          api_.Network().ZeroMQ().PairSocket(sync_cb_, requestor_endpoint_))
     , local_chain_height_(0)
     , remote_chain_height_(
           params::Data::Chains().at(chain_).checkpoint_.height_)
@@ -346,8 +334,8 @@ Base::Base(
 
             auto address = opentxs::factory::BlockchainAddress(
                 api_,
-                p2p::Protocol::bitcoin,
-                p2p::Network::ipv4,
+                blockchain::p2p::Protocol::bitcoin,
+                blockchain::p2p::Network::ipv4,
                 [&] {
                     auto out = api_.Factory().Data();
                     const auto v4 = boost.to_v4();
@@ -382,8 +370,8 @@ Base::Base(
 
             auto address = opentxs::factory::BlockchainAddress(
                 api_,
-                p2p::Protocol::bitcoin,
-                p2p::Network::ipv6,
+                blockchain::p2p::Protocol::bitcoin,
+                blockchain::p2p::Network::ipv6,
                 [&] {
                     auto out = api_.Factory().Data();
                     const auto v6 = boost.to_v6();
@@ -469,7 +457,8 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
     return peer_.BroadcastBlock(block);
 }
 
-auto Base::AddPeer(const p2p::Address& address) const noexcept -> bool
+auto Base::AddPeer(const blockchain::p2p::Address& address) const noexcept
+    -> bool
 {
     if (false == running_.load()) { return false; }
 
@@ -482,7 +471,7 @@ auto Base::BroadcastTransaction(
 {
     mempool_.Submit(tx.clone());
 
-    if (pushtx && sync_client_) {
+    if (pushtx && p2p_requestor_) {
         sync_socket_->Send([&] {
             auto out = network::zeromq::Message{};
             const auto command =
@@ -633,7 +622,8 @@ auto Base::JobReady(const node::internal::PeerManager::Task type) const noexcept
     if (peer_p_) { peer_.JobReady(type); }
 }
 
-auto Base::Listen(const p2p::Address& address) const noexcept -> bool
+auto Base::Listen(const blockchain::p2p::Address& address) const noexcept
+    -> bool
 {
     if (false == running_.load()) { return false; }
 
@@ -642,7 +632,7 @@ auto Base::Listen(const p2p::Address& address) const noexcept -> bool
 
 auto Base::notify_sync_client() const noexcept -> void
 {
-    if (sync_client_) {
+    if (p2p_requestor_) {
         sync_socket_->Send([this] {
             const auto tip = filters_.FilterTip(filters_.DefaultType());
             auto msg = MakeWork(OTZMQWorkType{OT_ZMQ_INTERNAL_SIGNAL + 2});
@@ -1168,6 +1158,10 @@ auto Base::shutdown(std::promise<void>& promise) noexcept -> void
         wallet_.Shutdown();
 
         if (sync_server_) { sync_server_->Shutdown(); }
+
+        if (p2p_requestor_) {
+            sync_socket_->Send(MakeWork(WorkType::Shutdown));
+        }
 
         peer_.Shutdown();
         filters_.Shutdown();

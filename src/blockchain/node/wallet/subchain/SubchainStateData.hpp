@@ -115,7 +115,7 @@ class Raw;
 namespace opentxs::blockchain::node::wallet
 {
 class SubchainStateData : virtual public Subchain,
-                          public opentxs::Actor<SubchainStateData, SubchainJobs>
+                          public Actor<SubchainStateData, SubchainJobs>
 {
 public:
     using WalletDatabase = node::internal::WalletDatabase;
@@ -216,7 +216,7 @@ protected:
         allocator_type alloc) noexcept;
 
 private:
-    friend opentxs::Actor<SubchainStateData, SubchainJobs>;
+    friend Actor<SubchainStateData, SubchainJobs>;
 
     struct ReorgData {
         const std::size_t target_;
