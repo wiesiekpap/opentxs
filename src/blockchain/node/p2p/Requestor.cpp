@@ -413,6 +413,9 @@ auto Requestor::Imp::state_init(const Work work, Message&& msg) noexcept -> void
         case Work::Processed: {
             // TODO change work type for peer header received messages
         } break;
+        case Work::StateMachine: {
+            do_work();
+        } break;
         default: {
             LogError()(OT_PRETTY_CLASS())(print(chain_))(
                 " unhandled message type ")(static_cast<OTZMQWorkType>(work))
@@ -440,6 +443,8 @@ auto Requestor::Imp::state_run(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::Processed: {
             process_sync_processed(std::move(msg));
+        } break;
+        case Work::StateMachine: {
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())(print(chain_))(
@@ -470,6 +475,8 @@ auto Requestor::Imp::state_sync(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::Processed: {
             process_sync_processed(std::move(msg));
+        } break;
+        case Work::StateMachine: {
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())(print(chain_))(

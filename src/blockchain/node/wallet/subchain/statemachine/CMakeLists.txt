@@ -7,6 +7,7 @@ target_sources(
   opentxs-common
   PRIVATE
     "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/subchain/statemachine/Index.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/subchain/statemachine/Process.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/subchain/statemachine/Progress.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/wallet/subchain/statemachine/Rescan.hpp"
@@ -16,7 +17,9 @@ target_sources(
     "DeterministicIndex.cpp"
     "DeterministicIndex.hpp"
     "Index.cpp"
-    "Index.hpp"
+    "Index.cpp"
+    "Job.cpp"
+    "Job.hpp"
     "NotificationIndex.cpp"
     "NotificationIndex.hpp"
     "Process.cpp"

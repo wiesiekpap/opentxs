@@ -7,19 +7,25 @@
 
 #pragma once
 
+#include <boost/system/error_code.hpp>
 #include <atomic>
 #include <chrono>
 #include <deque>
 #include <functional>
 #include <future>
 #include <memory>
+#include <mutex>
 #include <queue>
+#include <random>
 
+#include "internal/api/network/Asio.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/util/Future.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Timer.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -77,6 +83,7 @@ protected:
     using SocketType = network::zeromq::socket::Type;
 
     const Log& log_;
+    mutable std::timed_mutex reorg_lock_;
     Gatekeeper gatekeeper_;
     network::zeromq::Pipeline pipeline_;
     bool disable_automatic_processing_;
@@ -120,6 +127,7 @@ protected:
     }
     auto flush_cache() noexcept -> void
     {
+        retry_.Cancel();
         log_(OT_PRETTY_CLASS())("flushing ")(cache_.size())(" cached messages")
             .Flush();
 
@@ -146,6 +154,7 @@ protected:
         , init_future_(init_promise_.get_future())
         , running_(true)
         , log_(logger)
+        , reorg_lock_()
         , gatekeeper_()
         , pipeline_(api.Network().ZeroMQ().Internal().Pipeline(
               {},
@@ -161,12 +170,15 @@ protected:
         , last_executed_(Clock::now())
         , cache_(alloc)
         , state_machine_queued_(false)
+        , rng_(std::random_device{}())
+        , delay_(50, 150)
+        , retry_(api.Network().Asio().Internal().GetTimer())
     {
         LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(pipeline_.BatchID())
             .Flush();
     }
 
-    ~Actor() override = default;
+    ~Actor() override { retry_.Cancel(); }
 
 private:
     const std::chrono::milliseconds rate_limit_;
@@ -174,6 +186,9 @@ private:
     Time last_executed_;
     std::queue<Message, Deque<Message>> cache_;
     mutable std::atomic<bool> state_machine_queued_;
+    std::mt19937 rng_;
+    std::uniform_int_distribution<int> delay_;
+    Timer retry_;
 
     auto rate_limit_state_machine() const noexcept
     {
@@ -229,10 +244,39 @@ private:
         }();
         const auto type = CString{print(work)};
         log_(OT_PRETTY_CLASS())("message type is: ")(type).Flush();
+        auto limit = std::chrono::milliseconds{delay_(rng_)};
+        auto lock = std::unique_lock<std::timed_mutex>{reorg_lock_, limit};
+        auto attempts{-1};
 
-        if (OT_ZMQ_INIT_SIGNAL == static_cast<OTZMQWorkType>(work)) {
+        while ((++attempts < 3) && (false == lock.owns_lock())) {
+            limit = std::chrono::milliseconds{delay_(rng_)};
+            lock.try_lock_for(limit);
+        }
+
+        const auto isInit =
+            OT_ZMQ_INIT_SIGNAL == static_cast<OTZMQWorkType>(work);
+        const auto canDrop = (0u == never_drop_.count(work));
+        const auto canDefer =
+            (false == lock.owns_lock()) && canDrop && (false == isInit);
+
+        if (canDefer) {
+            log_(OT_PRETTY_CLASS())("queueing message of type ")(
+                type)(" until reorg is processed")
+                .Flush();
+            defer(std::move(in));
+            retry_.SetRelative(1s);
+            retry_.Wait([this](const auto& e) {
+                if (!e) { trigger(); }
+            });
+
+            return;
+        }
+
+        if (false == lock.owns_lock()) { lock.lock(); }
+
+        if (isInit) {
             log_(OT_PRETTY_CLASS())("initializing").Flush();
-            downcast().startup();
+            downcast().do_startup();
 
             try {
                 init_promise_.set_value();
@@ -250,15 +294,15 @@ private:
 
         // NOTE: do not process any messages until init is received
         if (false == IsReady(init_future_)) {
-            if (0u < never_drop_.count(work)) {
+            if (canDrop) {
+                log_(OT_PRETTY_CLASS())("dropping message of type ")(
+                    type)(" until init is processed")
+                    .Flush();
+            } else {
                 log_(OT_PRETTY_CLASS())("queueing message of type ")(
                     type)(" until init is processed")
                     .Flush();
                 defer(std::move(in));
-            } else {
-                log_(OT_PRETTY_CLASS())("dropping message of type ")(
-                    type)(" until init is processed")
-                    .Flush();
             }
 
             return;
@@ -276,6 +320,8 @@ private:
                 downcast().pipeline(work, std::move(in));
 
                 return;
+            } else {
+                flush_cache();
             }
 
             switch (static_cast<OTZMQWorkType>(work)) {

@@ -149,9 +149,7 @@ public:
     auto Init() noexcept -> void final;
     auto Shutdown() noexcept -> std::shared_future<void> final
     {
-        process_shutdown();
-
-        return shutdown_;
+        return signal_shutdown();
     }
 
     Wallet(
@@ -172,25 +170,14 @@ private:
     const node::internal::Network& parent_;
     const node::internal::WalletDatabase& db_;
     const Type chain_;
-    network::zeromq::socket::Raw& to_accounts_;
     wallet::FeeOracle fee_oracle_;
     wallet::Accounts accounts_;
     wallet::Proposals proposals_;
-    std::atomic_bool shutdown_sent_;
 
     auto pipeline(const zmq::Message& in) noexcept -> void;
-    auto process_shutdown() noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;
     auto state_machine() noexcept -> bool;
 
-    Wallet(
-        const api::Session& api,
-        const node::internal::Network& parent,
-        const node::internal::WalletDatabase& db,
-        const node::internal::Mempool& mempool,
-        const Type chain,
-        const std::string_view shutdown,
-        const CString accounts) noexcept;
     Wallet() = delete;
     Wallet(const Wallet&) = delete;
     Wallet(Wallet&&) = delete;

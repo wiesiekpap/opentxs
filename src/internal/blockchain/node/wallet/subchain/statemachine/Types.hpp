@@ -51,6 +51,12 @@ class Message;
 
 namespace opentxs::blockchain::node::wallet
 {
+enum class JobState {
+    normal,
+    reorg,
+    shutdown,
+};
+
 enum class ScanState : std::uint8_t {
     dirty = 0,
     scan_clean = 1,
