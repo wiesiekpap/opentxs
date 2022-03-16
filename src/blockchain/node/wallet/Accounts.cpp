@@ -301,7 +301,7 @@ auto Accounts::Imp::process_reorg(
 
 auto Accounts::Imp::Shutdown() noexcept -> void
 {
-    auto lock = std::unique_lock<std::timed_mutex>{reorg_lock_};
+    auto lock = std::unique_lock<std::recursive_timed_mutex>{reorg_lock_};
     transition_state_shutdown();
 }
 

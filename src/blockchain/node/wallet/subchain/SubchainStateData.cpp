@@ -19,6 +19,7 @@
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
+#include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Timer.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -564,7 +565,7 @@ auto SubchainStateData::ReportScan(const block::Position& pos) const noexcept
     -> void
 {
     api_.Crypto().Blockchain().Internal().ReportScan(
-        node_.Chain(), owner_, account_type_, id_, subchain_, pos);
+        chain_, owner_, account_type_, id_, subchain_, pos);
 }
 
 auto SubchainStateData::reorg_children() const noexcept -> std::size_t
@@ -578,7 +579,6 @@ auto SubchainStateData::Scan(
     block::Position& highestTested,
     Vector<ScanStatus>& out) const noexcept -> std::optional<block::Position>
 {
-    const auto& api = api_;
     const auto& name = name_;
     const auto& node = node_;
     const auto& type = filter_type_;
@@ -604,11 +604,27 @@ auto SubchainStateData::Scan(
         startHeight)(" to ")(stopHeight)
         .Flush();
     const auto targets = get_account_targets();
-    auto blockHash = api.Factory().Data();
-    auto isClean{true};
-    // TODO have the filter database provide all filters as a single batch
+    const auto target = static_cast<std::size_t>(stopHeight - startHeight + 1);
+    auto* upstream = alloc::standard_to_boost(get_allocator().resource());
+    // TODO adjust this once Data and GCS are allocator aware
+    static constexpr auto allocBytes =
+        (scan_batch_ *
+         (sizeof(block::pHash) + sizeof(std::unique_ptr<const GCS>))) +
+        sizeof(Vector<block::pHash>) +
+        sizeof(Vector<std::unique_ptr<const GCS>>);
+    auto alloc = alloc::BoostMonotonic{allocBytes, upstream};
+    const auto blocks = headers.BestHashes(startHeight, target, &alloc);
+    const auto cfilters = filters.LoadFilters(type, blocks);
 
-    for (auto i{startHeight}; i <= stopHeight; ++i) {
+    OT_ASSERT(cfilters.size() <= blocks.size());
+
+    auto isClean{true};
+
+    auto b = blocks.begin();
+    auto f = cfilters.begin();
+    auto i = startHeight;
+
+    for (auto end = cfilters.end(); f != end; ++f, ++b, ++i) {
         if (auto state = pending_state_.load(); state != state_) {
             LogConsole()(name)(" scan interrupted due to ")(print(state))(
                 " state change")
@@ -617,31 +633,28 @@ auto SubchainStateData::Scan(
             break;
         }
 
-        blockHash = headers.BestHash(i, best);
+        const auto& blockHash = b->get();
+        const auto& pFilter = *f;
+        auto testPosition = block::Position{i, blockHash};
 
-        if (blockHash->empty()) {
-            log_(OT_PRETTY_CLASS())(name)(
-                " interrupting scan due to chain reorg")
-                .Flush();
+        if (blockHash.empty()) {
+            LogError()(OT_PRETTY_CLASS())(name)(" empty block hash").Flush();
 
             break;
         }
-
-        auto testPosition = block::Position{i, blockHash};
-        const auto pFilter = filters.LoadFilterOrResetTip(type, testPosition);
 
         if (false == bool(pFilter)) {
-            log_(OT_PRETTY_CLASS())(name)(" filter at height ")(
-                i)(" not found ")
+            LogError()(OT_PRETTY_CLASS())(name)(" filter for block ")(
+                print(testPosition))(" not found ")
                 .Flush();
 
             break;
         }
 
+        const auto& filter = *pFilter;
         atLeastOnce = true;
         const auto hasMatches = [&] {
             const auto& [elements, utxos, patterns] = targets;
-            const auto& filter = *pFilter;
             auto matches = filter.Match(patterns);
 
             if (0 < matches.size()) {
@@ -651,7 +664,7 @@ auto SubchainStateData::Scan(
 
                 if (0 < matches.size()) {
                     log_(OT_PRETTY_CLASS())(name)(" GCS scan for block ")(
-                        blockHash->asHex())(" at height ")(i)(" found ")(
+                        blockHash.asHex())(" at height ")(i)(" found ")(
                         matches.size())(" new potential matches for the ")(
                         patterns.size())(" target elements for ")(id_)
                         .Flush();
@@ -767,11 +780,10 @@ auto SubchainStateData::supported_scripts(const crypto::Element& element)
     const noexcept -> UnallocatedVector<ScriptForm>
 {
     auto out = UnallocatedVector<ScriptForm>{};
-    const auto chain = node_.Chain();
     using Type = ScriptForm::Type;
-    out.emplace_back(api_, element, chain, Type::PayToPubkey);
-    out.emplace_back(api_, element, chain, Type::PayToPubkeyHash);
-    out.emplace_back(api_, element, chain, Type::PayToWitnessPubkeyHash);
+    out.emplace_back(api_, element, chain_, Type::PayToPubkey);
+    out.emplace_back(api_, element, chain_, Type::PayToPubkeyHash);
+    out.emplace_back(api_, element, chain_, Type::PayToWitnessPubkeyHash);
 
     return out;
 }
