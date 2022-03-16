@@ -41,7 +41,7 @@
 namespace opentxs::blockchain::node::wallet
 {
 Rescan::Imp::Imp(
-    const boost::shared_ptr<const SubchainStateData>& parent,
+    const SubchainStateData& parent,
     const network::zeromq::BatchID batch,
     allocator_type alloc) noexcept
     : Job(LogTrace(),
@@ -50,22 +50,22 @@ Rescan::Imp::Imp(
           CString{"rescan", alloc},
           alloc,
           {
-              {parent->shutdown_endpoint_, Direction::Connect},
-              {CString{parent->api_.Endpoints().BlockchainNewFilter()},
+              {parent.shutdown_endpoint_, Direction::Connect},
+              {CString{parent.api_.Endpoints().BlockchainNewFilter()},
                Direction::Connect},
           },
           {
-              {parent->to_rescan_endpoint_, Direction::Bind},
+              {parent.to_rescan_endpoint_, Direction::Bind},
           },
           {},
           {
               {SocketType::Push,
                {
-                   {parent->to_process_endpoint_, Direction::Connect},
+                   {parent.to_process_endpoint_, Direction::Connect},
                }},
               {SocketType::Push,
                {
-                   {parent->to_progress_endpoint_, Direction::Connect},
+                   {parent.to_progress_endpoint_, Direction::Connect},
                }},
           })
     , to_process_(pipeline_.Internal().ExtraSocket(0))
@@ -311,7 +311,8 @@ auto Rescan::Imp::work() noexcept -> bool
         last_scanned_ = std::move(highestClean);
         prune();
     } else {
-        OT_ASSERT(0u < dirty.size());
+        // NOTE either the first tested block was dirty or else the scan was
+        // interrupted for a state change
     }
 
     if (last_scanned_.has_value()) {
@@ -356,10 +357,9 @@ auto Rescan::Imp::work() noexcept -> bool
 
 namespace opentxs::blockchain::node::wallet
 {
-Rescan::Rescan(
-    const boost::shared_ptr<const SubchainStateData>& parent) noexcept
+Rescan::Rescan(const SubchainStateData& parent) noexcept
     : imp_([&] {
-        const auto& asio = parent->api_.Network().ZeroMQ().Internal();
+        const auto& asio = parent.api_.Network().ZeroMQ().Internal();
         const auto batchID = asio.PreallocateBatch();
         // TODO the version of libc++ present in android ndk 23.0.7599858
         // has a broken std::allocate_shared function so we're using

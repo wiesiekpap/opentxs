@@ -51,8 +51,6 @@ namespace opentxs::blockchain::node::wallet::statemachine
 {
 class Job : virtual public wallet::Job, public Actor<Job, SubchainJobs>
 {
-    boost::shared_ptr<const SubchainStateData> parent_p_;
-
 public:
     auto ChangeState(const State state) noexcept -> bool final;
     auto Init(boost::shared_ptr<Job> me) noexcept -> void
@@ -67,7 +65,7 @@ protected:
     const SubchainStateData& parent_;
 
     Job(const Log& logger,
-        const boost::shared_ptr<const SubchainStateData>& parent,
+        const SubchainStateData& parent,
         const network::zeromq::BatchID batch,
         CString&& name,
         allocator_type alloc,

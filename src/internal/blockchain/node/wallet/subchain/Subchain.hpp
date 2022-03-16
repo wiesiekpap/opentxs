@@ -9,6 +9,7 @@
 #include <atomic>
 #include <memory>
 
+#include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -45,11 +46,7 @@ namespace opentxs::blockchain::node::wallet
 class Subchain
 {
 public:
-    enum class State {
-        normal,
-        reorg,
-        shutdown,
-    };
+    using State = JobState;
 
     [[nodiscard]] virtual auto ChangeState(const State state) noexcept
         -> bool = 0;

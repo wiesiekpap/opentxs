@@ -38,7 +38,7 @@ public:
     auto ChangeState(const State state) noexcept -> bool final;
     auto ProcessReorg(const block::Position& parent) noexcept -> void final;
 
-    Progress(const boost::shared_ptr<const SubchainStateData>& parent) noexcept;
+    Progress(const SubchainStateData& parent) noexcept;
     Progress() = delete;
     Progress(const Progress&) = delete;
     Progress(Progress&&) = delete;

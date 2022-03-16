@@ -11,6 +11,7 @@
 #include <memory>
 #include <string_view>
 
+#include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
@@ -53,11 +54,7 @@ namespace opentxs::blockchain::node::wallet
 class Account
 {
 public:
-    enum class State {
-        normal,
-        reorg,
-        shutdown,
-    };
+    using State = JobState;
 
     [[nodiscard]] auto ChangeState(const State state) noexcept -> bool;
     auto VerifyState(const State state) const noexcept -> void;

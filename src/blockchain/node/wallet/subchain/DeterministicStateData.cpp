@@ -96,8 +96,7 @@ DeterministicStateData::DeterministicStateData(
 }
 
 auto DeterministicStateData::get_index(
-    const boost::shared_ptr<const SubchainStateData>& me) const noexcept
-    -> Index
+    const SubchainStateData& me) const noexcept -> Index
 {
     return Index::DeterministicFactory(me, *this);
 }

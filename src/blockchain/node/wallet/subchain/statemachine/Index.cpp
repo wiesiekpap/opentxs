@@ -40,7 +40,7 @@
 namespace opentxs::blockchain::node::wallet
 {
 Index::Imp::Imp(
-    const boost::shared_ptr<const SubchainStateData>& parent,
+    const SubchainStateData& parent,
     const network::zeromq::BatchID batch,
     allocator_type alloc) noexcept
     : Job(LogTrace(),
@@ -49,20 +49,20 @@ Index::Imp::Imp(
           CString{"index", alloc},
           alloc,
           {
-              {parent->shutdown_endpoint_, Direction::Connect},
+              {parent.shutdown_endpoint_, Direction::Connect},
               {CString{
-                   parent->api_.Crypto().Blockchain().Internal().KeyEndpoint(),
+                   parent.api_.Crypto().Blockchain().Internal().KeyEndpoint(),
                    alloc},
                Direction::Connect},
           },
           {
-              {parent->to_index_endpoint_, Direction::Bind},
+              {parent.to_index_endpoint_, Direction::Bind},
           },
           {},
           {
               {SocketType::Push,
                {
-                   {parent->to_rescan_endpoint_, Direction::Connect},
+                   {parent.to_rescan_endpoint_, Direction::Connect},
                }},
           })
     , to_rescan_(pipeline_.Internal().ExtraSocket(0))

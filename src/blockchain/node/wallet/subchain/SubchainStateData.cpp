@@ -127,13 +127,13 @@ SubchainStateData::SubchainStateData(
           network::zeromq::MakeArbitraryInproc(alloc.resource()))
     , to_progress_endpoint_(std::move(toProgress))
     , shutdown_endpoint_(parent, alloc)
+    , pending_state_(State::normal)
     , state_(State::normal)
     , progress_(std::nullopt)
     , rescan_(std::nullopt)
     , index_(std::nullopt)
     , process_(std::nullopt)
     , scan_(std::nullopt)
-    , me_()
 {
     OT_ASSERT(false == owner_->empty());
     OT_ASSERT(false == id_->empty());
@@ -176,6 +176,11 @@ SubchainStateData::SubchainStateData(
 
 auto SubchainStateData::ChangeState(const State state) noexcept -> bool
 {
+    if (auto old = pending_state_.exchange(state); old == state) {
+
+        return true;
+    }
+
     auto lock = lock_for_reorg(reorg_lock_);
 
     switch (state) {
@@ -192,7 +197,7 @@ auto SubchainStateData::ChangeState(const State state) noexcept -> bool
         case State::shutdown: {
             OT_ASSERT(State::reorg != state_);
 
-            if (State::shutdown != state_) { transition_state_shutdown(); }
+            transition_state_shutdown();
         } break;
         default: {
             OT_FAIL;
@@ -310,12 +315,11 @@ auto SubchainStateData::do_shutdown() noexcept -> void
 
 auto SubchainStateData::do_startup() noexcept -> void
 {
-    progress_.emplace(me_);
-    rescan_.emplace(me_);
-    index_.emplace(get_index(me_));
-    process_.emplace(me_);
-    scan_.emplace(me_);
-    me_.reset();
+    progress_.emplace(*this);
+    rescan_.emplace(*this);
+    index_.emplace(get_index(*this));
+    process_.emplace(*this);
+    scan_.emplace(*this);
     do_work();
 }
 
@@ -435,8 +439,7 @@ auto SubchainStateData::IndexElement(
 auto SubchainStateData::Init(boost::shared_ptr<SubchainStateData> me) noexcept
     -> void
 {
-    me_ = std::move(me);
-    signal_startup(me_);
+    signal_startup(me);
 }
 
 auto SubchainStateData::pipeline(const Work work, Message&& msg) noexcept
@@ -450,7 +453,7 @@ auto SubchainStateData::pipeline(const Work work, Message&& msg) noexcept
             state_reorg(work, std::move(msg));
         } break;
         case State::shutdown: {
-            // NOTE do not process any messages
+            shutdown_actor();
         } break;
         default: {
             OT_FAIL;
@@ -594,7 +597,7 @@ auto SubchainStateData::Scan(
             startHeight)(" to ")(stopHeight)(" but this is impossible")
             .Flush();
 
-        return highestClean;
+        return std::nullopt;
     }
 
     log_(OT_PRETTY_CLASS())(name)(" scanning filters from ")(
@@ -603,9 +606,17 @@ auto SubchainStateData::Scan(
     const auto targets = get_account_targets();
     auto blockHash = api.Factory().Data();
     auto isClean{true};
-    // TODO have the filter oracle provide all filters as a single batch
+    // TODO have the filter database provide all filters as a single batch
 
     for (auto i{startHeight}; i <= stopHeight; ++i) {
+        if (auto state = pending_state_.load(); state != state_) {
+            LogConsole()(name)(" scan interrupted due to ")(print(state))(
+                " state change")
+                .Flush();
+
+            break;
+        }
+
         blockHash = headers.BestHash(i, best);
 
         if (blockHash->empty()) {
@@ -670,8 +681,7 @@ auto SubchainStateData::Scan(
             std::chrono::nanoseconds{Clock::now() - start})
             .Flush();
     } else {
-        log_(OT_PRETTY_CLASS())(name)(" scan interrupted due to missing filter")
-            .Flush();
+        log_(OT_PRETTY_CLASS())(name)(" scan interrupted").Flush();
     }
 
     return highestClean;
@@ -696,18 +706,22 @@ auto SubchainStateData::state_normal(const Work work, Message&& msg) noexcept
     -> void
 {
     switch (work) {
+        case Work::shutdown: {
+            shutdown_actor();
+        } break;
         case Work::prepare_shutdown: {
             transition_state_shutdown();
+        } break;
+        case Work::init: {
+            do_init();
         } break;
         case Work::statemachine: {
             do_work();
         } break;
-        case Work::shutdown:
         case Work::filter:
         case Work::mempool:
         case Work::block:
         case Work::update:
-        case Work::init:
         case Work::key:
         default: {
             LogError()(OT_PRETTY_CLASS())("unhandled message type ")(

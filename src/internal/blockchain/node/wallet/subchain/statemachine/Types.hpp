@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -89,4 +90,5 @@ auto extract_dirty(
     const api::Session& api,
     network::zeromq::Message& in,
     Vector<ScanStatus>& out) noexcept -> void;
+auto print(JobState) noexcept -> std::string_view;
 }  // namespace opentxs::blockchain::node::wallet

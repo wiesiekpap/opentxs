@@ -27,11 +27,33 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
+namespace opentxs::blockchain::node::wallet
+{
+auto print(JobState state) noexcept -> std::string_view
+{
+    try {
+        static const auto map = Map<JobState, std::string_view>{
+            {JobState::normal, "normal"},
+            {JobState::reorg, "reorg"},
+            {JobState::shutdown, "shutdown"},
+        };
+
+        return map.at(state);
+    } catch (...) {
+        LogError()(__FUNCTION__)(": invalid JobState: ")(
+            static_cast<OTZMQWorkType>(state))
+            .Flush();
+
+        OT_FAIL;
+    }
+}
+}  // namespace opentxs::blockchain::node::wallet
+
 namespace opentxs::blockchain::node::wallet::statemachine
 {
 Job::Job(
     const Log& logger,
-    const boost::shared_ptr<const SubchainStateData>& parent,
+    const SubchainStateData& parent,
     const network::zeromq::BatchID batch,
     CString&& name,
     allocator_type alloc,
@@ -41,7 +63,7 @@ Job::Job(
     const Vector<network::zeromq::SocketData>& extra,
     Set<Work>&& neverDrop) noexcept
     : Actor(
-          parent->api_,
+          parent.api_,
           logger,
           0s,
           batch,
@@ -51,8 +73,7 @@ Job::Job(
           dealer,
           extra,
           std::move(neverDrop))
-    , parent_p_(parent)
-    , parent_(*parent_p_)
+    , parent_(parent)
     , name_([&] {
         using namespace std::literals;
         auto out = std::move(name);
@@ -64,7 +85,6 @@ Job::Job(
     }())
     , state_(State::normal)
 {
-    OT_ASSERT(parent_p_);
 }
 
 auto Job::ChangeState(const State state) noexcept -> bool
@@ -95,7 +115,7 @@ auto Job::ChangeState(const State state) noexcept -> bool
     return true;
 }
 
-auto Job::do_shutdown() noexcept -> void { parent_p_.reset(); }
+auto Job::do_shutdown() noexcept -> void {}
 
 auto Job::pipeline(const Work work, Message&& msg) noexcept -> void
 {
@@ -107,7 +127,7 @@ auto Job::pipeline(const Work work, Message&& msg) noexcept -> void
             state_reorg(work, std::move(msg));
         } break;
         case State::shutdown: {
-            // NOTE do not process any messages
+            shutdown_actor();
         } break;
         default: {
             OT_FAIL;
@@ -195,6 +215,9 @@ auto Job::process_update(Message&& msg) noexcept -> void
 auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
 {
     switch (work) {
+        case Work::shutdown: {
+            shutdown_actor();
+        } break;
         case Work::filter: {
             process_filter(std::move(msg));
         } break;
@@ -210,14 +233,15 @@ auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::update: {
             process_update(std::move(msg));
         } break;
+        case Work::init: {
+            do_init();
+        } break;
         case Work::key: {
             process_key(std::move(msg));
         } break;
         case Work::statemachine: {
             do_work();
         } break;
-        case Work::shutdown:
-        case Work::init:
         default: {
             LogError()(OT_PRETTY_CLASS())(name_)("unhandled message type ")(
                 static_cast<OTZMQWorkType>(work))
@@ -280,7 +304,6 @@ auto Job::transition_state_shutdown() noexcept -> void
 {
     state_ = State::shutdown;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to shutdown state ").Flush();
-    parent_p_.reset();
 }
 
 Job::~Job() = default;

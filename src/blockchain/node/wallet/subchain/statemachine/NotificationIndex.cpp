@@ -31,10 +31,10 @@
 namespace opentxs::blockchain::node::wallet
 {
 auto Index::NotificationFactory(
-    const boost::shared_ptr<const SubchainStateData>& parent,
+    const SubchainStateData& parent,
     const PaymentCode& code) noexcept -> Index
 {
-    const auto& asio = parent->api_.Network().ZeroMQ().Internal();
+    const auto& asio = parent.api_.Network().ZeroMQ().Internal();
     const auto batchID = asio.PreallocateBatch();
     // TODO the version of libc++ present in android ndk 23.0.7599858
     // has a broken std::allocate_shared function so we're using
@@ -51,7 +51,7 @@ auto Index::NotificationFactory(
 namespace opentxs::blockchain::node::wallet
 {
 NotificationIndex::NotificationIndex(
-    const boost::shared_ptr<const SubchainStateData>& parent,
+    const SubchainStateData& parent,
     const PaymentCode& code,
     const network::zeromq::BatchID batch,
     allocator_type alloc) noexcept

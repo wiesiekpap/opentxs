@@ -45,7 +45,7 @@
 namespace opentxs::blockchain::node::wallet
 {
 Process::Imp::Imp(
-    const boost::shared_ptr<const SubchainStateData>& parent,
+    const SubchainStateData& parent,
     const network::zeromq::BatchID batch,
     allocator_type alloc) noexcept
     : Job(LogTrace(),
@@ -54,22 +54,22 @@ Process::Imp::Imp(
           CString{"process", alloc},
           alloc,
           {
-              {parent->shutdown_endpoint_, Direction::Connect},
+              {parent.shutdown_endpoint_, Direction::Connect},
               {CString{
-                   parent->api_.Endpoints().BlockchainBlockAvailable(),
+                   parent.api_.Endpoints().BlockchainBlockAvailable(),
                    alloc},
                Direction::Connect},
-              {CString{parent->api_.Endpoints().BlockchainMempool(), alloc},
+              {CString{parent.api_.Endpoints().BlockchainMempool(), alloc},
                Direction::Connect},
           },
           {
-              {parent->to_process_endpoint_, Direction::Bind},
+              {parent.to_process_endpoint_, Direction::Bind},
           },
           {},
           {
               {SocketType::Push,
                {
-                   {parent->to_index_endpoint_, Direction::Connect},
+                   {parent.to_index_endpoint_, Direction::Connect},
                }},
           })
     , to_index_(pipeline_.Internal().ExtraSocket(0))
@@ -217,10 +217,9 @@ auto Process::Imp::work() noexcept -> bool
 
 namespace opentxs::blockchain::node::wallet
 {
-Process::Process(
-    const boost::shared_ptr<const SubchainStateData>& parent) noexcept
+Process::Process(const SubchainStateData& parent) noexcept
     : imp_([&] {
-        const auto& asio = parent->api_.Network().ZeroMQ().Internal();
+        const auto& asio = parent.api_.Network().ZeroMQ().Internal();
         const auto batchID = asio.PreallocateBatch();
         // TODO the version of libc++ present in android ndk 23.0.7599858
         // has a broken std::allocate_shared function so we're using
