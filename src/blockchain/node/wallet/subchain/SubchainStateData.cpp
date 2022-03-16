@@ -64,6 +64,7 @@ auto print(SubchainJobs job) noexcept -> std::string_view
             {Job::block, "block"},
             {Job::prepare_reorg, "prepare_reorg"},
             {Job::update, "update"},
+            {Job::process, "process"},
             {Job::init, "init"},
             {Job::key, "key"},
             {Job::prepare_shutdown, "prepare_shutdown"},
@@ -536,6 +537,7 @@ auto SubchainStateData::ProcessBlock(
 
     OT_ASSERT(position == header.Position());
 
+    const auto haveHeader = Clock::now();
     handle_confirmed_matches(block, position, confirmed);
     const auto handledMatches = Clock::now();
     const auto db = db_.SubchainMatchBlock(db_key_, [&] {
@@ -557,28 +559,32 @@ auto SubchainStateData::ProcessBlock(
 
     OT_ASSERT(db);  // TODO handle database errors
 
-    log_(OT_PRETTY_CLASS())(name)(" block ")(print(position))(" processed in ")(
+    const auto& log = log_;
+    log(OT_PRETTY_CLASS())(name)(" block ")(print(position))(" processed in ")(
         std::chrono::nanoseconds{Clock::now() - start})
         .Flush();
-    log_(OT_PRETTY_CLASS())(name)(" ")(general.size())(" of ")(
-        potential.size())(" potential key matches confirmed.")
+    log(OT_PRETTY_CLASS())(name)(" ")(general.size())(" of ")(potential.size())(
+        " potential key matches confirmed.")
         .Flush();
-    log_(OT_PRETTY_CLASS())(name)(" ")(utxo.size())(" of ")(outpoints.size())(
+    log(OT_PRETTY_CLASS())(name)(" ")(utxo.size())(" of ")(outpoints.size())(
         " potential utxo matches confirmed.")
         .Flush();
-    log_(OT_PRETTY_CLASS())(name)(" time to load match targets: ")(
+    log(OT_PRETTY_CLASS())(name)(" time to load match targets: ")(
         std::chrono::nanoseconds{haveTargets - start})
         .Flush();
-    log_(OT_PRETTY_CLASS())(name)(" time to load filter: ")(
+    log(OT_PRETTY_CLASS())(name)(" time to load filter: ")(
         std::chrono::nanoseconds{haveFilter - haveTargets})
         .Flush();
-    log_(OT_PRETTY_CLASS())(name)(" time to find matches: ")(
+    log(OT_PRETTY_CLASS())(name)(" time to find matches: ")(
         std::chrono::nanoseconds{haveMatches - haveFilter})
         .Flush();
-    log_(OT_PRETTY_CLASS())(name)(" time to handle matches: ")(
-        std::chrono::nanoseconds{handledMatches - haveMatches})
+    log(OT_PRETTY_CLASS())(name)(" time to load block header: ")(
+        std::chrono::nanoseconds{haveHeader - haveMatches})
         .Flush();
-    log_(OT_PRETTY_CLASS())(name)(" time to update database: ")(
+    log(OT_PRETTY_CLASS())(name)(" time to handle matches: ")(
+        std::chrono::nanoseconds{handledMatches - haveHeader})
+        .Flush();
+    log(OT_PRETTY_CLASS())(name)(" time to update database: ")(
         std::chrono::nanoseconds{updateDB - handledMatches})
         .Flush();
 }

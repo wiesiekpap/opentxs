@@ -73,7 +73,7 @@ Job::Job(
 
               return out;
           }(),
-          0s,
+          1ms,
           batch,
           alloc,
           [&] {
@@ -222,6 +222,24 @@ auto Job::process_prepare_reorg(Message&& in) noexcept -> void
     transition_state_reorg(body.at(1).as<StateSequence>());
 }
 
+auto Job::process_process(Message&& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(2 < body.size());
+
+    process_process(block::Position{
+        body.at(1).as<block::Height>(),
+        parent_.api_.Factory().Data(body.at(2))});
+}
+
+auto Job::process_process(block::Position&&) noexcept -> void
+{
+    LogError()(OT_PRETTY_CLASS())(name_)("unhandled message type").Flush();
+
+    OT_FAIL;
+}
+
 auto Job::process_startup(Message&& msg) noexcept -> void
 {
     state_ = State::normal;
@@ -265,6 +283,9 @@ auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::update: {
             process_update(std::move(msg));
+        } break;
+        case Work::process: {
+            process_process(std::move(msg));
         } break;
         case Work::init: {
             do_init();
