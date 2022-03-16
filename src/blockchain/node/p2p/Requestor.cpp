@@ -404,6 +404,9 @@ auto Requestor::Imp::reset_timer(
 auto Requestor::Imp::state_init(const Work work, Message&& msg) noexcept -> void
 {
     switch (work) {
+        case Work::Shutdown: {
+            shutdown_actor();
+        } break;
         case Work::PushTransaction: {
             defer(std::move(msg));
         } break;
@@ -412,6 +415,9 @@ auto Requestor::Imp::state_init(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::Processed: {
             // TODO change work type for peer header received messages
+        } break;
+        case Work::Init: {
+            do_init();
         } break;
         case Work::StateMachine: {
             do_work();
@@ -429,6 +435,9 @@ auto Requestor::Imp::state_init(const Work work, Message&& msg) noexcept -> void
 auto Requestor::Imp::state_run(const Work work, Message&& msg) noexcept -> void
 {
     switch (work) {
+        case Work::Shutdown: {
+            shutdown_actor();
+        } break;
         case Work::SyncAck: {
             process_sync_ack(std::move(msg));
         } break;
@@ -443,6 +452,9 @@ auto Requestor::Imp::state_run(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::Processed: {
             process_sync_processed(std::move(msg));
+        } break;
+        case Work::Init: {
+            do_init();
         } break;
         case Work::StateMachine: {
         } break;
@@ -461,6 +473,9 @@ auto Requestor::Imp::state_run(const Work work, Message&& msg) noexcept -> void
 auto Requestor::Imp::state_sync(const Work work, Message&& msg) noexcept -> void
 {
     switch (work) {
+        case Work::Shutdown: {
+            shutdown_actor();
+        } break;
         case Work::SyncAck: {
             process_sync_ack(std::move(msg));
         } break;
@@ -475,6 +490,9 @@ auto Requestor::Imp::state_sync(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::Processed: {
             process_sync_processed(std::move(msg));
+        } break;
+        case Work::Init: {
+            do_init();
         } break;
         case Work::StateMachine: {
         } break;

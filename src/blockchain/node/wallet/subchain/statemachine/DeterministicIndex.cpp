@@ -29,10 +29,10 @@
 namespace opentxs::blockchain::node::wallet
 {
 auto Index::DeterministicFactory(
-    const boost::shared_ptr<const SubchainStateData>& parent,
+    const SubchainStateData& parent,
     const DeterministicStateData& deterministic) noexcept -> Index
 {
-    const auto& asio = parent->api_.Network().ZeroMQ().Internal();
+    const auto& asio = parent.api_.Network().ZeroMQ().Internal();
     const auto batchID = asio.PreallocateBatch();
     // TODO the version of libc++ present in android ndk 23.0.7599858
     // has a broken std::allocate_shared function so we're using
@@ -49,7 +49,7 @@ auto Index::DeterministicFactory(
 namespace opentxs::blockchain::node::wallet
 {
 DeterministicIndex::DeterministicIndex(
-    const boost::shared_ptr<const SubchainStateData>& parent,
+    const SubchainStateData& parent,
     const DeterministicStateData& deterministic,
     const network::zeromq::BatchID batch,
     allocator_type alloc) noexcept

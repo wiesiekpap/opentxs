@@ -336,7 +336,7 @@ auto Account::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
             state_reorg(work, std::move(msg));
         } break;
         case State::shutdown: {
-            // NOTE do not process any messages
+            shutdown_actor();
         } break;
         default: {
             OT_FAIL;
@@ -423,11 +423,17 @@ auto Account::Imp::scan_subchains() noexcept -> void
 auto Account::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
 {
     switch (work) {
+        case Work::shutdown: {
+            shutdown_actor();
+        } break;
         case Work::subaccount: {
             process_subaccount(std::move(msg));
         } break;
         case Work::prepare_shutdown: {
             transition_state_shutdown();
+        } break;
+        case Work::init: {
+            do_init();
         } break;
         case Work::key: {
             process_key(std::move(msg));
@@ -435,8 +441,6 @@ auto Account::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::statemachine: {
             do_work();
         } break;
-        case Work::shutdown:
-        case Work::init:
         default: {
             LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type ")(
                 static_cast<OTZMQWorkType>(work))

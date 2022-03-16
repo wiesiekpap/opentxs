@@ -38,7 +38,7 @@ public:
     auto ChangeState(const State state) noexcept -> bool final;
     auto ProcessReorg(const block::Position& parent) noexcept -> void final;
 
-    Scan(const boost::shared_ptr<const SubchainStateData>& parent) noexcept;
+    Scan(const SubchainStateData& parent) noexcept;
     Scan() = delete;
     Scan(const Scan&) = delete;
     Scan(Scan&&) = delete;

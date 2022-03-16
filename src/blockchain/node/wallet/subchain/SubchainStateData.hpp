@@ -216,13 +216,13 @@ protected:
 private:
     friend Actor<SubchainStateData, SubchainJobs>;
 
+    std::atomic<State> pending_state_;
     std::atomic<State> state_;
     std::optional<wallet::Progress> progress_;
     std::optional<wallet::Rescan> rescan_;
     std::optional<wallet::Index> index_;
     std::optional<wallet::Process> process_;
     std::optional<wallet::Scan> scan_;
-    boost::shared_ptr<SubchainStateData> me_;
 
     static auto describe(
         const blockchain::Type chain,
@@ -231,8 +231,8 @@ private:
         const Subchain subchain,
         allocator_type alloc) noexcept -> CString;
 
-    virtual auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
-        const noexcept -> Index = 0;
+    virtual auto get_index(const SubchainStateData& me) const noexcept
+        -> Index = 0;
     auto get_targets(
         const Patterns& elements,
         const UnallocatedVector<WalletDatabase::UTXO>& utxos,

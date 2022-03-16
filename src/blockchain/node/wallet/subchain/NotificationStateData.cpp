@@ -125,8 +125,7 @@ auto NotificationStateData::do_startup() noexcept -> void
 }
 
 auto NotificationStateData::get_index(
-    const boost::shared_ptr<const SubchainStateData>& me) const noexcept
-    -> Index
+    const SubchainStateData& me) const noexcept -> Index
 {
     return Index::NotificationFactory(me, *code_.lock_shared());
 }

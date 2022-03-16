@@ -119,6 +119,22 @@ protected:
     {
         cache_.emplace(std::move(message));
     }
+    auto do_init() noexcept -> void
+    {
+        log_(OT_PRETTY_CLASS())("initializing").Flush();
+        downcast().do_startup();
+
+        try {
+            init_promise_.set_value();
+            log_(OT_PRETTY_CLASS())("initialization complete").Flush();
+            flush_cache();
+        } catch (...) {
+            LogError()(OT_PRETTY_CLASS())("init message received twice")
+                .Flush();
+
+            OT_FAIL;
+        }
+    }
     auto do_work() noexcept -> void
     {
         rate_limit_state_machine();
@@ -138,6 +154,15 @@ protected:
         }
     }
     auto init_complete() noexcept -> void { init_promise_.set_value(); }
+    auto shutdown_actor() noexcept -> void
+    {
+        init_future_.get();
+
+        if (auto previous = running_.exchange(false); previous) {
+            downcast().do_shutdown();
+            pipeline_.Close();
+        }
+    }
 
     Actor(
         const api::Session& api,
@@ -213,15 +238,6 @@ private:
 
         last_executed_ = Clock::now();
     }
-    auto shutdown() noexcept -> void
-    {
-        init_future_.get();
-
-        if (auto previous = running_.exchange(false); previous) {
-            downcast().do_shutdown();
-            pipeline_.Close();
-        }
-    }
     auto worker(network::zeromq::Message&& in) noexcept -> void
     {
         log_(OT_PRETTY_CLASS())("Message received").Flush();
@@ -275,19 +291,7 @@ private:
         if (false == lock.owns_lock()) { lock.lock(); }
 
         if (isInit) {
-            log_(OT_PRETTY_CLASS())("initializing").Flush();
-            downcast().do_startup();
-
-            try {
-                init_promise_.set_value();
-                log_(OT_PRETTY_CLASS())("initialization complete").Flush();
-                flush_cache();
-            } catch (...) {
-                LogError()(OT_PRETTY_CLASS())("init message received twice")
-                    .Flush();
-
-                OT_FAIL;
-            }
+            do_init();
 
             return;
         }
@@ -327,7 +331,7 @@ private:
             switch (static_cast<OTZMQWorkType>(work)) {
                 case value(WorkType::Shutdown): {
                     log_(OT_PRETTY_CLASS())("shutting down").Flush();
-                    this->shutdown();
+                    this->shutdown_actor();
                 } break;
                 case OT_ZMQ_STATE_MACHINE_SIGNAL: {
                     log_(OT_PRETTY_CLASS())("executing state machine").Flush();
