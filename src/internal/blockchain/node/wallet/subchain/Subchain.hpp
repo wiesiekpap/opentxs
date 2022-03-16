@@ -47,15 +47,12 @@ class Subchain
 public:
     enum class State {
         normal,
-        pre_reorg,
         reorg,
-        post_reorg,
-        pre_shutdown,
         shutdown,
     };
 
-    virtual auto VerifyState(const State state) const noexcept -> void = 0;
-
+    [[nodiscard]] virtual auto ChangeState(const State state) noexcept
+        -> bool = 0;
     virtual auto Init(boost::shared_ptr<SubchainStateData> me) noexcept
         -> void = 0;
     virtual auto ProcessReorg(

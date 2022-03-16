@@ -122,6 +122,7 @@ private:
     auto do_common() noexcept -> void;
     auto do_init() noexcept -> void;
     auto do_shutdown() noexcept -> void;
+    auto do_startup() noexcept -> void { do_work(); }
     auto do_run() noexcept -> void;
     auto do_sync() noexcept -> void;
     auto have_pending_request() noexcept -> bool;
@@ -139,7 +140,6 @@ private:
     auto reset_timer(
         const std::chrono::seconds& interval,
         Timer& timer) noexcept -> void;
-    auto startup() noexcept -> void { do_work(); }
     auto state_init(const Work work, Message&& msg) noexcept -> void;
     auto state_run(const Work work, Message&& msg) noexcept -> void;
     auto state_sync(const Work work, Message&& msg) noexcept -> void;

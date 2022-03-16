@@ -128,8 +128,7 @@ public:
         const cfilter::Type filter,
         const network::zeromq::BatchID batch,
         const Type chain,
-        const std::string_view fromParent,
-        const std::string_view toParent,
+        const std::string_view parent,
         opentxs::PaymentCode&& code,
         proto::HDPath&& path,
         allocator_type alloc) noexcept;
@@ -144,6 +143,7 @@ private:
     const CString pc_display_;
     mutable PaymentCode code_;
 
+    auto do_startup() noexcept -> void final;
     auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
         const noexcept -> Index final;
     auto handle_confirmed_matches(
@@ -164,7 +164,6 @@ private:
         const PasswordPrompt& reason) const noexcept -> void;
 
     auto init_contacts() noexcept -> void;
-    auto startup() noexcept -> void final;
     auto work() noexcept -> bool final;
 
     NotificationStateData() = delete;

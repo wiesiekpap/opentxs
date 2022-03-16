@@ -11,28 +11,24 @@
 #include <chrono>
 #include <future>
 #include <memory>
+#include <mutex>
+#include <random>
 #include <utility>
 
 #include "core/Worker.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/Factory.hpp"
-#include "internal/network/zeromq/socket/Pipeline.hpp"
-#include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/network/zeromq/socket/SocketType.hpp"
-#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "util/Work.hpp"
 
 namespace opentxs::factory
 {
@@ -54,6 +50,25 @@ auto BlockchainWallet(
 
 namespace opentxs::blockchain::node::wallet
 {
+auto lock_for_reorg(std::timed_mutex& mutex) noexcept
+    -> std::unique_lock<std::timed_mutex>
+{
+    static thread_local auto rng = std::mt19937{std::random_device{}()};
+    static thread_local auto dist =
+        std::uniform_int_distribution<int>{500, 1500};
+    auto lock = std::unique_lock<std::timed_mutex>{mutex, std::defer_lock};
+    auto failures{-1};
+
+    while (false == lock.owns_lock()) {
+        OT_ASSERT(++failures < 300);
+
+        const auto delay = std::chrono::milliseconds{dist(rng)};
+        lock.try_lock_for(delay);
+    }
+
+    return lock;
+}
+
 auto print(WalletJobs job) noexcept -> std::string_view
 {
     try {
@@ -61,7 +76,6 @@ auto print(WalletJobs job) noexcept -> std::string_view
         static const auto map = Map<Job, CString>{
             {Job::shutdown, "shutdown"},
             {Job::init, "init"},
-            {Job::shutdown_ready, "shutdown_ready"},
             {Job::statemachine, "statemachine"},
         };
 
@@ -84,47 +98,18 @@ Wallet::Wallet(
     const node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
     const Type chain,
-    const std::string_view shutdown,
-    const CString accounts) noexcept
-    : Worker(
-          api,
-          10ms,
-          {
-              {network::zeromq::socket::Type::Pair,
-               {
-                   {accounts, network::zeromq::socket::Direction::Bind},
-               }},
-          })
+    const std::string_view shutdown) noexcept
+    : Worker(api, 10ms)
     , parent_(parent)
     , db_(db)
     , chain_(chain)
-    , to_accounts_(pipeline_.Internal().ExtraSocket(0))
     , fee_oracle_(factory::FeeOracle(api_, chain))
-    , accounts_(api, parent_, db_, mempool, chain_, accounts)
+    , accounts_(api, parent_, db_, mempool, chain_)
     , proposals_(api, parent_, db_, chain_)
-    , shutdown_sent_(false)
 {
     init_executor({
         UnallocatedCString{shutdown},
     });
-}
-
-Wallet::Wallet(
-    const api::Session& api,
-    const node::internal::Network& parent,
-    const node::internal::WalletDatabase& db,
-    const node::internal::Mempool& mempool,
-    const Type chain,
-    const std::string_view shutdown) noexcept
-    : Wallet(
-          api,
-          parent,
-          db,
-          mempool,
-          chain,
-          shutdown,
-          network::zeromq::MakeArbitraryInproc().c_str())
-{
 }
 
 auto Wallet::ConstructTransaction(
@@ -239,9 +224,6 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            process_shutdown();
-        } break;
-        case Work::shutdown_ready: {
             shutdown(shutdown_promise_);
         } break;
         case Work::statemachine: {
@@ -265,19 +247,11 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
     }
 }
 
-auto Wallet::process_shutdown() noexcept -> void
-{
-    if (auto previous = shutdown_sent_.exchange(true); false == previous) {
-        to_accounts_.Send(MakeWork(wallet::AccountsJobs::shutdown_begin));
-    }
-}
-
 auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
 {
     if (auto previous = running_.exchange(false); previous) {
         LogDetail()("Shutting down ")(print(chain_))(" wallet").Flush();
-        process_shutdown();
-        to_accounts_.Send(MakeWork(wallet::AccountsJobs::shutdown));
+        accounts_.Shutdown();
         pipeline_.Close();
         fee_oracle_.Shutdown();
         promise.set_value();

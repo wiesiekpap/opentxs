@@ -55,13 +55,11 @@ class Account
 public:
     enum class State {
         normal,
-        pre_reorg,
         reorg,
-        post_reorg,
-        pre_shutdown,
         shutdown,
     };
 
+    [[nodiscard]] auto ChangeState(const State state) noexcept -> bool;
     auto VerifyState(const State state) const noexcept -> void;
 
     auto ProcessReorg(
@@ -78,8 +76,7 @@ public:
         const node::internal::Mempool& mempool,
         const Type chain,
         const cfilter::Type filter,
-        const std::string_view fromParent,
-        const std::string_view toParent) noexcept;
+        const std::string_view shutdown) noexcept;
     Account(Account&&) noexcept;
 
     ~Account();

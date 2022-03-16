@@ -19,9 +19,8 @@
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
-#include "internal/network/zeromq/socket/Pipeline.hpp"
-#include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Timer.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -36,9 +35,7 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
-#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -46,7 +43,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -59,17 +55,10 @@ auto print(SubchainJobs job) noexcept -> std::string_view
             {Job::filter, "filter"},
             {Job::mempool, "mempool"},
             {Job::block, "block"},
-            {Job::reorg_begin, "reorg_begin"},
-            {Job::reorg_begin_ack, "reorg_begin_ack"},
-            {Job::reorg_end, "reorg_end"},
-            {Job::reorg_end_ack, "reorg_end_ack"},
-            {Job::startup, "startup"},
-            {Job::startup, "startup"},
             {Job::update, "update"},
+            {Job::prepare_shutdown, "prepare_shutdown"},
             {Job::init, "init"},
             {Job::key, "key"},
-            {Job::shutdown_begin, "shutdown_begin"},
-            {Job::shutdown_ready, "shutdown_ready"},
             {Job::statemachine, "statemachine"},
         };
 
@@ -98,8 +87,7 @@ SubchainStateData::SubchainStateData(
     OTNymID&& owner,
     OTIdentifier&& id,
     const std::string_view display,
-    const std::string_view fromParent,
-    const std::string_view toParent,
+    const std::string_view parent,
     CString&& fromChildren,
     CString&& toChildren,
     CString&& toScan,
@@ -112,29 +100,10 @@ SubchainStateData::SubchainStateData(
           batch,
           alloc,
           {
-              {CString{fromParent, alloc}, Direction::Connect},
+              {CString{parent, alloc}, Direction::Connect},
           },
           {
               {fromChildren, Direction::Bind},
-          },
-          {},
-          {
-              {SocketType::Push,
-               {
-                   {CString{toParent, alloc}, Direction::Connect},
-               }},
-              {SocketType::Publish,
-               {
-                   {toChildren, Direction::Bind},
-               }},
-              {SocketType::Push,
-               {
-                   {toScan, Direction::Connect},
-               }},
-              {SocketType::Push,
-               {
-                   {toProgress, Direction::Connect},
-               }},
           })
     , api_(api)
     , node_(node)
@@ -150,8 +119,6 @@ SubchainStateData::SubchainStateData(
     , db_key_(db.GetSubchainID(id_, subchain_))
     , null_position_(make_blank<block::Position>::value(api_))
     , genesis_(node_.HeaderOracle().GetPosition(0))
-    , to_children_endpoint_(std::move(toChildren))
-    , from_children_endpoint_(std::move(fromChildren))
     , to_index_endpoint_(network::zeromq::MakeArbitraryInproc(alloc.resource()))
     , to_scan_endpoint_(std::move(toScan))
     , to_rescan_endpoint_(
@@ -159,12 +126,8 @@ SubchainStateData::SubchainStateData(
     , to_process_endpoint_(
           network::zeromq::MakeArbitraryInproc(alloc.resource()))
     , to_progress_endpoint_(std::move(toProgress))
-    , to_parent_(pipeline_.Internal().ExtraSocket(0))
-    , to_children_(pipeline_.Internal().ExtraSocket(1))
-    , to_scan_(pipeline_.Internal().ExtraSocket(2))
-    , to_progress_(pipeline_.Internal().ExtraSocket(3))
+    , shutdown_endpoint_(parent, alloc)
     , state_(State::normal)
-    , reorg_(std::nullopt)
     , progress_(std::nullopt)
     , rescan_(std::nullopt)
     , index_(std::nullopt)
@@ -188,8 +151,7 @@ SubchainStateData::SubchainStateData(
     OTNymID&& owner,
     OTIdentifier&& id,
     const std::string_view display,
-    const std::string_view fromParent,
-    const std::string_view toParent,
+    const std::string_view parent,
     allocator_type alloc) noexcept
     : SubchainStateData(
           api,
@@ -203,14 +165,41 @@ SubchainStateData::SubchainStateData(
           std::move(owner),
           std::move(id),
           display,
-          fromParent,
-          toParent,
+          parent,
           network::zeromq::MakeArbitraryInproc(alloc.resource()),
           network::zeromq::MakeArbitraryInproc(alloc.resource()),
           network::zeromq::MakeArbitraryInproc(alloc.resource()),
           network::zeromq::MakeArbitraryInproc(alloc.resource()),
           alloc)
 {
+}
+
+auto SubchainStateData::ChangeState(const State state) noexcept -> bool
+{
+    auto lock = lock_for_reorg(reorg_lock_);
+
+    switch (state) {
+        case State::normal: {
+            OT_ASSERT(State::reorg == state_);
+
+            transition_state_normal();
+        } break;
+        case State::reorg: {
+            OT_ASSERT(State::normal == state_);
+
+            transition_state_reorg();
+        } break;
+        case State::shutdown: {
+            OT_ASSERT(State::reorg != state_);
+
+            if (State::shutdown != state_) { transition_state_shutdown(); }
+        } break;
+        default: {
+            OT_FAIL;
+        }
+    }
+
+    return true;
 }
 
 auto SubchainStateData::describe(
@@ -261,7 +250,7 @@ auto SubchainStateData::do_reorg(
     std::atomic_int& errors,
     const block::Position ancestor) noexcept -> void
 {
-    LogTrace()(OT_PRETTY_CLASS())(name_)(" processing reorg to ")(
+    log_(OT_PRETTY_CLASS())(name_)(" processing reorg to ")(
         ancestor.second->asHex())(" at height ")(ancestor.first)
         .Flush();
     const auto tip = db_.SubchainLastScanned(db_key_);
@@ -273,13 +262,13 @@ auto SubchainStateData::do_reorg(
             headers.Internal().CalculateReorg(headerOracleLock, tip);
 
         if (0u == reorg.size()) {
-            LogTrace()(OT_PRETTY_CLASS())(
-                name_)(" no action required for this subchain")
+            log_(OT_PRETTY_CLASS())(name_)(
+                " no action required for this subchain")
                 .Flush();
 
             return;
         } else {
-            LogTrace()(OT_PRETTY_CLASS())(name_)(" ")(reorg.size())(
+            log_(OT_PRETTY_CLASS())(name_)(" ")(reorg.size())(
                 " previously mined blocks have been invalidated")
                 .Flush();
         }
@@ -317,7 +306,17 @@ auto SubchainStateData::do_shutdown() noexcept -> void
     index_.reset();
     rescan_.reset();
     progress_.reset();
-    to_children_.Send(MakeWork(WorkType::Shutdown));
+}
+
+auto SubchainStateData::do_startup() noexcept -> void
+{
+    progress_.emplace(me_);
+    rescan_.emplace(me_);
+    index_.emplace(get_index(me_));
+    process_.emplace(me_);
+    scan_.emplace(me_);
+    me_.reset();
+    do_work();
 }
 
 auto SubchainStateData::get_account_targets() const noexcept
@@ -409,7 +408,7 @@ auto SubchainStateData::IndexElement(
     const Bip32Index index,
     WalletDatabase::ElementMap& output) const noexcept -> void
 {
-    LogVerbose()(OT_PRETTY_CLASS())(name_)(" element ")(
+    log_(OT_PRETTY_CLASS())(name_)(" element ")(
         index)(" extracting filter matching patterns")
         .Flush();
     auto& list = output[index];
@@ -447,17 +446,8 @@ auto SubchainStateData::pipeline(const Work work, Message&& msg) noexcept
         case State::normal: {
             state_normal(work, std::move(msg));
         } break;
-        case State::pre_reorg: {
-            state_pre_reorg(work, std::move(msg));
-        } break;
         case State::reorg: {
             state_reorg(work, std::move(msg));
-        } break;
-        case State::post_reorg: {
-            state_post_reorg(work, std::move(msg));
-        } break;
-        case State::pre_shutdown: {
-            state_pre_shutdown(work, std::move(msg));
         } break;
         case State::shutdown: {
             // NOTE do not process any messages
@@ -565,23 +555,6 @@ auto SubchainStateData::ProcessReorg(
     const block::Position& ancestor) noexcept -> void
 {
     do_reorg(headerOracleLock, tx, errors, ancestor);
-}
-
-auto SubchainStateData::ready_for_normal() noexcept -> void
-{
-    disable_automatic_processing_ = false;
-    reorg_.reset();
-    state_ = State::normal;
-    log_(OT_PRETTY_CLASS())(name_)(" transitioned to normal state ").Flush();
-    to_parent_.Send(MakeWork(AccountJobs::reorg_end_ack));
-    flush_cache();
-}
-
-auto SubchainStateData::ready_for_reorg() noexcept -> void
-{
-    state_ = State::reorg;
-    log_(OT_PRETTY_CLASS())(name_)(" transitioned to reorg state ").Flush();
-    to_parent_.Send(MakeWork(AccountJobs::reorg_begin_ack));
 }
 
 auto SubchainStateData::ReportScan(const block::Position& pos) const noexcept
@@ -719,171 +692,23 @@ auto SubchainStateData::set_key_data(
     tx.Internal().SetKeyData(data);
 }
 
-auto SubchainStateData::startup() noexcept -> void
-{
-    progress_.emplace(me_);
-    rescan_.emplace(me_);
-    index_.emplace(get_index(me_));
-    process_.emplace(me_);
-    scan_.emplace(me_);
-    me_.reset();
-    do_work();
-}
-
 auto SubchainStateData::state_normal(const Work work, Message&& msg) noexcept
     -> void
 {
-    OT_ASSERT(false == reorg_.has_value());
-
     switch (work) {
-        case Work::reorg_begin: {
-            transition_state_pre_reorg(std::move(msg));
+        case Work::prepare_shutdown: {
+            transition_state_shutdown();
         } break;
-        case Work::reorg_end:
-        case Work::reorg_begin_ack:
-        case Work::reorg_end_ack:
-        case Work::shutdown_ready: {
-            LogError()(OT_PRETTY_CLASS())("wrong state for ")(print(work))(
-                " message")
-                .Flush();
-
-            OT_FAIL;
-        }
-        case Work::shutdown_begin: {
-            transition_state_pre_shutdown(std::move(msg));
-        } break;
-        case Work::shutdown:
-        case Work::filter:
-        case Work::mempool:
-        case Work::block:
-        case Work::startup:
-        case Work::update:
-        case Work::init:
-        case Work::key:
-        case Work::statemachine:
-        default: {
-            LogError()(OT_PRETTY_CLASS())("unhandled message type ")(
-                static_cast<OTZMQWorkType>(work))
-                .Flush();
-
-            OT_FAIL;
-        }
-    }
-}
-
-auto SubchainStateData::state_post_reorg(
-    const Work work,
-    Message&& msg) noexcept -> void
-{
-    OT_ASSERT(reorg_.has_value());
-
-    switch (work) {
-        case Work::shutdown:
         case Work::statemachine: {
-            defer(std::move(msg));
-        } break;
-        case Work::reorg_end_ack: {
-            transition_state_normal(std::move(msg));
-        } break;
-        case Work::reorg_begin:
-        case Work::reorg_begin_ack:
-        case Work::reorg_end:
-        case Work::shutdown_begin:
-        case Work::shutdown_ready: {
-            LogError()(OT_PRETTY_CLASS())("wrong state for ")(print(work))(
-                " message")
-                .Flush();
-
-            OT_FAIL;
-        }
-        case Work::filter:
-        case Work::mempool:
-        case Work::block:
-        case Work::startup:
-        case Work::update:
-        case Work::init:
-        case Work::key:
-        default: {
-            LogError()(OT_PRETTY_CLASS())("unhandled message type ")(
-                static_cast<OTZMQWorkType>(work))
-                .Flush();
-
-            OT_FAIL;
-        }
-    }
-}
-
-auto SubchainStateData::state_pre_reorg(const Work work, Message&& msg) noexcept
-    -> void
-{
-    OT_ASSERT(reorg_.has_value());
-
-    switch (work) {
-        case Work::shutdown:
-        case Work::statemachine: {
-            defer(std::move(msg));
-        } break;
-        case Work::reorg_begin_ack: {
-            transition_state_reorg(std::move(msg));
-        } break;
-        case Work::reorg_begin:
-        case Work::reorg_end:
-        case Work::reorg_end_ack:
-        case Work::shutdown_begin:
-        case Work::shutdown_ready: {
-            LogError()(OT_PRETTY_CLASS())("wrong state for ")(print(work))(
-                " message")
-                .Flush();
-
-            OT_FAIL;
-        }
-        case Work::filter:
-        case Work::mempool:
-        case Work::block:
-        case Work::startup:
-        case Work::update:
-        case Work::init:
-        case Work::key:
-        default: {
-            LogError()(OT_PRETTY_CLASS())("unhandled message type ")(
-                static_cast<OTZMQWorkType>(work))
-                .Flush();
-
-            OT_FAIL;
-        }
-    }
-}
-
-auto SubchainStateData::state_pre_shutdown(
-    const Work work,
-    Message&& msg) noexcept -> void
-{
-    OT_ASSERT(false == reorg_.has_value());
-
-    switch (work) {
-        case Work::reorg_begin:
-        case Work::reorg_begin_ack:
-        case Work::reorg_end:
-        case Work::reorg_end_ack:
-        case Work::shutdown_begin: {
-            LogError()(OT_PRETTY_CLASS())("wrong state for ")(print(work))(
-                " message")
-                .Flush();
-
-            OT_FAIL;
-        }
-        case Work::shutdown_ready: {
-            transition_state_shutdown(std::move(msg));
+            do_work();
         } break;
         case Work::shutdown:
         case Work::filter:
         case Work::mempool:
         case Work::block:
-        case Work::startup:
         case Work::update:
         case Work::init:
         case Work::key:
-        case Work::statemachine:
         default: {
             LogError()(OT_PRETTY_CLASS())("unhandled message type ")(
                 static_cast<OTZMQWorkType>(work))
@@ -897,21 +722,11 @@ auto SubchainStateData::state_pre_shutdown(
 auto SubchainStateData::state_reorg(const Work work, Message&& msg) noexcept
     -> void
 {
-    OT_ASSERT(reorg_.has_value());
-
     switch (work) {
-        case Work::shutdown:
         case Work::statemachine: {
             defer(std::move(msg));
         } break;
-        case Work::reorg_end: {
-            transition_state_post_reorg(std::move(msg));
-        } break;
-        case Work::reorg_begin:
-        case Work::reorg_begin_ack:
-        case Work::reorg_end_ack:
-        case Work::shutdown_begin:
-        case Work::shutdown_ready: {
+        case Work::shutdown: {
             LogError()(OT_PRETTY_CLASS())("wrong state for ")(print(work))(
                 " message")
                 .Flush();
@@ -921,7 +736,6 @@ auto SubchainStateData::state_reorg(const Work work, Message&& msg) noexcept
         case Work::filter:
         case Work::mempool:
         case Work::block:
-        case Work::startup:
         case Work::update:
         case Work::init:
         case Work::key:
@@ -948,127 +762,86 @@ auto SubchainStateData::supported_scripts(const crypto::Element& element)
     return out;
 }
 
-auto SubchainStateData::transition_state_normal(Message&& in) noexcept -> void
+auto SubchainStateData::transition_state_normal() noexcept -> void
 {
-    OT_ASSERT(0u < reorg_->target_);
+    disable_automatic_processing_ = false;
+    auto rc = scan_->ChangeState(JobState::normal);
 
-    auto& reorg = reorg_.value();
-    const auto& target = reorg.target_;
-    auto& counter = reorg.done_;
-    ++counter;
+    OT_ASSERT(rc);
 
-    if (counter < target) {
-        log_(OT_PRETTY_CLASS())(name_)(" ")(counter)(" of ")(
-            target)(" children finished with reorg")
-            .Flush();
+    rc = process_->ChangeState(JobState::normal);
 
-        return;
-    } else if (counter == target) {
-        log_(OT_PRETTY_CLASS())(name_)(" all ")(
-            target)(" children finished with reorg")
-            .Flush();
-        scan_->VerifyState(Scan::State::normal);
-        process_->VerifyState(Process::State::normal);
-        index_->VerifyState(Index::State::normal);
-        rescan_->VerifyState(Rescan::State::normal);
-        progress_->VerifyState(Progress::State::normal);
-        ready_for_normal();
-    } else {
+    OT_ASSERT(rc);
 
-        OT_FAIL;
-    }
+    rc = index_->ChangeState(JobState::normal);
+
+    OT_ASSERT(rc);
+
+    rc = rescan_->ChangeState(JobState::normal);
+
+    OT_ASSERT(rc);
+
+    rc = progress_->ChangeState(JobState::normal);
+
+    OT_ASSERT(rc);
+
+    state_ = State::normal;
+    log_(OT_PRETTY_CLASS())(name_)(" transitioned to normal state ").Flush();
+    trigger();
 }
 
-auto SubchainStateData::transition_state_post_reorg(Message&& in) noexcept
-    -> void
-{
-    const auto& reorg = reorg_.value();
-
-    if (0u < reorg.target_) {
-        log_(OT_PRETTY_CLASS())(name_)(" waiting for acknowledgements from ")(
-            reorg_->target_)(
-            " children prior to acknowledging reorg completion")
-            .Flush();
-        to_progress_.Send(MakeWork(SubchainJobs::reorg_end));
-        state_ = State::post_reorg;
-    } else {
-        log_(OT_PRETTY_CLASS())(name_)(
-            " no children instantiated therefore reorg may be completed "
-            "immediately")
-            .Flush();
-        ready_for_normal();
-    }
-}
-
-auto SubchainStateData::transition_state_pre_reorg(Message&& in) noexcept
-    -> void
+auto SubchainStateData::transition_state_reorg() noexcept -> void
 {
     disable_automatic_processing_ = true;
-    reorg_.emplace(reorg_children());
-    const auto& reorg = reorg_.value();
+    auto rc = scan_->ChangeState(JobState::reorg);
 
-    if (0u < reorg.target_) {
-        log_(OT_PRETTY_CLASS())(name_)(" waiting for acknowledgements from ")(
-            reorg_->target_)(" children prior to acknowledging reorg")
-            .Flush();
-        to_scan_.Send(MakeWork(SubchainJobs::reorg_begin));
-        state_ = State::pre_reorg;
-    } else {
-        log_(OT_PRETTY_CLASS())(name_)(
-            " no children instantiated therefore reorg may be acknowledged "
-            "immediately")
-            .Flush();
-        ready_for_reorg();
-    }
+    OT_ASSERT(rc);
+
+    rc = process_->ChangeState(JobState::reorg);
+
+    OT_ASSERT(rc);
+
+    rc = index_->ChangeState(JobState::reorg);
+
+    OT_ASSERT(rc);
+
+    rc = rescan_->ChangeState(JobState::reorg);
+
+    OT_ASSERT(rc);
+
+    rc = progress_->ChangeState(JobState::reorg);
+
+    OT_ASSERT(rc);
+
+    state_ = State::reorg;
+    log_(OT_PRETTY_CLASS())(name_)(" transitioned to reorg state ").Flush();
 }
 
-auto SubchainStateData::transition_state_pre_shutdown(Message&& in) noexcept
-    -> void
+auto SubchainStateData::transition_state_shutdown() noexcept -> void
 {
-    state_ = State::pre_shutdown;
-    to_scan_.Send(std::move(in));
-}
+    auto rc = scan_->ChangeState(JobState::shutdown);
 
-auto SubchainStateData::transition_state_reorg(Message&& in) noexcept -> void
-{
-    OT_ASSERT(0u < reorg_->target_);
+    OT_ASSERT(rc);
 
-    auto& reorg = reorg_.value();
-    const auto& target = reorg.target_;
-    auto& counter = reorg.ready_;
-    ++counter;
+    rc = process_->ChangeState(JobState::shutdown);
 
-    if (counter < target) {
-        log_(OT_PRETTY_CLASS())(name_)(" ")(counter)(" of ")(
-            target)(" children ready for reorg")
-            .Flush();
+    OT_ASSERT(rc);
 
-        return;
-    } else if (counter == target) {
-        log_(OT_PRETTY_CLASS())(name_)(" all ")(
-            target)(" children ready for reorg")
-            .Flush();
-        progress_->VerifyState(Progress::State::reorg);
-        rescan_->VerifyState(Rescan::State::reorg);
-        index_->VerifyState(Index::State::reorg);
-        process_->VerifyState(Process::State::reorg);
-        scan_->VerifyState(Scan::State::reorg);
-        ready_for_reorg();
-    } else {
+    rc = index_->ChangeState(JobState::shutdown);
 
-        OT_FAIL;
-    }
-}
+    OT_ASSERT(rc);
 
-auto SubchainStateData::transition_state_shutdown(Message&& in) noexcept -> void
-{
+    rc = rescan_->ChangeState(JobState::shutdown);
+
+    OT_ASSERT(rc);
+
+    rc = progress_->ChangeState(JobState::shutdown);
+
+    OT_ASSERT(rc);
+
     state_ = State::shutdown;
-    progress_->VerifyState(Progress::State::shutdown);
-    rescan_->VerifyState(Rescan::State::shutdown);
-    index_->VerifyState(Index::State::shutdown);
-    process_->VerifyState(Process::State::shutdown);
-    scan_->VerifyState(Scan::State::shutdown);
-    to_parent_.Send(std::move(in));
+    log_(OT_PRETTY_CLASS())(name_)(" transitioned to shutdown state ").Flush();
+    signal_shutdown();
 }
 
 auto SubchainStateData::translate(
@@ -1103,12 +876,5 @@ auto SubchainStateData::translate(
     }
 }
 
-auto SubchainStateData::VerifyState(const State state) const noexcept -> void
-{
-    OT_ASSERT(state == state_);
-}
-
 auto SubchainStateData::work() noexcept -> bool { return false; }
-
-SubchainStateData::~SubchainStateData() { signal_shutdown(); }
 }  // namespace opentxs::blockchain::node::wallet

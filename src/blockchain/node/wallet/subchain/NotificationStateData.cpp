@@ -68,8 +68,7 @@ NotificationStateData::NotificationStateData(
     const cfilter::Type filter,
     const network::zeromq::BatchID batch,
     const Type chain,
-    const std::string_view fromParent,
-    const std::string_view toParent,
+    const std::string_view parent,
     opentxs::PaymentCode&& code,
     proto::HDPath&& path,
     allocator_type alloc) noexcept
@@ -89,8 +88,7 @@ NotificationStateData::NotificationStateData(
 
               return "payment code notification"sv;
           }(),
-          fromParent,
-          toParent,
+          parent,
           std::move(alloc))
     , path_(std::move(path))
     , pc_display_(code.asBase58(), get_allocator())
@@ -109,6 +107,21 @@ auto NotificationStateData::calculate_id(
     output->CalculateDigest(preimage->Bytes());
 
     return output;
+}
+
+auto NotificationStateData::do_startup() noexcept -> void
+{
+    SubchainStateData::do_startup();
+    auto reason =
+        api_.Factory().PasswordPrompt("Verifying / updating contact data");
+    auto mNym = api_.Wallet().mutable_Nym(owner_, reason);
+    const auto type = BlockchainToUnit(chain_);
+    const auto existing = mNym.PaymentCode(type);
+    const auto expected = UnallocatedCString{pc_display_};
+
+    if (existing != expected) {
+        mNym.AddPaymentCode(expected, type, existing.empty(), true, reason);
+    }
 }
 
 auto NotificationStateData::get_index(
@@ -289,21 +302,6 @@ auto NotificationStateData::process(
     log_(OT_PRETTY_CLASS())("Created or verified account ")(account.ID())(
         " for ")(remote.asBase58())
         .Flush();
-}
-
-auto NotificationStateData::startup() noexcept -> void
-{
-    SubchainStateData::startup();
-    auto reason =
-        api_.Factory().PasswordPrompt("Verifying / updating contact data");
-    auto mNym = api_.Wallet().mutable_Nym(owner_, reason);
-    const auto type = BlockchainToUnit(chain_);
-    const auto existing = mNym.PaymentCode(type);
-    const auto expected = UnallocatedCString{pc_display_};
-
-    if (existing != expected) {
-        mNym.AddPaymentCode(expected, type, existing.empty(), true, reason);
-    }
 }
 
 auto NotificationStateData::work() noexcept -> bool
