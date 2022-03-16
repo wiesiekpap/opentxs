@@ -138,6 +138,13 @@ public:
     {
         return database_.LoadFilter(type, block.Bytes());
     }
+    auto LoadFilters(
+        const cfilter::Type type,
+        const Vector<block::pHash>& blocks) const noexcept
+        -> Vector<std::unique_ptr<const GCS>> final
+    {
+        return database_.LoadFilters(type, blocks);
+    }
     auto LoadFilterHeader(const cfilter::Type type, const block::Hash& block)
         const noexcept -> Header final
     {

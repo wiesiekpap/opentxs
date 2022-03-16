@@ -83,7 +83,7 @@ protected:
     using SocketType = network::zeromq::socket::Type;
 
     const Log& log_;
-    mutable std::timed_mutex reorg_lock_;
+    mutable std::recursive_timed_mutex reorg_lock_;
     Gatekeeper gatekeeper_;
     network::zeromq::Pipeline pipeline_;
     bool disable_automatic_processing_;
@@ -261,7 +261,8 @@ private:
         const auto type = CString{print(work)};
         log_(OT_PRETTY_CLASS())("message type is: ")(type).Flush();
         auto limit = std::chrono::milliseconds{delay_(rng_)};
-        auto lock = std::unique_lock<std::timed_mutex>{reorg_lock_, limit};
+        auto lock =
+            std::unique_lock<std::recursive_timed_mutex>{reorg_lock_, limit};
         auto attempts{-1};
 
         while ((++attempts < 3) && (false == lock.owns_lock())) {

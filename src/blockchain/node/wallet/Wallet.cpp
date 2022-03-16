@@ -50,13 +50,14 @@ auto BlockchainWallet(
 
 namespace opentxs::blockchain::node::wallet
 {
-auto lock_for_reorg(std::timed_mutex& mutex) noexcept
-    -> std::unique_lock<std::timed_mutex>
+auto lock_for_reorg(std::recursive_timed_mutex& mutex) noexcept
+    -> std::unique_lock<std::recursive_timed_mutex>
 {
     static thread_local auto rng = std::mt19937{std::random_device{}()};
     static thread_local auto dist =
         std::uniform_int_distribution<int>{500, 1500};
-    auto lock = std::unique_lock<std::timed_mutex>{mutex, std::defer_lock};
+    auto lock =
+        std::unique_lock<std::recursive_timed_mutex>{mutex, std::defer_lock};
     auto failures{-1};
 
     while (false == lock.owns_lock()) {

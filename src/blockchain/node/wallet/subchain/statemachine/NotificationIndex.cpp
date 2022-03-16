@@ -10,6 +10,7 @@
 #include "blockchain/node/wallet/subchain/statemachine/NotificationIndex.hpp"  // IWYU pragma: associated
 
 #include <boost/smart_ptr/make_shared.hpp>
+#include <boost/smart_ptr/shared_ptr.hpp>
 #include <array>
 #include <cstddef>
 #include <iterator>

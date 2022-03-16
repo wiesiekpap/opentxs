@@ -368,7 +368,8 @@ auto HeaderOracle::best_chain(
     auto height{youngest.first};
     auto output = Positions{};
 
-    for (auto& hash : best_hashes(lock, height, blank, 0)) {
+    // TODO allocator
+    for (auto& hash : best_hashes(lock, height, blank, 0, alloc::System())) {
         output.emplace_back(height++, std::move(hash));
 
         if ((0u < limit) && (output.size() == limit)) { break; }
@@ -412,29 +413,32 @@ auto HeaderOracle::BestHash(
 
 auto HeaderOracle::BestHashes(
     const block::Height start,
-    const std::size_t limit) const noexcept -> Hashes
+    const std::size_t limit,
+    alloc::Resource* alloc) const noexcept -> Hashes
 {
     static const auto blank = api_.Factory().Data();
 
     auto lock = Lock{lock_};
 
-    return best_hashes(lock, start, blank, limit);
+    return best_hashes(lock, start, blank, limit, alloc);
 }
 
 auto HeaderOracle::BestHashes(
     const block::Height start,
     const block::Hash& stop,
-    const std::size_t limit) const noexcept -> Hashes
+    const std::size_t limit,
+    alloc::Resource* alloc) const noexcept -> Hashes
 {
     auto lock = Lock{lock_};
 
-    return best_hashes(lock, start, stop, limit);
+    return best_hashes(lock, start, stop, limit, alloc);
 }
 
 auto HeaderOracle::BestHashes(
     const Hashes& previous,
     const block::Hash& stop,
-    const std::size_t limit) const noexcept -> Hashes
+    const std::size_t limit,
+    alloc::Resource* alloc) const noexcept -> Hashes
 {
     auto lock = Lock{lock_};
     auto start = std::size_t{0};
@@ -448,16 +452,17 @@ auto HeaderOracle::BestHashes(
         }
     }
 
-    return best_hashes(lock, start, stop, limit);
+    return best_hashes(lock, start, stop, limit, alloc);
 }
 
 auto HeaderOracle::best_hashes(
     const Lock& lock,
     const block::Height start,
     const block::Hash& stop,
-    const std::size_t limit) const noexcept -> Hashes
+    const std::size_t limit,
+    alloc::Resource* alloc) const noexcept -> Hashes
 {
-    auto output = Hashes{};
+    auto output = Hashes{alloc};
     const auto limitIsZero = (0 == limit);
     auto current{start};
     const auto tip = best_chain(lock);

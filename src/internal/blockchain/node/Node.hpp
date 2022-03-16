@@ -49,6 +49,7 @@
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -198,7 +199,7 @@ using UpdatedHeader = UnallocatedMap<
     std::pair<std::unique_ptr<block::Header>, bool>>;
 using BestHashes = UnallocatedMap<block::Height, block::pHash>;
 using Hashes = UnallocatedSet<block::pHash>;
-using HashVector = UnallocatedVector<block::pHash>;
+using HashVector = Vector<block::pHash>;
 using Segments = UnallocatedSet<ChainSegment>;
 // parent block hash, disconnected block hash
 using DisconnectedList = UnallocatedMultimap<block::pHash, block::pHash>;
@@ -286,6 +287,10 @@ struct FilterDatabase {
         const block::Hash& block) const noexcept -> bool = 0;
     virtual auto LoadFilter(const cfilter::Type type, const ReadView block)
         const noexcept -> std::unique_ptr<const blockchain::GCS> = 0;
+    virtual auto LoadFilters(
+        const cfilter::Type type,
+        const Vector<block::pHash>& blocks) const noexcept
+        -> Vector<std::unique_ptr<const GCS>> = 0;
     virtual auto LoadFilterHash(const cfilter::Type type, const ReadView block)
         const noexcept -> Hash = 0;
     virtual auto LoadFilterHeader(
@@ -357,7 +362,8 @@ struct HeaderDatabase {
     // Throws std::out_of_range if the header does not exist
     virtual auto LoadHeader(const block::Hash& hash) const noexcept(false)
         -> std::unique_ptr<block::Header> = 0;
-    virtual auto RecentHashes() const noexcept -> HashVector = 0;
+    virtual auto RecentHashes(alloc::Resource* alloc = alloc::System())
+        const noexcept -> HashVector = 0;
     virtual auto SiblingHashes() const noexcept -> Hashes = 0;
     // Returns null pointer if the header does not exist
     virtual auto TryLoadBitcoinHeader(const block::Hash& hash) const noexcept

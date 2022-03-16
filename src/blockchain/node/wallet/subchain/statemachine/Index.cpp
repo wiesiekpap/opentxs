@@ -9,6 +9,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/statemachine/Index.hpp"  // IWYU pragma: associated
 
+#include <boost/smart_ptr/shared_ptr.hpp>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"

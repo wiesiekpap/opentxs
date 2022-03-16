@@ -44,6 +44,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -379,6 +380,13 @@ public:
     {
         return filters_.LoadFilter(type, block);
     }
+    auto LoadFilters(
+        const cfilter::Type type,
+        const Vector<block::pHash>& blocks) const noexcept
+        -> Vector<std::unique_ptr<const GCS>> final
+    {
+        return filters_.LoadFilters(type, blocks);
+    }
     auto LoadFilterHash(const cfilter::Type type, const ReadView block)
         const noexcept -> Hash final
     {
@@ -415,9 +423,10 @@ public:
     {
         return wallet_.LookupContact(pubkeyHash);
     }
-    auto RecentHashes() const noexcept -> UnallocatedVector<block::pHash> final
+    auto RecentHashes(alloc::Resource* alloc) const noexcept
+        -> Vector<block::pHash> final
     {
-        return headers_.RecentHashes();
+        return headers_.RecentHashes(alloc);
     }
     auto ReorgSync(const Height height) const noexcept -> bool final
     {
