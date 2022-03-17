@@ -81,13 +81,13 @@ struct SubchainData::Imp {
 
         try {
             const auto& key = cache_.DecodeIndex(subchain);
+            auto buf = std::array<std::byte, 1000u * sizeof(pPatternID)>{};
+            auto pmr = alloc::BoostMonotonic{
+                buf.data(), buf.size(), alloc::standard_to_boost(alloc)};
             const auto patterns = [&] {
                 const auto& all = cache_.GetPatternIndex(subchain);
                 const auto& matches = cache_.GetMatchIndex(blockID);
                 const auto count = std::min(all.size(), matches.size());
-                auto buf = std::array<std::byte, 1000u * sizeof(pPatternID)>{};
-                auto pmr = alloc::BoostMonotonic{
-                    buf.data(), buf.size(), alloc::standard_to_boost(alloc)};
                 auto out = Vector<pPatternID>{&pmr};
                 out.reserve(count);
                 std::set_difference(
