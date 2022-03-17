@@ -79,6 +79,7 @@
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -124,38 +125,44 @@ struct NullWallet final : public node::internal::Wallet {
     {
         return {};
     }
-    auto GetOutputs() const noexcept -> UnallocatedVector<UTXO> final
+    auto GetOutputs(alloc::Resource* alloc) const noexcept -> Vector<UTXO> final
     {
-        return {};
+        return Vector<UTXO>{alloc};
     }
-    auto GetOutputs(TxoState) const noexcept -> UnallocatedVector<UTXO> final
+    auto GetOutputs(TxoState, alloc::Resource* alloc) const noexcept
+        -> Vector<UTXO> final
     {
-        return {};
+        return Vector<UTXO>{alloc};
     }
-    auto GetOutputs(const identifier::Nym&) const noexcept
-        -> UnallocatedVector<UTXO> final
+    auto GetOutputs(const identifier::Nym&, alloc::Resource* alloc)
+        const noexcept -> Vector<UTXO> final
     {
-        return {};
+        return Vector<UTXO>{alloc};
     }
-    auto GetOutputs(const identifier::Nym&, TxoState) const noexcept
-        -> UnallocatedVector<UTXO> final
+    auto GetOutputs(const identifier::Nym&, TxoState, alloc::Resource* alloc)
+        const noexcept -> Vector<UTXO> final
     {
-        return {};
+        return Vector<UTXO>{alloc};
     }
-    auto GetOutputs(const identifier::Nym&, const Identifier&) const noexcept
-        -> UnallocatedVector<UTXO> final
+    auto GetOutputs(
+        const identifier::Nym&,
+        const Identifier&,
+        alloc::Resource* alloc) const noexcept -> Vector<UTXO> final
     {
-        return {};
+        return Vector<UTXO>{alloc};
     }
-    auto GetOutputs(const identifier::Nym&, const Identifier&, TxoState)
-        const noexcept -> UnallocatedVector<UTXO> final
+    auto GetOutputs(
+        const identifier::Nym&,
+        const Identifier&,
+        TxoState,
+        alloc::Resource* alloc) const noexcept -> Vector<UTXO> final
     {
-        return {};
+        return Vector<UTXO>{alloc};
     }
-    auto GetOutputs(const crypto::Key&, TxoState) const noexcept
-        -> UnallocatedVector<UTXO> final
+    auto GetOutputs(const crypto::Key&, TxoState, alloc::Resource* alloc)
+        const noexcept -> Vector<UTXO> final
     {
-        return {};
+        return Vector<UTXO>{alloc};
     }
     auto GetTags(const block::Outpoint& output) const noexcept
         -> UnallocatedSet<TxoTag> final

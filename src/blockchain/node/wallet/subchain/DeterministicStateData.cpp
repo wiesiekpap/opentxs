@@ -43,6 +43,7 @@
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/ScopeGuard.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -105,6 +106,7 @@ auto DeterministicStateData::handle_confirmed_matches(
     const block::Position& position,
     const block::Matches& confirmed) const noexcept -> void
 {
+    const auto start = Clock::now();
     const auto& [utxo, general] = confirmed;
     auto transactions = UnallocatedMap<
         block::pTxid,
@@ -126,11 +128,18 @@ auto DeterministicStateData::handle_confirmed_matches(
         process(match, transaction, arg);
     }
 
+    const auto processMatches = Clock::now();
+
     for (const auto& [tx, outpoint, element] : utxo) {
         auto& pTx = transactions[tx].second;
 
         if (nullptr == pTx) { pTx = block.at(tx->Bytes()).get(); }
     }
+
+    const auto buildTransactionMap = Clock::now();
+    log_(OT_PRETTY_CLASS())(name_)(" adding ")(transactions.size())(
+        " confirmed transaction to database")
+        .Flush();
 
     for (const auto& [txid, data] : transactions) {
         auto& [outputs, pTX] = data;
@@ -143,7 +152,7 @@ auto DeterministicStateData::handle_confirmed_matches(
         OT_ASSERT(index.has_value());
 
         auto updated = db_.AddConfirmedTransaction(
-            id_, subchain_, position, index.value(), outputs, *pTX);
+            id_, db_key_, position, index.value(), outputs, *pTX);
 
         OT_ASSERT(updated);  // TODO handle database errors
 
@@ -151,6 +160,17 @@ auto DeterministicStateData::handle_confirmed_matches(
             " finished processing confirmed transaction ")(tx.ID().asHex())
             .Flush();
     }
+
+    const auto updateDatabase = Clock::now();
+    log_(OT_PRETTY_CLASS())(name_)(" time to process matches: ")(
+        std::chrono::nanoseconds{processMatches - start})
+        .Flush();
+    log_(OT_PRETTY_CLASS())(name_)(" time to build transaction map: ")(
+        std::chrono::nanoseconds{buildTransactionMap - processMatches})
+        .Flush();
+    log_(OT_PRETTY_CLASS())(name_)(" time to update database: ")(
+        std::chrono::nanoseconds{updateDatabase - buildTransactionMap})
+        .Flush();
 }
 
 auto DeterministicStateData::handle_mempool_matches(

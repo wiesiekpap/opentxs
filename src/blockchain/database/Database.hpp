@@ -124,20 +124,15 @@ class Database final : public internal::Database
 {
 public:
     auto AddConfirmedTransaction(
-        const NodeID& balanceNode,
-        const Subchain subchain,
+        const NodeID& accountID,
+        const SubchainIndex& index,
         const block::Position& block,
         const std::size_t blockIndex,
         const UnallocatedVector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) noexcept -> bool final
     {
         return wallet_.AddConfirmedTransaction(
-            balanceNode,
-            subchain,
-            block,
-            blockIndex,
-            outputIndices,
-            transaction);
+            accountID, index, block, blockIndex, outputIndices, transaction);
     }
     auto AddMempoolTransaction(
         const NodeID& balanceNode,
@@ -270,37 +265,42 @@ public:
     {
         return wallet_.GetBalance(key);
     }
-    auto GetOutputs(node::TxoState type) const noexcept
-        -> UnallocatedVector<UTXO> final
+    auto GetOutputs(node::TxoState type, alloc::Resource* alloc) const noexcept
+        -> Vector<UTXO> final
     {
-        return wallet_.GetOutputs(type);
+        return wallet_.GetOutputs(type, alloc);
     }
-    auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
-        const noexcept -> UnallocatedVector<UTXO> final
+    auto GetOutputs(
+        const identifier::Nym& owner,
+        node::TxoState type,
+        alloc::Resource* alloc) const noexcept -> Vector<UTXO> final
     {
-        return wallet_.GetOutputs(owner, type);
+        return wallet_.GetOutputs(owner, type, alloc);
     }
     auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& node,
-        node::TxoState type) const noexcept -> UnallocatedVector<UTXO> final
+        node::TxoState type,
+        alloc::Resource* alloc) const noexcept -> Vector<UTXO> final
     {
-        return wallet_.GetOutputs(owner, node, type);
+        return wallet_.GetOutputs(owner, node, type, alloc);
     }
-    auto GetOutputs(const crypto::Key& key, node::TxoState type) const noexcept
-        -> UnallocatedVector<UTXO> final
+    auto GetOutputs(
+        const crypto::Key& key,
+        node::TxoState type,
+        alloc::Resource* alloc) const noexcept -> Vector<UTXO> final
     {
-        return wallet_.GetOutputs(key, type);
+        return wallet_.GetOutputs(key, type, alloc);
     }
     auto GetOutputTags(const block::Outpoint& output) const noexcept
         -> UnallocatedSet<node::TxoTag> final
     {
         return wallet_.GetOutputTags(output);
     }
-    auto GetPatterns(const SubchainIndex& index) const noexcept
-        -> Patterns final
+    auto GetPatterns(const SubchainIndex& index, alloc::Resource* alloc)
+        const noexcept -> Patterns final
     {
-        return wallet_.GetPatterns(index);
+        return wallet_.GetPatterns(index, alloc);
     }
     auto GetSubchainID(const NodeID& balanceNode, const Subchain subchain)
         const noexcept -> pSubchainIndex final
@@ -322,19 +322,24 @@ public:
     {
         return wallet_.GetUnconfirmedTransactions();
     }
-    auto GetUnspentOutputs() const noexcept -> UnallocatedVector<UTXO> final
+    auto GetUnspentOutputs(alloc::Resource* alloc) const noexcept
+        -> Vector<UTXO> final
     {
-        return wallet_.GetUnspentOutputs();
+        return wallet_.GetUnspentOutputs(alloc);
     }
-    auto GetUnspentOutputs(const NodeID& balanceNode, const Subchain subchain)
-        const noexcept -> UnallocatedVector<UTXO> final
+    auto GetUnspentOutputs(
+        const NodeID& balanceNode,
+        const Subchain subchain,
+        alloc::Resource* alloc) const noexcept -> Vector<UTXO> final
     {
-        return wallet_.GetUnspentOutputs(balanceNode, subchain);
+        return wallet_.GetUnspentOutputs(balanceNode, subchain, alloc);
     }
-    auto GetUntestedPatterns(const SubchainIndex& index, const ReadView blockID)
-        const noexcept -> Patterns final
+    auto GetUntestedPatterns(
+        const SubchainIndex& index,
+        const ReadView blockID,
+        alloc::Resource* alloc) const noexcept -> Patterns final
     {
-        return wallet_.GetUntestedPatterns(index, blockID);
+        return wallet_.GetUntestedPatterns(index, blockID, alloc);
     }
     auto GetWalletHeight() const noexcept -> block::Height final
     {
@@ -379,7 +384,7 @@ public:
     auto LoadFilters(
         const cfilter::Type type,
         const Vector<block::pHash>& blocks) const noexcept
-        -> Vector<std::unique_ptr<const GCS>> final
+        -> Vector<std::unique_ptr<const blockchain::GCS>> final
     {
         return filters_.LoadFilters(type, blocks);
     }

@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <memory>
 
 // fixture at global namespace
 class FixtureClassAtGlobalNameSpace : public ::testing::Test
@@ -25,13 +26,11 @@ public:
     void TearDown() override { mBool = false; }
 };
 
-TEST_F(FixtureClassAtGlobalNameSpace, simpleFixture)
-{
-    EXPECT_TRUE(getBool());
-}
+TEST_F(FixtureClassAtGlobalNameSpace, simpleFixture) { EXPECT_TRUE(getBool()); }
 
 // fixture at unnamed namespace
-namespace {
+namespace
+{
 
 class FixtureClassAtUnnamedNamespace : public ::testing::Test
 {
@@ -56,12 +55,13 @@ TEST_F(FixtureClassAtUnnamedNamespace, simpleFixture)
 {
     EXPECT_TRUE(getBool());
 }
-}
+}  // namespace
 
 // fixture at named namespace
-namespace ottest {
-namespace DummyTest {
-
+namespace ottest
+{
+namespace DummyTest
+{
 class FixtureClassInsideNamedNamespace : public ::testing::Test
 {
 private:
@@ -85,5 +85,5 @@ TEST_F(FixtureClassInsideNamedNamespace, simpleFixture)
 {
     EXPECT_TRUE(this->getBool());
 }
-}   // DummyTest
-}   // ottest
+}  // namespace DummyTest
+}  // namespace ottest

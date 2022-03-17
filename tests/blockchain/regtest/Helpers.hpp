@@ -469,9 +469,8 @@ protected:
         const std::size_t count,
         const Generator& gen,
         const ot::UnallocatedVector<Transaction>& extra = {}) noexcept -> bool;
-    auto TestUTXOs(
-        const Expected& expected,
-        const ot::UnallocatedVector<UTXO>& utxos) const noexcept -> bool;
+    auto TestUTXOs(const Expected& expected, const ot::Vector<UTXO>& utxos)
+        const noexcept -> bool;
     auto TestWallet(const ot::api::session::Client& api, const TXOState& state)
         const noexcept -> bool;
 
@@ -535,7 +534,7 @@ private:
     auto compare_outpoints(
         const ot::blockchain::node::TxoState type,
         const TXOState::Data& expected,
-        const ot::UnallocatedVector<UTXO>& got) const noexcept -> bool;
+        const ot::Vector<UTXO>& got) const noexcept -> bool;
 };
 
 class Regtest_fixture_normal : public Regtest_fixture_base

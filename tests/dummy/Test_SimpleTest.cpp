@@ -4,26 +4,19 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <memory>
 
 // test at global namespace
-TEST(SimpleTestAtGlobalNamespace, simpleTest)
-{
-    ASSERT_TRUE(true);
-}
+TEST(SimpleTestAtGlobalNamespace, simpleTest) { ASSERT_TRUE(true); }
 
 // test at unnamed namespace
-namespace {
-TEST(SimpleTestAtUnNamedNamespace, simpletest)
+namespace
 {
-    ASSERT_TRUE(true);
-}
+TEST(SimpleTestAtUnNamedNamespace, simpletest) { ASSERT_TRUE(true); }
+}  // namespace
 
 // test at named namespace
-namespace DummyTest {
-TEST(SimpleTestAtNamedNamespace, simpleTest)
+namespace ottest
 {
-    ASSERT_TRUE(true);
-}
-}       // namespace DummyTest {
-
-}
+TEST(SimpleTestAtNamedNamespace, simpleTest) { ASSERT_TRUE(true); }
+}  // namespace ottest

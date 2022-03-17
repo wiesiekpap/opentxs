@@ -5,14 +5,16 @@
 
 #pragma once
 
-namespace opentxs::dummyinterface
+namespace ottest
 {
-class Interface {
+class Interface
+{
 public:
-    virtual bool someFunction(const int &input) = 0;
+    virtual bool someFunction(const int& input) = 0;
     virtual bool someConstFunction(const int& input) = 0;
-    virtual bool someFunctionWithNoExcept(const int &input) noexcept= 0;
-    virtual bool someConstFunctionWithNoExcept(const int &input) const noexcept = 0;
+    virtual bool someFunctionWithNoExcept(const int& input) noexcept = 0;
+    virtual bool someConstFunctionWithNoExcept(
+        const int& input) const noexcept = 0;
 
     virtual ~Interface() = default;
 
@@ -20,9 +22,9 @@ protected:
     Interface() = default;
 
 private:
-    Interface(const Interface &) = delete;
+    Interface(const Interface&) = delete;
     Interface(Interface&&) = delete;
     Interface& operator=(const Interface&) = delete;
     Interface& operator=(const Interface&&) = delete;
 };
-}
+}  // namespace ottest

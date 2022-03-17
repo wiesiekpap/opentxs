@@ -55,6 +55,7 @@ struct Config;
 struct FilterOracle;
 struct Mempool;
 struct Network;
+struct PeerDatabase;
 struct PeerManager;
 }  // namespace internal
 

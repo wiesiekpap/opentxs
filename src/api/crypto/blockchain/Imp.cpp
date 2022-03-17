@@ -413,8 +413,8 @@ auto Blockchain::Imp::Confirm(
         const auto accountID = api_.Factory().Identifier(id);
 
         return get_node(accountID).Internal().Confirm(subchain, index, tx);
-    } catch (...) {
-        LogError()(OT_PRETTY_CLASS())("Invalid key index").Flush();
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return false;
     }

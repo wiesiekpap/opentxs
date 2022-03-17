@@ -3,27 +3,25 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <memory>
+
 #include "dummy/Mocks/DummyInterfaceMock.hpp"
 
-namespace
+namespace ottest
 {
-
 TEST(StrictMock, constructor)
 {
-    ::testing::StrictMock<::opentxs::dummyinterface::mock::Interface>
-        strictMock;
+    ::testing::StrictMock<::ottest::mock::Interface> strictMock;
 }
 
 TEST(StrictMock, strictMockOnFunction)
 {
-    ::testing::StrictMock<::opentxs::dummyinterface::mock::Interface>
-        strictMock;
+    ::testing::StrictMock<::ottest::mock::Interface> strictMock;
     ON_CALL(strictMock, someFunction(0))
         .WillByDefault(::testing::Return(false));
-    ON_CALL(strictMock, someFunction(1))
-        .WillByDefault(::testing::Return(true));
+    ON_CALL(strictMock, someFunction(1)).WillByDefault(::testing::Return(true));
 
     EXPECT_CALL(strictMock, someFunction(0)).Times(1);
     EXPECT_CALL(strictMock, someFunction(1)).Times(1);
@@ -34,8 +32,7 @@ TEST(StrictMock, strictMockOnFunction)
 
 TEST(StrictMock, strictMockOnConstFunction)
 {
-    ::testing::StrictMock<::opentxs::dummyinterface::mock::Interface>
-        strictMock;
+    ::testing::StrictMock<::ottest::mock::Interface> strictMock;
     ON_CALL(strictMock, someConstFunction(0))
         .WillByDefault(::testing::Return(false));
     ON_CALL(strictMock, someConstFunction(1))
@@ -50,8 +47,7 @@ TEST(StrictMock, strictMockOnConstFunction)
 
 TEST(StrictMock, strictMockOnNoExceptFunction)
 {
-    ::testing::StrictMock<::opentxs::dummyinterface::mock::Interface>
-        strictMock;
+    ::testing::StrictMock<::ottest::mock::Interface> strictMock;
     ON_CALL(strictMock, someFunctionWithNoExcept(0))
         .WillByDefault(::testing::Return(false));
     ON_CALL(strictMock, someFunctionWithNoExcept(1))
@@ -66,8 +62,7 @@ TEST(StrictMock, strictMockOnNoExceptFunction)
 
 TEST(StrictMock, strictMockOnNoExceptConstFunction)
 {
-    ::testing::StrictMock<::opentxs::dummyinterface::mock::Interface>
-        strictMock;
+    ::testing::StrictMock<::ottest::mock::Interface> strictMock;
     ON_CALL(strictMock, someConstFunctionWithNoExcept(0))
         .WillByDefault(::testing::Return(false));
     ON_CALL(strictMock, someConstFunctionWithNoExcept(1))
@@ -79,8 +74,4 @@ TEST(StrictMock, strictMockOnNoExceptConstFunction)
     EXPECT_TRUE(strictMock.someConstFunctionWithNoExcept(1));
     EXPECT_FALSE(strictMock.someConstFunctionWithNoExcept(0));
 }
-
-}     // namespace {
-
-
-
+}  // namespace ottest

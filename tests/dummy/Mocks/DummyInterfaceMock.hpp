@@ -6,20 +6,21 @@
 #pragma once
 
 #include <gmock/gmock.h>
+
 #include "dummy/Interfaces/DummyInterface.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
 
-namespace opentxs::dummyinterface
+namespace ottest
 {
 namespace mock
 {
-class Interface : public ::opentxs::dummyinterface::Interface
+class Interface : public ::ottest::Interface
 {
 public:
     Interface()
-        : ::opentxs::dummyinterface::Interface()
+        : ::ottest::Interface()
     {
     }
     MOCK_METHOD(bool, someFunction, (const int& input), (override));
@@ -36,7 +37,7 @@ public:
         (const, noexcept, override));
 };
 
-}       // namespace mock {
-}       // namespace opentxs::dummyinterface
+}  // namespace mock
+}  // namespace ottest
 
 #pragma GCC diagnostic pop
