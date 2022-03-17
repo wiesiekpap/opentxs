@@ -50,7 +50,7 @@ namespace opentxs::blockchain::node::wallet
 DeterministicStateData::DeterministicStateData(
     const api::Session& api,
     const node::internal::Network& node,
-    const node::internal::WalletDatabase& db,
+    node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
     const crypto::Deterministic& subaccount,
     const cfilter::Type filter,

@@ -79,7 +79,7 @@ namespace opentxs::blockchain::node::wallet
 SubchainStateData::SubchainStateData(
     const api::Session& api,
     const node::internal::Network& node,
-    const node::internal::WalletDatabase& db,
+    node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
     const crypto::SubaccountType accountType,
     const cfilter::Type filter,
@@ -143,7 +143,7 @@ SubchainStateData::SubchainStateData(
 SubchainStateData::SubchainStateData(
     const api::Session& api,
     const node::internal::Network& node,
-    const node::internal::WalletDatabase& db,
+    node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
     const crypto::SubaccountType accountType,
     const cfilter::Type filter,

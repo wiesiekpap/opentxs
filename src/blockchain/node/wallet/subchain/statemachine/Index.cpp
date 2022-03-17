@@ -82,7 +82,7 @@ auto Index::Imp::do_startup() noexcept -> void
 auto Index::Imp::done(
     const node::internal::WalletDatabase::ElementMap& elements) noexcept -> void
 {
-    const auto& db = parent_.db_;
+    auto& db = parent_.db_;
     const auto& index = parent_.db_key_;
     db.SubchainAddElements(index, elements);
     last_indexed_ = parent_.db_.SubchainLastIndexed(index);

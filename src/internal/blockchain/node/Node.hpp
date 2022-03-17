@@ -222,10 +222,9 @@ struct BlockDatabase {
     virtual auto BlockLoadBitcoin(const block::Hash& block) const noexcept
         -> std::shared_ptr<const block::bitcoin::Block> = 0;
     virtual auto BlockPolicy() const noexcept -> database::BlockStorage = 0;
-    virtual auto BlockStore(const block::Block& block) const noexcept
-        -> bool = 0;
+    virtual auto BlockStore(const block::Block& block) noexcept -> bool = 0;
     virtual auto BlockTip() const noexcept -> block::Position = 0;
-    virtual auto SetBlockTip(const block::Position& position) const noexcept
+    virtual auto SetBlockTip(const block::Position& position) noexcept
         -> bool = 0;
 
     virtual ~BlockDatabase() = default;
@@ -298,22 +297,22 @@ struct FilterDatabase {
         const ReadView block) const noexcept -> Hash = 0;
     virtual auto SetFilterHeaderTip(
         const cfilter::Type type,
-        const block::Position& position) const noexcept -> bool = 0;
+        const block::Position& position) noexcept -> bool = 0;
     virtual auto SetFilterTip(
         const cfilter::Type type,
-        const block::Position& position) const noexcept -> bool = 0;
+        const block::Position& position) noexcept -> bool = 0;
     virtual auto StoreFilters(
         const cfilter::Type type,
-        UnallocatedVector<Filter> filters) const noexcept -> bool = 0;
+        UnallocatedVector<Filter> filters) noexcept -> bool = 0;
     virtual auto StoreFilters(
         const cfilter::Type type,
         const UnallocatedVector<Header>& headers,
         const UnallocatedVector<Filter>& filters,
-        const block::Position& tip) const noexcept -> bool = 0;
+        const block::Position& tip) noexcept -> bool = 0;
     virtual auto StoreFilterHeaders(
         const cfilter::Type type,
         const ReadView previous,
-        const UnallocatedVector<Header> headers) const noexcept -> bool = 0;
+        const UnallocatedVector<Header> headers) noexcept -> bool = 0;
 
     virtual ~FilterDatabase() = default;
 };
@@ -397,14 +396,13 @@ struct PeerDatabase {
     using Service = blockchain::p2p::Service;
     using Type = blockchain::p2p::Network;
 
-    virtual auto AddOrUpdate(Address address) const noexcept -> bool = 0;
+    virtual auto AddOrUpdate(Address address) noexcept -> bool = 0;
     virtual auto Get(
         const Protocol protocol,
         const UnallocatedSet<Type> onNetworks,
         const UnallocatedSet<Service> withServices) const noexcept
         -> Address = 0;
-    virtual auto Import(UnallocatedVector<Address> peers) const noexcept
-        -> bool = 0;
+    virtual auto Import(UnallocatedVector<Address> peers) noexcept -> bool = 0;
 
     virtual ~PeerDatabase() = default;
 };
@@ -444,7 +442,6 @@ struct PeerManager {
     virtual auto BroadcastTransaction(
         const block::bitcoin::Transaction& tx) const noexcept -> bool = 0;
     virtual auto Connect() noexcept -> bool = 0;
-    virtual auto Database() const noexcept -> const PeerDatabase& = 0;
     virtual auto Disconnect(const int id) const noexcept -> void = 0;
     virtual auto Endpoint(const Task type) const noexcept
         -> UnallocatedCString = 0;
@@ -532,13 +529,14 @@ struct SyncDatabase {
     using Items = UnallocatedVector<network::p2p::Block>;
     using Message = network::p2p::Data;
 
-    virtual auto LoadSync(const Height height, Message& output) const noexcept
+    virtual auto LoadSync(const Height height, Message& output) noexcept
         -> bool = 0;
-    virtual auto ReorgSync(const Height height) const noexcept -> bool = 0;
-    virtual auto SetSyncTip(const block::Position& position) const noexcept
+    virtual auto ReorgSync(const Height height) noexcept -> bool = 0;
+    virtual auto SetSyncTip(const block::Position& position) noexcept
         -> bool = 0;
-    virtual auto StoreSync(const block::Position& tip, const Items& items)
-        const noexcept -> bool = 0;
+    virtual auto StoreSync(
+        const block::Position& tip,
+        const Items& items) noexcept -> bool = 0;
     virtual auto SyncTip() const noexcept -> block::Position = 0;
 
     virtual ~SyncDatabase() = default;
@@ -591,34 +589,28 @@ struct WalletDatabase {
         const block::Position& block,
         const std::size_t blockIndex,
         const UnallocatedVector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction) const noexcept
-        -> bool = 0;
+        const block::bitcoin::Transaction& transaction) noexcept -> bool = 0;
     virtual auto AddMempoolTransaction(
         const NodeID& balanceNode,
         const Subchain subchain,
         const UnallocatedVector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction) const noexcept
-        -> bool = 0;
+        const block::bitcoin::Transaction& transaction) noexcept -> bool = 0;
     virtual auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
-        const block::bitcoin::Transaction& transaction) const noexcept
-        -> bool = 0;
+        const block::bitcoin::Transaction& transaction) noexcept -> bool = 0;
     virtual auto AddProposal(
         const Identifier& id,
-        const proto::BlockchainTransactionProposal& tx) const noexcept
-        -> bool = 0;
-    virtual auto AdvanceTo(const block::Position& pos) const noexcept
-        -> bool = 0;
-    virtual auto CancelProposal(const Identifier& id) const noexcept
-        -> bool = 0;
+        const proto::BlockchainTransactionProposal& tx) noexcept -> bool = 0;
+    virtual auto AdvanceTo(const block::Position& pos) noexcept -> bool = 0;
+    virtual auto CancelProposal(const Identifier& id) noexcept -> bool = 0;
     virtual auto CompletedProposals() const noexcept
         -> UnallocatedSet<OTIdentifier> = 0;
     virtual auto FinalizeReorg(
         storage::lmdb::LMDB::Transaction& tx,
-        const block::Position& pos) const noexcept -> bool = 0;
+        const block::Position& pos) noexcept -> bool = 0;
     virtual auto ForgetProposals(
-        const UnallocatedSet<OTIdentifier>& ids) const noexcept -> bool = 0;
+        const UnallocatedSet<OTIdentifier>& ids) noexcept -> bool = 0;
     virtual auto GetBalance() const noexcept -> Balance = 0;
     virtual auto GetBalance(const identifier::Nym& owner) const noexcept
         -> Balance = 0;
@@ -671,17 +663,15 @@ struct WalletDatabase {
         const NodeID& balanceNode,
         const Subchain subchain,
         const SubchainIndex& index,
-        const UnallocatedVector<block::Position>& reorg) const noexcept
-        -> bool = 0;
+        const UnallocatedVector<block::Position>& reorg) noexcept -> bool = 0;
     virtual auto ReserveUTXO(
         const identifier::Nym& spender,
         const Identifier& proposal,
-        SpendPolicy& policy) const noexcept -> std::optional<UTXO> = 0;
-    virtual auto StartReorg() const noexcept
-        -> storage::lmdb::LMDB::Transaction = 0;
+        SpendPolicy& policy) noexcept -> std::optional<UTXO> = 0;
+    virtual auto StartReorg() noexcept -> storage::lmdb::LMDB::Transaction = 0;
     virtual auto SubchainAddElements(
         const SubchainIndex& index,
-        const ElementMap& elements) const noexcept -> bool = 0;
+        const ElementMap& elements) noexcept -> bool = 0;
     virtual auto SubchainLastIndexed(const SubchainIndex& index) const noexcept
         -> std::optional<Bip32Index> = 0;
     virtual auto SubchainLastScanned(const SubchainIndex& index) const noexcept

@@ -126,7 +126,7 @@ public:
 
     const api::Session& api_;
     const node::internal::Network& node_;
-    const node::internal::WalletDatabase& db_;
+    node::internal::WalletDatabase& db_;
     const node::internal::Mempool& mempool_oracle_;
     const OTNymID owner_;
     const crypto::SubaccountType account_type_;
@@ -201,7 +201,7 @@ protected:
     SubchainStateData(
         const api::Session& api,
         const node::internal::Network& node,
-        const node::internal::WalletDatabase& db,
+        node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const crypto::SubaccountType accountType,
         const cfilter::Type filter,
@@ -271,7 +271,7 @@ private:
     SubchainStateData(
         const api::Session& api,
         const node::internal::Network& node,
-        const node::internal::WalletDatabase& db,
+        node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const crypto::SubaccountType accountType,
         const cfilter::Type filter,

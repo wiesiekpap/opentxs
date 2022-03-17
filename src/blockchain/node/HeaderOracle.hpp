@@ -152,7 +152,7 @@ public:
 
     HeaderOracle(
         const api::Session& api,
-        const internal::HeaderDatabase& database,
+        internal::HeaderDatabase& database,
         const blockchain::Type type) noexcept;
 
     ~HeaderOracle() final = default;
@@ -166,7 +166,7 @@ private:
     using Candidates = UnallocatedVector<Candidate>;
 
     const api::Session& api_;
-    const internal::HeaderDatabase& database_;
+    internal::HeaderDatabase& database_;
     const blockchain::Type chain_;
     mutable std::mutex lock_;
 

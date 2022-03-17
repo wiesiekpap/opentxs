@@ -156,7 +156,7 @@ public:
             const node::HeaderOracle& headers,
             const node::internal::FilterOracle& filter,
             const node::internal::BlockOracle& block,
-            const node::internal::PeerDatabase& database,
+            node::internal::PeerDatabase& database,
             const node::internal::PeerManager& parent,
             const database::BlockStorage policy,
             const UnallocatedCString& shutdown,
@@ -178,7 +178,7 @@ public:
         const node::HeaderOracle& headers_;
         const node::internal::FilterOracle& filter_;
         const node::internal::BlockOracle& block_;
-        const node::internal::PeerDatabase& database_;
+        node::internal::PeerDatabase& database_;
         const node::internal::PeerManager& parent_;
         const network::zeromq::socket::Publish& connected_peers_;
         const database::BlockStorage policy_;
@@ -243,10 +243,6 @@ public:
     auto BroadcastBlock(const block::Block& block) const noexcept -> bool final;
     auto BroadcastTransaction(
         const block::bitcoin::Transaction& tx) const noexcept -> bool final;
-    auto Database() const noexcept -> const node::internal::PeerDatabase& final
-    {
-        return database_;
-    }
     auto Connect() noexcept -> bool final;
     auto Disconnect(const int id) const noexcept -> void final;
     auto Endpoint(const Task type) const noexcept -> UnallocatedCString final
@@ -289,7 +285,7 @@ public:
         const node::HeaderOracle& headers,
         const node::internal::FilterOracle& filter,
         const node::internal::BlockOracle& block,
-        const node::internal::PeerDatabase& database,
+        node::internal::PeerDatabase& database,
         const Type chain,
         const database::BlockStorage policy,
         const UnallocatedCString& seednode,
@@ -335,7 +331,7 @@ private:
     };
 
     const node::internal::Network& node_;
-    const node::internal::PeerDatabase& database_;
+    node::internal::PeerDatabase& database_;
     const Type chain_;
     mutable Jobs jobs_;
     mutable Peers peers_;
