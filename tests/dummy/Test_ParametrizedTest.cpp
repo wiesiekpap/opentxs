@@ -4,16 +4,19 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <ostream>
+#include <string>
 
 // parametrized test at global namespace
 struct ParametrizedTestAtGlobalNamespaceStruct {
     ::std::string mName;
     bool mExpectedValue;
 
-    friend ::std::ostream &operator << (::std::ostream &os, const ParametrizedTestAtGlobalNamespaceStruct&obj)
+    friend ::std::ostream& operator<<(
+        ::std::ostream& os,
+        const ParametrizedTestAtGlobalNamespaceStruct& obj)
     {
-        return os
-               << "Test name: '" << obj.mName << "'";
+        return os << "Test name: '" << obj.mName << "'";
     }
 };
 
@@ -37,17 +40,15 @@ public:
 };
 
 ParametrizedTestAtGlobalNamespaceStruct
-    ParametrizedClassAtGlobalNamespace_TestVector[] =
-        {
-            {"YES", true},
-            {"NO", false},
+    ParametrizedClassAtGlobalNamespace_TestVector[] = {
+        {"YES", true},
+        {"NO", false},
 };
 
 INSTANTIATE_TEST_CASE_P(
     ParametrizedTestAtGlobalNamespace,
     ParametrizedTestAtGlobalNamespaceClass,
-    ::testing::ValuesIn(ParametrizedClassAtGlobalNamespace_TestVector)
-);
+    ::testing::ValuesIn(ParametrizedClassAtGlobalNamespace_TestVector));
 
 TEST_P(ParametrizedTestAtGlobalNamespaceClass, simpleParametrizedTest)
 {
@@ -103,14 +104,13 @@ TEST_P(ParametrizedTestAtUnnamedNamespaceClass, simpleParametrizedTest)
 {
     EXPECT_EQ(getBool(), GetParam().mExpectedValue);
 }
-}       // namespace
+}  // namespace
 
 // parametrized test at named namespace
 namespace ottest
 {
 namespace DummyTest
 {
-
 struct ParametrizedTestAtNamedNamespaceStruct {
     ::std::string mName;
     bool mExpectedValue;
@@ -158,5 +158,5 @@ TEST_P(ParametrizedTestAtNamedNamespaceClass, simpleParametrizedTest)
     EXPECT_EQ(getBool(), GetParam().mExpectedValue);
 }
 
-}  // namespace  DummyTest
-}       // namespace ottest {
+}  // namespace DummyTest
+}  // namespace ottest

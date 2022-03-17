@@ -576,7 +576,7 @@ struct WalletDatabase {
     using ElementID = std::pair<Bip32Index, SubchainID>;
     using ElementMap = UnallocatedMap<Bip32Index, UnallocatedVector<Space>>;
     using Pattern = std::pair<ElementID, Space>;
-    using Patterns = UnallocatedVector<Pattern>;
+    using Patterns = Vector<Pattern>;
     using MatchingIndices = UnallocatedVector<Bip32Index>;
     using UTXO = std::pair<
         blockchain::block::Outpoint,
@@ -585,7 +585,7 @@ struct WalletDatabase {
 
     virtual auto AddConfirmedTransaction(
         const NodeID& balanceNode,
-        const Subchain subchain,
+        const SubchainIndex& index,
         const block::Position& block,
         const std::size_t blockIndex,
         const UnallocatedVector<std::uint32_t> outputIndices,
@@ -618,19 +618,31 @@ struct WalletDatabase {
         const noexcept -> Balance = 0;
     virtual auto GetBalance(const crypto::Key& key) const noexcept
         -> Balance = 0;
-    virtual auto GetOutputs(node::TxoState type) const noexcept
-        -> UnallocatedVector<UTXO> = 0;
-    virtual auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
-        const noexcept -> UnallocatedVector<UTXO> = 0;
+    virtual auto GetOutputs(
+        node::TxoState type,
+        alloc::Resource* alloc = alloc::System()) const noexcept
+        -> Vector<UTXO> = 0;
+    virtual auto GetOutputs(
+        const identifier::Nym& owner,
+        node::TxoState type,
+        alloc::Resource* alloc = alloc::System()) const noexcept
+        -> Vector<UTXO> = 0;
     virtual auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& node,
-        node::TxoState type) const noexcept -> UnallocatedVector<UTXO> = 0;
-    virtual auto GetOutputs(const crypto::Key& key, TxoState type)
-        const noexcept -> UnallocatedVector<UTXO> = 0;
+        node::TxoState type,
+        alloc::Resource* alloc = alloc::System()) const noexcept
+        -> Vector<UTXO> = 0;
+    virtual auto GetOutputs(
+        const crypto::Key& key,
+        TxoState type,
+        alloc::Resource* alloc = alloc::System()) const noexcept
+        -> Vector<UTXO> = 0;
     virtual auto GetOutputTags(const block::Outpoint& output) const noexcept
         -> UnallocatedSet<node::TxoTag> = 0;
-    virtual auto GetPatterns(const SubchainIndex& index) const noexcept
+    virtual auto GetPatterns(
+        const SubchainIndex& index,
+        alloc::Resource* alloc = alloc::System()) const noexcept
         -> Patterns = 0;
     virtual auto GetSubchainID(
         const NodeID& balanceNode,
@@ -641,14 +653,18 @@ struct WalletDatabase {
         -> UnallocatedVector<block::pTxid> = 0;
     virtual auto GetUnconfirmedTransactions() const noexcept
         -> UnallocatedSet<block::pTxid> = 0;
-    virtual auto GetUnspentOutputs() const noexcept
-        -> UnallocatedVector<UTXO> = 0;
+    virtual auto GetUnspentOutputs(alloc::Resource* alloc = alloc::System())
+        const noexcept -> Vector<UTXO> = 0;
     virtual auto GetUnspentOutputs(
         const NodeID& balanceNode,
-        const Subchain subchain) const noexcept -> UnallocatedVector<UTXO> = 0;
+        const Subchain subchain,
+        alloc::Resource* alloc = alloc::System()) const noexcept
+        -> Vector<UTXO> = 0;
     virtual auto GetUntestedPatterns(
         const SubchainIndex& index,
-        const ReadView blockID) const noexcept -> Patterns = 0;
+        const ReadView blockID,
+        alloc::Resource* alloc = alloc::System()) const noexcept
+        -> Patterns = 0;
     virtual auto GetWalletHeight() const noexcept -> block::Height = 0;
     virtual auto LoadProposal(const Identifier& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal> = 0;

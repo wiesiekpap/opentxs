@@ -41,7 +41,6 @@
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "util/Gatekeeper.hpp"
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -84,16 +83,11 @@ protected:
 
     const Log& log_;
     mutable std::recursive_timed_mutex reorg_lock_;
-    Gatekeeper gatekeeper_;
     network::zeromq::Pipeline pipeline_;
     bool disable_automatic_processing_;
 
     auto trigger() const noexcept -> void
     {
-        auto shutdown = gatekeeper_.get();
-
-        if (shutdown) { return; }
-
         const auto running = state_machine_queued_.exchange(true);
 
         if (false == running) {
@@ -180,7 +174,6 @@ protected:
         , running_(true)
         , log_(logger)
         , reorg_lock_()
-        , gatekeeper_()
         , pipeline_(api.Network().ZeroMQ().Internal().Pipeline(
               {},
               subscribe,
@@ -199,7 +192,7 @@ protected:
         , delay_(50, 150)
         , retry_(api.Network().Asio().Internal().GetTimer())
     {
-        LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(pipeline_.BatchID())
+        log_(OT_PRETTY_CLASS())("using ZMQ batch ")(pipeline_.BatchID())
             .Flush();
     }
 
@@ -221,7 +214,7 @@ private:
             rate_limit_ - (Clock::now() - last_executed_));
 
         if (0 < wait.count()) {
-            LogInsane()(OT_PRETTY_CLASS())("rate limited for ")(wait.count())(
+            log_(OT_PRETTY_CLASS())("rate limited for ")(wait.count())(
                 " microseconds")
                 .Flush();
             Sleep(wait);
@@ -293,6 +286,7 @@ private:
 
         if (isInit) {
             do_init();
+            flush_cache();
 
             return;
         }
@@ -313,41 +307,32 @@ private:
             return;
         }
 
-        {
-            // NOTE do not process any messages after shutdown is ordered
-            auto shutdown = gatekeeper_.get();
+        if (disable_automatic_processing_) {
+            log_(OT_PRETTY_CLASS())("processing ")(type)(" in bypass mode")
+                .Flush();
+            downcast().pipeline(work, std::move(in));
 
-            if (shutdown || (false == running_)) { return; }
+            return;
+        } else {
+            flush_cache();
+        }
 
-            if (disable_automatic_processing_) {
-                log_(OT_PRETTY_CLASS())("processing ")(type)(" in bypass mode")
-                    .Flush();
+        switch (static_cast<OTZMQWorkType>(work)) {
+            case value(WorkType::Shutdown): {
+                log_(OT_PRETTY_CLASS())("shutting down").Flush();
+                this->shutdown_actor();
+            } break;
+            case OT_ZMQ_STATE_MACHINE_SIGNAL: {
+                log_(OT_PRETTY_CLASS())("executing state machine").Flush();
+                do_work();
+            } break;
+            default: {
+                log_(OT_PRETTY_CLASS())("processing ")(type).Flush();
                 downcast().pipeline(work, std::move(in));
-
-                return;
-            } else {
-                flush_cache();
-            }
-
-            switch (static_cast<OTZMQWorkType>(work)) {
-                case value(WorkType::Shutdown): {
-                    log_(OT_PRETTY_CLASS())("shutting down").Flush();
-                    this->shutdown_actor();
-                } break;
-                case OT_ZMQ_STATE_MACHINE_SIGNAL: {
-                    log_(OT_PRETTY_CLASS())("executing state machine").Flush();
-                    do_work();
-                } break;
-                default: {
-                    log_(OT_PRETTY_CLASS())("processing ")(type).Flush();
-                    downcast().pipeline(work, std::move(in));
-                }
             }
         }
 
         log_(OT_PRETTY_CLASS())("message processing complete").Flush();
-
-        if (false == running_) { gatekeeper_.shutdown(); }
     }
 };
 }  // namespace opentxs

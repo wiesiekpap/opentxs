@@ -3,21 +3,19 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <memory>
+
 #include "dummy/Mocks/DummyInterfaceMock.hpp"
 
-namespace
+namespace ottest
 {
-
-TEST(NaggyMock, constructor)
-{
-    ::opentxs::dummyinterface::mock::Interface naggyMock;
-}
+TEST(NaggyMock, constructor) { ::ottest::mock::Interface naggyMock; }
 
 TEST(NaggyMock, naggyMockOnFunction)
 {
-    ::opentxs::dummyinterface::mock::Interface naggyMock;
+    ::ottest::mock::Interface naggyMock;
     ON_CALL(naggyMock, someFunction(0)).WillByDefault(::testing::Return(false));
     ON_CALL(naggyMock, someFunction(1)).WillByDefault(::testing::Return(true));
 
@@ -35,7 +33,7 @@ TEST(NaggyMock, naggyMockOnFunction)
 
 TEST(NaggyMock, naggyMockOnConstFunction)
 {
-    ::opentxs::dummyinterface::mock::Interface naggyMock;
+    ::ottest::mock::Interface naggyMock;
     ON_CALL(naggyMock, someConstFunction(0))
         .WillByDefault(::testing::Return(false));
     ON_CALL(naggyMock, someConstFunction(1))
@@ -55,7 +53,7 @@ TEST(NaggyMock, naggyMockOnConstFunction)
 
 TEST(NaggyMock, naggyMockOnNoExceptFunction)
 {
-    ::opentxs::dummyinterface::mock::Interface naggyMock;
+    ::ottest::mock::Interface naggyMock;
     ON_CALL(naggyMock, someFunctionWithNoExcept(0))
         .WillByDefault(::testing::Return(false));
     ON_CALL(naggyMock, someFunctionWithNoExcept(1))
@@ -75,7 +73,7 @@ TEST(NaggyMock, naggyMockOnNoExceptFunction)
 
 TEST(NaggyMock, naggyMockOnNoExceptConstFunction)
 {
-    ::opentxs::dummyinterface::mock::Interface naggyMock;
+    ::ottest::mock::Interface naggyMock;
     ON_CALL(naggyMock, someConstFunctionWithNoExcept(0))
         .WillByDefault(::testing::Return(false));
     ON_CALL(naggyMock, someConstFunctionWithNoExcept(1))
@@ -92,5 +90,4 @@ TEST(NaggyMock, naggyMockOnNoExceptConstFunction)
         .WillByDefault(::testing::Return(true));
     EXPECT_TRUE(naggyMock.someFunction(2));
 }
-
-}      // namespace {
+}  // namespace ottest

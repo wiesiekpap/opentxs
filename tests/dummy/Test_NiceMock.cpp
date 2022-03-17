@@ -3,22 +3,22 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <memory>
+
 #include "dummy/Mocks/DummyInterfaceMock.hpp"
 
-namespace
+namespace ottest
 {
-
 TEST(NiceMock, constructor)
 {
-    ::testing::NiceMock<::opentxs::dummyinterface::mock::Interface>
-        mockInstance;
+    ::testing::NiceMock<::ottest::mock::Interface> mockInstance;
 }
 
 TEST(NiceMock, niceMockOnFunction)
 {
-    ::testing::NiceMock<::opentxs::dummyinterface::mock::Interface> niceMock;
+    ::testing::NiceMock<::ottest::mock::Interface> niceMock;
     ON_CALL(niceMock, someFunction(0)).WillByDefault(::testing::Return(false));
     ON_CALL(niceMock, someFunction(1)).WillByDefault(::testing::Return(true));
 
@@ -36,7 +36,7 @@ TEST(NiceMock, niceMockOnFunction)
 
 TEST(NiceMock, niceMockOnConstFunction)
 {
-    ::testing::NiceMock<::opentxs::dummyinterface::mock::Interface> niceMock;
+    ::testing::NiceMock<::ottest::mock::Interface> niceMock;
     ON_CALL(niceMock, someConstFunction(0))
         .WillByDefault(::testing::Return(false));
     ON_CALL(niceMock, someConstFunction(1))
@@ -56,7 +56,7 @@ TEST(NiceMock, niceMockOnConstFunction)
 
 TEST(NiceMock, niceMockOnNoExceptFunction)
 {
-    ::testing::NiceMock<::opentxs::dummyinterface::mock::Interface> niceMock;
+    ::testing::NiceMock<::ottest::mock::Interface> niceMock;
     ON_CALL(niceMock, someFunctionWithNoExcept(0))
         .WillByDefault(::testing::Return(false));
     ON_CALL(niceMock, someFunctionWithNoExcept(1))
@@ -76,7 +76,7 @@ TEST(NiceMock, niceMockOnNoExceptFunction)
 
 TEST(NiceMock, niceMockOnNoExceptConstFunction)
 {
-    ::testing::NiceMock<::opentxs::dummyinterface::mock::Interface> niceMock;
+    ::testing::NiceMock<::ottest::mock::Interface> niceMock;
     ON_CALL(niceMock, someConstFunctionWithNoExcept(0))
         .WillByDefault(::testing::Return(false));
     ON_CALL(niceMock, someConstFunctionWithNoExcept(1))
@@ -93,5 +93,4 @@ TEST(NiceMock, niceMockOnNoExceptConstFunction)
         .WillByDefault(::testing::Return(true));
     EXPECT_TRUE(niceMock.someFunction(2));
 }
-
-}      // namespace {
+}  // namespace ottest

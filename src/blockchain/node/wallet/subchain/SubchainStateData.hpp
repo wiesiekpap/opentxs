@@ -47,6 +47,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Actor.hpp"
@@ -175,24 +176,29 @@ public:
 
 protected:
     using Transactions =
-        UnallocatedVector<std::shared_ptr<const block::bitcoin::Transaction>>;
+        Vector<std::shared_ptr<const block::bitcoin::Transaction>>;
     using Task = node::internal::Wallet::Task;
     using Patterns = WalletDatabase::Patterns;
-    using UTXOs = UnallocatedVector<WalletDatabase::UTXO>;
+    using UTXOs = Vector<WalletDatabase::UTXO>;
     using Targets = GCS::Targets;
     using Tested = WalletDatabase::MatchingIndices;
 
-    auto get_account_targets() const noexcept
+    auto get_account_targets(alloc::Resource* alloc) const noexcept
         -> std::tuple<Patterns, UTXOs, Targets>;
-    auto get_block_targets(const block::Hash& id, const UTXOs& utxos)
-        const noexcept -> std::pair<Patterns, Targets>;
-    auto get_block_targets(const block::Hash& id, Tested& tested) const noexcept
+    auto get_block_targets(
+        const block::Hash& id,
+        const UTXOs& utxos,
+        alloc::Resource* alloc) const noexcept -> std::pair<Patterns, Targets>;
+    auto get_block_targets(
+        const block::Hash& id,
+        Tested& tested,
+        alloc::Resource* alloc) const noexcept
         -> std::tuple<Patterns, UTXOs, Targets, Patterns>;
     auto set_key_data(block::bitcoin::Transaction& tx) const noexcept -> void;
     auto supported_scripts(const crypto::Element& element) const noexcept
         -> UnallocatedVector<ScriptForm>;
     auto translate(
-        const UnallocatedVector<WalletDatabase::UTXO>& utxos,
+        const Vector<WalletDatabase::UTXO>& utxos,
         Patterns& outpoints) const noexcept -> void;
 
     virtual auto do_startup() noexcept -> void;
@@ -235,11 +241,11 @@ private:
         -> Index = 0;
     auto get_targets(
         const Patterns& elements,
-        const UnallocatedVector<WalletDatabase::UTXO>& utxos,
+        const Vector<WalletDatabase::UTXO>& utxos,
         Targets& targets) const noexcept -> void;
     auto get_targets(
         const Patterns& elements,
-        const UnallocatedVector<WalletDatabase::UTXO>& utxos,
+        const Vector<WalletDatabase::UTXO>& utxos,
         Targets& targets,
         Patterns& outpoints,
         Tested& tested) const noexcept -> void;

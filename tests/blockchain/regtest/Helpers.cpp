@@ -630,7 +630,7 @@ auto Regtest_fixture_base::compare_outpoints(
 auto Regtest_fixture_base::compare_outpoints(
     const ot::blockchain::node::TxoState type,
     const TXOState::Data& expected,
-    const ot::UnallocatedVector<UTXO>& got) const noexcept -> bool
+    const ot::Vector<UTXO>& got) const noexcept -> bool
 {
     auto output{true};
     static const auto emptySet =
@@ -1029,7 +1029,7 @@ auto Regtest_fixture_base::Start() noexcept -> bool
 
 auto Regtest_fixture_base::TestUTXOs(
     const Expected& expected,
-    const ot::UnallocatedVector<UTXO>& utxos) const noexcept -> bool
+    const ot::Vector<UTXO>& utxos) const noexcept -> bool
 {
     auto out = true;
 

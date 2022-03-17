@@ -61,7 +61,7 @@ auto lock_for_reorg(std::recursive_timed_mutex& mutex) noexcept
     auto failures{-1};
 
     while (false == lock.owns_lock()) {
-        OT_ASSERT(++failures < 300);
+        OT_ASSERT(++failures < 600);
 
         const auto delay = std::chrono::milliseconds{dist(rng)};
         lock.try_lock_for(delay);
@@ -139,31 +139,35 @@ auto Wallet::GetBalance(const crypto::Key& key) const noexcept -> Balance
     return db_.GetBalance(key);
 }
 
-auto Wallet::GetOutputs() const noexcept -> UnallocatedVector<UTXO>
+auto Wallet::GetOutputs(alloc::Resource* alloc) const noexcept -> Vector<UTXO>
 {
-    return GetOutputs(TxoState::All);
+    return GetOutputs(TxoState::All, alloc);
 }
 
-auto Wallet::GetOutputs(TxoState type) const noexcept -> UnallocatedVector<UTXO>
+auto Wallet::GetOutputs(TxoState type, alloc::Resource* alloc) const noexcept
+    -> Vector<UTXO>
 {
-    return db_.GetOutputs(type);
+    return db_.GetOutputs(type, alloc);
 }
 
-auto Wallet::GetOutputs(const identifier::Nym& owner) const noexcept
-    -> UnallocatedVector<UTXO>
+auto Wallet::GetOutputs(const identifier::Nym& owner, alloc::Resource* alloc)
+    const noexcept -> Vector<UTXO>
 {
     return GetOutputs(owner, TxoState::All);
 }
 
-auto Wallet::GetOutputs(const identifier::Nym& owner, TxoState type)
-    const noexcept -> UnallocatedVector<UTXO>
+auto Wallet::GetOutputs(
+    const identifier::Nym& owner,
+    TxoState type,
+    alloc::Resource* alloc) const noexcept -> Vector<UTXO>
 {
-    return db_.GetOutputs(owner, type);
+    return db_.GetOutputs(owner, type, alloc);
 }
 
 auto Wallet::GetOutputs(
     const identifier::Nym& owner,
-    const Identifier& subaccount) const noexcept -> UnallocatedVector<UTXO>
+    const Identifier& subaccount,
+    alloc::Resource* alloc) const noexcept -> Vector<UTXO>
 {
     return GetOutputs(owner, subaccount, TxoState::All);
 }
@@ -171,15 +175,18 @@ auto Wallet::GetOutputs(
 auto Wallet::GetOutputs(
     const identifier::Nym& owner,
     const Identifier& node,
-    TxoState type) const noexcept -> UnallocatedVector<UTXO>
+    TxoState type,
+    alloc::Resource* alloc) const noexcept -> Vector<UTXO>
 {
-    return db_.GetOutputs(owner, node, type);
+    return db_.GetOutputs(owner, node, type, alloc);
 }
 
-auto Wallet::GetOutputs(const crypto::Key& key, TxoState type) const noexcept
-    -> UnallocatedVector<UTXO>
+auto Wallet::GetOutputs(
+    const crypto::Key& key,
+    TxoState type,
+    alloc::Resource* alloc) const noexcept -> Vector<UTXO>
 {
-    return db_.GetOutputs(key, type);
+    return db_.GetOutputs(key, type, alloc);
 }
 
 auto Wallet::GetTags(const block::Outpoint& output) const noexcept

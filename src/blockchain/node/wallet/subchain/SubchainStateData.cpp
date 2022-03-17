@@ -8,6 +8,7 @@
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <iterator>
 #include <memory>
@@ -44,6 +45,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/ByteLiterals.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -324,13 +326,13 @@ auto SubchainStateData::do_startup() noexcept -> void
     do_work();
 }
 
-auto SubchainStateData::get_account_targets() const noexcept
-    -> std::tuple<Patterns, UTXOs, Targets>
+auto SubchainStateData::get_account_targets(alloc::Resource* alloc)
+    const noexcept -> std::tuple<Patterns, UTXOs, Targets>
 {
     auto out = std::tuple<Patterns, UTXOs, Targets>{};
     auto& [elements, utxos, targets] = out;
-    elements = db_.GetPatterns(db_key_);
-    utxos = db_.GetUnspentOutputs(id_, subchain_);
+    elements = db_.GetPatterns(db_key_, alloc);
+    utxos = db_.GetUnspentOutputs(id_, subchain_, alloc);
     get_targets(elements, utxos, targets);
 
     return out;
@@ -338,23 +340,27 @@ auto SubchainStateData::get_account_targets() const noexcept
 
 auto SubchainStateData::get_block_targets(
     const block::Hash& id,
-    const UTXOs& utxos) const noexcept -> std::pair<Patterns, Targets>
+    const UTXOs& utxos,
+    alloc::Resource* alloc) const noexcept -> std::pair<Patterns, Targets>
 {
     auto out = std::pair<Patterns, Targets>{};
     auto& [elements, targets] = out;
-    elements = db_.GetUntestedPatterns(db_key_, id.Bytes());
+    elements = db_.GetUntestedPatterns(db_key_, id.Bytes(), alloc);
     get_targets(elements, utxos, targets);
 
     return out;
 }
 
-auto SubchainStateData::get_block_targets(const block::Hash& id, Tested& tested)
-    const noexcept -> std::tuple<Patterns, UTXOs, Targets, Patterns>
+auto SubchainStateData::get_block_targets(
+    const block::Hash& id,
+    Tested& tested,
+    alloc::Resource* alloc) const noexcept
+    -> std::tuple<Patterns, UTXOs, Targets, Patterns>
 {
     auto out = std::tuple<Patterns, UTXOs, Targets, Patterns>{};
     auto& [elements, utxos, targets, outpoints] = out;
-    elements = db_.GetUntestedPatterns(db_key_, id.Bytes());
-    utxos = db_.GetUnspentOutputs(id_, subchain_);
+    elements = db_.GetUntestedPatterns(db_key_, id.Bytes(), alloc);
+    utxos = db_.GetUnspentOutputs(id_, subchain_, alloc);
     get_targets(elements, utxos, targets, outpoints, tested);
 
     return out;
@@ -363,7 +369,7 @@ auto SubchainStateData::get_block_targets(const block::Hash& id, Tested& tested)
 // NOTE: this version is for matching before a block is downloaded
 auto SubchainStateData::get_targets(
     const Patterns& elements,
-    const UnallocatedVector<WalletDatabase::UTXO>& utxos,
+    const Vector<WalletDatabase::UTXO>& utxos,
     Targets& targets) const noexcept -> void
 {
     targets.reserve(elements.size() + utxos.size());
@@ -389,7 +395,7 @@ auto SubchainStateData::get_targets(
 // NOTE: this version is for matching after a block is downloaded
 auto SubchainStateData::get_targets(
     const Patterns& elements,
-    const UnallocatedVector<WalletDatabase::UTXO>& utxos,
+    const Vector<WalletDatabase::UTXO>& utxos,
     Targets& targets,
     Patterns& outpoints,
     Tested& tested) const noexcept -> void
@@ -473,13 +479,20 @@ auto SubchainStateData::ProcessBlock(
     const auto& filters = node.FilterOracleInternal();
     const auto& blockHash = position.second.get();
     auto matches = Indices{};
+    auto buf = std::array<std::byte, 16_KiB>{};
+    auto alloc = alloc::BoostMonotonic{
+        buf.data(),
+        buf.size(),
+        alloc::standard_to_boost(get_allocator().resource())};
     auto [elements, utxos, targets, outpoints] =
-        get_block_targets(blockHash, matches);
+        get_block_targets(blockHash, matches, &alloc);
+    const auto haveTargets = Clock::now();
     const auto pFilter = filters.LoadFilter(type, blockHash);
 
     OT_ASSERT(pFilter);
 
     const auto& filter = *pFilter;
+    const auto haveFilter = Clock::now();
     auto potential = node::internal::WalletDatabase::Patterns{};
 
     for (const auto& it : filter.Match(targets)) {
@@ -491,6 +504,7 @@ auto SubchainStateData::ProcessBlock(
 
     const auto confirmed =
         block.Internal().FindMatches(type, outpoints, potential);
+    const auto haveMatches = Clock::now();
     const auto& [utxo, general] = confirmed;
     const auto& oracle = node.HeaderOracle();
     const auto pHeader = oracle.LoadHeader(blockHash);
@@ -502,16 +516,7 @@ auto SubchainStateData::ProcessBlock(
     OT_ASSERT(position == header.Position());
 
     handle_confirmed_matches(block, position, confirmed);
-    log_(OT_PRETTY_CLASS())(name)(" block ")(block.ID().asHex())(" at height ")(
-        position.first)(" processed in ")(
-        std::chrono::nanoseconds{Clock::now() - start})
-        .Flush();
-    log_(OT_PRETTY_CLASS())(name)(" ")(general.size())(" of ")(
-        potential.size())(" potential key matches confirmed.")
-        .Flush();
-    log_(OT_PRETTY_CLASS())(name)(" ")(utxo.size())(" of ")(outpoints.size())(
-        " potential utxo matches confirmed.")
-        .Flush();
+    const auto handledMatches = Clock::now();
     const auto db = db_.SubchainMatchBlock(db_key_, [&] {
         auto out = UnallocatedVector<std::pair<ReadView, Indices>>{};
         out.emplace_back(position.second->Bytes(), [&] {
@@ -527,18 +532,49 @@ auto SubchainStateData::ProcessBlock(
 
         return out;
     }());
+    const auto updateDB = Clock::now();
 
     OT_ASSERT(db);  // TODO handle database errors
+
+    log_(OT_PRETTY_CLASS())(name)(" block ")(print(position))(" processed in ")(
+        std::chrono::nanoseconds{Clock::now() - start})
+        .Flush();
+    log_(OT_PRETTY_CLASS())(name)(" ")(general.size())(" of ")(
+        potential.size())(" potential key matches confirmed.")
+        .Flush();
+    log_(OT_PRETTY_CLASS())(name)(" ")(utxo.size())(" of ")(outpoints.size())(
+        " potential utxo matches confirmed.")
+        .Flush();
+    log_(OT_PRETTY_CLASS())(name)(" time to load match targets: ")(
+        std::chrono::nanoseconds{haveTargets - start})
+        .Flush();
+    log_(OT_PRETTY_CLASS())(name)(" time to load filter: ")(
+        std::chrono::nanoseconds{haveFilter - haveTargets})
+        .Flush();
+    log_(OT_PRETTY_CLASS())(name)(" time to find matches: ")(
+        std::chrono::nanoseconds{haveMatches - haveFilter})
+        .Flush();
+    log_(OT_PRETTY_CLASS())(name)(" time to handle matches: ")(
+        std::chrono::nanoseconds{handledMatches - haveMatches})
+        .Flush();
+    log_(OT_PRETTY_CLASS())(name)(" time to update database: ")(
+        std::chrono::nanoseconds{updateDB - handledMatches})
+        .Flush();
 }
 
 auto SubchainStateData::ProcessTransaction(
     const block::bitcoin::Transaction& tx) const noexcept -> void
 {
-    const auto targets = get_account_targets();
+    auto buf = std::array<std::byte, 4_KiB>{};
+    auto alloc = alloc::BoostMonotonic{
+        buf.data(),
+        buf.size(),
+        alloc::standard_to_boost(get_allocator().resource())};
+    const auto targets = get_account_targets(&alloc);
     const auto& [elements, utxos, patterns] = targets;
     const auto parsed = block::ParsedPatterns{elements};
     const auto outpoints = [&] {
-        auto out = SubchainStateData::Patterns{};
+        auto out = SubchainStateData::Patterns{&alloc};
         translate(std::get<1>(targets), out);
 
         return out;
@@ -603,16 +639,15 @@ auto SubchainStateData::Scan(
     log_(OT_PRETTY_CLASS())(name)(" scanning filters from ")(
         startHeight)(" to ")(stopHeight)
         .Flush();
-    const auto targets = get_account_targets();
-    const auto target = static_cast<std::size_t>(stopHeight - startHeight + 1);
     auto* upstream = alloc::standard_to_boost(get_allocator().resource());
     // TODO adjust this once Data and GCS are allocator aware
     static constexpr auto allocBytes =
         (scan_batch_ *
          (sizeof(block::pHash) + sizeof(std::unique_ptr<const GCS>))) +
-        sizeof(Vector<block::pHash>) +
-        sizeof(Vector<std::unique_ptr<const GCS>>);
+        4_KiB;
     auto alloc = alloc::BoostMonotonic{allocBytes, upstream};
+    const auto targets = get_account_targets(&alloc);
+    const auto target = static_cast<std::size_t>(stopHeight - startHeight + 1);
     const auto blocks = headers.BestHashes(startHeight, target, &alloc);
     const auto cfilters = filters.LoadFilters(type, blocks);
 
@@ -659,7 +694,7 @@ auto SubchainStateData::Scan(
 
             if (0 < matches.size()) {
                 const auto [untested, retest] =
-                    get_block_targets(blockHash, utxos);
+                    get_block_targets(blockHash, utxos, &alloc);
                 matches = filter.Match(retest);
 
                 if (0 < matches.size()) {
@@ -871,7 +906,7 @@ auto SubchainStateData::transition_state_shutdown() noexcept -> void
 }
 
 auto SubchainStateData::translate(
-    const UnallocatedVector<WalletDatabase::UTXO>& utxos,
+    const Vector<WalletDatabase::UTXO>& utxos,
     Patterns& outpoints) const noexcept -> void
 {
     for (const auto& [outpoint, output] : utxos) {
