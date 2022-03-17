@@ -155,7 +155,7 @@ public:
     Wallet(
         const api::Session& api,
         const node::internal::Network& parent,
-        const node::internal::WalletDatabase& db,
+        node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const Type chain,
         const std::string_view shutdown) noexcept;
@@ -168,7 +168,7 @@ private:
     using Work = wallet::WalletJobs;
 
     const node::internal::Network& parent_;
-    const node::internal::WalletDatabase& db_;
+    node::internal::WalletDatabase& db_;
     const Type chain_;
     wallet::FeeOracle fee_oracle_;
     wallet::Accounts accounts_;

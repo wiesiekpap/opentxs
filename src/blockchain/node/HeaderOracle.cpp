@@ -37,7 +37,7 @@ namespace opentxs::factory
 {
 auto HeaderOracle(
     const api::Session& api,
-    const blockchain::node::internal::HeaderDatabase& database,
+    blockchain::node::internal::HeaderDatabase& database,
     const blockchain::Type type) noexcept
     -> std::unique_ptr<blockchain::node::HeaderOracle>
 {
@@ -81,7 +81,7 @@ namespace opentxs::blockchain::node::implementation
 {
 HeaderOracle::HeaderOracle(
     const api::Session& api,
-    const internal::HeaderDatabase& database,
+    internal::HeaderDatabase& database,
     const blockchain::Type type) noexcept
     : internal::HeaderOracle()
     , api_(api)

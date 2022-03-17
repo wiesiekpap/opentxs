@@ -122,7 +122,7 @@ public:
     NotificationStateData(
         const api::Session& api,
         const node::internal::Network& node,
-        const node::internal::WalletDatabase& db,
+        node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const identifier::Nym& nym,
         const cfilter::Type filter,

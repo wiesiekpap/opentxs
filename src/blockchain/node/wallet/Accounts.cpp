@@ -85,7 +85,7 @@ namespace opentxs::blockchain::node::wallet
 Accounts::Imp::Imp(
     const api::Session& api,
     const node::internal::Network& node,
-    const node::internal::WalletDatabase& db,
+    node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
     const network::zeromq::BatchID batch,
     const Type chain,
@@ -127,7 +127,7 @@ Accounts::Imp::Imp(
 Accounts::Imp::Imp(
     const api::Session& api,
     const node::internal::Network& node,
-    const node::internal::WalletDatabase& db,
+    node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
     const network::zeromq::BatchID batch,
     const Type chain,
@@ -369,7 +369,7 @@ namespace opentxs::blockchain::node::wallet
 Accounts::Accounts(
     const api::Session& api,
     const node::internal::Network& node,
-    const node::internal::WalletDatabase& db,
+    node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
     const Type chain) noexcept
     : imp_([&] {

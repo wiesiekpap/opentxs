@@ -98,7 +98,7 @@ public:
 
     Imp(const api::Session& api,
         const node::internal::Network& node,
-        const node::internal::WalletDatabase& db,
+        node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const network::zeromq::BatchID batch,
         const Type chain,
@@ -118,7 +118,7 @@ private:
 
     const api::Session& api_;
     const node::internal::Network& node_;
-    const node::internal::WalletDatabase& db_;
+    node::internal::WalletDatabase& db_;
     const node::internal::Mempool& mempool_;
     const Type chain_;
     const cfilter::Type filter_type_;
@@ -150,7 +150,7 @@ private:
 
     Imp(const api::Session& api,
         const node::internal::Network& node,
-        const node::internal::WalletDatabase& db,
+        node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const network::zeromq::BatchID batch,
         const Type chain,

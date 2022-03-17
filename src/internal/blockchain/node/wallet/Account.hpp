@@ -69,7 +69,7 @@ public:
         const api::Session& api,
         const crypto::Account& account,
         const node::internal::Network& node,
-        const node::internal::WalletDatabase& db,
+        node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const Type chain,
         const cfilter::Type filter,
