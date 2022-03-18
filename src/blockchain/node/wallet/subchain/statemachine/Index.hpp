@@ -57,7 +57,7 @@ class Index::Imp : public statemachine::Job
 public:
     auto ProcessReorg(const block::Position& parent) noexcept -> void final;
 
-    Imp(const SubchainStateData& parent,
+    Imp(const boost::shared_ptr<const SubchainStateData>& parent,
         const network::zeromq::BatchID batch,
         allocator_type alloc) noexcept;
     Imp() = delete;

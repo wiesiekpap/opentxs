@@ -34,7 +34,7 @@
 namespace opentxs::blockchain::node::wallet
 {
 Progress::Imp::Imp(
-    const SubchainStateData& parent,
+    const boost::shared_ptr<const SubchainStateData>& parent,
     const network::zeromq::BatchID batch,
     allocator_type alloc) noexcept
     : Job(LogTrace(),
@@ -42,11 +42,9 @@ Progress::Imp::Imp(
           batch,
           CString{"rescan", alloc},
           alloc,
+          {},
           {
-              {parent.shutdown_endpoint_, Direction::Connect},
-          },
-          {
-              {parent.to_progress_endpoint_, Direction::Bind},
+              {parent->to_progress_endpoint_, Direction::Bind},
           })
     , last_reported_(std::nullopt)
 {
@@ -87,9 +85,10 @@ auto Progress::Imp::process_update(Message&& msg) noexcept -> void
 
 namespace opentxs::blockchain::node::wallet
 {
-Progress::Progress(const SubchainStateData& parent) noexcept
+Progress::Progress(
+    const boost::shared_ptr<const SubchainStateData>& parent) noexcept
     : imp_([&] {
-        const auto& asio = parent.api_.Network().ZeroMQ().Internal();
+        const auto& asio = parent->api_.Network().ZeroMQ().Internal();
         const auto batchID = asio.PreallocateBatch();
         // TODO the version of libc++ present in android ndk 23.0.7599858
         // has a broken std::allocate_shared function so we're using

@@ -126,6 +126,7 @@ Account::Imp::Imp(
     }())
     , filter_type_(node_.FilterOracleInternal().DefaultType())
     , shutdown_endpoint_(std::move(shutdown))
+    , pending_state_(State::normal)
     , state_(State::normal)
     , notification_(alloc)
     , internal_(alloc)
@@ -161,6 +162,11 @@ Account::Imp::Imp(
 
 auto Account::Imp::ChangeState(const State state) noexcept -> bool
 {
+    if (auto old = pending_state_.exchange(state); old == state) {
+
+        return true;
+    }
+
     auto lock = lock_for_reorg(reorg_lock_);
 
     switch (state) {
@@ -177,7 +183,7 @@ auto Account::Imp::ChangeState(const State state) noexcept -> bool
         case State::shutdown: {
             OT_ASSERT(State::reorg != state_);
 
-            if (State::shutdown != state_) { transition_state_shutdown(); }
+            transition_state_shutdown();
         } break;
         default: {
             OT_FAIL;
@@ -210,14 +216,22 @@ auto Account::Imp::check_pc(const crypto::PaymentCode& subaccount) noexcept
     get(subaccount, Subtype::Incoming, incoming_);
 }
 
-auto Account::Imp::do_shutdown() noexcept -> void
+auto Account::Imp::clear_children() noexcept -> void
 {
+    const auto cb = [](auto& value) {
+        auto rc = value.second->ChangeState(Subchain::State::shutdown);
+
+        OT_ASSERT(rc);
+    };
+    for_each(cb);
     notification_.clear();
     internal_.clear();
     external_.clear();
     outgoing_.clear();
     incoming_.clear();
 }
+
+auto Account::Imp::do_shutdown() noexcept -> void { clear_children(); }
 
 auto Account::Imp::do_startup() noexcept -> void
 {
@@ -507,12 +521,7 @@ auto Account::Imp::transition_state_reorg() noexcept -> void
 
 auto Account::Imp::transition_state_shutdown() noexcept -> void
 {
-    const auto cb = [](auto& value) {
-        auto rc = value.second->ChangeState(Subchain::State::shutdown);
-
-        OT_ASSERT(rc);
-    };
-    for_each(cb);
+    clear_children();
     state_ = State::shutdown;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to shutdown state ").Flush();
     signal_shutdown();

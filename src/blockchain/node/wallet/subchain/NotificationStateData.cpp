@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/NotificationStateData.hpp"  // IWYU pragma: associated
 
+#include <boost/smart_ptr/shared_ptr.hpp>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -124,7 +125,8 @@ auto NotificationStateData::do_startup() noexcept -> void
 }
 
 auto NotificationStateData::get_index(
-    const SubchainStateData& me) const noexcept -> Index
+    const boost::shared_ptr<const SubchainStateData>& me) const noexcept
+    -> Index
 {
     return Index::NotificationFactory(me, *code_.lock_shared());
 }

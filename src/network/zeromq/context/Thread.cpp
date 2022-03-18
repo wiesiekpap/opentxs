@@ -40,7 +40,7 @@ Thread::Thread(zeromq::internal::Pool& parent) noexcept
     , alloc_()
     , gate_()
     , thread_()
-    , data_()
+    , data_(&alloc_)
 {
 }
 
@@ -262,6 +262,10 @@ auto Thread::run() noexcept -> void
 auto Thread::Shutdown() noexcept -> void
 {
     shutdown_ = true;
+    data_.modify_detach([](auto& data) {
+        data.items_.clear();
+        data.data_.clear();
+    });
     wait();
 }
 

@@ -41,10 +41,10 @@ public:
     class Imp;
 
     static auto DeterministicFactory(
-        const SubchainStateData& parent,
+        const boost::shared_ptr<const SubchainStateData>& parent,
         const DeterministicStateData& deterministic) noexcept -> Index;
     static auto NotificationFactory(
-        const SubchainStateData& parent,
+        const boost::shared_ptr<const SubchainStateData>& parent,
         const PaymentCode& code) noexcept -> Index;
 
     auto ChangeState(const State state) noexcept -> bool final;

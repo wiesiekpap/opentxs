@@ -65,8 +65,7 @@ class Context;
 namespace opentxs::network::zeromq::context
 {
 using Batches = robin_hood::unordered_node_map<BatchID, internal::Batch>;
-using BatchIndex =
-    robin_hood::unordered_node_map<BatchID, UnallocatedVector<SocketID>>;
+using BatchIndex = robin_hood::unordered_node_map<BatchID, Vector<SocketID>>;
 using SocketIndex =
     robin_hood::unordered_node_map<SocketID, std::pair<BatchID, socket::Raw*>>;
 
@@ -89,7 +88,7 @@ public:
     auto Modify(SocketID id, ModifyCallback cb) noexcept -> AsyncResult;
     auto DoModify(SocketID id, const ModifyCallback& cb) noexcept -> bool final;
     auto PreallocateBatch() const noexcept -> BatchID final;
-    auto Shutdown() noexcept -> void;
+    auto Shutdown() noexcept -> void final;
     auto Start(BatchID id, StartArgs&& sockets) noexcept
         -> zeromq::internal::Thread*;
     auto Stop(BatchID id) noexcept -> std::future<bool>;

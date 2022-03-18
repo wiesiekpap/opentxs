@@ -144,7 +144,8 @@ private:
     mutable PaymentCode code_;
 
     auto do_startup() noexcept -> void final;
-    auto get_index(const SubchainStateData& me) const noexcept -> Index final;
+    auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
+        const noexcept -> Index final;
     auto handle_confirmed_matches(
         const block::bitcoin::Block& block,
         const block::Position& position,

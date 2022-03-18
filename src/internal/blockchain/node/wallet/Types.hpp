@@ -54,8 +54,8 @@ enum class SubchainJobs : OTZMQWorkType {
     statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
 };
 
-auto lock_for_reorg(std::recursive_timed_mutex& mutex) noexcept
-    -> std::unique_lock<std::recursive_timed_mutex>;
+auto lock_for_reorg(std::timed_mutex& mutex) noexcept
+    -> std::unique_lock<std::timed_mutex>;
 auto print(WalletJobs) noexcept -> std::string_view;
 auto print(AccountsJobs) noexcept -> std::string_view;
 auto print(AccountJobs) noexcept -> std::string_view;

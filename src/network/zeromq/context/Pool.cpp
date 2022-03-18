@@ -184,6 +184,10 @@ auto Pool::stop() noexcept -> void
         gate_.shutdown();
 
         for (auto& [id, thread] : threads_) { thread.Shutdown(); }
+
+        batches_.modify([](auto& map) { map.clear(); });
+        batch_index_.modify([](auto& map) { map.clear(); });
+        socket_index_.modify([](auto& map) { map.clear(); });
     }
 }
 
