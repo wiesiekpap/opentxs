@@ -51,6 +51,7 @@ public:
     virtual auto MakeBatch(
         const BatchID preallocated,
         Vector<socket::Type>&& types) noexcept -> Handle = 0;
+    virtual auto Shutdown() noexcept -> void = 0;
     virtual auto UpdateIndex(BatchID id, StartArgs&& sockets) noexcept
         -> void = 0;
     virtual auto UpdateIndex(BatchID id) noexcept -> void = 0;

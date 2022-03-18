@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/smart_ptr/enable_shared_from_this.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <atomic>
 #include <condition_variable>
@@ -115,8 +117,10 @@ class Raw;
 
 namespace opentxs::blockchain::node::wallet
 {
-class SubchainStateData : virtual public Subchain,
-                          public Actor<SubchainStateData, SubchainJobs>
+class SubchainStateData
+    : virtual public Subchain,
+      public Actor<SubchainStateData, SubchainJobs>,
+      public boost::enable_shared_from_this<SubchainStateData>
 {
 public:
     using WalletDatabase = node::internal::WalletDatabase;
@@ -229,6 +233,7 @@ private:
     std::optional<wallet::Index> index_;
     std::optional<wallet::Process> process_;
     std::optional<wallet::Scan> scan_;
+    bool have_children_;
 
     static auto describe(
         const blockchain::Type chain,
@@ -237,8 +242,9 @@ private:
         const Subchain subchain,
         allocator_type alloc) noexcept -> CString;
 
-    virtual auto get_index(const SubchainStateData& me) const noexcept
-        -> Index = 0;
+    auto clear_children() noexcept -> void;
+    virtual auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
+        const noexcept -> Index = 0;
     auto get_targets(
         const Patterns& elements,
         const Vector<WalletDatabase::UTXO>& utxos,

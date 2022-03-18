@@ -70,7 +70,7 @@ public:
         -> AsyncResult final;
     auto Remove(BatchID id, UnallocatedVector<socket::Raw*>&& sockets) noexcept
         -> std::future<bool>;
-    auto Shutdown() noexcept -> void;
+    auto Shutdown() noexcept -> void final;
 
     Thread(zeromq::internal::Pool& parent) noexcept;
 
@@ -82,11 +82,17 @@ private:
         std::thread handle_{};
     };
     struct Items {
-        using ItemVector = UnallocatedVector<zmq_pollitem_t>;
-        using DataVector = UnallocatedVector<ReceiveCallback>;
+        using ItemVector = Vector<zmq_pollitem_t>;
+        using DataVector = Vector<ReceiveCallback>;
 
-        ItemVector items_{};
-        DataVector data_{};
+        ItemVector items_;
+        DataVector data_;
+
+        Items(alloc::Resource* alloc) noexcept
+            : items_(alloc)
+            , data_(alloc)
+        {
+        }
 
         ~Items();
     };

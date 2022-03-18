@@ -137,6 +137,7 @@ SubchainStateData::SubchainStateData(
     , index_(std::nullopt)
     , process_(std::nullopt)
     , scan_(std::nullopt)
+    , have_children_(false)
 {
     OT_ASSERT(false == owner_->empty());
     OT_ASSERT(false == id_->empty());
@@ -208,6 +209,38 @@ auto SubchainStateData::ChangeState(const State state) noexcept -> bool
     }
 
     return true;
+}
+
+auto SubchainStateData::clear_children() noexcept -> void
+{
+    if (have_children_) {
+        auto rc = scan_->ChangeState(JobState::shutdown);
+
+        OT_ASSERT(rc);
+
+        rc = process_->ChangeState(JobState::shutdown);
+
+        OT_ASSERT(rc);
+
+        rc = index_->ChangeState(JobState::shutdown);
+
+        OT_ASSERT(rc);
+
+        rc = rescan_->ChangeState(JobState::shutdown);
+
+        OT_ASSERT(rc);
+
+        rc = progress_->ChangeState(JobState::shutdown);
+
+        OT_ASSERT(rc);
+
+        scan_.reset();
+        process_.reset();
+        index_.reset();
+        rescan_.reset();
+        progress_.reset();
+        have_children_ = false;
+    }
 }
 
 auto SubchainStateData::describe(
@@ -307,22 +340,17 @@ auto SubchainStateData::do_reorg(
     }
 }
 
-auto SubchainStateData::do_shutdown() noexcept -> void
-{
-    scan_.reset();
-    process_.reset();
-    index_.reset();
-    rescan_.reset();
-    progress_.reset();
-}
+auto SubchainStateData::do_shutdown() noexcept -> void { clear_children(); }
 
 auto SubchainStateData::do_startup() noexcept -> void
 {
-    progress_.emplace(*this);
-    rescan_.emplace(*this);
-    index_.emplace(get_index(*this));
-    process_.emplace(*this);
-    scan_.emplace(*this);
+    auto me = shared_from_this();
+    progress_.emplace(me);
+    rescan_.emplace(me);
+    index_.emplace(get_index(me));
+    process_.emplace(me);
+    scan_.emplace(me);
+    have_children_ = true;
     do_work();
 }
 
@@ -825,6 +853,8 @@ auto SubchainStateData::supported_scripts(const crypto::Element& element)
 
 auto SubchainStateData::transition_state_normal() noexcept -> void
 {
+    OT_ASSERT(have_children_);
+
     disable_automatic_processing_ = false;
     auto rc = scan_->ChangeState(JobState::normal);
 
@@ -853,6 +883,8 @@ auto SubchainStateData::transition_state_normal() noexcept -> void
 
 auto SubchainStateData::transition_state_reorg() noexcept -> void
 {
+    OT_ASSERT(have_children_);
+
     disable_automatic_processing_ = true;
     auto rc = scan_->ChangeState(JobState::reorg);
 
@@ -880,26 +912,7 @@ auto SubchainStateData::transition_state_reorg() noexcept -> void
 
 auto SubchainStateData::transition_state_shutdown() noexcept -> void
 {
-    auto rc = scan_->ChangeState(JobState::shutdown);
-
-    OT_ASSERT(rc);
-
-    rc = process_->ChangeState(JobState::shutdown);
-
-    OT_ASSERT(rc);
-
-    rc = index_->ChangeState(JobState::shutdown);
-
-    OT_ASSERT(rc);
-
-    rc = rescan_->ChangeState(JobState::shutdown);
-
-    OT_ASSERT(rc);
-
-    rc = progress_->ChangeState(JobState::shutdown);
-
-    OT_ASSERT(rc);
-
+    clear_children();
     state_ = State::shutdown;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to shutdown state ").Flush();
     signal_shutdown();

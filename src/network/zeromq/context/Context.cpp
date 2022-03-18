@@ -11,6 +11,7 @@
 #include <atomic>
 #include <cassert>
 #include <memory>
+#include <thread>
 #include <utility>
 
 #include "internal/network/zeromq/Factory.hpp"
@@ -259,8 +260,12 @@ Context::~Context()
     pool_.Shutdown();
 
     if (nullptr != context_) {
-        zmq_ctx_shutdown(context_);
-        zmq_ctx_term(context_);
+        std::thread{[context = context_] {
+            // NOTE neither of these functions should block forever but
+            // sometimes they do anyway
+            ::zmq_ctx_shutdown(context);
+            ::zmq_ctx_term(context);
+        }}.detach();
         context_ = nullptr;
     }
 }

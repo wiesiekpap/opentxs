@@ -99,12 +99,13 @@ Pipeline::Imp::Imp(
     allocator_type pmr) noexcept
     : Allocated(allocator_type{pmr})
     , context_(context)
+    , total_socket_count_(fixed_sockets_ + extra.size())
     , gate_()
     , shutdown_(false)
     , handle_([&] {
         auto sockets = [&] {
             auto out = Vector<socket::Type>{pmr};
-            out.reserve(fixed_sockets_ + extra.size());
+            out.reserve(total_socket_count_);
             out.emplace_back(socket::Type::Subscribe);  // NOTE sub_
             out.emplace_back(socket::Type::Pull);       // NOTE pull_
             out.emplace_back(socket::Type::Pair);       // NOTE outgoing_
@@ -112,6 +113,8 @@ Pipeline::Imp::Imp(
             out.emplace_back(socket::Type::Pair);       // NOTE internal_
 
             for (const auto& [type, args] : extra) { out.emplace_back(type); }
+
+            OT_ASSERT(out.size() == total_socket_count_);
 
             return out;
         }();
@@ -129,6 +132,8 @@ Pipeline::Imp::Imp(
         auto& batch = handle_.batch_;
         batch.listen_callbacks_.emplace_back(
             ListenCallback::Factory(std::move(callback)));
+
+        OT_ASSERT(batch.sockets_.size() == total_socket_count_);
 
         return batch;
     }())
@@ -223,7 +228,8 @@ Pipeline::Imp::Imp(
              }},
         };
 
-        OT_ASSERT(batch_.sockets_.size() == fixed_sockets_ + extra.size());
+        OT_ASSERT(batch_.sockets_.size() == total_socket_count_);
+        OT_ASSERT((fixed_sockets_ + extra.size()) == total_socket_count_);
 
         // NOTE adjust to the last fixed socket because the iterator will be
         // preincremented

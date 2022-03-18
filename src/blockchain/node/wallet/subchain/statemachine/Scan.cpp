@@ -45,7 +45,7 @@
 namespace opentxs::blockchain::node::wallet
 {
 Scan::Imp::Imp(
-    const SubchainStateData& parent,
+    const boost::shared_ptr<const SubchainStateData>& parent,
     const network::zeromq::BatchID batch,
     allocator_type alloc) noexcept
     : Job(LogTrace(),
@@ -54,18 +54,17 @@ Scan::Imp::Imp(
           CString{"scan", alloc},
           alloc,
           {
-              {parent.shutdown_endpoint_, Direction::Connect},
-              {CString{parent.api_.Endpoints().BlockchainNewFilter()},
+              {CString{parent->api_.Endpoints().BlockchainNewFilter()},
                Direction::Connect},
           },
           {
-              {parent.to_scan_endpoint_, Direction::Bind},
+              {parent->to_scan_endpoint_, Direction::Bind},
           },
           {},
           {
               {SocketType::Push,
                {
-                   {parent.to_process_endpoint_, Direction::Connect},
+                   {parent->to_process_endpoint_, Direction::Connect},
                }},
           })
     , to_process_(pipeline_.Internal().ExtraSocket(0))
@@ -203,9 +202,9 @@ auto Scan::Imp::work() noexcept -> bool
 
 namespace opentxs::blockchain::node::wallet
 {
-Scan::Scan(const SubchainStateData& parent) noexcept
+Scan::Scan(const boost::shared_ptr<const SubchainStateData>& parent) noexcept
     : imp_([&] {
-        const auto& asio = parent.api_.Network().ZeroMQ().Internal();
+        const auto& asio = parent->api_.Network().ZeroMQ().Internal();
         const auto batchID = asio.PreallocateBatch();
         // TODO the version of libc++ present in android ndk 23.0.7599858
         // has a broken std::allocate_shared function so we're using

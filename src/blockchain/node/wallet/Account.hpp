@@ -142,6 +142,7 @@ private:
     const CString name_;
     const cfilter::Type filter_type_;
     const CString shutdown_endpoint_;
+    std::atomic<State> pending_state_;
     std::atomic<State> state_;
     Subchains notification_;
     Subchains internal_;
@@ -153,6 +154,7 @@ private:
     auto check_hd(const crypto::HD& subaccount) noexcept -> void;
     auto check_pc(const Identifier& subaccount) noexcept -> void;
     auto check_pc(const crypto::PaymentCode& subaccount) noexcept -> void;
+    auto clear_children() noexcept -> void;
     auto do_shutdown() noexcept -> void;
     auto do_startup() noexcept -> void;
     template <typename Callback>

@@ -127,6 +127,7 @@ private:
     static constexpr auto fixed_sockets_ = std::size_t{5};
 
     const zeromq::Context& context_;
+    const std::size_t total_socket_count_;
     mutable Gatekeeper gate_;
     mutable std::atomic<bool> shutdown_;
     internal::Handle handle_;

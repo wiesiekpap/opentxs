@@ -54,7 +54,7 @@ namespace opentxs::blockchain::node::wallet::statemachine
 {
 Job::Job(
     const Log& logger,
-    const SubchainStateData& parent,
+    const boost::shared_ptr<const SubchainStateData>& parent,
     const network::zeromq::BatchID batch,
     CString&& name,
     allocator_type alloc,
@@ -64,17 +64,23 @@ Job::Job(
     const Vector<network::zeromq::SocketData>& extra,
     Set<Work>&& neverDrop) noexcept
     : Actor(
-          parent.api_,
+          parent->api_,
           logger,
           0s,
           batch,
           alloc,
-          subscribe,
+          [&] {
+              auto out{subscribe};
+              out.emplace_back(parent->shutdown_endpoint_, Direction::Connect);
+
+              return out;
+          }(),
           pull,
           dealer,
           extra,
           std::move(neverDrop))
-    , parent_(parent)
+    , parent_p_(parent)
+    , parent_(*parent_p_)
     , name_([&] {
         using namespace std::literals;
         auto out = std::move(name);
@@ -86,6 +92,7 @@ Job::Job(
     }())
     , state_(State::normal)
 {
+    OT_ASSERT(parent_p_);
 }
 
 auto Job::ChangeState(const State state) noexcept -> bool

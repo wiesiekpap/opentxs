@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/DeterministicStateData.hpp"  // IWYU pragma: associated
 
+#include <boost/smart_ptr/shared_ptr.hpp>
 #include <chrono>
 #include <memory>
 #include <optional>
@@ -96,7 +97,8 @@ DeterministicStateData::DeterministicStateData(
 }
 
 auto DeterministicStateData::get_index(
-    const SubchainStateData& me) const noexcept -> Index
+    const boost::shared_ptr<const SubchainStateData>& me) const noexcept
+    -> Index
 {
     return Index::DeterministicFactory(me, *this);
 }
