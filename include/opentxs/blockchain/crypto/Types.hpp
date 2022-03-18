@@ -55,6 +55,11 @@ using HDKey = std::shared_ptr<const opentxs::crypto::key::HD>;
 /// account id, chain, index
 using Key = std::tuple<UnallocatedCString, Subchain, Bip32Index>;
 using Activity = std::tuple<Coin, Key, Amount>;
+
+OPENTXS_EXPORT auto print(HDProtocol) noexcept -> std::string_view;
+OPENTXS_EXPORT auto print(SubaccountType) noexcept -> std::string_view;
+OPENTXS_EXPORT auto print(Subchain) noexcept -> std::string_view;
+OPENTXS_EXPORT auto print(const Key& key) noexcept -> UnallocatedCString;
 }  // namespace opentxs::blockchain::crypto
 
 namespace std
@@ -75,10 +80,4 @@ OPENTXS_EXPORT auto operator!=(
     const blockchain::crypto::Key& lhs,
     const blockchain::crypto::Key& rhs) noexcept -> bool;
 auto preimage(const blockchain::crypto::Key& in) noexcept -> Space;
-OPENTXS_EXPORT auto print(blockchain::crypto::HDProtocol) noexcept
-    -> UnallocatedCString;
-OPENTXS_EXPORT auto print(blockchain::crypto::Subchain) noexcept
-    -> UnallocatedCString;
-OPENTXS_EXPORT auto print(const blockchain::crypto::Key&) noexcept
-    -> UnallocatedCString;
 }  // namespace opentxs

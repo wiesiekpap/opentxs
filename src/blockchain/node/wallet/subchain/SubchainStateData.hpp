@@ -80,6 +80,7 @@ class Transaction;
 namespace crypto
 {
 class Element;
+class Subaccount;
 }  // namespace crypto
 
 namespace node
@@ -213,13 +214,10 @@ protected:
         const node::internal::Network& node,
         node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
-        const crypto::SubaccountType accountType,
+        const crypto::Subaccount& subaccount,
         const cfilter::Type filter,
         const Subchain subchain,
         const network::zeromq::BatchID batch,
-        OTNymID&& owner,
-        OTIdentifier&& id,
-        const std::string_view display,
         const std::string_view parent,
         allocator_type alloc) noexcept;
 
@@ -236,9 +234,7 @@ private:
     bool have_children_;
 
     static auto describe(
-        const blockchain::Type chain,
-        const Identifier& id,
-        const std::string_view type,
+        const crypto::Subaccount& account,
         const Subchain subchain,
         allocator_type alloc) noexcept -> CString;
 
@@ -285,13 +281,10 @@ private:
         const node::internal::Network& node,
         node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
-        const crypto::SubaccountType accountType,
+        const crypto::Subaccount& subaccount,
         const cfilter::Type filter,
         const Subchain subchain,
         const network::zeromq::BatchID batch,
-        OTNymID&& owner,
-        OTIdentifier&& id,
-        const std::string_view display,
         const std::string_view parent,
         CString&& fromChildren,
         CString&& toChildren,

@@ -9,6 +9,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <string_view>
+
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -52,6 +54,7 @@ public:
     /// Throws std::out_of_range for invalid index
     virtual auto BalanceElement(const Subchain type, const Bip32Index index)
         const noexcept(false) -> const crypto::Element& = 0;
+    virtual auto Describe() const noexcept -> std::string_view = 0;
     virtual auto ID() const noexcept -> const Identifier& = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> internal::Subaccount& = 0;

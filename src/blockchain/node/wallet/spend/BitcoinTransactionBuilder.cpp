@@ -607,7 +607,7 @@ private:
         const auto& api = api_.Crypto().Blockchain();
 
         for (const auto& id : input.Keys()) {
-            LogVerbose()(OT_PRETTY_CLASS())("Loading element ")(opentxs::print(
+            LogVerbose()(OT_PRETTY_CLASS())("Loading element ")(crypto::print(
                 id))(" to sign previous output ")(input.PreviousOutput().str())
                 .Flush();
             const auto& node = api.GetKey(id);
@@ -616,10 +616,9 @@ private:
                 LogError()(OT_PRETTY_CLASS())(
                     "api::Blockchain::GetKey returned the wrong key")
                     .Flush();
-                LogError()(OT_PRETTY_CLASS())("requested: ")(opentxs::print(id))
+                LogError()(OT_PRETTY_CLASS())("requested: ")(crypto::print(id))
                     .Flush();
-                LogError()(OT_PRETTY_CLASS())("      got: ")(
-                    opentxs::print(got))
+                LogError()(OT_PRETTY_CLASS())("      got: ")(crypto::print(got))
                     .Flush();
 
                 OT_FAIL;
@@ -685,7 +684,7 @@ private:
         const auto& api = api_.Crypto().Blockchain();
 
         for (const auto& id : input.Keys()) {
-            LogVerbose()(OT_PRETTY_CLASS())("Loading element ")(opentxs::print(
+            LogVerbose()(OT_PRETTY_CLASS())("Loading element ")(crypto::print(
                 id))(" to sign previous output ")(input.PreviousOutput().str())
                 .Flush();
             const auto& node = api.GetKey(id);
@@ -694,10 +693,9 @@ private:
                 LogError()(OT_PRETTY_CLASS())(
                     "api::Blockchain::GetKey returned the wrong key")
                     .Flush();
-                LogError()(OT_PRETTY_CLASS())("requested: ")(opentxs::print(id))
+                LogError()(OT_PRETTY_CLASS())("requested: ")(crypto::print(id))
                     .Flush();
-                LogError()(OT_PRETTY_CLASS())("      got: ")(
-                    opentxs::print(got))
+                LogError()(OT_PRETTY_CLASS())("      got: ")(crypto::print(got))
                     .Flush();
 
                 OT_FAIL;
@@ -762,7 +760,7 @@ private:
         const auto& api = api_.Crypto().Blockchain();
 
         for (const auto& id : input.Keys()) {
-            LogVerbose()(OT_PRETTY_CLASS())("Loading element ")(opentxs::print(
+            LogVerbose()(OT_PRETTY_CLASS())("Loading element ")(crypto::print(
                 id))(" to sign previous output ")(input.PreviousOutput().str())
                 .Flush();
             const auto& node = api.GetKey(id);
@@ -771,10 +769,9 @@ private:
                 LogError()(OT_PRETTY_CLASS())(
                     "api::Blockchain::GetKey returned the wrong key")
                     .Flush();
-                LogError()(OT_PRETTY_CLASS())("requested: ")(opentxs::print(id))
+                LogError()(OT_PRETTY_CLASS())("requested: ")(crypto::print(id))
                     .Flush();
-                LogError()(OT_PRETTY_CLASS())("      got: ")(
-                    opentxs::print(got))
+                LogError()(OT_PRETTY_CLASS())("      got: ")(crypto::print(got))
                     .Flush();
 
                 OT_FAIL;
@@ -878,7 +875,7 @@ private:
 
         if (!pKey) {
             LogError()(OT_PRETTY_CLASS())("failed to obtain private key ")(
-                opentxs::print(element.KeyID()))
+                crypto::print(element.KeyID()))
                 .Flush();
 
             return {};

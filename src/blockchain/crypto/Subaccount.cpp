@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <sstream>
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
@@ -49,6 +50,7 @@ Subaccount::Subaccount(
     , chain_(parent_.Chain())
     , type_(type)
     , id_(std::move(id))
+    , description_(describe(chain_, type_, id_))
     , lock_()
     , revision_(revision)
     , unspent_(convert(unspent))
@@ -98,6 +100,23 @@ Subaccount::AddressData::AddressData(
     , progress_(-1, block::BlankHash())
     , map_()
 {
+}
+
+auto Subaccount::AddressData::check_keys() const noexcept -> bool
+{
+    auto counter{-1};
+
+    for (const auto& [index, element] : map_) {
+        if (index != static_cast<Bip32Index>(++counter)) {
+            LogError()(OT_PRETTY_CLASS())("key ")(
+                index)(" present at position ")(counter)
+                .Flush();
+
+            return false;
+        }
+    }
+
+    return true;
 }
 
 auto Subaccount::AssociateTransaction(
@@ -206,6 +225,21 @@ auto Subaccount::convert(const UnallocatedVector<Activity>& in) noexcept
     }
 
     return output;
+}
+
+auto Subaccount::describe(
+    const opentxs::blockchain::Type chain,
+    const SubaccountType type,
+    const Identifier& id) noexcept -> CString
+{
+    // TODO c++20 use allocator
+    auto out = std::stringstream{};
+    out << print(chain) << ' ';
+    out << print(type);
+    out << " account ";
+    out << id.str();
+
+    return CString{} + out.str().c_str();
 }
 
 auto Subaccount::IncomingTransactions(const Key& element) const noexcept

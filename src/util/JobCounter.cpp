@@ -24,6 +24,8 @@ namespace opentxs
 using OutstandingMap = UnallocatedMap<int, std::atomic_int>;
 
 struct Outstanding::Imp {
+    auto is_limited() const noexcept -> bool { return limited_; }
+
     auto operator++() noexcept -> Imp&
     {
         {
@@ -95,7 +97,7 @@ private:
     JobCounter::Imp& parent_;
     std::mutex lock_;
     bool idle_;
-    bool limited_;
+    std::atomic_bool limited_;
     std::condition_variable finished_;
     std::condition_variable ready_;
     OutstandingMap::iterator position_;
@@ -183,6 +185,11 @@ auto Outstanding::operator--() noexcept -> Outstanding&
     --(*imp_);
 
     return *this;
+}
+
+auto Outstanding::is_limited() const noexcept -> bool
+{
+    return imp_->is_limited();
 }
 
 auto Outstanding::wait_for_finished() noexcept -> void

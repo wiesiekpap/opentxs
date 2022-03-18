@@ -10,7 +10,6 @@
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <algorithm>
 #include <array>
-#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
@@ -22,6 +21,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "blockchain/crypto/Notification.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -41,8 +41,8 @@
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
-#include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Contact.hpp"
 #include "opentxs/core/Data.hpp"
@@ -64,11 +64,10 @@ NotificationStateData::NotificationStateData(
     const node::internal::Network& node,
     node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
-    const identifier::Nym& nym,
     const cfilter::Type filter,
     const network::zeromq::BatchID batch,
-    const Type chain,
     const std::string_view parent,
+    crypto::implementation::Notification&& subaccount,
     opentxs::PaymentCode&& code,
     proto::HDPath&& path,
     allocator_type alloc) noexcept
@@ -77,22 +76,45 @@ NotificationStateData::NotificationStateData(
           node,
           db,
           mempool,
-          crypto::SubaccountType::Notification,
+          subaccount,
           filter,
           Subchain::Notification,
           batch,
-          OTNymID{nym},
-          calculate_id(api, chain, code),
-          [] {
-              using namespace std::literals;
-
-              return "payment code notification"sv;
-          }(),
           parent,
           std::move(alloc))
     , path_(std::move(path))
     , pc_display_(code.asBase58(), get_allocator())
     , code_(std::move(code))
+{
+}
+
+NotificationStateData::NotificationStateData(
+    const api::Session& api,
+    const node::internal::Network& node,
+    const crypto::Account& parent,
+    node::internal::WalletDatabase& db,
+    const node::internal::Mempool& mempool,
+    const cfilter::Type filter,
+    const network::zeromq::BatchID batch,
+    const std::string_view endpoint,
+    opentxs::PaymentCode&& code,
+    proto::HDPath&& path,
+    allocator_type alloc) noexcept
+    : NotificationStateData(
+          api,
+          node,
+          db,
+          mempool,
+          filter,
+          batch,
+          endpoint,
+          crypto::implementation::Notification{
+              api,
+              parent,
+              calculate_id(api, parent.Chain(), code)},
+          std::move(code),
+          std::move(path),
+          std::move(alloc))
 {
 }
 

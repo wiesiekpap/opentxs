@@ -12,6 +12,7 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -215,7 +216,7 @@ auto HD::Name() const noexcept -> UnallocatedCString
 
     if (false == name_.has_value()) {
         auto name = std::stringstream{};
-        name << opentxs::print(standard_);
+        name << print(standard_);
         name << ": ";
         name << opentxs::crypto::Print(path_, false);
         name_ = name.str();
@@ -240,9 +241,9 @@ auto HD::PrivateKey(
             OT_FAIL;
         }
         default: {
-            LogError()(OT_PRETTY_CLASS())("Invalid subchain (")(opentxs::print(
-                type))("). Only ")(opentxs::print(internal_type_))(" and ")(
-                opentxs::print(external_type_))(" are valid for this account.")
+            LogError()(OT_PRETTY_CLASS())("Invalid subchain (")(print(type))(
+                "). Only ")(print(internal_type_))(" and ")(
+                print(external_type_))(" are valid for this account.")
                 .Flush();
 
             return {};

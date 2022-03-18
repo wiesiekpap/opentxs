@@ -9,18 +9,104 @@
 
 #include <robin_hood.h>
 #include <cstring>
+#include <iosfwd>
 #include <iterator>
-#include <memory>
+#include <sstream>
+#include <string_view>
 #include <type_traits>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
+#include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/util/Pimpl.hpp"
+
+namespace opentxs::blockchain::crypto
+{
+auto print(HDProtocol value) noexcept -> std::string_view
+{
+    using namespace std::literals;
+    using Type = HDProtocol;
+    static const auto map =
+        robin_hood::unordered_flat_map<Type, std::string_view>{
+            {Type::Error, "invalid"sv},
+            {Type::BIP_32, "BIP-32"sv},
+            {Type::BIP_44, "BIP-44"sv},
+            {Type::BIP_49, "BIP-49"sv},
+            {Type::BIP_84, "BIP-84"sv},
+        };
+
+    try {
+
+        return map.at(value);
+    } catch (...) {
+
+        return map.at(Type::Error);
+    }
+}
+
+auto print(SubaccountType type) noexcept -> std::string_view
+{
+    using namespace std::literals;
+    using Type = SubaccountType;
+    static const auto map =
+        robin_hood::unordered_flat_map<Type, std::string_view>{
+            {Type::Error, "invalid"sv},
+            {Type::HD, "HD"sv},
+            {Type::PaymentCode, "payment code"sv},
+            {Type::Imported, "single key"sv},
+            {Type::Notification, "payment code notification"sv},
+        };
+
+    try {
+
+        return map.at(type);
+    } catch (...) {
+
+        return map.at(Type::Error);
+    }
+}
+auto print(Subchain value) noexcept -> std::string_view
+{
+    using namespace std::literals;
+    using Type = Subchain;
+    static const auto map =
+        robin_hood::unordered_flat_map<Type, std::string_view>{
+            {Type::Error, "invalid"sv},
+            {Type::Internal, "internal"sv},
+            {Type::External, "external"sv},
+            {Type::Incoming, "incoming"sv},
+            {Type::Outgoing, "outgoing"sv},
+            {Type::Notification, "notification"sv},
+            {Type::None, "none"sv},
+        };
+
+    try {
+
+        return map.at(value);
+    } catch (...) {
+
+        return map.at(Type::Error);
+    }
+}
+
+auto print(const Key& key) noexcept -> UnallocatedCString
+{
+    const auto& [account, subchain, index] = key;
+    auto out = std::stringstream{};
+    out << account;
+    out << " / ";
+    out << print(subchain);
+    out << " / ";
+    out << std::to_string(index);
+
+    return out.str();
+}
+}  // namespace opentxs::blockchain::crypto
 
 namespace opentxs
 {
@@ -85,54 +171,5 @@ auto preimage(const blockchain::crypto::Key& in) noexcept -> Space
     std::advance(i, sizeof(index));
 
     return out;
-}
-auto print(blockchain::crypto::HDProtocol value) noexcept -> UnallocatedCString
-{
-    using Proto = blockchain::crypto::HDProtocol;
-    static const auto map =
-        robin_hood::unordered_flat_map<Proto, UnallocatedCString>{
-            {Proto::BIP_32, "BIP-32"},
-            {Proto::BIP_44, "BIP-44"},
-            {Proto::BIP_49, "BIP-49"},
-            {Proto::BIP_84, "BIP-84"},
-            {Proto::Error, "invalid"},
-        };
-
-    try {
-
-        return map.at(value);
-    } catch (...) {
-
-        return map.at(Proto::Error);
-    }
-}
-
-auto print(blockchain::crypto::Subchain value) noexcept -> UnallocatedCString
-{
-    using Subchain = blockchain::crypto::Subchain;
-    static const auto map =
-        robin_hood::unordered_flat_map<Subchain, UnallocatedCString>{
-            {Subchain::Internal, "internal"},
-            {Subchain::External, "external"},
-            {Subchain::Incoming, "incoming"},
-            {Subchain::Outgoing, "outgoing"},
-            {Subchain::Notification, "notification"},
-            {Subchain::None, "none"},
-        };
-
-    try {
-
-        return map.at(value);
-    } catch (...) {
-
-        return "error";
-    }
-}
-
-auto print(const blockchain::crypto::Key& key) noexcept -> UnallocatedCString
-{
-    const auto& [account, subchain, index] = key;
-
-    return account + " / " + print(subchain) + " / " + std::to_string(index);
 }
 }  // namespace opentxs
