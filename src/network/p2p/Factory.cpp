@@ -18,8 +18,8 @@
 #include "Proto.tpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
-#include "internal/serialization/protobuf/verify/BlockchainP2PHello.hpp"
-#include "internal/serialization/protobuf/verify/BlockchainP2PSync.hpp"
+#include "internal/serialization/protobuf/verify/P2PBlockchainHello.hpp"
+#include "internal/serialization/protobuf/verify/P2PBlockchainSync.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -50,9 +50,9 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/BlockchainP2PChainState.pb.h"
-#include "serialization/protobuf/BlockchainP2PHello.pb.h"
-#include "serialization/protobuf/BlockchainP2PSync.pb.h"
+#include "serialization/protobuf/P2PBlockchainChainState.pb.h"
+#include "serialization/protobuf/P2PBlockchainHello.pb.h"
+#include "serialization/protobuf/P2PBlockchainSync.pb.h"
 
 namespace opentxs::factory
 {
@@ -197,7 +197,7 @@ auto BlockchainSyncMessage(
         const auto& helloFrame = b.at(1);
 
         const auto hello =
-            proto::Factory<proto::BlockchainP2PHello>(helloFrame);
+            proto::Factory<proto::P2PBlockchainHello>(helloFrame);
 
         if (false == proto::Validate(hello, VERBOSE)) {
             throw std::runtime_error{"invalid hello"};
@@ -240,7 +240,7 @@ auto BlockchainSyncMessage(
 
                 for (auto i{std::next(b.begin(), 3)}; i != b.end(); ++i) {
                     const auto sync =
-                        proto::Factory<proto::BlockchainP2PSync>(*i);
+                        proto::Factory<proto::P2PBlockchainSync>(*i);
 
                     if (false == proto::Validate(sync, VERBOSE)) {
                         throw std::runtime_error{"invalid sync data"};

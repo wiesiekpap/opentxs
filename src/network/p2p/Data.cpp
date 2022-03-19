@@ -14,7 +14,7 @@
 #include "Proto.tpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
-#include "internal/serialization/protobuf/verify/BlockchainP2PSync.hpp"
+#include "internal/serialization/protobuf/verify/P2PBlockchainSync.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/p2p/Base.hpp"
 #include "opentxs/Types.hpp"
@@ -27,7 +27,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/BlockchainP2PSync.pb.h"
+#include "serialization/protobuf/P2PBlockchainSync.pb.h"
 
 namespace opentxs::factory
 {
@@ -137,7 +137,7 @@ Data::Data(Imp* imp) noexcept
 
 auto Data::Add(ReadView data) noexcept -> bool
 {
-    const auto proto = proto::Factory<proto::BlockchainP2PSync>(data);
+    const auto proto = proto::Factory<proto::P2PBlockchainSync>(data);
 
     if (false == proto::Validate(proto, VERBOSE)) { return false; }
 

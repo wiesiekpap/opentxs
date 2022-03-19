@@ -38,13 +38,13 @@ auto CheckProto_1(const Ciphertext& input, const bool silent, const bool nested)
         OPTIONAL_SUBOBJECT(key, CiphertextAllowedSymmetricKey());
     }
 
-    if (!input.has_iv()) { FAIL_1("missing iv") }
+    static constexpr auto limit = std::size_t{64u};
 
-    if (1 > input.iv().size()) { FAIL_1("invalid iv") }
+    if (1 > input.iv().size()) { FAIL_1("iv too small") }
 
-    if (!input.has_tag()) { FAIL_1("missing tag") }
+    if (limit < input.iv().size()) { FAIL_1("iv too large") }
 
-    if (1 > input.tag().size()) { FAIL_1("invalid tag") }
+    if (limit < input.tag().size()) { FAIL_1("tag too large") }
 
     if (!input.has_data()) { FAIL_1("missing data") }
 

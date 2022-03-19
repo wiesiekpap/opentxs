@@ -50,8 +50,9 @@ auto BlockchainWallet(
 
 namespace opentxs::blockchain::node::wallet
 {
-auto lock_for_reorg(std::timed_mutex& mutex) noexcept
-    -> std::unique_lock<std::timed_mutex>
+auto lock_for_reorg(
+    const std::string_view name,
+    std::timed_mutex& mutex) noexcept -> std::unique_lock<std::timed_mutex>
 {
     static thread_local auto rng = std::mt19937{std::random_device{}()};
     static thread_local auto dist =
@@ -64,8 +65,7 @@ auto lock_for_reorg(std::timed_mutex& mutex) noexcept
             const auto delay = std::chrono::milliseconds{dist(rng)};
             lock.try_lock_for(delay);
         } else {
-            LogError()(__FUNCTION__)(": state machine is not responding")
-                .Flush();
+            LogError()(name)(" state machine is not responding").Flush();
             lock.try_lock_for(1s);
         }
     }

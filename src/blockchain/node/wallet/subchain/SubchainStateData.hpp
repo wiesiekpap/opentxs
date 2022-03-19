@@ -140,7 +140,6 @@ public:
     const Subchain subchain_;
     const Type chain_;
     const cfilter::Type filter_type_;
-    const CString name_;
     const SubchainIndex db_key_;
     const block::Position null_position_;
     const block::Position genesis_;
@@ -151,7 +150,8 @@ public:
     const CString to_progress_endpoint_;
     const CString shutdown_endpoint_;
 
-    auto ChangeState(const State state) noexcept -> bool final;
+    auto ChangeState(const State state, StateSequence reorg) noexcept
+        -> bool final;
     auto IndexElement(
         const cfilter::Type type,
         const blockchain::crypto::Element& input,
@@ -224,8 +224,11 @@ protected:
 private:
     friend Actor<SubchainStateData, SubchainJobs>;
 
+    using HandledReorgs = Set<StateSequence>;
+
     std::atomic<State> pending_state_;
     std::atomic<State> state_;
+    HandledReorgs reorgs_;
     std::optional<wallet::Progress> progress_;
     std::optional<wallet::Rescan> rescan_;
     std::optional<wallet::Index> index_;
@@ -268,12 +271,11 @@ private:
         const block::Position ancestor) noexcept -> void;
     auto do_shutdown() noexcept -> void;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
-    auto process_shutdown_begin(Message&& msg) noexcept -> void;
-    auto process_shutdown_ready(Message&& msg) noexcept -> void;
+    auto process_prepare_reorg(Message&& in) noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto state_reorg(const Work work, Message&& msg) noexcept -> void;
     auto transition_state_normal() noexcept -> void;
-    auto transition_state_reorg() noexcept -> void;
+    auto transition_state_reorg(StateSequence id) noexcept -> void;
     auto transition_state_shutdown() noexcept -> void;
 
     SubchainStateData(

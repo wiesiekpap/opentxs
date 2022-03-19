@@ -18,6 +18,7 @@
 
 namespace opentxs::proto
 {
+static constexpr auto crypto_salt_limit_ = std::size_t{64u};
 
 auto CheckProto_1(const SymmetricKey& input, const bool silent) -> bool
 {
@@ -39,6 +40,8 @@ auto CheckProto_1(const SymmetricKey& input, const bool silent) -> bool
     if (!input.has_size()) { FAIL_1("missing size") }
 
     if (!input.has_type()) { FAIL_1("missing type") }
+
+    if (crypto_salt_limit_ < input.salt().size()) { FAIL_1("salt too large") }
 
     switch (input.type()) {
         case SKEYTYPE_RAW:
@@ -85,12 +88,17 @@ auto CheckProto_2(const SymmetricKey& input, const bool silent) -> bool
     switch (input.type()) {
         case SKEYTYPE_RAW:
         case SKEYTYPE_ECDH: {
+            if (input.has_salt()) { FAIL_1("salt not valid for this key type") }
         } break;
         case SKEYTYPE_ARGON2:
         case SKEYTYPE_ARGON2ID: {
             if (!input.has_salt()) { FAIL_1("missing salt") }
 
             if (1 > input.operations()) { FAIL_1("missing operations") }
+
+            if (crypto_salt_limit_ < input.salt().size()) {
+                FAIL_1("salt too large")
+            }
 
             if (1 > input.difficulty()) { FAIL_1("missing difficulty") }
 

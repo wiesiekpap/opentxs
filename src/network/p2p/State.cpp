@@ -20,7 +20,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/BlockchainP2PChainState.pb.h"
+#include "serialization/protobuf/P2PBlockchainChainState.pb.h"
 
 namespace opentxs::network::p2p
 {
@@ -50,7 +50,7 @@ private:
 
 State::State(
     const api::Session& api,
-    const proto::BlockchainP2PChainState& in) noexcept(false)
+    const proto::P2PBlockchainChainState& in) noexcept(false)
     : State(
           static_cast<opentxs::blockchain::Type>(in.chain()),
           {in.height(), api.Factory().Data(in.hash())})
@@ -81,7 +81,7 @@ auto State::Position() const noexcept
     return imp_->position_;
 }
 
-auto State::Serialize(proto::BlockchainP2PChainState& dest) const noexcept
+auto State::Serialize(proto::P2PBlockchainChainState& dest) const noexcept
     -> bool
 {
     const auto& pos = imp_->position_;

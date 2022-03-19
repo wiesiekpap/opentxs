@@ -51,7 +51,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/BlockchainP2PChainState.pb.h"
+#include "serialization/protobuf/P2PBlockchainChainState.pb.h"
 #include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::p2p
@@ -65,6 +65,13 @@ Requestor::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
+          [&] {
+              auto out = CString(print(chain), alloc);
+              out.push_back(' ');
+              out.append("p2p requestor");
+
+              return out;
+          }(),
           0ms,
           batch,
           alloc,
@@ -360,7 +367,7 @@ auto Requestor::Imp::request(const block::Position& position) noexcept -> void
         auto msg = MakeWork(Work::Request);
         msg.AddFrame(chain_);
         msg.Internal().AddFrame([&] {
-            auto proto = proto::BlockchainP2PChainState{};
+            auto proto = proto::P2PBlockchainChainState{};
             const auto state = network::p2p::State{chain_, position};
             state.Serialize(proto);
 

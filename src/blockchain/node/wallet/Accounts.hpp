@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cstddef>
+#include <exception>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -125,6 +126,7 @@ private:
     const CString shutdown_endpoint_;
     network::zeromq::socket::Raw& shutdown_socket_;
     State state_;
+    StateSequence reorg_counter_;
     AccountMap accounts_;
 
     auto do_reorg() noexcept -> void;

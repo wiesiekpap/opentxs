@@ -24,7 +24,7 @@ namespace opentxs  // NOLINT
 // {
 namespace proto
 {
-class BlockchainP2PSync;
+class P2PBlockchainSync;
 }  // namespace proto
 // }  // namespace v1
 }  // namespace opentxs
@@ -42,12 +42,12 @@ public:
     auto Header() const noexcept -> ReadView;
     auto Height() const noexcept -> opentxs::blockchain::block::Height;
     OPENTXS_NO_EXPORT auto Serialize(
-        proto::BlockchainP2PSync& dest) const noexcept -> bool;
+        proto::P2PBlockchainSync& dest) const noexcept -> bool;
     OPENTXS_NO_EXPORT auto Serialize(AllocateOutput dest) const noexcept
         -> bool;
 
     OPENTXS_NO_EXPORT Block(
-        const proto::BlockchainP2PSync& serialized) noexcept(false);
+        const proto::P2PBlockchainSync& serialized) noexcept(false);
     OPENTXS_NO_EXPORT Block(
         opentxs::blockchain::Type chain,
         opentxs::blockchain::block::Height height,

@@ -47,7 +47,8 @@ public:
         const boost::shared_ptr<const SubchainStateData>& parent,
         const PaymentCode& code) noexcept -> Index;
 
-    auto ChangeState(const State state) noexcept -> bool final;
+    auto ChangeState(const State state, StateSequence reorg) noexcept
+        -> bool final;
     auto ProcessReorg(const block::Position& parent) noexcept -> void final;
 
     Index() = delete;

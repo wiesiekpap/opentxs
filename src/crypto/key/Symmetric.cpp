@@ -465,7 +465,7 @@ auto Symmetric::encrypt(
     const opentxs::crypto::key::symmetric::Algorithm mode,
     const opentxs::PasswordPrompt& reason,
     proto::Ciphertext& ciphertext,
-    const bool text) const -> bool
+    const bool isPrimaryPayload) const -> bool
 {
     if (nullptr == input) {
         LogError()(OT_PRETTY_CLASS())("Null input.").Flush();
@@ -510,7 +510,7 @@ auto Symmetric::encrypt(
         ciphertext.set_iv(iv, ivSize);
     }
 
-    ciphertext.set_text(text);
+    ciphertext.set_is_payload(isPrimaryPayload);
 
     OT_ASSERT(nullptr != plain.value()->data());
 
@@ -592,7 +592,7 @@ auto Symmetric::encrypt_key(
     auto blankIV = api_.Factory().Secret(0);
     blankIV->Randomize(engine_.IvSize(translate(encrypted->mode())));
     encrypted->set_iv(blankIV->data(), blankIV->size());
-    encrypted->set_text(false);
+    encrypted->set_is_payload(false);
     auto key = api_.Factory().Secret(0);
     get_password(lock, reason, key);
     const auto saltSize = engine_.SaltSize(type);

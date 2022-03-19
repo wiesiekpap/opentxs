@@ -14,6 +14,7 @@
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
+#include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
@@ -159,9 +160,9 @@ Index::Index(Index&& rhs) noexcept
 {
 }
 
-auto Index::ChangeState(const State state) noexcept -> bool
+auto Index::ChangeState(const State state, StateSequence reorg) noexcept -> bool
 {
-    return imp_->ChangeState(state);
+    return imp_->ChangeState(state, reorg);
 }
 
 auto Index::ProcessReorg(const block::Position& parent) noexcept -> void

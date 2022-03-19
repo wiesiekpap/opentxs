@@ -7,6 +7,7 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <atomic>
+#include <exception>
 
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
@@ -54,7 +55,8 @@ class Job : virtual public wallet::Job, public Actor<Job, SubchainJobs>
     boost::shared_ptr<const SubchainStateData> parent_p_;
 
 public:
-    auto ChangeState(const State state) noexcept -> bool final;
+    auto ChangeState(const State state, StateSequence reorg) noexcept
+        -> bool final;
     auto Init(boost::shared_ptr<Job> me) noexcept -> void
     {
         signal_startup(me);
@@ -80,8 +82,11 @@ protected:
 private:
     friend Actor<Job, SubchainJobs>;
 
-    const CString name_;
+    using HandledReorgs = Set<StateSequence>;
+
+    std::atomic<State> pending_state_;
     std::atomic<State> state_;
+    HandledReorgs reorgs_;
 
     auto do_shutdown() noexcept -> void;
     virtual auto do_startup() noexcept -> void = 0;
@@ -92,12 +97,13 @@ private:
     auto process_filter(Message&& in) noexcept -> void;
     virtual auto process_filter(block::Position&& tip) noexcept -> void;
     virtual auto process_mempool(Message&& in) noexcept -> void;
+    auto process_prepare_reorg(Message&& in) noexcept -> void;
     virtual auto process_startup(Message&& in) noexcept -> void;
     virtual auto process_update(Message&& msg) noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto state_reorg(const Work work, Message&& msg) noexcept -> void;
     auto transition_state_normal() noexcept -> void;
-    auto transition_state_reorg() noexcept -> void;
+    auto transition_state_reorg(StateSequence id) noexcept -> void;
     auto transition_state_shutdown() noexcept -> void;
     virtual auto work() noexcept -> bool = 0;
 };

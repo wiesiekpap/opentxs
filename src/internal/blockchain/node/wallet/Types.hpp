@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <mutex>
 #include <string_view>
@@ -14,6 +15,8 @@
 
 namespace opentxs::blockchain::node::wallet
 {
+using StateSequence = std::size_t;
+
 // WARNING update print function if new values are added or removed
 enum class WalletJobs : OTZMQWorkType {
     shutdown = value(WorkType::Shutdown),
@@ -35,9 +38,10 @@ enum class AccountsJobs : OTZMQWorkType {
 enum class AccountJobs : OTZMQWorkType {
     shutdown = value(WorkType::Shutdown),
     subaccount = value(WorkType::BlockchainAccountCreated),
-    prepare_shutdown = OT_ZMQ_PREPARE_SHUTDOWN + 0,
+    prepare_reorg = OT_ZMQ_INTERNAL_SIGNAL + 0,
     init = OT_ZMQ_INIT_SIGNAL,
     key = OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL,
+    prepare_shutdown = OT_ZMQ_PREPARE_SHUTDOWN,
     statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
 };
 
@@ -47,15 +51,17 @@ enum class SubchainJobs : OTZMQWorkType {
     filter = value(WorkType::BlockchainNewFilter),
     mempool = value(WorkType::BlockchainMempoolUpdated),
     block = value(WorkType::BlockchainBlockAvailable),
-    prepare_shutdown = OT_ZMQ_PREPARE_SHUTDOWN + 0,
+    prepare_reorg = OT_ZMQ_INTERNAL_SIGNAL + 0,
     update = OT_ZMQ_INTERNAL_SIGNAL + 1,
     init = OT_ZMQ_INIT_SIGNAL,
     key = OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL,
+    prepare_shutdown = OT_ZMQ_PREPARE_SHUTDOWN,
     statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
 };
 
-auto lock_for_reorg(std::timed_mutex& mutex) noexcept
-    -> std::unique_lock<std::timed_mutex>;
+auto lock_for_reorg(
+    const std::string_view name,
+    std::timed_mutex& mutex) noexcept -> std::unique_lock<std::timed_mutex>;
 auto print(WalletJobs) noexcept -> std::string_view;
 auto print(AccountsJobs) noexcept -> std::string_view;
 auto print(AccountJobs) noexcept -> std::string_view;

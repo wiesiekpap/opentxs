@@ -35,7 +35,8 @@ namespace opentxs::blockchain::node::wallet
 class Rescan final : public Job
 {
 public:
-    auto ChangeState(const State state) noexcept -> bool final;
+    auto ChangeState(const State state, StateSequence reorg) noexcept
+        -> bool final;
     auto ProcessReorg(const block::Position& parent) noexcept -> void final;
 
     Rescan(const boost::shared_ptr<const SubchainStateData>& parent) noexcept;
