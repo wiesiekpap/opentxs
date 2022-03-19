@@ -182,7 +182,7 @@ private:
         const opentxs::crypto::key::symmetric::Algorithm mode,
         const PasswordPrompt& reason,
         proto::Ciphertext& ciphertext,
-        const bool text = false) const -> bool;
+        const bool isPrimaryPayload) const -> bool;
     auto encrypt_key(
         const Lock& lock,
         const opentxs::Secret& plaintextKey,

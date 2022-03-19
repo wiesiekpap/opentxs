@@ -10,12 +10,12 @@ option java_package = "org.opentransactions.proto";
 option java_outer_classname = "OTCiphertext";
 option optimize_for = LITE_RUNTIME;
 
-import "Enums.proto";
+import public "Enums.proto";
 
 message Ciphertext {
     optional uint32 version = 1;
     optional SymmetricMode mode = 2;
-    optional bool text = 3;
+    optional bool is_payload = 3;
     optional SymmetricKey key = 4;
     optional bytes iv = 5;
     optional bytes tag = 6;
