@@ -373,9 +373,10 @@ Rescan::Rescan(
     imp_->Init(imp_);
 }
 
-auto Rescan::ChangeState(const State state) noexcept -> bool
+auto Rescan::ChangeState(const State state, StateSequence reorg) noexcept
+    -> bool
 {
-    return imp_->ChangeState(state);
+    return imp_->ChangeState(state, reorg);
 }
 
 auto Rescan::ProcessReorg(const block::Position& parent) noexcept -> void

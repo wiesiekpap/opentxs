@@ -11,6 +11,7 @@
 
 #include <boost/smart_ptr/make_shared.hpp>
 #include <chrono>
+#include <exception>
 #include <memory>
 #include <string_view>
 #include <utility>
@@ -21,9 +22,9 @@
 #include "internal/api/session/Wallet.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/subchain/Subchain.hpp"
+#include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "internal/util/Timer.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -65,9 +66,10 @@ auto print(AccountJobs job) noexcept -> std::string_view
         static const auto map = Map<Job, CString>{
             {Job::shutdown, "shutdown"},
             {Job::subaccount, "subaccount"},
-            {Job::prepare_shutdown, "prepare_shutdown"},
+            {Job::prepare_reorg, "prepare_reorg"},
             {Job::init, "init"},
             {Job::key, "key"},
+            {Job::prepare_shutdown, "prepare_shutdown"},
             {Job::statemachine, "statemachine"},
         };
 
@@ -98,6 +100,14 @@ Account::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
+          [&] {
+              using namespace std::literals;
+
+              return CString{alloc}
+                  .append(print(chain))
+                  .append(" account for "sv)
+                  .append(account.NymID().str());
+          }(),
           0ms,
           batch,
           alloc,
@@ -116,18 +126,11 @@ Account::Imp::Imp(
     , db_(db)
     , mempool_(mempool)
     , chain_(chain)
-    , name_([&] {
-        using namespace std::literals;
-
-        return CString{alloc}
-            .append(print(chain_))
-            .append(" account for "sv)
-            .append(account_.NymID().str());
-    }())
     , filter_type_(node_.FilterOracleInternal().DefaultType())
     , shutdown_endpoint_(std::move(shutdown))
     , pending_state_(State::normal)
     , state_(State::normal)
+    , reorgs_(alloc)
     , notification_(alloc)
     , internal_(alloc)
     , external_(alloc)
@@ -160,37 +163,51 @@ Account::Imp::Imp(
 {
 }
 
-auto Account::Imp::ChangeState(const State state) noexcept -> bool
+auto Account::Imp::ChangeState(const State state, StateSequence reorg) noexcept
+    -> bool
 {
     if (auto old = pending_state_.exchange(state); old == state) {
 
         return true;
     }
 
-    auto lock = lock_for_reorg(reorg_lock_);
+    auto lock = lock_for_reorg(name_, reorg_lock_);
+    auto output{false};
 
     switch (state) {
         case State::normal: {
-            OT_ASSERT(State::reorg == state_);
+            if (State::reorg != state_) { break; }
 
             transition_state_normal();
+            output = true;
         } break;
         case State::reorg: {
-            OT_ASSERT(State::normal == state_);
+            if (State::shutdown == state_) { break; }
 
-            transition_state_reorg();
+            transition_state_reorg(reorg);
+            output = true;
         } break;
         case State::shutdown: {
-            OT_ASSERT(State::reorg != state_);
+            if (State::reorg == state_) { break; }
 
             transition_state_shutdown();
+            output = true;
         } break;
         default: {
             OT_FAIL;
         }
     }
 
-    return true;
+    if (false == output) {
+        LogError()(OT_PRETTY_CLASS())(
+            name_)(" failed to transaction states from ")(print(state_))(
+            " to ")(print(state))
+            .Flush();
+
+        OT_FAIL;
+    }
+
+    return output;
 }
 
 auto Account::Imp::check_hd(const Identifier& id) noexcept -> void
@@ -219,7 +236,7 @@ auto Account::Imp::check_pc(const crypto::PaymentCode& subaccount) noexcept
 auto Account::Imp::clear_children() noexcept -> void
 {
     const auto cb = [](auto& value) {
-        auto rc = value.second->ChangeState(Subchain::State::shutdown);
+        auto rc = value.second->ChangeState(Subchain::State::shutdown, {});
 
         OT_ASSERT(rc);
     };
@@ -376,6 +393,15 @@ auto Account::Imp::process_key(Message&& in) noexcept -> void
     process_subaccount(id, type);
 }
 
+auto Account::Imp::process_prepare_reorg(Message&& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(1u < body.size());
+
+    transition_state_reorg(body.at(1).as<StateSequence>());
+}
+
 auto Account::Imp::process_subaccount(Message&& in) noexcept -> void
 {
     const auto body = in.Body();
@@ -442,14 +468,17 @@ auto Account::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::subaccount: {
             process_subaccount(std::move(msg));
         } break;
-        case Work::prepare_shutdown: {
-            transition_state_shutdown();
+        case Work::prepare_reorg: {
+            process_prepare_reorg(std::move(msg));
         } break;
         case Work::init: {
             do_init();
         } break;
         case Work::key: {
             process_key(std::move(msg));
+        } break;
+        case Work::prepare_shutdown: {
+            transition_state_shutdown();
         } break;
         case Work::statemachine: {
             do_work();
@@ -468,12 +497,13 @@ auto Account::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
 {
     switch (work) {
         case Work::subaccount:
+        case Work::prepare_reorg:
         case Work::key:
         case Work::statemachine: {
             defer(std::move(msg));
         } break;
-        case Work::prepare_shutdown:
         case Work::shutdown:
+        case Work::prepare_shutdown:
         case Work::init: {
             LogError()(OT_PRETTY_CLASS())(name_)(" wrong state for ")(
                 print(work))(" message")
@@ -495,7 +525,7 @@ auto Account::Imp::transition_state_normal() noexcept -> void
 {
     disable_automatic_processing_ = false;
     const auto cb = [](auto& value) {
-        auto rc = value.second->ChangeState(Subchain::State::normal);
+        auto rc = value.second->ChangeState(Subchain::State::normal, {});
 
         OT_ASSERT(rc);
     };
@@ -505,17 +535,23 @@ auto Account::Imp::transition_state_normal() noexcept -> void
     trigger();
 }
 
-auto Account::Imp::transition_state_reorg() noexcept -> void
+auto Account::Imp::transition_state_reorg(StateSequence id) noexcept -> void
 {
-    disable_automatic_processing_ = true;
-    const auto cb = [](auto& value) {
-        auto rc = value.second->ChangeState(Subchain::State::reorg);
+    if (0u == reorgs_.count(id)) {
+        reorgs_.emplace(id);
+        disable_automatic_processing_ = true;
+        const auto cb = [=](auto& value) {
+            auto rc = value.second->ChangeState(Subchain::State::reorg, id);
 
-        OT_ASSERT(rc);
-    };
-    for_each(cb);
-    state_ = State::reorg;
-    log_(OT_PRETTY_CLASS())(name_)(" transitioned to reorg state ").Flush();
+            OT_ASSERT(rc);
+        };
+        for_each(cb);
+        state_ = State::reorg;
+        log_(OT_PRETTY_CLASS())(name_)(" transitioned to reorg state ").Flush();
+    } else {
+        log_(OT_PRETTY_CLASS())(name_)(" reorg ")(id)(" already handled")
+            .Flush();
+    }
 }
 
 auto Account::Imp::transition_state_shutdown() noexcept -> void
@@ -585,9 +621,10 @@ auto Account::ProcessReorg(
     imp_->ProcessReorg(headerOracleLock, tx, errors, parent);
 }
 
-auto Account::ChangeState(const State state) noexcept -> bool
+auto Account::ChangeState(const State state, StateSequence reorg) noexcept
+    -> bool
 {
-    return imp_->ChangeState(state);
+    return imp_->ChangeState(state, reorg);
 }
 
 auto Account::VerifyState(const State state) const noexcept -> void

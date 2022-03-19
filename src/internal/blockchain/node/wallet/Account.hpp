@@ -13,6 +13,7 @@
 
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
@@ -56,7 +57,9 @@ class Account
 public:
     using State = JobState;
 
-    [[nodiscard]] auto ChangeState(const State state) noexcept -> bool;
+    [[nodiscard]] auto ChangeState(
+        const State state,
+        StateSequence reorg = {}) noexcept -> bool;
     auto VerifyState(const State state) const noexcept -> void;
 
     auto ProcessReorg(

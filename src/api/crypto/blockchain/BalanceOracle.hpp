@@ -6,6 +6,7 @@
 #pragma once
 
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <exception>
 #include <tuple>
 #include <utility>
 

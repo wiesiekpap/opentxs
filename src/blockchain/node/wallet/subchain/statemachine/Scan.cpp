@@ -217,9 +217,9 @@ Scan::Scan(const boost::shared_ptr<const SubchainStateData>& parent) noexcept
     imp_->Init(imp_);
 }
 
-auto Scan::ChangeState(const State state) noexcept -> bool
+auto Scan::ChangeState(const State state, StateSequence reorg) noexcept -> bool
 {
-    return imp_->ChangeState(state);
+    return imp_->ChangeState(state, reorg);
 }
 
 auto Scan::ProcessReorg(const block::Position& parent) noexcept -> void

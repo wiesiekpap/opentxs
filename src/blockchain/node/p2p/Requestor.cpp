@@ -65,6 +65,13 @@ Requestor::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
+          [&] {
+              auto out = CString(print(chain), alloc);
+              out.push_back(' ');
+              out.append("p2p requestor");
+
+              return out;
+          }(),
           0ms,
           batch,
           alloc,

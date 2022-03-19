@@ -105,7 +105,7 @@ class Account::Imp final : public Actor<Imp, AccountJobs>
 public:
     auto VerifyState(const State state) const noexcept -> void;
 
-    auto ChangeState(const State state) noexcept -> bool;
+    auto ChangeState(const State state, StateSequence reorg) noexcept -> bool;
     auto Init(boost::shared_ptr<Imp> me) noexcept -> void;
     auto ProcessReorg(
         const Lock& headerOracleLock,
@@ -132,6 +132,7 @@ private:
 
     using Subchains = Map<OTIdentifier, boost::shared_ptr<SubchainStateData>>;
     using Subtype = node::internal::WalletDatabase::Subchain;
+    using HandledReorgs = Set<StateSequence>;
 
     const api::Session& api_;
     const crypto::Account& account_;
@@ -139,11 +140,11 @@ private:
     node::internal::WalletDatabase& db_;
     const node::internal::Mempool& mempool_;
     const Type chain_;
-    const CString name_;
     const cfilter::Type filter_type_;
     const CString shutdown_endpoint_;
     std::atomic<State> pending_state_;
     std::atomic<State> state_;
+    HandledReorgs reorgs_;
     Subchains notification_;
     Subchains internal_;
     Subchains external_;
@@ -177,6 +178,7 @@ private:
         Subchains& map) noexcept -> Subchain&;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
     auto process_key(Message&& in) noexcept -> void;
+    auto process_prepare_reorg(Message&& in) noexcept -> void;
     auto process_subaccount(Message&& in) noexcept -> void;
     auto process_subaccount(
         const Identifier& id,
@@ -185,7 +187,7 @@ private:
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto state_reorg(const Work work, Message&& msg) noexcept -> void;
     auto transition_state_normal() noexcept -> void;
-    auto transition_state_reorg() noexcept -> void;
+    auto transition_state_reorg(StateSequence id) noexcept -> void;
     auto transition_state_shutdown() noexcept -> void;
     auto work() noexcept -> bool;
 

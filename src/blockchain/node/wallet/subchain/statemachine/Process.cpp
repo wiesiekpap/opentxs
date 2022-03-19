@@ -233,9 +233,10 @@ Process::Process(
     imp_->Init(imp_);
 }
 
-auto Process::ChangeState(const State state) noexcept -> bool
+auto Process::ChangeState(const State state, StateSequence reorg) noexcept
+    -> bool
 {
-    return imp_->ChangeState(state);
+    return imp_->ChangeState(state, reorg);
 }
 
 auto Process::ProcessReorg(const block::Position& parent) noexcept -> void

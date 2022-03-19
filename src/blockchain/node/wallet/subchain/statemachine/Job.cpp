@@ -66,6 +66,14 @@ Job::Job(
     : Actor(
           parent->api_,
           logger,
+          [&] {
+              using namespace std::literals;
+              auto out = std::move(name);
+              out.append(" job for "sv);
+              out.append(parent->name_);
+
+              return out;
+          }(),
           0s,
           batch,
           alloc,
@@ -81,46 +89,57 @@ Job::Job(
           std::move(neverDrop))
     , parent_p_(parent)
     , parent_(*parent_p_)
-    , name_([&] {
-        using namespace std::literals;
-        auto out = std::move(name);
-        out.append(" job for "sv);
-        out.append(parent_.name_);
-        out.push_back(' ');
-
-        return out;
-    }())
+    , pending_state_(State::normal)
     , state_(State::normal)
+    , reorgs_(alloc)
 {
     OT_ASSERT(parent_p_);
 }
 
-auto Job::ChangeState(const State state) noexcept -> bool
+auto Job::ChangeState(const State state, StateSequence reorg) noexcept -> bool
 {
-    auto lock = lock_for_reorg(reorg_lock_);
+    if (auto old = pending_state_.exchange(state); old == state) {
+
+        return true;
+    }
+
+    auto lock = lock_for_reorg(name_, reorg_lock_);
+    auto output{false};
 
     switch (state) {
         case State::normal: {
-            OT_ASSERT(State::reorg == state_);
+            if (State::reorg != state_) { break; }
 
             transition_state_normal();
+            output = true;
         } break;
         case State::reorg: {
-            OT_ASSERT(State::normal == state_);
+            if (State::shutdown == state_) { break; }
 
-            transition_state_reorg();
+            transition_state_reorg(reorg);
+            output = true;
         } break;
         case State::shutdown: {
-            OT_ASSERT(State::reorg != state_);
+            if (State::reorg == state_) { break; }
 
-            if (State::shutdown != state_) { transition_state_shutdown(); }
+            transition_state_shutdown();
+            output = true;
         } break;
         default: {
             OT_FAIL;
         }
     }
 
-    return true;
+    if (false == output) {
+        LogError()(OT_PRETTY_CLASS())(
+            name_)(" failed to transaction states from ")(print(state_))(
+            " to ")(print(state))
+            .Flush();
+
+        OT_FAIL;
+    }
+
+    return output;
 }
 
 auto Job::do_shutdown() noexcept -> void {}
@@ -159,7 +178,7 @@ auto Job::process_block(Message&& in) noexcept -> void
 
 auto Job::process_block(const block::Hash& hash) noexcept -> void
 {
-    LogError()(OT_PRETTY_CLASS())(name_)("unhandled message type").Flush();
+    LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type").Flush();
 
     OT_FAIL;
 }
@@ -185,16 +204,25 @@ auto Job::process_filter(Message&& in) noexcept -> void
 
 auto Job::process_filter(block::Position&& tip) noexcept -> void
 {
-    LogError()(OT_PRETTY_CLASS())(name_)("unhandled message type").Flush();
+    LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type").Flush();
 
     OT_FAIL;
 }
 
 auto Job::process_key(Message&& in) noexcept -> void
 {
-    LogError()(OT_PRETTY_CLASS())(name_)("unhandled message type").Flush();
+    LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type").Flush();
 
     OT_FAIL;
+}
+
+auto Job::process_prepare_reorg(Message&& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(1u < body.size());
+
+    transition_state_reorg(body.at(1).as<StateSequence>());
 }
 
 auto Job::process_startup(Message&& msg) noexcept -> void
@@ -208,14 +236,14 @@ auto Job::process_startup(Message&& msg) noexcept -> void
 
 auto Job::process_mempool(Message&& in) noexcept -> void
 {
-    LogError()(OT_PRETTY_CLASS())(name_)("unhandled message type").Flush();
+    LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type").Flush();
 
     OT_FAIL;
 }
 
 auto Job::process_update(Message&& msg) noexcept -> void
 {
-    LogError()(OT_PRETTY_CLASS())(name_)("unhandled message type").Flush();
+    LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type").Flush();
 
     OT_FAIL;
 }
@@ -235,8 +263,8 @@ auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::block: {
             process_block(std::move(msg));
         } break;
-        case Work::prepare_shutdown: {
-            transition_state_shutdown();
+        case Work::prepare_reorg: {
+            process_prepare_reorg(std::move(msg));
         } break;
         case Work::update: {
             process_update(std::move(msg));
@@ -247,11 +275,14 @@ auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::key: {
             process_key(std::move(msg));
         } break;
+        case Work::prepare_shutdown: {
+            transition_state_shutdown();
+        } break;
         case Work::statemachine: {
             do_work();
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS())(name_)("unhandled message type ")(
+            LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type ")(
                 static_cast<OTZMQWorkType>(work))
                 .Flush();
 
@@ -266,17 +297,18 @@ auto Job::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::filter:
         case Work::mempool:
         case Work::block:
+        case Work::prepare_reorg:
         case Work::update:
         case Work::statemachine: {
-            log_(OT_PRETTY_CLASS())(name_)("deferring ")(print(work))(
+            log_(OT_PRETTY_CLASS())(name_)(" deferring ")(print(work))(
                 " message processing until reorg is complete")
                 .Flush();
             defer(std::move(msg));
         } break;
         case Work::shutdown:
-        case Work::prepare_shutdown:
-        case Work::init: {
-            LogError()(OT_PRETTY_CLASS())(name_)("wrong state for ")(
+        case Work::init:
+        case Work::prepare_shutdown: {
+            LogError()(OT_PRETTY_CLASS())(name_)(" wrong state for ")(
                 print(work))(" message")
                 .Flush();
 
@@ -284,7 +316,7 @@ auto Job::state_reorg(const Work work, Message&& msg) noexcept -> void
         }
         case Work::key:
         default: {
-            LogError()(OT_PRETTY_CLASS())(name_)("unhandled message type ")(
+            LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type ")(
                 static_cast<OTZMQWorkType>(work))
                 .Flush();
 
@@ -301,11 +333,17 @@ auto Job::transition_state_normal() noexcept -> void
     trigger();
 }
 
-auto Job::transition_state_reorg() noexcept -> void
+auto Job::transition_state_reorg(StateSequence id) noexcept -> void
 {
-    disable_automatic_processing_ = true;
-    state_ = State::reorg;
-    log_(OT_PRETTY_CLASS())(name_)(" transitioned to reorg state ").Flush();
+    if (0u == reorgs_.count(id)) {
+        reorgs_.emplace(id);
+        disable_automatic_processing_ = true;
+        state_ = State::reorg;
+        log_(OT_PRETTY_CLASS())(name_)(" transitioned to reorg state ").Flush();
+    } else {
+        log_(OT_PRETTY_CLASS())(name_)(" reorg ")(id)(" already handled")
+            .Flush();
+    }
 }
 
 auto Job::transition_state_shutdown() noexcept -> void
