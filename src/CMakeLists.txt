@@ -21,10 +21,8 @@ if(OT_PCH)
     "$<$<COMPILE_LANGUAGE:CXX>:<cctype$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<cerrno$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<chrono$<ANGLE-R>>"
-    "$<$<COMPILE_LANGUAGE:CXX>:<cinttypes$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<cmath$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<condition_variable$<ANGLE-R>>"
-    "$<$<COMPILE_LANGUAGE:CXX>:<csignal$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<cstdarg$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<cstddef$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<cstdint$<ANGLE-R>>"
@@ -34,6 +32,7 @@ if(OT_PCH)
     "$<$<COMPILE_LANGUAGE:CXX>:<ctime$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<deque$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<exception$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<forward_list$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<functional$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<future$<ANGLE-R>>"
@@ -57,11 +56,14 @@ if(OT_PCH)
     "$<$<COMPILE_LANGUAGE:CXX>:<ratio$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<regex$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<set$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<shared_mutex$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<sstream$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<stdexcept$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<string$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<string_view$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<thread$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<tuple$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<typeindex$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<typeinfo$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<type_traits$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<unordered_map$<ANGLE-R>>"
@@ -75,7 +77,16 @@ if(OT_PCH)
     target_precompile_headers(
       opentxs-common
       PUBLIC
+      "$<$<COMPILE_LANGUAGE:CXX>:<experimental/deque$<ANGLE-R>>"
+      "$<$<COMPILE_LANGUAGE:CXX>:<experimental/forward_list$<ANGLE-R>>"
+      "$<$<COMPILE_LANGUAGE:CXX>:<experimental/list$<ANGLE-R>>"
+      "$<$<COMPILE_LANGUAGE:CXX>:<experimental/map$<ANGLE-R>>"
       "$<$<COMPILE_LANGUAGE:CXX>:<experimental/memory_resource$<ANGLE-R>>"
+      "$<$<COMPILE_LANGUAGE:CXX>:<experimental/set$<ANGLE-R>>"
+      "$<$<COMPILE_LANGUAGE:CXX>:<experimental/string$<ANGLE-R>>"
+      "$<$<COMPILE_LANGUAGE:CXX>:<experimental/unordered_map$<ANGLE-R>>"
+      "$<$<COMPILE_LANGUAGE:CXX>:<experimental/unordered_set$<ANGLE-R>>"
+      "$<$<COMPILE_LANGUAGE:CXX>:<experimental/vector$<ANGLE-R>>"
     )
   else()
     target_precompile_headers(
