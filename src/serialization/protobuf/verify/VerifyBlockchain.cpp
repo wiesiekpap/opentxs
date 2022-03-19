@@ -118,15 +118,6 @@ auto BlockchainDeterministicAccountDataAllowedHDPath() noexcept
 
     return output;
 }
-auto BlockchainP2PHelloAllowedBlockchainP2PChainState() noexcept
-    -> const VersionMap&
-{
-    static const auto output = VersionMap{
-        {1, {1, 1}},
-    };
-
-    return output;
-}
 auto BlockchainTransactionAllowedInput() noexcept -> const VersionMap&
 {
     static const auto output = VersionMap{

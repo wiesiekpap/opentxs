@@ -15,7 +15,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/BlockchainP2PSync.pb.h"
+#include "serialization/protobuf/P2PBlockchainSync.pb.h"
 
 namespace opentxs::network::p2p
 {
@@ -60,7 +60,7 @@ private:
     auto operator=(Imp&&) -> Imp& = delete;
 };
 
-Block::Block(const proto::BlockchainP2PSync& in) noexcept(false)
+Block::Block(const proto::P2PBlockchainSync& in) noexcept(false)
     : Block(
           static_cast<opentxs::blockchain::Type>(in.chain()),
           in.height(),
@@ -119,7 +119,7 @@ auto Block::Height() const noexcept -> opentxs::blockchain::block::Height
     return imp_->height_;
 }
 
-auto Block::Serialize(proto::BlockchainP2PSync& dest) const noexcept -> bool
+auto Block::Serialize(proto::P2PBlockchainSync& dest) const noexcept -> bool
 {
     const auto header = reader(imp_->header_);
     const auto filter = reader(imp_->filter_);
@@ -137,7 +137,7 @@ auto Block::Serialize(proto::BlockchainP2PSync& dest) const noexcept -> bool
 auto Block::Serialize(AllocateOutput dest) const noexcept -> bool
 {
     const auto proto = [&] {
-        auto out = proto::BlockchainP2PSync{};
+        auto out = proto::P2PBlockchainSync{};
         Serialize(out);
 
         return out;

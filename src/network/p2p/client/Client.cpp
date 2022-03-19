@@ -60,7 +60,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/BlockchainP2PChainState.pb.h"
+#include "serialization/protobuf/P2PBlockchainChainState.pb.h"
 #include "util/Work.hpp"
 
 namespace bc = opentxs::blockchain;
@@ -528,7 +528,7 @@ auto Client::Imp::process_external(Message&& msg) noexcept -> void
                     auto data = [&] {
                         auto out = bcsync::StateData{};
                         const auto proto = [&] {
-                            auto out = proto::BlockchainP2PChainState{};
+                            auto out = proto::P2PBlockchainChainState{};
                             state.Serialize(out);
 
                             return out;
@@ -748,7 +748,7 @@ auto Client::Imp::process_request(Message&& msg) noexcept -> void
     const auto request = [&] {
         namespace otsync = opentxs::network::p2p;
         const auto proto =
-            proto::Factory<proto::BlockchainP2PChainState>(body.at(2));
+            proto::Factory<proto::P2PBlockchainChainState>(body.at(2));
         auto states = [&] {
             auto out = otsync::StateData{};
             out.emplace_back(api_, proto);

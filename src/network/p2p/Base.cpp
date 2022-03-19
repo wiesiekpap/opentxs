@@ -34,8 +34,8 @@
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BlockchainP2PHello.pb.h"
-#include "serialization/protobuf/BlockchainP2PSync.pb.h"
+#include "serialization/protobuf/P2PBlockchainHello.pb.h"
+#include "serialization/protobuf/P2PBlockchainSync.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::network::p2p
@@ -196,7 +196,7 @@ auto Base::Imp::serialize(zeromq::Message& out) const noexcept -> bool
 
     try {
         const auto hello = [&] {
-            auto out = proto::BlockchainP2PHello{};
+            auto out = proto::P2PBlockchainHello{};
             out.set_version(hello_version_);
 
             for (const auto& state : state_) {
@@ -212,7 +212,7 @@ auto Base::Imp::serialize(zeromq::Message& out) const noexcept -> bool
 
         for (const auto& block : blocks_) {
             const auto data = [&] {
-                auto out = proto::BlockchainP2PSync{};
+                auto out = proto::P2PBlockchainSync{};
 
                 if (false == block.Serialize(out)) {
                     throw std::runtime_error{""};

@@ -30,8 +30,6 @@ auto BlockchainDeterministicAccountDataAllowedBlockchainAccountData() noexcept
     -> const VersionMap&;
 auto BlockchainDeterministicAccountDataAllowedHDPath() noexcept
     -> const VersionMap&;
-auto BlockchainP2PHelloAllowedBlockchainP2PChainState() noexcept
-    -> const VersionMap&;
 auto BlockchainTransactionAllowedInput() noexcept -> const VersionMap&;
 auto BlockchainTransactionAllowedOutput() noexcept -> const VersionMap&;
 auto BlockchainTransactionInputAllowedBlockchainInputWitness() noexcept

@@ -34,9 +34,6 @@ set(PROTO_SOURCES
     BlockchainHDAccountData.proto
     BlockchainInputWitness.proto
     BlockchainOutputMultisigDetails.proto
-    BlockchainP2PChainState.proto
-    BlockchainP2PHello.proto
-    BlockchainP2PSync.proto
     BlockchainPeerAddress.proto
     BlockchainPreviousOutput.proto
     BlockchainTransaction.proto
@@ -93,6 +90,9 @@ set(PROTO_SOURCES
     OTXPush.proto
     OutBailment.proto
     OutBailmentReply.proto
+    P2PBlockchainChainState.proto
+    P2PBlockchainHello.proto
+    P2PBlockchainSync.proto
     PairEvent.proto
     PaymentCode.proto
     PaymentEvent.proto
