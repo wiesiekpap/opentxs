@@ -177,8 +177,8 @@ PaymentCode::PaymentCode(
           parent,
           SubaccountType::PaymentCode,
           serialized.deterministic(),
-          serialized.incoming().address().size(),
           serialized.outgoing().address().size(),
+          serialized.incoming().address().size(),
           [&, fallback = std::move(contact)] {
               auto out =
                   ChainData{api, internal_type_, false, external_type_, false};

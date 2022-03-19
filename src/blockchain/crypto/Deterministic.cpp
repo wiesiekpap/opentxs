@@ -12,6 +12,7 @@
 #include <iterator>
 #include <memory>
 #include <stdexcept>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -329,12 +330,37 @@ auto Deterministic::element(
     const Subchain type,
     const Bip32Index index) noexcept(false) -> crypto::Element&
 {
-    if (auto& data = data_.internal_; data.type_ == type) {
-        return *data.map_.at(index);
-    } else if (auto& data = data_.external_; data.type_ == type) {
-        return *data.map_.at(index);
-    } else {
-        throw std::out_of_range("Invalid subchain");
+    const auto validType =
+        (type == data_.internal_.type_) || (type == data_.external_.type_);
+
+    if (false == validType) {
+        const auto error = CString{print(type)}
+                               .append(" subchain is not valid for ")
+                               .append(Describe());
+
+        throw std::out_of_range(error.c_str());
+    }
+
+    try {
+        if (data_.internal_.type_ == type) {
+            auto& data = data_.internal_;
+
+            return *data.map_.at(index);
+        } else {
+            auto& data = data_.external_;
+
+            return *data.map_.at(index);
+        }
+    } catch (...) {
+        const auto error = CString{"index "}
+                               .append(std::to_string(index))
+                               .append(" has not been generated on ")
+                               .append(Describe())
+                               .append(" ")
+                               .append(print(type))
+                               .append(" subchain");
+
+        throw std::out_of_range(error.c_str());
     }
 }
 
@@ -434,8 +460,10 @@ auto Deterministic::generate(
     const Bip32Index desired,
     const PasswordPrompt& reason) const noexcept(false) -> Bip32Index
 {
+    auto& addressMap = data_.Get(type).map_;
     auto& index = generated_.at(type);
 
+    OT_ASSERT(addressMap.size() == index);
     OT_ASSERT(desired == index);
 
     if (max_index_ <= index) { throw std::runtime_error("Account is full"); }
@@ -447,7 +475,6 @@ auto Deterministic::generate(
     }
 
     const auto& key = *pKey;
-    auto& addressMap = data_.Get(type).map_;
     const auto& blockchain = parent_.Parent().Parent();
     const auto [it, added] = addressMap.emplace(
         std::piecewise_construct,
@@ -475,23 +502,69 @@ auto Deterministic::get_contact() const noexcept -> OTIdentifier
     return blank;
 }
 
+auto Deterministic::init() noexcept -> void
+{
+    const auto& log = LogTrace();
+    const auto cb = [&](const auto& data) {
+        const auto type = data.type_;
+        const auto nextGenerateIndex = generated_.at(type);
+        const auto generatedCount = data.map_.size();
+        const auto contiguous = data.check_keys();
+        log(OT_PRETTY_CLASS())("verifying consistency of ")(Describe())(" ")(
+            print(type))(" subchain")
+            .Flush();
+        log(OT_PRETTY_CLASS())("generate index: ")(nextGenerateIndex).Flush();
+        log(OT_PRETTY_CLASS())("    used index: ")(used_.at(type)).Flush();
+        log(OT_PRETTY_CLASS())("     key count: ")(generatedCount).Flush();
+
+        OT_ASSERT(contiguous);
+
+        if (generatedCount != nextGenerateIndex) {
+            LogError()(OT_PRETTY_CLASS())("next generate index for ")(
+                Describe())(" ")(print(type))(" subchain is ")(
+                nextGenerateIndex)(" however ")(
+                generatedCount)(" keys have been generated")
+                .Flush();
+
+            return true;
+        }
+
+        return false;
+    };
+    auto inconsistent = cb(data_.internal_);
+    inconsistent |= cb(data_.external_);
+
+    if (inconsistent) {
+        LogError()(OT_PRETTY_CLASS())("repairing inconsistent state for ")(
+            Describe())
+            .Flush();
+        const auto reason = api_.Factory().PasswordPrompt(
+            "Generate keys to repair inconsistent blockchain account");
+        init(reason);
+    } else {
+        Subaccount::init();
+    }
+}
+
 auto Deterministic::init(const PasswordPrompt& reason) noexcept(false) -> void
 {
-    auto lock = rLock{lock_};
+    {
+        auto lock = rLock{lock_};
 
-    if (account_already_exists(lock)) {
-        throw std::runtime_error("Account already exists");
+        if (account_already_exists(lock)) {
+            throw std::runtime_error("Account already exists");
+        }
+
+        auto internal = Batch{};
+        auto external = Batch{};
+        check_lookahead(lock, internal, external, reason);
+
+        if (false == finish_allocation(lock, internal, external)) {
+            throw std::runtime_error("Failed to save new account");
+        }
     }
 
-    auto internal = Batch{};
-    auto external = Batch{};
-    check_lookahead(lock, internal, external, reason);
-
-    if (false == finish_allocation(lock, internal, external)) {
-        throw std::runtime_error("Failed to save new account");
-    }
-
-    init();
+    Subaccount::init();
 }
 
 auto Deterministic::Key(const Subchain type, const Bip32Index index)
@@ -535,7 +608,7 @@ auto Deterministic::mutable_element(
         auto error = CString{"index "}
                          .append(std::to_string(index))
                          .append(" does not exist for ")
-                         .append(opentxs::print(type))
+                         .append(print(type))
                          .append(" subchain which contains ");
 
         if (0u == data.size()) {

@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <string_view>
 
 #include "Proto.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
@@ -89,6 +90,10 @@ public:
         const UnallocatedVector<Activity>& outgoing,
         UnallocatedSet<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool final;
+    auto Describe() const noexcept -> std::string_view final
+    {
+        return description_;
+    }
     auto ID() const noexcept -> const Identifier& final { return id_; }
     auto Internal() const noexcept -> internal::Subaccount& final
     {
@@ -149,6 +154,8 @@ protected:
         block::Position progress_;
         AddressMap map_;
 
+        auto check_keys() const noexcept -> bool;
+
         AddressData(
             const api::Session& api,
             Subchain type,
@@ -160,6 +167,7 @@ protected:
     const opentxs::blockchain::Type chain_;
     const SubaccountType type_;
     const OTIdentifier id_;
+    const CString description_;
     mutable std::recursive_mutex lock_;
     mutable std::atomic<Revision> revision_;
     mutable internal::ActivityMap unspent_;
@@ -176,6 +184,10 @@ protected:
         -> UnallocatedVector<Activity>;
     static auto convert(const UnallocatedVector<Activity>& in) noexcept
         -> internal::ActivityMap;
+    static auto describe(
+        const opentxs::blockchain::Type chain,
+        const SubaccountType type,
+        const Identifier& id) noexcept -> CString;
 
     virtual auto account_already_exists(const rLock& lock) const noexcept
         -> bool = 0;
@@ -194,7 +206,7 @@ protected:
         -> void;
 
     // NOTE call only from final constructor bodies
-    auto init() noexcept -> void;
+    virtual auto init() noexcept -> void;
     virtual auto mutable_element(
         const rLock& lock,
         const Subchain type,

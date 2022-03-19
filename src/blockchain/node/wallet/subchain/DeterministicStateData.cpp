@@ -30,13 +30,11 @@
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -65,31 +63,10 @@ DeterministicStateData::DeterministicStateData(
           node,
           db,
           mempool,
-          subaccount.Type(),
+          subaccount,
           filter,
           subchain,
           batch,
-          OTNymID{subaccount.Parent().NymID()},
-          OTIdentifier{subaccount.ID()},
-          [&] {
-              using namespace std::literals;
-
-              switch (subchain) {
-                  case Subchain::Internal:
-                  case Subchain::External: {
-
-                      return "HD"sv;
-                  }
-                  case Subchain::Incoming:
-                  case Subchain::Outgoing: {
-
-                      return "payment code"sv;
-                  }
-                  default: {
-                      OT_FAIL;
-                  }
-              }
-          }(),
           parent,
           std::move(alloc))
     , subaccount_(subaccount)

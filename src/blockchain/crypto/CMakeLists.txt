@@ -20,6 +20,8 @@ target_sources(
     "Element.hpp"
     "HD.cpp"
     "HD.hpp"
+    "Notification.cpp"
+    "Notification.hpp"
     "PaymentCode.cpp"
     "PaymentCode.hpp"
     "Subaccount.cpp"

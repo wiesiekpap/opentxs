@@ -203,7 +203,7 @@ auto OutputCache::AddToKey(
 
     try {
         auto& set = load_output_index(
-            wallet::keys_, id, reader(key), "key", opentxs::print(id), keys_);
+            wallet::keys_, id, reader(key), "key", print(id), keys_);
         auto rc =
             lmdb_.Store(wallet::keys_, reader(key), output.Bytes(), tx).first;
 
@@ -557,7 +557,7 @@ auto OutputCache::GetKey(const sLock&, const crypto::Key& id) noexcept
         auto lock = Lock{key_lock_};
 
         return load_output_index(
-            wallet::keys_, id, reader(key), "key", opentxs::print(id), keys_);
+            wallet::keys_, id, reader(key), "key", print(id), keys_);
     } catch (...) {
 
         return empty_outputs_;
@@ -575,7 +575,7 @@ auto OutputCache::GetKey(const eLock&, const crypto::Key& id) noexcept
 
     try {
         return load_output_index(
-            wallet::keys_, id, reader(key), "key", opentxs::print(id), keys_);
+            wallet::keys_, id, reader(key), "key", print(id), keys_);
     } catch (...) {
 
         return empty_outputs_;
@@ -1105,7 +1105,7 @@ auto OutputCache::Print(const eLock&) const noexcept -> void
     log(OT_PRETTY_CLASS())("Outputs by key:\n");
 
     for (const auto& [key, outputs] : keys_) {
-        log("  * ")(opentxs::print(key))("\n");
+        log("  * ")(print(key))("\n");
 
         for (const auto& outpoint : outputs) {
             log("    * ")(outpoint.str())("\n");

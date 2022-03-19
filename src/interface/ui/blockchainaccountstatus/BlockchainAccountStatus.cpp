@@ -13,6 +13,7 @@
 #include <memory>
 #include <optional>
 #include <sstream>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -465,7 +466,7 @@ auto BlockchainAccountStatus::subchain_display_name(
 
         return out.str();
     }();
-    name << opentxs::print(subchain) << " subchain";
+    name << print(subchain) << " subchain";
     progress << std::to_string(actual);
     progress << " of ";
 

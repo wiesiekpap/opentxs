@@ -27,13 +27,14 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
@@ -83,13 +84,10 @@ SubchainStateData::SubchainStateData(
     const node::internal::Network& node,
     node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
-    const crypto::SubaccountType accountType,
+    const crypto::Subaccount& subaccount,
     const cfilter::Type filter,
     const Subchain subchain,
     const network::zeromq::BatchID batch,
-    OTNymID&& owner,
-    OTIdentifier&& id,
-    const std::string_view display,
     const std::string_view parent,
     CString&& fromChildren,
     CString&& toChildren,
@@ -112,13 +110,13 @@ SubchainStateData::SubchainStateData(
     , node_(node)
     , db_(db)
     , mempool_oracle_(mempool)
-    , owner_(std::move(owner))
-    , account_type_(accountType)
-    , id_(std::move(id))
+    , owner_(subaccount.Parent().NymID())
+    , account_type_(subaccount.Type())
+    , id_(subaccount.ID())
     , subchain_(subchain)
     , chain_(node_.Chain())
     , filter_type_(filter)
-    , name_(describe(chain_, id_, display, subchain_, alloc))
+    , name_(describe(subaccount, subchain_, alloc))
     , db_key_(db.GetSubchainID(id_, subchain_))
     , null_position_(make_blank<block::Position>::value(api_))
     , genesis_(node_.HeaderOracle().GetPosition(0))
@@ -148,13 +146,10 @@ SubchainStateData::SubchainStateData(
     const node::internal::Network& node,
     node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
-    const crypto::SubaccountType accountType,
+    const crypto::Subaccount& subaccount,
     const cfilter::Type filter,
     const Subchain subchain,
     const network::zeromq::BatchID batch,
-    OTNymID&& owner,
-    OTIdentifier&& id,
-    const std::string_view display,
     const std::string_view parent,
     allocator_type alloc) noexcept
     : SubchainStateData(
@@ -162,13 +157,10 @@ SubchainStateData::SubchainStateData(
           node,
           db,
           mempool,
-          accountType,
+          subaccount,
           filter,
           subchain,
           batch,
-          std::move(owner),
-          std::move(id),
-          display,
           parent,
           network::zeromq::MakeArbitraryInproc(alloc.resource()),
           network::zeromq::MakeArbitraryInproc(alloc.resource()),
@@ -244,42 +236,15 @@ auto SubchainStateData::clear_children() noexcept -> void
 }
 
 auto SubchainStateData::describe(
-    const blockchain::Type chain,
-    const Identifier& id,
-    const std::string_view type,
+    const crypto::Subaccount& account,
     const Subchain subchain,
     allocator_type alloc) noexcept -> CString
 {
     // TODO c++20 use allocator
     auto out = std::stringstream{};
-    out << print(chain) << ' ';
-    out << type;
-    out << " account ";
-    out << id.str();
+    out << account.Describe();
     out << ' ';
-
-    switch (subchain) {
-        case Subchain::Internal: {
-            out << "internal";
-        } break;
-        case Subchain::External: {
-            out << "external";
-        } break;
-        case Subchain::Incoming: {
-            out << "incoming";
-        } break;
-        case Subchain::Outgoing: {
-            out << "outgoing";
-        } break;
-        case Subchain::Notification: {
-            out << "notification";
-        } break;
-        default: {
-
-            OT_FAIL;
-        }
-    }
-
+    out << print(subchain);
     out << " subchain";
 
     return CString{alloc} + out.str().c_str();

@@ -277,12 +277,11 @@ auto Account::Imp::index_nym(const identifier::Nym& id) noexcept -> void
             alloc::PMR<NotificationStateData>{asio.Alloc(batchID)},
             api_,
             node_,
+            account_,
             db_,
             mempool_,
-            id,
             filter_type_,
             batchID,
-            chain_,
             shutdown_endpoint_,
             std::move(code),
             [&] {
@@ -311,7 +310,7 @@ auto Account::Imp::instantiate(
     Subchains& map) noexcept -> Subchain&
 {
     log_("Instantiating ")(name_)(" subaccount ")(subaccount.ID())(" ")(
-        opentxs::print(subchain))(" subchain for ")(subaccount.Parent().NymID())
+        print(subchain))(" subchain for ")(subaccount.Parent().NymID())
         .Flush();
     const auto& asio = api_.Network().ZeroMQ().Internal();
     const auto batchID = asio.PreallocateBatch();

@@ -178,7 +178,7 @@ protected:
         const rLock& lock,
         const Subchain type,
         const Bip32Index index) noexcept(false) -> crypto::Element&;
-    using Subaccount::init;
+    auto init() noexcept -> void final;
     auto init(const PasswordPrompt& reason) noexcept(false) -> void;
 
     Deterministic(
@@ -194,8 +194,8 @@ protected:
         const crypto::Account& parent,
         const SubaccountType type,
         const SerializedType& serialized,
-        const Bip32Index generated,
-        const Bip32Index used,
+        const Bip32Index internal,
+        const Bip32Index external,
         ChainData&& data,
         Identifier& out) noexcept(false);
 

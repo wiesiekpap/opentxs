@@ -345,7 +345,7 @@ struct Output::Imp {
 
                     if (owner.empty()) {
                         LogError()(OT_PRETTY_CLASS())(
-                            "No owner found for key ")(opentxs::print(key))
+                            "No owner found for key ")(print(key))
                             .Flush();
 
                         OT_FAIL;
