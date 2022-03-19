@@ -200,6 +200,7 @@ public:
         -> UnallocatedVector<proto::BlockchainTransactionProposal>;
     auto LookupContact(const Data& pubkeyHash) const noexcept
         -> UnallocatedSet<OTIdentifier>;
+    auto PublishBalance() const noexcept -> void;
     auto ReorgTo(
         const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,

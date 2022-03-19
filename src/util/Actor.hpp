@@ -234,14 +234,13 @@ private:
         }
     }
 
-    auto decode_message_type(const network::zeromq::Message& in) noexcept
+    auto decode_message_type(const network::zeromq::Message& in) noexcept(false)
     {
         const auto body = in.Body();
 
         if (1 > body.size()) {
-            LogError()(name_)(" ")(__FUNCTION__)(": Invalid message").Flush();
 
-            OT_FAIL;
+            throw std::runtime_error{"empty message received"};
         }
 
         const auto work = [&] {
@@ -250,7 +249,8 @@ private:
                 return body.at(0).as<Work>();
             } catch (...) {
 
-                OT_FAIL;
+                throw std::runtime_error{
+                    "message does not contain a valid work tag"};
             }
         }();
         const auto type = print(work);
@@ -268,13 +268,23 @@ private:
     }
     auto handle_message(network::zeromq::Message&& in) noexcept -> void
     {
-        const auto [work, type, isInit, canDrop, initFinished] =
-            decode_message_type(in);
+        try {
+            const auto [work, type, isInit, canDrop, initFinished] =
+                decode_message_type(in);
 
-        OT_ASSERT(initFinished);
+            OT_ASSERT(initFinished);
 
-        handle_message(
-            false, isInit, initFinished, canDrop, type, work, std::move(in));
+            handle_message(
+                false,
+                isInit,
+                initFinished,
+                canDrop,
+                type,
+                work,
+                std::move(in));
+        } catch (const std::exception& e) {
+            log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
+        }
     }
     auto handle_message(
         const bool topLevel,
@@ -363,54 +373,61 @@ private:
     auto worker(network::zeromq::Message&& in) noexcept -> void
     {
         log_(name_)(" ")(__FUNCTION__)(": Message received").Flush();
-        const auto [work, type, isInit, canDrop, initFinished] =
-            decode_message_type(in);
-        auto lock = try_lock();
 
-        if (false == lock.owns_lock()) {
-            auto log{type};
-            const auto queue = [&] {
-                log_(name_)(" ")(__FUNCTION__)(": queueing message of type ")(
-                    log)(" until reorg is processed")
-                    .Flush();
-                defer(std::move(in));
-                retry_.SetRelative(1s);
-                retry_.Wait([this](const auto& e) {
-                    if (!e) { trigger(); }
-                });
-                defer(std::move(in));
-            };
+        try {
+            const auto [work, type, isInit, canDrop, initFinished] =
+                decode_message_type(in);
+            auto lock = try_lock();
 
-            if (false == initFinished) {
-                if (canDrop) {
+            if (false == lock.owns_lock()) {
+                auto log{type};
+                const auto queue = [&] {
                     log_(name_)(" ")(__FUNCTION__)(
-                        ": dropping message of type ")(
-                        type)(" until init is processed")
+                        ": queueing message of type ")(
+                        log)(" until reorg is processed")
                         .Flush();
+                    defer(std::move(in));
+                    retry_.SetRelative(1s);
+                    retry_.Wait([this](const auto& e) {
+                        if (!e) { trigger(); }
+                    });
+                    defer(std::move(in));
+                };
 
-                    return;
-                } else if (false == isInit) {
+                if (false == initFinished) {
+                    if (canDrop) {
+                        log_(name_)(" ")(__FUNCTION__)(
+                            ": dropping message of type ")(
+                            type)(" until init is processed")
+                            .Flush();
+
+                        return;
+                    } else if (false == isInit) {
+                        queue();
+
+                        return;
+                    }
+                } else {
                     queue();
 
                     return;
                 }
-            } else {
-                queue();
-
-                return;
             }
+
+            if (false == lock.owns_lock()) {
+                // If this branch is reached then a reorg must have been
+                // initiated in between when this object was constructed and
+                // before the init message was received. Only in this one case
+                // we will block the thread until the lock is available.
+                lock.lock();
+            }
+
+            handle_message(
+                true, isInit, initFinished, canDrop, type, work, std::move(in));
+        } catch (const std::exception& e) {
+            log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
         }
 
-        if (false == lock.owns_lock()) {
-            // If this branch is reached then a reorg must have been initiated
-            // in between when this object was constructed and before the init
-            // message was received. Only in this one case we will block the
-            // thread until the lock is available.
-            lock.lock();
-        }
-
-        handle_message(
-            true, isInit, initFinished, canDrop, type, work, std::move(in));
         log_(name_)(" ")(__FUNCTION__)(": message processing complete").Flush();
     }
 };

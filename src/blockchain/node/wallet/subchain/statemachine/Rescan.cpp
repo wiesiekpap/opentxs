@@ -302,7 +302,7 @@ auto Rescan::Imp::work() noexcept -> bool
     }
 
     auto highestClean =
-        parent_.Scan(filter_tip_.value(), stop(), highestTested, dirty);
+        parent_.Rescan(filter_tip_.value(), stop(), highestTested, dirty);
 
     if (highestClean.has_value()) {
         log_(OT_PRETTY_CLASS())(parent_.name_)(" last scanned updated to ")(

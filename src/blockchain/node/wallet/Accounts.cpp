@@ -177,8 +177,7 @@ auto Accounts::Imp::process_block_header(Message&& in) noexcept -> void
     const auto body = in.Body();
 
     if (3 >= body.size()) {
-        LogError()(OT_PRETTY_CLASS())(print(chain_))(" wallet: invalid message")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())(name_)(": invalid message").Flush();
 
         OT_FAIL;
     }
@@ -209,8 +208,7 @@ auto Accounts::Imp::process_nym(const identifier::Nym& nym) noexcept -> bool
         shutdown_endpoint_);
 
     if (added) {
-        LogConsole()("Initializing ")(print(chain_))(" wallet for ")(nym)
-            .Flush();
+        LogConsole()("Initializing ")(name_)(" wallet for ")(nym).Flush();
     }
 
     return added;
@@ -234,8 +232,7 @@ auto Accounts::Imp::process_reorg(Message&& in) noexcept -> void
     const auto body = in.Body();
 
     if (6 > body.size()) {
-        LogError()(OT_PRETTY_CLASS())(print(chain_))(" wallet: invalid message")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())(name_)(": invalid message").Flush();
 
         OT_FAIL;
     }
@@ -277,8 +274,7 @@ auto Accounts::Imp::process_reorg(
                 throw std::runtime_error{"Finalize transaction failed"};
             }
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS())(print(chain_))(" wallet: ")(e.what())
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())(name_)(": ")(e.what()).Flush();
 
             OT_FAIL;
         }
@@ -290,8 +286,7 @@ auto Accounts::Imp::process_reorg(
             throw std::runtime_error{"Advance chain failed"};
         }
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS())(print(chain_))("  wallet: ")(e.what())
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())(name_)(": ")(e.what()).Flush();
 
         OT_FAIL;
     }
@@ -302,8 +297,8 @@ auto Accounts::Imp::process_reorg(
 
         OT_ASSERT(rc);
     });
-    LogConsole()(print(chain_))(" wallet: reorg to ")(tip.second->asHex())(
-        " at height ")(tip.first)(" finished")
+    LogConsole()(name_)(": reorg to ")(tip.second->asHex())(" at height ")(
+        tip.first)(" finished")
         .Flush();
 }
 
@@ -339,8 +334,7 @@ auto Accounts::Imp::state_normal(const Work work, Message&& msg) noexcept
             do_work();
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS())(print(chain_))(
-                " wallet: unhandled message type ")(
+            LogError()(OT_PRETTY_CLASS())(name_)(": unhandled message type ")(
                 static_cast<OTZMQWorkType>(work))
                 .Flush();
 
@@ -351,18 +345,16 @@ auto Accounts::Imp::state_normal(const Work work, Message&& msg) noexcept
 
 auto Accounts::Imp::transition_state_reorg() noexcept -> void
 {
-    ++reorg_counter_;
-    log_(OT_PRETTY_CLASS())(print(chain_))(" wallet: processing reorg ")(
-        reorg_counter_)
-        .Flush();
+    const auto id = ++reorg_counter_;
+    log_(OT_PRETTY_CLASS())(name_)(": processing reorg ")(id).Flush();
     shutdown_socket_.SendDeferred([=] {
         auto out = MakeWork(AccountJobs::prepare_reorg);
-        out.AddFrame(reorg_counter_);
+        out.AddFrame(id);
 
         return out;
     }());
-    for_each([](auto& a) {
-        auto rc = a.second.ChangeState(Account::State::reorg);
+    for_each([=](auto& a) {
+        auto rc = a.second.ChangeState(Account::State::reorg, id);
 
         OT_ASSERT(rc);
     });
@@ -377,9 +369,7 @@ auto Accounts::Imp::transition_state_shutdown() noexcept -> void
         OT_ASSERT(rc);
     });
     state_ = State::shutdown;
-    log_(OT_PRETTY_CLASS())(print(chain_))(
-        " wallet: transitioned to shutdown state")
-        .Flush();
+    log_(OT_PRETTY_CLASS())(name_)(": transitioned to shutdown state").Flush();
     signal_shutdown();
 }
 

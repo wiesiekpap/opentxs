@@ -163,6 +163,12 @@ public:
     auto ProcessTransaction(
         const block::bitcoin::Transaction& tx) const noexcept -> void;
     virtual auto ReportScan(const block::Position& pos) const noexcept -> void;
+    auto Rescan(
+        const block::Position best,
+        const block::Height stop,
+        block::Position& highestTested,
+        Vector<ScanStatus>& out) const noexcept
+        -> std::optional<block::Position>;
     auto Scan(
         const block::Position best,
         const block::Height stop,
@@ -225,6 +231,8 @@ private:
     friend Actor<SubchainStateData, SubchainJobs>;
 
     using HandledReorgs = Set<StateSequence>;
+    using MatchData = Set<Vector<std::byte>>;
+    using PreviouslyMatched = Map<block::pHash, MatchData>;
 
     std::atomic<State> pending_state_;
     std::atomic<State> state_;
@@ -235,12 +243,16 @@ private:
     std::optional<wallet::Process> process_;
     std::optional<wallet::Scan> scan_;
     bool have_children_;
+    mutable PreviouslyMatched previous_matches_;
 
     static auto describe(
         const crypto::Subaccount& account,
         const Subchain subchain,
         allocator_type alloc) noexcept -> CString;
 
+    auto check_previous_matches(
+        const block::Hash& block,
+        const Targets& targets) const noexcept -> bool;
     auto clear_children() noexcept -> void;
     virtual auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
         const noexcept -> Index = 0;
@@ -263,6 +275,13 @@ private:
         std::unique_ptr<const block::bitcoin::Transaction> tx) const noexcept
         -> void = 0;
     auto reorg_children() const noexcept -> std::size_t;
+    auto scan(
+        const bool rescan,
+        const block::Position best,
+        const block::Height stop,
+        block::Position& highestTested,
+        Vector<ScanStatus>& out) const noexcept
+        -> std::optional<block::Position>;
 
     auto do_reorg(
         const Lock& headerOracleLock,

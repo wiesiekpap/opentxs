@@ -131,9 +131,8 @@ auto Job::ChangeState(const State state, StateSequence reorg) noexcept -> bool
     }
 
     if (false == output) {
-        LogError()(OT_PRETTY_CLASS())(
-            name_)(" failed to transaction states from ")(print(state_))(
-            " to ")(print(state))
+        LogError()(OT_PRETTY_CLASS())(name_)(" failed to change state from ")(
+            print(state_))(" to ")(print(state))
             .Flush();
 
         OT_FAIL;
@@ -335,11 +334,13 @@ auto Job::transition_state_normal() noexcept -> void
 
 auto Job::transition_state_reorg(StateSequence id) noexcept -> void
 {
+    OT_ASSERT(0u < id);
+
     if (0u == reorgs_.count(id)) {
         reorgs_.emplace(id);
         disable_automatic_processing_ = true;
         state_ = State::reorg;
-        log_(OT_PRETTY_CLASS())(name_)(" transitioned to reorg state ").Flush();
+        log_(OT_PRETTY_CLASS())(name_)(" ready to process reorg ")(id).Flush();
     } else {
         log_(OT_PRETTY_CLASS())(name_)(" reorg ")(id)(" already handled")
             .Flush();

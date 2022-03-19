@@ -201,6 +201,12 @@ struct Output::Imp {
 
         return cache_.GetHeight();
     }
+    auto PublishBalance() const noexcept -> void
+    {
+        auto lock = eLock{lock_};
+
+        publish_balance(lock);
+    }
 
     auto AddTransaction(
         const AccountID& account,
@@ -1931,6 +1937,8 @@ auto Output::GetWalletHeight() const noexcept -> block::Height
 {
     return imp_->GetWalletHeight();
 }
+
+auto Output::PublishBalance() const noexcept -> void { imp_->PublishBalance(); }
 
 auto Output::ReserveUTXO(
     const identifier::Nym& spender,
