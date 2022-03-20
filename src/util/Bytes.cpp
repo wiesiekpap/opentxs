@@ -72,6 +72,10 @@ auto reader(const Space& in) noexcept -> ReadView
 {
     return {reinterpret_cast<const char*>(in.data()), in.size()};
 }
+auto reader(const Vector<std::byte>& in) noexcept -> ReadView
+{
+    return {reinterpret_cast<const char*>(in.data()), in.size()};
+}
 auto reader(const WritableView& in) noexcept -> ReadView
 {
     return {in.as<const char>(), in.size()};
@@ -87,6 +91,14 @@ auto space(const std::size_t size) noexcept -> Space
 
     return output;
 }
+auto space(const std::size_t size, alloc::Resource* alloc) noexcept
+    -> Vector<std::byte>
+{
+    auto output = Vector<std::byte>{alloc};
+    output.assign(size, std::byte{51});
+
+    return output;
+}
 auto space(const ReadView bytes) noexcept -> Space
 {
     if ((nullptr == bytes.data()) || (0 == bytes.size())) { return {}; }
@@ -94,6 +106,17 @@ auto space(const ReadView bytes) noexcept -> Space
     auto it = reinterpret_cast<const std::byte*>(bytes.data());
 
     return {it, it + bytes.size()};
+}
+auto space(const ReadView bytes, alloc::Resource* alloc) noexcept
+    -> Vector<std::byte>
+{
+    using Out = Vector<std::byte>;
+
+    if ((nullptr == bytes.data()) || (0 == bytes.size())) { return Out{alloc}; }
+
+    auto it = reinterpret_cast<const std::byte*>(bytes.data());
+
+    return Out{it, it + bytes.size(), alloc};
 }
 auto valid(const ReadView view) noexcept -> bool
 {
@@ -114,6 +137,14 @@ auto writer(UnallocatedCString* protobuf) noexcept -> AllocateOutput
     return writer(*protobuf);
 }
 auto writer(Space& in) noexcept -> AllocateOutput
+{
+    return [&in](const auto size) -> WritableView {
+        in.resize(size, std::byte{51});
+
+        return {in.data(), in.size()};
+    };
+}
+auto writer(Vector<std::byte>& in) noexcept -> AllocateOutput
 {
     return [&in](const auto size) -> WritableView {
         in.resize(size, std::byte{51});
