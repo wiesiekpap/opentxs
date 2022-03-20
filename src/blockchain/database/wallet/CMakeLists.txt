@@ -27,5 +27,6 @@ target_sources(
 target_link_libraries(opentxs-common PRIVATE Boost::headers)
 target_include_directories(
   opentxs-common SYSTEM
-  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/cs_libguarded/src"
+          "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )

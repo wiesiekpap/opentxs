@@ -92,7 +92,7 @@ private:
     virtual auto do_startup() noexcept -> void = 0;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
     auto process_block(Message&& in) noexcept -> void;
-    virtual auto process_block(const block::Hash& block) noexcept -> void;
+    virtual auto process_block(block::pHash&& block) noexcept -> void;
     virtual auto process_key(Message&& in) noexcept -> void;
     auto process_filter(Message&& in) noexcept -> void;
     virtual auto process_filter(block::Position&& tip) noexcept -> void;

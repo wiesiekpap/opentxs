@@ -231,8 +231,6 @@ private:
     friend Actor<SubchainStateData, SubchainJobs>;
 
     using HandledReorgs = Set<StateSequence>;
-    using MatchData = Set<Vector<std::byte>>;
-    using PreviouslyMatched = Map<block::pHash, MatchData>;
 
     std::atomic<State> pending_state_;
     std::atomic<State> state_;
@@ -243,16 +241,12 @@ private:
     std::optional<wallet::Process> process_;
     std::optional<wallet::Scan> scan_;
     bool have_children_;
-    mutable PreviouslyMatched previous_matches_;
 
     static auto describe(
         const crypto::Subaccount& account,
         const Subchain subchain,
         allocator_type alloc) noexcept -> CString;
 
-    auto check_previous_matches(
-        const block::Hash& block,
-        const Targets& targets) const noexcept -> bool;
     auto clear_children() noexcept -> void;
     virtual auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
         const noexcept -> Index = 0;

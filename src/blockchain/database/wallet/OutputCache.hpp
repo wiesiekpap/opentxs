@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <memory>
-#include <mutex>
 #include <optional>
 
 #include "blockchain/database/wallet/Output.hpp"
@@ -95,102 +94,74 @@ auto all_states() noexcept -> const States&;
 class OutputCache
 {
 public:
-    auto Print(const eLock&) const noexcept -> void;
+    auto Exists(const block::Outpoint& id) const noexcept -> bool;
+    auto Exists(const SubchainID& subchain, const block::Outpoint& id)
+        const noexcept -> bool;
+    auto GetAccount(const AccountID& id) const noexcept -> const Outpoints&;
+    auto GetKey(const crypto::Key& id) const noexcept -> const Outpoints&;
+    auto GetHeight() const noexcept -> block::Height;
+    auto GetNym(const identifier::Nym& id) const noexcept -> const Outpoints&;
+    auto GetNyms() const noexcept -> const Nyms&;
+    auto GetOutput(const block::Outpoint& id) const noexcept(false)
+        -> const block::bitcoin::internal::Output&;
+    auto GetPosition() const noexcept -> const db::Position&;
+    auto GetPosition(const block::Position& id) const noexcept
+        -> const Outpoints&;
+    auto GetState(const node::TxoState id) const noexcept -> const Outpoints&;
+    auto GetSubchain(const SubchainID& id) const noexcept -> const Outpoints&;
+    auto Populate() const noexcept -> void;
+    auto Print() const noexcept -> void;
 
     auto AddOutput(
-        const eLock&,
         const block::Outpoint& id,
         MDB_txn* tx,
         std::unique_ptr<block::bitcoin::Output> output) noexcept -> bool;
     auto AddToAccount(
-        const eLock&,
         const AccountID& id,
         const block::Outpoint& output,
         MDB_txn* tx) noexcept -> bool;
     auto AddToKey(
-        const eLock&,
         const crypto::Key& id,
         const block::Outpoint& output,
         MDB_txn* tx) noexcept -> bool;
     auto AddToNym(
-        const eLock&,
         const identifier::Nym& id,
         const block::Outpoint& output,
         MDB_txn* tx) noexcept -> bool;
     auto AddToPosition(
-        const eLock&,
         const block::Position& id,
         const block::Outpoint& output,
         MDB_txn* tx) noexcept -> bool;
     auto AddToState(
-        const eLock&,
         const node::TxoState id,
         const block::Outpoint& output,
         MDB_txn* tx) noexcept -> bool;
     auto AddToSubchain(
-        const eLock&,
         const SubchainID& id,
         const block::Outpoint& output,
         MDB_txn* tx) noexcept -> bool;
     auto ChangePosition(
-        const eLock&,
         const block::Position& oldPosition,
         const block::Position& newPosition,
         const block::Outpoint& output,
         MDB_txn* tx) noexcept -> bool;
     auto ChangeState(
-        const eLock&,
         const node::TxoState oldState,
         const node::TxoState newState,
         const block::Outpoint& output,
         MDB_txn* tx) noexcept -> bool;
-    auto Clear(const eLock&) noexcept -> void;
-    auto GetAccount(const sLock&, const AccountID& id) noexcept
-        -> const Outpoints&;
-    auto GetAccount(const eLock&, const AccountID& id) noexcept
-        -> const Outpoints&;
-    auto GetKey(const sLock&, const crypto::Key& id) noexcept
-        -> const Outpoints&;
-    auto GetKey(const eLock&, const crypto::Key& id) noexcept
-        -> const Outpoints&;
-    auto GetHeight() noexcept -> block::Height;
-    auto GetNym(const sLock&, const identifier::Nym& id) noexcept
-        -> const Outpoints&;
-    auto GetNym(const eLock&, const identifier::Nym& id) noexcept
-        -> const Outpoints&;
-    auto GetNyms() noexcept -> const Nyms&;
-    auto GetNyms(const eLock&) noexcept -> const Nyms&;
-    auto GetOutput(const sLock&, const block::Outpoint& id) noexcept(false)
-        -> const block::bitcoin::internal::Output&;
-    auto GetOutput(const eLock&, const block::Outpoint& id) noexcept(false)
+    auto Clear() noexcept -> void;
+    auto GetOutput(const block::Outpoint& id) noexcept(false)
         -> block::bitcoin::internal::Output&;
     auto GetOutput(
-        const eLock&,
         const SubchainID& subchain,
         const block::Outpoint& id) noexcept(false)
         -> block::bitcoin::internal::Output&;
-    auto GetPosition(const eLock&) noexcept -> const db::Position&;
-    auto GetPosition(const sLock&, const block::Position& id) noexcept
-        -> const Outpoints&;
-    auto GetPosition(const eLock&, const block::Position& id) noexcept
-        -> const Outpoints&;
-    auto GetState(const sLock&, const node::TxoState id) noexcept
-        -> const Outpoints&;
-    auto GetState(const eLock&, const node::TxoState id) noexcept
-        -> const Outpoints&;
-    auto GetSubchain(const sLock&, const SubchainID& id) noexcept
-        -> const Outpoints&;
-    auto GetSubchain(const eLock&, const SubchainID& id) noexcept
-        -> const Outpoints&;
     auto UpdateOutput(
-        const eLock&,
         const block::Outpoint& id,
         const block::bitcoin::Output& output,
         MDB_txn* tx) noexcept -> bool;
-    auto UpdatePosition(
-        const eLock&,
-        const block::Position&,
-        MDB_txn* tx) noexcept -> bool;
+    auto UpdatePosition(const block::Position&, MDB_txn* tx) noexcept -> bool;
 
     OutputCache(
         const api::Session& api,
@@ -205,46 +176,37 @@ private:
     static const Outpoints empty_outputs_;
     static const Nyms empty_nyms_;
 
-    // NOTE if an exclusive lock is being held in the parent then locking
-    // these mutexes is redundant
     const api::Session& api_;
     const storage::lmdb::LMDB& lmdb_;
     const blockchain::Type chain_;
     const block::Position& blank_;
-    std::mutex position_lock_;
     std::optional<db::Position> position_;
-    std::mutex output_lock_;
     robin_hood::unordered_node_map<
         block::Outpoint,
         std::unique_ptr<block::bitcoin::Output>>
         outputs_;
-    std::mutex account_lock_;
     robin_hood::unordered_node_map<OTIdentifier, Outpoints> accounts_;
-    std::mutex key_lock_;
     robin_hood::unordered_node_map<crypto::Key, Outpoints> keys_;
-    std::mutex nym_lock_;
     robin_hood::unordered_node_map<OTNymID, Outpoints> nyms_;
-    std::optional<Nyms> nym_list_;
-    std::mutex positions_lock_;
+    Nyms nym_list_;
     robin_hood::unordered_node_map<block::Position, Outpoints> positions_;
-    std::mutex state_lock_;
     robin_hood::unordered_node_map<node::TxoState, Outpoints> states_;
-    std::mutex subchain_lock_;
     robin_hood::unordered_node_map<OTIdentifier, Outpoints> subchains_;
+    bool populated_;
 
-    auto get_position() noexcept -> const db::Position&;
+    auto get_position() const noexcept -> const db::Position&;
+    auto load_output(const block::Outpoint& id) const noexcept(false)
+        -> const block::bitcoin::internal::Output&;
+    template <typename MapKeyType, typename MapType>
+    auto load_output_index(const MapKeyType& key, MapType& map) const noexcept
+        -> const Outpoints&;
+
     auto load_output(const block::Outpoint& id) noexcept(false)
         -> block::bitcoin::internal::Output&;
-    template <typename MapKeyType, typename DBKeyType, typename MapType>
-    auto load_output_index(
-        const Table table,
-        const MapKeyType& key,
-        const DBKeyType dbKey,
-        const char* indexName,
-        const UnallocatedCString& keyName,
-        MapType& map) noexcept -> Outpoints&;
-    auto load_nyms() noexcept -> Nyms&;
-    auto load_position() noexcept -> void;
+    template <typename MapKeyType, typename MapType>
+    auto load_output_index(const MapKeyType& key, MapType& map) noexcept
+        -> Outpoints&;
+    auto populate() noexcept -> void;
     auto write_output(
         const block::Outpoint& id,
         const block::bitcoin::Output& output,

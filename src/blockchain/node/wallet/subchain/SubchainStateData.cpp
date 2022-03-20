@@ -141,7 +141,6 @@ SubchainStateData::SubchainStateData(
     , process_(std::nullopt)
     , scan_(std::nullopt)
     , have_children_(false)
-    , previous_matches_(alloc)
 {
     OT_ASSERT(false == owner_->empty());
     OT_ASSERT(false == id_->empty());
@@ -221,45 +220,6 @@ auto SubchainStateData::ChangeState(
     }
 
     return output;
-}
-
-auto SubchainStateData::check_previous_matches(
-    const block::Hash& block,
-    const Targets& targets) const noexcept -> bool
-{
-    auto data = [&] {
-        auto out = MatchData{get_allocator()};
-
-        for (const auto& target : targets) {
-            out.emplace([&] {
-                auto item = Vector<std::byte>{out.get_allocator()};
-                copy(target, writer(item));
-
-                return item;
-            }());
-        }
-
-        return out;
-    }();
-    auto& map = previous_matches_;
-
-    if (auto it = map.find(block); map.end() != it) {
-        auto& previous = it->second;
-
-        if (previous == data) {
-            map.erase(it);
-
-            return true;
-        } else {
-            previous.swap(data);
-
-            return false;
-        }
-    } else {
-        map.try_emplace(block, std::move(data));
-
-        return false;
-    }
 }
 
 auto SubchainStateData::clear_children() noexcept -> void
@@ -776,16 +736,6 @@ auto SubchainStateData::scan(
                     .Flush();
                 const auto [untested, retest] =
                     get_block_targets(blockHash, utxos, &alloc);
-
-                if (check_previous_matches(blockHash, retest)) {
-                    log_(OT_PRETTY_CLASS())(name)(
-                        " this set of parameters has already been checked once "
-                        "therefore ")(printPosition)(" is considered clean")
-                        .Flush();
-
-                    return false;
-                }
-
                 matches = filter.Match(retest);
 
                 if (0 < matches.size()) {

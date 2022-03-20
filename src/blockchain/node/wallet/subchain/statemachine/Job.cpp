@@ -25,7 +25,6 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -171,11 +170,10 @@ auto Job::process_block(Message&& in) noexcept -> void
 
     if (parent_.chain_ != chain) { return; }
 
-    const auto hash = parent_.api_.Factory().Data(body.at(2));
-    process_block(hash);
+    process_block(parent_.api_.Factory().Data(body.at(2)));
 }
 
-auto Job::process_block(const block::Hash& hash) noexcept -> void
+auto Job::process_block(block::pHash&&) noexcept -> void
 {
     LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type").Flush();
 

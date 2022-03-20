@@ -158,11 +158,31 @@ auto operator!=(
     return lIndex != rIndex;
 }
 
-auto preimage(const blockchain::crypto::Key& in) noexcept -> Space
+auto deserialize(const ReadView in) noexcept -> blockchain::crypto::Key
+{
+    auto out = blockchain::crypto::Key{};
+    auto& [id, subchain, index] = out;
+
+    if (in.size() < (sizeof(subchain) + sizeof(index))) { return out; }
+
+    const auto idbytes = in.size() - sizeof(subchain) - sizeof(index);
+
+    auto* i = in.data();
+    id.assign(ReadView{i, idbytes});
+    std::advance(i, idbytes);
+    std::memcpy(&subchain, i, sizeof(subchain));
+    std::advance(i, sizeof(subchain));
+    std::memcpy(&index, i, sizeof(index));
+    std::advance(i, sizeof(index));
+
+    return out;
+}
+
+auto serialize(const blockchain::crypto::Key& in) noexcept -> Space
 {
     const auto& [id, subchain, index] = in;
     auto out = space(id.size() + sizeof(subchain) + sizeof(index));
-    auto i = out.data();
+    auto* i = out.data();
     std::memcpy(i, id.data(), id.size());
     std::advance(i, id.size());
     std::memcpy(i, &subchain, sizeof(subchain));

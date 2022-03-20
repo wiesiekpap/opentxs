@@ -75,8 +75,7 @@ private:
     using Downloading = Map<block::Position, BlockOracle::BitcoinBlockFuture>;
     using Index = Map<block::pHash, Downloading::iterator>;
 
-    static constexpr auto download_limit_ = std::size_t{400u};
-
+    const std::size_t download_limit_;
     network::zeromq::socket::Raw& to_index_;
     Waiting waiting_;
     Downloading downloading_;
@@ -85,7 +84,7 @@ private:
     robin_hood::unordered_flat_set<block::pHash> txid_cache_;
 
     auto do_startup() noexcept -> void final;
-    auto process_block(const block::Hash& block) noexcept -> void final;
+    auto process_block(block::pHash&& block) noexcept -> void final;
     auto process_mempool(Message&& in) noexcept -> void final;
     auto process_update(Message&& msg) noexcept -> void final;
     auto work() noexcept -> bool final;

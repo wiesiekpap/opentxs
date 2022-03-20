@@ -27,7 +27,6 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
@@ -64,13 +63,9 @@ auto all_states() noexcept -> const States&
     return data;
 }
 
-template <typename MapKeyType, typename DBKeyType, typename MapType>
+template <typename MapKeyType, typename MapType>
 auto OutputCache::load_output_index(
-    const Table table,
     const MapKeyType& key,
-    const DBKeyType dbKey,
-    const char* indexName,
-    const UnallocatedCString& keyName,
     MapType& map) noexcept -> Outpoints&
 {
     if (auto it = map.find(key); map.end() != it) { return it->second; }
@@ -79,30 +74,16 @@ auto OutputCache::load_output_index(
 
     OT_ASSERT(added);
 
-    auto& set = row->second;
-    set.reserve(reserve_);
-#if defined OPENTXS_DETAILED_DEBUG
-    LogTrace()(OT_PRETTY_CLASS())("cache miss, loading ")(
-        indexName)(" index for ")(keyName)(" from database")
-        .Flush();
-    const auto start = Clock::now();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-    lmdb_.Load(
-        table,
-        dbKey,
-        [&](const auto bytes) { set.emplace(bytes); },
-        Mode::Multiple);
-#if defined OPENTXS_DETAILED_DEBUG
-    const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
-        Clock::now() - start);
-    LogTrace()(OT_PRETTY_CLASS())("database query finished in ")(
-        elapsed.count())(" microseconds")
-        .Flush();
-    LogTrace()(OT_PRETTY_CLASS())("loaded ")(set.size())(" items for ")(keyName)
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
+    return row->second;
+}
 
-    return set;
+template <typename MapKeyType, typename MapType>
+auto OutputCache::load_output_index(const MapKeyType& key, MapType& map)
+    const noexcept -> const Outpoints&
+{
+    if (auto it = map.find(key); map.end() != it) { return it->second; }
+
+    return empty_outputs_;
 }
 }  // namespace opentxs::blockchain::database::wallet
 
@@ -120,23 +101,16 @@ OutputCache::OutputCache(
     , lmdb_(lmdb)
     , chain_(chain)
     , blank_(blank)
-    , position_lock_()
     , position_()
-    , output_lock_()
     , outputs_()
-    , account_lock_()
     , accounts_()
-    , key_lock_()
     , keys_()
-    , nym_lock_()
     , nyms_()
     , nym_list_()
-    , positions_lock_()
     , positions_()
-    , state_lock_()
     , states_()
-    , subchain_lock_()
     , subchains_()
+    , populated_(false)
 {
     outputs_.reserve(reserve_);
     keys_.reserve(reserve_);
@@ -144,7 +118,6 @@ OutputCache::OutputCache(
 }
 
 auto OutputCache::AddOutput(
-    const eLock&,
     const block::Outpoint& id,
     MDB_txn* tx,
     std::unique_ptr<block::bitcoin::Output> pOutput) noexcept -> bool
@@ -159,19 +132,12 @@ auto OutputCache::AddOutput(
 }
 
 auto OutputCache::AddToAccount(
-    const eLock&,
     const AccountID& id,
     const block::Outpoint& output,
     MDB_txn* tx) noexcept -> bool
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for account ")(id.str())
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
     try {
-        auto& set = load_output_index(
-            wallet::accounts_, id, id.Bytes(), "account", id.str(), accounts_);
+        auto& set = load_output_index(id, accounts_);
         auto rc = lmdb_.Store(wallet::accounts_, id.Bytes(), output.Bytes(), tx)
                       .first;
 
@@ -190,20 +156,14 @@ auto OutputCache::AddToAccount(
 }
 
 auto OutputCache::AddToKey(
-    const eLock&,
     const crypto::Key& id,
     const block::Outpoint& output,
     MDB_txn* tx) noexcept -> bool
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for key ")(opentxs::print(id))
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-    const auto key = preimage(id);
+    const auto key = serialize(id);
 
     try {
-        auto& set = load_output_index(
-            wallet::keys_, id, reader(key), "key", print(id), keys_);
+        auto& set = load_output_index(id, keys_);
         auto rc =
             lmdb_.Store(wallet::keys_, reader(key), output.Bytes(), tx).first;
 
@@ -222,21 +182,15 @@ auto OutputCache::AddToKey(
 }
 
 auto OutputCache::AddToNym(
-    const eLock&,
     const identifier::Nym& id,
     const block::Outpoint& output,
     MDB_txn* tx) noexcept -> bool
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for nym ")(id.str()).Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
     OT_ASSERT(false == id.empty());
 
     try {
-        auto& index = load_output_index(
-            wallet::nyms_, id, id.Bytes(), "nym", id.str(), nyms_);
-        auto& list = load_nyms();
+        auto& index = load_output_index(id, nyms_);
+        auto& list = nym_list_;
         auto rc =
             lmdb_.Store(wallet::nyms_, id.Bytes(), output.Bytes(), tx).first;
 
@@ -256,26 +210,14 @@ auto OutputCache::AddToNym(
 }
 
 auto OutputCache::AddToPosition(
-    const eLock&,
     const block::Position& id,
     const block::Outpoint& output,
     MDB_txn* tx) noexcept -> bool
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for position ")(
-        opentxs::print(id))
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
     const auto key = db::Position{id};
 
     try {
-        auto& set = load_output_index(
-            wallet::positions_,
-            id,
-            reader(key.data_),
-            "position",
-            opentxs::print(id),
-            positions_);
+        auto& set = load_output_index(id, positions_);
         auto rc =
             lmdb_
                 .Store(
@@ -297,25 +239,12 @@ auto OutputCache::AddToPosition(
 }
 
 auto OutputCache::AddToState(
-    const eLock&,
     const node::TxoState id,
     const block::Outpoint& output,
     MDB_txn* tx) noexcept -> bool
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for state ")(
-        opentxs::print(id))
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
     try {
-        auto& set = load_output_index(
-            wallet::states_,
-            id,
-            static_cast<std::size_t>(id),
-            "state",
-            UnallocatedCString{print(id)},
-            states_);
+        auto& set = load_output_index(id, states_);
         auto rc = lmdb_
                       .Store(
                           wallet::states_,
@@ -329,11 +258,6 @@ auto OutputCache::AddToState(
         }
 
         set.emplace(output);
-#if defined OPENTXS_DETAILED_DEBUG
-        LogTrace()(OT_PRETTY_CLASS())("output ")(output.str())(
-            " added to index for state ")(opentxs::print(id))
-            .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
 
         return true;
     } catch (const std::exception& e) {
@@ -344,24 +268,12 @@ auto OutputCache::AddToState(
 }
 
 auto OutputCache::AddToSubchain(
-    const eLock&,
     const SubchainID& id,
     const block::Outpoint& output,
     MDB_txn* tx) noexcept -> bool
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for subchain ")(id.str())
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
     try {
-        auto& set = load_output_index(
-            wallet::subchains_,
-            id,
-            id.Bytes(),
-            "subchain",
-            id.str(),
-            subchains_);
+        auto& set = load_output_index(id, subchains_);
         auto rc =
             lmdb_.Store(wallet::subchains_, id.Bytes(), output.Bytes(), tx)
                 .first;
@@ -381,15 +293,12 @@ auto OutputCache::AddToSubchain(
 }
 
 auto OutputCache::ChangePosition(
-    const eLock& lock,
     const block::Position& oldPosition,
     const block::Position& newPosition,
     const block::Outpoint& id,
     MDB_txn* tx) noexcept -> bool
 {
     try {
-        GetPosition(lock, oldPosition);
-        GetPosition(lock, newPosition);
         const auto oldP = db::Position{oldPosition};
         const auto newP = db::Position{newPosition};
 
@@ -430,14 +339,13 @@ auto OutputCache::ChangePosition(
 }
 
 auto OutputCache::ChangeState(
-    const eLock& lock,
     const node::TxoState oldState,
     const node::TxoState newState,
     const block::Outpoint& id,
     MDB_txn* tx) noexcept -> bool
 {
     try {
-        for (const auto state : all_states()) { GetState(lock, state); }
+        for (const auto state : all_states()) { GetState(state); }
 
         auto deleted = UnallocatedVector<node::TxoState>{};
 
@@ -495,10 +403,10 @@ auto OutputCache::ChangeState(
     }
 }
 
-auto OutputCache::Clear(const eLock&) noexcept -> void
+auto OutputCache::Clear() noexcept -> void
 {
     position_ = std::nullopt;
-    nym_list_ = std::nullopt;
+    nym_list_.clear();
     outputs_.clear();
     accounts_.clear();
     keys_.clear();
@@ -506,391 +414,111 @@ auto OutputCache::Clear(const eLock&) noexcept -> void
     positions_.clear();
     states_.clear();
     subchains_.clear();
+    populated_ = false;
 }
 
-auto OutputCache::GetAccount(const sLock&, const AccountID& id) noexcept
-    -> const Outpoints&
+auto OutputCache::Exists(const block::Outpoint& id) const noexcept -> bool
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for account ")(id.str())
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
+    return 0 < outputs_.count(id);
+}
 
-    try {
-        auto lock = Lock{account_lock_};
+auto OutputCache::Exists(const SubchainID& subchain, const block::Outpoint& id)
+    const noexcept -> bool
+{
+    if (auto it = subchains_.find(subchain); subchains_.end() != it) {
+        const auto& set = it->second;
 
-        return load_output_index(
-            wallet::accounts_, id, id.Bytes(), "account", id.str(), accounts_);
-    } catch (...) {
+        return 0 < set.count(id);
+    } else {
 
-        return empty_outputs_;
+        return false;
     }
 }
 
-auto OutputCache::GetAccount(const eLock&, const AccountID& id) noexcept
+auto OutputCache::GetAccount(const AccountID& id) const noexcept
     -> const Outpoints&
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for account ")(id.str())
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
-    try {
-        return load_output_index(
-            wallet::accounts_, id, id.Bytes(), "account", id.str(), accounts_);
-    } catch (...) {
-
-        return empty_outputs_;
-    }
+    return load_output_index(id, accounts_);
 }
 
-auto OutputCache::GetKey(const sLock&, const crypto::Key& id) noexcept
+auto OutputCache::GetKey(const crypto::Key& id) const noexcept
     -> const Outpoints&
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for key ")(opentxs::print(id))
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-    const auto key = preimage(id);
-
-    try {
-        auto lock = Lock{key_lock_};
-
-        return load_output_index(
-            wallet::keys_, id, reader(key), "key", print(id), keys_);
-    } catch (...) {
-
-        return empty_outputs_;
-    }
+    return load_output_index(id, keys_);
 }
 
-auto OutputCache::GetKey(const eLock&, const crypto::Key& id) noexcept
-    -> const Outpoints&
+auto OutputCache::GetHeight() const noexcept -> block::Height
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for key ")(opentxs::print(id))
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-    const auto key = preimage(id);
-
-    try {
-        return load_output_index(
-            wallet::keys_, id, reader(key), "key", print(id), keys_);
-    } catch (...) {
-
-        return empty_outputs_;
-    }
-}
-
-auto OutputCache::GetHeight() noexcept -> block::Height
-{
-    auto lock = Lock{position_lock_};
-
     return get_position().Height();
 }
 
-auto OutputCache::GetNym(const sLock&, const identifier::Nym& id) noexcept
+auto OutputCache::GetNym(const identifier::Nym& id) const noexcept
     -> const Outpoints&
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for nym ")(id.str()).Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
-    try {
-        auto lock = Lock{nym_lock_};
-
-        return load_output_index(
-            wallet::nyms_, id, id.Bytes(), "nym", id.str(), nyms_);
-    } catch (...) {
-
-        return empty_outputs_;
-    }
+    return load_output_index(id, nyms_);
 }
 
-auto OutputCache::GetNym(const eLock&, const identifier::Nym& id) noexcept
-    -> const Outpoints&
+auto OutputCache::GetNyms() const noexcept -> const Nyms& { return nym_list_; }
+
+auto OutputCache::GetOutput(const block::Outpoint& id) const noexcept(false)
+    -> const block::bitcoin::internal::Output&
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for nym ")(id.str()).Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
-    try {
-        return load_output_index(
-            wallet::nyms_, id, id.Bytes(), "nym", id.str(), nyms_);
-    } catch (...) {
-
-        return empty_outputs_;
-    }
-}
-
-auto OutputCache::GetNyms() noexcept -> const Nyms&
-{
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading nym list").Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
-    try {
-        auto lock = Lock{nym_lock_};
-
-        return load_nyms();
-    } catch (...) {
-
-        return empty_nyms_;
-    }
-}
-
-auto OutputCache::GetNyms(const eLock&) noexcept -> const Nyms&
-{
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading nym list").Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
-    try {
-
-        return load_nyms();
-    } catch (...) {
-
-        return empty_nyms_;
-    }
-}
-
-auto OutputCache::GetOutput(const sLock&, const block::Outpoint& id) noexcept(
-    false) -> const block::bitcoin::internal::Output&
-{
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading output ")(id.str()).Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-    auto lock = Lock{output_lock_};
-
     return load_output(id);
 }
 
-auto OutputCache::GetOutput(const eLock&, const block::Outpoint& id) noexcept(
-    false) -> block::bitcoin::internal::Output&
+auto OutputCache::GetOutput(const block::Outpoint& id) noexcept(false)
+    -> block::bitcoin::internal::Output&
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading output ")(id.str()).Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
     return load_output(id);
 }
 
 auto OutputCache::GetOutput(
-    const eLock& lock,
     const SubchainID& subchain,
     const block::Outpoint& id) noexcept(false)
     -> block::bitcoin::internal::Output&
 {
-    const auto& relevant = GetSubchain(lock, subchain);
+    const auto& relevant = GetSubchain(subchain);
 
     if (0u == relevant.count(id)) {
         throw std::out_of_range{"outpoint not found in this subchain"};
     }
 
-    return GetOutput(lock, id);
+    return GetOutput(id);
 }
 
-auto OutputCache::GetPosition(const eLock&) noexcept -> const db::Position&
+auto OutputCache::GetPosition() const noexcept -> const db::Position&
 {
     return get_position();
 }
 
-auto OutputCache::GetPosition(const sLock&, const block::Position& id) noexcept
+auto OutputCache::GetPosition(const block::Position& id) const noexcept
     -> const Outpoints&
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for position ")(
-        opentxs::print(id))
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-    const auto key = db::Position{id};
+    return load_output_index(id, positions_);
+}
 
-    try {
-        auto lock = Lock{positions_lock_};
+auto OutputCache::get_position() const noexcept -> const db::Position&
+{
+    if (position_.has_value()) {
 
-        return load_output_index(
-            wallet::positions_,
-            id,
-            reader(key.data_),
-            "position",
-            opentxs::print(id),
-            positions_);
-    } catch (...) {
+        return position_.value();
+    } else {
+        static const auto null = db::Position{blank_};
 
-        return empty_outputs_;
+        return null;
     }
 }
 
-auto OutputCache::GetPosition(const eLock&, const block::Position& id) noexcept
+auto OutputCache::GetState(const node::TxoState id) const noexcept
     -> const Outpoints&
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for position ")(
-        opentxs::print(id))
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-    const auto key = db::Position{id};
-
-    try {
-
-        return load_output_index(
-            wallet::positions_,
-            id,
-            reader(key.data_),
-            "position",
-            opentxs::print(id),
-            positions_);
-    } catch (...) {
-
-        return empty_outputs_;
-    }
+    return load_output_index(id, states_);
 }
 
-auto OutputCache::get_position() noexcept -> const db::Position&
-{
-    if (position_.has_value()) { return position_.value(); }
-
-    load_position();
-
-    if (position_.has_value()) { return position_.value(); }
-
-    static const auto null = db::Position{blank_};
-
-    return null;
-}
-
-auto OutputCache::GetState(const sLock&, const node::TxoState id) noexcept
+auto OutputCache::GetSubchain(const SubchainID& id) const noexcept
     -> const Outpoints&
 {
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for state ")(
-        opentxs::print(id))
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
-    try {
-        auto lock = Lock{state_lock_};
-
-        return load_output_index(
-            wallet::states_,
-            id,
-            static_cast<std::size_t>(id),
-            "state",
-            UnallocatedCString{print(id)},
-            states_);
-    } catch (...) {
-
-        return empty_outputs_;
-    }
-}
-
-auto OutputCache::GetState(const eLock&, const node::TxoState id) noexcept
-    -> const Outpoints&
-{
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for state ")(
-        opentxs::print(id))
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
-    try {
-        return load_output_index(
-            wallet::states_,
-            id,
-            static_cast<std::size_t>(id),
-            "state",
-            UnallocatedCString{print(id)},
-            states_);
-    } catch (...) {
-
-        return empty_outputs_;
-    }
-}
-
-auto OutputCache::GetSubchain(const sLock&, const SubchainID& id) noexcept
-    -> const Outpoints&
-{
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for subchain ")(id.str())
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
-    try {
-        auto lock = Lock{subchain_lock_};
-
-        return load_output_index(
-            wallet::subchains_,
-            id,
-            id.Bytes(),
-            "subchain",
-            id.str(),
-            subchains_);
-    } catch (...) {
-
-        return empty_outputs_;
-    }
-}
-
-auto OutputCache::GetSubchain(const eLock&, const SubchainID& id) noexcept
-    -> const Outpoints&
-{
-#if defined OPENTXS_DETAILED_DEBUG
-    LogInsane()(OT_PRETTY_CLASS())("loading index for subchain ")(id.str())
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
-    try {
-        return load_output_index(
-            wallet::subchains_,
-            id,
-            id.Bytes(),
-            "subchain",
-            id.str(),
-            subchains_);
-    } catch (...) {
-
-        return empty_outputs_;
-    }
-}
-
-auto OutputCache::load_nyms() noexcept -> Nyms&
-{
-    if (nym_list_.has_value()) { return nym_list_.value(); }
-
-#if defined OPENTXS_DETAILED_DEBUG
-    LogTrace()(OT_PRETTY_CLASS())("cache miss, loading nym list from database")
-        .Flush();
-    const auto start = Clock::now();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-    auto& set = nym_list_.emplace();
-    auto tested = UnallocatedSet<ReadView>{};
-    lmdb_.Read(
-        wallet::nyms_,
-        [&](const auto key, const auto bytes) {
-            if (0u == tested.count(key)) {
-                set.emplace([&] {
-                    auto out = api_.Factory().NymID();
-                    out->Assign(key);
-
-                    return out;
-                }());
-                tested.emplace(key);
-            }
-
-            return true;
-        },
-        Dir::Forward);
-#if defined OPENTXS_DETAILED_DEBUG
-    const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
-        Clock::now() - start);
-    LogTrace()(OT_PRETTY_CLASS())("database query finished in ")(
-        elapsed.count())(" microseconds")
-        .Flush();
-    LogTrace()(OT_PRETTY_CLASS())(set.size())(" nyms found in database")
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
-    return nym_list_.value();
+    return load_output_index(id, subchains_);
 }
 
 auto OutputCache::load_output(const block::Outpoint& id) noexcept(false)
@@ -906,84 +534,153 @@ auto OutputCache::load_output(const block::Outpoint& id) noexcept(false)
         return out;
     }
 
-#if defined OPENTXS_DETAILED_DEBUG
-    LogTrace()(OT_PRETTY_CLASS())("cache miss, loading output ")(id.str())(
-        " from database")
-        .Flush();
-    const auto start = Clock::now();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-    lmdb_.Load(wallet::outputs_, id.Bytes(), [&](const auto bytes) {
-        const auto proto =
-            proto::Factory<proto::BlockchainTransactionOutput>(bytes);
-        auto pOutput = factory::BitcoinTransactionOutput(api_, chain_, proto);
-
-        if (pOutput) {
-            auto [row, added] = outputs_.try_emplace(id, std::move(pOutput));
-
-            OT_ASSERT(added);
-
-            it = row;
-        }
-    });
-#if defined OPENTXS_DETAILED_DEBUG
-    const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
-        Clock::now() - start);
-    LogTrace()(OT_PRETTY_CLASS())("database query finished in ")(
-        elapsed.count())(" microseconds")
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-
-    if (outputs_.end() != it) {
-#if defined OPENTXS_DETAILED_DEBUG
-        LogTrace()(OT_PRETTY_CLASS())("output ")(id.str())(" found in database")
-            .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-        auto& out = it->second->Internal();
-
-        OT_ASSERT(0 < out.Keys().size());
-
-        return out;
-    }
-
-#if defined OPENTXS_DETAILED_DEBUG
-    LogTrace()(OT_PRETTY_CLASS())("output ")(id.str())(" not found in database")
-        .Flush();
-#endif  // defined OPENTXS_DETAILED_DEBUG
     const auto error = UnallocatedCString{"output "} + id.str() + " not found";
 
     throw std::out_of_range{error};
 }
 
-auto OutputCache::load_position() noexcept -> void
+auto OutputCache::load_output(const block::Outpoint& id) const noexcept(false)
+    -> const block::bitcoin::internal::Output&
 {
-    position_ = std::nullopt;
-#if defined OPENTXS_DETAILED_DEBUG
-    LogTrace()(OT_PRETTY_CLASS())("cache miss, loading position from database")
-        .Flush();
-    const auto start = Clock::now();
-#endif  // defined OPENTXS_DETAILED_DEBUG
-    lmdb_.Load(
-        wallet::output_config_,
-        tsv(database::Key::WalletPosition),
-        [&](const auto bytes) { position_.emplace(bytes); });
-#if defined OPENTXS_DETAILED_DEBUG
-    const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
-        Clock::now() - start);
-    LogTrace()(OT_PRETTY_CLASS())("database query finished in ")(
-        elapsed.count())(" microseconds")
-        .Flush();
-
-    if (position_.has_value()) {
-        LogTrace()(OT_PRETTY_CLASS())("position found").Flush();
-    } else {
-        LogTrace()(OT_PRETTY_CLASS())("position not available").Flush();
-    }
-#endif  // defined OPENTXS_DETAILED_DEBUG
+    return const_cast<OutputCache*>(this)->load_output(id);
 }
 
-auto OutputCache::Print(const eLock&) const noexcept -> void
+auto OutputCache::Populate() const noexcept -> void
 {
-    // TODO read from database instead of cache
+    const_cast<OutputCache*>(this)->populate();
+}
+
+auto OutputCache::populate() noexcept -> void
+{
+    if (populated_) { return; }
+
+    auto outputCount = std::size_t{};
+    const auto outputs = [&](const auto key, const auto value) {
+        ++outputCount;
+        outputs_.try_emplace(
+            key,
+            factory::BitcoinTransactionOutput(
+                api_,
+                chain_,
+                proto::Factory<proto::BlockchainTransactionOutput>(value)));
+
+        return true;
+    };
+    const auto accounts = [&](const auto key, const auto value) {
+        auto& map = accounts_;
+        auto id = [&] {
+            auto out = api_.Factory().Identifier();
+            out->Assign(key);
+
+            return out;
+        }();
+        auto& set = map[std::move(id)];
+        set.emplace(value);
+
+        return true;
+    };
+    const auto keys = [&](const auto key, const auto value) {
+        auto& map = keys_;
+        auto& set = map[deserialize(key)];
+        set.emplace(value);
+
+        return true;
+    };
+    const auto nyms = [&](const auto key, const auto value) {
+        auto& map = nyms_;
+        auto id = [&] {
+            auto out = api_.Factory().NymID();
+            out->Assign(key);
+
+            return out;
+        }();
+        nym_list_.emplace(id);
+        auto& set = map[std::move(id)];
+        set.emplace(value);
+
+        return true;
+    };
+    const auto positions = [&](const auto key, const auto value) {
+        auto& map = positions_;
+        auto& set = map[db::Position{key}.Decode(api_)];
+        set.emplace(value);
+
+        return true;
+    };
+    const auto states = [&](const auto key, const auto value) {
+        auto& map = states_;
+        auto id = [&] {
+            auto out = std::size_t{};
+            std::memcpy(&out, key.data(), std::min(key.size(), sizeof(out)));
+
+            return static_cast<node::TxoState>(out);
+        }();
+        auto& set = map[std::move(id)];
+        set.emplace(value);
+
+        return true;
+    };
+    const auto subchains = [&](const auto key, const auto value) {
+        auto& map = subchains_;
+        auto id = [&] {
+            auto out = api_.Factory().Identifier();
+            out->Assign(key);
+
+            return out;
+        }();
+        auto& set = map[std::move(id)];
+        set.emplace(value);
+
+        return true;
+    };
+    auto tx = lmdb_.TransactionRO();
+    static constexpr auto fwd = storage::lmdb::LMDB::Dir::Forward;
+    auto rc = lmdb_.Read(wallet::outputs_, outputs, fwd, tx);
+
+    OT_ASSERT(rc);
+
+    rc = lmdb_.Read(wallet::accounts_, accounts, fwd, tx);
+
+    OT_ASSERT(rc);
+
+    rc = lmdb_.Read(wallet::keys_, keys, fwd, tx);
+
+    OT_ASSERT(rc);
+
+    rc = lmdb_.Read(wallet::nyms_, nyms, fwd, tx);
+
+    OT_ASSERT(rc);
+
+    rc = lmdb_.Read(wallet::positions_, positions, fwd, tx);
+
+    OT_ASSERT(rc);
+
+    rc = lmdb_.Read(wallet::states_, states, fwd, tx);
+
+    OT_ASSERT(rc);
+
+    rc = lmdb_.Read(wallet::subchains_, subchains, fwd, tx);
+
+    OT_ASSERT(rc);
+
+    if (lmdb_.Exists(
+            wallet::output_config_, tsv(database::Key::WalletPosition), tx)) {
+        rc = lmdb_.Load(
+            wallet::output_config_,
+            tsv(database::Key::WalletPosition),
+            [&](const auto bytes) { position_.emplace(bytes); },
+            tx);
+
+        OT_ASSERT(rc);
+    }
+
+    OT_ASSERT(outputs_.size() == outputCount);
+
+    populated_ = true;
+}
+
+auto OutputCache::Print() const noexcept -> void
+{
     struct Output {
         std::stringstream text_{};
         Amount total_{};
@@ -1148,7 +845,6 @@ auto OutputCache::Print(const eLock&) const noexcept -> void
 }
 
 auto OutputCache::UpdateOutput(
-    const eLock&,
     const block::Outpoint& id,
     const block::bitcoin::Output& output,
     MDB_txn* tx) noexcept -> bool
@@ -1157,7 +853,6 @@ auto OutputCache::UpdateOutput(
 }
 
 auto OutputCache::UpdatePosition(
-    const eLock&,
     const block::Position& pos,
     MDB_txn* tx) noexcept -> bool
 {
@@ -1192,7 +887,7 @@ auto OutputCache::write_output(
 {
     try {
         for (const auto& key : output.Keys()) {
-            const auto sKey = preimage(key);
+            const auto sKey = serialize(key);
             auto rc =
                 lmdb_.Store(wallet::keys_, reader(sKey), id.Bytes(), tx).first;
 
