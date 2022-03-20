@@ -91,8 +91,15 @@ public:
         const ReadView value,
         MDB_txn* parent = nullptr) const noexcept -> bool;
     auto Exists(const Table table, const ReadView key) const noexcept -> bool;
+    auto Exists(const Table table, const ReadView key, MDB_txn* tx)
+        const noexcept -> bool;
     auto Exists(const Table table, const ReadView key, const ReadView value)
         const noexcept -> bool;
+    auto Exists(
+        const Table table,
+        const ReadView key,
+        const ReadView value,
+        MDB_txn* tx) const noexcept -> bool;
     auto Load(
         const Table table,
         const ReadView key,
@@ -116,6 +123,11 @@ public:
         const Mode mode = Mode::One) const noexcept -> bool;
     auto Read(const Table table, const ReadCallback cb, const Dir dir)
         const noexcept -> bool;
+    auto Read(
+        const Table table,
+        const ReadCallback cb,
+        const Dir dir,
+        MDB_txn* parent) const noexcept -> bool;
     auto ReadAndDelete(
         const Table table,
         const ReadCallback cb,

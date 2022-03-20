@@ -147,8 +147,17 @@ struct LMDB::Imp {
     auto Exists(const Table table, const ReadView index, const ReadView item)
         const noexcept -> bool
     {
+        auto tx = TransactionRO();
+
+        return Exists(table, index, item, tx);
+    }
+    auto Exists(
+        const Table table,
+        const ReadView index,
+        const ReadView item,
+        MDB_txn* tx) const noexcept -> bool
+    {
         try {
-            auto tx = TransactionRO();
             MDB_cursor* cursor{nullptr};
             auto post = ScopeGuard{[&] {
                 if (nullptr != cursor) {
@@ -262,14 +271,25 @@ struct LMDB::Imp {
     auto Read(const Table table, const ReadCallback cb, const Dir dir)
         const noexcept -> bool
     {
-        return read(db_.at(table), cb, dir);
-    }
+        auto tx = TransactionRO();
 
-    auto read(const MDB_dbi dbi, const ReadCallback cb, const Dir dir)
-        const noexcept -> bool
+        return read(db_.at(table), cb, dir, tx);
+    }
+    auto Read(
+        const Table table,
+        const ReadCallback cb,
+        const Dir dir,
+        MDB_txn* tx) const noexcept -> bool
+    {
+        return read(db_.at(table), cb, dir, tx);
+    }
+    auto read(
+        const MDB_dbi dbi,
+        const ReadCallback cb,
+        const Dir dir,
+        MDB_txn* tx) const noexcept -> bool
     {
         try {
-            auto tx = TransactionRO();
             MDB_cursor* cursor{nullptr};
             auto post = ScopeGuard{[&] {
                 if (nullptr != cursor) {
@@ -314,6 +334,10 @@ struct LMDB::Imp {
                         return false;
                     }
                 }
+            } else {
+                // NOTE table is empty
+
+                return true;
             }
 
             return success;
@@ -338,7 +362,7 @@ struct LMDB::Imp {
         }
 
         LogConsole()("Beginning database upgrade for ")(message).Flush();
-        read(dbi, cb, Dir::Forward);
+        read(dbi, cb, Dir::Forward, &tx);
 
         if (0 != ::mdb_drop(&tx, dbi, 1)) {
             LogError()(OT_PRETTY_CLASS())("Failed to delete table").Flush();
@@ -745,10 +769,25 @@ auto LMDB::Exists(const Table table, const ReadView index) const noexcept
     return imp_->Exists(table, index, {});
 }
 
+auto LMDB::Exists(const Table table, const ReadView index, MDB_txn* tx)
+    const noexcept -> bool
+{
+    return imp_->Exists(table, index, {}, tx);
+}
+
 auto LMDB::Exists(const Table table, const ReadView index, const ReadView value)
     const noexcept -> bool
 {
     return imp_->Exists(table, index, value);
+}
+
+auto LMDB::Exists(
+    const Table table,
+    const ReadView index,
+    const ReadView value,
+    MDB_txn* tx) const noexcept -> bool
+{
+    return imp_->Exists(table, index, value, tx);
 }
 
 auto LMDB::Load(
@@ -796,6 +835,15 @@ auto LMDB::Read(const Table table, const ReadCallback cb, const Dir dir)
     const noexcept -> bool
 {
     return imp_->Read(table, cb, dir);
+}
+
+auto LMDB::Read(
+    const Table table,
+    const ReadCallback cb,
+    const Dir dir,
+    MDB_txn* parent) const noexcept -> bool
+{
+    return imp_->Read(table, cb, dir, parent);
 }
 
 auto LMDB::ReadAndDelete(

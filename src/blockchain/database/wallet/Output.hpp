@@ -15,7 +15,6 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <shared_mutex>
 
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"

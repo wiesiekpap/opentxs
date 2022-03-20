@@ -68,7 +68,7 @@ auto hash<opentxs::blockchain::block::Position>::operator()(
 auto hash<opentxs::blockchain::crypto::Key>::operator()(
     const opentxs::blockchain::crypto::Key& data) const noexcept -> std::size_t
 {
-    const auto preimage = opentxs::preimage(data);
+    const auto preimage = opentxs::serialize(data);
     static const auto key = opentxs::crypto::sodium::SiphashKey{};
 
     return opentxs::crypto::sodium::Siphash(key, opentxs::reader(preimage));

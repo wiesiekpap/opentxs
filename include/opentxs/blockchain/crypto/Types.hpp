@@ -79,5 +79,6 @@ OPENTXS_EXPORT auto operator==(
 OPENTXS_EXPORT auto operator!=(
     const blockchain::crypto::Key& lhs,
     const blockchain::crypto::Key& rhs) noexcept -> bool;
-auto preimage(const blockchain::crypto::Key& in) noexcept -> Space;
+auto deserialize(const ReadView in) noexcept -> blockchain::crypto::Key;
+auto serialize(const blockchain::crypto::Key& in) noexcept -> Space;
 }  // namespace opentxs

@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
+#include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
@@ -72,6 +73,8 @@ Process::Imp::Imp(
                    {parent->to_index_endpoint_, Direction::Connect},
                }},
           })
+    , download_limit_(
+          2u * params::Data::Chains().at(parent_.chain_).block_download_batch_)
     , to_index_(pipeline_.Internal().ExtraSocket(0))
     , waiting_(alloc)
     , downloading_(alloc)
@@ -123,11 +126,11 @@ auto Process::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
     }
 }
 
-auto Process::Imp::process_block(const block::Hash& hash) noexcept -> void
+auto Process::Imp::process_block(block::pHash&& hash) noexcept -> void
 {
     if (auto index = index_.find(hash); index_.end() != index) {
         log_(OT_PRETTY_CLASS())(parent_.name_)(" processing block ")(
-            hash.asHex())
+            hash->asHex())
             .Flush();
         auto& data = index->second;
         const auto& [position, future] = *data;
