@@ -98,7 +98,6 @@ using UTXO = Parent::UTXO;
 class Output
 {
 public:
-    auto CancelProposal(const Identifier& id) noexcept -> bool;
     auto GetBalance() const noexcept -> Balance;
     auto GetBalance(const identifier::Nym& owner) const noexcept -> Balance;
     auto GetBalance(const identifier::Nym& owner, const NodeID& node)
@@ -119,6 +118,8 @@ public:
         const crypto::Key& key,
         node::TxoState type,
         alloc::Resource* alloc) const noexcept -> Vector<UTXO>;
+    auto GetOutputTags(const block::Outpoint& output) const noexcept
+        -> UnallocatedSet<node::TxoTag>;
     auto GetTransactions() const noexcept -> UnallocatedVector<block::pTxid>;
     auto GetTransactions(const identifier::Nym& account) const noexcept
         -> UnallocatedVector<block::pTxid>;
@@ -128,6 +129,8 @@ public:
         -> Vector<UTXO>;
     auto GetUnspentOutputs(const NodeID& balanceNode, alloc::Resource* alloc)
         const noexcept -> Vector<UTXO>;
+    auto GetWalletHeight() const noexcept -> block::Height;
+    auto PublishBalance() const noexcept -> void;
 
     auto AddConfirmedTransaction(
         const AccountID& account,
@@ -146,11 +149,9 @@ public:
         const proto::BlockchainTransactionProposal& proposal,
         const block::bitcoin::Transaction& transaction) noexcept -> bool;
     auto AdvanceTo(const block::Position& pos) noexcept -> bool;
+    auto CancelProposal(const Identifier& id) noexcept -> bool;
     auto FinalizeReorg(MDB_txn* tx, const block::Position& pos) noexcept
         -> bool;
-    auto GetOutputTags(const block::Outpoint& output) const noexcept
-        -> UnallocatedSet<node::TxoTag>;
-    auto GetWalletHeight() const noexcept -> block::Height;
     auto ReserveUTXO(
         const identifier::Nym& spender,
         const Identifier& proposal,

@@ -236,6 +236,11 @@ auto Wallet::LookupContact(const Data& pubkeyHash) const noexcept
     return common_.LookupContact(pubkeyHash);
 }
 
+auto Wallet::PublishBalance() const noexcept -> void
+{
+    outputs_.PublishBalance();
+}
+
 auto Wallet::ReorgTo(
     const Lock& headerOracleLock,
     storage::lmdb::LMDB::Transaction& tx,

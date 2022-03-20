@@ -423,6 +423,10 @@ public:
     {
         return wallet_.LookupContact(pubkeyHash);
     }
+    auto PublishBalance() const noexcept -> void final
+    {
+        wallet_.PublishBalance();
+    }
     auto RecentHashes(alloc::Resource* alloc) const noexcept
         -> Vector<block::pHash> final
     {

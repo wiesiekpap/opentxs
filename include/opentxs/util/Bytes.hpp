@@ -16,6 +16,7 @@
 #include <tuple>
 #include <utility>
 
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs
@@ -152,13 +153,20 @@ OPENTXS_EXPORT auto preallocated(const std::size_t size, void* out) noexcept
     -> AllocateOutput;
 OPENTXS_EXPORT auto reader(const WritableView& in) noexcept -> ReadView;
 OPENTXS_EXPORT auto reader(const Space& in) noexcept -> ReadView;
+OPENTXS_EXPORT auto reader(const Vector<std::byte>& in) noexcept -> ReadView;
 OPENTXS_EXPORT auto reader(const UnallocatedVector<std::uint8_t>& in) noexcept
     -> ReadView;
 OPENTXS_EXPORT auto space(const std::size_t size) noexcept -> Space;
+OPENTXS_EXPORT auto space(
+    const std::size_t size,
+    alloc::Resource* alloc) noexcept -> Vector<std::byte>;
 OPENTXS_EXPORT auto space(const ReadView bytes) noexcept -> Space;
+OPENTXS_EXPORT auto space(const ReadView bytes, alloc::Resource* alloc) noexcept
+    -> Vector<std::byte>;
 OPENTXS_EXPORT auto valid(const ReadView view) noexcept -> bool;
 OPENTXS_EXPORT auto writer(UnallocatedCString& in) noexcept -> AllocateOutput;
 OPENTXS_EXPORT auto writer(UnallocatedCString* protobuf) noexcept
     -> AllocateOutput;
 OPENTXS_EXPORT auto writer(Space& in) noexcept -> AllocateOutput;
+OPENTXS_EXPORT auto writer(Vector<std::byte>& in) noexcept -> AllocateOutput;
 }  // namespace opentxs

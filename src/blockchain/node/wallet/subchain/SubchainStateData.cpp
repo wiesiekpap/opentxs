@@ -141,6 +141,7 @@ SubchainStateData::SubchainStateData(
     , process_(std::nullopt)
     , scan_(std::nullopt)
     , have_children_(false)
+    , previous_matches_(alloc)
 {
     OT_ASSERT(false == owner_->empty());
     OT_ASSERT(false == id_->empty());
@@ -212,15 +213,53 @@ auto SubchainStateData::ChangeState(
     }
 
     if (false == output) {
-        LogError()(OT_PRETTY_CLASS())(
-            name_)(" failed to transaction states from ")(print(state_))(
-            " to ")(print(state))
+        LogError()(OT_PRETTY_CLASS())(name_)(" failed to change state from ")(
+            print(state_))(" to ")(print(state))
             .Flush();
 
         OT_FAIL;
     }
 
     return output;
+}
+
+auto SubchainStateData::check_previous_matches(
+    const block::Hash& block,
+    const Targets& targets) const noexcept -> bool
+{
+    auto data = [&] {
+        auto out = MatchData{get_allocator()};
+
+        for (const auto& target : targets) {
+            out.emplace([&] {
+                auto item = Vector<std::byte>{out.get_allocator()};
+                copy(target, writer(item));
+
+                return item;
+            }());
+        }
+
+        return out;
+    }();
+    auto& map = previous_matches_;
+
+    if (auto it = map.find(block); map.end() != it) {
+        auto& previous = it->second;
+
+        if (previous == data) {
+            map.erase(it);
+
+            return true;
+        } else {
+            previous.swap(data);
+
+            return false;
+        }
+    } else {
+        map.try_emplace(block, std::move(data));
+
+        return false;
+    }
 }
 
 auto SubchainStateData::clear_children() noexcept -> void
@@ -631,12 +670,33 @@ auto SubchainStateData::reorg_children() const noexcept -> std::size_t
     return 1u;
 }
 
+auto SubchainStateData::Rescan(
+    const block::Position best,
+    const block::Height stop,
+    block::Position& highestTested,
+    Vector<ScanStatus>& out) const noexcept -> std::optional<block::Position>
+{
+    return scan(true, best, stop, highestTested, out);
+}
+
 auto SubchainStateData::Scan(
     const block::Position best,
     const block::Height stop,
     block::Position& highestTested,
     Vector<ScanStatus>& out) const noexcept -> std::optional<block::Position>
 {
+    return scan(false, best, stop, highestTested, out);
+}
+
+auto SubchainStateData::scan(
+    const bool rescan,
+    const block::Position best,
+    const block::Height stop,
+    block::Position& highestTested,
+    Vector<ScanStatus>& out) const noexcept -> std::optional<block::Position>
+{
+    using namespace std::literals;
+    const auto procedure = rescan ? "rescan"sv : "scan"sv;
     const auto& name = name_;
     const auto& node = node_;
     const auto& type = filter_type_;
@@ -651,14 +711,15 @@ auto SubchainStateData::Scan(
     auto highestClean = std::optional<block::Position>{std::nullopt};
 
     if (startHeight > stopHeight) {
-        log_(OT_PRETTY_CLASS())(name)(" attempted to scan filters from ")(
-            startHeight)(" to ")(stopHeight)(" but this is impossible")
+        log_(OT_PRETTY_CLASS())(name)(" attempted to ")(
+            procedure)(" filters from ")(startHeight)(" to ")(
+            stopHeight)(" but this is impossible")
             .Flush();
 
         return std::nullopt;
     }
 
-    log_(OT_PRETTY_CLASS())(name)(" scanning filters from ")(
+    log_(OT_PRETTY_CLASS())(name)(" ")(procedure)("ning filters from ")(
         startHeight)(" to ")(stopHeight)
         .Flush();
     auto* upstream = alloc::standard_to_boost(get_allocator().resource());
@@ -707,18 +768,38 @@ auto SubchainStateData::Scan(
             auto matches = filter.Match(patterns);
 
             if (0 < matches.size()) {
+                const auto printPosition =
+                    CString{print(testPosition), get_allocator()};
+                log_(OT_PRETTY_CLASS())(name)(" GCS for block ")(
+                    printPosition)(" matches ")(matches.size())(" of ")(
+                    patterns.size())(" target elements")
+                    .Flush();
                 const auto [untested, retest] =
                     get_block_targets(blockHash, utxos, &alloc);
+
+                if (check_previous_matches(blockHash, retest)) {
+                    log_(OT_PRETTY_CLASS())(name)(
+                        " this set of parameters has already been checked once "
+                        "therefore ")(printPosition)(" is considered clean")
+                        .Flush();
+
+                    return false;
+                }
+
                 matches = filter.Match(retest);
 
                 if (0 < matches.size()) {
-                    log_(OT_PRETTY_CLASS())(name)(" GCS scan for block ")(
-                        blockHash.asHex())(" at height ")(i)(" found ")(
-                        matches.size())(" new potential matches for the ")(
-                        patterns.size())(" target elements for ")(id_)
+                    log_(OT_PRETTY_CLASS())(name)(" ")(matches.size())(
+                        " matches are new therefore ")(
+                        printPosition)(" is considered dirty")
                         .Flush();
 
                     return true;
+                } else {
+                    log_(OT_PRETTY_CLASS())(name)(
+                        " all matches have been previously processed "
+                        "therefore ")(printPosition)(" is considered clean")
+                        .Flush();
                 }
             }
 
@@ -737,13 +818,13 @@ auto SubchainStateData::Scan(
 
     if (atLeastOnce) {
         const auto count = out.size();
-        log_(OT_PRETTY_CLASS())(name)(" scan found ")(
+        log_(OT_PRETTY_CLASS())(name)(" ")(procedure)(" found ")(
             count)(" new potential matches between blocks ")(
             startHeight)(" and ")(highestTested.first)(" in ")(
             std::chrono::nanoseconds{Clock::now() - start})
             .Flush();
     } else {
-        log_(OT_PRETTY_CLASS())(name)(" scan interrupted").Flush();
+        log_(OT_PRETTY_CLASS())(name)(" ")(procedure)(" interrupted").Flush();
     }
 
     return highestClean;
@@ -875,6 +956,8 @@ auto SubchainStateData::transition_state_normal() noexcept -> void
 auto SubchainStateData::transition_state_reorg(StateSequence id) noexcept
     -> void
 {
+    OT_ASSERT(0u < id);
+
     if (0u == reorgs_.count(id)) {
         reorgs_.emplace(id);
 
@@ -902,7 +985,7 @@ auto SubchainStateData::transition_state_reorg(StateSequence id) noexcept
         OT_ASSERT(rc);
 
         state_ = State::reorg;
-        log_(OT_PRETTY_CLASS())(name_)(" transitioned to reorg state ").Flush();
+        log_(OT_PRETTY_CLASS())(name_)(" ready to process reorg ")(id).Flush();
     } else {
         log_(OT_PRETTY_CLASS())(name_)(" reorg ")(id)(" already handled")
             .Flush();

@@ -672,6 +672,7 @@ struct WalletDatabase {
         -> UnallocatedVector<proto::BlockchainTransactionProposal> = 0;
     virtual auto LookupContact(const Data& pubkeyHash) const noexcept
         -> UnallocatedSet<OTIdentifier> = 0;
+    virtual auto PublishBalance() const noexcept -> void = 0;
     virtual auto ReorgTo(
         const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
