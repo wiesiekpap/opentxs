@@ -32,6 +32,7 @@
 #include "internal/blockchain/node/wallet/subchain/statemachine/Scan.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
+#include "internal/util/Timer.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -52,6 +53,7 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/Actor.hpp"
 #include "util/JobCounter.hpp"
 #include "util/LMDB.hpp"
@@ -107,7 +109,6 @@ namespace zeromq
 {
 namespace socket
 {
-class Push;
 class Raw;
 }  // namespace socket
 }  // namespace zeromq
@@ -143,6 +144,8 @@ public:
     const SubchainIndex db_key_;
     const block::Position null_position_;
     const block::Position genesis_;
+    const CString from_ssd_endpoint_;
+    const CString to_ssd_endpoint_;
     const CString to_index_endpoint_;
     const CString to_scan_endpoint_;
     const CString to_rescan_endpoint_;
@@ -183,7 +186,7 @@ public:
         std::atomic_int& errors,
         const block::Position& ancestor) noexcept -> void final;
 
-    ~SubchainStateData() override { signal_shutdown(); }
+    ~SubchainStateData() override;
 
 protected:
     using Transactions =
@@ -232,6 +235,7 @@ private:
 
     using HandledReorgs = Set<StateSequence>;
 
+    network::zeromq::socket::Raw& to_children_;
     std::atomic<State> pending_state_;
     std::atomic<State> state_;
     HandledReorgs reorgs_;
@@ -241,6 +245,8 @@ private:
     std::optional<wallet::Process> process_;
     std::optional<wallet::Scan> scan_;
     bool have_children_;
+    Map<JobType, Time> child_activity_;
+    Timer watchdog_;
 
     static auto describe(
         const crypto::Subaccount& account,
@@ -285,6 +291,7 @@ private:
     auto do_shutdown() noexcept -> void;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
     auto process_prepare_reorg(Message&& in) noexcept -> void;
+    auto process_watchdog_ack(Message&& in) noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto state_reorg(const Work work, Message&& msg) noexcept -> void;
     auto transition_state_normal() noexcept -> void;

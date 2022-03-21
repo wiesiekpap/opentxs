@@ -41,7 +41,7 @@ Progress::Imp::Imp(
     : Job(LogTrace(),
           parent,
           batch,
-          CString{"progress", alloc},
+          JobType::progress,
           alloc,
           {},
           {

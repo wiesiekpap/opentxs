@@ -6,7 +6,6 @@
 #include "0_stdafx.hpp"                        // IWYU pragma: associated
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "api/Legacy.hpp"                      // IWYU pragma: associated
-#include "api/context/Context.hpp"             // IWYU pragma: associated
 #include "network/zeromq/context/Context.hpp"  // IWYU pragma: associated
 #include "util/Thread.hpp"                     // IWYU pragma: associated
 
@@ -39,11 +38,6 @@ auto Legacy::get_suffix() noexcept -> fs::path
 
 auto Legacy::use_dot() noexcept -> bool { return false; }
 }  // namespace opentxs::api::imp
-
-namespace opentxs::network::zeromq::implementation
-{
-auto Context::max_sockets() noexcept -> int { return 10240; }
-}  // namespace opentxs::network::zeromq::implementation
 
 // TODO after libc++ finally incorporates this into std, and after Apple ships
 // that version of libc++, then this can be removed

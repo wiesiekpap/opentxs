@@ -51,7 +51,7 @@ Scan::Imp::Imp(
     : Job(LogTrace(),
           parent,
           batch,
-          CString{"scan", alloc},
+          JobType::scan,
           alloc,
           {
               {CString{parent->api_.Endpoints().BlockchainNewFilter()},
@@ -67,7 +67,7 @@ Scan::Imp::Imp(
                    {parent->to_process_endpoint_, Direction::Connect},
                }},
           })
-    , to_process_(pipeline_.Internal().ExtraSocket(0))
+    , to_process_(pipeline_.Internal().ExtraSocket(1))
     , last_scanned_(std::nullopt)
     , filter_tip_(std::nullopt)
 {

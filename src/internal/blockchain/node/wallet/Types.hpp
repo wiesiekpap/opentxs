@@ -54,10 +54,21 @@ enum class SubchainJobs : OTZMQWorkType {
     prepare_reorg = OT_ZMQ_INTERNAL_SIGNAL + 0,
     update = OT_ZMQ_INTERNAL_SIGNAL + 1,
     process = OT_ZMQ_INTERNAL_SIGNAL + 2,
+    watchdog = OT_ZMQ_INTERNAL_SIGNAL + 3,
+    watchdog_ack = OT_ZMQ_INTERNAL_SIGNAL + 4,
     init = OT_ZMQ_INIT_SIGNAL,
     key = OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL,
     prepare_shutdown = OT_ZMQ_PREPARE_SHUTDOWN,
     statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
+};
+
+// WARNING update print function if new values are added or removed
+enum class JobType : unsigned int {
+    scan,
+    process,
+    index,
+    rescan,
+    progress,
 };
 
 auto lock_for_reorg(
@@ -67,4 +78,5 @@ auto print(WalletJobs) noexcept -> std::string_view;
 auto print(AccountsJobs) noexcept -> std::string_view;
 auto print(AccountJobs) noexcept -> std::string_view;
 auto print(SubchainJobs) noexcept -> std::string_view;
+auto print(JobType) noexcept -> std::string_view;
 }  // namespace opentxs::blockchain::node::wallet

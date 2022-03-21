@@ -48,7 +48,7 @@ Index::Imp::Imp(
     : Job(LogTrace(),
           parent,
           batch,
-          CString{"index", alloc},
+          JobType::index,
           alloc,
           {
               {CString{
@@ -66,7 +66,7 @@ Index::Imp::Imp(
                    {parent->to_rescan_endpoint_, Direction::Connect},
                }},
           })
-    , to_rescan_(pipeline_.Internal().ExtraSocket(0))
+    , to_rescan_(pipeline_.Internal().ExtraSocket(1))
     , last_indexed_(std::nullopt)
 {
 }

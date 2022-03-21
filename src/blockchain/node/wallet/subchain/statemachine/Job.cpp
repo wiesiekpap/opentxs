@@ -9,38 +9,69 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/statemachine/Job.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <chrono>
+#include <iterator>
 #include <string_view>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
+#include "internal/network/zeromq/socket/Pipeline.hpp"
+#include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
+using namespace std::literals;
+
 auto print(JobState state) noexcept -> std::string_view
 {
     try {
         static const auto map = Map<JobState, std::string_view>{
-            {JobState::normal, "normal"},
-            {JobState::reorg, "reorg"},
-            {JobState::shutdown, "shutdown"},
+            {JobState::normal, "normal"sv},
+            {JobState::reorg, "reorg"sv},
+            {JobState::shutdown, "shutdown"sv},
         };
 
         return map.at(state);
     } catch (...) {
         LogError()(__FUNCTION__)(": invalid JobState: ")(
+            static_cast<OTZMQWorkType>(state))
+            .Flush();
+
+        OT_FAIL;
+    }
+}
+
+auto print(JobType state) noexcept -> std::string_view
+{
+    try {
+        static const auto map = Map<JobType, std::string_view>{
+            {JobType::scan, "scan"sv},
+            {JobType::process, "process"sv},
+            {JobType::index, "index"sv},
+            {JobType::rescan, "rescan"sv},
+            {JobType::progress, "progress"sv},
+        };
+
+        return map.at(state);
+    } catch (...) {
+        LogError()(__FUNCTION__)(": invalid JobType: ")(
             static_cast<OTZMQWorkType>(state))
             .Flush();
 
@@ -55,7 +86,7 @@ Job::Job(
     const Log& logger,
     const boost::shared_ptr<const SubchainStateData>& parent,
     const network::zeromq::BatchID batch,
-    CString&& name,
+    const JobType type,
     allocator_type alloc,
     const network::zeromq::EndpointArgs& subscribe,
     const network::zeromq::EndpointArgs& pull,
@@ -67,7 +98,8 @@ Job::Job(
           logger,
           [&] {
               using namespace std::literals;
-              auto out = std::move(name);
+              auto out = CString{alloc};
+              out.append(print(type));
               out.append(" job for "sv);
               out.append(parent->name_);
 
@@ -79,15 +111,25 @@ Job::Job(
           [&] {
               auto out{subscribe};
               out.emplace_back(parent->shutdown_endpoint_, Direction::Connect);
+              out.emplace_back(parent->from_ssd_endpoint_, Direction::Connect);
 
               return out;
           }(),
           pull,
           dealer,
-          extra,
+          [&] {
+              auto out = Vector<network::zeromq::SocketData>{
+                  {SocketType::Push,
+                   {{parent->to_ssd_endpoint_, Direction::Connect}}}};
+              std::copy(extra.begin(), extra.end(), std::back_inserter(out));
+
+              return out;
+          }(),
           std::move(neverDrop))
     , parent_p_(parent)
     , parent_(*parent_p_)
+    , job_type_(type)
+    , to_parent_(pipeline_.Internal().ExtraSocket(0))
     , pending_state_(State::normal)
     , state_(State::normal)
     , reorgs_(alloc)
@@ -263,6 +305,16 @@ auto Job::process_update(Message&& msg) noexcept -> void
     OT_FAIL;
 }
 
+auto Job::process_watchdog(Message&& in) noexcept -> void
+{
+    to_parent_.Send([&] {
+        auto out = MakeWork(Work::watchdog_ack);
+        out.AddFrame(job_type_);
+
+        return out;
+    }());
+}
+
 auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
 {
     switch (work) {
@@ -287,6 +339,9 @@ auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::process: {
             process_process(std::move(msg));
         } break;
+        case Work::watchdog: {
+            process_watchdog(std::move(msg));
+        } break;
         case Work::init: {
             do_init();
         } break;
@@ -299,6 +354,7 @@ auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::statemachine: {
             do_work();
         } break;
+        case Work::watchdog_ack:
         default: {
             LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type ")(
                 static_cast<OTZMQWorkType>(work))
@@ -333,6 +389,9 @@ auto Job::state_reorg(const Work work, Message&& msg) noexcept -> void
 
             OT_FAIL;
         }
+        case Work::watchdog: {
+            process_watchdog(std::move(msg));
+        } break;
         case Work::key:
         default: {
             LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type ")(
