@@ -11,7 +11,6 @@
 #include <tuple>
 
 #include "Proto.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Envelope.hpp"

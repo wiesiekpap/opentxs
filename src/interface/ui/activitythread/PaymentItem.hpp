@@ -12,7 +12,6 @@
 #include "1_Internal.hpp"
 #include "interface/ui/activitythread/ActivityThreadItem.hpp"
 #include "internal/interface/ui/UI.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Container.hpp"
 

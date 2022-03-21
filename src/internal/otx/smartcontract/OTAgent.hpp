@@ -8,8 +8,8 @@
 #include <cstdint>
 
 #include "internal/otx/common/Account.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 

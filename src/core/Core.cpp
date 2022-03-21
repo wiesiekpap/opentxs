@@ -17,7 +17,7 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -134,7 +134,7 @@ auto IssuerID(const api::Session& api, const blockchain::Type chain) noexcept
     try {
         const auto& hex =
             blockchain::params::Data::Chains().at(chain).genesis_hash_hex_;
-        const auto genesis = api.Factory().Data(hex, StringStyle::Hex);
+        const auto genesis = api.Factory().DataFromHex(hex);
         output->CalculateDigest(genesis->Bytes());
     } catch (...) {
     }

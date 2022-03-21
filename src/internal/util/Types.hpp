@@ -5,10 +5,19 @@
 
 #pragma once
 
+#include <functional>
+#include <mutex>
+#include <tuple>
+
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 using VersionConversionMap = UnallocatedMap<VersionNumber, VersionNumber>;
+
+// local ID, remote ID
+using ContextID = std::pair<UnallocatedCString, UnallocatedCString>;
+using ContextLockCallback =
+    std::function<std::recursive_mutex&(const ContextID&)>;
 }  // namespace opentxs

@@ -8,9 +8,9 @@
 #include <ostream>
 #include <string_view>
 
+#include "internal/util/Mutex.hpp"
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Receiver.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/zap/Handler.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
 #include "opentxs/util/Container.hpp"

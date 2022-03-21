@@ -12,8 +12,8 @@
 #include <sstream>  // IWYU pragma: keep
 
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "internal/util/storage/drivers/Factory.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/storage/Config.hpp"

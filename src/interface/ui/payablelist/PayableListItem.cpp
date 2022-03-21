@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/core/Contact.hpp"

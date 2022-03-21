@@ -16,7 +16,6 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/blockchain/bitcoin/Work.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
@@ -48,7 +48,7 @@ auto GenesisBlockHeader(
         case blockchain::Type::UnitTest: {
             const auto& hex =
                 blockchain::params::Data::Chains().at(type).genesis_header_hex_;
-            const auto data = api.Factory().Data(hex, StringStyle::Hex);
+            const auto data = api.Factory().DataFromHex(hex);
 
             return factory::BitcoinBlockHeader(api, type, data->Bytes());
         }

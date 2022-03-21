@@ -20,7 +20,6 @@
 
 #include "core/Worker.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"

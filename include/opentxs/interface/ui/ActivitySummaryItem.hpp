@@ -10,7 +10,7 @@
 #include <chrono>
 
 #include "ListRow.hpp"
-#include "opentxs/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -40,7 +40,7 @@ public:
     virtual auto Text() const noexcept -> UnallocatedCString = 0;
     virtual auto ThreadID() const noexcept -> UnallocatedCString = 0;
     virtual auto Timestamp() const noexcept -> Time = 0;
-    virtual auto Type() const noexcept -> StorageBox = 0;
+    virtual auto Type() const noexcept -> otx::client::StorageBox = 0;
 
     ~ActivitySummaryItem() override = default;
 

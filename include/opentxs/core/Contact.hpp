@@ -18,7 +18,6 @@
 #include <mutex>
 #include <tuple>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -27,6 +26,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/wot/claim/Data.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
@@ -58,6 +58,8 @@ class Group;
 class Item;
 }  // namespace claim
 }  // namespace wot
+
+class Nym;
 }  // namespace identity
 
 namespace proto
@@ -151,7 +153,7 @@ public:
         const bool active) -> bool;
     auto RemoveNym(const identifier::Nym& nymID) -> bool;
     void SetLabel(const UnallocatedCString& label);
-    void Update(const identity::Nym::Serialized& nym);
+    OPENTXS_NO_EXPORT void Update(const proto::Nym& nym);
 
     ~Contact();
 

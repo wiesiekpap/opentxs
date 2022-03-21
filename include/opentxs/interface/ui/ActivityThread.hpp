@@ -8,6 +8,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/interface/ui/List.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
@@ -42,14 +43,14 @@ public:
         const UnallocatedCString& amount,
         const Identifier& sourceAccount,
         const UnallocatedCString& memo = "",
-        const PaymentType type = PaymentType::Cheque) const noexcept
-        -> bool = 0;
+        const otx::client::PaymentType type =
+            otx::client::PaymentType::Cheque) const noexcept -> bool = 0;
     virtual auto Pay(
         const Amount amount,
         const Identifier& sourceAccount,
         const UnallocatedCString& memo = "",
-        const PaymentType type = PaymentType::Cheque) const noexcept
-        -> bool = 0;
+        const otx::client::PaymentType type =
+            otx::client::PaymentType::Cheque) const noexcept -> bool = 0;
     virtual auto PaymentCode(const UnitType currency) const noexcept
         -> UnallocatedCString = 0;
     virtual auto SendDraft() const noexcept -> bool = 0;

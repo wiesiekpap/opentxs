@@ -42,6 +42,7 @@
 #include "internal/otx/smartcontract/OTVariable.hpp"
 #include "internal/util/Editor.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -61,6 +62,8 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
@@ -2490,7 +2493,7 @@ auto OT_API::issueBasket(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     auto [newRequestNumber, message] =
         context.InternalServer().InitializeServerCommand(
@@ -2830,7 +2833,7 @@ auto OT_API::exchangeBasket(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     const auto& nym = *context.Nym();
     const auto& nymID = nym.ID();
@@ -2892,7 +2895,7 @@ auto OT_API::exchangeBasket(
             "You don't have enough "
             "transaction numbers to perform the exchange.")
             .Flush();
-        status = SendResult::TRANSACTION_NUMBERS;
+        status = otx::client::SendResult::TRANSACTION_NUMBERS;
 
         return output;
     }
@@ -2907,7 +2910,7 @@ auto OT_API::exchangeBasket(
             "No transaction numbers were available. "
             "Try requesting the server for a new one.")
             .Flush();
-        status = SendResult::TRANSACTION_NUMBERS;
+        status = otx::client::SendResult::TRANSACTION_NUMBERS;
 
         return output;
     }
@@ -3058,7 +3061,7 @@ auto OT_API::payDividend(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     const auto& nym = *context.Nym();
     const auto& nymID = nym.ID();
@@ -3119,7 +3122,7 @@ auto OT_API::payDividend(
             "definition.")
             .Flush();
         requestNum = 0;
-        status = SendResult::UNNECESSARY;
+        status = otx::client::SendResult::UNNECESSARY;
 
         return output;
     }
@@ -3165,7 +3168,7 @@ auto OT_API::payDividend(
             "No transaction numbers were available. Try requesting the "
             "server for a new one.")
             .Flush();
-        status = SendResult::TRANSACTION_NUMBERS;
+        status = otx::client::SendResult::TRANSACTION_NUMBERS;
 
         return output;
     }
@@ -3347,7 +3350,7 @@ auto OT_API::withdrawVoucher(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     const auto& nym = *context.Nym();
     const auto& nymID = nym.ID();
@@ -3520,7 +3523,7 @@ auto OT_API::depositPaymentPlan(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     const auto& nym = *context.Nym();
     const auto& nymID = nym.ID();
@@ -3666,7 +3669,7 @@ auto OT_API::triggerClause(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = transactionNumber;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     auto payload = Armored::Factory();
 
@@ -3714,7 +3717,7 @@ auto OT_API::activateSmartContract(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     const auto& nym = *context.Nym();
     const auto& nymID = nym.ID();
@@ -4077,7 +4080,7 @@ auto OT_API::cancelCronItem(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     const auto& nym = *context.Nym();
     const auto& nymID = nym.ID();
@@ -4089,7 +4092,7 @@ auto OT_API::cancelCronItem(
             "cron item. Try requesting the server for more numbers (you "
             "are low).")
             .Flush();
-        status = SendResult::TRANSACTION_NUMBERS;
+        status = otx::client::SendResult::TRANSACTION_NUMBERS;
 
         return output;
     }
@@ -4104,7 +4107,7 @@ auto OT_API::cancelCronItem(
             "No transaction numbers were available. Suggest "
             "requesting the server for one.")
             .Flush();
-        status = SendResult::TRANSACTION_NUMBERS;
+        status = otx::client::SendResult::TRANSACTION_NUMBERS;
 
         return output;
     }
@@ -4210,7 +4213,7 @@ auto OT_API::issueMarketOffer(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     const auto& nym = *context.Nym();
     const auto& nymID = nym.ID();
@@ -4255,7 +4258,7 @@ auto OT_API::issueMarketOffer(
             "market offer. Try requesting the server for more (you are "
             "low).")
             .Flush();
-        status = SendResult::TRANSACTION_NUMBERS;
+        status = otx::client::SendResult::TRANSACTION_NUMBERS;
 
         return output;
     }
@@ -4563,7 +4566,7 @@ auto OT_API::getMarketList(otx::context::Server& context) const -> CommandResult
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     auto [newRequestNumber, message] =
         context.InternalServer().InitializeServerCommand(
@@ -4605,7 +4608,7 @@ auto OT_API::getMarketOffers(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     auto [newRequestNumber, message] =
         context.InternalServer().InitializeServerCommand(
@@ -4654,7 +4657,7 @@ auto OT_API::getMarketRecentTrades(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     auto [newRequestNumber, message] =
         context.InternalServer().InitializeServerCommand(
@@ -4697,7 +4700,7 @@ auto OT_API::getNymMarketOffers(otx::context::Server& context) const
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     auto [newRequestNumber, message] =
         context.InternalServer().InitializeServerCommand(
@@ -4742,7 +4745,7 @@ auto OT_API::queryInstrumentDefinitions(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     auto [newRequestNumber, message] =
         context.InternalServer().InitializeServerCommand(
@@ -4780,7 +4783,7 @@ auto OT_API::deleteAssetAccount(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
 
     {
@@ -4826,7 +4829,7 @@ auto OT_API::usageCredits(
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     auto [newRequestNumber, message] =
         context.InternalServer().InitializeServerCommand(
@@ -4862,7 +4865,7 @@ auto OT_API::unregisterNym(otx::context::Server& context) const -> CommandResult
     auto& [status, reply] = result;
     requestNum = -1;
     transactionNum = 0;
-    status = SendResult::Error;
+    status = otx::client::SendResult::Error;
     reply.reset();
     auto message{api_.Factory().InternalSession().Message()};
     requestNum = m_pClient->ProcessUserCommand(

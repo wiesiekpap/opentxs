@@ -7,8 +7,10 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string_view>
 
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -42,6 +44,7 @@ public:
     auto operator+=(const std::uint64_t rhs) -> Data& final;
 
     auto asHex() const -> UnallocatedCString final;
+    auto asHex(alloc::Resource* alloc) const -> CString final;
     auto at(const std::size_t position) const -> const std::byte& final
     {
         return reinterpret_cast<const std::byte&>(data_.at(position));
@@ -109,13 +112,14 @@ public:
     auto Concatenate(const void* data, const std::size_t size) noexcept
         -> bool override;
     auto data() -> void* final { return data_.data(); }
-    auto DecodeHex(const UnallocatedCString& hex) -> bool final;
+    auto DecodeHex(const std::string_view hex) -> bool final;
     auto end() -> iterator final { return iterator(this, data_.size()); }
     auto Randomize(const std::size_t size) -> bool override;
     void Release() final;
     void resize(const std::size_t size) final { data_.resize(size); }
     void SetSize(const std::size_t size) final;
     auto str() const -> UnallocatedCString override;
+    auto str(alloc::Resource* alloc) const -> CString override;
     void swap(opentxs::Data&& rhs) final;
     auto WriteInto() noexcept -> AllocateOutput final;
     void zeroMemory() final;

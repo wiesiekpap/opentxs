@@ -20,7 +20,7 @@
 #include "api/session/ui/UpdateManager.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "internal/util/Lockable.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
@@ -50,6 +50,7 @@
 #include "opentxs/interface/ui/Types.hpp"
 #include "opentxs/interface/ui/UnitList.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Types.hpp"
 
 class QAbstractItemModel;
 

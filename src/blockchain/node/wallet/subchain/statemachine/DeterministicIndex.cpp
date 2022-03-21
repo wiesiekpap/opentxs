@@ -17,7 +17,6 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Types.hpp"
 #include "util/ScopeGuard.hpp"
 
 namespace opentxs::blockchain::node::wallet

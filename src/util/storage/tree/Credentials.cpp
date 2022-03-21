@@ -17,7 +17,6 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/Credential.hpp"
 #include "internal/serialization/protobuf/verify/StorageCredentials.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"

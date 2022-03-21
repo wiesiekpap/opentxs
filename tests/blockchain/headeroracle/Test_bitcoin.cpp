@@ -27,7 +27,12 @@ TEST_F(Test_HeaderOracle_btc, init_opentxs) {}
 TEST_F(Test_HeaderOracle_btc, stage_headers)
 {
     for (const auto& hex : bitcoin_) {
-        const auto raw = ot::Data::Factory(hex, ot::Data::Mode::Hex);
+        const auto raw = [&] {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+
+            return out;
+        }();
         auto pHeader = api_.Factory().BlockHeader(type_, raw->Bytes());
 
         ASSERT_TRUE(pHeader);

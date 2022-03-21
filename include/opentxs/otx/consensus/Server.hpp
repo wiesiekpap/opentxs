@@ -11,6 +11,7 @@
 #include <tuple>
 
 #include "opentxs/otx/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 
@@ -139,7 +140,7 @@ public:
     OPENTXS_NO_EXPORT virtual auto InternalServer() noexcept
         -> internal::Server& = 0;
     virtual auto PingNotary(const PasswordPrompt& reason)
-        -> NetworkReplyMessage = 0;
+        -> client::NetworkReplyMessage = 0;
     virtual auto ProcessNotification(
         const api::session::Client& client,
         const otx::Reply& notification,
@@ -171,7 +172,7 @@ public:
         const Message& message,
         const PasswordPrompt& reason,
         const UnallocatedCString& label = "",
-        const bool resync = false) -> NetworkReplyMessage = 0;
+        const bool resync = false) -> client::NetworkReplyMessage = 0;
     virtual void SetAdminAttempted() = 0;
     virtual void SetAdminPassword(const UnallocatedCString& password) = 0;
     virtual void SetAdminSuccess() = 0;

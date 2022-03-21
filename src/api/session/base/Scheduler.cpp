@@ -12,11 +12,11 @@
 #include <ratio>
 
 #include "internal/api/network/Dht.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Dht.hpp"
 #include "opentxs/api/session/Storage.hpp"
-#include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/Nym.pb.h"
 #include "serialization/protobuf/ServerContract.pb.h"
@@ -50,7 +50,8 @@ void Scheduler::Start(
         std::chrono::seconds(nym_publish_interval_),
         [=, &dht]() -> void {
             NymLambda nymLambda(
-                [=, &dht](const identity::Nym::Serialized& nym) -> void {
+                [=,
+                 &dht](const identity::internal::Nym::Serialized& nym) -> void {
                     dht.Internal().Insert(nym);
                 });
             storage->MapPublicNyms(nymLambda);
@@ -60,10 +61,9 @@ void Scheduler::Start(
     Schedule(
         std::chrono::seconds(nym_refresh_interval_),
         [=, &dht]() -> void {
-            NymLambda nymLambda(
-                [=, &dht](const identity::Nym::Serialized& nym) -> void {
-                    dht.GetPublicNym(nym.nymid());
-                });
+            NymLambda nymLambda([=, &dht](const proto::Nym& nym) -> void {
+                dht.GetPublicNym(nym.nymid());
+            });
             storage->MapPublicNyms(nymLambda);
         },
         (now - std::chrono::seconds(nym_refresh_interval_) / 2));

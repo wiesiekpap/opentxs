@@ -600,7 +600,11 @@ auto Sodium::sha1(
         .add(input, static_cast<std::uint32_t>(size))
         .finalize()
         .print_hex(hex.data());
-    const auto hash = Data::Factory(hex.data(), Data::Mode::Hex);
+    const auto hash = [&]() {
+        auto out = Data::Factory();
+        out->DecodeHex({hex.data(), hex.size()});
+        return out;
+    }();
     std::memcpy(output, hash->data(), hash->size());
 
     return true;

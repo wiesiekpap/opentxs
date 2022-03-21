@@ -13,7 +13,6 @@
 #include <iosfwd>
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/bitcoin/bloom/BloomFilter.hpp"
 #include "opentxs/blockchain/bitcoin/bloom/Types.hpp"
 #include "opentxs/core/Data.hpp"

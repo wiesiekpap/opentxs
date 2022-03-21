@@ -16,11 +16,11 @@
 #include "interface/ui/base/Row.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "internal/util/UniqueQueue.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/interface/ui/ActivitySummaryItem.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -87,7 +87,7 @@ public:
     auto Text() const noexcept -> UnallocatedCString final;
     auto ThreadID() const noexcept -> UnallocatedCString final;
     auto Timestamp() const noexcept -> Time final;
-    auto Type() const noexcept -> StorageBox final;
+    auto Type() const noexcept -> otx::client::StorageBox final;
 
     ActivitySummaryItem(
         const ActivitySummaryInternalInterface& parent,
@@ -103,15 +103,18 @@ public:
 
 private:
     // id, box, account, thread
-    using ItemLocator = std::
-        tuple<UnallocatedCString, StorageBox, UnallocatedCString, OTIdentifier>;
+    using ItemLocator = std::tuple<
+        UnallocatedCString,
+        otx::client::StorageBox,
+        UnallocatedCString,
+        OTIdentifier>;
 
     const Flag& running_;
     const OTNymID nym_id_;
     ActivitySummarySortKey key_;
     UnallocatedCString& display_name_;
     UnallocatedCString text_;
-    StorageBox type_;
+    otx::client::StorageBox type_;
     Time time_;
     std::unique_ptr<std::thread> newest_item_thread_;
     UniqueQueue<ItemLocator> newest_item_;

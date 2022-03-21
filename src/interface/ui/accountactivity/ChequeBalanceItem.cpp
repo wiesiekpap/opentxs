@@ -14,13 +14,14 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/otx/common/Cheque.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -55,25 +56,25 @@ auto ChequeBalanceItem::effective_amount() const noexcept -> opentxs::Amount
     if (cheque_) { amount = cheque_->GetAmount(); }
 
     switch (type_) {
-        case StorageBox::OUTGOINGCHEQUE: {
+        case otx::client::StorageBox::OUTGOINGCHEQUE: {
             sign = -1;
         } break;
-        case StorageBox::INCOMINGCHEQUE: {
+        case otx::client::StorageBox::INCOMINGCHEQUE: {
             sign = 1;
         } break;
-        case StorageBox::SENTPEERREQUEST:
-        case StorageBox::INCOMINGPEERREQUEST:
-        case StorageBox::SENTPEERREPLY:
-        case StorageBox::INCOMINGPEERREPLY:
-        case StorageBox::FINISHEDPEERREQUEST:
-        case StorageBox::FINISHEDPEERREPLY:
-        case StorageBox::PROCESSEDPEERREQUEST:
-        case StorageBox::PROCESSEDPEERREPLY:
-        case StorageBox::MAILINBOX:
-        case StorageBox::MAILOUTBOX:
-        case StorageBox::BLOCKCHAIN:
-        case StorageBox::DRAFT:
-        case StorageBox::UNKNOWN:
+        case otx::client::StorageBox::SENTPEERREQUEST:
+        case otx::client::StorageBox::INCOMINGPEERREQUEST:
+        case otx::client::StorageBox::SENTPEERREPLY:
+        case otx::client::StorageBox::INCOMINGPEERREPLY:
+        case otx::client::StorageBox::FINISHEDPEERREQUEST:
+        case otx::client::StorageBox::FINISHEDPEERREPLY:
+        case otx::client::StorageBox::PROCESSEDPEERREQUEST:
+        case otx::client::StorageBox::PROCESSEDPEERREPLY:
+        case otx::client::StorageBox::MAILINBOX:
+        case otx::client::StorageBox::MAILOUTBOX:
+        case otx::client::StorageBox::BLOCKCHAIN:
+        case otx::client::StorageBox::DRAFT:
+        case otx::client::StorageBox::UNKNOWN:
         default: {
         }
     }
@@ -122,7 +123,7 @@ auto ChequeBalanceItem::startup(
     auto otherNymID = identifier::Nym::Factory();
 
     switch (type_) {
-        case StorageBox::INCOMINGCHEQUE: {
+        case otx::client::StorageBox::INCOMINGCHEQUE: {
             otherNymID->Assign(cheque_->GetSenderNymID());
 
             if (otherNymID->empty()) { otherNymID = nym_id_; }
@@ -144,7 +145,7 @@ auto ChequeBalanceItem::startup(
                 }
             }
         } break;
-        case StorageBox::OUTGOINGCHEQUE: {
+        case otx::client::StorageBox::OUTGOINGCHEQUE: {
             otherNymID->Assign(cheque_->GetRecipientNymID());
 
             switch (event.type()) {
@@ -169,22 +170,22 @@ auto ChequeBalanceItem::startup(
                 }
             }
         } break;
-        case StorageBox::SENTPEERREQUEST:
-        case StorageBox::INCOMINGPEERREQUEST:
-        case StorageBox::SENTPEERREPLY:
-        case StorageBox::INCOMINGPEERREPLY:
-        case StorageBox::FINISHEDPEERREQUEST:
-        case StorageBox::FINISHEDPEERREPLY:
-        case StorageBox::PROCESSEDPEERREQUEST:
-        case StorageBox::PROCESSEDPEERREPLY:
-        case StorageBox::MAILINBOX:
-        case StorageBox::MAILOUTBOX:
-        case StorageBox::BLOCKCHAIN:
-        case StorageBox::OUTGOINGTRANSFER:
-        case StorageBox::INCOMINGTRANSFER:
-        case StorageBox::INTERNALTRANSFER:
-        case StorageBox::DRAFT:
-        case StorageBox::UNKNOWN:
+        case otx::client::StorageBox::SENTPEERREQUEST:
+        case otx::client::StorageBox::INCOMINGPEERREQUEST:
+        case otx::client::StorageBox::SENTPEERREPLY:
+        case otx::client::StorageBox::INCOMINGPEERREPLY:
+        case otx::client::StorageBox::FINISHEDPEERREQUEST:
+        case otx::client::StorageBox::FINISHEDPEERREPLY:
+        case otx::client::StorageBox::PROCESSEDPEERREQUEST:
+        case otx::client::StorageBox::PROCESSEDPEERREPLY:
+        case otx::client::StorageBox::MAILINBOX:
+        case otx::client::StorageBox::MAILOUTBOX:
+        case otx::client::StorageBox::BLOCKCHAIN:
+        case otx::client::StorageBox::OUTGOINGTRANSFER:
+        case otx::client::StorageBox::INCOMINGTRANSFER:
+        case otx::client::StorageBox::INTERNALTRANSFER:
+        case otx::client::StorageBox::DRAFT:
+        case otx::client::StorageBox::UNKNOWN:
         default: {
             LogError()(OT_PRETTY_CLASS())("Invalid item type (")(
                 static_cast<std::uint8_t>(type_))(")")

@@ -9,8 +9,9 @@
 
 #include "identity/credential/Base.hpp"
 #include "identity/credential/Key.hpp"
+#include "internal/identity/Types.hpp"
 #include "internal/identity/credential/Credential.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -32,7 +33,7 @@ namespace identity
 {
 namespace internal
 {
-struct Authority;
+class Authority;
 }  // namespace internal
 
 class Source;

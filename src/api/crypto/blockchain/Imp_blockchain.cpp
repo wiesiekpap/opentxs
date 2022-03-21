@@ -122,7 +122,7 @@ auto BlockchainImp::ActivityDescription(
     for (const auto& item : data.item()) {
         if (item.id() != itemID) { continue; }
 
-        const auto txid = api_.Factory().Data(item.txid(), StringStyle::Raw);
+        const auto txid = api_.Factory().DataFromBytes(item.txid());
         const auto chain = static_cast<opentxs::blockchain::Type>(item.chain());
         const auto pTx = LoadTransactionBitcoin(txid);
 
@@ -324,7 +324,7 @@ auto BlockchainImp::load_transaction(const Lock& lock, const TxidHex& txid)
     const noexcept
     -> std::unique_ptr<opentxs::blockchain::block::bitcoin::Transaction>
 {
-    return load_transaction(lock, api_.Factory().Data(txid, StringStyle::Hex));
+    return load_transaction(lock, api_.Factory().DataFromHex(txid));
 }
 
 auto BlockchainImp::load_transaction(const Lock& lock, const Txid& txid)

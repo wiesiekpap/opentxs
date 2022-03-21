@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "opentxs/Types.hpp"
+#include "opentxs/util/Types.hpp"
 
 namespace opentxs
 {

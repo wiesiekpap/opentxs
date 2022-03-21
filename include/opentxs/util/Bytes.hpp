@@ -142,6 +142,7 @@ private:
 
 using AllocateOutput = std::function<WritableView(const std::size_t)>;
 using Space = UnallocatedVector<std::byte>;
+using RawData = UnallocatedVector<unsigned char>;
 
 OPENTXS_EXPORT auto copy(const ReadView in, const AllocateOutput out) noexcept
     -> bool;

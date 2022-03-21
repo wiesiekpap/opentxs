@@ -16,7 +16,6 @@
 #include <stdexcept>
 
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"

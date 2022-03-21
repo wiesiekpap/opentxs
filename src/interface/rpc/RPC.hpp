@@ -20,7 +20,6 @@
 #include "internal/interface/rpc/RPC.hpp"
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/Lockable.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -33,6 +32,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/RPCEnums.pb.h"
 #include "serialization/protobuf/RPCResponse.pb.h"
@@ -143,7 +143,7 @@ private:
         proto::RPCResponse& output,
         const UnallocatedCString& taskid);
     static auto get_account_event_type(
-        StorageBox storagebox,
+        otx::client::StorageBox storagebox,
         Amount amount) noexcept -> rpc::AccountEventType;
     static auto get_args(const Args& serialized) -> Options;
     static auto get_index(std::int32_t instance) -> std::size_t;

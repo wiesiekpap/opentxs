@@ -41,6 +41,7 @@
 #include "opentxs/identity/wot/claim/Section.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Bailment.pb.h"
@@ -358,12 +359,16 @@ auto Issuer::BailmentInitiated(const identifier::UnitDefinition& unitID) const
         std::time_t notUsed{0};
         auto request = proto::PeerRequest{};
         auto loaded = wallet_.Internal().PeerRequest(
-            nym_id_, requestID, StorageBox::SENTPEERREQUEST, notUsed, request);
+            nym_id_,
+            requestID,
+            otx::client::StorageBox::SENTPEERREQUEST,
+            notUsed,
+            request);
         if (false == loaded) {
             loaded = wallet_.Internal().PeerRequest(
                 nym_id_,
                 requestID,
-                StorageBox::FINISHEDPEERREQUEST,
+                otx::client::StorageBox::FINISHEDPEERREQUEST,
                 notUsed,
                 request);
         }
@@ -409,7 +414,7 @@ auto Issuer::BailmentInstructions(
         auto loaded = wallet_.Internal().PeerRequest(
             nym_id_,
             requestID,
-            StorageBox::FINISHEDPEERREQUEST,
+            otx::client::StorageBox::FINISHEDPEERREQUEST,
             notUsed,
             request);
 
@@ -417,7 +422,7 @@ auto Issuer::BailmentInstructions(
             loaded = wallet_.Internal().PeerRequest(
                 nym_id_,
                 requestID,
-                StorageBox::SENTPEERREQUEST,
+                otx::client::StorageBox::SENTPEERREQUEST,
                 notUsed,
                 request);
         }
@@ -427,12 +432,18 @@ auto Issuer::BailmentInstructions(
 
             auto reply = proto::PeerReply{};
             auto loadedreply = wallet_.Internal().PeerReply(
-                nym_id_, replyID, StorageBox::PROCESSEDPEERREPLY, reply);
+                nym_id_,
+                replyID,
+                otx::client::StorageBox::PROCESSEDPEERREPLY,
+                reply);
 
             if (false == loadedreply) {
                 reply = proto::PeerReply{};
                 loaded = wallet_.Internal().PeerReply(
-                    nym_id_, replyID, StorageBox::INCOMINGPEERREPLY, reply);
+                    nym_id_,
+                    replyID,
+                    otx::client::StorageBox::INCOMINGPEERREPLY,
+                    reply);
             }
 
             if (false == loadedreply) {
@@ -481,7 +492,7 @@ auto Issuer::ConnectionInfo(
         auto loaded = wallet_.Internal().PeerRequest(
             nym_id_,
             requestID,
-            StorageBox::FINISHEDPEERREQUEST,
+            otx::client::StorageBox::FINISHEDPEERREQUEST,
             notUsed,
             request);
 
@@ -489,7 +500,7 @@ auto Issuer::ConnectionInfo(
             loaded = wallet_.Internal().PeerRequest(
                 nym_id_,
                 requestID,
-                StorageBox::SENTPEERREQUEST,
+                otx::client::StorageBox::SENTPEERREQUEST,
                 notUsed,
                 request);
         }
@@ -506,12 +517,18 @@ auto Issuer::ConnectionInfo(
 
             auto reply = proto::PeerReply{};
             auto loadedreply = wallet_.Internal().PeerReply(
-                nym_id_, replyID, StorageBox::PROCESSEDPEERREPLY, reply);
+                nym_id_,
+                replyID,
+                otx::client::StorageBox::PROCESSEDPEERREPLY,
+                reply);
 
             if (false == loadedreply) {
                 reply = proto::PeerReply{};
                 loadedreply = wallet_.Internal().PeerReply(
-                    nym_id_, replyID, StorageBox::INCOMINGPEERREPLY, reply);
+                    nym_id_,
+                    replyID,
+                    otx::client::StorageBox::INCOMINGPEERREPLY,
+                    reply);
             }
 
             if (loadedreply) {
@@ -557,13 +574,17 @@ auto Issuer::ConnectionInfoInitiated(
         std::time_t notUsed{0};
         auto request = proto::PeerRequest{};
         auto loaded = wallet_.Internal().PeerRequest(
-            nym_id_, requestID, StorageBox::SENTPEERREQUEST, notUsed, request);
+            nym_id_,
+            requestID,
+            otx::client::StorageBox::SENTPEERREQUEST,
+            notUsed,
+            request);
 
         if (false == loaded) {
             loaded = wallet_.Internal().PeerRequest(
                 nym_id_,
                 requestID,
-                StorageBox::FINISHEDPEERREQUEST,
+                otx::client::StorageBox::FINISHEDPEERREQUEST,
                 notUsed,
                 request);
         }

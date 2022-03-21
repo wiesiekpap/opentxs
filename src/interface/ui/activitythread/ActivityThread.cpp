@@ -22,7 +22,7 @@
 #include "interface/ui/base/List.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Activity.hpp"
@@ -55,8 +55,10 @@
 #include "serialization/protobuf/StorageThread.pb.h"
 #include "serialization/protobuf/StorageThreadItem.pb.h"
 
-template class std::
-    tuple<opentxs::OTIdentifier, opentxs::StorageBox, opentxs::OTIdentifier>;
+template class std::tuple<
+    opentxs::OTIdentifier,
+    opentxs::otx::client::StorageBox,
+    opentxs::OTIdentifier>;
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -146,7 +148,7 @@ auto ActivityThread::can_message() const noexcept -> bool
 
     const auto value = can_message_.value();
 
-    return Messagability::READY == value;
+    return otx::client::Messagability::READY == value;
 }
 
 auto ActivityThread::ClearCallbacks() const noexcept -> void
@@ -181,36 +183,36 @@ auto ActivityThread::construct_row(
     const auto& box = std::get<1>(id);
 
     switch (box) {
-        case StorageBox::MAILINBOX:
-        case StorageBox::MAILOUTBOX:
-        case StorageBox::DRAFT: {
+        case otx::client::StorageBox::MAILINBOX:
+        case otx::client::StorageBox::MAILOUTBOX:
+        case otx::client::StorageBox::DRAFT: {
             return factory::MailItem(
                 *this, Widget::api_, primary_id_, id, index, custom);
         }
-        case StorageBox::INCOMINGCHEQUE:
-        case StorageBox::OUTGOINGCHEQUE: {
+        case otx::client::StorageBox::INCOMINGCHEQUE:
+        case otx::client::StorageBox::OUTGOINGCHEQUE: {
             return factory::PaymentItem(
                 *this, Widget::api_, primary_id_, id, index, custom);
         }
-        case StorageBox::PENDING_SEND: {
+        case otx::client::StorageBox::PENDING_SEND: {
             return factory::PendingSend(
                 *this, Widget::api_, primary_id_, id, index, custom);
         }
 #if OT_BLOCKCHAIN
-        case StorageBox::BLOCKCHAIN: {
+        case otx::client::StorageBox::BLOCKCHAIN: {
             return factory::BlockchainActivityThreadItem(
                 *this, Widget::api_, primary_id_, id, index, custom);
         }
 #endif  // OT_BLOCKCHAIN
-        case StorageBox::SENTPEERREQUEST:
-        case StorageBox::INCOMINGPEERREQUEST:
-        case StorageBox::SENTPEERREPLY:
-        case StorageBox::INCOMINGPEERREPLY:
-        case StorageBox::FINISHEDPEERREQUEST:
-        case StorageBox::FINISHEDPEERREPLY:
-        case StorageBox::PROCESSEDPEERREQUEST:
-        case StorageBox::PROCESSEDPEERREPLY:
-        case StorageBox::UNKNOWN:
+        case otx::client::StorageBox::SENTPEERREQUEST:
+        case otx::client::StorageBox::INCOMINGPEERREQUEST:
+        case otx::client::StorageBox::SENTPEERREPLY:
+        case otx::client::StorageBox::INCOMINGPEERREPLY:
+        case otx::client::StorageBox::FINISHEDPEERREQUEST:
+        case otx::client::StorageBox::FINISHEDPEERREPLY:
+        case otx::client::StorageBox::PROCESSEDPEERREQUEST:
+        case otx::client::StorageBox::PROCESSEDPEERREPLY:
+        case otx::client::StorageBox::UNKNOWN:
         default: {
             OT_FAIL
         }
@@ -280,7 +282,7 @@ auto ActivityThread::Pay(
     const UnallocatedCString& amount,
     const Identifier& sourceAccount,
     const UnallocatedCString& memo,
-    const PaymentType type) const noexcept -> bool
+    const otx::client::PaymentType type) const noexcept -> bool
 {
     const auto& unitID = Widget::api_.Storage().AccountContract(sourceAccount);
 
@@ -317,7 +319,7 @@ auto ActivityThread::Pay(
     const Amount amount,
     const Identifier& sourceAccount,
     const UnallocatedCString& memo,
-    const PaymentType type) const noexcept -> bool
+    const otx::client::PaymentType type) const noexcept -> bool
 {
     wait_for_startup();
 
@@ -332,7 +334,7 @@ auto ActivityThread::Pay(
     }
 
     switch (type) {
-        case PaymentType::Cheque: {
+        case otx::client::PaymentType::Cheque: {
             return send_cheque(amount, sourceAccount, memo);
         }
         default: {
@@ -461,7 +463,7 @@ auto ActivityThread::process_item(
 {
     const auto id = ActivityThreadRowID{
         Widget::api_.Factory().Identifier(item.id()),
-        static_cast<StorageBox>(item.box()),
+        static_cast<otx::client::StorageBox>(item.box()),
         Widget::api_.Factory().Identifier(item.account())};
     const auto& [itemID, box, account] = id;
     const auto key =
@@ -477,18 +479,18 @@ auto ActivityThread::process_item(
     auto& outgoing = *static_cast<bool*>(custom.emplace_back(new bool{false}));
 
     switch (box) {
-        case StorageBox::OUTGOINGCHEQUE:
-        case StorageBox::OUTGOINGTRANSFER:
-        case StorageBox::INTERNALTRANSFER:
-        case StorageBox::PENDING_SEND:
-        case StorageBox::DRAFT: {
+        case otx::client::StorageBox::OUTGOINGCHEQUE:
+        case otx::client::StorageBox::OUTGOINGTRANSFER:
+        case otx::client::StorageBox::INTERNALTRANSFER:
+        case otx::client::StorageBox::PENDING_SEND:
+        case otx::client::StorageBox::DRAFT: {
             outgoing = true;
         } break;
-        case StorageBox::MAILOUTBOX: {
+        case otx::client::StorageBox::MAILOUTBOX: {
             outgoing = true;
             [[fallthrough]];
         }
-        case StorageBox::MAILINBOX: {
+        case otx::client::StorageBox::MAILINBOX: {
             auto reason =
                 Widget::api_.Factory().PasswordPrompt("Decrypting messages");
             auto message = Widget::api_.Activity().MailText(
@@ -504,9 +506,8 @@ auto ActivityThread::process_item(
                 loading = true;
             }
         } break;
-        case StorageBox::BLOCKCHAIN: {
-            const auto txid =
-                Widget::api_.Factory().Data(item.txid(), StringStyle::Raw);
+        case otx::client::StorageBox::BLOCKCHAIN: {
+            const auto txid = Widget::api_.Factory().DataFromBytes(item.txid());
             const auto pTx =
                 Widget::api_.Crypto().Blockchain().LoadTransactionBitcoin(
                     txid->asHex());
@@ -553,7 +554,7 @@ auto ActivityThread::process_messagability(const Message& message) noexcept
 
     if (0 == contacts_.count(contact)) { return; }
 
-    if (update_messagability(body.at(3).as<Messagability>())) {
+    if (update_messagability(body.at(3).as<otx::client::Messagability>())) {
         UpdateNotify();
     }
 }
@@ -567,7 +568,7 @@ auto ActivityThread::process_message_loaded(const Message& message) noexcept
 
     const auto id = ActivityThreadRowID{
         Widget::api_.Factory().Identifier(body.at(2)),
-        body.at(3).as<StorageBox>(),
+        body.at(3).as<otx::client::StorageBox>(),
         Widget::api_.Factory().Identifier()};
     const auto& [itemID, box, account] = id;
 
@@ -578,7 +579,7 @@ auto ActivityThread::process_message_loaded(const Message& message) noexcept
 
         return sort_key(lock, id);
     }();
-    const auto outgoing{box == StorageBox::MAILOUTBOX};
+    const auto outgoing{box == otx::client::StorageBox::MAILOUTBOX};
     auto custom = CustomData{
         new UnallocatedCString{from(outgoing)},
         new UnallocatedCString{body.at(4).Bytes()},
@@ -723,7 +724,9 @@ auto ActivityThread::send_cheque(
     }
 
     id = ActivityThreadRowID{
-        Identifier::Random(), StorageBox::PENDING_SEND, Identifier::Factory()};
+        Identifier::Random(),
+        otx::client::StorageBox::PENDING_SEND,
+        Identifier::Factory()};
     const auto key = ActivityThreadSortKey{Clock::now(), 0};
     static constexpr auto outgoing{true};
     auto custom = CustomData{
@@ -773,7 +776,9 @@ auto ActivityThread::SendDraft() const noexcept -> bool
         }
 
         id = ActivityThreadRowID{
-            Identifier::Random(), StorageBox::DRAFT, Identifier::Factory()};
+            Identifier::Random(),
+            otx::client::StorageBox::DRAFT,
+            Identifier::Factory()};
         const ActivityThreadSortKey key{Clock::now(), 0};
         static constexpr auto outgoing{true};
         auto custom = CustomData{
@@ -861,11 +866,11 @@ auto ActivityThread::state_machine() noexcept -> bool
             Widget::api_.OTX().CanMessage(primary_id_, id, false);
 
         switch (value) {
-            case Messagability::READY: {
+            case otx::client::Messagability::READY: {
 
                 return false;
             }
-            case Messagability::UNREGISTERED: {
+            case otx::client::Messagability::UNREGISTERED: {
 
                 again |= true;
             } break;
@@ -900,7 +905,8 @@ auto ActivityThread::update_display_name() noexcept -> bool
     return changed;
 }
 
-auto ActivityThread::update_messagability(Messagability value) noexcept -> bool
+auto ActivityThread::update_messagability(
+    otx::client::Messagability value) noexcept -> bool
 {
     const auto changed = [&] {
         auto lock = rLock{recursive_lock_};
@@ -917,7 +923,7 @@ auto ActivityThread::update_messagability(Messagability value) noexcept -> bool
 
         if (changed && callbacks_ && callbacks_.value().messagability_) {
             callbacks_.value().messagability_(
-                Messagability::READY == can_message_.value());
+                otx::client::Messagability::READY == can_message_.value());
         }
     }
 

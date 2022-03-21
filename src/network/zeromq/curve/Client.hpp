@@ -10,7 +10,6 @@
 #include <mutex>
 
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/curve/Client.hpp"
 #include "opentxs/util/Container.hpp"
 

@@ -7,11 +7,11 @@
 
 #include <ostream>
 
+#include "internal/util/Mutex.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Bidirectional.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"

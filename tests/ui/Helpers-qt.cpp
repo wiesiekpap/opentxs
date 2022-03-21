@@ -606,7 +606,9 @@ auto check_row(
         output &= (confirmations.toInt() == expected.confirmations_);
         output &= (contacts.toStringList() == rContacts);
         output &= (workflow.toString().toStdString() == expected.workflow_);
-        output &= (static_cast<ot::StorageBox>(type.toInt()) == expected.type_);
+        output &=
+            (static_cast<ot::otx::client::StorageBox>(type.toInt()) ==
+             expected.type_);
         output &= (model.columnCount(index) == account_activity_columns_);
         output &= (static_cast<std::size_t>(model.rowCount(index)) == vCount);
 
@@ -618,7 +620,9 @@ auto check_row(
         EXPECT_EQ(confirmations.toInt(), expected.confirmations_);
         EXPECT_EQ(contacts.toStringList(), rContacts);
         EXPECT_EQ(workflow.toString().toStdString(), expected.workflow_);
-        EXPECT_EQ(static_cast<ot::StorageBox>(type.toInt()), expected.type_);
+        EXPECT_EQ(
+            static_cast<ot::otx::client::StorageBox>(type.toInt()),
+            expected.type_);
         EXPECT_EQ(model.columnCount(index), account_activity_columns_);
         EXPECT_EQ(model.rowCount(index), vCount);
     }
@@ -943,7 +947,9 @@ auto check_row(
         output &= (pending.toBool() == expected.pending_);
         output &= (polarity == expected.polarity_);
         output &= (text.toString().toStdString() == expected.text_);
-        output &= (static_cast<ot::StorageBox>(type.toInt()) == expected.type_);
+        output &=
+            (static_cast<ot::otx::client::StorageBox>(type.toInt()) ==
+             expected.type_);
         output &= (outgoing.toBool() == expected.outgoing_);
         output &= (from.toString().toStdString() == expected.from_);
         output &= (model.columnCount(index) == activity_thread_columns_);
@@ -955,7 +961,9 @@ auto check_row(
         EXPECT_EQ(pending.toBool(), expected.pending_);
         EXPECT_EQ(polarity, expected.polarity_);
         EXPECT_EQ(text.toString().toStdString(), expected.text_);
-        EXPECT_EQ(static_cast<ot::StorageBox>(type.toInt()), expected.type_);
+        EXPECT_EQ(
+            static_cast<ot::otx::client::StorageBox>(type.toInt()),
+            expected.type_);
         EXPECT_EQ(outgoing.toBool(), expected.outgoing_);
         EXPECT_EQ(from.toString().toStdString(), expected.from_);
         EXPECT_EQ(model.columnCount(index), activity_thread_columns_);

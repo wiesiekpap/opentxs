@@ -23,7 +23,6 @@
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -119,7 +118,8 @@ struct Test_BitcoinBlock : public ::testing::Test {
 
         for (const auto& bytes : block.Internal().ExtractElements(
                  ot::blockchain::cfilter::Type::Basic_BIP158)) {
-            output.emplace_back(api_.Factory().Data(ot::reader(bytes)));
+            output.emplace_back(
+                api_.Factory().DataFromBytes(ot::reader(bytes)));
         }
 
         const auto& expectedElements = indexed_elements_.at(vector.height_);
@@ -149,8 +149,7 @@ struct Test_BitcoinBlock : public ::testing::Test {
         const ot::blockchain::cfilter::Type filterType) const noexcept -> bool
     {
         const auto& [genesisHex, filterMap] = genesis_block_data_.at(chain);
-        const auto bytes =
-            api_.Factory().Data(genesisHex, ot::StringStyle::Hex);
+        const auto bytes = api_.Factory().DataFromHex(genesisHex);
         const auto block = api_.Factory().BitcoinBlock(chain, bytes->Bytes());
 
         EXPECT_TRUE(block);
@@ -296,7 +295,7 @@ TEST_F(Test_BitcoinBlock, pkt_mainnet)
         GenerateGenesisFilter(chain, ot::blockchain::cfilter::Type::ES));
 
     const auto& [genesisHex, filterMap] = genesis_block_data_.at(chain);
-    const auto bytes = api_.Factory().Data(genesisHex, ot::StringStyle::Hex);
+    const auto bytes = api_.Factory().DataFromHex(genesisHex);
     const auto pBlock = api_.Factory().BitcoinBlock(chain, bytes->Bytes());
 
     ASSERT_TRUE(pBlock);
@@ -400,20 +399,14 @@ TEST_F(Test_BitcoinBlock, serialization)
 TEST_F(Test_BitcoinBlock, bch_filter_1307544)
 {
     const auto& filter = bch_filter_1307544_;
-    const auto blockHash = api_.Factory().Data(
-        "a9df8e8b72336137aaf70ac0d390c2a57b2afc826201e9f78b000000000000"
-        "00",
-        ot::StringStyle::Hex);
+    const auto blockHash = api_.Factory().DataFromHex(
+        "a9df8e8b72336137aaf70ac0d390c2a57b2afc826201e9f78b00000000000000");
     const auto encodedFilter = ot::ReadView{
         reinterpret_cast<const char*>(filter.data()), filter.size()};
-    const auto previousHeader = api_.Factory().Data(
-        "258c5095df5d3d57d4a427add793df679615366ce8ac6e1803a6ea02fca44f"
-        "c6",
-        ot::StringStyle::Hex);
-    const auto expectedHeader = api_.Factory().Data(
-        "1aa1093ac9289923d390f3bdb2218095dc2d2559f14b4a68b20fcf1656b612"
-        "b4",
-        ot::StringStyle::Hex);
+    const auto previousHeader = api_.Factory().DataFromHex(
+        "258c5095df5d3d57d4a427add793df679615366ce8ac6e1803a6ea02fca44fc6");
+    const auto expectedHeader = api_.Factory().DataFromHex(
+        "1aa1093ac9289923d390f3bdb2218095dc2d2559f14b4a68b20fcf1656b612b4");
 
     const auto pGCS = ot::factory::GCS(
         api_,
@@ -432,20 +425,14 @@ TEST_F(Test_BitcoinBlock, bch_filter_1307544)
 TEST_F(Test_BitcoinBlock, bch_filter_1307723)
 {
     const auto& filter = bch_filter_1307723_;
-    const auto blockHash = api_.Factory().Data(
-        "c28ca17ec9727809b449447eac0ba416a0b347f3836843f313030000000000"
-        "00",
-        ot::StringStyle::Hex);
+    const auto blockHash = api_.Factory().DataFromHex(
+        "c28ca17ec9727809b449447eac0ba416a0b347f3836843f31303000000000000");
     const auto encodedFilter = ot::ReadView{
         reinterpret_cast<const char*>(filter.data()), filter.size()};
-    const auto previousHeader = api_.Factory().Data(
-        "4417c11a1bfecdbd6948b225dfb92a86021bc2220e1b7d9749af04637b0c9e"
-        "1f",
-        ot::StringStyle::Hex);
-    const auto expectedHeader = api_.Factory().Data(
-        "747d817e9a7b2130e000b197a08219fa2667c8dc8313591d00492bb9213293"
-        "ae",
-        ot::StringStyle::Hex);
+    const auto previousHeader = api_.Factory().DataFromHex(
+        "4417c11a1bfecdbd6948b225dfb92a86021bc2220e1b7d9749af04637b0c9e1f");
+    const auto expectedHeader = api_.Factory().DataFromHex(
+        "747d817e9a7b2130e000b197a08219fa2667c8dc8313591d00492bb9213293ae");
 
     const auto pGCS = ot::factory::GCS(
         api_,

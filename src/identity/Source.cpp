@@ -15,7 +15,6 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Parameters.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
@@ -88,7 +88,7 @@ auto Factory::NymIDSource(
                         crypto::AsymmetricProvider::KeyTypeToCurve(
                             params.Algorithm());
 
-                    if (EcdsaCurve::invalid == curve) {
+                    if (crypto::EcdsaCurve::invalid == curve) {
                         throw std::runtime_error("Invalid curve type");
                     }
 

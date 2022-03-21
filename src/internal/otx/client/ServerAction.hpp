@@ -7,9 +7,9 @@
 
 #include <chrono>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -35,6 +35,7 @@ class UnitDefinition;
 }  // namespace proto
 
 class Amount;
+class Identifier;
 class OTPaymentPlan;
 class OTSmartContract;
 class PasswordPrompt;

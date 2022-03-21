@@ -7,7 +7,6 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Types.hpp"
 #include "opentxs/identity/wot/verification/Item.hpp"
 #include "opentxs/util/Iterator.hpp"
 
@@ -30,6 +29,8 @@ namespace verification
 class Nym;
 }  // namespace verification
 }  // namespace wot
+
+class Nym;
 }  // namespace identity
 
 namespace proto

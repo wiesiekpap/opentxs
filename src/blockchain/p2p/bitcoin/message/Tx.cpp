@@ -71,7 +71,7 @@ Tx::Tx(
     const blockchain::Type network,
     const ReadView transaction) noexcept
     : Message(api, network, bitcoin::Command::tx)
-    , payload_(api_.Factory().Data(transaction))
+    , payload_(api_.Factory().DataFromBytes(transaction))
 {
     init_hash();
 }
@@ -81,7 +81,7 @@ Tx::Tx(
     std::unique_ptr<Header> header,
     const ReadView transaction) noexcept(false)
     : Message(api, std::move(header))
-    , payload_(api_.Factory().Data(transaction))
+    , payload_(api_.Factory().DataFromBytes(transaction))
 {
     verify_checksum();
 }

@@ -14,8 +14,8 @@
 
 #include "internal/network/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "network/DhtConfig.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"

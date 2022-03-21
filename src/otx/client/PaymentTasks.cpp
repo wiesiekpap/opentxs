@@ -18,7 +18,7 @@
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/common/Cheque.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/util/Container.hpp"

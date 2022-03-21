@@ -16,7 +16,7 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/display/Scale.hpp"

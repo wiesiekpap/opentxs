@@ -12,7 +12,7 @@
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageItems.pb.h"
 #include "util/storage/tree/Node.hpp"

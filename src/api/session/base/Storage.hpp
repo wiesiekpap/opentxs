@@ -8,7 +8,6 @@
 #include <chrono>
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"

@@ -22,6 +22,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -59,7 +60,7 @@ auto Request::Send(zeromq::Message&& request) const noexcept
     OT_ASSERT(nullptr != socket_);
 
     Lock lock(lock_);
-    auto output = SendResult{opentxs::SendResult::Error, {}};
+    auto output = SendResult{otx::client::SendResult::Error, {}};
     auto& [status, reply] = output;
 
     if (false == send_message(lock, std::move(request))) {
@@ -70,13 +71,13 @@ auto Request::Send(zeromq::Message&& request) const noexcept
 
     if (false == wait(lock)) {
         LogVerbose()(OT_PRETTY_CLASS())("Receive timeout.").Flush();
-        status = opentxs::SendResult::TIMEOUT;
+        status = otx::client::SendResult::TIMEOUT;
 
         return output;
     }
 
     if (receive_message(lock, reply)) {
-        status = opentxs::SendResult::VALID_REPLY;
+        status = otx::client::SendResult::VALID_REPLY;
     } else {
         LogError()(OT_PRETTY_CLASS())("Failed to receive reply.").Flush();
     }

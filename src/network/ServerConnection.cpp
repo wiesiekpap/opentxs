@@ -18,6 +18,7 @@
 #include <thread>
 #include <utility>
 
+#include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
@@ -36,6 +37,7 @@
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
@@ -124,7 +126,7 @@ auto ServerConnection::activity_timer() -> void
             if (limit > 0s) {
                 const auto result = socket_->Send(zeromq::Message{});
 
-                if (SendResult::TIMEOUT != result.first) {
+                if (otx::client::SendResult::TIMEOUT != result.first) {
                     reset_timer();
 
                     if (status_->On()) { publish(); };
@@ -384,24 +386,26 @@ auto ServerConnection::Send(
     const otx::context::Server& context,
     const Message& message,
     const PasswordPrompt& reason,
-    const Push push) -> NetworkReplyMessage
+    const Push push) -> otx::client::NetworkReplyMessage
 {
     struct Cleanup {
         const Lock& lock_;
         ServerConnection& connection_;
-        SendResult& result_;
+        otx::client::SendResult& result_;
         std::shared_ptr<Message>& reply_;
         bool success_{false};
 
-        void SetStatus(const SendResult status)
+        void SetStatus(const otx::client::SendResult status)
         {
-            if (SendResult::VALID_REPLY == status) { success_ = true; }
+            if (otx::client::SendResult::VALID_REPLY == status) {
+                success_ = true;
+            }
         }
 
         Cleanup(
             const Lock& lock,
             ServerConnection& connection,
-            SendResult& result,
+            otx::client::SendResult& result,
             std::shared_ptr<Message>& reply)
             : lock_(lock)
             , connection_(connection)
@@ -427,7 +431,8 @@ auto ServerConnection::Send(
         disable_push(context.Nym()->ID());
     }
 
-    NetworkReplyMessage output{SendResult::Error, nullptr};
+    otx::client::NetworkReplyMessage output{
+        otx::client::SendResult::Error, nullptr};
     auto& status = output.first;
     auto& reply = output.second;
     reply.reset(api_.Factory().InternalSession().Message().release());
@@ -461,9 +466,9 @@ auto ServerConnection::Send(
 
     OT_ASSERT(false != bool(replymessage));
 
-    if (SendResult::TIMEOUT == status) {
+    if (otx::client::SendResult::TIMEOUT == status) {
         LogError()(OT_PRETTY_CLASS())("Reply timeout.").Flush();
-        cleanup.SetStatus(SendResult::TIMEOUT);
+        cleanup.SetStatus(otx::client::SendResult::TIMEOUT);
 
         return output;
     }
@@ -526,13 +531,13 @@ auto ServerConnection::Send(
                 "Received server reply, but unable to instantiate it as a "
                 "Message.")
                 .Flush();
-            cleanup.SetStatus(SendResult::INVALID_REPLY);
+            cleanup.SetStatus(otx::client::SendResult::INVALID_REPLY);
         }
 
-        cleanup.SetStatus(SendResult::VALID_REPLY);
+        cleanup.SetStatus(otx::client::SendResult::VALID_REPLY);
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
-        cleanup.SetStatus(SendResult::INVALID_REPLY);
+        cleanup.SetStatus(otx::client::SendResult::INVALID_REPLY);
     }
 
     return output;

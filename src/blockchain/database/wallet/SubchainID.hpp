@@ -8,7 +8,6 @@
 #include <mutex>
 #include <optional>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

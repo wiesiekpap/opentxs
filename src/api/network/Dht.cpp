@@ -17,8 +17,8 @@
 #include "internal/api/session/Wallet.hpp"
 #include "internal/network/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "network/DhtConfig.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -178,7 +178,7 @@ auto Dht::Insert(const UnallocatedCString& key, const UnallocatedCString& value)
     node_->Insert(key, value);
 }
 
-auto Dht::Insert(const identity::Nym::Serialized& nym) const noexcept -> void
+auto Dht::Insert(const proto::Nym& nym) const noexcept -> void
 {
     node_->Insert(nym.nymid(), proto::ToString(nym));
 }
@@ -202,8 +202,8 @@ auto Dht::GetPublicNym(const UnallocatedCString& key) const noexcept -> void
 
     if (haveCB) { notifyCB = it->second; }
 
-    DhtResultsCallback gcb(
-        [this, notifyCB, key](const DhtResults& values) -> bool {
+    opentxs::network::DhtResultsCallback gcb(
+        [this, notifyCB, key](const auto& values) -> bool {
             return ProcessPublicNym(api_, key, values, notifyCB);
         });
 
@@ -220,8 +220,8 @@ auto Dht::GetServerContract(const UnallocatedCString& key) const noexcept
 
     if (haveCB) { notifyCB = it->second; }
 
-    DhtResultsCallback gcb(
-        [this, notifyCB, key](const DhtResults& values) -> bool {
+    opentxs::network::DhtResultsCallback gcb(
+        [this, notifyCB, key](const auto& values) -> bool {
             return ProcessServerContract(api_, key, values, notifyCB);
         });
 
@@ -238,8 +238,8 @@ auto Dht::GetUnitDefinition(const UnallocatedCString& key) const noexcept
 
     if (haveCB) { notifyCB = it->second; }
 
-    DhtResultsCallback gcb(
-        [this, notifyCB, key](const DhtResults& values) -> bool {
+    opentxs::network::DhtResultsCallback gcb(
+        [this, notifyCB, key](const auto& values) -> bool {
             return ProcessUnitDefinition(api_, key, values, notifyCB);
         });
 
@@ -281,7 +281,7 @@ auto Dht::process_request(
 auto Dht::ProcessPublicNym(
     const api::Session& api,
     const UnallocatedCString key,
-    const DhtResults& values,
+    const opentxs::network::DhtResults& values,
     NotifyCB notifyCB) noexcept -> bool
 {
     UnallocatedCString theresult;
@@ -335,7 +335,7 @@ auto Dht::ProcessPublicNym(
 auto Dht::ProcessServerContract(
     const api::Session& api,
     const UnallocatedCString key,
-    const DhtResults& values,
+    const opentxs::network::DhtResults& values,
     NotifyCB notifyCB) noexcept -> bool
 {
     UnallocatedCString theresult;
@@ -385,7 +385,7 @@ auto Dht::ProcessServerContract(
 auto Dht::ProcessUnitDefinition(
     const api::Session& api,
     const UnallocatedCString key,
-    const DhtResults& values,
+    const opentxs::network::DhtResults& values,
     NotifyCB notifyCB) noexcept -> bool
 {
     UnallocatedCString theresult;

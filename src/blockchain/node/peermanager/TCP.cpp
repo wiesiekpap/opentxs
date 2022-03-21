@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -145,7 +144,7 @@ private:
             api_,
             blockchain::p2p::Protocol::bitcoin,
             type,
-            api_.Factory().Data(reader(bytes)),
+            api_.Factory().DataFromBytes(reader(bytes)),
             port,
             parent_.chain_,
             {},

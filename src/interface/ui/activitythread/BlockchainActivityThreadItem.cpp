@@ -13,7 +13,7 @@
 #include "interface/ui/activitythread/ActivityThreadItem.hpp"
 #include "interface/ui/base/Widget.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -97,10 +97,9 @@ auto BlockchainActivityThreadItem::extract(
 {
     return std::
         tuple<OTData, opentxs::Amount, UnallocatedCString, UnallocatedCString>{
-            api.Factory().Data(
+            api.Factory().DataFromBytes(
                 ui::implementation::extract_custom<UnallocatedCString>(
-                    custom, 5),
-                StringStyle::Raw),
+                    custom, 5)),
             ui::implementation::extract_custom<opentxs::Amount>(custom, 6),
             ui::implementation::extract_custom<UnallocatedCString>(custom, 7),
             ui::implementation::extract_custom<UnallocatedCString>(custom, 8)};

@@ -21,7 +21,6 @@
 #include <utility>
 
 #include "Basic.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -29,6 +28,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/interface/ui/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
@@ -61,7 +61,7 @@ struct Counter {
 };
 
 struct AccountActivityRow {
-    ot::StorageBox type_{};
+    ot::otx::client::StorageBox type_{};
     int polarity_{};
     ot::Amount amount_{};
     ot::UnallocatedCString display_amount_{};
@@ -152,7 +152,7 @@ struct ActivityThreadRow {
     ot::UnallocatedCString from_{};
     ot::UnallocatedCString text_{};
     ot::UnallocatedCString memo_{};
-    ot::StorageBox type_{};
+    ot::otx::client::StorageBox type_{};
     std::optional<ot::Time> timestamp_{};
 };
 

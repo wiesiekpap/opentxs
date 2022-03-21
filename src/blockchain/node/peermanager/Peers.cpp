@@ -26,7 +26,6 @@
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/blockchain/p2p/bitcoin/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -73,7 +72,7 @@ PeerManager::Peers::Peers(
     , policy_(policy)
     , shutdown_endpoint_(shutdown)
     , invalid_peer_(false)
-    , localhost_peer_(api_.Factory().Data("0x7f000001", StringStyle::Hex))
+    , localhost_peer_(api_.Factory().DataFromHex("0x7f000001"))
     , default_peer_(set_default_peer(
           seednode,
           localhost_peer_,
@@ -81,8 +80,7 @@ PeerManager::Peers::Peers(
     , preferred_services_(get_preferred_services(config_))
     , next_id_(0)
     , minimum_peers_([&]() -> std::size_t {
-        static const auto test =
-            api.Factory().Data("0x7f000002", StringStyle::Hex);
+        static const auto test = api.Factory().DataFromHex("0x7f000002");
 
         if (default_peer_ == test) { return 1u; }
 
@@ -352,7 +350,7 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
                 api_,
                 data.p2p_protocol_,
                 network,
-                api_.Factory().Data(endpoint.GetBytes()),
+                api_.Factory().DataFromBytes(endpoint.GetBytes()),
                 port,
                 chain_,
                 Time{},

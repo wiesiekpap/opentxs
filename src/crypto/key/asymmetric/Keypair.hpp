@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "Proto.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
@@ -46,8 +45,8 @@ class Keypair final : virtual public key::Keypair
 public:
     operator bool() const noexcept final { return true; }
 
-    auto CheckCapability(const NymCapability& capability) const noexcept
-        -> bool final;
+    auto CheckCapability(
+        const identity::NymCapability& capability) const noexcept -> bool final;
     auto GetPrivateKey() const noexcept(false) -> const key::Asymmetric& final;
     auto GetPublicKey() const noexcept(false) -> const key::Asymmetric& final;
     auto GetPublicKeyBySignature(

@@ -18,7 +18,6 @@
 
 #include "Proto.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/bloom/Types.hpp"

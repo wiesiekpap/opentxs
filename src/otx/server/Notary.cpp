@@ -14,6 +14,7 @@
 #include <string_view>
 #include <utility>
 
+#include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/Endpoints.hpp"
@@ -46,7 +47,6 @@
 #include "internal/util/Editor.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -63,6 +63,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"

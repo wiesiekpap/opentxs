@@ -398,7 +398,7 @@ auto FilterHashToHeader(
     const ReadView previous) noexcept -> OTData
 {
     static const auto blank = std::array<std::uint8_t, 32u>{};
-    auto preimage = api.Factory().Data(hash);
+    auto preimage = api.Factory().DataFromBytes(hash);
     auto output = api.Factory().Data();
 
     if (0u == previous.size()) {

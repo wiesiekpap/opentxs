@@ -16,8 +16,8 @@
 #include "internal/otx/common/OTTransactionType.hpp"
 #include "internal/otx/common/cron/OTCronItem.hpp"
 #include "internal/otx/common/script/OTScriptable.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 

@@ -21,7 +21,6 @@
 #include "internal/otx/common/Item.hpp"    // IWYU pragma: keep
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -220,7 +219,7 @@ auto Activity::AddBlockchainTransaction(
 auto Activity::AddPaymentEvent(
     const identifier::Nym& nymID,
     const Identifier& threadID,
-    const StorageBox type,
+    const otx::client::StorageBox type,
     const Identifier& itemID,
     const Identifier& workflowID,
     Time time) const noexcept -> bool
@@ -423,7 +422,7 @@ auto Activity::get_publisher(
 auto Activity::Mail(
     const identifier::Nym& nym,
     const Message& mail,
-    const StorageBox box,
+    const otx::client::StorageBox box,
     const UnallocatedCString& text) const noexcept -> UnallocatedCString
 {
     const auto nymID = nym.str();
@@ -468,8 +467,9 @@ auto Activity::Mail(
     return "";
 }
 
-auto Activity::Mail(const identifier::Nym& nym, const StorageBox box)
-    const noexcept -> ObjectList
+auto Activity::Mail(
+    const identifier::Nym& nym,
+    const otx::client::StorageBox box) const noexcept -> ObjectList
 {
     return api_.Storage().NymBoxList(nym.str(), box);
 }
@@ -477,7 +477,7 @@ auto Activity::Mail(const identifier::Nym& nym, const StorageBox box)
 auto Activity::Mail(
     const identifier::Nym& nym,
     const Message& mail,
-    const StorageBox box,
+    const otx::client::StorageBox box,
     const PeerObject& text) const noexcept -> UnallocatedCString
 {
     return Mail(nym, mail, box, [&]() -> UnallocatedCString {
@@ -494,7 +494,7 @@ auto Activity::Mail(
 auto Activity::MailRemove(
     const identifier::Nym& nym,
     const Identifier& id,
-    const StorageBox box) const noexcept -> bool
+    const otx::client::StorageBox box) const noexcept -> bool
 {
     const UnallocatedCString nymid = nym.str();
     const UnallocatedCString mail = id.str();
@@ -760,11 +760,11 @@ auto Activity::thread_preload_thread(
         if (cached >= count) { break; }
 
         const auto& item = thread.item(static_cast<int>(i - 1u));
-        const auto& box = static_cast<StorageBox>(item.box());
+        const auto& box = static_cast<otx::client::StorageBox>(item.box());
 
         switch (box) {
-            case StorageBox::MAILINBOX:
-            case StorageBox::MAILOUTBOX: {
+            case otx::client::StorageBox::MAILINBOX:
+            case otx::client::StorageBox::MAILOUTBOX: {
                 LogTrace()(OT_PRETTY_CLASS())("Preloading item ")(item.id())(
                     " in thread ")(threadID)
                     .Flush();

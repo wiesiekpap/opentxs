@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/network/zeromq/socket/Request.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -76,7 +76,7 @@ void Test_RequestReply::requestSocketThread(const ot::UnallocatedCString& msg)
         return out;
     }());
 
-    ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
+    ASSERT_EQ(result, ot::otx::client::SendResult::VALID_REPLY);
 
     const auto messageString =
         ot::UnallocatedCString{message.Body().begin()->Bytes()};
@@ -159,7 +159,7 @@ TEST_F(Test_RequestReply, Request_Reply)
         return out;
     }());
 
-    ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
+    ASSERT_EQ(result, ot::otx::client::SendResult::VALID_REPLY);
 
     const auto messageString =
         ot::UnallocatedCString{message.Body().begin()->Bytes()};
@@ -224,7 +224,7 @@ TEST_F(Test_RequestReply, Request_1_Reply_2)
         return out;
     }());
 
-    ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
+    ASSERT_EQ(result, ot::otx::client::SendResult::VALID_REPLY);
 
     auto messageString =
         ot::UnallocatedCString{message.Body().begin()->Bytes()};
@@ -237,7 +237,7 @@ TEST_F(Test_RequestReply, Request_1_Reply_2)
         return out;
     }());
 
-    ASSERT_EQ(result2, ot::SendResult::VALID_REPLY);
+    ASSERT_EQ(result2, ot::otx::client::SendResult::VALID_REPLY);
 
     messageString = message2.Body().begin()->Bytes();
     ASSERT_EQ(testMessage3_, messageString);
@@ -297,7 +297,7 @@ TEST_F(Test_RequestReply, Request_Reply_Multipart)
 
     auto [result, message] = requestSocket->Send(std::move(multipartMessage));
 
-    ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
+    ASSERT_EQ(result, ot::otx::client::SendResult::VALID_REPLY);
 
     const auto messageHeader =
         ot::UnallocatedCString{message.Header().begin()->Bytes()};

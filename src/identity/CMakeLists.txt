@@ -9,6 +9,9 @@ add_subdirectory(wot)
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/identity/Authority.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/identity/Nym.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/identity/Types.hpp"
     "Authority.cpp"
     "Authority.hpp"
     "Identity.cpp"

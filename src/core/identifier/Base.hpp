@@ -14,7 +14,6 @@
 
 #include "Proto.hpp"
 #include "core/Data.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -23,6 +22,7 @@
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -100,6 +100,7 @@ public:
     }
     auto GetString(String& theStr) const -> void final;
     auto str() const -> UnallocatedCString final;
+    auto str(alloc::Resource* alloc) const -> CString final;
     auto Type() const noexcept -> identifier::Type final { return type_; }
 
     using Data::Assign;

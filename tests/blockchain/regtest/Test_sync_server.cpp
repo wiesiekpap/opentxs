@@ -915,7 +915,7 @@ TEST_F(Regtest_fixture_sync, pushtx)
         "66d7f01cc44a0220573a954c4518331561406f90300e8f3358f51928d43c212a8c"
         "aed02de67eebee0121025476c2e83188368da1ff3e292e7acafcdb3566bb0ad253"
         "f62fc70f07aeee635711000000"};
-    const auto data = client_1_.Factory().Data(hex, ot::StringStyle::Hex);
+    const auto data = client_1_.Factory().DataFromHex(hex);
     const auto tx = client_1_.Factory().BitcoinTransaction(
         test_chain_, data->Bytes(), false);
 
@@ -997,7 +997,7 @@ TEST_F(Regtest_fixture_sync, pushtx_chain_not_active)
         "66d7f01cc44a0220573a954c4518331561406f90300e8f3358f51928d43c212a8c"
         "aed02de67eebee0121025476c2e83188368da1ff3e292e7acafcdb3566bb0ad253"
         "f62fc70f07aeee635711000000"};
-    const auto data = client_1_.Factory().Data(hex, ot::StringStyle::Hex);
+    const auto data = client_1_.Factory().DataFromHex(hex);
     const constexpr auto chain = ot::blockchain::Type::Bitcoin;
     const auto tx =
         client_1_.Factory().BitcoinTransaction(chain, data->Bytes(), false);

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "opentxs/Types.hpp"
+#include "internal/util/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

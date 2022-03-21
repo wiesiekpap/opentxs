@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "internal/otx/common/Message.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"

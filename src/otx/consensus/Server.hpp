@@ -25,18 +25,20 @@
 #include "internal/otx/consensus/Consensus.hpp"
 #include "internal/util/Editor.hpp"
 #include "internal/util/Flag.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
@@ -193,7 +195,8 @@ public:
         -> Editor<blind::Purse, std::shared_mutex> final;
     auto NextTransactionNumber(const MessageType reason)
         -> OTManagedNumber final;
-    auto PingNotary(const PasswordPrompt& reason) -> NetworkReplyMessage final;
+    auto PingNotary(const PasswordPrompt& reason)
+        -> client::NetworkReplyMessage final;
     auto ProcessNotification(
         const api::session::Client& client,
         const otx::Reply& notification,
@@ -224,7 +227,7 @@ public:
         const Message& message,
         const PasswordPrompt& reason,
         const UnallocatedCString& label,
-        const bool resync) -> NetworkReplyMessage final;
+        const bool resync) -> client::NetworkReplyMessage final;
     void SetAdminAttempted() final;
     void SetAdminPassword(const UnallocatedCString& password) final;
     void SetAdminSuccess() final;
@@ -478,7 +481,7 @@ private:
         const Lock& messageLock,
         const api::session::Client& client,
         Message& message,
-        const PasswordPrompt& reason) -> NetworkReplyMessage;
+        const PasswordPrompt& reason) -> client::NetworkReplyMessage;
     auto harvest_unused(const Lock& lock, const api::session::Client& client)
         -> bool;
     void init_sockets();

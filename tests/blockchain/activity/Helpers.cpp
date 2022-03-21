@@ -14,7 +14,6 @@
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -165,8 +164,7 @@ auto Test_BlockchainActivity::get_test_transaction(
     const Element& second,
     const ot::Time& time) const -> std::unique_ptr<const Transaction>
 {
-    const auto raw =
-        api_.Factory().Data(monkey_patch(first, second), ot::StringStyle::Hex);
+    const auto raw = api_.Factory().DataFromHex(monkey_patch(first, second));
     auto output = api_.Factory().BitcoinTransaction(
         ot::blockchain::Type::Bitcoin, raw->Bytes(), false, time);
 

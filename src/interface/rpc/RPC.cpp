@@ -25,6 +25,7 @@
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/core/Factory.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/identity/credential/Credential.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
@@ -39,7 +40,6 @@
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/Lockable.hpp"
 #include "internal/util/Shared.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -985,7 +985,7 @@ auto RPC::get_nyms(const proto::RPCCommand& command) const -> proto::RPCResponse
 
         if (pNym) {
             auto publicNym = proto::Nym{};
-            if (false == pNym->Serialize(publicNym)) {
+            if (false == pNym->Internal().Serialize(publicNym)) {
                 add_output_status(output, proto::RPCRESPONSE_NYM_NOT_FOUND);
             } else {
                 *output.add_nym() = publicNym;

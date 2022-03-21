@@ -10,7 +10,7 @@
 #include <future>
 
 #include "core/StateMachine.hpp"
-#include "opentxs/Version.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 

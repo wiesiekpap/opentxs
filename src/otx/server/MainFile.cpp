@@ -20,7 +20,6 @@
 #include "internal/otx/common/cron/OTCron.hpp"
 #include "internal/otx/common/util/Tag.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -30,6 +29,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -434,7 +434,7 @@ auto MainFile::LoadServerUserAndContract() -> bool
     serverNym = server_.API().Wallet().Nym(
         server_.API().Factory().NymID(server_.ServerNymID()));
 
-    if (serverNym->HasCapability(NymCapability::SIGN_MESSAGE)) {
+    if (serverNym->HasCapability(identity::NymCapability::SIGN_MESSAGE)) {
         LogTrace()(OT_PRETTY_CLASS())("Server nym is viable.").Flush();
     } else {
         LogError()(OT_PRETTY_CLASS())("Server nym lacks private keys.").Flush();

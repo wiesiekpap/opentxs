@@ -11,13 +11,13 @@
 #include <stdexcept>
 #include <utility>
 
+#include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/P2PBlockchainSync.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/p2p/Base.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Header.hpp"

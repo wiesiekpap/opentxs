@@ -11,7 +11,7 @@
 
 #include "Proto.tpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"

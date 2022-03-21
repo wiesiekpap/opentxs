@@ -23,7 +23,7 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/network/p2p/Client.hpp"
 #include "internal/network/p2p/Server.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"

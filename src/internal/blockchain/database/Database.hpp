@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <shared_mutex>
 
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/util/Bytes.hpp"
 
 namespace opentxs::blockchain::database

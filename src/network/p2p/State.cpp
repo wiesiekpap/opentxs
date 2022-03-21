@@ -53,7 +53,7 @@ State::State(
     const proto::P2PBlockchainChainState& in) noexcept(false)
     : State(
           static_cast<opentxs::blockchain::Type>(in.chain()),
-          {in.height(), api.Factory().Data(in.hash())})
+          {in.height(), api.Factory().DataFromBytes(in.hash())})
 {
 }
 

@@ -15,14 +15,15 @@
 #include <memory>
 #include <tuple>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/contract/BasketContract.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/Unit.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -244,7 +245,7 @@ public:
     virtual auto PeerReply(
         const identifier::Nym& nym,
         const Identifier& reply,
-        const StorageBox& box,
+        const otx::client::StorageBox& box,
         AllocateOutput destination) const -> bool = 0;
 
     /**   Clean up the recipient's copy of a peer reply
@@ -331,7 +332,7 @@ public:
     virtual auto PeerRequest(
         const identifier::Nym& nym,
         const Identifier& request,
-        const StorageBox& box,
+        const otx::client::StorageBox& box,
         std::time_t& time,
         AllocateOutput destination) const -> bool = 0;
 
@@ -369,7 +370,7 @@ public:
     virtual auto PeerRequestDelete(
         const identifier::Nym& nym,
         const Identifier& request,
-        const StorageBox& box) const -> bool = 0;
+        const otx::client::StorageBox& box) const -> bool = 0;
 
     /**   Obtain a list of sent peer requests
      *
@@ -421,7 +422,7 @@ public:
     virtual auto PeerRequestUpdate(
         const identifier::Nym& nym,
         const Identifier& request,
-        const StorageBox& box) const -> bool = 0;
+        const otx::client::StorageBox& box) const -> bool = 0;
 
     virtual auto Purse(
         const identifier::Nym& nym,

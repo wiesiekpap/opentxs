@@ -9,7 +9,9 @@
 
 #include <cstdint>
 #include <functional>
+#include <string_view>
 
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
@@ -76,8 +78,6 @@ namespace opentxs
 class OPENTXS_EXPORT Data
 {
 public:
-    enum class Mode : bool { Hex = true, Raw = false };
-
     using iterator = opentxs::iterator::Bidirectional<Data, std::byte>;
     using const_iterator =
         opentxs::iterator::Bidirectional<const Data, const std::byte>;
@@ -98,7 +98,6 @@ public:
     static auto Factory(const std::uint32_t in) -> OTData;
     /// Bytes will be stored in big endian order
     static auto Factory(const std::uint64_t in) -> OTData;
-    static auto Factory(const UnallocatedCString in, const Mode mode) -> OTData;
 
     virtual auto operator==(const Data& rhs) const noexcept -> bool = 0;
     virtual auto operator!=(const Data& rhs) const noexcept -> bool = 0;
@@ -107,6 +106,7 @@ public:
     virtual auto operator<=(const Data& rhs) const noexcept -> bool = 0;
     virtual auto operator>=(const Data& rhs) const noexcept -> bool = 0;
     virtual auto asHex() const -> UnallocatedCString = 0;
+    virtual auto asHex(alloc::Resource* alloc) const -> CString = 0;
     virtual auto at(const std::size_t position) const -> const std::byte& = 0;
     virtual auto begin() const -> const_iterator = 0;
     virtual auto Bytes() const noexcept -> ReadView = 0;
@@ -133,6 +133,7 @@ public:
     virtual auto IsNull() const -> bool = 0;
     virtual auto size() const -> std::size_t = 0;
     virtual auto str() const -> UnallocatedCString = 0;
+    virtual auto str(alloc::Resource* alloc) const -> CString = 0;
 
     virtual auto operator+=(const Data& rhs) -> Data& = 0;
     virtual auto operator+=(const std::uint8_t rhs) -> Data& = 0;
@@ -148,11 +149,11 @@ public:
         -> bool = 0;
     virtual auto at(const std::size_t position) -> std::byte& = 0;
     virtual auto begin() -> iterator = 0;
-    virtual auto data() -> void* = 0;
-    virtual auto DecodeHex(const UnallocatedCString& hex) -> bool = 0;
     virtual auto Concatenate(const ReadView data) noexcept -> bool = 0;
     virtual auto Concatenate(const void* data, const std::size_t size) noexcept
         -> bool = 0;
+    virtual auto data() -> void* = 0;
+    virtual auto DecodeHex(const std::string_view hex) -> bool = 0;
     virtual auto end() -> iterator = 0;
     virtual auto Randomize(const std::size_t size) -> bool = 0;
     virtual void Release() = 0;

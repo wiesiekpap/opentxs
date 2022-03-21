@@ -11,6 +11,10 @@
 
 namespace opentxs
 {
+using ProtoValidationVerbosity = bool;
+static const ProtoValidationVerbosity SILENT = true;
+static const ProtoValidationVerbosity VERBOSE = false;
+
 using ProtobufType = ::google::protobuf::MessageLite;
 
 auto operator==(const ProtobufType& lhs, const ProtobufType& rhs) noexcept

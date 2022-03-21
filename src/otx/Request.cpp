@@ -14,6 +14,7 @@
 #include "core/contract/Signable.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/otx/OTX.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/ServerRequest.hpp"
@@ -156,7 +157,7 @@ auto Request::full_version(const Lock& lock) const -> proto::ServerRequest
 
     if (include_nym_.get() && bool(nym_)) {
         auto publicNym = proto::Nym{};
-        if (false == nym_->Serialize(publicNym)) {}
+        if (false == nym_->Internal().Serialize(publicNym)) {}
         *contract.mutable_credentials() = publicNym;
     }
 
@@ -252,7 +253,7 @@ auto Request::update_signature(const Lock& lock, const PasswordPrompt& reason)
     signatures_.clear();
     auto serialized = signature_version(lock);
     auto& signature = *serialized.mutable_signature();
-    success = nym_->Sign(
+    success = nym_->Internal().Sign(
         serialized, crypto::SignatureRole::ServerRequest, signature, reason);
 
     if (success) {
@@ -314,6 +315,6 @@ auto Request::verify_signature(
     auto& sigProto = *serialized.mutable_signature();
     sigProto.CopyFrom(signature);
 
-    return nym_->Verify(serialized, sigProto);
+    return nym_->Internal().Verify(serialized, sigProto);
 }
 }  // namespace opentxs::otx::implementation

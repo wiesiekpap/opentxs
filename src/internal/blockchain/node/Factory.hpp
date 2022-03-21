@@ -9,7 +9,6 @@
 #include <string_view>
 
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

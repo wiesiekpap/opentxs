@@ -7,6 +7,8 @@
 
 #include <optional>
 
+#include "internal/identity/Types.hpp"
+#include "internal/identity/credential/Types.hpp"
 #include "opentxs/core/Secret.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/credential/Base.hpp"
@@ -17,10 +19,56 @@
 #include "opentxs/identity/credential/Verification.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+// inline namespace v1
+// {
+namespace proto
+{
+class Credential;
+class ContactData;
+class VerificationSet;
+}  // namespace proto
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
+
 namespace opentxs::identity::credential::internal
 {
-struct Base : virtual public identity::credential::Base {
+class Base : virtual public identity::credential::Base
+{
+public:
+    using SerializedType = proto::Credential;
+
+    virtual auto GetContactData(proto::ContactData& contactData) const
+        -> bool = 0;
+    virtual auto GetVerificationSet(
+        proto::VerificationSet& verificationSet) const -> bool = 0;
+    auto Internal() const noexcept -> const internal::Base& final
+    {
+        return *this;
+    }
     virtual void ReleaseSignatures(const bool onlyPrivate) = 0;
+    virtual auto SelfSignature(
+        CredentialModeFlag version = PUBLIC_VERSION) const -> Signature = 0;
+    using Signable::Serialize;
+    virtual auto Serialize(
+        SerializedType& serialized,
+        const SerializationModeFlag asPrivate,
+        const SerializationSignatureFlag asSigned) const -> bool = 0;
+    virtual auto Verify(
+        const Data& plaintext,
+        const proto::Signature& sig,
+        const opentxs::crypto::key::asymmetric::Role key =
+            opentxs::crypto::key::asymmetric::Role::Sign) const -> bool = 0;
+    virtual auto Verify(
+        const proto::Credential& credential,
+        const identity::CredentialRole& role,
+        const Identifier& masterID,
+        const proto::Signature& masterSig) const -> bool = 0;
+
+    auto Internal() noexcept -> internal::Base& final { return *this; }
 
 #ifdef _MSC_VER
     Base() {}

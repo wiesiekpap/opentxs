@@ -15,7 +15,7 @@
 #include "internal/api/Factory.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::factory

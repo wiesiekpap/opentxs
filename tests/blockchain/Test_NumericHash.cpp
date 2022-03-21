@@ -51,7 +51,11 @@ TEST_F(Test_NumericHash, init_opentxs) {}
 TEST_F(Test_NumericHash, number_low_1)
 {
     // Little endian
-    const auto raw = ot::Data::Factory("0x01", ot::Data::Mode::Hex);
+    const auto raw = []() {
+        auto out = ot::Data::Factory();
+        out->DecodeHex("0x01");
+        return out;
+    }();
     const ot::UnallocatedCString decimal{"1"};
     // Big endian
     const ot::UnallocatedCString hex{
@@ -66,9 +70,12 @@ TEST_F(Test_NumericHash, number_low_1)
 TEST_F(Test_NumericHash, number_low_32)
 {
     // Little endian
-    const auto raw = ot::Data::Factory(
-        "0x0100000000000000000000000000000000000000000000000000000000000000",
-        ot::Data::Mode::Hex);
+    const auto raw = []() {
+        auto out = ot::Data::Factory();
+        out->DecodeHex("0x01000000000000000000000000000000000000000000000000000"
+                       "00000000000");
+        return out;
+    }();
     const ot::UnallocatedCString decimal{"1"};
     // Big endian
     const ot::UnallocatedCString hex{
@@ -83,9 +90,12 @@ TEST_F(Test_NumericHash, number_low_32)
 TEST_F(Test_NumericHash, number_high)
 {
     // Little endian
-    const auto raw = ot::Data::Factory(
-        "0xf1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-        ot::Data::Mode::Hex);
+    const auto raw = []() {
+        auto out = ot::Data::Factory();
+        out->DecodeHex("0xf1fffffffffffffffffffffffffffffffffffffffffffffffffff"
+                       "fffffffffff");
+        return out;
+    }();
     const ot::UnallocatedCString decimal{
         "115792089237316195423570985008687907853269984665"
         "640564039457584007913129639921"};

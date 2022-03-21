@@ -85,7 +85,7 @@ Account::Account(
     , nym_id_(nym)
     , account_id_([&] {
         auto out = api_.Factory().Identifier();
-        auto preimage = api_.Factory().Data(nym_id_->Bytes());
+        auto preimage = api_.Factory().DataFromBytes(nym_id_->Bytes());
         const auto chain = parent.Chain();
         preimage->Concatenate(&chain, sizeof(chain));
         out->CalculateDigest(preimage->Bytes());

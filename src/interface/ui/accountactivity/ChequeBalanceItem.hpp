@@ -11,7 +11,6 @@
 #include "interface/ui/accountactivity/BalanceItem.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "internal/otx/common/Cheque.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Container.hpp"
 

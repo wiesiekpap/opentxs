@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "Proto.tpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Contact.hpp"
@@ -154,10 +155,10 @@ auto NymData::AddSocialMediaProfile(
     return nym().AddSocialMediaProfile(value, type, reason, primary, active);
 }
 
-auto NymData::asPublicNym() const -> identity::Nym::Serialized
+auto NymData::asPublicNym() const -> proto::Nym
 {
     auto serialized = proto::Nym{};
-    if (false == nym().Serialize(serialized)) {}
+    if (false == nym().Internal().Serialize(serialized)) {}
     return serialized;
 }
 
@@ -294,7 +295,7 @@ auto NymData::SetContactData(
     const proto::ContactData& data,
     const PasswordPrompt& reason) -> bool
 {
-    return nym().SetContactData(data, reason);
+    return nym().Internal().SetContactData(data, reason);
 }
 
 auto NymData::SetContactData(

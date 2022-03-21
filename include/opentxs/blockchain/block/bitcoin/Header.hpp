@@ -7,7 +7,6 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/util/Time.hpp"
 

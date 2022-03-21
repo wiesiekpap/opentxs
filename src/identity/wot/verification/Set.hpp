@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "internal/identity/wot/verification/Verification.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"

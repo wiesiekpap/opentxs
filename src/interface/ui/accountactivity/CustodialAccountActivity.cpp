@@ -20,8 +20,8 @@
 #include "internal/core/Factory.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "internal/util/Shared.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"  // IWYU pragma: keep
 #include "opentxs/api/session/Factory.hpp"

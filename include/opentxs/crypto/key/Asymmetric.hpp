@@ -18,6 +18,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -87,8 +88,8 @@ public:
     virtual auto engine() const noexcept
         -> const opentxs::crypto::AsymmetricProvider& = 0;
     virtual auto GetMetadata() const noexcept -> const OTSignatureMetadata* = 0;
-    virtual auto hasCapability(const NymCapability& capability) const noexcept
-        -> bool = 0;
+    virtual auto hasCapability(
+        const identity::NymCapability& capability) const noexcept -> bool = 0;
     virtual auto HasPrivate() const noexcept -> bool = 0;
     virtual auto HasPublic() const noexcept -> bool = 0;
     virtual auto keyType() const noexcept

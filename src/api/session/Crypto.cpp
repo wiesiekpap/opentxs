@@ -11,7 +11,7 @@
 #include "internal/api/session/Factory.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Factory.hpp"
 

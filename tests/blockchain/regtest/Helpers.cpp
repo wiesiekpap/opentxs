@@ -10,6 +10,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <functional>
 #include <future>
 #include <iostream>
@@ -27,8 +28,8 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
@@ -41,6 +42,7 @@
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
@@ -78,8 +80,8 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Options.hpp"
@@ -784,9 +786,8 @@ auto Regtest_fixture_base::init_address(const ot::api::Session& api) noexcept
             api.Factory().BlockchainAddress(
                 b::p2p::Protocol::bitcoin,
                 b::p2p::Network::zmq,
-                api.Factory().Data(
-                    ot::UnallocatedCString{test_endpoint},
-                    ot::StringStyle::Raw),
+                api.Factory().DataFromBytes(
+                    ot::UnallocatedCString{test_endpoint}),
                 test_port,
                 test_chain_,
                 {},
@@ -1199,7 +1200,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
                         case 0: {
                             const auto& [bytes, value, pattern] =
                                 meta.emplace_back(
-                                    client_1_.Factory().Data(
+                                    client_1_.Factory().DataFromBytes(
                                         element.Key()->PublicKey()),
                                     baseAmount + i,
                                     Pattern::PayToPubkey);
@@ -1371,7 +1372,7 @@ Regtest_fixture_tcp::Regtest_fixture_tcp()
     , tcp_listen_address_(miner_.Factory().BlockchainAddress(
           b::p2p::Protocol::bitcoin,
           b::p2p::Network::ipv4,
-          miner_.Factory().Data("0x7f000001", ot::StringStyle::Hex),
+          miner_.Factory().DataFromHex("0x7f000001"),
           18444,
           test_chain_,
           {},
@@ -1419,7 +1420,8 @@ Regtest_payment_code::Regtest_payment_code()
                 OT_ASSERT(key);
 
                 const auto& [bytes, value, pattern] = meta.emplace_back(
-                    client_1_.Factory().Data(element.Key()->PublicKey()),
+                    client_1_.Factory().DataFromBytes(
+                        element.Key()->PublicKey()),
                     baseAmmount,
                     Pattern::PayToPubkey);
                 output.emplace_back(

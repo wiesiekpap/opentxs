@@ -8,9 +8,8 @@
 #include <utility>
 
 #include "2_Factory.hpp"
-#include "internal/identity/Identity.hpp"
+#include "internal/identity/Nym.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Config.hpp"
@@ -27,6 +26,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/identity/SourceType.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/Data.hpp"
 #include "opentxs/identity/wot/claim/Group.hpp"
@@ -78,11 +78,14 @@ public:
 
         {
             EXPECT_EQ(name, nym.Alias());
-            EXPECT_TRUE(nym.HasCapability(ot::NymCapability::SIGN_MESSAGE));
-            EXPECT_TRUE(nym.HasCapability(ot::NymCapability::ENCRYPT_MESSAGE));
             EXPECT_TRUE(
-                nym.HasCapability(ot::NymCapability::AUTHENTICATE_CONNECTION));
-            EXPECT_TRUE(nym.HasCapability(ot::NymCapability::SIGN_CHILDCRED));
+                nym.HasCapability(ot::identity::NymCapability::SIGN_MESSAGE));
+            EXPECT_TRUE(nym.HasCapability(
+                ot::identity::NymCapability::ENCRYPT_MESSAGE));
+            EXPECT_TRUE(nym.HasCapability(
+                ot::identity::NymCapability::AUTHENTICATE_CONNECTION));
+            EXPECT_TRUE(
+                nym.HasCapability(ot::identity::NymCapability::SIGN_CHILDCRED));
             EXPECT_EQ(1, nym.Revision());
             EXPECT_EQ(name, nym.Name());
             EXPECT_EQ(source, nym.Source().Type());
@@ -241,10 +244,12 @@ TEST_F(Test_Nym, default_params)
     const auto& claims = nym.Claims();
 
     EXPECT_TRUE(nym.Alias().empty());
-    EXPECT_TRUE(nym.HasCapability(ot::NymCapability::SIGN_MESSAGE));
-    EXPECT_TRUE(nym.HasCapability(ot::NymCapability::ENCRYPT_MESSAGE));
-    EXPECT_TRUE(nym.HasCapability(ot::NymCapability::AUTHENTICATE_CONNECTION));
-    EXPECT_TRUE(nym.HasCapability(ot::NymCapability::SIGN_CHILDCRED));
+    EXPECT_TRUE(nym.HasCapability(ot::identity::NymCapability::SIGN_MESSAGE));
+    EXPECT_TRUE(
+        nym.HasCapability(ot::identity::NymCapability::ENCRYPT_MESSAGE));
+    EXPECT_TRUE(nym.HasCapability(
+        ot::identity::NymCapability::AUTHENTICATE_CONNECTION));
+    EXPECT_TRUE(nym.HasCapability(ot::identity::NymCapability::SIGN_CHILDCRED));
     EXPECT_EQ(1, nym.Revision());
     EXPECT_TRUE(nym.Name().empty());
 

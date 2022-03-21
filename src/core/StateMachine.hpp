@@ -11,7 +11,7 @@
 #include <mutex>
 #include <thread>
 
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 
 namespace opentxs::internal
 {

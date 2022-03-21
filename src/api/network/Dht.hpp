@@ -13,11 +13,11 @@
 
 #include "internal/api/network/Dht.hpp"
 #include "network/DhtConfig.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/network/Dht.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/network/OpenDHT.hpp"
+#include "opentxs/network/Types.hpp"
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Reply.hpp"
@@ -106,17 +106,17 @@ private:
     static auto ProcessPublicNym(
         const api::Session& api,
         const UnallocatedCString key,
-        const DhtResults& values,
+        const opentxs::network::DhtResults& values,
         NotifyCB notifyCB) noexcept -> bool;
     static auto ProcessServerContract(
         const api::Session& api,
         const UnallocatedCString key,
-        const DhtResults& values,
+        const opentxs::network::DhtResults& values,
         NotifyCB notifyCB) noexcept -> bool;
     static auto ProcessUnitDefinition(
         const api::Session& api,
         const UnallocatedCString key,
-        const DhtResults& values,
+        const opentxs::network::DhtResults& values,
         NotifyCB notifyCB) noexcept -> bool;
 
     auto process_request(

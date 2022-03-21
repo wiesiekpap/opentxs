@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/core/Data.hpp"
@@ -28,6 +27,7 @@
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -97,7 +97,7 @@ void Test_RouterDealer::requestSocketThread(
         return out;
     }());
 
-    ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
+    ASSERT_EQ(result, ot::otx::client::SendResult::VALID_REPLY);
 
     const auto messageString =
         ot::UnallocatedCString{message.Body().begin()->Bytes()};

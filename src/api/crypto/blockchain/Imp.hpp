@@ -18,7 +18,7 @@
 #include "api/crypto/blockchain/Blockchain.hpp"
 #include "api/crypto/blockchain/Wallets.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"

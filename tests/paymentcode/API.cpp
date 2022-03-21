@@ -8,7 +8,6 @@
 
 #include "VectorsV3.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -120,8 +119,8 @@ TEST_F(Test_PaymentCodeAPI, alice)
     populate(account2, remote.receive_keys_);
 
     for (auto i{0u}; i < vector.receive_keys_.size(); ++i) {
-        const auto expected = alice_.Factory().Data(
-            vector.receive_keys_.at(i), ot::StringStyle::Hex);
+        const auto expected =
+            alice_.Factory().DataFromHex(vector.receive_keys_.at(i));
         const auto& element = account1.BalanceElement(Subchain::Incoming, i);
         const auto pKey = element.Key();
 
@@ -138,8 +137,8 @@ TEST_F(Test_PaymentCodeAPI, alice)
     }
 
     for (auto i{0u}; i < remote.receive_keys_.size(); ++i) {
-        const auto expected = alice_.Factory().Data(
-            remote.receive_keys_.at(i), ot::StringStyle::Hex);
+        const auto expected =
+            alice_.Factory().DataFromHex(remote.receive_keys_.at(i));
         const auto& element = account2.BalanceElement(Subchain::Outgoing, i);
         const auto pKey = element.Key();
 
@@ -224,8 +223,8 @@ TEST_F(Test_PaymentCodeAPI, bob)
     populate(account2, remote.receive_keys_);
 
     for (auto i{0u}; i < vector.receive_keys_.size(); ++i) {
-        const auto expected = bob_.Factory().Data(
-            vector.receive_keys_.at(i), ot::StringStyle::Hex);
+        const auto expected =
+            bob_.Factory().DataFromHex(vector.receive_keys_.at(i));
         const auto& element = account1.BalanceElement(Subchain::Incoming, i);
         const auto pKey = element.Key();
 
@@ -242,8 +241,8 @@ TEST_F(Test_PaymentCodeAPI, bob)
     }
 
     for (auto i{0u}; i < remote.receive_keys_.size(); ++i) {
-        const auto expected = bob_.Factory().Data(
-            remote.receive_keys_.at(i), ot::StringStyle::Hex);
+        const auto expected =
+            bob_.Factory().DataFromHex(remote.receive_keys_.at(i));
         const auto& element = account2.BalanceElement(Subchain::Outgoing, i);
         const auto pKey = element.Key();
 

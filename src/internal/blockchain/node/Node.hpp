@@ -27,7 +27,7 @@
 #include "internal/blockchain/database/Database.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "internal/core/Core.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"

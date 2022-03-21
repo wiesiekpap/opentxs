@@ -12,7 +12,7 @@
 #include <mutex>
 
 #include "Proto.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
@@ -101,7 +101,7 @@ public:
     {
         return metadata_.get();
     }
-    auto hasCapability(const NymCapability& capability) const noexcept
+    auto hasCapability(const identity::NymCapability& capability) const noexcept
         -> bool override;
     auto HasPrivate() const noexcept -> bool final;
     auto HasPublic() const noexcept -> bool final { return has_public_; }

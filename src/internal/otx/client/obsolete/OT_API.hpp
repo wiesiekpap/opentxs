@@ -13,12 +13,13 @@
 #include <utility>
 
 #include "internal/otx/Types.hpp"
+#include "internal/otx/client/Types.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Item.hpp"
 #include "internal/otx/common/Ledger.hpp"
 #include "internal/otx/common/OTTransaction.hpp"
 #include "internal/util/Lockable.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Amount.hpp"

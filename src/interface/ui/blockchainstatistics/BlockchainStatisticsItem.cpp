@@ -12,7 +12,7 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/Amount.hpp"
 
 namespace opentxs::factory

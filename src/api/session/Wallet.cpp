@@ -25,7 +25,8 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/core/Core.hpp"
-#include "internal/identity/Identity.hpp"
+#include "internal/core/contract/Types.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/network/p2p/Types.hpp"
 #include "internal/network/zeromq/Batch.hpp"
@@ -49,7 +50,6 @@
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -1465,7 +1465,7 @@ auto Wallet::peer_lock(const UnallocatedCString& nymID) const -> std::mutex&
 auto Wallet::PeerReply(
     const identifier::Nym& nym,
     const Identifier& reply,
-    const StorageBox& box,
+    const otx::client::StorageBox& box,
     proto::PeerReply& output) const -> bool
 {
     const auto nymID = nym.str();
@@ -1481,7 +1481,7 @@ auto Wallet::PeerReply(
 auto Wallet::PeerReply(
     const identifier::Nym& nym,
     const Identifier& reply,
-    const StorageBox& box,
+    const otx::client::StorageBox& box,
     AllocateOutput destination) const -> bool
 {
     auto peerreply = proto::PeerReply{};
@@ -1498,7 +1498,11 @@ auto Wallet::PeerReplyComplete(
     auto reply = proto::PeerReply{};
     Lock lock(peer_lock(nymID));
     const bool haveReply = api_.Storage().Load(
-        nymID, replyID.str(), StorageBox::SENTPEERREPLY, reply, false);
+        nymID,
+        replyID.str(),
+        otx::client::StorageBox::SENTPEERREPLY,
+        reply,
+        false);
 
     if (!haveReply) {
         LogError()(OT_PRETTY_CLASS())("Sent reply not found.").Flush();
@@ -1509,8 +1513,8 @@ auto Wallet::PeerReplyComplete(
     // This reply may have been loaded by request id.
     const auto& realReplyID = reply.id();
 
-    const bool savedReply =
-        api_.Storage().Store(reply, nymID, StorageBox::FINISHEDPEERREPLY);
+    const bool savedReply = api_.Storage().Store(
+        reply, nymID, otx::client::StorageBox::FINISHEDPEERREPLY);
 
     if (!savedReply) {
         LogError()(OT_PRETTY_CLASS())("Failed to save finished reply.").Flush();
@@ -1519,7 +1523,7 @@ auto Wallet::PeerReplyComplete(
     }
 
     const bool removedReply = api_.Storage().RemoveNymBoxItem(
-        nymID, StorageBox::SENTPEERREPLY, realReplyID);
+        nymID, otx::client::StorageBox::SENTPEERREPLY, realReplyID);
 
     if (!removedReply) {
         LogError()(OT_PRETTY_CLASS())(
@@ -1554,8 +1558,8 @@ auto Wallet::PeerReplyCreate(
         return false;
     }
 
-    const bool createdReply =
-        api_.Storage().Store(reply, nymID, StorageBox::SENTPEERREPLY);
+    const bool createdReply = api_.Storage().Store(
+        reply, nymID, otx::client::StorageBox::SENTPEERREPLY);
 
     if (!createdReply) {
         LogError()(OT_PRETTY_CLASS())("Failed to save sent reply.").Flush();
@@ -1563,8 +1567,8 @@ auto Wallet::PeerReplyCreate(
         return false;
     }
 
-    const bool processedRequest =
-        api_.Storage().Store(request, nymID, StorageBox::PROCESSEDPEERREQUEST);
+    const bool processedRequest = api_.Storage().Store(
+        request, nymID, otx::client::StorageBox::PROCESSEDPEERREQUEST);
 
     if (!processedRequest) {
         LogError()(OT_PRETTY_CLASS())("Failed to save processed request.")
@@ -1574,7 +1578,7 @@ auto Wallet::PeerReplyCreate(
     }
 
     const bool movedRequest = api_.Storage().RemoveNymBoxItem(
-        nymID, StorageBox::INCOMINGPEERREQUEST, request.id());
+        nymID, otx::client::StorageBox::INCOMINGPEERREQUEST, request.id());
 
     if (!processedRequest) {
         LogError()(OT_PRETTY_CLASS())(
@@ -1600,17 +1604,19 @@ auto Wallet::PeerReplyCreateRollback(
     const bool loadedRequest = api_.Storage().Load(
         nymID,
         requestID,
-        StorageBox::PROCESSEDPEERREQUEST,
+        otx::client::StorageBox::PROCESSEDPEERREQUEST,
         requestItem,
         notUsed);
 
     if (loadedRequest) {
         const bool requestRolledBack = api_.Storage().Store(
-            requestItem, nymID, StorageBox::INCOMINGPEERREQUEST);
+            requestItem, nymID, otx::client::StorageBox::INCOMINGPEERREQUEST);
 
         if (requestRolledBack) {
             const bool purgedRequest = api_.Storage().RemoveNymBoxItem(
-                nymID, StorageBox::PROCESSEDPEERREQUEST, requestID);
+                nymID,
+                otx::client::StorageBox::PROCESSEDPEERREQUEST,
+                requestID);
             if (!purgedRequest) {
                 LogError()(OT_PRETTY_CLASS())(
                     " Failed to delete request from processed box.")
@@ -1631,7 +1637,7 @@ auto Wallet::PeerReplyCreateRollback(
     }
 
     const bool removedReply = api_.Storage().RemoveNymBoxItem(
-        nymID, StorageBox::SENTPEERREPLY, replyID);
+        nymID, otx::client::StorageBox::SENTPEERREPLY, replyID);
 
     if (!removedReply) {
         LogError()(OT_PRETTY_CLASS())(" Failed to delete reply from sent box.")
@@ -1647,7 +1653,8 @@ auto Wallet::PeerReplySent(const identifier::Nym& nym) const -> ObjectList
     const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
-    return api_.Storage().NymBoxList(nymID, StorageBox::SENTPEERREPLY);
+    return api_.Storage().NymBoxList(
+        nymID, otx::client::StorageBox::SENTPEERREPLY);
 }
 
 auto Wallet::PeerReplyIncoming(const identifier::Nym& nym) const -> ObjectList
@@ -1655,7 +1662,8 @@ auto Wallet::PeerReplyIncoming(const identifier::Nym& nym) const -> ObjectList
     const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
-    return api_.Storage().NymBoxList(nymID, StorageBox::INCOMINGPEERREPLY);
+    return api_.Storage().NymBoxList(
+        nymID, otx::client::StorageBox::INCOMINGPEERREPLY);
 }
 
 auto Wallet::PeerReplyFinished(const identifier::Nym& nym) const -> ObjectList
@@ -1663,7 +1671,8 @@ auto Wallet::PeerReplyFinished(const identifier::Nym& nym) const -> ObjectList
     const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
-    return api_.Storage().NymBoxList(nymID, StorageBox::FINISHEDPEERREPLY);
+    return api_.Storage().NymBoxList(
+        nymID, otx::client::StorageBox::FINISHEDPEERREPLY);
 }
 
 auto Wallet::PeerReplyProcessed(const identifier::Nym& nym) const -> ObjectList
@@ -1671,7 +1680,8 @@ auto Wallet::PeerReplyProcessed(const identifier::Nym& nym) const -> ObjectList
     const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
-    return api_.Storage().NymBoxList(nymID, StorageBox::PROCESSEDPEERREPLY);
+    return api_.Storage().NymBoxList(
+        nymID, otx::client::StorageBox::PROCESSEDPEERREPLY);
 }
 
 auto Wallet::PeerReplyReceive(
@@ -1705,7 +1715,7 @@ auto Wallet::PeerReplyReceive(
     const bool haveRequest = api_.Storage().Load(
         nymID,
         requestID->str(),
-        StorageBox::SENTPEERREQUEST,
+        otx::client::StorageBox::SENTPEERREQUEST,
         request,
         notUsed,
         false);
@@ -1724,8 +1734,8 @@ auto Wallet::PeerReplyReceive(
 
         return false;
     }
-    const bool receivedReply =
-        api_.Storage().Store(serialized, nymID, StorageBox::INCOMINGPEERREPLY);
+    const bool receivedReply = api_.Storage().Store(
+        serialized, nymID, otx::client::StorageBox::INCOMINGPEERREPLY);
 
     if (receivedReply) {
         auto message = opentxs::network::zeromq::Message{};
@@ -1739,8 +1749,8 @@ auto Wallet::PeerReplyReceive(
         return false;
     }
 
-    const bool finishedRequest =
-        api_.Storage().Store(request, nymID, StorageBox::FINISHEDPEERREQUEST);
+    const bool finishedRequest = api_.Storage().Store(
+        request, nymID, otx::client::StorageBox::FINISHEDPEERREQUEST);
 
     if (!finishedRequest) {
         LogError()(OT_PRETTY_CLASS())(
@@ -1751,7 +1761,7 @@ auto Wallet::PeerReplyReceive(
     }
 
     const bool removedRequest = api_.Storage().RemoveNymBoxItem(
-        nymID, StorageBox::SENTPEERREQUEST, requestID->str());
+        nymID, otx::client::StorageBox::SENTPEERREQUEST, requestID->str());
 
     if (!finishedRequest) {
         LogError()(OT_PRETTY_CLASS())(
@@ -1765,7 +1775,7 @@ auto Wallet::PeerReplyReceive(
 auto Wallet::PeerRequest(
     const identifier::Nym& nym,
     const Identifier& request,
-    const StorageBox& box,
+    const otx::client::StorageBox& box,
     std::time_t& time,
     proto::PeerRequest& output) const -> bool
 {
@@ -1783,7 +1793,7 @@ auto Wallet::PeerRequest(
 auto Wallet::PeerRequest(
     const identifier::Nym& nym,
     const Identifier& request,
-    const StorageBox& box,
+    const otx::client::StorageBox& box,
     std::time_t& time,
     AllocateOutput destination) const -> bool
 {
@@ -1803,7 +1813,11 @@ auto Wallet::PeerRequestComplete(
     Lock lock(peer_lock(nymID));
     auto reply = proto::PeerReply{};
     const bool haveReply = api_.Storage().Load(
-        nymID, replyID.str(), StorageBox::INCOMINGPEERREPLY, reply, false);
+        nymID,
+        replyID.str(),
+        otx::client::StorageBox::INCOMINGPEERREPLY,
+        reply,
+        false);
 
     if (!haveReply) {
         LogError()(OT_PRETTY_CLASS())(
@@ -1816,8 +1830,8 @@ auto Wallet::PeerRequestComplete(
     // This reply may have been loaded by request id.
     const auto& realReplyID = reply.id();
 
-    const bool storedReply =
-        api_.Storage().Store(reply, nymID, StorageBox::PROCESSEDPEERREPLY);
+    const bool storedReply = api_.Storage().Store(
+        reply, nymID, otx::client::StorageBox::PROCESSEDPEERREPLY);
 
     if (!storedReply) {
         LogError()(OT_PRETTY_CLASS())(" Failed to save reply to processed box.")
@@ -1827,7 +1841,7 @@ auto Wallet::PeerRequestComplete(
     }
 
     const bool removedReply = api_.Storage().RemoveNymBoxItem(
-        nymID, StorageBox::INCOMINGPEERREPLY, realReplyID);
+        nymID, otx::client::StorageBox::INCOMINGPEERREPLY, realReplyID);
 
     if (!removedReply) {
         LogError()(OT_PRETTY_CLASS())(
@@ -1846,7 +1860,7 @@ auto Wallet::PeerRequestCreate(
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().Store(
-        request, nym.str(), StorageBox::SENTPEERREQUEST);
+        request, nym.str(), otx::client::StorageBox::SENTPEERREQUEST);
 }
 
 auto Wallet::PeerRequestCreateRollback(
@@ -1857,19 +1871,19 @@ auto Wallet::PeerRequestCreateRollback(
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().RemoveNymBoxItem(
-        nym.str(), StorageBox::SENTPEERREQUEST, request.str());
+        nym.str(), otx::client::StorageBox::SENTPEERREQUEST, request.str());
 }
 
 auto Wallet::PeerRequestDelete(
     const identifier::Nym& nym,
     const Identifier& request,
-    const StorageBox& box) const -> bool
+    const otx::client::StorageBox& box) const -> bool
 {
     switch (box) {
-        case StorageBox::SENTPEERREQUEST:
-        case StorageBox::INCOMINGPEERREQUEST:
-        case StorageBox::FINISHEDPEERREQUEST:
-        case StorageBox::PROCESSEDPEERREQUEST: {
+        case otx::client::StorageBox::SENTPEERREQUEST:
+        case otx::client::StorageBox::INCOMINGPEERREQUEST:
+        case otx::client::StorageBox::FINISHEDPEERREQUEST:
+        case otx::client::StorageBox::PROCESSEDPEERREQUEST: {
             return api_.Storage().RemoveNymBoxItem(
                 nym.str(), box, request.str());
         }
@@ -1884,7 +1898,8 @@ auto Wallet::PeerRequestSent(const identifier::Nym& nym) const -> ObjectList
     const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
-    return api_.Storage().NymBoxList(nym.str(), StorageBox::SENTPEERREQUEST);
+    return api_.Storage().NymBoxList(
+        nym.str(), otx::client::StorageBox::SENTPEERREQUEST);
 }
 
 auto Wallet::PeerRequestIncoming(const identifier::Nym& nym) const -> ObjectList
@@ -1893,7 +1908,7 @@ auto Wallet::PeerRequestIncoming(const identifier::Nym& nym) const -> ObjectList
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().NymBoxList(
-        nym.str(), StorageBox::INCOMINGPEERREQUEST);
+        nym.str(), otx::client::StorageBox::INCOMINGPEERREQUEST);
 }
 
 auto Wallet::PeerRequestFinished(const identifier::Nym& nym) const -> ObjectList
@@ -1902,7 +1917,7 @@ auto Wallet::PeerRequestFinished(const identifier::Nym& nym) const -> ObjectList
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().NymBoxList(
-        nym.str(), StorageBox::FINISHEDPEERREQUEST);
+        nym.str(), otx::client::StorageBox::FINISHEDPEERREQUEST);
 }
 
 auto Wallet::PeerRequestProcessed(const identifier::Nym& nym) const
@@ -1912,7 +1927,7 @@ auto Wallet::PeerRequestProcessed(const identifier::Nym& nym) const
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().NymBoxList(
-        nym.str(), StorageBox::PROCESSEDPEERREQUEST);
+        nym.str(), otx::client::StorageBox::PROCESSEDPEERREQUEST);
 }
 
 auto Wallet::PeerRequestReceive(
@@ -1940,7 +1955,7 @@ auto Wallet::PeerRequestReceive(
     const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
     const auto saved = api_.Storage().Store(
-        serialized, nymID, StorageBox::INCOMINGPEERREQUEST);
+        serialized, nymID, otx::client::StorageBox::INCOMINGPEERREQUEST);
 
     if (saved) {
         auto message = opentxs::network::zeromq::Message{};
@@ -1956,13 +1971,13 @@ auto Wallet::PeerRequestReceive(
 auto Wallet::PeerRequestUpdate(
     const identifier::Nym& nym,
     const Identifier& request,
-    const StorageBox& box) const -> bool
+    const otx::client::StorageBox& box) const -> bool
 {
     switch (box) {
-        case StorageBox::SENTPEERREQUEST:
-        case StorageBox::INCOMINGPEERREQUEST:
-        case StorageBox::FINISHEDPEERREQUEST:
-        case StorageBox::PROCESSEDPEERREQUEST: {
+        case otx::client::StorageBox::SENTPEERREQUEST:
+        case otx::client::StorageBox::INCOMINGPEERREQUEST:
+        case otx::client::StorageBox::FINISHEDPEERREQUEST:
+        case otx::client::StorageBox::PROCESSEDPEERREQUEST: {
             return api_.Storage().SetPeerRequestTime(
                 nym.str(), request.str(), box);
         }

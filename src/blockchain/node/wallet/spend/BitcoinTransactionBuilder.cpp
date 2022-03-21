@@ -33,7 +33,6 @@
 #include "internal/core/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/crypto/Hash.hpp"  // IWYU pragma: keep
 #include "opentxs/api/session/Contacts.hpp"
@@ -60,12 +59,14 @@
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "opentxs/util/Types.hpp"
 #include "serialization/protobuf/BlockchainOutputMultisigDetails.pb.h"
 #include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
 #include "serialization/protobuf/BlockchainTransactionProposedNotification.pb.h"
@@ -789,8 +790,8 @@ private:
 
             const auto& key = *pKey;
 
-            const auto& pubkey =
-                keys.emplace_back(api_.Factory().Data(key.PublicKey()));
+            const auto& pubkey = keys.emplace_back(
+                api_.Factory().DataFromBytes(key.PublicKey()));
             auto& sig = signatures.emplace_back();
             sig.reserve(80);
             const auto haveSig =
@@ -886,8 +887,9 @@ private:
         OT_ASSERT(key.HasPrivate());
 
         if (key.PublicKey() != pubkey.PublicKey()) {
-            const auto got = api_.Factory().Data(key.PublicKey());
-            const auto expected = api_.Factory().Data(pubkey.PublicKey());
+            const auto got = api_.Factory().DataFromBytes(key.PublicKey());
+            const auto expected =
+                api_.Factory().DataFromBytes(pubkey.PublicKey());
             const auto [account, subchain, index] = element.KeyID();
             LogError()(OT_PRETTY_CLASS())(
                 "Derived private key for "

@@ -9,7 +9,6 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Types.hpp"
 #include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/util/Numbers.hpp"
 

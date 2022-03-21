@@ -10,7 +10,6 @@
 #include <string_view>
 
 #include "internal/api/session/Endpoints.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"

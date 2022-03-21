@@ -869,7 +869,7 @@ auto Script::LikelyPubkeyHashes(const api::Session& api) const noexcept
 
             OT_ASSERT(hash.has_value());
 
-            output.emplace_back(api.Factory().Data(hash.value()));
+            output.emplace_back(api.Factory().DataFromBytes(hash.value()));
         } break;
         case Pattern::PayToMultisig: {
             for (auto i = std::uint8_t{0}; i < N().value(); ++i) {
@@ -905,8 +905,8 @@ auto Script::LikelyPubkeyHashes(const api::Session& api) const noexcept
                 if (is_hash160(element)) {
                     OT_ASSERT(element.data_.has_value());
 
-                    output.emplace_back(
-                        api.Factory().Data(reader(element.data_.value())));
+                    output.emplace_back(api.Factory().DataFromBytes(
+                        reader(element.data_.value())));
                 } else if (is_public_key(element)) {
                     OT_ASSERT(element.data_.has_value());
 

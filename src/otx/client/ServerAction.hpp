@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "internal/otx/client/ServerAction.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"

@@ -12,7 +12,8 @@
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageThread.pb.h"
 #include "serialization/protobuf/StorageThreadItem.pb.h"
@@ -94,7 +95,7 @@ public:
     auto Add(
         const UnallocatedCString& id,
         const std::uint64_t time,
-        const StorageBox& box,
+        const otx::client::StorageBox& box,
         const UnallocatedCString& alias,
         const UnallocatedCString& contents,
         const std::uint64_t index = 0,

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/NumericHash.hpp"

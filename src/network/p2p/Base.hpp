@@ -11,7 +11,6 @@
 
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/State.hpp"

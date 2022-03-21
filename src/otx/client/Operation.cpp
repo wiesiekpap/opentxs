@@ -20,6 +20,7 @@
 #include <utility>
 
 #include "2_Factory.hpp"
+#include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/Legacy.hpp"
@@ -28,6 +29,7 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/otx/Types.hpp"
 #include "internal/otx/blind/Mint.hpp"
 #include "internal/otx/blind/Purse.hpp"
@@ -899,7 +901,7 @@ auto Operation::construct_publish_nym() -> std::shared_ptr<Message>
 
     message.enum_ = static_cast<std::uint8_t>(contract::Type::nym);
     auto publicNym = proto::Nym{};
-    if (false == contract->Serialize(publicNym)) {
+    if (false == contract->Internal().Serialize(publicNym)) {
         LogError()(OT_PRETTY_CLASS())("Failed to serialize nym: ")(
             target_nym_id_)
             .Flush();
@@ -1006,7 +1008,7 @@ auto Operation::construct_register_nym() -> std::shared_ptr<Message>
     CREATE_MESSAGE(registerNym, -1, true, true);
 
     auto publicNym = proto::Nym{};
-    if (false == nym.Serialize(publicNym)) {
+    if (false == nym.Internal().Serialize(publicNym)) {
         LogError()(OT_PRETTY_CLASS())("Failed to serialize nym.");
         return {};
     }
@@ -1834,7 +1836,7 @@ void Operation::execute()
                     const auto messageID = api_.Activity().Internal().Mail(
                         nym_id_,
                         *outmail_message_,
-                        StorageBox::MAILOUTBOX,
+                        otx::client::StorageBox::MAILOUTBOX,
                         memo_->Get());
 
                     if (set_id_) { set_id_(Identifier::Factory(messageID)); }

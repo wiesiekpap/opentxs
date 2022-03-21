@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "core/contract/Signable.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/contract/peer/BailmentReply.hpp"
 #include "opentxs/core/contract/peer/ConnectionReply.hpp"
@@ -20,6 +20,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 

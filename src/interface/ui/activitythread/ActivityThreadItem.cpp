@@ -13,6 +13,7 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

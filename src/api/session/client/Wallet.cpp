@@ -15,6 +15,7 @@
 #include "internal/api/session/Factory.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/api/session/Client.hpp"

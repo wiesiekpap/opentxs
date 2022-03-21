@@ -9,7 +9,6 @@
 
 #include "internal/network/zeromq/message/Factory.hpp"
 #include "network/zeromq/message/Message.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -17,6 +16,7 @@
 #include "opentxs/network/zeromq/zap/ZAP.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

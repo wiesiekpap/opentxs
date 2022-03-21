@@ -32,7 +32,7 @@ RSA::RSA(
           [&](auto& pub, auto& prv) -> EncryptedKey {
               return deserialize_key(api, serialized, pub, prv);
           })
-    , params_(api_.Factory().Data(serialized.params()))
+    , params_(api_.Factory().DataFromBytes(serialized.params()))
 {
 }
 

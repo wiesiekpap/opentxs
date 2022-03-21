@@ -10,7 +10,7 @@
 
 #include "Proto.hpp"
 #include "crypto/key/asymmetric/EllipticCurve.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Types.hpp"

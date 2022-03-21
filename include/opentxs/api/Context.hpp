@@ -10,7 +10,6 @@
 #include <chrono>
 #include <functional>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Periodic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"

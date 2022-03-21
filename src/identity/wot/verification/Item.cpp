@@ -11,6 +11,7 @@
 
 #include "2_Factory.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -191,7 +192,7 @@ auto Item::get_sig(
     auto serialized = sig_form(version, id, claim, value, start, end, valid);
     auto& sig = *serialized.mutable_sig();
 
-    if (false == signer.Sign(
+    if (false == signer.Internal().Sign(
                      serialized,
                      crypto::SignatureRole::Claim,
                      *serialized.mutable_sig(),

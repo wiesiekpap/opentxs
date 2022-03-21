@@ -12,7 +12,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -158,20 +157,20 @@ auto RPC::send_payment_custodial(
     const auto& otx = api.OTX();
 
     switch (otx.CanMessage(sender, contact)) {
-        case Messagability::MISSING_CONTACT:
-        case Messagability::CONTACT_LACKS_NYM:
-        case Messagability::NO_SERVER_CLAIM:
-        case Messagability::INVALID_SENDER:
-        case Messagability::MISSING_SENDER: {
+        case otx::client::Messagability::MISSING_CONTACT:
+        case otx::client::Messagability::CONTACT_LACKS_NYM:
+        case otx::client::Messagability::NO_SERVER_CLAIM:
+        case otx::client::Messagability::INVALID_SENDER:
+        case otx::client::Messagability::MISSING_SENDER: {
 
             return reply(ResponseCode::no_path_to_recipient);
         }
-        case Messagability::MISSING_RECIPIENT:
-        case Messagability::UNREGISTERED: {
+        case otx::client::Messagability::MISSING_RECIPIENT:
+        case otx::client::Messagability::UNREGISTERED: {
 
             return reply(ResponseCode::retry);
         }
-        case Messagability::READY:
+        case otx::client::Messagability::READY:
         default: {
         }
     }

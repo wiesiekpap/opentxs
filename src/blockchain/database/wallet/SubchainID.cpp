@@ -12,7 +12,7 @@
 #include <iterator>
 #include <stdexcept>
 
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/util/Container.hpp"

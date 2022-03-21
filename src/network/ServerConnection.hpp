@@ -17,7 +17,7 @@
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/Lockable.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -27,6 +27,7 @@
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -92,7 +93,7 @@ public:
         const otx::context::Server& context,
         const Message& message,
         const PasswordPrompt& reason,
-        const Push push) -> NetworkReplyMessage final;
+        const Push push) -> otx::client::NetworkReplyMessage final;
     auto Status() const -> bool final;
 
     ~ServerConnection() final;

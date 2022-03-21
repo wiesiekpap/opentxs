@@ -11,12 +11,13 @@
 #include <mutex>
 
 #include "Proto.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/network/ServerConnection.hpp"
+#include "opentxs/network/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Container.hpp"
@@ -58,7 +59,7 @@ public:
     auto SocksProxy() const -> UnallocatedCString final;
     auto SocksProxy(UnallocatedCString& proxy) const -> bool final;
     auto Status(const UnallocatedCString& server) const
-        -> ConnectionState final;
+        -> opentxs::network::ConnectionState final;
 
     ~ZMQ() final;
 

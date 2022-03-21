@@ -14,11 +14,12 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/contract/Unit.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
+#include "opentxs/util/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -78,7 +79,7 @@ public:
     virtual auto AddPaymentEvent(
         const identifier::Nym& nymID,
         const Identifier& threadID,
-        const StorageBox type,
+        const otx::client::StorageBox type,
         const Identifier& itemID,
         const Identifier& workflowID,
         Time time) const noexcept -> bool = 0;
@@ -89,8 +90,9 @@ public:
      *    \param[in] nym the identifier of the nym who owns the mail box
      *    \param[in] box the box to be listed
      */
-    virtual auto Mail(const identifier::Nym& nym, const StorageBox box)
-        const noexcept -> ObjectList = 0;
+    virtual auto Mail(
+        const identifier::Nym& nym,
+        const otx::client::StorageBox box) const noexcept -> ObjectList = 0;
     /**   Delete a mail object
      *
      *    \param[in] nym the identifier of the nym who owns the mail box
@@ -102,7 +104,7 @@ public:
     virtual auto MailRemove(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox box) const noexcept -> bool = 0;
+        const otx::client::StorageBox box) const noexcept -> bool = 0;
     /**   Retrieve the text from a message
      *
      *    \param[in] nym the identifier of the nym who owns the mail box
@@ -114,7 +116,7 @@ public:
     virtual auto MailText(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox& box,
+        const otx::client::StorageBox& box,
         const PasswordPrompt& reason) const noexcept
         -> std::shared_future<UnallocatedCString> = 0;
     /**   Mark a thread item as read

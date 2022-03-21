@@ -18,8 +18,8 @@ extern "C" {
 #include <tuple>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Types.hpp"
 #include "util/FileSize.hpp"
 #include "util/ScopeGuard.hpp"
 

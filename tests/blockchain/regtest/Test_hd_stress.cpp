@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
@@ -44,6 +43,7 @@
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/interface/ui/AccountActivity.hpp"
 #include "opentxs/interface/ui/BalanceItem.hpp"
 #include "opentxs/util/Container.hpp"

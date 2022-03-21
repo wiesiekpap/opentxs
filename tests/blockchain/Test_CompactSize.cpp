@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <cstdint>
+#include <utility>
 
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
@@ -64,7 +65,12 @@ CompactSize::Bytes decode_hex(const ot::UnallocatedCString& hex);
 CompactSize::Bytes decode_hex(const ot::UnallocatedCString& hex)
 {
     CompactSize::Bytes output{};
-    auto bytes = ot::Data::Factory(hex, ot::Data::Mode::Hex);
+    auto bytes = [](auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+
+        return out;
+    }(hex);
 
     for (const auto& byte : bytes.get()) { output.emplace_back(byte); }
 
@@ -75,7 +81,12 @@ TEST(Test_CompactSize, encode)
 {
     for (const auto& [number, hex] : vector_1_) {
         CompactSize encoded(number);
-        const auto expectedRaw = ot::Data::Factory(hex, ot::Data::Mode::Hex);
+        const auto expectedRaw = [](auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+
+            return out;
+        }(hex);
         const auto calculatedRaw = ot::Data::Factory(encoded.Encode());
 
         EXPECT_EQ(calculatedRaw, expectedRaw);

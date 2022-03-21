@@ -8,7 +8,6 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "ListRow.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 

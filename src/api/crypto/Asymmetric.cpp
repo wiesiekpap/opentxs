@@ -53,10 +53,12 @@ namespace opentxs::api::crypto::imp
 const VersionNumber Asymmetric::serialized_path_version_{1};
 
 const Asymmetric::TypeMap Asymmetric::curve_to_key_type_{
-    {EcdsaCurve::invalid, opentxs::crypto::key::asymmetric::Algorithm::Error},
-    {EcdsaCurve::secp256k1,
+    {opentxs::crypto::EcdsaCurve::invalid,
+     opentxs::crypto::key::asymmetric::Algorithm::Error},
+    {opentxs::crypto::EcdsaCurve::secp256k1,
      opentxs::crypto::key::asymmetric::Algorithm::Secp256k1},
-    {EcdsaCurve::ed25519, opentxs::crypto::key::asymmetric::Algorithm::ED25519},
+    {opentxs::crypto::EcdsaCurve::ed25519,
+     opentxs::crypto::key::asymmetric::Algorithm::ED25519},
 };
 
 Asymmetric::Asymmetric(const api::Session& api) noexcept
@@ -327,7 +329,7 @@ auto Asymmetric::InstantiateSecp256k1Key(
         api_,
         api_.Crypto().Internal().EllipticProvider(Type::Secp256k1),
         blank,
-        api_.Factory().Data(publicKey),
+        api_.Factory().DataFromBytes(publicKey),
         role,
         version,
         reason);
@@ -389,7 +391,7 @@ auto Asymmetric::InstantiateSecp256k1Key(
 auto Asymmetric::NewHDKey(
     const UnallocatedCString& seedID,
     const Secret& seed,
-    const EcdsaCurve& curve,
+    const opentxs::crypto::EcdsaCurve& curve,
     const opentxs::crypto::Bip32::Path& path,
     const PasswordPrompt& reason) const
     -> std::unique_ptr<opentxs::crypto::key::HD>
@@ -407,7 +409,7 @@ auto Asymmetric::NewHDKey(
 auto Asymmetric::NewHDKey(
     const UnallocatedCString& seedID,
     const Secret& seed,
-    const EcdsaCurve& curve,
+    const opentxs::crypto::EcdsaCurve& curve,
     const opentxs::crypto::Bip32::Path& path,
     const opentxs::crypto::key::asymmetric::Role role,
     const PasswordPrompt& reason) const
@@ -426,7 +428,7 @@ auto Asymmetric::NewHDKey(
 auto Asymmetric::NewHDKey(
     const UnallocatedCString& seedID,
     const Secret& seed,
-    const EcdsaCurve& curve,
+    const opentxs::crypto::EcdsaCurve& curve,
     const opentxs::crypto::Bip32::Path& path,
     const VersionNumber version,
     const PasswordPrompt& reason) const
@@ -445,7 +447,7 @@ auto Asymmetric::NewHDKey(
 auto Asymmetric::NewHDKey(
     const UnallocatedCString& seedID,
     const Secret& seed,
-    const EcdsaCurve& curve,
+    const opentxs::crypto::EcdsaCurve& curve,
     const opentxs::crypto::Bip32::Path& path,
     const opentxs::crypto::key::asymmetric::Role role,
     const VersionNumber version,
@@ -596,8 +598,8 @@ auto Asymmetric::NewSecp256k1Key(
     const PasswordPrompt& reason) const
     -> std::unique_ptr<opentxs::crypto::key::Secp256k1>
 {
-    const auto serialized =
-        api_.Crypto().BIP32().DeriveKey(EcdsaCurve::secp256k1, seed, derive);
+    const auto serialized = api_.Crypto().BIP32().DeriveKey(
+        opentxs::crypto::EcdsaCurve::secp256k1, seed, derive);
     const auto& [privkey, ccode, pubkey, path, parent] = serialized;
     using Type = opentxs::crypto::key::asymmetric::Algorithm;
 

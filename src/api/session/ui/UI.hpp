@@ -11,7 +11,6 @@
 #include <memory>
 
 #include "internal/api/session/UI.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -36,6 +35,7 @@
 #include "opentxs/interface/ui/Profile.hpp"
 #include "opentxs/interface/ui/SeedTree.hpp"
 #include "opentxs/interface/ui/UnitList.hpp"
+#include "opentxs/util/Types.hpp"
 
 class QAbstractItemModel;
 

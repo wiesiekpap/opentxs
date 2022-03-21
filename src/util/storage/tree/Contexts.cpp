@@ -15,7 +15,6 @@
 #include "internal/serialization/protobuf/verify/Context.hpp"
 #include "internal/serialization/protobuf/verify/StorageNymList.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"

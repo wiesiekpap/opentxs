@@ -11,9 +11,11 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <tuple>
 
 #include "opentxs/core/Types.hpp"
 #include "opentxs/identity/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::identity::wot::claim
 {
@@ -24,6 +26,23 @@ enum class SectionType : std::uint8_t;
 
 namespace opentxs
 {
+/** C++11 representation of a claim. This version is more useful than the
+ *  protobuf version, since it contains the claim ID.
+ */
+using Claim = std::tuple<
+    UnallocatedCString,              // claim identifier
+    std::uint32_t,                   // section
+    std::uint32_t,                   // type
+    UnallocatedCString,              // value
+    std::int64_t,                    // start time
+    std::int64_t,                    // end time
+    UnallocatedSet<std::uint32_t>>;  // attributes
+using ClaimTuple = Claim;
+/** C++11 representation of all contact data associated with a nym, aggregating
+ *  each the nym's contact credentials in the event it has more than one.
+ */
+using ClaimSet = UnallocatedSet<Claim>;
+
 OPENTXS_EXPORT auto ClaimToNym(
     const identity::wot::claim::ClaimType in) noexcept -> identity::Type;
 OPENTXS_EXPORT auto ClaimToUnit(

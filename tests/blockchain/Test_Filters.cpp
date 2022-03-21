@@ -16,7 +16,6 @@
 #include "1_Internal.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Util.hpp"
@@ -66,18 +65,15 @@ public:
     auto TestGCSBlock(const ot::blockchain::block::Height height) const -> bool
     {
         const auto& vector = gcs_.at(0);
-        const auto block =
-            api_.Factory().Data(vector.block_hash_, ot::StringStyle::Hex);
+        const auto block = api_.Factory().DataFromHex(vector.block_hash_);
         auto elements = ot::UnallocatedVector<ot::OTData>{};
 
         for (const auto& element : vector.previous_) {
-            elements.emplace_back(
-                api_.Factory().Data(element, ot::StringStyle::Hex));
+            elements.emplace_back(api_.Factory().DataFromHex(element));
         }
 
         for (const auto& element : vector.outputs_) {
-            elements.emplace_back(
-                api_.Factory().Data(element, ot::StringStyle::Hex));
+            elements.emplace_back(api_.Factory().DataFromHex(element));
         }
 
         const auto pGCS = ot::factory::GCS(
@@ -417,13 +413,11 @@ TEST_F(Test_Filters, bip158_case_49291) { EXPECT_TRUE(TestGCSBlock(49291)); }
 // https://live.blockcypher.com/btc-testnet/tx/507449133487c4c288a007b12ae6489204cf7d2316028433e289ef089a66fb8a/
 TEST_F(Test_Filters, bip158_case_1665877)
 {
-    const auto block = api_.Factory().Data(
-        "0486d358f515ee448ee77f8dadb24e3c49e17e8208bbbcff2241c89900000000",
-        ot::StringStyle::Hex);
-    const auto script = api_.Factory().Data(
-        "76a914abcfcc53dcae0b49d45a4830a667dfb3aadf185b88ac",
-        ot::StringStyle::Hex);
-    const auto encodedGCS = api_.Factory().Data(
+    const auto block = api_.Factory().DataFromHex(
+        "0486d358f515ee448ee77f8dadb24e3c49e17e8208bbbcff2241c89900000000");
+    const auto script = api_.Factory().DataFromHex(
+        "76a914abcfcc53dcae0b49d45a4830a667dfb3aadf185b88ac");
+    const auto encodedGCS = api_.Factory().DataFromHex(
         "8f1ee69134da43687f3cc23fcba34efcce9b25c6ba1b296a1c456a96d2d0f362800795"
         "dd0746a5264514ad1d50e190590c69a312ff1f3d66426292978c5f14751c1691705f17"
         "a260a23a92dedce351ce983ef4c09a17591e212c7cf34836da468b23f462511311dd53"
@@ -435,8 +429,7 @@ TEST_F(Test_Filters, bip158_case_1665877)
         "18f6a9870e3ca8ca238a450c7c6aaa7c80f7eac71dfc30a57e4dd7a7abd682bb41e32f"
         "c47db5c3fb445394143671552051462c148e0ada789356733fb38d2e76b90a40e8ffd7"
         "c0bc6bbd8159136b4d48fb4e1709c2dc175cc2172d27110d750648ff2a43d2b8133550"
-        "b263e994f9a0f4351e852968fba21f41a27628e900",
-        ot::StringStyle::Hex);
+        "b263e994f9a0f4351e852968fba21f41a27628e900");
 
     auto key = ot::blockchain::internal::BlockHashToFilterKey(block->Bytes());
     const auto pGcs = ot::factory::GCS(
@@ -453,29 +446,20 @@ TEST_F(Test_Filters, bip158_headers)
 {
     namespace bc = ot::blockchain::internal;
 
-    const auto filter_0 =
-        api_.Factory().Data("0x019dfca8", ot::StringStyle::Hex);
-    const auto filter_1 =
-        api_.Factory().Data("0x015d5000", ot::StringStyle::Hex);
-    const auto filter_2 =
-        api_.Factory().Data("0x0174a170", ot::StringStyle::Hex);
-    const auto filter_3 =
-        api_.Factory().Data("0x016cf7a0", ot::StringStyle::Hex);
-    const auto blank = api_.Factory().Data(
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-        ot::StringStyle::Hex);
-    const auto expected_0 = api_.Factory().Data(
-        "0x50b781aed7b7129012a6d20e2d040027937f3affaee573779908ebb779455821",
-        ot::StringStyle::Hex);
-    const auto expected_1 = api_.Factory().Data(
-        "0xe14fc288fdbf3c8d84f31bfc45892e44a0f152e82c0ddd1a5b749da513acbdd7",
-        ot::StringStyle::Hex);
-    const auto expected_2 = api_.Factory().Data(
-        "0xf06c381b7d46b1f8df603de51f25fda128dff8cbe8f204357e5e2bef11fd6a18",
-        ot::StringStyle::Hex);
-    const auto expected_3 = api_.Factory().Data(
-        "0x2a9d721212af044cec24f188631cff7b516fb1576a31d2b67c25b75adfaa638d",
-        ot::StringStyle::Hex);
+    const auto filter_0 = api_.Factory().DataFromHex("0x019dfca8");
+    const auto filter_1 = api_.Factory().DataFromHex("0x015d5000");
+    const auto filter_2 = api_.Factory().DataFromHex("0x0174a170");
+    const auto filter_3 = api_.Factory().DataFromHex("0x016cf7a0");
+    const auto blank = api_.Factory().DataFromHex(
+        "0x0000000000000000000000000000000000000000000000000000000000000000");
+    const auto expected_0 = api_.Factory().DataFromHex(
+        "0x50b781aed7b7129012a6d20e2d040027937f3affaee573779908ebb779455821");
+    const auto expected_1 = api_.Factory().DataFromHex(
+        "0xe14fc288fdbf3c8d84f31bfc45892e44a0f152e82c0ddd1a5b749da513acbdd7");
+    const auto expected_2 = api_.Factory().DataFromHex(
+        "0xf06c381b7d46b1f8df603de51f25fda128dff8cbe8f204357e5e2bef11fd6a18");
+    const auto expected_3 = api_.Factory().DataFromHex(
+        "0x2a9d721212af044cec24f188631cff7b516fb1576a31d2b67c25b75adfaa638d");
     auto previous = blank->Bytes();
     auto hash = bc::FilterToHash(api_, filter_0->Bytes());
     auto calculated_a = bc::FilterHashToHeader(api_, hash->Bytes(), previous);
@@ -515,9 +499,8 @@ TEST_F(Test_Filters, hash)
 
     const auto& block_0 = ot::blockchain::node::HeaderOracle::GenesisBlockHash(
         ot::blockchain::Type::Bitcoin_testnet3);
-    const auto preimage =
-        api_.Factory().Data("0x019dfca8", ot::StringStyle::Hex);
-    const auto filter_0 = api_.Factory().Data("0x9dfca8", ot::StringStyle::Hex);
+    const auto preimage = api_.Factory().DataFromHex("0x019dfca8");
+    const auto filter_0 = api_.Factory().DataFromHex("0x9dfca8");
     auto pGcs = ot::factory::GCS(
         api_,
         params_.first,

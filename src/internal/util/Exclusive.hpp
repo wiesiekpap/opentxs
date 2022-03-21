@@ -15,7 +15,7 @@
 #include <utility>
 
 #include "internal/otx/common/Account.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 
 namespace opentxs
 {

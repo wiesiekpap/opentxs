@@ -19,6 +19,7 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "internal/util/UniqueQueue.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Activity.hpp"
@@ -77,7 +78,7 @@ ActivitySummaryItem::ActivitySummaryItem(
     , key_(sortKey)
     , display_name_(std::get<1>(key_))
     , text_(text)
-    , type_(extract_custom<StorageBox>(custom, 1))
+    , type_(extract_custom<otx::client::StorageBox>(custom, 1))
     , time_(extract_custom<Time>(custom, 3))
     , newest_item_thread_(nullptr)
     , newest_item_()
@@ -107,8 +108,8 @@ auto ActivitySummaryItem::find_text(
     const auto& [itemID, box, accountID, thread] = locator;
 
     switch (box) {
-        case StorageBox::MAILINBOX:
-        case StorageBox::MAILOUTBOX: {
+        case otx::client::StorageBox::MAILINBOX:
+        case otx::client::StorageBox::MAILOUTBOX: {
             auto text = api_.Activity().MailText(
                 nym_id_, Identifier::Factory(itemID), box, reason);
             // TODO activity summary should subscribe for updates instead of
@@ -116,8 +117,8 @@ auto ActivitySummaryItem::find_text(
 
             return text.get();
         }
-        case StorageBox::INCOMINGCHEQUE:
-        case StorageBox::OUTGOINGCHEQUE: {
+        case otx::client::StorageBox::INCOMINGCHEQUE:
+        case otx::client::StorageBox::OUTGOINGCHEQUE: {
             auto text = api_.Activity().PaymentText(nym_id_, itemID, accountID);
 
             if (text) {
@@ -128,7 +129,7 @@ auto ActivitySummaryItem::find_text(
                     .Flush();
             }
         } break;
-        case StorageBox::BLOCKCHAIN: {
+        case otx::client::StorageBox::BLOCKCHAIN: {
             return api_.Crypto().Blockchain().ActivityDescription(
                 nym_id_, thread, itemID);
         }
@@ -175,11 +176,12 @@ auto ActivitySummaryItem::LoadItemText(
     const identifier::Nym& nym,
     const CustomData& custom) noexcept -> UnallocatedCString
 {
-    const auto& box = *static_cast<const StorageBox*>(custom.at(1));
+    const auto& box =
+        *static_cast<const otx::client::StorageBox*>(custom.at(1));
     const auto& thread = *static_cast<const OTIdentifier*>(custom.at(4));
     const auto& itemID = *static_cast<const UnallocatedCString*>(custom.at(0));
 
-    if (StorageBox::BLOCKCHAIN == box) {
+    if (otx::client::StorageBox::BLOCKCHAIN == box) {
         return api.Crypto().Blockchain().ActivityDescription(
             nym, thread, itemID);
     }
@@ -228,7 +230,7 @@ auto ActivitySummaryItem::Timestamp() const noexcept -> Time
     return time_;
 }
 
-auto ActivitySummaryItem::Type() const noexcept -> StorageBox
+auto ActivitySummaryItem::Type() const noexcept -> otx::client::StorageBox
 {
     sLock lock(shared_lock_);
 

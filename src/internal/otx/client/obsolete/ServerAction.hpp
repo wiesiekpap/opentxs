@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs
@@ -18,7 +18,7 @@ namespace client
 class ServerAction
 {
 public:
-    virtual auto LastSendResult() const -> SendResult = 0;
+    virtual auto LastSendResult() const -> otx::client::SendResult = 0;
     virtual auto Reply() const -> const std::shared_ptr<Message> = 0;
 
     virtual auto Run(const std::size_t totalRetries = 2)

@@ -16,7 +16,6 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/StorageUnits.hpp"
 #include "internal/serialization/protobuf/verify/UnitDefinition.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/StorageItemHash.pb.h"

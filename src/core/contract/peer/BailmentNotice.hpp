@@ -6,7 +6,6 @@
 #pragma once
 
 #include "core/contract/peer/PeerRequest.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/contract/peer/BailmentNotice.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"

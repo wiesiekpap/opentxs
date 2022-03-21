@@ -7,9 +7,10 @@
 
 #include <mutex>
 
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 

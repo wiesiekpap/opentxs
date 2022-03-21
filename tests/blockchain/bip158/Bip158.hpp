@@ -38,9 +38,8 @@ auto parse_hex(
     const ot::UnallocatedCString& hex,
     const bool reverse = false) noexcept -> ot::OTData
 {
-    return api.Factory().Data(
-        reverse ? some_moron_wrote_the_bytes_backwards(hex) : hex,
-        ot::StringStyle::Hex);
+    return api.Factory().DataFromHex(
+        reverse ? some_moron_wrote_the_bytes_backwards(hex) : hex);
 }
 
 struct Bip158Vector {

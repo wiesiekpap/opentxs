@@ -10,8 +10,8 @@
 #include <chrono>
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/network/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -56,7 +56,7 @@ public:
     virtual auto SocksProxy() const -> UnallocatedCString = 0;
     virtual auto SocksProxy(UnallocatedCString& proxy) const -> bool = 0;
     virtual auto Status(const UnallocatedCString& server) const
-        -> ConnectionState = 0;
+        -> opentxs::network::ConnectionState = 0;
 
     OPENTXS_NO_EXPORT virtual ~ZMQ() = default;
 

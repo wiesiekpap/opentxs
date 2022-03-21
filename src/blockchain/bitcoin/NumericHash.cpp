@@ -17,7 +17,6 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -121,8 +120,7 @@ namespace opentxs::blockchain
 auto HashToNumber(const api::Session& api, ReadView hex) noexcept
     -> UnallocatedCString
 {
-    return HashToNumber(
-        api.Factory().Data(UnallocatedCString{hex}, StringStyle::Hex));
+    return HashToNumber(api.Factory().DataFromHex(hex));
 }
 
 auto HashToNumber(const Hash& hash) noexcept -> UnallocatedCString
@@ -146,8 +144,7 @@ auto NumericHash::MaxTarget(const blockchain::Type chain) noexcept
 
 auto NumberToHash(const api::Session& api, ReadView hex) noexcept -> pHash
 {
-    const auto hash =
-        api.Factory().Data(UnallocatedCString{hex}, StringStyle::Hex);
+    const auto hash = api.Factory().DataFromHex(hex);
     auto out = api.Factory().Data();
 
     for (auto i{hash->size()}; i > 0u; --i) {

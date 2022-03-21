@@ -38,7 +38,6 @@
 
 #include "Basic.hpp"
 #include "integration/Helpers.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"

@@ -14,7 +14,7 @@
 
 #include "api/network/asio/Acceptor.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"

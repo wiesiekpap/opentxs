@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"

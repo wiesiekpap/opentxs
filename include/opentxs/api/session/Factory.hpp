@@ -53,6 +53,7 @@
 #include "opentxs/otx/blind/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -333,13 +334,12 @@ public:
         -> OTData = 0;
     virtual auto Data(const std::uint8_t input) const -> OTData = 0;
     virtual auto Data(const std::uint32_t input) const -> OTData = 0;
-    virtual auto Data(const UnallocatedCString& input, const StringStyle mode)
-        const -> OTData = 0;
     virtual auto Data(const UnallocatedVector<unsigned char>& input) const
         -> OTData = 0;
     virtual auto Data(const UnallocatedVector<std::byte>& input) const
         -> OTData = 0;
-    virtual auto Data(const ReadView input) const -> OTData = 0;
+    virtual auto DataFromBytes(const ReadView input) const -> OTData = 0;
+    virtual auto DataFromHex(const ReadView input) const -> OTData = 0;
     virtual auto Envelope() const noexcept -> OTEnvelope = 0;
     virtual auto Envelope(const opentxs::Armored& ciphertext) const
         noexcept(false) -> OTEnvelope = 0;
@@ -372,7 +372,7 @@ public:
         const Bip32Index nym,
         const Bip32Index credset,
         const Bip32Index credindex,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const opentxs::crypto::key::asymmetric::Role role,
         const opentxs::PasswordPrompt& reason) const -> OTKeypair = 0;
     virtual auto Mint() const noexcept -> otx::blind::Mint = 0;

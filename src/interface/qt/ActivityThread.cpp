@@ -16,10 +16,10 @@
 #include "interface/qt/DraftValidator.hpp"
 #include "interface/ui/activitythread/ActivityThreadItem.hpp"
 #include "internal/interface/ui/UI.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -147,7 +147,7 @@ auto ActivityThreadQt::pay(
         amount.toStdString(),
         Identifier::Factory(sourceAccount.toStdString()),
         memo.toStdString(),
-        PaymentType::Cheque);
+        otx::client::PaymentType::Cheque);
 }
 
 auto ActivityThreadQt::paymentCode(const int currency) const noexcept -> QString

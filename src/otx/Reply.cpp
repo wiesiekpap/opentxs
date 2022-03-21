@@ -13,6 +13,7 @@
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/otx/OTX.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/ServerReply.hpp"
@@ -284,7 +285,7 @@ auto Reply::update_signature(const Lock& lock, const PasswordPrompt& reason)
     signatures_.clear();
     auto serialized = signature_version(lock);
     auto& signature = *serialized.mutable_signature();
-    success = nym_->Sign(
+    success = nym_->Internal().Sign(
         serialized, crypto::SignatureRole::ServerReply, signature, reason);
 
     if (success) {
@@ -346,6 +347,6 @@ auto Reply::verify_signature(
     auto& sigProto = *serialized.mutable_signature();
     sigProto.CopyFrom(signature);
 
-    return nym_->Verify(serialized, sigProto);
+    return nym_->Internal().Verify(serialized, sigProto);
 }
 }  // namespace opentxs::otx::implementation

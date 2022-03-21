@@ -11,7 +11,6 @@
 
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"

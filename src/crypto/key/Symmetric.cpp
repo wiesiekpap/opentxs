@@ -15,6 +15,7 @@
 #include <string_view>
 #include <utility>
 
+#include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/crypto/key/Factory.hpp"
@@ -23,6 +24,7 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/SymmetricKey.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
@@ -35,6 +37,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Types.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
 #include "util/ScopeGuard.hpp"
 

@@ -12,9 +12,9 @@
 #include <mutex>
 
 #include "internal/util/Flag.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/network/OpenDHT.hpp"
+#include "opentxs/network/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

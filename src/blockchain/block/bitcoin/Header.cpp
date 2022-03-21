@@ -25,7 +25,6 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -177,9 +176,9 @@ auto BitcoinBlockHeader(
             std::move(hash),
             ReturnType::calculate_pow(api, chain, raw),
             serialized.version_.value(),
-            api.Factory().Data(ReadView{
+            api.Factory().DataFromBytes(ReadView{
                 serialized.previous_.data(), serialized.previous_.size()}),
-            api.Factory().Data(
+            api.Factory().DataFromBytes(
                 ReadView{serialized.merkle_.data(), serialized.merkle_.size()}),
             Clock::from_time_t(std::time_t(serialized.time_.value())),
             serialized.nbits_.value(),
@@ -340,9 +339,7 @@ Header::Header(
           static_cast<blockchain::Type>(serialized.type()),
           calculate_hash(api, serialized),
           calculate_pow(api, serialized),
-          api.Factory().Data(
-              serialized.bitcoin().previous_header(),
-              StringStyle::Raw),
+          api.Factory().DataFromBytes(serialized.bitcoin().previous_header()),
           serialized.local().height(),
           static_cast<Status>(serialized.local().status()),
           static_cast<Status>(serialized.local().inherit_status()),
@@ -350,9 +347,7 @@ Header::Header(
           OTWork{factory::Work(serialized.local().inherit_work())},
           serialized.bitcoin().version(),
           serialized.bitcoin().block_version(),
-          api.Factory().Data(
-              serialized.bitcoin().merkle_hash(),
-              StringStyle::Raw),
+          api.Factory().DataFromBytes(serialized.bitcoin().merkle_hash()),
           Clock::from_time_t(serialized.bitcoin().timestamp()),
           serialized.bitcoin().nbits(),
           serialized.bitcoin().nonce(),

@@ -17,7 +17,7 @@
 
 #include "internal/blockchain/Params.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -65,12 +65,21 @@ const CommandMap command_map_{
 };
 const CommandReverseMap command_reverse_map_{reverse_map(command_map_)};
 
-const OTData AddressVersion::cjdns_prefix_{
-    Data::Factory("0xfc", Data::Mode::Hex)};
-const OTData AddressVersion::ipv4_prefix_{
-    Data::Factory("0x00000000000000000000ffff", Data::Mode::Hex)};
-const OTData AddressVersion::onion_prefix_{
-    Data::Factory("0xfd87d87eeb43", Data::Mode::Hex)};
+const OTData AddressVersion::cjdns_prefix_{[]() {
+    auto out = Data::Factory();
+    out->DecodeHex("0xfc");
+    return out;
+}()};
+const OTData AddressVersion::ipv4_prefix_{[]() {
+    auto out = Data::Factory();
+    out->DecodeHex("0x00000000000000000000ffff");
+    return out;
+}()};
+const OTData AddressVersion::onion_prefix_{[]() {
+    auto out = Data::Factory();
+    out->DecodeHex("0xfd87d87eeb43");
+    return out;
+}()};
 
 AddressVersion::AddressVersion(
     const UnallocatedSet<bitcoin::Service>& services,

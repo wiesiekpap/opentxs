@@ -201,7 +201,7 @@ auto Process::Imp::process_mempool(Message&& in) noexcept -> void
 
     if (parent_.chain_ != chain) { return; }
 
-    const auto txid = parent_.api_.Factory().Data(body.at(2).Bytes());
+    const auto txid = parent_.api_.Factory().Data(body.at(2));
 
     // TODO guarantee that already-confirmed transactions can never be processed
     // as mempool transactions even if they are erroneously received from peers

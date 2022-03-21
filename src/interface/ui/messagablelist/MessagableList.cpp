@@ -14,7 +14,6 @@
 #include "interface/ui/base/List.hpp"
 #include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -132,20 +132,20 @@ auto MessagableList::process_contact(
     }
 
     switch (Widget::api_.OTX().CanMessage(primary_id_, id, false)) {
-        case Messagability::READY:
-        case Messagability::MISSING_RECIPIENT:
-        case Messagability::UNREGISTERED: {
+        case otx::client::Messagability::READY:
+        case otx::client::Messagability::MISSING_RECIPIENT:
+        case otx::client::Messagability::UNREGISTERED: {
             LogDetail()(OT_PRETTY_CLASS())("Messagable contact ")(id)(" (")(
                 key.second)(")")
                 .Flush();
             auto custom = CustomData{};
             add_item(id, key, custom);
         } break;
-        case Messagability::MISSING_SENDER:
-        case Messagability::INVALID_SENDER:
-        case Messagability::NO_SERVER_CLAIM:
-        case Messagability::CONTACT_LACKS_NYM:
-        case Messagability::MISSING_CONTACT:
+        case otx::client::Messagability::MISSING_SENDER:
+        case otx::client::Messagability::INVALID_SENDER:
+        case otx::client::Messagability::NO_SERVER_CLAIM:
+        case otx::client::Messagability::CONTACT_LACKS_NYM:
+        case otx::client::Messagability::MISSING_CONTACT:
         default: {
             LogDetail()(OT_PRETTY_CLASS())("Skipping non-messagable contact ")(
                 id)(" (")(key.second)(")")

@@ -13,7 +13,7 @@
 
 #include "internal/network/zeromq/zap/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/network/zeromq/zap/Reply.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
 #include "opentxs/network/zeromq/zap/ZAP.hpp"

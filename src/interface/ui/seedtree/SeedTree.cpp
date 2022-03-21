@@ -21,6 +21,7 @@
 
 #include "interface/ui/base/List.hpp"
 #include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
+#include "internal/identity/Nym.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -286,7 +287,7 @@ auto SeedTree::load_nym(OTNymID&& nymID, ChildMap& out) const noexcept -> void
 
         const auto path = [&] {
             auto out = proto::HDPath{};
-            nym->Path(out);
+            nym->Internal().Path(out);
 
             return out;
         }();

@@ -13,6 +13,7 @@
 #include "Proto.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/otx/OTX.hpp"
 #include "internal/otx/Types.hpp"
 #include "internal/otx/common/Ledger.hpp"
@@ -673,7 +674,7 @@ auto Base::update_signature(const Lock& lock, const PasswordPrompt& reason)
     auto success{false};
     auto serialized = SigVersion(lock);
     auto& signature = *serialized.mutable_signature();
-    success = nym_->Sign(
+    success = nym_->Internal().Sign(
         serialized, crypto::SignatureRole::Context, signature, reason);
 
     if (success) {
@@ -745,7 +746,7 @@ auto Base::verify_signature(const Lock& lock, const proto::Signature& signature)
     auto& sigProto = *serialized.mutable_signature();
     sigProto.CopyFrom(signature);
 
-    return nym_->Verify(serialized, sigProto);
+    return nym_->Internal().Verify(serialized, sigProto);
 }
 
 auto Base::VerifyAcknowledgedNumber(const RequestNumber& req) const -> bool

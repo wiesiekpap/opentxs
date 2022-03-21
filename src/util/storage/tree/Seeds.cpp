@@ -17,7 +17,7 @@
 #include "internal/serialization/protobuf/verify/Seed.hpp"
 #include "internal/serialization/protobuf/verify/StorageSeeds.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/Seed.pb.h"

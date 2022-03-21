@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <memory>
 
-#include "opentxs/Types.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -52,8 +52,8 @@ public:
 
     virtual operator bool() const noexcept = 0;
 
-    virtual auto CheckCapability(const NymCapability& capability) const noexcept
-        -> bool = 0;
+    virtual auto CheckCapability(
+        const identity::NymCapability& capability) const noexcept -> bool = 0;
     /// throws std::runtime_error if private key is missing
     virtual auto GetPrivateKey() const noexcept(false) -> const Asymmetric& = 0;
     /// throws std::runtime_error if public key is missing

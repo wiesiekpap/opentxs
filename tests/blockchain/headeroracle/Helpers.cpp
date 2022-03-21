@@ -2704,14 +2704,14 @@ auto Test_HeaderOracle_base::make_position(
     const bb::Height height,
     const std::string_view hash) -> bb::Position
 {
-    return bb::Position{height, api_.Factory().Data(hash)};
+    return bb::Position{height, api_.Factory().DataFromBytes(hash)};
 }
 
 auto Test_HeaderOracle_base::make_test_block(
     const ot::UnallocatedCString& hash,
     const bb::Hash& parent) -> bool
 {
-    const auto child = ot::Data::Factory(hash, ot::Data::Mode::Raw);
+    const auto child = ot::Data::Factory(hash.data(), hash.size());
     auto pHeader = api_.Factory().BlockHeaderForUnitTests(child, parent, -1);
 
     if (false == bool(pHeader)) { return false; }

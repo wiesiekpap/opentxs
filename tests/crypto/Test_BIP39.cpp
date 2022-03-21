@@ -501,7 +501,7 @@ TEST_F(Test_BIP39, pkt_seed_import)
 
         const auto& key = *pKey;
         const auto secret = [&] {
-            auto out = api_.Factory().Data(key.PrivateKey(reason_));
+            auto out = api_.Factory().DataFromBytes(key.PrivateKey(reason_));
 
             return out;
         }();

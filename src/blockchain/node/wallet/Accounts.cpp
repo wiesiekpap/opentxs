@@ -25,7 +25,7 @@
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -187,8 +187,7 @@ auto Accounts::Imp::process_block_header(Message&& in) noexcept -> void
     if (chain_ != chain) { return; }
 
     const auto position = block::Position{
-        body.at(3).as<block::Height>(),
-        api_.Factory().Data(body.at(2).Bytes())};
+        body.at(3).as<block::Height>(), api_.Factory().Data(body.at(2))};
     db_.AdvanceTo(position);
 }
 
@@ -243,11 +242,9 @@ auto Accounts::Imp::process_reorg(Message&& in) noexcept -> void
 
     process_reorg(
         std::make_pair(
-            body.at(3).as<block::Height>(),
-            api_.Factory().Data(body.at(2).Bytes())),
+            body.at(3).as<block::Height>(), api_.Factory().Data(body.at(2))),
         std::make_pair(
-            body.at(5).as<block::Height>(),
-            api_.Factory().Data(body.at(4).Bytes())));
+            body.at(5).as<block::Height>(), api_.Factory().Data(body.at(4))));
 }
 
 auto Accounts::Imp::process_reorg(

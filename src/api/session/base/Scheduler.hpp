@@ -13,7 +13,6 @@
 #include <tuple>
 
 #include "internal/util/Lockable.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Periodic.hpp"
 #include "opentxs/util/Container.hpp"

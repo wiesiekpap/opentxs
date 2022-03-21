@@ -11,7 +11,6 @@
 
 #include <string_view>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

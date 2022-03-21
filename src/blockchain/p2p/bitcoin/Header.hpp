@@ -12,7 +12,6 @@
 #include <tuple>
 
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Factory.hpp"

@@ -15,7 +15,7 @@
 #include "internal/api/session/Client.hpp"
 #include "internal/otx/client/Pair.hpp"
 #include "internal/otx/client/ServerAction.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/ZMQ.hpp"

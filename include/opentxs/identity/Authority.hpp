@@ -28,17 +28,12 @@ namespace credential
 {
 class Key;
 }  // namespace credential
-}  // namespace identity
 
-namespace proto
+namespace internal
 {
 class Authority;
-class ContactData;
-class HDPath;
-class Signature;
-class Verification;
-class VerificationSet;
-}  // namespace proto
+}  // namespace internal
+}  // namespace identity
 
 class Secret;
 // }  // namespace v1
@@ -51,12 +46,9 @@ class OPENTXS_EXPORT Authority
 {
 public:
     using AuthorityKeys = Nym::AuthorityKeys;
-    using Serialized = proto::Authority;
 
     virtual auto ContactCredentialVersion() const -> VersionNumber = 0;
     virtual auto EncryptionTargets() const noexcept -> AuthorityKeys = 0;
-    virtual auto GetContactData(proto::ContactData& contactData) const
-        -> bool = 0;
     virtual auto GetMasterCredID() const -> OTIdentifier = 0;
     virtual auto GetPublicAuthKey(
         crypto::key::asymmetric::Algorithm keytype,
@@ -100,25 +92,12 @@ public:
         -> const crypto::key::Keypair& = 0;
     virtual auto GetTagCredential(crypto::key::asymmetric::Algorithm keytype)
         const noexcept(false) -> const credential::Key& = 0;
-    virtual auto GetVerificationSet(
-        proto::VerificationSet& verificationSet) const -> bool = 0;
     virtual auto hasCapability(const NymCapability& capability) const
         -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Authority& = 0;
     virtual auto Params(const crypto::key::asymmetric::Algorithm type)
         const noexcept -> ReadView = 0;
-    virtual auto Path(proto::HDPath& output) const -> bool = 0;
-    OPENTXS_NO_EXPORT virtual auto Serialize(
-        Serialized& serialized,
-        const CredentialIndexModeFlag mode) const -> bool = 0;
-    virtual auto Sign(
-        const GetPreimage input,
-        const crypto::SignatureRole role,
-        proto::Signature& signature,
-        const PasswordPrompt& reason,
-        opentxs::crypto::key::asymmetric::Role key =
-            opentxs::crypto::key::asymmetric::Role::Sign,
-        const crypto::HashType hash = crypto::HashType::Error) const
-        -> bool = 0;
     virtual auto Source() const -> const identity::Source& = 0;
     virtual auto TransportKey(
         Data& publicKey,
@@ -131,23 +110,13 @@ public:
         const crypto::key::Symmetric& key,
         PasswordPrompt& reason) const noexcept -> bool = 0;
     virtual auto VerificationCredentialVersion() const -> VersionNumber = 0;
-    virtual auto Verify(
-        const Data& plaintext,
-        const proto::Signature& sig,
-        const opentxs::crypto::key::asymmetric::Role key =
-            opentxs::crypto::key::asymmetric::Role::Sign) const -> bool = 0;
-    virtual auto Verify(const proto::Verification& item) const -> bool = 0;
     virtual auto VerifyInternally() const -> bool = 0;
 
     virtual auto AddChildKeyCredential(
         const crypto::Parameters& nymParameters,
         const PasswordPrompt& reason) -> UnallocatedCString = 0;
-    virtual auto AddVerificationCredential(
-        const proto::VerificationSet& verificationSet,
-        const PasswordPrompt& reason) -> bool = 0;
-    virtual auto AddContactCredential(
-        const proto::ContactData& contactData,
-        const PasswordPrompt& reason) -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept
+        -> internal::Authority& = 0;
     virtual void RevokeContactCredentials(
         UnallocatedList<UnallocatedCString>& contactCredentialIDs) = 0;
     virtual void RevokeVerificationCredentials(

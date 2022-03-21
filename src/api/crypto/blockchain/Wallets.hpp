@@ -12,7 +12,7 @@
 #include <optional>
 
 #include "blockchain/crypto/AccountIndex.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"

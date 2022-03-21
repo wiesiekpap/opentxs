@@ -24,7 +24,8 @@ class Keypair final : virtual public key::Keypair
 public:
     operator bool() const noexcept final { return false; }
 
-    auto CheckCapability(const NymCapability&) const noexcept -> bool final
+    auto CheckCapability(const identity::NymCapability&) const noexcept
+        -> bool final
     {
         return {};
     }
@@ -106,7 +107,8 @@ public:
     {
         return nullptr;
     }
-    auto hasCapability(const NymCapability&) const noexcept -> bool final
+    auto hasCapability(const identity::NymCapability&) const noexcept
+        -> bool final
     {
         return false;
     }

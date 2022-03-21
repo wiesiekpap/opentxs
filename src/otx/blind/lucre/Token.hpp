@@ -11,7 +11,6 @@
 
 #include "Proto.hpp"
 #include "Proto.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/otx/blind/Token.hpp"

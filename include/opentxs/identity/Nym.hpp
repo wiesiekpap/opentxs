@@ -11,7 +11,6 @@
 #include <memory>
 #include <tuple>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -21,16 +20,9 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace google
-{
-namespace protobuf
-{
-class MessageLite;
-}  // namespace protobuf
-}  // namespace google
-
 namespace opentxs  // NOLINT
 {
 // inline namespace v1
@@ -53,6 +45,11 @@ class UnitDefinition;
 
 namespace identity
 {
+namespace internal
+{
+class Nym;
+}  // namespace internal
+
 namespace wot
 {
 namespace claim
@@ -88,7 +85,6 @@ public:
     using KeyTypes = UnallocatedVector<crypto::key::asymmetric::Algorithm>;
     using AuthorityKeys = std::pair<OTIdentifier, KeyTypes>;
     using NymKeys = std::pair<OTNymID, UnallocatedVector<AuthorityKeys>>;
-    using Serialized = proto::Nym;
     using key_type = Identifier;
     using value_type = Authority;
     using const_iterator =
@@ -120,8 +116,9 @@ public:
         -> UnallocatedCString = 0;
     virtual auto EncryptionTargets() const noexcept -> NymKeys = 0;
     virtual auto end() const noexcept -> const_iterator = 0;
-    virtual void GetIdentifier(identifier::Nym& theIdentifier) const = 0;
-    virtual void GetIdentifier(String& theIdentifier) const = 0;
+    virtual auto GetIdentifier(identifier::Nym& theIdentifier) const
+        -> void = 0;
+    virtual auto GetIdentifier(String& theIdentifier) const -> void = 0;
     virtual auto GetPrivateAuthKey(
         crypto::key::asymmetric::Algorithm keytype =
             crypto::key::asymmetric::Algorithm::Null) const
@@ -160,31 +157,19 @@ public:
         -> bool = 0;
     virtual auto HasPath() const -> bool = 0;
     virtual auto ID() const -> const identifier::Nym& = 0;
-
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Nym& = 0;
     virtual auto Name() const -> UnallocatedCString = 0;
-
-    virtual auto Path(proto::HDPath& output) const -> bool = 0;
     virtual auto PathRoot() const -> const UnallocatedCString = 0;
     virtual auto PathChildSize() const -> int = 0;
     virtual auto PathChild(int index) const -> std::uint32_t = 0;
     virtual auto PaymentCode() const -> UnallocatedCString = 0;
     virtual auto PaymentCodePath(AllocateOutput destination) const -> bool = 0;
-    virtual auto PaymentCodePath(proto::HDPath& output) const -> bool = 0;
     virtual auto PhoneNumbers(bool active = true) const
         -> UnallocatedCString = 0;
     virtual auto Revision() const -> std::uint64_t = 0;
-
     virtual auto Serialize(AllocateOutput destination) const -> bool = 0;
-    OPENTXS_NO_EXPORT virtual auto Serialize(Serialized& serialized) const
-        -> bool = 0;
     virtual void SerializeNymIDSource(Tag& parent) const = 0;
-    OPENTXS_NO_EXPORT virtual auto Sign(
-        const google::protobuf::MessageLite& input,
-        const crypto::SignatureRole role,
-        proto::Signature& signature,
-        const PasswordPrompt& reason,
-        const crypto::HashType hash = crypto::HashType::Error) const
-        -> bool = 0;
     virtual auto size() const noexcept -> std::size_t = 0;
     virtual auto SocialMediaProfiles(
         const wot::claim::ClaimType type,
@@ -194,16 +179,12 @@ public:
     virtual auto Source() const -> const identity::Source& = 0;
     virtual auto TransportKey(Data& pubkey, const PasswordPrompt& reason) const
         -> OTSecret = 0;
-
     virtual auto Unlock(
         const crypto::key::Asymmetric& dhKey,
         const std::uint32_t tag,
         const crypto::key::asymmetric::Algorithm type,
         const crypto::key::Symmetric& key,
         PasswordPrompt& reason) const noexcept -> bool = 0;
-    OPENTXS_NO_EXPORT virtual auto Verify(
-        const google::protobuf::MessageLite& input,
-        proto::Signature& signature) const -> bool = 0;
     virtual auto VerifyPseudonym() const -> bool = 0;
 
     virtual auto AddChildKeyCredential(
@@ -246,14 +227,12 @@ public:
         const bool active) -> bool = 0;
     virtual auto DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
         -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Nym& = 0;
     virtual auto SetCommonName(
         const UnallocatedCString& name,
         const PasswordPrompt& reason) -> bool = 0;
     virtual auto SetContactData(
         const ReadView protobuf,
-        const PasswordPrompt& reason) -> bool = 0;
-    OPENTXS_NO_EXPORT virtual auto SetContactData(
-        const proto::ContactData& data,
         const PasswordPrompt& reason) -> bool = 0;
     virtual auto SetScope(
         const wot::claim::ClaimType type,

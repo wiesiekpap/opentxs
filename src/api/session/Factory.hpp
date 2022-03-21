@@ -23,7 +23,6 @@
 #include "internal/otx/common/Item.hpp"
 #include "internal/otx/common/Ledger.hpp"
 #include "internal/otx/common/OTTransaction.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
@@ -472,12 +471,11 @@ public:
         -> OTData final;
     auto Data(const std::uint8_t input) const -> OTData final;
     auto Data(const std::uint32_t input) const -> OTData final;
-    auto Data(const UnallocatedCString& input, const StringStyle mode) const
-        -> OTData final;
     auto Data(const UnallocatedVector<unsigned char>& input) const
         -> OTData final;
     auto Data(const UnallocatedVector<std::byte>& input) const -> OTData final;
-    auto Data(ReadView input) const -> OTData final;
+    auto DataFromBytes(ReadView input) const -> OTData final;
+    auto DataFromHex(ReadView input) const -> OTData final;
     auto Envelope() const noexcept -> OTEnvelope final;
     auto Envelope(const opentxs::Armored& ciphertext) const noexcept(false)
         -> OTEnvelope final;
@@ -538,7 +536,7 @@ public:
         const Bip32Index nym,
         const Bip32Index credset,
         const Bip32Index credindex,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const opentxs::crypto::key::asymmetric::Role role,
         const opentxs::PasswordPrompt& reason) const -> OTKeypair final;
     auto Ledger(

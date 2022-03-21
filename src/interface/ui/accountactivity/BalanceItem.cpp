@@ -14,6 +14,7 @@
 #include "Proto.hpp"
 #include "internal/api/session/Types.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -158,35 +159,35 @@ auto BalanceItem::extract_contacts(
 }
 
 auto BalanceItem::extract_type(const proto::PaymentWorkflow& workflow) noexcept
-    -> StorageBox
+    -> otx::client::StorageBox
 {
     switch (translate(workflow.type())) {
         case otx::client::PaymentWorkflowType::OutgoingCheque: {
 
-            return StorageBox::OUTGOINGCHEQUE;
+            return otx::client::StorageBox::OUTGOINGCHEQUE;
         }
         case otx::client::PaymentWorkflowType::IncomingCheque: {
 
-            return StorageBox::INCOMINGCHEQUE;
+            return otx::client::StorageBox::INCOMINGCHEQUE;
         }
         case otx::client::PaymentWorkflowType::OutgoingTransfer: {
 
-            return StorageBox::OUTGOINGTRANSFER;
+            return otx::client::StorageBox::OUTGOINGTRANSFER;
         }
         case otx::client::PaymentWorkflowType::IncomingTransfer: {
 
-            return StorageBox::INCOMINGTRANSFER;
+            return otx::client::StorageBox::INCOMINGTRANSFER;
         }
         case otx::client::PaymentWorkflowType::InternalTransfer: {
 
-            return StorageBox::INTERNALTRANSFER;
+            return otx::client::StorageBox::INTERNALTRANSFER;
         }
         case otx::client::PaymentWorkflowType::Error:
         case otx::client::PaymentWorkflowType::OutgoingInvoice:
         case otx::client::PaymentWorkflowType::IncomingInvoice:
         default: {
 
-            return StorageBox::UNKNOWN;
+            return otx::client::StorageBox::UNKNOWN;
         }
     }
 }

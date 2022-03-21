@@ -26,7 +26,6 @@
 #include "internal/otx/blind/Mint.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/network/Network.hpp"

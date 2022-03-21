@@ -10,7 +10,6 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Periodic.hpp"
@@ -289,6 +288,7 @@
 #include "opentxs/interface/ui/Widget.hpp"
 #include "opentxs/network/OpenDHT.hpp"
 #include "opentxs/network/ServerConnection.hpp"
+#include "opentxs/network/Types.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
@@ -378,6 +378,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "opentxs/util/Types.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "opentxs/util/storage/Plugin.hpp"

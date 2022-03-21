@@ -19,9 +19,11 @@
 #include <string_view>
 #include <type_traits>
 
+#include "Proto.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/api/session/Factory.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -977,7 +979,7 @@ auto Contacts::update(const identity::Nym& nym) const
     {
         auto contact = mutable_contact(lock, contactID);
         auto serialized = proto::Nym{};
-        if (false == nym.Serialize(serialized)) {
+        if (false == nym.Internal().Serialize(serialized)) {
             LogError()(OT_PRETTY_CLASS())("Failed to serialize nym.").Flush();
             return {};
         }

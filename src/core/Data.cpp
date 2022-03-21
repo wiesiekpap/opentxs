@@ -153,19 +153,6 @@ auto Data::Factory(const std::uint64_t in) -> OTData
     return OTData(new implementation::Data(&input, sizeof(input)));
 }
 
-auto Data::Factory(const UnallocatedCString in, const Mode mode) -> OTData
-{
-    if (Mode::Hex == mode) {
-        auto output = OTData(new implementation::Data(in.data(), in.size()));
-
-        if (output->DecodeHex(in)) { return output; }
-
-        return OTData(new implementation::Data());
-    } else {
-        return OTData(new implementation::Data(in.data(), in.size()));
-    }
-}
-
 namespace implementation
 {
 Data::Data() noexcept
@@ -288,6 +275,18 @@ auto Data::asHex() const -> UnallocatedCString
     return out.str();
 }
 
+auto Data::asHex(alloc::Resource* alloc) const -> CString
+{
+    std::stringstream out{};  // TODO c++20 use allocator
+
+    for (const auto byte : data_) {
+        out << std::hex << std::setfill('0') << std::setw(2)
+            << static_cast<const int&>(byte);
+    }
+
+    return CString{alloc}.append(out.str());
+}
+
 auto Data::Assign(const void* data, const std::size_t size) noexcept -> bool
 {
     auto rhs = [&]() -> Vector {
@@ -339,7 +338,7 @@ auto Data::Concatenate(const void* data, const std::size_t size) noexcept
     return true;
 }
 
-auto Data::DecodeHex(const UnallocatedCString& hex) -> bool
+auto Data::DecodeHex(const std::string_view hex) -> bool
 {
     data_.clear();
 
@@ -351,9 +350,11 @@ auto Data::DecodeHex(const UnallocatedCString& hex) -> bool
     const auto stripped = (prefix == "0x" || prefix == "0X")
                               ? hex.substr(2, hex.size() - 2)
                               : hex;
+    using namespace std::literals;
+    // TODO c++20 use ranges to prevent unnecessary copy
     const auto padded = (0 == stripped.size() % 2)
-                            ? stripped
-                            : UnallocatedCString("0") + stripped;
+                            ? CString{stripped}
+                            : CString{"0"sv}.append(stripped);
 
     for (std::size_t i = 0; i < padded.length(); i += 2) {
         data_.emplace_back(static_cast<std::uint8_t>(
@@ -468,10 +469,12 @@ auto Data::spaceship(const opentxs::Data& rhs) const noexcept -> int
 
 auto Data::str() const -> UnallocatedCString
 {
-    if (data_.empty()) { return {}; }
+    return UnallocatedCString{Bytes()};
+}
 
-    return UnallocatedCString{
-        reinterpret_cast<const char*>(&data_[0]), data_.size()};
+auto Data::str(alloc::Resource* alloc) const -> CString
+{
+    return CString{Bytes(), alloc};
 }
 
 void Data::swap(opentxs::Data&& rhs)

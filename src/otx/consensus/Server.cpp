@@ -880,7 +880,7 @@ auto Server::attempt_delivery(
     const Lock& messageLock,
     const api::session::Client& client,
     Message& message,
-    const PasswordPrompt& reason) -> NetworkReplyMessage
+    const PasswordPrompt& reason) -> client::NetworkReplyMessage
 {
     request_sent_.Send([&] {
         auto out = network::zeromq::Message{};
@@ -899,7 +899,7 @@ auto Server::attempt_delivery(
         need_request_number(Message::Type(message.m_strCommand->Get()));
 
     switch (status) {
-        case SendResult::VALID_REPLY: {
+        case client::SendResult::VALID_REPLY: {
             OT_ASSERT(reply);
 
             reply_received_.Send([&] {
@@ -934,7 +934,7 @@ auto Server::attempt_delivery(
             if ((0 == number) || (false == sent)) {
                 LogError()(OT_PRETTY_CLASS())("Unable to resync request number")
                     .Flush();
-                status = SendResult::TIMEOUT;
+                status = client::SendResult::TIMEOUT;
                 reply.reset();
 
                 return output;
@@ -951,7 +951,7 @@ auto Server::attempt_delivery(
                 LogError()(OT_PRETTY_CLASS())("Unable to update ")(
                     message.m_strCommand)(" with new request number")
                     .Flush();
-                status = SendResult::TIMEOUT;
+                status = client::SendResult::TIMEOUT;
                 reply.reset();
                 ++failure_counter_;
 
@@ -969,7 +969,7 @@ auto Server::attempt_delivery(
                 static_cast<opentxs::network::ServerConnection::Push>(
                     enable_otx_push_.load()));
 
-            if (SendResult::VALID_REPLY == status) {
+            if (client::SendResult::VALID_REPLY == status) {
                 LogVerbose()(OT_PRETTY_CLASS())("Success delivering ")(
                     message.m_strCommand)(" (second attempt)")
                     .Flush();
@@ -978,19 +978,19 @@ auto Server::attempt_delivery(
                 return output;
             }
         } break;
-        case SendResult::TIMEOUT: {
+        case client::SendResult::TIMEOUT: {
             LogError()(OT_PRETTY_CLASS())("Timeout delivering ")(
                 message.m_strCommand)
                 .Flush();
             ++failure_counter_;
         } break;
-        case SendResult::INVALID_REPLY: {
+        case client::SendResult::INVALID_REPLY: {
             LogError()(OT_PRETTY_CLASS())("Invalid reply to ")(
                 message.m_strCommand)
                 .Flush();
             ++failure_counter_;
         } break;
-        case SendResult::Error: {
+        case client::SendResult::Error: {
             LogError()(OT_PRETTY_CLASS())("Malformed ")(message.m_strCommand)
                 .Flush();
             ++failure_counter_;
@@ -1725,7 +1725,7 @@ auto Server::harvest_unused(
     const auto& nymID = nym_->ID();
     auto available = issued_transaction_numbers_;
     const auto workflows = client.Storage().PaymentWorkflowList(nymID.str());
-    UnallocatedSet<otx::client::PaymentWorkflowState> keepStates{};
+    UnallocatedSet<client::PaymentWorkflowState> keepStates{};
 
     // Loop through workflows to determine which issued numbers should not be
     // harvested
@@ -1742,28 +1742,26 @@ auto Server::harvest_unused(
         }
 
         switch (translate(proto.type())) {
-            case otx::client::PaymentWorkflowType::OutgoingCheque:
-            case otx::client::PaymentWorkflowType::OutgoingInvoice: {
-                keepStates.insert(otx::client::PaymentWorkflowState::Unsent);
-                keepStates.insert(otx::client::PaymentWorkflowState::Conveyed);
+            case client::PaymentWorkflowType::OutgoingCheque:
+            case client::PaymentWorkflowType::OutgoingInvoice: {
+                keepStates.insert(client::PaymentWorkflowState::Unsent);
+                keepStates.insert(client::PaymentWorkflowState::Conveyed);
             } break;
-            case otx::client::PaymentWorkflowType::OutgoingTransfer: {
-                keepStates.insert(otx::client::PaymentWorkflowState::Initiated);
-                keepStates.insert(
-                    otx::client::PaymentWorkflowState::Acknowledged);
+            case client::PaymentWorkflowType::OutgoingTransfer: {
+                keepStates.insert(client::PaymentWorkflowState::Initiated);
+                keepStates.insert(client::PaymentWorkflowState::Acknowledged);
             } break;
-            case otx::client::PaymentWorkflowType::InternalTransfer: {
-                keepStates.insert(otx::client::PaymentWorkflowState::Initiated);
-                keepStates.insert(
-                    otx::client::PaymentWorkflowState::Acknowledged);
-                keepStates.insert(otx::client::PaymentWorkflowState::Conveyed);
+            case client::PaymentWorkflowType::InternalTransfer: {
+                keepStates.insert(client::PaymentWorkflowState::Initiated);
+                keepStates.insert(client::PaymentWorkflowState::Acknowledged);
+                keepStates.insert(client::PaymentWorkflowState::Conveyed);
             } break;
-            case otx::client::PaymentWorkflowType::IncomingTransfer:
-            case otx::client::PaymentWorkflowType::IncomingCheque:
-            case otx::client::PaymentWorkflowType::IncomingInvoice: {
+            case client::PaymentWorkflowType::IncomingTransfer:
+            case client::PaymentWorkflowType::IncomingCheque:
+            case client::PaymentWorkflowType::IncomingInvoice: {
                 continue;
             }
-            case otx::client::PaymentWorkflowType::Error:
+            case client::PaymentWorkflowType::Error:
             default: {
                 LogError()(OT_PRETTY_CLASS())(
                     "Warning: Unhandled workflow type.")
@@ -1779,8 +1777,8 @@ auto Server::harvest_unused(
         // number(s) must not be added to the available list (recovered).
 
         switch (translate(proto.type())) {
-            case otx::client::PaymentWorkflowType::OutgoingCheque:
-            case otx::client::PaymentWorkflowType::OutgoingInvoice: {
+            case client::PaymentWorkflowType::OutgoingCheque:
+            case client::PaymentWorkflowType::OutgoingInvoice: {
                 [[maybe_unused]] auto [state, cheque] =
                     api::session::Workflow::InstantiateCheque(api_, proto);
 
@@ -1794,8 +1792,8 @@ auto Server::harvest_unused(
                 const auto number = cheque->GetTransactionNum();
                 available.erase(number);
             } break;
-            case otx::client::PaymentWorkflowType::OutgoingTransfer:
-            case otx::client::PaymentWorkflowType::InternalTransfer: {
+            case client::PaymentWorkflowType::OutgoingTransfer:
+            case client::PaymentWorkflowType::InternalTransfer: {
                 [[maybe_unused]] auto [state, pTransfer] =
                     api::session::Workflow::InstantiateTransfer(api_, proto);
 
@@ -1810,10 +1808,10 @@ auto Server::harvest_unused(
                 const auto number = transfer.GetTransactionNum();
                 available.erase(number);
             } break;
-            case otx::client::PaymentWorkflowType::Error:
-            case otx::client::PaymentWorkflowType::IncomingTransfer:
-            case otx::client::PaymentWorkflowType::IncomingCheque:
-            case otx::client::PaymentWorkflowType::IncomingInvoice:
+            case client::PaymentWorkflowType::Error:
+            case client::PaymentWorkflowType::IncomingTransfer:
+            case client::PaymentWorkflowType::IncomingCheque:
+            case client::PaymentWorkflowType::IncomingInvoice:
             default: {
                 LogError()(OT_PRETTY_CLASS())(
                     "Warning: unhandled workflow type.")
@@ -2361,10 +2359,10 @@ void Server::need_box_items(
             contextLock, messageLock, client, *message, reason);
 
         switch (result.first) {
-            case SendResult::SHUTDOWN: {
+            case client::SendResult::SHUTDOWN: {
                 return;
             }
-            case SendResult::VALID_REPLY: {
+            case client::SendResult::VALID_REPLY: {
                 OT_ASSERT(result.second);
 
                 if (result.second->m_bSuccess) {
@@ -2380,8 +2378,8 @@ void Server::need_box_items(
 
                 [[fallthrough]];
             }
-            case SendResult::TIMEOUT:
-            case SendResult::INVALID_REPLY:
+            case client::SendResult::TIMEOUT:
+            case client::SendResult::INVALID_REPLY:
             default: {
                 LogError()(OT_PRETTY_CLASS())("Error downloading box item")
                     .Flush();
@@ -2417,10 +2415,10 @@ void Server::need_nymbox(
         attempt_delivery(contextLock, messageLock, client, *message, reason);
 
     switch (result.first) {
-        case SendResult::SHUTDOWN: {
+        case client::SendResult::SHUTDOWN: {
             return;
         }
-        case SendResult::VALID_REPLY: {
+        case client::SendResult::VALID_REPLY: {
             OT_ASSERT(result.second);
             auto& reply = *result.second;
 
@@ -2437,8 +2435,8 @@ void Server::need_nymbox(
 
             [[fallthrough]];
         }
-        case SendResult::TIMEOUT:
-        case SendResult::INVALID_REPLY:
+        case client::SendResult::TIMEOUT:
+        case client::SendResult::INVALID_REPLY:
         default: {
             LogError()(OT_PRETTY_CLASS())("Error downloading nymbox").Flush();
 
@@ -2558,10 +2556,10 @@ void Server::need_process_nymbox(
         attempt_delivery(contextLock, messageLock, client, *message, reason);
 
     switch (result.first) {
-        case SendResult::SHUTDOWN: {
+        case client::SendResult::SHUTDOWN: {
             return;
         }
-        case SendResult::VALID_REPLY: {
+        case client::SendResult::VALID_REPLY: {
             auto& pReply = result.second;
 
             OT_ASSERT(pReply);
@@ -2599,8 +2597,8 @@ void Server::need_process_nymbox(
 
             [[fallthrough]];
         }
-        case SendResult::TIMEOUT:
-        case SendResult::INVALID_REPLY:
+        case client::SendResult::TIMEOUT:
+        case client::SendResult::INVALID_REPLY:
         default: {
             // If processing a nymbox fails, then it must have changed since
             // the last time we downloaded it. Also if the reply was dropped
@@ -2677,10 +2675,10 @@ void Server::pending_send(
         Message::Type(pending_message_->m_strCommand->Get()));
 
     switch (result.first) {
-        case SendResult::SHUTDOWN: {
+        case client::SendResult::SHUTDOWN: {
             return;
         }
-        case SendResult::VALID_REPLY: {
+        case client::SendResult::VALID_REPLY: {
             OT_ASSERT(result.second);
 
             DeliveryResult output{};
@@ -2701,8 +2699,8 @@ void Server::pending_send(
                 proto::DELIVERTYSTATE_IDLE);
 
         } break;
-        case SendResult::TIMEOUT:
-        case SendResult::INVALID_REPLY: {
+        case client::SendResult::TIMEOUT:
+        case client::SendResult::INVALID_REPLY: {
             if (needRequestNumber) {
                 update_state(
                     contextLock,
@@ -2716,7 +2714,8 @@ void Server::pending_send(
     }
 }
 
-auto Server::PingNotary(const PasswordPrompt& reason) -> NetworkReplyMessage
+auto Server::PingNotary(const PasswordPrompt& reason)
+    -> client::NetworkReplyMessage
 {
     Lock lock(message_lock_);
 
@@ -4217,7 +4216,7 @@ void Server::process_incoming_message(
                 client.Activity().Internal().Mail(
                     recipientNymId,
                     *message,
-                    StorageBox::MAILINBOX,
+                    otx::client::StorageBox::MAILINBOX,
                     peerObject);
             } break;
             case (contract::peer::PeerObjectType::Cash): {
@@ -7192,7 +7191,7 @@ auto Server::SendMessage(
     const Message& message,
     const PasswordPrompt& reason,
     const UnallocatedCString& label,
-    const bool resync) -> NetworkReplyMessage
+    const bool resync) -> client::NetworkReplyMessage
 {
     Lock lock(lock_);
     pending_args_ = {label, resync};
@@ -7204,7 +7203,7 @@ auto Server::SendMessage(
     }());
     auto result = context.Connection().Send(context, message, reason);
 
-    if (SendResult::VALID_REPLY == result.first) {
+    if (client::SendResult::VALID_REPLY == result.first) {
         process_reply(lock, client, pending, *result.second, reason);
         reply_received_.Send([&] {
             auto out = network::zeromq::Message{};
@@ -7629,18 +7628,18 @@ auto Server::update_request_number(
     const auto& reply = response.second;
 
     switch (status) {
-        case SendResult::TIMEOUT: {
+        case client::SendResult::TIMEOUT: {
             LogError()(OT_PRETTY_CLASS())("Reply timeout.").Flush();
 
             return {};
         }
-        case SendResult::INVALID_REPLY: {
+        case client::SendResult::INVALID_REPLY: {
             sendStatus = true;
             LogError()(OT_PRETTY_CLASS())("Invalid reply.").Flush();
 
             return {};
         }
-        case SendResult::VALID_REPLY: {
+        case client::SendResult::VALID_REPLY: {
             sendStatus = true;
         } break;
         default: {

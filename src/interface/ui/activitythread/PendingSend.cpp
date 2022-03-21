@@ -13,7 +13,7 @@
 #include "interface/ui/activitythread/ActivityThreadItem.hpp"
 #include "interface/ui/base/Widget.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 

@@ -12,12 +12,13 @@
 #include "1_Internal.hpp"
 #include "interface/ui/accountactivity/BalanceItem.hpp"
 #include "internal/interface/ui/UI.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -75,9 +76,9 @@ public:
         -> UnallocatedVector<UnallocatedCString> final;
     auto DisplayAmount() const noexcept -> UnallocatedCString final;
     auto Memo() const noexcept -> UnallocatedCString final;
-    auto Type() const noexcept -> StorageBox final
+    auto Type() const noexcept -> otx::client::StorageBox final
     {
-        return StorageBox::BLOCKCHAIN;
+        return otx::client::StorageBox::BLOCKCHAIN;
     }
     auto UUID() const noexcept -> UnallocatedCString final;
     auto Workflow() const noexcept -> UnallocatedCString final { return {}; }

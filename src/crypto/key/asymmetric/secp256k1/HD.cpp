@@ -114,7 +114,7 @@ auto Secp256k1Key(
         api.Crypto().Internal().EllipticProvider(Type::Secp256k1),
         blank,
         api.Factory().SecretFromBytes(chaincode),
-        api.Factory().Data(key),
+        api.Factory().DataFromBytes(key),
         path,
         {},
         opentxs::crypto::key::asymmetric::Role::Sign,

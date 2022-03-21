@@ -21,7 +21,6 @@
 #include <functional>
 #include <string_view>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/Types.hpp"

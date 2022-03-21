@@ -23,6 +23,7 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/subchain/Subchain.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -302,7 +303,7 @@ auto Account::Imp::index_nym(const identifier::Nym& id) noexcept -> void
             std::move(code),
             [&] {
                 auto out = proto::HDPath{};
-                nym.PaymentCodePath(out);
+                nym.Internal().PaymentCodePath(out);
 
                 return out;
             }()));

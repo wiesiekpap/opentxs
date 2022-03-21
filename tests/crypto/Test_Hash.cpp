@@ -420,7 +420,11 @@ TEST_F(Test_Hash, MurmurHash3)
 {
     for (const auto& [input, seed, expected] : murmur_) {
         std::uint32_t calculated{0};
-        const auto plaintext = ot::Data::Factory(input, ot::Data::Mode::Hex);
+        const auto plaintext = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(input);
         crypto_.Hash().MurmurHash3_32(seed, plaintext, calculated);
 
         EXPECT_EQ(calculated, expected);
@@ -430,8 +434,12 @@ TEST_F(Test_Hash, MurmurHash3)
 TEST_F(Test_Hash, PKCS5_PBKDF2_HMAC_SHA1)
 {
     for (const auto& [P, S, c, dkLen, DK] : pbkdf_sha1_) {
-        const auto salt = ot::Data::Factory(S, ot::Data::Mode::Raw);
-        const auto expected = ot::Data::Factory(DK, ot::Data::Mode::Hex);
+        const auto salt = ot::Data::Factory(S.data(), S.size());
+        const auto expected = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(DK);
         auto output = ot::Data::Factory();
 
         EXPECT_TRUE(crypto_.Hash().PKCS5_PBKDF2_HMAC(
@@ -443,8 +451,12 @@ TEST_F(Test_Hash, PKCS5_PBKDF2_HMAC_SHA1)
 TEST_F(Test_Hash, PKCS5_PBKDF2_HMAC_SHA256)
 {
     for (const auto& [P, S, c, dkLen, DK] : pbkdf_sha256_) {
-        const auto salt = ot::Data::Factory(S, ot::Data::Mode::Raw);
-        const auto expected = ot::Data::Factory(DK, ot::Data::Mode::Hex);
+        const auto salt = ot::Data::Factory(S.data(), S.size());
+        const auto expected = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(DK);
         auto output = ot::Data::Factory();
 
         EXPECT_TRUE(crypto_.Hash().PKCS5_PBKDF2_HMAC(
@@ -456,8 +468,12 @@ TEST_F(Test_Hash, PKCS5_PBKDF2_HMAC_SHA256)
 TEST_F(Test_Hash, PKCS5_PBKDF2_HMAC_SHA512)
 {
     for (const auto& [P, S, c, dkLen, DK] : pbkdf_sha512_) {
-        const auto salt = ot::Data::Factory(S, ot::Data::Mode::Raw);
-        const auto expected = ot::Data::Factory(DK, ot::Data::Mode::Hex);
+        const auto salt = ot::Data::Factory(S.data(), S.size());
+        const auto expected = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(DK);
         auto output = ot::Data::Factory();
 
         EXPECT_TRUE(crypto_.Hash().PKCS5_PBKDF2_HMAC(
@@ -469,10 +485,26 @@ TEST_F(Test_Hash, PKCS5_PBKDF2_HMAC_SHA512)
 TEST_F(Test_Hash, HMAC_SHA2)
 {
     for (const auto& [key, d, sha256, sha512] : hmac_sha2_) {
-        const auto data = ot::Data::Factory(d, ot::Data::Mode::Hex);
-        const auto dataPassword = ot::Data::Factory(key, ot::Data::Mode::Hex);
-        const auto expected256 = ot::Data::Factory(sha256, ot::Data::Mode::Hex);
-        const auto expected512 = ot::Data::Factory(sha512, ot::Data::Mode::Hex);
+        const auto data = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(d);
+        const auto dataPassword = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(key);
+        const auto expected256 = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(sha256);
+        const auto expected512 = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(sha512);
         auto output256 = ot::Data::Factory();
         auto output512 = ot::Data::Factory();
 
@@ -495,7 +527,11 @@ TEST_F(Test_Hash, HMAC_SHA2)
 TEST_F(Test_Hash, scrypt_rfc7914)
 {
     for (const auto& [input, salt, N, r, p, size, hex] : scrypt_rfc7914_) {
-        const auto expected = ot::Data::Factory(hex, ot::Data::Mode::Hex);
+        const auto expected = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(hex);
         auto hash = ot::Data::Factory();
         const auto success = crypto_.Hash().Scrypt(
             input, salt, N, r, p, size, hash->WriteInto());
@@ -508,8 +544,16 @@ TEST_F(Test_Hash, scrypt_rfc7914)
 TEST_F(Test_Hash, scrypt_litecoin)
 {
     for (const auto& [input, salt, N, r, p, size, hex] : scrypt_litecoin_) {
-        const auto expected = ot::Data::Factory(hex, ot::Data::Mode::Hex);
-        const auto preimage = ot::Data::Factory(input, ot::Data::Mode::Hex);
+        const auto expected = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(hex);
+        const auto preimage = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(input);
         auto hash = ot::Data::Factory();
 
         ASSERT_EQ(preimage->size(), 80);
@@ -532,9 +576,21 @@ TEST_F(Test_Hash, scrypt_litecoin)
 TEST_F(Test_Hash, nist_short)
 {
     for (const auto& [input, sha1, sha256, sha512] : nist_hashes_) {
-        const auto eSha1 = ot::Data::Factory(sha1, ot::Data::Mode::Hex);
-        const auto eSha256 = ot::Data::Factory(sha256, ot::Data::Mode::Hex);
-        const auto eSha512 = ot::Data::Factory(sha512, ot::Data::Mode::Hex);
+        const auto eSha1 = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(sha1);
+        const auto eSha256 = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(sha256);
+        const auto eSha512 = [](const auto& hex) {
+            auto out = ot::Data::Factory();
+            out->DecodeHex(hex);
+            return out;
+        }(sha512);
         auto calculatedSha1 = ot::Data::Factory();
         auto calculatedSha256 = ot::Data::Factory();
         auto calculatedSha512 = ot::Data::Factory();
@@ -559,9 +615,21 @@ TEST_F(Test_Hash, nist_short)
 TEST_F(Test_Hash, nist_million_characters)
 {
     const auto& [input, sha1, sha256, sha512] = nist_one_million_;
-    const auto eSha1 = ot::Data::Factory(sha1, ot::Data::Mode::Hex);
-    const auto eSha256 = ot::Data::Factory(sha256, ot::Data::Mode::Hex);
-    const auto eSha512 = ot::Data::Factory(sha512, ot::Data::Mode::Hex);
+    const auto eSha1 = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(sha1);
+    const auto eSha256 = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(sha256);
+    const auto eSha512 = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(sha512);
     auto calculatedSha1 = ot::Data::Factory();
     auto calculatedSha256 = ot::Data::Factory();
     auto calculatedSha512 = ot::Data::Factory();
@@ -589,9 +657,21 @@ TEST_F(Test_Hash, nist_million_characters)
 TEST_F(Test_Hash, nist_gigabyte_string)
 {
     const auto& [input, sha1, sha256, sha512] = nist_one_gigabyte_;
-    const auto eSha1 = ot::Data::Factory(sha1, ot::Data::Mode::Hex);
-    const auto eSha256 = ot::Data::Factory(sha256, ot::Data::Mode::Hex);
-    const auto eSha512 = ot::Data::Factory(sha512, ot::Data::Mode::Hex);
+    const auto eSha1 = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(sha1);
+    const auto eSha256 = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(sha256);
+    const auto eSha512 = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(sha512);
     auto calculatedSha1 = ot::Data::Factory();
     auto calculatedSha256 = ot::Data::Factory();
     auto calculatedSha512 = ot::Data::Factory();
@@ -643,7 +723,7 @@ TEST_F(Test_Hash, argon2i)
             auto secret = api.Factory().Secret(bytes);
             key->RawKey(reason, secret);
 
-            return api.Factory().Data(secret->Bytes());
+            return api.Factory().DataFromBytes(secret->Bytes());
         }();
 
         EXPECT_EQ(hash->asHex(), hex);
@@ -671,7 +751,7 @@ TEST_F(Test_Hash, argon2id)
             auto secret = api.Factory().Secret(bytes);
             key->RawKey(reason, secret);
 
-            return api.Factory().Data(secret->Bytes());
+            return api.Factory().DataFromBytes(secret->Bytes());
         }();
 
         EXPECT_EQ(hash->asHex(), hex);

@@ -706,7 +706,7 @@ auto Deterministic::RootNode(const PasswordPrompt& reason) const noexcept
 
     key = api_.Crypto().Seed().GetHDKey(
         fingerprint,
-        EcdsaCurve::secp256k1,
+        opentxs::crypto::EcdsaCurve::secp256k1,
         path,
         opentxs::crypto::key::asymmetric::Role::Sign,
         opentxs::crypto::key::EllipticCurve::MaxVersion,

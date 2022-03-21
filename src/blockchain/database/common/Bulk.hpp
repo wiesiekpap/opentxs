@@ -10,7 +10,7 @@
 #include <memory>
 #include <mutex>
 
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"

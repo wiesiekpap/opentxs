@@ -17,6 +17,7 @@
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/otx/common/StringXML.hpp"
 #include "internal/otx/common/XML.hpp"
 #include "internal/otx/common/crypto/OTSignatureMetadata.hpp"
@@ -1404,8 +1405,8 @@ auto Contract::CreateContract(
         // Add theSigner to the contract, if he's not already there.
         //
         if (nullptr == GetContractPublicNym()) {
-            const bool bHasCredentials =
-                (theSigner.HasCapability(NymCapability::SIGN_MESSAGE));
+            const bool bHasCredentials = (theSigner.HasCapability(
+                identity::NymCapability::SIGN_MESSAGE));
 
             if (!bHasCredentials) {
                 LogError()(OT_PRETTY_CLASS())("Signing nym has no credentials.")
@@ -1489,13 +1490,14 @@ void Contract::CreateInnerContents(Tag& parent)
                 "Contract::CreateInnerContents.\n");
 
             if ("signer" == str_name) {
-                OT_ASSERT(pNym->HasCapability(NymCapability::SIGN_MESSAGE));
+                OT_ASSERT(
+                    pNym->HasCapability(identity::NymCapability::SIGN_MESSAGE));
 
                 auto strNymID = String::Factory();
                 pNym->GetIdentifier(strNymID);
 
                 auto publicNym = proto::Nym{};
-                OT_ASSERT(pNym->Serialize(publicNym));
+                OT_ASSERT(pNym->Internal().Serialize(publicNym));
 
                 TagPtr pTag(new Tag(str_name));  // "signer"
                 pTag->add_attribute("nymID", strNymID->Get());

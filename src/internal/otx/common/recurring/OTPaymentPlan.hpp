@@ -11,7 +11,6 @@
 
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/recurring/OTAgreement.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Time.hpp"

@@ -11,11 +11,13 @@
 #include <stdexcept>
 #include <utility>
 
+#include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
@@ -382,7 +384,7 @@ auto Object::Serialize(proto::PeerObject& output) const noexcept -> bool
 
     auto publicNym = [&](Nym_p nym) -> proto::Nym {
         auto publicNym = proto::Nym{};
-        if (false == nym->Serialize(publicNym)) {
+        if (false == nym->Internal().Serialize(publicNym)) {
             LogError()(OT_PRETTY_CLASS())("Failed to serialize nym.").Flush();
         }
         return publicNym;

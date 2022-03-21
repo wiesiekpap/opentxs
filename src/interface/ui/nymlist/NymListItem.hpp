@@ -12,7 +12,6 @@
 #include "1_Internal.hpp"
 #include "interface/ui/base/Row.hpp"
 #include "internal/interface/ui/UI.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/interface/ui/NymListItem.hpp"
 #include "opentxs/util/Container.hpp"

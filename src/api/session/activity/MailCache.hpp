@@ -8,7 +8,7 @@
 #include <future>
 #include <memory>
 
-#include "opentxs/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -52,17 +52,18 @@ public:
     auto LoadMail(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox& box) const noexcept -> std::unique_ptr<Message>;
+        const otx::client::StorageBox& box) const noexcept
+        -> std::unique_ptr<Message>;
 
     auto CacheText(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox box,
+        const otx::client::StorageBox box,
         const UnallocatedCString& text) noexcept -> void;
     auto GetText(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox box,
+        const otx::client::StorageBox box,
         const PasswordPrompt& reason) noexcept
         -> std::shared_future<UnallocatedCString>;
 

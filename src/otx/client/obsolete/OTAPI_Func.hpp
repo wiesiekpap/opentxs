@@ -14,6 +14,7 @@
 
 #include "Proto.hpp"
 #include "internal/otx/client/OTPayment.hpp"
+#include "internal/otx/client/Types.hpp"
 #include "internal/otx/client/obsolete/ServerAction.hpp"
 #include "internal/otx/common/Cheque.hpp"
 #include "internal/otx/common/Ledger.hpp"
@@ -21,11 +22,12 @@
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
 #include "internal/util/Editor.hpp"
 #include "internal/util/Lockable.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
 #include "opentxs/core/contract/peer/SecretType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
@@ -241,7 +243,7 @@ public:
         const Amount& activationPrice,
         const UnallocatedCString& stopSign);
 
-    auto LastSendResult() const -> SendResult final { return {}; }
+    auto LastSendResult() const -> otx::client::SendResult final { return {}; }
     auto Reply() const -> const std::shared_ptr<Message> final { return {}; }
 
     auto Run(const std::size_t totalRetries = 2) -> UnallocatedCString final;

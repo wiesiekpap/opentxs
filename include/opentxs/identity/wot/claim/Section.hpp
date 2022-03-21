@@ -13,7 +13,6 @@
 #include <iosfwd>
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"

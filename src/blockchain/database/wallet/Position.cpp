@@ -13,7 +13,7 @@
 #include <stdexcept>
 #include <utility>
 
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -55,7 +55,7 @@ auto Position::Decode(const api::Session& api) const noexcept
     auto lock = Lock{lock_};
 
     if (false == position_.has_value()) {
-        position_.emplace(Height(), api.Factory().Data(Hash()));
+        position_.emplace(Height(), api.Factory().DataFromBytes(Hash()));
     }
 
     return position_.value();

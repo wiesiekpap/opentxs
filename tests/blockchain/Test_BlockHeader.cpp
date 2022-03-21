@@ -44,8 +44,11 @@ TEST_F(Test_BlockHeader, init_opentxs) {}
 
 TEST_F(Test_BlockHeader, btc_genesis_block_hash_oracle)
 {
-    const auto expectedHash =
-        ot::Data::Factory(btc_genesis_hash_, ot::Data::Mode::Hex);
+    const auto expectedHash = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(btc_genesis_hash_);
     const auto& genesisHash =
         bc::HeaderOracle::GenesisBlockHash(b::Type::Bitcoin);
 
@@ -54,8 +57,11 @@ TEST_F(Test_BlockHeader, btc_genesis_block_hash_oracle)
 
 TEST_F(Test_BlockHeader, ltc_genesis_block_hash_oracle)
 {
-    const auto expectedHash =
-        ot::Data::Factory(ltc_genesis_hash_, ot::Data::Mode::Hex);
+    const auto expectedHash = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(ltc_genesis_hash_);
     const auto& genesisHash =
         bc::HeaderOracle::GenesisBlockHash(b::Type::Litecoin);
 
@@ -64,10 +70,16 @@ TEST_F(Test_BlockHeader, ltc_genesis_block_hash_oracle)
 
 TEST_F(Test_BlockHeader, btc_genesis_block_header)
 {
-    const auto blankHash = ot::Data::Factory(
-        ot::UnallocatedCString(blank_hash_), ot::Data::Mode::Hex);
-    const auto expectedHash =
-        ot::Data::Factory(btc_genesis_hash_, ot::Data::Mode::Hex);
+    const auto blankHash = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(blank_hash_);
+    const auto expectedHash = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(btc_genesis_hash_);
     const ot::UnallocatedCString numericHash{btc_genesis_hash_numeric_};
     std::unique_ptr<const bb::Header> pHeader{
         ot::factory::GenesisBlockHeader(api_, b::Type::Bitcoin)};
@@ -94,10 +106,16 @@ TEST_F(Test_BlockHeader, btc_genesis_block_header)
 
 TEST_F(Test_BlockHeader, ltc_genesis_block_header)
 {
-    const auto blankHash = ot::Data::Factory(
-        ot::UnallocatedCString(blank_hash_), ot::Data::Mode::Hex);
-    const auto expectedHash =
-        ot::Data::Factory(ltc_genesis_hash_, ot::Data::Mode::Hex);
+    const auto blankHash = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(blank_hash_);
+    const auto expectedHash = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(ltc_genesis_hash_);
     const ot::UnallocatedCString numericHash{ltc_genesis_hash_numeric_};
     std::unique_ptr<const bb::Header> pHeader{
         ot::factory::GenesisBlockHeader(api_, b::Type::Litecoin)};
@@ -124,8 +142,11 @@ TEST_F(Test_BlockHeader, ltc_genesis_block_header)
 
 TEST_F(Test_BlockHeader, serialize_deserialize)
 {
-    const auto expectedHash =
-        ot::Data::Factory(btc_genesis_hash_, ot::Data::Mode::Hex);
+    const auto expectedHash = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(btc_genesis_hash_);
     std::unique_ptr<const bb::Header> pHeader{
         ot::factory::GenesisBlockHeader(api_, b::Type::Bitcoin)};
 

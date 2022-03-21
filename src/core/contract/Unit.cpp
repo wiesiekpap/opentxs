@@ -24,6 +24,7 @@
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/core/contract/Contract.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/AccountVisitor.hpp"
@@ -556,7 +557,7 @@ auto Unit::Serialize(SerializedType& serialized, bool includeNym) const -> bool
 
     if (includeNym && nym_) {
         auto publicNym = proto::Nym{};
-        if (false == nym_->Serialize(publicNym)) { return false; }
+        if (false == nym_->Internal().Serialize(publicNym)) { return false; }
         *(serialized.mutable_issuer_nym()) = publicNym;
     }
 
@@ -590,7 +591,7 @@ auto Unit::update_signature(const Lock& lock, const PasswordPrompt& reason)
     signatures_.clear();
     auto serialized = SigVersion(lock);
     auto& signature = *serialized.mutable_signature();
-    success = nym_->Sign(
+    success = nym_->Internal().Sign(
         serialized, crypto::SignatureRole::UnitDefinition, signature, reason);
 
     if (success) {
@@ -633,7 +634,7 @@ auto Unit::verify_signature(const Lock& lock, const proto::Signature& signature)
     auto& sigProto = *serialized.mutable_signature();
     sigProto.CopyFrom(signature);
 
-    return nym_->Verify(serialized, sigProto);
+    return nym_->Internal().Verify(serialized, sigProto);
 }
 
 // currently only "user" accounts (normal user asset accounts) are added to

@@ -18,7 +18,6 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -175,7 +174,7 @@ private:
                 api_,
                 blockchain::p2p::Protocol::bitcoin,
                 blockchain::p2p::Network::zmq,
-                api_.Factory().Data(inproc, StringStyle::Raw),
+                api_.Factory().DataFromBytes(inproc),
                 port,
                 parent_.chain_,
                 {},

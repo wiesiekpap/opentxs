@@ -30,7 +30,6 @@
 #include "internal/serialization/protobuf/verify/Identifier.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
@@ -920,6 +919,13 @@ auto Identifier::SetString(const UnallocatedCString& encoded) -> void
 }
 
 auto Identifier::str() const -> UnallocatedCString { return to_string(); }
+
+auto Identifier::str(alloc::Resource* alloc) const -> CString
+{
+    // TODO c++20 avoid a copy by using an allocator in to_string
+
+    return CString{alloc}.append(to_string());
+}
 
 auto Identifier::swap(opentxs::Identifier& rhs) -> void
 {

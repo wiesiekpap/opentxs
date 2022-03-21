@@ -30,6 +30,7 @@ class Issuer;
 namespace proto
 {
 class Credential;
+class Nym;
 class PeerReply;
 class PeerRequest;
 class ServerContract;
@@ -109,7 +110,7 @@ public:
         -> Editor<otx::client::Issuer> = 0;
 
     using session::Wallet::Nym;
-    virtual auto Nym(const identity::Nym::Serialized& nym) const -> Nym_p = 0;
+    virtual auto Nym(const proto::Nym& nym) const -> Nym_p = 0;
 
     virtual auto mutable_Nymfile(
         const identifier::Nym& id,
@@ -143,7 +144,7 @@ public:
     virtual auto PeerReply(
         const identifier::Nym& nym,
         const Identifier& reply,
-        const StorageBox& box,
+        const otx::client::StorageBox& box,
         proto::PeerReply& serialized) const -> bool = 0;
     /**   Store the recipient's copy of a peer reply
      *
@@ -174,7 +175,7 @@ public:
     virtual auto PeerRequest(
         const identifier::Nym& nym,
         const Identifier& request,
-        const StorageBox& box,
+        const otx::client::StorageBox& box,
         std::time_t& time,
         proto::PeerRequest& serialized) const -> bool = 0;
     /**   Store the initiator's copy of a peer request

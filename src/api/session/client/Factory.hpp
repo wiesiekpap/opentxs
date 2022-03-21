@@ -13,7 +13,6 @@
 
 #include "Proto.hpp"
 #include "api/session/Factory.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
@@ -56,6 +55,7 @@
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"

@@ -13,11 +13,11 @@
 #include <memory>
 #include <tuple>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/otx/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -77,21 +77,21 @@ public:
         const identifier::Nym& targetNymID,
         const Identifier& requestID,
         const UnallocatedCString& instructions,
-        const SetID setID = {}) const -> BackgroundTask = 0;
+        const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto AcknowledgeNotice(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const identifier::Nym& recipientID,
         const Identifier& requestID,
         const bool ack,
-        const SetID setID = {}) const -> BackgroundTask = 0;
+        const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto AcknowledgeOutbailment(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const identifier::Nym& recipientID,
         const Identifier& requestID,
         const UnallocatedCString& details,
-        const SetID setID = {}) const -> BackgroundTask = 0;
+        const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto AcknowledgeConnection(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
@@ -102,19 +102,20 @@ public:
         const UnallocatedCString& login,
         const UnallocatedCString& password,
         const UnallocatedCString& key,
-        const SetID setID = {}) const -> BackgroundTask = 0;
+        const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto AutoProcessInboxEnabled() const -> bool = 0;
     virtual auto CanDeposit(
         const identifier::Nym& recipientNymID,
-        const OTPayment& payment) const -> Depositability = 0;
+        const OTPayment& payment) const -> otx::client::Depositability = 0;
     virtual auto CanDeposit(
         const identifier::Nym& recipientNymID,
         const Identifier& accountID,
-        const OTPayment& payment) const -> Depositability = 0;
+        const OTPayment& payment) const -> otx::client::Depositability = 0;
     virtual auto CanMessage(
         const identifier::Nym& senderNymID,
         const Identifier& recipientContactID,
-        const bool startIntroductionServer = true) const -> Messagability = 0;
+        const bool startIntroductionServer = true) const
+        -> otx::client::Messagability = 0;
     virtual auto CheckTransactionNumbers(
         const identifier::Nym& nym,
         const identifier::Notary& serverID,
@@ -182,7 +183,7 @@ public:
         const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const SetID setID = {}) const -> BackgroundTask = 0;
+        const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto InitiateOutbailment(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
@@ -190,13 +191,13 @@ public:
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Amount amount,
         const UnallocatedCString& message,
-        const SetID setID = {}) const -> BackgroundTask = 0;
+        const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto InitiateRequestConnection(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
         const contract::peer::ConnectionInfoType& type,
-        const SetID setID = {}) const -> BackgroundTask = 0;
+        const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto InitiateStoreSecret(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
@@ -204,7 +205,7 @@ public:
         const contract::peer::SecretType& type,
         const UnallocatedCString& primary,
         const UnallocatedCString& secondary,
-        const SetID setID = {}) const -> BackgroundTask = 0;
+        const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::OTX& = 0;
     virtual auto IntroductionServer() const -> const identifier::Notary& = 0;
@@ -218,9 +219,9 @@ public:
         const identifier::Nym& senderNymID,
         const Identifier& contactID,
         const UnallocatedCString& message,
-        const SetID setID = {}) const -> BackgroundTask = 0;
+        const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto MessageStatus(const TaskID taskID) const
-        -> std::pair<ThreadStatus, MessageID> = 0;
+        -> std::pair<otx::client::ThreadStatus, MessageID> = 0;
     virtual auto NotifyBailment(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
@@ -229,7 +230,7 @@ public:
         const Identifier& requestID,
         const UnallocatedCString& txid,
         const Amount amount,
-        const SetID setID = {}) const -> BackgroundTask = 0;
+        const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto PayContact(
         const identifier::Nym& senderNymID,
         const Identifier& contactID,
@@ -291,7 +292,8 @@ public:
         const UnallocatedCString& memo) const -> BackgroundTask = 0;
     virtual void StartIntroductionServer(
         const identifier::Nym& localNymID) const = 0;
-    virtual auto Status(const TaskID taskID) const -> ThreadStatus = 0;
+    virtual auto Status(const TaskID taskID) const
+        -> otx::client::ThreadStatus = 0;
     virtual auto WithdrawCash(
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,

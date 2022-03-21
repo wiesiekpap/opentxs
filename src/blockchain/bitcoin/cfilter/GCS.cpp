@@ -30,7 +30,6 @@
 #include "internal/serialization/protobuf/verify/GCS.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -359,8 +358,8 @@ GCS::GCS(
     , false_positive_rate_(fpRate)
     , count_(filterElementCount)
     , elements_()
-    , compressed_(api_.Factory().Data(encoded))
-    , key_(api_.Factory().Data(key))
+    , compressed_(api_.Factory().DataFromBytes(encoded))
+    , key_(api_.Factory().DataFromBytes(key))
 {
     if (16u != key_->size()) {
         throw std::runtime_error(
@@ -385,9 +384,9 @@ GCS::GCS(
           static_cast<std::uint32_t>(elements.size()),
           false_positive_rate_,
           elements))
-    , compressed_(
-          api_.Factory().Data(reader(gcs::GolombEncode(bits_, *elements_))))
-    , key_(api_.Factory().Data(key))
+    , compressed_(api_.Factory().DataFromBytes(
+          reader(gcs::GolombEncode(bits_, *elements_))))
+    , key_(api_.Factory().DataFromBytes(key))
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wtautological-type-limit-compare"

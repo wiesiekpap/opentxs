@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "internal/util/Flag.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::api::imp

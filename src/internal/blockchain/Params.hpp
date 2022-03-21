@@ -26,7 +26,6 @@
 #if OT_BLOCKCHAIN
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #endif  // OT_BLOCKCHAIN
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
