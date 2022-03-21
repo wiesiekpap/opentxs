@@ -84,14 +84,13 @@ public:
         const AllocateOutput header) const noexcept -> bool;
     auto StoreFilterHeaders(
         const cfilter::Type type,
-        const UnallocatedVector<FilterHeader>& headers) const noexcept -> bool;
+        const Vector<FilterHeader>& headers) const noexcept -> bool;
+    auto StoreFilters(const cfilter::Type type, Vector<FilterData>& filters)
+        const noexcept -> bool;
     auto StoreFilters(
         const cfilter::Type type,
-        UnallocatedVector<FilterData>& filters) const noexcept -> bool;
-    auto StoreFilters(
-        const cfilter::Type type,
-        const UnallocatedVector<FilterHeader>& headers,
-        const UnallocatedVector<FilterData>& filters) const noexcept -> bool;
+        const Vector<FilterHeader>& headers,
+        const Vector<FilterData>& filters) const noexcept -> bool;
 
     BlockFilter(
         const api::Session& api,

@@ -415,8 +415,8 @@ auto FilterOracle::ProcessBlock(
 {
     const auto& id = block.ID();
     const auto& header = block.Header();
-    auto filters = UnallocatedVector<internal::FilterDatabase::Filter>{};
-    auto headers = UnallocatedVector<internal::FilterDatabase::Header>{};
+    auto filters = Vector<internal::FilterDatabase::Filter>{};
+    auto headers = Vector<internal::FilterDatabase::Header>{};
     const auto& pGCS =
         filters.emplace_back(id.Bytes(), process_block(default_type_, block))
             .second;
@@ -519,8 +519,8 @@ auto FilterOracle::ProcessSyncData(
     const UnallocatedVector<block::pHash>& hashes,
     const network::p2p::Data& data) const noexcept -> void
 {
-    auto filters = UnallocatedVector<internal::FilterDatabase::Filter>{};
-    auto headers = UnallocatedVector<internal::FilterDatabase::Header>{};
+    auto filters = Vector<internal::FilterDatabase::Filter>{};
+    auto headers = Vector<internal::FilterDatabase::Header>{};
     auto cache = UnallocatedVector<SyncClientFilterData>{};
     const auto& blocks = data.Blocks();
     const auto incoming = blocks.front().Height();
