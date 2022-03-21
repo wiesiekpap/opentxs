@@ -39,6 +39,11 @@ namespace network
 {
 namespace zeromq
 {
+namespace socket
+{
+class Raw;
+}  // namespace socket
+
 class Message;
 }  // namespace zeromq
 }  // namespace network
@@ -71,7 +76,7 @@ protected:
     Job(const Log& logger,
         const boost::shared_ptr<const SubchainStateData>& parent,
         const network::zeromq::BatchID batch,
-        CString&& name,
+        const JobType type,
         allocator_type alloc,
         const network::zeromq::EndpointArgs& subscribe = {},
         const network::zeromq::EndpointArgs& pull = {},
@@ -84,29 +89,33 @@ private:
 
     using HandledReorgs = Set<StateSequence>;
 
+    const JobType job_type_;
+    network::zeromq::socket::Raw& to_parent_;
     std::atomic<State> pending_state_;
     std::atomic<State> state_;
     HandledReorgs reorgs_;
 
     auto do_shutdown() noexcept -> void;
-    virtual auto do_startup() noexcept -> void = 0;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
     auto process_block(Message&& in) noexcept -> void;
-    virtual auto process_block(block::pHash&& block) noexcept -> void;
-    virtual auto process_key(Message&& in) noexcept -> void;
     auto process_filter(Message&& in) noexcept -> void;
-    virtual auto process_filter(block::Position&& tip) noexcept -> void;
-    virtual auto process_mempool(Message&& in) noexcept -> void;
     auto process_prepare_reorg(Message&& in) noexcept -> void;
-    virtual auto process_startup(Message&& in) noexcept -> void;
-    virtual auto process_update(Message&& msg) noexcept -> void;
     auto process_process(Message&& in) noexcept -> void;
-    virtual auto process_process(block::Position&& position) noexcept -> void;
+    auto process_watchdog(Message&& in) noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto state_reorg(const Work work, Message&& msg) noexcept -> void;
     auto transition_state_normal() noexcept -> void;
     auto transition_state_reorg(StateSequence id) noexcept -> void;
     auto transition_state_shutdown() noexcept -> void;
+
+    virtual auto do_startup() noexcept -> void = 0;
+    virtual auto process_block(block::pHash&& block) noexcept -> void;
+    virtual auto process_key(Message&& in) noexcept -> void;
+    virtual auto process_filter(block::Position&& tip) noexcept -> void;
+    virtual auto process_mempool(Message&& in) noexcept -> void;
+    virtual auto process_startup(Message&& in) noexcept -> void;
+    virtual auto process_update(Message&& msg) noexcept -> void;
+    virtual auto process_process(block::Position&& position) noexcept -> void;
     virtual auto work() noexcept -> bool = 0;
 };
 }  // namespace opentxs::blockchain::node::wallet::statemachine

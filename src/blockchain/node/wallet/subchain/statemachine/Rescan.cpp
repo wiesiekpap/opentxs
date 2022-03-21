@@ -48,7 +48,7 @@ Rescan::Imp::Imp(
     : Job(LogTrace(),
           parent,
           batch,
-          CString{"rescan", alloc},
+          JobType::rescan,
           alloc,
           {
               {CString{parent->api_.Endpoints().BlockchainNewFilter()},
@@ -68,8 +68,8 @@ Rescan::Imp::Imp(
                    {parent->to_progress_endpoint_, Direction::Connect},
                }},
           })
-    , to_process_(pipeline_.Internal().ExtraSocket(0))
-    , to_progress_(pipeline_.Internal().ExtraSocket(1))
+    , to_process_(pipeline_.Internal().ExtraSocket(1))
+    , to_progress_(pipeline_.Internal().ExtraSocket(2))
     , active_(false)
     , last_scanned_(std::nullopt)
     , filter_tip_(std::nullopt)

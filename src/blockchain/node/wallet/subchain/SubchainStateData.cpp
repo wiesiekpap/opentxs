@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"  // IWYU pragma: associated
 
+#include <boost/system/error_code.hpp>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -19,11 +20,16 @@
 
 #include "blockchain/node/wallet/subchain/ScriptForm.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
+#include "internal/network/zeromq/socket/Pipeline.hpp"
+#include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/network/Asio.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -38,10 +44,12 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -50,6 +58,7 @@
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/ByteLiterals.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -65,6 +74,8 @@ auto print(SubchainJobs job) noexcept -> std::string_view
             {Job::prepare_reorg, "prepare_reorg"},
             {Job::update, "update"},
             {Job::process, "process"},
+            {Job::watchdog, "watchdog"},
+            {Job::watchdog_ack, "watchdog_ack"},
             {Job::init, "init"},
             {Job::key, "key"},
             {Job::prepare_shutdown, "prepare_shutdown"},
@@ -111,6 +122,13 @@ SubchainStateData::SubchainStateData(
           },
           {
               {fromChildren, Direction::Bind},
+          },
+          {},
+          {
+              {SocketType::Publish,
+               {
+                   {toChildren, Direction::Bind},
+               }},
           })
     , api_(api)
     , node_(node)
@@ -125,6 +143,8 @@ SubchainStateData::SubchainStateData(
     , db_key_(db.GetSubchainID(id_, subchain_))
     , null_position_(make_blank<block::Position>::value(api_))
     , genesis_(node_.HeaderOracle().GetPosition(0))
+    , from_ssd_endpoint_(std::move(toChildren))
+    , to_ssd_endpoint_(std::move(fromChildren))
     , to_index_endpoint_(network::zeromq::MakeArbitraryInproc(alloc.resource()))
     , to_scan_endpoint_(std::move(toScan))
     , to_rescan_endpoint_(
@@ -133,6 +153,7 @@ SubchainStateData::SubchainStateData(
           network::zeromq::MakeArbitraryInproc(alloc.resource()))
     , to_progress_endpoint_(std::move(toProgress))
     , shutdown_endpoint_(parent, alloc)
+    , to_children_(pipeline_.Internal().ExtraSocket(0))
     , pending_state_(State::normal)
     , state_(State::normal)
     , reorgs_(alloc)
@@ -142,6 +163,14 @@ SubchainStateData::SubchainStateData(
     , process_(std::nullopt)
     , scan_(std::nullopt)
     , have_children_(false)
+    , child_activity_({
+          {JobType::scan, {}},
+          {JobType::process, {}},
+          {JobType::index, {}},
+          {JobType::rescan, {}},
+          {JobType::progress, {}},
+      })
+    , watchdog_(api_.Network().Asio().Internal().GetTimer())
 {
     OT_ASSERT(false == owner_->empty());
     OT_ASSERT(false == id_->empty());
@@ -336,6 +365,10 @@ auto SubchainStateData::do_startup() noexcept -> void
     process_.emplace(me);
     scan_.emplace(me);
     have_children_ = true;
+    const auto now = Clock::now();
+
+    for (auto& [type, time] : child_activity_) { time = now; }
+
     do_work();
 }
 
@@ -488,6 +521,15 @@ auto SubchainStateData::process_prepare_reorg(Message&& in) noexcept -> void
     OT_ASSERT(1u < body.size());
 
     transition_state_reorg(body.at(1).as<StateSequence>());
+}
+
+auto SubchainStateData::process_watchdog_ack(Message&& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(1u < body.size());
+
+    child_activity_.at(body.at(1).as<JobType>()) = Clock::now();
 }
 
 auto SubchainStateData::ProcessBlock(
@@ -811,6 +853,9 @@ auto SubchainStateData::state_normal(const Work work, Message&& msg) noexcept
         case Work::prepare_reorg: {
             process_prepare_reorg(std::move(msg));
         } break;
+        case Work::watchdog_ack: {
+            process_watchdog_ack(std::move(msg));
+        } break;
         case Work::init: {
             do_init();
         } break;
@@ -824,6 +869,7 @@ auto SubchainStateData::state_normal(const Work work, Message&& msg) noexcept
         case Work::mempool:
         case Work::block:
         case Work::update:
+        case Work::watchdog:
         case Work::key:
         default: {
             LogError()(OT_PRETTY_CLASS())("unhandled message type ")(
@@ -852,10 +898,14 @@ auto SubchainStateData::state_reorg(const Work work, Message&& msg) noexcept
         case Work::statemachine: {
             defer(std::move(msg));
         } break;
+        case Work::watchdog_ack: {
+            process_watchdog_ack(std::move(msg));
+        } break;
         case Work::filter:
         case Work::mempool:
         case Work::block:
         case Work::update:
+        case Work::watchdog:
         case Work::key:
         default: {
             LogError()(OT_PRETTY_CLASS())("unhandled message type ")(
@@ -988,5 +1038,41 @@ auto SubchainStateData::translate(
     }
 }
 
-auto SubchainStateData::work() noexcept -> bool { return false; }
+auto SubchainStateData::work() noexcept -> bool
+{
+    to_children_.Send(MakeWork(Work::watchdog));
+    const auto now = Clock::now();
+    using namespace std::literals;
+    static constexpr auto timeout = 90s;
+
+    for (const auto& [type, time] : child_activity_) {
+        const auto interval =
+            std::chrono::duration_cast<std::chrono::nanoseconds>(now - time);
+
+        if (interval > timeout) {
+            LogConsole()(interval)(" elapsed since last activity from ")(
+                print(type))(" job for ")(name_)
+                .Flush();
+        }
+    }
+
+    watchdog_.SetRelative(60s);
+    watchdog_.Wait([this](const auto& error) {
+        if (error) {
+            if (boost::system::errc::operation_canceled != error.value()) {
+                LogError()(OT_PRETTY_CLASS())(name_)(" ")(error).Flush();
+            }
+        } else {
+            trigger();
+        }
+    });
+
+    return false;
+}
+
+SubchainStateData::~SubchainStateData()
+{
+    signal_shutdown();
+    watchdog_.Cancel();
+}
 }  // namespace opentxs::blockchain::node::wallet

@@ -56,7 +56,7 @@ Process::Imp::Imp(
     : Job(LogTrace(),
           parent,
           batch,
-          CString{"process", alloc},
+          JobType::process,
           alloc,
           {
               {CString{
@@ -78,7 +78,7 @@ Process::Imp::Imp(
           })
     , download_limit_(
           2u * params::Data::Chains().at(parent_.chain_).block_download_batch_)
-    , to_index_(pipeline_.Internal().ExtraSocket(0))
+    , to_index_(pipeline_.Internal().ExtraSocket(1))
     , waiting_(alloc)
     , downloading_(alloc)
     , downloading_index_(alloc)

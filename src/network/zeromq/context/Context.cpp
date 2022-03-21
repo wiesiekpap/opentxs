@@ -97,6 +97,8 @@ auto Context::DealerSocket(
         factory::DealerSocket(*this, static_cast<bool>(direction), callback)};
 }
 
+auto Context::max_sockets() noexcept -> int { return 32768; }
+
 auto Context::MakeBatch(Vector<socket::Type>&& types) const noexcept
     -> internal::Handle
 {
