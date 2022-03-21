@@ -56,13 +56,7 @@ Crypto::Crypto(const api::Settings& settings) noexcept
     , bip32_(factory::Bip32(*this))
     , bip39_(*bip39_p_)
     , encode_(factory::Encode(*this))
-    , hash_(factory::Hash(
-          *encode_,
-          sha_choose(sodium_, ssl_),
-          *sodium_,
-          pbkdf2_choose(sodium_, ssl_),
-          ripemd160_choose(sodium_, ssl_),
-          *sodium_))
+    , hash_(factory::Hash(*encode_, *ssl_, *sodium_, *ssl_, *ssl_, *sodium_))
     , asymmetric_map_([this] {
         auto out = AMap{};
         out.emplace(AType::ED25519, sodium_.get());
@@ -196,51 +190,6 @@ auto Crypto::Init_Sodium() noexcept -> void { OT_ASSERT(sodium_); }
 auto Crypto::Libsodium() const noexcept -> const opentxs::crypto::Sodium&
 {
     return *sodium_;
-}
-
-auto Crypto::pbkdf2_choose(
-    std::unique_ptr<opentxs::crypto::Sodium>& sodium,
-    std::unique_ptr<opentxs::crypto::OpenSSL>& openssl) noexcept
-    -> const opentxs::crypto::Pbkdf2&
-{
-    if (openssl) {
-
-        return *openssl;
-    } else {
-        OT_ASSERT(sodium);
-
-        return *sodium;
-    }
-}
-
-auto Crypto::ripemd160_choose(
-    std::unique_ptr<opentxs::crypto::Sodium>& sodium,
-    std::unique_ptr<opentxs::crypto::OpenSSL>& openssl) noexcept
-    -> const opentxs::crypto::Ripemd160&
-{
-    if (openssl) {
-
-        return *openssl;
-    } else {
-        OT_ASSERT(sodium);
-
-        return *sodium;
-    }
-}
-
-auto Crypto::sha_choose(
-    std::unique_ptr<opentxs::crypto::Sodium>& sodium,
-    std::unique_ptr<opentxs::crypto::OpenSSL>& openssl) noexcept
-    -> const opentxs::crypto::HashingProvider&
-{
-    if (openssl) {
-
-        return *openssl;
-    } else {
-        OT_ASSERT(sodium);
-
-        return *sodium;
-    }
 }
 
 auto Crypto::SymmetricProvider(opentxs::crypto::key::symmetric::Algorithm type)

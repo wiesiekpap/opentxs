@@ -28,7 +28,6 @@ auto LicenseData() noexcept -> const LicenseMap&
         license_protobuf(out);
         license_secp256k1(out);
         license_simpleini(out);
-        license_trezor(out);
 
         return out;
     }();

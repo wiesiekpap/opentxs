@@ -12,8 +12,6 @@
 #include "Proto.hpp"
 #include "crypto/library/AsymmetricProvider.hpp"
 #include "crypto/library/EcdsaProvider.hpp"
-#include "crypto/library/Pbkdf2.hpp"
-#include "crypto/library/Ripemd160.hpp"
 #include "internal/api/crypto/Util.hpp"
 #include "internal/crypto/library/Sodium.hpp"
 #include "opentxs/Version.hpp"
@@ -67,8 +65,6 @@ namespace opentxs::crypto::implementation
 class Sodium final : virtual public crypto::Sodium,
                      public AsymmetricProvider,
                      public EcdsaProvider,
-                     public Ripemd160,
-                     public Pbkdf2,
                      public api::crypto::internal::Util
 {
 public:
