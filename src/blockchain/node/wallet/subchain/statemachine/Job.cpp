@@ -317,6 +317,7 @@ auto Job::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::block:
         case Work::prepare_reorg:
         case Work::update:
+        case Work::process:
         case Work::statemachine: {
             log_(OT_PRETTY_CLASS())(name_)(" deferring ")(print(work))(
                 " message processing until reorg is complete")
