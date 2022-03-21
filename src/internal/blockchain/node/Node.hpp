@@ -303,16 +303,16 @@ struct FilterDatabase {
         const block::Position& position) noexcept -> bool = 0;
     virtual auto StoreFilters(
         const cfilter::Type type,
-        UnallocatedVector<Filter> filters) noexcept -> bool = 0;
+        Vector<Filter> filters) noexcept -> bool = 0;
     virtual auto StoreFilters(
         const cfilter::Type type,
-        const UnallocatedVector<Header>& headers,
-        const UnallocatedVector<Filter>& filters,
+        const Vector<Header>& headers,
+        const Vector<Filter>& filters,
         const block::Position& tip) noexcept -> bool = 0;
     virtual auto StoreFilterHeaders(
         const cfilter::Type type,
         const ReadView previous,
-        const UnallocatedVector<Header> headers) noexcept -> bool = 0;
+        const Vector<Header> headers) noexcept -> bool = 0;
 
     virtual ~FilterDatabase() = default;
 };

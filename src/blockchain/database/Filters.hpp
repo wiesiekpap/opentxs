@@ -99,16 +99,15 @@ public:
         const noexcept -> bool;
     auto StoreFilters(
         const cfilter::Type type,
-        const UnallocatedVector<Header>& headers,
-        const UnallocatedVector<Filter>& filters,
+        const Vector<Header>& headers,
+        const Vector<Filter>& filters,
         const block::Position& tip) const noexcept -> bool;
-    auto StoreFilters(
-        const cfilter::Type type,
-        UnallocatedVector<Filter> filters) const noexcept -> bool;
+    auto StoreFilters(const cfilter::Type type, Vector<Filter> filters)
+        const noexcept -> bool;
     auto StoreHeaders(
         const cfilter::Type type,
         const ReadView previous,
-        const UnallocatedVector<Header> headers) const noexcept -> bool;
+        const Vector<Header> headers) const noexcept -> bool;
 
     Filters(
         const api::Session& api,

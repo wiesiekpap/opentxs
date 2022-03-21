@@ -173,14 +173,13 @@ public:
     auto StoreBlockHeaders(const UpdatedHeader& headers) const noexcept -> bool;
     auto StoreFilterHeaders(
         const cfilter::Type type,
-        const UnallocatedVector<FilterHeader>& headers) const noexcept -> bool;
+        const Vector<FilterHeader>& headers) const noexcept -> bool;
+    auto StoreFilters(const cfilter::Type type, Vector<FilterData>& filters)
+        const noexcept -> bool;
     auto StoreFilters(
         const cfilter::Type type,
-        UnallocatedVector<FilterData>& filters) const noexcept -> bool;
-    auto StoreFilters(
-        const cfilter::Type type,
-        const UnallocatedVector<FilterHeader>& headers,
-        const UnallocatedVector<FilterData>& filters) const noexcept -> bool;
+        const Vector<FilterHeader>& headers,
+        const Vector<FilterData>& filters) const noexcept -> bool;
     auto StoreSync(const Chain chain, const SyncItems& items) const noexcept
         -> bool;
     auto StoreTransaction(const block::bitcoin::Transaction& tx) const noexcept

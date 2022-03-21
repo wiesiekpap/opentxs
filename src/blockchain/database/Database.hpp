@@ -484,16 +484,15 @@ public:
     {
         return lmdb_.TransactionRW();
     }
-    auto StoreFilters(
-        const cfilter::Type type,
-        UnallocatedVector<Filter> filters) noexcept -> bool final
+    auto StoreFilters(const cfilter::Type type, Vector<Filter> filters) noexcept
+        -> bool final
     {
         return filters_.StoreFilters(type, std::move(filters));
     }
     auto StoreFilters(
         const cfilter::Type type,
-        const UnallocatedVector<Header>& headers,
-        const UnallocatedVector<Filter>& filters,
+        const Vector<Header>& headers,
+        const Vector<Filter>& filters,
         const block::Position& tip) noexcept -> bool final
     {
         return filters_.StoreFilters(type, headers, filters, tip);
@@ -501,7 +500,7 @@ public:
     auto StoreFilterHeaders(
         const cfilter::Type type,
         const ReadView previous,
-        const UnallocatedVector<Header> headers) noexcept -> bool final
+        const Vector<Header> headers) noexcept -> bool final
     {
         return filters_.StoreHeaders(type, previous, std::move(headers));
     }

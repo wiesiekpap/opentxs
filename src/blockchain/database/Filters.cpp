@@ -117,9 +117,8 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
 
         if (needHeader) {
             auto header = api_.Factory().Data(genesis.first, StringStyle::Hex);
-            auto headers =
-                UnallocatedVector<node::internal::FilterDatabase::Header>{
-                    {blockHash, std::move(header), filterHash->Bytes()}};
+            auto headers = Vector<node::internal::FilterDatabase::Header>{
+                {blockHash, std::move(header), filterHash->Bytes()}};
             success = common_.StoreFilterHeaders(style, headers);
 
             OT_ASSERT(success);
@@ -130,8 +129,7 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
         }
 
         if (needFilter) {
-            auto filters =
-                UnallocatedVector<node::internal::FilterDatabase::Filter>{};
+            auto filters = Vector<node::internal::FilterDatabase::Filter>{};
             filters.emplace_back(blockHash.Bytes(), std::move(gcs));
 
             success = common_.StoreFilters(style, filters);
@@ -210,8 +208,8 @@ auto Filters::SetTip(const cfilter::Type type, const block::Position& position)
 
 auto Filters::StoreFilters(
     const cfilter::Type type,
-    const UnallocatedVector<Header>& headers,
-    const UnallocatedVector<Filter>& filters,
+    const Vector<Header>& headers,
+    const Vector<Filter>& filters,
     const block::Position& tip) const noexcept -> bool
 {
     auto output = common_.StoreFilters(type, headers, filters);
@@ -256,9 +254,8 @@ auto Filters::StoreFilters(
     return parentTxn.Finalize(true);
 }
 
-auto Filters::StoreFilters(
-    const cfilter::Type type,
-    UnallocatedVector<Filter> filters) const noexcept -> bool
+auto Filters::StoreFilters(const cfilter::Type type, Vector<Filter> filters)
+    const noexcept -> bool
 {
     return common_.StoreFilters(type, filters);
 }
@@ -266,7 +263,7 @@ auto Filters::StoreFilters(
 auto Filters::StoreHeaders(
     const cfilter::Type type,
     const ReadView previous,
-    const UnallocatedVector<Header> headers) const noexcept -> bool
+    const Vector<Header> headers) const noexcept -> bool
 {
     return common_.StoreFilterHeaders(type, headers);
 }

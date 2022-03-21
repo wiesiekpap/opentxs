@@ -309,8 +309,8 @@ auto FilterOracle::BlockIndexer::queue_processing(
 {
     if (0u == data.size()) { return; }
 
-    auto filters = UnallocatedVector<internal::FilterDatabase::Filter>{};
-    auto headers = UnallocatedVector<internal::FilterDatabase::Header>{};
+    auto filters = Vector<internal::FilterDatabase::Filter>{};
+    auto headers = Vector<internal::FilterDatabase::Header>{};
     auto cache = UnallocatedVector<BlockIndexerData>{};
     const auto& tip = data.back();
 

@@ -197,7 +197,7 @@ private:
     {
         if (0 == data.size()) { return; }
 
-        auto filters = UnallocatedVector<internal::FilterDatabase::Filter>{};
+        auto filters = Vector<internal::FilterDatabase::Filter>{};
 
         for (const auto& task : data) {
             const auto& prior = task->previous_.get();
