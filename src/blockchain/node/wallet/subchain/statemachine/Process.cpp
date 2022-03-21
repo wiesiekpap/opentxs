@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
@@ -26,6 +27,8 @@
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -42,6 +45,7 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -78,11 +82,30 @@ Process::Imp::Imp(
     , to_index_(pipeline_.Internal().ExtraSocket(0))
     , waiting_(alloc)
     , downloading_(alloc)
-    , index_(alloc)
-    , downloaded_(alloc)
+    , downloading_index_(alloc)
+    , ready_(alloc)
+    , processing_(alloc)
     , txid_cache_()
+    , counter_()
+    , running_(counter_.Allocate(4))
 {
     txid_cache_.reserve(1024);
+}
+
+auto Process::Imp::do_process(
+    const block::Position position,
+    const BlockOracle::BitcoinBlock_p block) noexcept -> void
+{
+    OT_ASSERT(block);
+
+    parent_.ProcessBlock(position, *block);
+    pipeline_.Push([&] {
+        auto out = MakeWork(Work::process);
+        out.AddFrame(position.first);
+        out.AddFrame(position.second);
+
+        return out;
+    }());
 }
 
 auto Process::Imp::do_startup() noexcept -> void
@@ -108,6 +131,30 @@ auto Process::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
             [&](const auto& pos) { return pos > parent; }),
         waiting_.end());
 
+    for (auto i{ready_.begin()}, end{ready_.end()}; i != end;) {
+        const auto& [position, block] = *i;
+
+        if (position > parent) {
+            ready_.erase(i, end);
+
+            break;
+        } else {
+            ++i;
+        }
+    }
+
+    for (auto i{processing_.begin()}, end{processing_.end()}; i != end;) {
+        const auto& [position, block] = *i;
+
+        if (position > parent) {
+            processing_.erase(i, end);
+
+            break;
+        } else {
+            ++i;
+        }
+    }
+
     {
         auto erase{false};
         auto& map = downloading_;
@@ -117,7 +164,7 @@ auto Process::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
 
             if (erase || (position > parent)) {
                 erase = true;
-                index_.erase(position.second);
+                downloading_index_.erase(position.second);
                 i = map.erase(i);
             } else {
                 ++i;
@@ -128,38 +175,24 @@ auto Process::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
 
 auto Process::Imp::process_block(block::pHash&& hash) noexcept -> void
 {
-    if (auto index = index_.find(hash); index_.end() != index) {
+    if (auto index = downloading_index_.find(hash);
+        downloading_index_.end() != index) {
         log_(OT_PRETTY_CLASS())(parent_.name_)(" processing block ")(
             hash->asHex())
             .Flush();
         auto& data = index->second;
         const auto& [position, future] = *data;
-        const auto block = future.get();
+        auto block = future.get();
 
         OT_ASSERT(block);
 
-        parent_.ProcessBlock(position, *block);
-        const auto sent = to_index_.SendDeferred([&] {
-            auto out = MakeWork(Work::update);
-            encode(
-                [&] {
-                    auto status = Vector<ScanStatus>{get_allocator()};
-                    status.emplace_back(ScanState::processed, data->first);
-
-                    return status;
-                }(),
-                out);
-
-            return out;
-        }());
-
-        OT_ASSERT(sent);
-
+        ready_.try_emplace(position, std::move(block));
         downloading_.erase(data);
-        index_.erase(index);
-        txid_cache_.emplace(block::pHash{hash});
-        do_work();
+        downloading_index_.erase(index);
+        txid_cache_.emplace(std::move(hash));
     }
+
+    do_work();
 }
 
 auto Process::Imp::process_mempool(Message&& in) noexcept -> void
@@ -187,6 +220,36 @@ auto Process::Imp::process_mempool(Message&& in) noexcept -> void
     }
 }
 
+auto Process::Imp::process_process(block::Position&& pos) noexcept -> void
+{
+    if (const auto i = processing_.find(pos); i == processing_.end()) {
+        log_(OT_PRETTY_CLASS())(parent_.name_)(" block ")(print(pos))(
+            " has been removed from the processing list due to reorg")
+            .Flush();
+
+        return;
+    } else {
+        processing_.erase(i);
+        const auto sent = to_index_.SendDeferred([&] {
+            auto out = MakeWork(Work::update);
+            encode(
+                [&] {
+                    auto status = Vector<ScanStatus>{get_allocator()};
+                    status.emplace_back(ScanState::processed, std::move(pos));
+
+                    return status;
+                }(),
+                out);
+
+            return out;
+        }());
+
+        OT_ASSERT(sent);
+    }
+
+    do_work();
+}
+
 auto Process::Imp::process_update(Message&& msg) noexcept -> void
 {
     auto dirty = Vector<ScanStatus>{get_allocator()};
@@ -200,7 +263,7 @@ auto Process::Imp::process_update(Message&& msg) noexcept -> void
     do_work();
 }
 
-auto Process::Imp::work() noexcept -> bool
+auto Process::Imp::queue_downloads() noexcept -> void
 {
     while ((downloading_.size() < download_limit_) && (0u < waiting_.size())) {
         auto& position = waiting_.front();
@@ -210,9 +273,42 @@ auto Process::Imp::work() noexcept -> bool
         auto future = parent_.node_.BlockOracle().LoadBitcoin(position.second);
         auto [it, added] =
             downloading_.try_emplace(std::move(position), std::move(future));
-        index_.emplace(it->first.second, it);
+        downloading_index_.emplace(it->first.second, it);
         waiting_.pop_front();
     }
+}
+
+auto Process::Imp::queue_process() noexcept -> void
+{
+    const auto ready = [this] {
+        return (processing_.size() < download_limit_) && (0u < ready_.size()) &&
+               (false == running_.is_limited());
+    };
+
+    while (ready()) {
+        const auto i = processing_.insert(
+            processing_.begin(), ready_.extract(ready_.begin()));
+
+        OT_ASSERT(processing_.end() != i);
+
+        auto& [position, block] = *i;
+        log_(OT_PRETTY_CLASS())(parent_.name_)(" adding block ")(
+            opentxs::print(position))(" to process queue")
+            .Flush();
+        ++running_;
+        auto post = std::make_shared<ScopeGuard>([this] { --running_; });
+        parent_.api_.Network().Asio().Internal().Post(
+            ThreadPool::Blockchain,
+            [this, post, pos{i->first}, ptr{i->second}] {
+                do_process(pos, ptr);
+            });
+    }
+}
+
+auto Process::Imp::work() noexcept -> bool
+{
+    queue_downloads();
+    queue_process();
 
     return false;
 }
