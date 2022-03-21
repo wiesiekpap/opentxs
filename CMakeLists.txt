@@ -713,6 +713,10 @@ if(OT_WITH_BLOCKCHAIN)
     message(FATAL_ERROR "Blockchain support requires BIP32 support")
   endif()
 
+  if(NOT OT_CRYPTO_USING_OPENSSL)
+    message(FATAL_ERROR "Blockchain support requires OpenSSL")
+  endif()
+
   set(OT_BLOCKCHAIN_EXPORT 1)
 else()
   set(OT_BLOCKCHAIN_EXPORT 0)

@@ -18,7 +18,6 @@ target_sources(
     "${CMAKE_CURRENT_BINARY_DIR}/protobuf.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/secp256k1.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/simpleini.cpp"
-    "${CMAKE_CURRENT_BINARY_DIR}/trezor.cpp"
     "License.cpp"
     "License.hpp"
     "argon.cpp"

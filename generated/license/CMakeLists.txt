@@ -63,11 +63,6 @@ file(
   "${opentxs_SOURCE_DIR}/deps/simpleini/LICENCE.txt"
   SIMPLEINI_LICENSE_TEXT
 )
-file(
-  READ
-  "${opentxs_SOURCE_DIR}/src/crypto/library/trezor/COPYING"
-  TREZOR_LICENSE_TEXT
-)
 
 configure_file(
   "base58.cpp.in"
@@ -168,10 +163,5 @@ endif()
 configure_file(
   "simpleini.cpp.in"
   "${opentxs_BINARY_DIR}/src/util/license/simpleini.cpp"
-  @ONLY
-)
-configure_file(
-  "trezor.cpp.in"
-  "${opentxs_BINARY_DIR}/src/util/license/trezor.cpp"
   @ONLY
 )

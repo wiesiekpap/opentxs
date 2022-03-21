@@ -119,19 +119,6 @@ private:
     using SaMap = UnallocatedMap<SaType, opentxs::crypto::SymmetricProvider*>;
     using SsMap = UnallocatedMap<SsType, opentxs::crypto::SymmetricProvider*>;
 
-    static auto pbkdf2_choose(
-        std::unique_ptr<opentxs::crypto::Sodium>& sodium,
-        std::unique_ptr<opentxs::crypto::OpenSSL>& openssl) noexcept
-        -> const opentxs::crypto::Pbkdf2&;
-    static auto ripemd160_choose(
-        std::unique_ptr<opentxs::crypto::Sodium>& sodium,
-        std::unique_ptr<opentxs::crypto::OpenSSL>& openssl) noexcept
-        -> const opentxs::crypto::Ripemd160&;
-    static auto sha_choose(
-        std::unique_ptr<opentxs::crypto::Sodium>& sodium,
-        std::unique_ptr<opentxs::crypto::OpenSSL>& openssl) noexcept
-        -> const opentxs::crypto::HashingProvider&;
-
     static const opentxs::crypto::blank::EcdsaProvider blank_;
 
     std::unique_ptr<api::crypto::Config> config_;
