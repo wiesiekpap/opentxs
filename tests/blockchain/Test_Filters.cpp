@@ -27,6 +27,7 @@
 #include "opentxs/blockchain/bitcoin/bloom/BloomUpdateFlag.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
@@ -465,32 +466,32 @@ TEST_F(Test_Filters, bip158_headers)
     auto calculated_a = bc::FilterHashToHeader(api_, hash->Bytes(), previous);
     auto calculated_b = bc::FilterToHeader(api_, filter_0->Bytes(), previous);
 
-    EXPECT_EQ(calculated_a.get(), calculated_b.get());
-    EXPECT_EQ(calculated_a.get(), expected_0.get());
+    EXPECT_EQ(calculated_a, calculated_b);
+    EXPECT_EQ(calculated_a, expected_0.get());
 
     previous = expected_0->Bytes();
     hash = bc::FilterToHash(api_, filter_1->Bytes());
     calculated_a = bc::FilterHashToHeader(api_, hash->Bytes(), previous);
     calculated_b = bc::FilterToHeader(api_, filter_1->Bytes(), previous);
 
-    EXPECT_EQ(calculated_a.get(), calculated_b.get());
-    EXPECT_EQ(calculated_a.get(), expected_1.get());
+    EXPECT_EQ(calculated_a, calculated_b);
+    EXPECT_EQ(calculated_a, expected_1.get());
 
     previous = expected_1->Bytes();
     hash = bc::FilterToHash(api_, filter_2->Bytes());
     calculated_a = bc::FilterHashToHeader(api_, hash->Bytes(), previous);
     calculated_b = bc::FilterToHeader(api_, filter_2->Bytes(), previous);
 
-    EXPECT_EQ(calculated_a.get(), calculated_b.get());
-    EXPECT_EQ(calculated_a.get(), expected_2.get());
+    EXPECT_EQ(calculated_a, calculated_b);
+    EXPECT_EQ(calculated_a, expected_2.get());
 
     previous = expected_2->Bytes();
     hash = bc::FilterToHash(api_, filter_3->Bytes());
     calculated_a = bc::FilterHashToHeader(api_, hash->Bytes(), previous);
     calculated_b = bc::FilterToHeader(api_, filter_3->Bytes(), previous);
 
-    EXPECT_EQ(calculated_a.get(), calculated_b.get());
-    EXPECT_EQ(calculated_a.get(), expected_3.get());
+    EXPECT_EQ(calculated_a, calculated_b);
+    EXPECT_EQ(calculated_a, expected_3.get());
 }
 
 TEST_F(Test_Filters, hash)

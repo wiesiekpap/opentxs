@@ -9,7 +9,6 @@
 
 #include <boost/multiprecision/cpp_int.hpp>
 #include <algorithm>
-#include <array>
 #include <cstddef>
 #include <cstring>
 #include <iterator>
@@ -28,6 +27,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/display/Definition.hpp"
@@ -395,11 +395,11 @@ auto Deserialize(const api::Session& api, const ReadView in) noexcept
 auto FilterHashToHeader(
     const api::Session& api,
     const ReadView hash,
-    const ReadView previous) noexcept -> OTData
+    const ReadView previous) noexcept -> cfilter::Header
 {
-    static const auto blank = std::array<std::uint8_t, 32u>{};
+    static const auto blank = cfilter::Header{};
     auto preimage = api.Factory().DataFromBytes(hash);
-    auto output = api.Factory().Data();
+    auto output = cfilter::Header{};
 
     if (0u == previous.size()) {
         preimage->Concatenate(blank.data(), blank.size());
@@ -407,7 +407,7 @@ auto FilterHashToHeader(
         preimage->Concatenate(previous.data(), previous.size());
     }
 
-    FilterHash(api, Type::Bitcoin, preimage->Bytes(), output->WriteInto());
+    FilterHash(api, Type::Bitcoin, preimage->Bytes(), output.WriteInto());
 
     return output;
 }
@@ -424,7 +424,7 @@ auto FilterToHash(const api::Session& api, const ReadView filter) noexcept
 auto FilterToHeader(
     const api::Session& api,
     const ReadView filter,
-    const ReadView previous) noexcept -> OTData
+    const ReadView previous) noexcept -> cfilter::Header
 {
     return FilterHashToHeader(
         api, FilterToHash(api, filter)->Bytes(), previous);

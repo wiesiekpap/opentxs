@@ -21,6 +21,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/bloom/BloomFilter.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -132,7 +133,7 @@ struct FilterPrefixChained {
     HashField hash_;
     HashField previous_;
 
-    auto Previous() const noexcept -> cfilter::pHeader;
+    auto Previous() const noexcept -> cfilter::Header;
     auto Stop() const noexcept -> block::pHash;
     auto Type(const blockchain::Type chain) const noexcept -> cfilter::Type;
 

@@ -22,6 +22,8 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/bloom/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/display/Definition.hpp"
@@ -45,6 +47,11 @@ namespace block
 {
 class Block;
 }  // namespace block
+
+namespace cfilter
+{
+class Header;
+}  // namespace cfilter
 
 class BloomFilter;
 class GCS;
@@ -185,13 +192,13 @@ auto BlockHashToFilterKey(const ReadView hash) noexcept(false) -> ReadView;
 auto FilterHashToHeader(
     const api::Session& api,
     const ReadView hash,
-    const ReadView previous = {}) noexcept -> OTData;
+    const ReadView previous = {}) noexcept -> cfilter::Header;
 auto FilterToHash(const api::Session& api, const ReadView filter) noexcept
     -> OTData;
 auto FilterToHeader(
     const api::Session& api,
     const ReadView filter,
-    const ReadView previous = {}) noexcept -> OTData;
+    const ReadView previous = {}) noexcept -> cfilter::Header;
 auto Format(const Type chain, const opentxs::Amount&) noexcept
     -> UnallocatedCString;
 auto GetFilterParams(const cfilter::Type type) noexcept(false) -> FilterParams;

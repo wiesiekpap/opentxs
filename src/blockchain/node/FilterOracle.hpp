@@ -28,6 +28,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
@@ -146,7 +147,7 @@ public:
         return database_.LoadFilters(type, blocks);
     }
     auto LoadFilterHeader(const cfilter::Type type, const block::Hash& block)
-        const noexcept -> Header final
+        const noexcept -> cfilter::Header final
     {
         return database_.LoadFilterHeader(type, block.Bytes());
     }

@@ -18,6 +18,11 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
+namespace cfilter
+{
+class Header;
+}  // namespace cfilter
+
 class GCS;
 }  // namespace blockchain
 // }  // namespace v1
@@ -40,7 +45,7 @@ public:
         -> Vector<std::unique_ptr<const GCS>> = 0;
     virtual auto LoadFilterHeader(
         const cfilter::Type type,
-        const block::Hash& block) const noexcept -> cfilter::pHeader = 0;
+        const block::Hash& block) const noexcept -> cfilter::Header = 0;
 
     virtual ~FilterOracle() = default;
 

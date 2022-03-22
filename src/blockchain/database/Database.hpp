@@ -35,6 +35,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
@@ -394,7 +395,7 @@ public:
         return filters_.LoadFilterHash(type, block);
     }
     auto LoadFilterHeader(const cfilter::Type type, const ReadView block)
-        const noexcept -> Hash final
+        const noexcept -> cfilter::Header final
     {
         return filters_.LoadFilterHeader(type, block);
     }
@@ -491,7 +492,7 @@ public:
     }
     auto StoreFilters(
         const cfilter::Type type,
-        const Vector<Header>& headers,
+        const Vector<CFHeaderParams>& headers,
         const Vector<Filter>& filters,
         const block::Position& tip) noexcept -> bool final
     {
@@ -500,7 +501,7 @@ public:
     auto StoreFilterHeaders(
         const cfilter::Type type,
         const ReadView previous,
-        const Vector<Header> headers) noexcept -> bool final
+        const Vector<CFHeaderParams> headers) noexcept -> bool final
     {
         return filters_.StoreHeaders(type, previous, std::move(headers));
     }

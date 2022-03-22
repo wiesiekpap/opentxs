@@ -84,12 +84,12 @@ public:
         const AllocateOutput header) const noexcept -> bool;
     auto StoreFilterHeaders(
         const cfilter::Type type,
-        const Vector<FilterHeader>& headers) const noexcept -> bool;
+        const Vector<CFHeaderParams>& headers) const noexcept -> bool;
     auto StoreFilters(const cfilter::Type type, Vector<FilterData>& filters)
         const noexcept -> bool;
     auto StoreFilters(
         const cfilter::Type type,
-        const Vector<FilterHeader>& headers,
+        const Vector<CFHeaderParams>& headers,
         const Vector<FilterData>& filters) const noexcept -> bool;
 
     BlockFilter(

@@ -56,6 +56,7 @@
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #endif  // OT_BLOCKCHAIN
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/Block.hpp"

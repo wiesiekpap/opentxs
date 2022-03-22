@@ -27,7 +27,7 @@ namespace opentxs::blockchain::node::implementation
 using HeaderDM = download::Manager<
     FilterOracle::HeaderDownloader,
     cfilter::pHash,
-    cfilter::pHeader,
+    cfilter::Header,
     cfilter::Type>;
 using HeaderWorker = Worker<FilterOracle::HeaderDownloader, api::Session>;
 
@@ -52,7 +52,7 @@ public:
         : HeaderDM(
               [&] { return db.FilterHeaderTip(type); }(),
               [&] {
-                  auto promise = std::promise<cfilter::pHeader>{};
+                  auto promise = std::promise<cfilter::Header>{};
                   const auto tip = db.FilterHeaderTip(type);
                   promise.set_value(
                       db.LoadFilterHeader(type, tip.second->Bytes()));
@@ -113,7 +113,7 @@ private:
     }
     auto check_task(TaskType&) const noexcept -> void {}
     auto trigger_state_machine() const noexcept -> void { trigger(); }
-    auto update_tip(const Position& position, const cfilter::pHeader&)
+    auto update_tip(const Position& position, const cfilter::Header&)
         const noexcept -> void
     {
         const auto saved = db_.SetFilterHeaderTip(type_, position);
@@ -194,7 +194,7 @@ private:
             auto& first = hashes.front();
 
             if (first != current) {
-                auto promise = std::promise<cfilter::pHeader>{};
+                auto promise = std::promise<cfilter::Header>{};
                 promise.set_value(
                     db_.LoadFilterHeader(type_, first.second->Bytes()));
                 prior.emplace(std::move(first), promise.get_future());
@@ -211,8 +211,8 @@ private:
 
         auto position = Position{
             body.at(1).as<block::Height>(), api_.Factory().Data(body.at(2))};
-        auto promise = std::promise<cfilter::pHeader>{};
-        promise.set_value(api_.Factory().Data(body.at(3)));
+        auto promise = std::promise<cfilter::Header>{};
+        promise.set_value(body.at(3).Bytes());
         Reset(position, promise.get_future());
     }
     auto queue_processing(DownloadedData&& data) noexcept -> void
@@ -221,12 +221,12 @@ private:
 
         const auto& previous = data.front()->previous_.get();
         auto hashes = Vector<block::pHash>{};
-        auto headers = Vector<internal::FilterDatabase::Header>{};
+        auto headers = Vector<internal::FilterDatabase::CFHeaderParams>{};
 
         for (const auto& task : data) {
             const auto& hash = hashes.emplace_back(task->data_.get());
             auto header = blockchain::internal::FilterHashToHeader(
-                api_, hash->Bytes(), task->previous_.get()->Bytes());
+                api_, hash->Bytes(), task->previous_.get().Bytes());
             const auto& position = task->position_;
             const auto check = checkpoint_(position, header);
 
@@ -237,7 +237,7 @@ private:
                 const auto good =
                     db_.LoadFilterHeader(type_, check.second->Bytes());
 
-                OT_ASSERT(false == good->empty());
+                OT_ASSERT(false == good.IsNull());
 
                 auto work = MakeWork(Work::reset_filter_tip);
                 work.AddFrame(check.first);
@@ -247,8 +247,8 @@ private:
             }
         }
 
-        const auto saved = db_.StoreFilterHeaders(
-            type_, previous->Bytes(), std::move(headers));
+        const auto saved =
+            db_.StoreFilterHeaders(type_, previous.Bytes(), std::move(headers));
 
         OT_ASSERT(saved);
     }

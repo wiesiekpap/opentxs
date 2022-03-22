@@ -35,6 +35,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -468,9 +469,10 @@ auto GCS::hash_to_range(const ReadView in) const noexcept -> std::uint64_t
         api_, key_->Bytes(), range(count_, false_positive_rate_), in);
 }
 
-auto GCS::Header(const ReadView previous) const noexcept -> OTData
+auto GCS::Header(const cfilter::Header& previous) const noexcept
+    -> cfilter::Header
 {
-    return internal::FilterToHeader(api_, Encode()->Bytes(), previous);
+    return internal::FilterToHeader(api_, Encode()->Bytes(), previous.Bytes());
 }
 
 auto GCS::Match(const Targets& targets) const noexcept -> Matches

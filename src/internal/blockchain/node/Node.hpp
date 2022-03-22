@@ -95,6 +95,11 @@ class Header;
 class Outpoint;
 }  // namespace block
 
+namespace cfilter
+{
+class Header;
+}  // namespace cfilter
+
 namespace internal
 {
 struct Database;
@@ -205,9 +210,9 @@ using Segments = UnallocatedSet<ChainSegment>;
 using DisconnectedList = UnallocatedMultimap<block::pHash, block::pHash>;
 
 using CfheaderJob =
-    download::Batch<cfilter::pHash, cfilter::pHeader, cfilter::Type>;
-using CfilterJob = download::
-    Batch<std::unique_ptr<const GCS>, cfilter::pHeader, cfilter::Type>;
+    download::Batch<cfilter::pHash, cfilter::Header, cfilter::Type>;
+using CfilterJob =
+    download::Batch<std::unique_ptr<const GCS>, cfilter::Header, cfilter::Type>;
 using BlockJob =
     download::Batch<std::shared_ptr<const block::bitcoin::Block>, int>;
 }  // namespace opentxs::blockchain::node
@@ -271,7 +276,7 @@ struct Config {
 struct FilterDatabase {
     using Hash = block::pHash;
     /// block hash, filter header, filter hash
-    using Header = std::tuple<block::pHash, cfilter::pHeader, ReadView>;
+    using CFHeaderParams = std::tuple<block::pHash, cfilter::Header, ReadView>;
     /// block hash, filter
     using Filter = std::pair<ReadView, std::unique_ptr<const GCS>>;
 
@@ -294,7 +299,7 @@ struct FilterDatabase {
         const noexcept -> Hash = 0;
     virtual auto LoadFilterHeader(
         const cfilter::Type type,
-        const ReadView block) const noexcept -> Hash = 0;
+        const ReadView block) const noexcept -> cfilter::Header = 0;
     virtual auto SetFilterHeaderTip(
         const cfilter::Type type,
         const block::Position& position) noexcept -> bool = 0;
@@ -306,20 +311,18 @@ struct FilterDatabase {
         Vector<Filter> filters) noexcept -> bool = 0;
     virtual auto StoreFilters(
         const cfilter::Type type,
-        const Vector<Header>& headers,
+        const Vector<CFHeaderParams>& headers,
         const Vector<Filter>& filters,
         const block::Position& tip) noexcept -> bool = 0;
     virtual auto StoreFilterHeaders(
         const cfilter::Type type,
         const ReadView previous,
-        const Vector<Header> headers) noexcept -> bool = 0;
+        const Vector<CFHeaderParams> headers) noexcept -> bool = 0;
 
     virtual ~FilterDatabase() = default;
 };
 
 struct FilterOracle : virtual public node::FilterOracle {
-    using Header = FilterDatabase::Hash;
-
     virtual auto GetFilterJob() const noexcept -> CfilterJob = 0;
     virtual auto GetHeaderJob() const noexcept -> CfheaderJob = 0;
     virtual auto Heartbeat() const noexcept -> void = 0;

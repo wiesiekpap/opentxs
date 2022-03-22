@@ -31,7 +31,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
-#include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
@@ -103,7 +103,7 @@ struct Test_BitcoinBlock : public ::testing::Test {
         if (false == bool(genesisFilter)) { return false; }
 
         EXPECT_EQ(filter.asHex(), genesisFilter->Encode()->asHex());
-        EXPECT_EQ(header.asHex(), genesisHeader->asHex());
+        EXPECT_EQ(header.asHex(), genesisHeader.asHex());
 
         return true;
     }
@@ -183,15 +183,13 @@ struct Test_BitcoinBlock : public ::testing::Test {
             EXPECT_EQ(gcs2->Encode(), gcs->Encode());
         }
 
-        static const auto blank = std::array<char, 32>{};
+        static const auto blank = ot::blockchain::cfilter::Header{};
         const auto filter = gcs->Encode();
-        const auto header = gcs->Header({});
-        const auto header2 = gcs->Header({blank.data(), blank.size()});
+        const auto header = gcs->Header(blank);
         const auto& [expectedFilter, expectedHeader] = filterMap.at(filterType);
 
         EXPECT_EQ(filter->asHex(), expectedFilter);
-        EXPECT_EQ(header->asHex(), expectedHeader);
-        EXPECT_EQ(header->asHex(), header2->asHex());
+        EXPECT_EQ(header.asHex(), expectedHeader);
         EXPECT_TRUE(CompareToOracle(chain, filterType, filter, header));
 
         return true;
@@ -375,7 +373,7 @@ TEST_F(Test_BitcoinBlock, gcs_headers)
         const auto& gcs = *pGCS;
         const auto header = gcs.Header(previousHeader->Bytes());
 
-        EXPECT_EQ(header.get(), vector.FilterHeader(api_).get());
+        EXPECT_EQ(header, vector.FilterHeader(api_).get());
     }
 }
 
@@ -419,7 +417,7 @@ TEST_F(Test_BitcoinBlock, bch_filter_1307544)
     const auto& gcs = *pGCS;
     const auto header = gcs.Header(previousHeader->Bytes());
 
-    EXPECT_EQ(header.get(), expectedHeader.get());
+    EXPECT_EQ(header, expectedHeader.get());
 }
 
 TEST_F(Test_BitcoinBlock, bch_filter_1307723)
@@ -445,6 +443,6 @@ TEST_F(Test_BitcoinBlock, bch_filter_1307723)
     const auto& gcs = *pGCS;
     const auto header = gcs.Header(previousHeader->Bytes());
 
-    EXPECT_EQ(header.get(), expectedHeader.get());
+    EXPECT_EQ(header, expectedHeader.get());
 }
 }  // namespace ottest

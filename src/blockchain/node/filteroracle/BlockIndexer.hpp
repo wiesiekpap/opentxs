@@ -26,6 +26,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/core/Data.hpp"
@@ -85,7 +86,7 @@ namespace opentxs::blockchain::node::implementation
 using BlockDMFilter = download::Manager<
     FilterOracle::BlockIndexer,
     std::shared_ptr<const block::bitcoin::Block>,
-    cfilter::pHeader,
+    cfilter::Header,
     cfilter::Type>;
 using BlockWorkerFilter = Worker<FilterOracle::BlockIndexer, api::Session>;
 
@@ -129,7 +130,7 @@ private:
         UnallocatedVector<BlockIndexerData>& cache) const noexcept -> bool;
     auto check_task(TaskType&) const noexcept -> void {}
     auto trigger_state_machine() const noexcept -> void { trigger(); }
-    auto update_tip(const Position& position, const cfilter::pHeader&)
+    auto update_tip(const Position& position, const cfilter::Header&)
         const noexcept -> void;
 
     auto download() noexcept -> void;
@@ -148,15 +149,15 @@ struct FilterOracle::BlockIndexerData {
     const cfilter::Type type_;
     cfilter::pHash filter_hash_;
     internal::FilterDatabase::Filter& filter_data_;
-    internal::FilterDatabase::Header& header_data_;
+    internal::FilterDatabase::CFHeaderParams& header_data_;
     Outstanding& job_counter_;
 
     BlockIndexerData(
-        OTData blank,
+        cfilter::pHash blank,
         const Task& data,
         const cfilter::Type type,
         internal::FilterDatabase::Filter& filter,
-        internal::FilterDatabase::Header& header,
+        internal::FilterDatabase::CFHeaderParams& header,
         Outstanding& jobCounter) noexcept
         : incoming_data_(data)
         , type_(type)
