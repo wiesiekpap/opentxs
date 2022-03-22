@@ -20,8 +20,7 @@
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
@@ -129,6 +128,8 @@ auto BitcoinP2PCfheaders(
 
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
+// TODO consider changing previousHeader to const cfilter::Header& if already
+// instantiated by the caller
 Cfheaders::Cfheaders(
     const api::Session& api,
     const blockchain::Type network,
@@ -139,7 +140,7 @@ Cfheaders::Cfheaders(
     : Message(api, network, bitcoin::Command::cfheaders)
     , type_(type)
     , stop_(stop)
-    , previous_(api_.Factory().DataFromBytes(previousHeader))
+    , previous_(previousHeader)
     , payload_(headers)
 {
     init_hash();

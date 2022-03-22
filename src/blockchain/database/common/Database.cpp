@@ -619,7 +619,7 @@ auto Database::StoreBlockHeaders(const UpdatedHeader& headers) const noexcept
 
 auto Database::StoreFilterHeaders(
     const cfilter::Type type,
-    const Vector<FilterHeader>& headers) const noexcept -> bool
+    const Vector<CFHeaderParams>& headers) const noexcept -> bool
 {
     return imp_.filters_.StoreFilterHeaders(type, headers);
 }
@@ -633,7 +633,7 @@ auto Database::StoreFilters(
 
 auto Database::StoreFilters(
     const cfilter::Type type,
-    const Vector<FilterHeader>& headers,
+    const Vector<CFHeaderParams>& headers,
     const Vector<FilterData>& filters) const noexcept -> bool
 {
     return imp_.filters_.StoreFilters(type, headers, filters);

@@ -46,6 +46,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
@@ -596,7 +597,7 @@ auto Peer::process_cfheaders(
 
         if (filterHash != receivedFilterHeader) {
             LogVerbose()(OT_PRETTY_CLASS())("Unexpected filter header: ")(
-                receivedFilterHeader->asHex())(". Expected: ")(
+                receivedFilterHeader.asHex())(". Expected: ")(
                 filterHash->asHex())
                 .Flush();
 
@@ -948,14 +949,13 @@ auto Peer::process_getcfheaders(
     const auto previousHeader =
         fOracle.LoadFilterHeader(filterType, *blocks.cbegin());
 
-    if (previousHeader->empty()) { return; }
+    if (previousHeader.empty()) { return; }
 
-    auto filterHashes =
-        UnallocatedVector<node::internal::FilterOracle::Header>{};
+    auto filterHashes = UnallocatedVector<cfilter::pHash>{};
     const auto start = std::size_t{fromGenesis ? 0u : 1u};
     static const auto blank = std::array<char, 32>{};
     const auto previous = fromGenesis ? ReadView{blank.data(), blank.size()}
-                                      : previousHeader->Bytes();
+                                      : previousHeader.Bytes();
 
     for (auto i{start}; i < blocks.size(); ++i) {
         const auto& blockHash = blocks.at(i);

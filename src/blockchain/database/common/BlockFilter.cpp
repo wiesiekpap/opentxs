@@ -287,14 +287,14 @@ auto BlockFilter::store(
 
 auto BlockFilter::StoreFilterHeaders(
     const cfilter::Type type,
-    const Vector<FilterHeader>& headers) const noexcept -> bool
+    const Vector<CFHeaderParams>& headers) const noexcept -> bool
 {
     auto tx = lmdb_.TransactionRW();
 
     for (const auto& [block, header, hash] : headers) {
         auto proto = proto::BlockchainFilterHeader();
         proto.set_version(1);
-        proto.set_header(header->data(), header->size());
+        proto.set_header(header.data(), header.size());
         proto.set_hash(hash.data(), hash.size());
         auto bytes = space(proto.ByteSize());
         proto.SerializeWithCachedSizesToArray(
@@ -335,7 +335,7 @@ auto BlockFilter::StoreFilters(
 
 auto BlockFilter::StoreFilters(
     const cfilter::Type type,
-    const Vector<FilterHeader>& headers,
+    const Vector<CFHeaderParams>& headers,
     const Vector<FilterData>& filters) const noexcept -> bool
 {
     try {
@@ -387,9 +387,7 @@ auto BlockFilter::StoreFilters(
                     auto* proto = google::protobuf::Arena::Create<
                         proto::BlockchainFilterHeader>(&arena);
                     proto->set_version(1);
-                    proto->set_header(
-                        static_cast<const char*>(header->data()),
-                        header->size());
+                    proto->set_header(header.data(), header.size());
                     proto->set_hash(hash.data(), hash.size());
 
                     return proto;

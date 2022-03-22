@@ -40,18 +40,17 @@ struct Address;
 
 namespace opentxs::blockchain::database::common
 {
-using Chain = opentxs::blockchain::Type;
-using Address = opentxs::blockchain::p2p::internal::Address;
+using Chain = Type;
+using Address = p2p::internal::Address;
 using Address_p = std::unique_ptr<Address>;
-using FilterData = opentxs::blockchain::node::internal::FilterDatabase::Filter;
-using FilterHash = opentxs::blockchain::node::internal::FilterDatabase::Hash;
-using FilterHeader =
-    opentxs::blockchain::node::internal::FilterDatabase::Header;
-using Position = opentxs::blockchain::block::Position;
-using Protocol = opentxs::blockchain::p2p::Protocol;
-using Service = opentxs::blockchain::p2p::Service;
-using Type = opentxs::blockchain::p2p::Network;
-using UpdatedHeader = opentxs::blockchain::node::UpdatedHeader;
+using FilterData = node::internal::FilterDatabase::Filter;
+using FilterHash = node::internal::FilterDatabase::Hash;
+using CFHeaderParams = node::internal::FilterDatabase::CFHeaderParams;
+using Position = block::Position;
+using Protocol = p2p::Protocol;
+using Service = p2p::Service;
+using Type = p2p::Network;
+using UpdatedHeader = node::UpdatedHeader;
 using SyncTableData = std::pair<int, UnallocatedCString>;
 
 enum Table {

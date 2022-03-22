@@ -24,6 +24,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
@@ -114,9 +115,17 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
         auto success{false};
 
         if (needHeader) {
-            auto header = api_.Factory().DataFromHex(genesis.first);
-            auto headers = Vector<node::internal::FilterDatabase::Header>{
-                {blockHash, std::move(header), filterHash->Bytes()}};
+            auto headers = Vector<CFHeaderParams>{
+                {blockHash,
+                 [&](const auto& hex) {
+                     auto out = cfilter::Header{};
+                     const auto rc = out.DecodeHex(hex);
+
+                     OT_ASSERT(rc);
+
+                     return out;
+                 }(genesis.first),
+                 filterHash->Bytes()}};
             success = common_.StoreFilterHeaders(style, headers);
 
             OT_ASSERT(success);
@@ -169,16 +178,16 @@ auto Filters::LoadFilterHash(const cfilter::Type type, const ReadView block)
 }
 
 auto Filters::LoadFilterHeader(const cfilter::Type type, const ReadView block)
-    const noexcept -> Hash
+    const noexcept -> cfilter::Header
 {
-    auto output = api_.Factory().Data();
+    auto output = cfilter::Header{};
 
-    if (common_.LoadFilterHeader(type, block, output->WriteInto())) {
+    if (common_.LoadFilterHeader(type, block, output.WriteInto())) {
 
         return output;
     }
 
-    return api_.Factory().Data();
+    return {};
 }
 
 auto Filters::SetHeaderTip(
@@ -206,7 +215,7 @@ auto Filters::SetTip(const cfilter::Type type, const block::Position& position)
 
 auto Filters::StoreFilters(
     const cfilter::Type type,
-    const Vector<Header>& headers,
+    const Vector<CFHeaderParams>& headers,
     const Vector<Filter>& filters,
     const block::Position& tip) const noexcept -> bool
 {
@@ -261,7 +270,7 @@ auto Filters::StoreFilters(const cfilter::Type type, Vector<Filter> filters)
 auto Filters::StoreHeaders(
     const cfilter::Type type,
     const ReadView previous,
-    const Vector<Header> headers) const noexcept -> bool
+    const Vector<CFHeaderParams> headers) const noexcept -> bool
 {
     return common_.StoreFilterHeaders(type, headers);
 }

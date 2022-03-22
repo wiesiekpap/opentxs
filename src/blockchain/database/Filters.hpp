@@ -22,6 +22,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/core/Data.hpp"
@@ -72,7 +73,7 @@ class Filters
 public:
     using Parent = node::internal::FilterDatabase;
     using Hash = Parent::Hash;
-    using Header = Parent::Header;
+    using CFHeaderParams = Parent::CFHeaderParams;
     using Filter = Parent::Filter;
 
     auto CurrentHeaderTip(const cfilter::Type type) const noexcept
@@ -91,14 +92,14 @@ public:
     auto LoadFilterHash(const cfilter::Type type, const ReadView block)
         const noexcept -> Hash;
     auto LoadFilterHeader(const cfilter::Type type, const ReadView block)
-        const noexcept -> Hash;
+        const noexcept -> cfilter::Header;
     auto SetHeaderTip(const cfilter::Type type, const block::Position& position)
         const noexcept -> bool;
     auto SetTip(const cfilter::Type type, const block::Position& position)
         const noexcept -> bool;
     auto StoreFilters(
         const cfilter::Type type,
-        const Vector<Header>& headers,
+        const Vector<CFHeaderParams>& headers,
         const Vector<Filter>& filters,
         const block::Position& tip) const noexcept -> bool;
     auto StoreFilters(const cfilter::Type type, Vector<Filter> filters)
@@ -106,7 +107,7 @@ public:
     auto StoreHeaders(
         const cfilter::Type type,
         const ReadView previous,
-        const Vector<Header> headers) const noexcept -> bool;
+        const Vector<CFHeaderParams> headers) const noexcept -> bool;
 
     Filters(
         const api::Session& api,

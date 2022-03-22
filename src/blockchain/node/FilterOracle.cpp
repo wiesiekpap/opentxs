@@ -41,10 +41,13 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -80,14 +83,14 @@ auto BlockchainFilterOracle(
 namespace opentxs::blockchain::node::implementation
 {
 struct FilterOracle::SyncClientFilterData {
-    using Future = std::future<cfilter::pHeader>;
-    using Promise = std::promise<cfilter::pHeader>;
+    using Future = std::future<cfilter::Header>;
+    using Promise = std::promise<cfilter::Header>;
 
     const block::Hash& block_hash_;
     const network::p2p::Block& incoming_data_;
     cfilter::pHash filter_hash_;
     internal::FilterDatabase::Filter& filter_data_;
-    internal::FilterDatabase::Header& header_data_;
+    internal::FilterDatabase::CFHeaderParams& header_data_;
     Outstanding& job_counter_;
     Future previous_header_;
     Promise calculated_header_;
@@ -97,7 +100,7 @@ struct FilterOracle::SyncClientFilterData {
         const block::Hash& block,
         const network::p2p::Block& data,
         internal::FilterDatabase::Filter& filter,
-        internal::FilterDatabase::Header& header,
+        internal::FilterDatabase::CFHeaderParams& header,
         Outstanding& jobCounter,
         Future&& previous) noexcept
         : block_hash_(block)
@@ -415,7 +418,7 @@ auto FilterOracle::ProcessBlock(
     const auto& id = block.ID();
     const auto& header = block.Header();
     auto filters = Vector<internal::FilterDatabase::Filter>{};
-    auto headers = Vector<internal::FilterDatabase::Header>{};
+    auto headers = Vector<internal::FilterDatabase::CFHeaderParams>{};
     const auto& pGCS =
         filters.emplace_back(id.Bytes(), process_block(default_type_, block))
             .second;
@@ -429,10 +432,10 @@ auto FilterOracle::ProcessBlock(
     }
 
     const auto& gcs = *pGCS;
-    const auto previousHeader =
+    const auto previousCfheader =
         LoadFilterHeader(default_type_, header.ParentHash());
 
-    if (previousHeader->empty()) {
+    if (previousCfheader.IsNull()) {
         LogError()(OT_PRETTY_CLASS())("failed to load previous")(print(chain_))(
             " cfheader")
             .Flush();
@@ -442,9 +445,9 @@ auto FilterOracle::ProcessBlock(
 
     const auto filterHash = gcs.Hash();
     const auto& cfheader = std::get<1>(headers.emplace_back(
-        id, gcs.Header(previousHeader->Bytes()), filterHash->Bytes()));
+        id, gcs.Header(previousCfheader.Bytes()), filterHash->Bytes()));
 
-    if (cfheader->empty()) {
+    if (cfheader.IsNull()) {
         LogError()(OT_PRETTY_CLASS())("failed to calculate ")(print(chain_))(
             " cfheader")
             .Flush();
@@ -519,7 +522,7 @@ auto FilterOracle::ProcessSyncData(
     const network::p2p::Data& data) const noexcept -> void
 {
     auto filters = Vector<internal::FilterDatabase::Filter>{};
-    auto headers = Vector<internal::FilterDatabase::Header>{};
+    auto headers = Vector<internal::FilterDatabase::CFHeaderParams>{};
     auto cache = UnallocatedVector<SyncClientFilterData>{};
     const auto& blocks = data.Blocks();
     const auto incoming = blocks.front().Height();
@@ -574,12 +577,12 @@ auto FilterOracle::ProcessSyncData(
         auto previous = [&] {
             if (prior.empty()) {
 
-                return block::BlankHash();
+                return cfilter::Header{};
             } else {
 
                 auto output = LoadFilterHeader(filterType, prior);
 
-                if (output->empty()) {
+                if (output.IsNull()) {
                     LogError()(OT_PRETTY_CLASS())("cfheader for ")(
                         print(chain_))(" block ")(prior.asHex())(" not found")
                         .Flush();
@@ -591,15 +594,17 @@ auto FilterOracle::ProcessSyncData(
                 return output;
             }
         }();
-        static const auto blank = api_.Factory().Data();
+        static const auto blankHash = api_.Factory().Data();
+        static const auto blankCfheader = cfilter::Header{};
         static const auto blankView = ReadView{};
         auto first{true};
 
         for (auto i = std::size_t{0u}; i < count; ++i) {
             auto& filter = filters.emplace_back(blankView, nullptr);
-            auto& header = headers.emplace_back(blank, blank, blankView);
+            auto& header =
+                headers.emplace_back(blankHash, blankCfheader, blankView);
             auto& job = cache.emplace_back(
-                blank,
+                blankHash,
                 hashes.at(i),
                 blocks.at(i),
                 filter,
@@ -608,7 +613,7 @@ auto FilterOracle::ProcessSyncData(
                 [&] {
                     if (first) {
                         first = false;
-                        auto promise = std::promise<cfilter::pHeader>{};
+                        auto promise = std::promise<cfilter::Header>{};
                         auto post = ScopeGuard{
                             [&] { promise.set_value(std::move(previous)); }};
 
@@ -718,7 +723,7 @@ auto FilterOracle::ProcessSyncData(
             const auto height = data.incoming_data_.Height();
             auto& previous = data.previous_header_;
             auto& [blockHashView, pGCS] = data.filter_data_;
-            auto& [blockHash, filterHeader, filterHashView] = data.header_data_;
+            auto& [blockHash, cfheader, filterHashView] = data.header_data_;
             static constexpr auto zero = 0s;
             using State = std::future_status;
 
@@ -733,9 +738,9 @@ auto FilterOracle::ProcessSyncData(
             OT_ASSERT(pGCS);
 
             const auto& gcs = *pGCS;
-            filterHeader = gcs.Header(previous.get()->Bytes());
+            cfheader = gcs.Header(previous.get().Bytes());
 
-            if (filterHeader->empty()) {
+            if (cfheader.IsNull()) {
                 LogError()(OT_PRETTY_CLASS())("failed to calculate ")(
                     print(chain_))(" cfheader #")(height)
                     .Flush();
@@ -743,7 +748,7 @@ auto FilterOracle::ProcessSyncData(
                 throw std::runtime_error("Failed to calculate cfheader");
             }
 
-            data.calculated_header_.set_value(filterHeader);
+            data.calculated_header_.set_value(cfheader);
             LogTrace()(OT_PRETTY_CLASS())("Finished calculating cfheader for ")(
                 print(chain_))(" block at height ")(height)
                 .Flush();
@@ -836,13 +841,13 @@ auto FilterOracle::reset_tips_to(
     OT_ASSERT(resetfilter.has_value());
 
     auto lock = rLock{lock_};
-    using Future = std::shared_future<cfilter::pHeader>;
+    using Future = std::shared_future<cfilter::Header>;
     auto previous = [&]() -> Future {
         const auto& block = header_.LoadHeader(position.second);
 
         OT_ASSERT(block);
 
-        auto promise = std::promise<cfilter::pHeader>{};
+        auto promise = std::promise<cfilter::Header>{};
         promise.set_value(database_.LoadFilterHeader(
             default_type_, block->ParentHash().Bytes()));
 

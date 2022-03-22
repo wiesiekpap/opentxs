@@ -12,6 +12,7 @@
 #include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -45,7 +46,8 @@ public:
     auto ElementCount() const noexcept -> std::uint32_t final { return count_; }
     auto Encode() const noexcept -> OTData final;
     auto Hash() const noexcept -> OTData final;
-    auto Header(const ReadView previous) const noexcept -> OTData final;
+    auto Header(const cfilter::Header& previous) const noexcept
+        -> cfilter::Header final;
     auto Match(const Targets&) const noexcept -> Matches final;
     auto Serialize(proto::GCS& out) const noexcept -> bool final;
     auto Serialize(AllocateOutput out) const noexcept -> bool final;

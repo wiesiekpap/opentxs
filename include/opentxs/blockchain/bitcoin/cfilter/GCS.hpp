@@ -19,6 +19,14 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace blockchain
+{
+namespace cfilter
+{
+class Header;
+}  // namespace cfilter
+}  // namespace blockchain
+
 namespace proto
 {
 class GCS;
@@ -41,8 +49,8 @@ public:
     /// Element count as CompactSize followed by serialized filter
     virtual auto Encode() const noexcept -> OTData = 0;
     virtual auto Hash() const noexcept -> cfilter::pHash = 0;
-    virtual auto Header(const ReadView previous) const noexcept
-        -> cfilter::pHeader = 0;
+    virtual auto Header(const cfilter::Header& previous) const noexcept
+        -> cfilter::Header = 0;
     virtual auto Match(const Targets&) const noexcept -> Matches = 0;
     OPENTXS_NO_EXPORT virtual auto Serialize(proto::GCS& out) const noexcept
         -> bool = 0;

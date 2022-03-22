@@ -18,6 +18,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -89,9 +90,10 @@ FilterPrefixChained::FilterPrefixChained() noexcept
     static_assert(65 == sizeof(FilterPrefixChained));
 }
 
-auto FilterPrefixChained::Previous() const noexcept -> cfilter::pHeader
+auto FilterPrefixChained::Previous() const noexcept -> cfilter::Header
 {
-    return Data::Factory(previous_.data(), previous_.size());
+    return ReadView{
+        reinterpret_cast<const char*>(previous_.data()), previous_.size()};
 }
 
 auto FilterPrefixChained::Stop() const noexcept -> block::pHash

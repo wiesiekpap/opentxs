@@ -27,7 +27,7 @@ namespace opentxs::blockchain::node::implementation
 using FilterDM = download::Manager<
     FilterOracle::FilterDownloader,
     std::unique_ptr<const GCS>,
-    cfilter::pHeader,
+    cfilter::Header,
     cfilter::Type>;
 using FilterWorker = Worker<FilterOracle::FilterDownloader, api::Session>;
 
@@ -47,13 +47,13 @@ public:
             auto& first = hashes.front();
 
             if (first != current) {
-                auto promise = std::promise<cfilter::pHeader>{};
-                auto header =
+                auto promise = std::promise<cfilter::Header>{};
+                auto cfheader =
                     db_.LoadFilterHeader(type_, first.second->Bytes());
 
-                OT_ASSERT(false == header->empty());
+                OT_ASSERT(false == cfheader.IsNull());
 
-                promise.set_value(std::move(header));
+                promise.set_value(std::move(cfheader));
                 prior.emplace(std::move(first), promise.get_future());
             }
             hashes.erase(hashes.begin());
@@ -74,7 +74,7 @@ public:
         : FilterDM(
               [&] { return db.FilterTip(type); }(),
               [&] {
-                  auto promise = std::promise<cfilter::pHeader>{};
+                  auto promise = std::promise<cfilter::Header>{};
                   const auto tip = db.FilterTip(type);
                   promise.set_value(
                       db.LoadFilterHeader(type, tip.second->Bytes()));
@@ -130,7 +130,7 @@ private:
     }
     auto check_task(TaskType&) const noexcept -> void {}
     auto trigger_state_machine() const noexcept -> void { trigger(); }
-    auto update_tip(const Position& position, const cfilter::pHeader&)
+    auto update_tip(const Position& position, const cfilter::Header&)
         const noexcept -> void
     {
         const auto saved = db_.SetFilterTip(type_, position);
@@ -189,8 +189,8 @@ private:
 
         auto position = Position{
             body.at(1).as<block::Height>(), api_.Factory().Data(body.at(2))};
-        auto promise = std::promise<cfilter::pHeader>{};
-        promise.set_value(api_.Factory().Data(body.at(3)));
+        auto promise = std::promise<cfilter::Header>{};
+        promise.set_value(body.at(3).Bytes());
         Reset(position, promise.get_future());
     }
     auto queue_processing(DownloadedData&& data) noexcept -> void
@@ -200,14 +200,14 @@ private:
         auto filters = Vector<internal::FilterDatabase::Filter>{};
 
         for (const auto& task : data) {
-            const auto& prior = task->previous_.get();
+            const auto& priorCfheader = task->previous_.get();
             auto& gcs =
                 const_cast<std::unique_ptr<const GCS>&>(task->data_.get());
             const auto block = task->position_.second->Bytes();
             const auto expected = db_.LoadFilterHash(type_, block);
 
             if (expected == gcs->Hash()) {
-                task->process(gcs->Header(prior->Bytes()));
+                task->process(gcs->Header(priorCfheader));
                 filters.emplace_back(block, gcs.release());
             } else {
                 LogError()("Filter for block ")(
