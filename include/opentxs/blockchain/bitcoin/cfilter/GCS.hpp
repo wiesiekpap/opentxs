@@ -9,7 +9,6 @@
 
 #include <cstdint>
 
-#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -23,6 +22,7 @@ namespace blockchain
 {
 namespace cfilter
 {
+class Hash;
 class Header;
 }  // namespace cfilter
 }  // namespace blockchain
@@ -48,7 +48,7 @@ public:
     virtual auto ElementCount() const noexcept -> std::uint32_t = 0;
     /// Element count as CompactSize followed by serialized filter
     virtual auto Encode() const noexcept -> OTData = 0;
-    virtual auto Hash() const noexcept -> cfilter::pHash = 0;
+    virtual auto Hash() const noexcept -> cfilter::Hash = 0;
     virtual auto Header(const cfilter::Header& previous) const noexcept
         -> cfilter::Header = 0;
     virtual auto Match(const Targets&) const noexcept -> Matches = 0;

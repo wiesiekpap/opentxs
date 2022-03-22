@@ -213,7 +213,7 @@ private:
                 LogError()("Filter for block ")(
                     task->position_.second->asHex())(" at height ")(
                     task->position_.first)(
-                    " does not match header. Received: ")(gcs->Hash()->asHex())(
+                    " does not match header. Received: ")(gcs->Hash().asHex())(
                     " expected: ")(expected->asHex())
                     .Flush();
                 task->redownload();

@@ -5,32 +5,32 @@
 
 #include "0_stdafx.hpp"    // IWYU pragma: associated
 #include "1_Internal.hpp"  // IWYU pragma: associated
-#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"  // IWYU pragma: associated
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"  // IWYU pragma: associated
 
 namespace opentxs::blockchain::cfilter
 {
-Header::Header() noexcept
+Hash::Hash() noexcept
     : FixedByteArray()
 {
     static_assert(payload_size == 32u);
 }
 
-Header::Header(const ReadView bytes) noexcept(false)
+Hash::Hash(const ReadView bytes) noexcept(false)
     : FixedByteArray(bytes)
 {
 }
 
-Header::Header(const Header& rhs) noexcept
+Hash::Hash(const Hash& rhs) noexcept
     : FixedByteArray(rhs)
 {
 }
 
-auto Header::operator=(const Header& rhs) noexcept -> Header&
+auto Hash::operator=(const Hash& rhs) noexcept -> Hash&
 {
     FixedByteArray::operator=(rhs);
 
     return *this;
 }
 
-Header::~Header() = default;
+Hash::~Hash() = default;
 }  // namespace opentxs::blockchain::cfilter

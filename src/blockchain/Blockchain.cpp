@@ -27,6 +27,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -413,10 +414,10 @@ auto FilterHashToHeader(
 }
 
 auto FilterToHash(const api::Session& api, const ReadView filter) noexcept
-    -> OTData
+    -> cfilter::Hash
 {
-    auto output = api.Factory().Data();
-    FilterHash(api, Type::Bitcoin, filter, output->WriteInto());
+    auto output = cfilter::Hash{};
+    FilterHash(api, Type::Bitcoin, filter, output.WriteInto());
 
     return output;
 }
@@ -426,8 +427,7 @@ auto FilterToHeader(
     const ReadView filter,
     const ReadView previous) noexcept -> cfilter::Header
 {
-    return FilterHashToHeader(
-        api, FilterToHash(api, filter)->Bytes(), previous);
+    return FilterHashToHeader(api, FilterToHash(api, filter).Bytes(), previous);
 }
 
 auto GetFilterParams(const cfilter::Type type) noexcept(false) -> FilterParams

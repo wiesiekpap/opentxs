@@ -13,6 +13,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 
@@ -48,25 +49,25 @@ class Getcfcheckpt final : public internal::Getcfcheckpt,
 public:
     using BitcoinFormat = FilterPrefixBasic;
 
-    auto Stop() const noexcept -> const cfilter::Hash& final { return stop_; }
+    auto Stop() const noexcept -> const block::Hash& final { return stop_; }
     auto Type() const noexcept -> cfilter::Type final { return type_; }
 
     Getcfcheckpt(
         const api::Session& api,
         const blockchain::Type network,
         const cfilter::Type type,
-        const cfilter::Hash& stop) noexcept;
+        const block::Hash& stop) noexcept;
     Getcfcheckpt(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const cfilter::Type type,
-        const cfilter::Hash& stop) noexcept;
+        block::pHash&& stop) noexcept;
 
     ~Getcfcheckpt() final = default;
 
 private:
     const cfilter::Type type_;
-    const cfilter::pHash stop_;
+    const block::pHash stop_;
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;

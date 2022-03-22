@@ -41,8 +41,8 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
-#include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
@@ -88,7 +88,7 @@ struct FilterOracle::SyncClientFilterData {
 
     const block::Hash& block_hash_;
     const network::p2p::Block& incoming_data_;
-    cfilter::pHash filter_hash_;
+    cfilter::Hash filter_hash_;
     internal::FilterDatabase::Filter& filter_data_;
     internal::FilterDatabase::CFHeaderParams& header_data_;
     Outstanding& job_counter_;
@@ -96,7 +96,6 @@ struct FilterOracle::SyncClientFilterData {
     Promise calculated_header_;
 
     SyncClientFilterData(
-        OTData blank,
         const block::Hash& block,
         const network::p2p::Block& data,
         internal::FilterDatabase::Filter& filter,
@@ -105,7 +104,7 @@ struct FilterOracle::SyncClientFilterData {
         Future&& previous) noexcept
         : block_hash_(block)
         , incoming_data_(data)
-        , filter_hash_(std::move(blank))
+        , filter_hash_()
         , filter_data_(filter)
         , header_data_(header)
         , job_counter_(jobCounter)
@@ -445,7 +444,7 @@ auto FilterOracle::ProcessBlock(
 
     const auto filterHash = gcs.Hash();
     const auto& cfheader = std::get<1>(headers.emplace_back(
-        id, gcs.Header(previousCfheader.Bytes()), filterHash->Bytes()));
+        id, gcs.Header(previousCfheader.Bytes()), filterHash.Bytes()));
 
     if (cfheader.IsNull()) {
         LogError()(OT_PRETTY_CLASS())("failed to calculate ")(print(chain_))(
@@ -510,7 +509,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
         LogTrace()(OT_PRETTY_CLASS())("Finished calculating cfilter for ")(
             print(chain_))(" block at height ")(height)
             .Flush();
-        filterHashView = data.filter_hash_->Bytes();
+        filterHashView = data.filter_hash_.Bytes();
     } catch (...) {
         task.process(std::current_exception());
     }
@@ -594,7 +593,7 @@ auto FilterOracle::ProcessSyncData(
                 return output;
             }
         }();
-        static const auto blankHash = api_.Factory().Data();
+        static const auto blankHash = cfilter::Hash();
         static const auto blankCfheader = cfilter::Header{};
         static const auto blankView = ReadView{};
         auto first{true};
@@ -604,13 +603,7 @@ auto FilterOracle::ProcessSyncData(
             auto& header =
                 headers.emplace_back(blankHash, blankCfheader, blankView);
             auto& job = cache.emplace_back(
-                blankHash,
-                hashes.at(i),
-                blocks.at(i),
-                filter,
-                header,
-                jobCounter,
-                [&] {
+                hashes.at(i), blocks.at(i), filter, header, jobCounter, [&] {
                     if (first) {
                         first = false;
                         auto promise = std::promise<cfilter::Header>{};
@@ -704,7 +697,7 @@ auto FilterOracle::ProcessSyncData(SyncClientFilterData& data) const noexcept
 
         const auto& gcs = *pGCS;
         data.filter_hash_ = gcs.Hash();
-        filterHashView = data.filter_hash_->Bytes();
+        filterHashView = data.filter_hash_.Bytes();
         LogTrace()(OT_PRETTY_CLASS())("Finished calculating cfilter for ")(
             print(chain_))(" block at height ")(height)
             .Flush();

@@ -27,6 +27,7 @@
 #include "opentxs/blockchain/bitcoin/bloom/BloomUpdateFlag.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
@@ -463,7 +464,7 @@ TEST_F(Test_Filters, bip158_headers)
         "0x2a9d721212af044cec24f188631cff7b516fb1576a31d2b67c25b75adfaa638d");
     auto previous = blank->Bytes();
     auto hash = bc::FilterToHash(api_, filter_0->Bytes());
-    auto calculated_a = bc::FilterHashToHeader(api_, hash->Bytes(), previous);
+    auto calculated_a = bc::FilterHashToHeader(api_, hash.Bytes(), previous);
     auto calculated_b = bc::FilterToHeader(api_, filter_0->Bytes(), previous);
 
     EXPECT_EQ(calculated_a, calculated_b);
@@ -471,7 +472,7 @@ TEST_F(Test_Filters, bip158_headers)
 
     previous = expected_0->Bytes();
     hash = bc::FilterToHash(api_, filter_1->Bytes());
-    calculated_a = bc::FilterHashToHeader(api_, hash->Bytes(), previous);
+    calculated_a = bc::FilterHashToHeader(api_, hash.Bytes(), previous);
     calculated_b = bc::FilterToHeader(api_, filter_1->Bytes(), previous);
 
     EXPECT_EQ(calculated_a, calculated_b);
@@ -479,7 +480,7 @@ TEST_F(Test_Filters, bip158_headers)
 
     previous = expected_1->Bytes();
     hash = bc::FilterToHash(api_, filter_2->Bytes());
-    calculated_a = bc::FilterHashToHeader(api_, hash->Bytes(), previous);
+    calculated_a = bc::FilterHashToHeader(api_, hash.Bytes(), previous);
     calculated_b = bc::FilterToHeader(api_, filter_2->Bytes(), previous);
 
     EXPECT_EQ(calculated_a, calculated_b);
@@ -487,7 +488,7 @@ TEST_F(Test_Filters, bip158_headers)
 
     previous = expected_2->Bytes();
     hash = bc::FilterToHash(api_, filter_3->Bytes());
-    calculated_a = bc::FilterHashToHeader(api_, hash->Bytes(), previous);
+    calculated_a = bc::FilterHashToHeader(api_, hash.Bytes(), previous);
     calculated_b = bc::FilterToHeader(api_, filter_3->Bytes(), previous);
 
     EXPECT_EQ(calculated_a, calculated_b);
@@ -516,7 +517,7 @@ TEST_F(Test_Filters, hash)
     const auto hash_a = gcs.Hash();
     const auto hash_b = bc::FilterToHash(api_, preimage->Bytes());
 
-    EXPECT_EQ(hash_a.get(), hash_b.get());
+    EXPECT_EQ(hash_a, hash_b);
 }
 
 TEST_F(Test_Filters, init_array)

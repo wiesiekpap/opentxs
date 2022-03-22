@@ -97,6 +97,7 @@ class Outpoint;
 
 namespace cfilter
 {
+class Hash;
 class Header;
 }  // namespace cfilter
 
@@ -210,7 +211,7 @@ using Segments = UnallocatedSet<ChainSegment>;
 using DisconnectedList = UnallocatedMultimap<block::pHash, block::pHash>;
 
 using CfheaderJob =
-    download::Batch<cfilter::pHash, cfilter::Header, cfilter::Type>;
+    download::Batch<cfilter::Hash, cfilter::Header, cfilter::Type>;
 using CfilterJob =
     download::Batch<std::unique_ptr<const GCS>, cfilter::Header, cfilter::Type>;
 using BlockJob =

@@ -24,6 +24,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"
@@ -125,7 +126,7 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
 
                      return out;
                  }(genesis.first),
-                 filterHash->Bytes()}};
+                 filterHash.Bytes()}};
             success = common_.StoreFilterHeaders(style, headers);
 
             OT_ASSERT(success);

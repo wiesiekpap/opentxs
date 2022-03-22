@@ -15,6 +15,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -31,6 +32,11 @@ class Session;
 
 namespace blockchain
 {
+namespace cfilter
+{
+class Header;
+}  // namespace cfilter
+
 namespace p2p
 {
 namespace bitcoin
@@ -65,28 +71,28 @@ public:
         return const_iterator(this, payload_.size());
     }
     auto size() const noexcept -> std::size_t final { return payload_.size(); }
-    auto Stop() const noexcept -> const value_type& final { return stop_; }
+    auto Stop() const noexcept -> const block::Hash& final { return stop_; }
     auto Type() const noexcept -> cfilter::Type final { return type_; }
 
     Cfcheckpt(
         const api::Session& api,
         const blockchain::Type network,
         const cfilter::Type type,
-        const cfilter::Hash& stop,
-        const UnallocatedVector<cfilter::pHash>& headers) noexcept;
+        const block::Hash& stop,
+        Vector<cfilter::Header>&& headers) noexcept;
     Cfcheckpt(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const cfilter::Type type,
-        const cfilter::Hash& stop,
-        const UnallocatedVector<cfilter::pHash>& headers) noexcept;
+        const block::Hash& stop,
+        Vector<cfilter::Header>&& headers) noexcept;
 
     ~Cfcheckpt() final = default;
 
 private:
     const cfilter::Type type_;
-    const cfilter::pHash stop_;
-    const UnallocatedVector<cfilter::pHash> payload_;
+    const block::pHash stop_;
+    const Vector<cfilter::Header> payload_;
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;

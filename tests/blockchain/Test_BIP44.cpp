@@ -35,6 +35,7 @@
 #include "opentxs/crypto/key/EllipticCurve.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/key/HD.hpp"             // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"

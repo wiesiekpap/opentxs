@@ -64,7 +64,7 @@ auto BitcoinP2PGetcfcheckpt(
     const api::Session& api,
     const blockchain::Type network,
     const blockchain::cfilter::Type type,
-    const blockchain::cfilter::Hash& stop)
+    const blockchain::block::Hash& stop)
     -> blockchain::p2p::bitcoin::message::internal::Getcfcheckpt*
 {
     namespace bitcoin = blockchain::p2p::bitcoin;
@@ -80,7 +80,7 @@ Getcfcheckpt::Getcfcheckpt(
     const api::Session& api,
     const blockchain::Type network,
     const cfilter::Type type,
-    const cfilter::Hash& stop) noexcept
+    const block::Hash& stop) noexcept
     : Message(api, network, bitcoin::Command::getcfcheckpt)
     , type_(type)
     , stop_(stop)
@@ -92,10 +92,10 @@ Getcfcheckpt::Getcfcheckpt(
     const api::Session& api,
     std::unique_ptr<Header> header,
     const cfilter::Type type,
-    const cfilter::Hash& stop) noexcept
+    block::pHash&& stop) noexcept
     : Message(api, std::move(header))
     , type_(type)
-    , stop_(stop)
+    , stop_(std::move(stop))
 {
 }
 

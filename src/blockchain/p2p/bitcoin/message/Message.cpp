@@ -48,7 +48,7 @@ FilterPrefixBasic::FilterPrefixBasic() noexcept
     static_assert(33 == sizeof(FilterPrefixBasic));
 }
 
-auto FilterPrefixBasic::Hash() const noexcept -> cfilter::pHash
+auto FilterPrefixBasic::Hash() const noexcept -> block::pHash
 {
     return Data::Factory(hash_.data(), hash_.size());
 }
@@ -111,7 +111,7 @@ FilterRequest::FilterRequest(
     const blockchain::Type chain,
     const cfilter::Type type,
     const block::Height start,
-    const cfilter::Hash& stop) noexcept(false)
+    const block::Hash& stop) noexcept(false)
     : type_(blockchain::internal::Serialize(chain, type))
     , start_(static_cast<std::uint32_t>(start))
     , stop_()
@@ -141,7 +141,7 @@ auto FilterRequest::Start() const noexcept -> block::Height
     return start_.value();
 }
 
-auto FilterRequest::Stop() const noexcept -> cfilter::pHash
+auto FilterRequest::Stop() const noexcept -> block::pHash
 {
     return Data::Factory(stop_.data(), stop_.size());
 }
