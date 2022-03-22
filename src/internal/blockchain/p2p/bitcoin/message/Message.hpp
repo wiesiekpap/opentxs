@@ -21,6 +21,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/bloom/BloomFilter.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -150,14 +151,14 @@ struct FilterRequest {
     HashField stop_;
 
     auto Start() const noexcept -> block::Height;
-    auto Stop() const noexcept -> cfilter::pHash;
+    auto Stop() const noexcept -> block::pHash;
     auto Type(const blockchain::Type chain) const noexcept -> cfilter::Type;
 
     FilterRequest(
         const blockchain::Type chain,
         const cfilter::Type type,
         const block::Height start,
-        const cfilter::Hash& stop) noexcept(false);
+        const block::Hash& stop) noexcept(false);
     FilterRequest() noexcept;
 };
 
@@ -193,7 +194,7 @@ struct Blocktxn : virtual public bitcoin::Message {
     ~Blocktxn() override = default;
 };
 struct Cfcheckpt : virtual public bitcoin::Message {
-    using value_type = cfilter::Hash;
+    using value_type = cfilter::Header;
     using const_iterator =
         iterator::Bidirectional<const Cfcheckpt, const value_type>;
 
@@ -202,7 +203,7 @@ struct Cfcheckpt : virtual public bitcoin::Message {
     virtual auto begin() const noexcept -> const_iterator = 0;
     virtual auto end() const noexcept -> const_iterator = 0;
     virtual auto size() const noexcept -> std::size_t = 0;
-    virtual auto Stop() const noexcept -> const value_type& = 0;
+    virtual auto Stop() const noexcept -> const block::Hash& = 0;
     virtual auto Type() const noexcept -> cfilter::Type = 0;
 
     ~Cfcheckpt() override = default;
@@ -252,14 +253,14 @@ struct Getaddr : virtual public bitcoin::Message {
     ~Getaddr() override = default;
 };
 struct Getcfcheckpt : virtual public bitcoin::Message {
-    virtual auto Stop() const noexcept -> const cfilter::Hash& = 0;
+    virtual auto Stop() const noexcept -> const block::Hash& = 0;
     virtual auto Type() const noexcept -> cfilter::Type = 0;
 
     ~Getcfcheckpt() override = default;
 };
 struct Getcfheaders : virtual public bitcoin::Message {
     virtual auto Start() const noexcept -> block::Height = 0;
-    virtual auto Stop() const noexcept -> const cfilter::Hash& = 0;
+    virtual auto Stop() const noexcept -> const block::Hash& = 0;
     virtual auto Type() const noexcept -> cfilter::Type = 0;
 
     ~Getcfheaders() override = default;
@@ -434,8 +435,8 @@ auto BitcoinP2PCfcheckpt(
     const api::Session& api,
     const blockchain::Type network,
     const blockchain::cfilter::Type type,
-    const blockchain::cfilter::Hash& stop,
-    const UnallocatedVector<blockchain::cfilter::pHash>& headers)
+    const blockchain::block::Hash& stop,
+    Vector<blockchain::cfilter::Header>&& headers)
     -> blockchain::p2p::bitcoin::message::internal::Cfcheckpt*;
 auto BitcoinP2PCfheaders(
     const api::Session& api,
@@ -449,8 +450,8 @@ auto BitcoinP2PCfheaders(
     const blockchain::Type network,
     const blockchain::cfilter::Type type,
     const blockchain::block::Hash& stop,
-    const ReadView previousHeader,
-    const UnallocatedVector<blockchain::cfilter::pHash>& headers)
+    const blockchain::cfilter::Header& previous,
+    Vector<blockchain::cfilter::Hash>&& hashes)
     -> blockchain::p2p::bitcoin::message::internal::Cfheaders*;
 auto BitcoinP2PCfilter(
     const api::Session& api,
@@ -561,7 +562,7 @@ auto BitcoinP2PGetcfcheckpt(
     const api::Session& api,
     const blockchain::Type network,
     const blockchain::cfilter::Type type,
-    const blockchain::cfilter::Hash& stop)
+    const blockchain::block::Hash& stop)
     -> blockchain::p2p::bitcoin::message::internal::Getcfcheckpt*;
 auto BitcoinP2PGetcfheaders(
     const api::Session& api,

@@ -22,6 +22,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/bloom/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -50,6 +51,7 @@ class Block;
 
 namespace cfilter
 {
+class Hash;
 class Header;
 }  // namespace cfilter
 
@@ -194,7 +196,7 @@ auto FilterHashToHeader(
     const ReadView hash,
     const ReadView previous = {}) noexcept -> cfilter::Header;
 auto FilterToHash(const api::Session& api, const ReadView filter) noexcept
-    -> OTData;
+    -> cfilter::Hash;
 auto FilterToHeader(
     const api::Session& api,
     const ReadView filter,

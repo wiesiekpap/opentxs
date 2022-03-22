@@ -58,13 +58,13 @@ public:
         const blockchain::Type network,
         const cfilter::Type type,
         const block::Height start,
-        const cfilter::Hash& stop) noexcept;
+        const block::Hash& stop) noexcept;
     Getcfilters(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const cfilter::Type type,
         const block::Height start,
-        const cfilter::Hash& stop) noexcept;
+        const block::Hash& stop) noexcept;
 
     ~Getcfilters() final = default;
 

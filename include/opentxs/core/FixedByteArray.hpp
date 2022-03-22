@@ -22,6 +22,8 @@ template <std::size_t N>
 class OPENTXS_EXPORT FixedByteArray : virtual public Data
 {
 public:
+    static constexpr auto payload_size = std::size_t{N};
+
     auto asHex() const -> UnallocatedCString override;
     auto asHex(alloc::Resource* alloc) const -> CString override;
     auto at(const std::size_t position) const -> const std::byte& final;

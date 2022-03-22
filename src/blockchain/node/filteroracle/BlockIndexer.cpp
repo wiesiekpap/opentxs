@@ -325,7 +325,7 @@ auto FilterOracle::BlockIndexer::queue_processing(
         filters.reserve(count);
         headers.reserve(count);
         cache.reserve(count);
-        static const auto blankHash = api_.Factory().Data();
+        static const auto blankHash = cfilter::Hash{};
         static const auto blankHeader = cfilter::Header{};
         static const auto blankView = ReadView{};
 

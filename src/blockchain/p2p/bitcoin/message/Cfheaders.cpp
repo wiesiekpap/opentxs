@@ -20,12 +20,12 @@
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -81,11 +81,11 @@ auto BitcoinP2PCfheaders(
         return nullptr;
     }
 
-    UnallocatedVector<blockchain::cfilter::pHash> headers{};
+    auto hashes = Vector<blockchain::cfilter::Hash>{};
 
     if (count > 0) {
         for (std::size_t i{0}; i < count; ++i) {
-            expectedSize += sizeof(bitcoin::message::HashField);
+            expectedSize += blockchain::cfilter::Hash::payload_size;
 
             if (expectedSize > size) {
                 LogError()("opentxs::factory::")(__func__)(
@@ -95,9 +95,10 @@ auto BitcoinP2PCfheaders(
                 return nullptr;
             }
 
-            headers.emplace_back(
-                Data::Factory(it, sizeof(bitcoin::message::HashField)));
-            it += sizeof(bitcoin::message::HashField);
+            hashes.emplace_back(ReadView{
+                reinterpret_cast<const char*>(it),
+                blockchain::cfilter::Hash::payload_size});
+            it += blockchain::cfilter::Hash::payload_size;
         }
     }
 
@@ -107,7 +108,7 @@ auto BitcoinP2PCfheaders(
         raw.Type(header.Network()),
         raw.Stop(),
         raw.Previous(),
-        headers);
+        std::move(hashes));
 }
 
 auto BitcoinP2PCfheaders(
@@ -115,41 +116,34 @@ auto BitcoinP2PCfheaders(
     const blockchain::Type network,
     const blockchain::cfilter::Type type,
     const blockchain::block::Hash& stop,
-    const ReadView previous,
-    const UnallocatedVector<blockchain::cfilter::pHash>& headers)
+    const blockchain::cfilter::Header& previous,
+    Vector<blockchain::cfilter::Hash>&& hashes)
     -> blockchain::p2p::bitcoin::message::internal::Cfheaders*
 {
     namespace bitcoin = blockchain::p2p::bitcoin;
     using ReturnType = bitcoin::message::implementation::Cfheaders;
 
-    return new ReturnType(api, network, type, stop, previous, headers);
+    return new ReturnType(
+        api, network, type, stop, previous, std::move(hashes));
 }
 }  // namespace opentxs::factory
 
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
-// TODO consider changing previousHeader to const cfilter::Header& if already
-// instantiated by the caller
 Cfheaders::Cfheaders(
     const api::Session& api,
     const blockchain::Type network,
     const cfilter::Type type,
     const block::Hash& stop,
-    const ReadView previousHeader,
-    const UnallocatedVector<cfilter::pHash>& headers) noexcept(false)
+    const cfilter::Header& previous,
+    Vector<cfilter::Hash>&& hashes) noexcept
     : Message(api, network, bitcoin::Command::cfheaders)
     , type_(type)
     , stop_(stop)
-    , previous_(previousHeader)
-    , payload_(headers)
+    , previous_(previous)
+    , payload_(std::move(hashes))
 {
     init_hash();
-
-    for (const auto& hash : payload_) {
-        if (false == verify_hash_size(hash->size())) {
-            throw std::runtime_error{"invalid hash size"};
-        }
-    }
 }
 
 Cfheaders::Cfheaders(
@@ -158,18 +152,13 @@ Cfheaders::Cfheaders(
     const cfilter::Type type,
     const block::Hash& stop,
     const cfilter::Header& previous,
-    const UnallocatedVector<cfilter::pHash>& headers) noexcept(false)
+    Vector<cfilter::Hash>&& hashes) noexcept
     : Message(api, std::move(header))
     , type_(type)
     , stop_(stop)
     , previous_(previous)
-    , payload_(headers)
+    , payload_(std::move(hashes))
 {
-    for (const auto& hash : payload_) {
-        if (false == verify_hash_size(hash->size())) {
-            throw std::runtime_error{"invalid hash size"};
-        }
-    }
 }
 
 auto Cfheaders::payload(AllocateOutput out) const noexcept -> bool
@@ -196,7 +185,7 @@ auto Cfheaders::payload(AllocateOutput out) const noexcept -> bool
         std::advance(i, cs.size());
 
         for (const auto& hash : payload_) {
-            std::memcpy(i, hash->data(), standard_hash_size_);
+            std::memcpy(i, hash.data(), standard_hash_size_);
             std::advance(i, standard_hash_size_);
         }
 

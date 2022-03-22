@@ -12,6 +12,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -50,7 +51,7 @@ public:
     using BitcoinFormat = FilterRequest;
 
     auto Start() const noexcept -> block::Height final { return start_; }
-    auto Stop() const noexcept -> const cfilter::Hash& final { return stop_; }
+    auto Stop() const noexcept -> const block::Hash& final { return stop_; }
     auto Type() const noexcept -> cfilter::Type final { return type_; }
 
     Getcfheaders(
@@ -58,20 +59,20 @@ public:
         const blockchain::Type network,
         const cfilter::Type type,
         const block::Height start,
-        const cfilter::Hash& stop) noexcept;
+        const block::Hash& stop) noexcept;
     Getcfheaders(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const cfilter::Type type,
         const block::Height start,
-        const cfilter::Hash& stop) noexcept;
+        block::pHash&& stop) noexcept;
 
     ~Getcfheaders() final = default;
 
 private:
     const cfilter::Type type_;
     const block::Height start_;
-    const cfilter::pHash stop_;
+    const block::pHash stop_;
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;

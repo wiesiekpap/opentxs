@@ -7,11 +7,19 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <cstdint>
+#include "opentxs/core/FixedByteArray.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs::blockchain::cfilter
 {
-using TypeEnum = std::uint32_t;
+class Hash : virtual public FixedByteArray<32>
+{
+public:
+    Hash() noexcept;
+    Hash(const ReadView bytes) noexcept(false);
+    Hash(const Hash& rhs) noexcept;
+    auto operator=(const Hash& rhs) noexcept -> Hash&;
 
-enum class Type : TypeEnum;
+    ~Hash() override;
+};
 }  // namespace opentxs::blockchain::cfilter

@@ -35,6 +35,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -439,7 +440,7 @@ auto GCS::Encode() const noexcept -> OTData
     return output;
 }
 
-auto GCS::Hash() const noexcept -> OTData
+auto GCS::Hash() const noexcept -> cfilter::Hash
 {
     return internal::FilterToHash(api_, Encode()->Bytes());
 }

@@ -33,6 +33,11 @@ class Session;
 
 namespace blockchain
 {
+namespace cfilter
+{
+class Hash;
+}  // namespace cfilter
+
 namespace p2p
 {
 namespace bitcoin
@@ -81,15 +86,15 @@ public:
         const blockchain::Type network,
         const cfilter::Type type,
         const block::Hash& stop,
-        const ReadView previousHeader,
-        const UnallocatedVector<cfilter::pHash>& headers) noexcept(false);
+        const cfilter::Header& previous,
+        Vector<cfilter::Hash>&& hashes) noexcept;
     Cfheaders(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const cfilter::Type type,
         const block::Hash& stop,
         const cfilter::Header& previous,
-        const UnallocatedVector<cfilter::pHash>& headers) noexcept(false);
+        Vector<cfilter::Hash>&& hashes) noexcept;
 
     ~Cfheaders() final = default;
 
@@ -97,7 +102,7 @@ private:
     const cfilter::Type type_;
     const block::pHash stop_;
     const cfilter::Header previous_;
-    const UnallocatedVector<cfilter::pHash> payload_;
+    const Vector<cfilter::Hash> payload_;
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;

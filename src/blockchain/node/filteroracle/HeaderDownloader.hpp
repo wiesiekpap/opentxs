@@ -26,7 +26,7 @@ namespace opentxs::blockchain::node::implementation
 {
 using HeaderDM = download::Manager<
     FilterOracle::HeaderDownloader,
-    cfilter::pHash,
+    cfilter::Hash,
     cfilter::Header,
     cfilter::Type>;
 using HeaderWorker = Worker<FilterOracle::HeaderDownloader, api::Session>;

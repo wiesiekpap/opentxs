@@ -85,7 +85,7 @@ Getcfilters::Getcfilters(
     const blockchain::Type network,
     const cfilter::Type type,
     const block::Height start,
-    const cfilter::Hash& stop) noexcept
+    const block::Hash& stop) noexcept
     : Message(api, network, bitcoin::Command::getcfilters)
     , type_(type)
     , start_(start)
@@ -99,7 +99,7 @@ Getcfilters::Getcfilters(
     std::unique_ptr<Header> header,
     const cfilter::Type type,
     const block::Height start,
-    const cfilter::Hash& stop) noexcept
+    const block::Hash& stop) noexcept
     : Message(api, std::move(header))
     , type_(type)
     , start_(start)

@@ -20,12 +20,12 @@
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -81,11 +81,11 @@ auto BitcoinP2PCfcheckpt(
         return nullptr;
     }
 
-    UnallocatedVector<blockchain::cfilter::pHash> headers{};
+    auto headers = Vector<blockchain::cfilter::Header>{};
 
     if (count > 0) {
         for (std::size_t i{0}; i < count; ++i) {
-            expectedSize += sizeof(bitcoin::message::HashField);
+            expectedSize += blockchain::cfilter::Header::payload_size;
 
             if (expectedSize > size) {
                 LogError()("opentxs::factory::")(__func__)(
@@ -95,9 +95,10 @@ auto BitcoinP2PCfcheckpt(
                 return nullptr;
             }
 
-            headers.emplace_back(
-                Data::Factory(it, sizeof(bitcoin::message::HashField)));
-            it += sizeof(bitcoin::message::HashField);
+            headers.emplace_back(ReadView{
+                reinterpret_cast<const char*>(it),
+                blockchain::cfilter::Header::payload_size});
+            it += blockchain::cfilter::Header::payload_size;
         }
     }
 
@@ -106,21 +107,21 @@ auto BitcoinP2PCfcheckpt(
         std::move(pHeader),
         raw.Type(header.Network()),
         raw.Hash(),
-        headers);
+        std::move(headers));
 }
 
 auto BitcoinP2PCfcheckpt(
     const api::Session& api,
     const blockchain::Type network,
     const blockchain::cfilter::Type type,
-    const blockchain::cfilter::Hash& stop,
-    const UnallocatedVector<blockchain::cfilter::pHash>& headers)
+    const blockchain::block::Hash& stop,
+    Vector<blockchain::cfilter::Header>&& headers)
     -> blockchain::p2p::bitcoin::message::internal::Cfcheckpt*
 {
     namespace bitcoin = blockchain::p2p::bitcoin;
     using ReturnType = bitcoin::message::implementation::Cfcheckpt;
 
-    return new ReturnType(api, network, type, stop, headers);
+    return new ReturnType(api, network, type, stop, std::move(headers));
 }
 }  // namespace opentxs::factory
 
@@ -130,12 +131,12 @@ Cfcheckpt::Cfcheckpt(
     const api::Session& api,
     const blockchain::Type network,
     const cfilter::Type type,
-    const cfilter::Hash& stop,
-    const UnallocatedVector<cfilter::pHash>& headers) noexcept
+    const block::Hash& stop,
+    Vector<cfilter::Header>&& headers) noexcept
     : Message(api, network, bitcoin::Command::cfcheckpt)
     , type_(type)
     , stop_(stop)
-    , payload_(headers)
+    , payload_(std::move(headers))
 {
     init_hash();
 }
@@ -144,12 +145,12 @@ Cfcheckpt::Cfcheckpt(
     const api::Session& api,
     std::unique_ptr<Header> header,
     const cfilter::Type type,
-    const cfilter::Hash& stop,
-    const UnallocatedVector<cfilter::pHash>& headers) noexcept
+    const block::Hash& stop,
+    Vector<cfilter::Header>&& headers) noexcept
     : Message(api, std::move(header))
     , type_(type)
     , stop_(stop)
-    , payload_(headers)
+    , payload_(std::move(headers))
 {
 }
 
@@ -176,7 +177,7 @@ auto Cfcheckpt::payload(AllocateOutput out) const noexcept -> bool
         std::advance(i, cs.size());
 
         for (const auto& hash : payload_) {
-            std::memcpy(i, hash->data(), standard_hash_size_);
+            std::memcpy(i, hash.data(), standard_hash_size_);
             std::advance(i, standard_hash_size_);
         }
 

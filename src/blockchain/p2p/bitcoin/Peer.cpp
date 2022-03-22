@@ -8,7 +8,6 @@
 #include "blockchain/p2p/bitcoin/Peer.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <array>
 #include <iterator>
 #include <stdexcept>
 #include <tuple>
@@ -46,8 +45,8 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
-#include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
@@ -654,11 +653,12 @@ auto Peer::process_cfheaders(
             }
 
             auto block = headers.begin();
-            auto cfheader = message.begin();
+            auto cfilterHash = message.begin();
             const auto type = message.Type();
 
-            for (; cfheader != message.end(); ++block, ++cfheader) {
-                cfheader_job_.Download(*block, std::move(*cfheader), type);
+            for (; cfilterHash != message.end(); ++block, ++cfilterHash) {
+                cfheader_job_.Download(
+                    *block, cfilter::Hash{*cfilterHash}, type);
             }
 
             if (cfheader_job_.isDownloaded()) { reset_cfheader_job(); }
@@ -951,11 +951,10 @@ auto Peer::process_getcfheaders(
 
     if (previousHeader.empty()) { return; }
 
-    auto filterHashes = UnallocatedVector<cfilter::pHash>{};
+    auto filterHashes = Vector<cfilter::Hash>{};
     const auto start = std::size_t{fromGenesis ? 0u : 1u};
-    static const auto blank = std::array<char, 32>{};
-    const auto previous = fromGenesis ? ReadView{blank.data(), blank.size()}
-                                      : previousHeader.Bytes();
+    static const auto blank = cfilter::Header{};
+    const auto& previous = fromGenesis ? blank : previousHeader;
 
     for (auto i{start}; i < blocks.size(); ++i) {
         const auto& blockHash = blocks.at(i);
