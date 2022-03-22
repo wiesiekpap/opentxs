@@ -609,12 +609,12 @@ auto Ledger::SaveGeneric(ledgerType theType) -> bool
 //
 auto Ledger::CalculateHash(Identifier& theOutput) const -> bool
 {
-    theOutput.Release();
+    theOutput.clear();
 
     bool bCalcDigest = theOutput.CalculateDigest(m_xmlUnsigned->Bytes());
 
     if (false == bCalcDigest) {
-        theOutput.Release();
+        theOutput.clear();
         LogError()(OT_PRETTY_CLASS())(
             "Failed trying to calculate hash (for a ")(GetTypeString())(").")
             .Flush();
@@ -748,7 +748,7 @@ auto Ledger::save_box(
     const bool saved = SaveGeneric(m_Type);
 
     if (saved) {
-        hash.Release();
+        hash.clear();
 
         if (false == (this->*calc)(hash)) {
             LogError()(OT_PRETTY_CLASS())(

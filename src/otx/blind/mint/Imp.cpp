@@ -144,7 +144,7 @@ void Mint::ReleaseDenominations()
 void Mint::Release_Mint()
 {
     ReleaseDenominations();
-    m_CashAccountID->Release();
+    m_CashAccountID->clear();
 }
 
 void Mint::Release()

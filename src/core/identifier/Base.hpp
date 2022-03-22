@@ -119,8 +119,6 @@ public:
     auto SetString(const UnallocatedCString& encoded) -> void final;
     auto SetString(const String& encoded) -> void final;
     auto SetString(const ReadView encoded) -> void;
-    using ot_super::swap;
-    auto swap(opentxs::Identifier& rhs) -> void final;
 
     Identifier(const identity::Nym& nym) noexcept;
     Identifier(const Contract& contract) noexcept;

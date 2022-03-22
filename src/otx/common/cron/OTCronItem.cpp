@@ -1485,7 +1485,7 @@ void OTCronItem::HarvestClosingNumbers(otx::context::Server& context)
 auto OTCronItem::GetCancelerID(identifier::Nym& theOutput) const -> bool
 {
     if (!IsCanceled()) {
-        theOutput.Release();
+        theOutput.clear();
         return false;
     }
 
@@ -1531,7 +1531,7 @@ void OTCronItem::Release_CronItem()
 
     m_bRemovalFlag = false;
     m_bCanceled = false;
-    m_pCancelerNymID->Release();
+    m_pCancelerNymID->clear();
 }
 
 void OTCronItem::Release()

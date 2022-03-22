@@ -7,6 +7,7 @@ add_subdirectory(crypto)
 
 add_opentx_test(unittests-opentxs-core-amount Test_Amount.cpp)
 add_opentx_test(unittests-opentxs-core-data Test_Data.cpp)
+add_opentx_test(unittests-opentxs-core-fixed_byte_array Test_FixedByteArray.cpp)
 add_opentx_test(unittests-opentxs-core-identifier Test_Identifier.cpp)
 add_opentx_test(unittests-opentxs-core-ledger Test_Ledger.cpp)
 add_opentx_test(unittests-opentxs-core-nym Test_Nym.cpp)

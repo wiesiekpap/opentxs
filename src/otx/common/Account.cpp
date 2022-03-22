@@ -207,12 +207,12 @@ auto Account::ConsensusHash(
         preimage->Concatenate(&num, sizeof(num));
     }
 
-    theOutput.Release();
+    theOutput.clear();
 
     bool bCalcDigest = theOutput.CalculateDigest(preimage->Bytes());
 
     if (false == bCalcDigest) {
-        theOutput.Release();
+        theOutput.clear();
         LogError()(OT_PRETTY_CLASS())(
             "Failed trying to calculate hash (for a ")(GetTypeString())(").")
             .Flush();
@@ -368,7 +368,7 @@ void Account::SetInboxHash(const Identifier& input) { inboxHash_ = input; }
 
 auto Account::GetInboxHash(Identifier& output) -> bool
 {
-    output.Release();
+    output.clear();
 
     if (!inboxHash_->empty()) {
         output.SetString(inboxHash_->str());
@@ -394,7 +394,7 @@ void Account::SetOutboxHash(const Identifier& input) { outboxHash_ = input; }
 
 auto Account::GetOutboxHash(Identifier& output) -> bool
 {
-    output.Release();
+    output.clear();
 
     if (!outboxHash_->empty()) {
         output.SetString(outboxHash_->str());
@@ -1172,8 +1172,8 @@ void Account::Release_Account()
 {
     balanceDate_->Release();
     balanceAmount_->Release();
-    inboxHash_->Release();
-    outboxHash_->Release();
+    inboxHash_->clear();
+    outboxHash_->clear();
 }
 
 void Account::Release()

@@ -3020,7 +3020,7 @@ auto Wallet::server_to_nym(Identifier& input) const -> OTNymID
 
         OT_ASSERT(2 > matches);
     } else {
-        output->Release();
+        output->clear();
 
         try {
             const auto notaryID = [&] {

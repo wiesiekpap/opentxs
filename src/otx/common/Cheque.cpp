@@ -182,15 +182,15 @@ auto Cheque::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         if (m_bHasRecipient)
             m_RECIPIENT_NYM_ID->SetString(strRecipientNymID);
         else
-            m_RECIPIENT_NYM_ID->Release();
+            m_RECIPIENT_NYM_ID->clear();
 
         // Remitter ID (for vouchers)
         if (m_bHasRemitter) {
             m_REMITTER_NYM_ID->SetString(strRemitterNymID);
             m_REMITTER_ACCT_ID->SetString(strRemitterAcctID);
         } else {
-            m_REMITTER_NYM_ID->Release();
-            m_REMITTER_ACCT_ID->Release();
+            m_REMITTER_NYM_ID->clear();
+            m_REMITTER_ACCT_ID->clear();
         }
         {
             const auto unittype = api_.Wallet().CurrencyTypeBasedOnUnitType(
@@ -283,7 +283,7 @@ auto Cheque::IssueCheque(
 
     if (pRECIPIENT_NYM_ID.empty()) {
         m_bHasRecipient = false;
-        m_RECIPIENT_NYM_ID->Release();
+        m_RECIPIENT_NYM_ID->clear();
     } else {
         m_bHasRecipient = true;
         m_RECIPIENT_NYM_ID = pRECIPIENT_NYM_ID;
@@ -312,7 +312,7 @@ void Cheque::Release_Cheque()
 
     //    m_SENDER_ACCT_ID.Release();     // in parent class now.
     //    m_SENDER_NYM_ID.Release();     // in parent class now.
-    m_RECIPIENT_NYM_ID->Release();
+    m_RECIPIENT_NYM_ID->clear();
 
     ot_super::Release();  // since I've overridden the base class, I call it
                           // now...

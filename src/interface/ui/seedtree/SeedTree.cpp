@@ -155,7 +155,7 @@ auto SeedTree::check_default_nym() noexcept -> void
     auto& [current, count] = data;
 
     if ((0u < count) && (old != current)) {
-        default_nym_.modify([&](auto& nym) { nym->swap(data.first); });
+        default_nym_.modify([&](auto& nym) { nym->Assign(data.first); });
 
         {
             auto handle = callbacks_.lock_shared();
@@ -178,7 +178,7 @@ auto SeedTree::check_default_seed() noexcept -> void
     auto current = api.Factory().Identifier(id);
 
     if ((0u < count) && (old != current)) {
-        default_seed_.modify([&](auto& seed) { seed->swap(current); });
+        default_seed_.modify([&](auto& seed) { seed->Assign(current); });
 
         {
             auto handle = callbacks_.lock_shared();

@@ -184,7 +184,7 @@ auto Output::Cache::set_payee(const Identifier& contact) noexcept -> void
 auto Output::Cache::set_payee(OTIdentifier&& contact) noexcept -> void
 {
     auto lock = Lock{lock_};
-    payee_->swap(contact);
+    payee_->Assign(contact);
 }
 
 auto Output::Cache::set_payer(const Identifier& contact) noexcept -> void
@@ -195,7 +195,7 @@ auto Output::Cache::set_payer(const Identifier& contact) noexcept -> void
 auto Output::Cache::set_payer(OTIdentifier&& contact) noexcept -> void
 {
     auto lock = Lock{lock_};
-    payer_->swap(contact);
+    payer_->Assign(contact);
 }
 
 auto Output::Cache::set_position(const block::Position& pos) noexcept -> void

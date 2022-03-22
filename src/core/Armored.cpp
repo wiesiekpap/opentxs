@@ -268,7 +268,7 @@ auto Armored::decompress_string(const UnallocatedCString& str) const
 // Base64-decode
 auto Armored::GetData(opentxs::Data& theData, bool bLineBreaks) const -> bool
 {
-    theData.Release();
+    theData.clear();
 
     if (GetLength() < 1) return true;
 

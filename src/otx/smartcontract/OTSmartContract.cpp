@@ -5257,7 +5257,7 @@ auto OTSmartContract::ProcessXMLNode(irr::io::IrrXMLReader*& xml)
             // else log
         } else {
             m_bCanceled = false;
-            m_pCancelerNymID->Release();
+            m_pCancelerNymID->clear();
         }
 
         const auto strTransNum =

@@ -1,0 +1,104 @@
+// Copyright (c) 2010-2022 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#pragma once
+
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
+#include <array>
+#include <cstddef>
+#include <cstdint>
+
+#include "opentxs/core/Data.hpp"
+#include "opentxs/util/Allocator.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
+
+namespace opentxs
+{
+template <std::size_t N>
+class OPENTXS_EXPORT FixedByteArray : virtual public Data
+{
+public:
+    auto asHex() const -> UnallocatedCString override;
+    auto asHex(alloc::Resource* alloc) const -> CString override;
+    auto at(const std::size_t position) const -> const std::byte& final;
+    auto begin() const -> const_iterator final;
+    auto Bytes() const noexcept -> ReadView final;
+    auto cbegin() const -> const_iterator final;
+    auto cend() const -> const_iterator final;
+    auto data() const -> const void* final;
+    auto empty() const -> bool final;
+    auto end() const -> const_iterator final;
+    auto Extract(
+        const std::size_t amount,
+        Data& output,
+        const std::size_t pos = 0) const -> bool final;
+    auto Extract(std::uint8_t& output, const std::size_t pos = 0) const
+        -> bool final;
+    auto Extract(std::uint16_t& output, const std::size_t pos = 0) const
+        -> bool final;
+    auto Extract(std::uint32_t& output, const std::size_t pos = 0) const
+        -> bool final;
+    auto Extract(std::uint64_t& output, const std::size_t pos = 0) const
+        -> bool final;
+    auto GetPointer() const -> const void* final;
+    auto GetSize() const -> std::size_t final;
+    auto IsEmpty() const -> bool final;
+    auto IsNull() const -> bool final;
+    auto operator==(const Data& rhs) const noexcept -> bool final;
+    auto operator!=(const Data& rhs) const noexcept -> bool final;
+    auto operator<(const Data& rhs) const noexcept -> bool final;
+    auto operator>(const Data& rhs) const noexcept -> bool final;
+    auto operator<=(const Data& rhs) const noexcept -> bool final;
+    auto operator>=(const Data& rhs) const noexcept -> bool final;
+    auto size() const -> std::size_t final;
+    auto str() const -> UnallocatedCString override;
+    auto str(alloc::Resource* alloc) const -> CString override;
+
+    auto Assign(const Data& source) noexcept -> bool final;
+    auto Assign(const ReadView source) noexcept -> bool final;
+    auto Assign(const void* data, const std::size_t size) noexcept
+        -> bool final;
+    auto at(const std::size_t position) -> std::byte& final;
+    auto begin() -> iterator final;
+    auto clear() noexcept -> void final;
+    auto Concatenate(const ReadView data) noexcept -> bool final;
+    auto Concatenate(const void* data, const std::size_t size) noexcept
+        -> bool final;
+    auto data() -> void* final;
+    auto DecodeHex(const ReadView hex) -> bool final;
+    auto end() -> iterator final;
+    auto operator+=(const Data& rhs) noexcept(false) -> FixedByteArray& final;
+    auto operator+=(const ReadView rhs) noexcept(false)
+        -> FixedByteArray& final;
+    auto operator+=(const std::uint8_t rhs) noexcept(false)
+        -> FixedByteArray& final;
+    auto operator+=(const std::uint16_t rhs) noexcept(false)
+        -> FixedByteArray& final;
+    auto operator+=(const std::uint32_t rhs) noexcept(false)
+        -> FixedByteArray& final;
+    auto operator+=(const std::uint64_t rhs) noexcept(false)
+        -> FixedByteArray& final;
+    auto Randomize(const std::size_t size) -> bool final;
+    auto resize(const std::size_t size) -> bool final;
+    auto SetSize(const std::size_t size) -> bool final;
+    auto WriteInto() noexcept -> AllocateOutput final;
+    auto zeroMemory() -> void final;
+
+    FixedByteArray() noexcept;
+    /// Throws std::out_of_range if input size is incorrect
+    FixedByteArray(const ReadView bytes) noexcept(false);
+    FixedByteArray(const FixedByteArray& rhs) noexcept;
+    auto operator=(const FixedByteArray& rhs) noexcept -> FixedByteArray&;
+
+    ~FixedByteArray() override;
+
+private:
+    std::array<std::byte, N> data_;
+
+    auto clone() const -> Data* override;
+};
+}  // namespace opentxs
