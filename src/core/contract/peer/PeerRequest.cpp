@@ -9,10 +9,12 @@
 
 #include <memory>
 
+#include "Proto.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/PeerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -229,7 +231,7 @@ auto Request::update_signature(const Lock& lock, const PasswordPrompt& reason)
     signatures_.clear();
     auto serialized = SigVersion(lock);
     auto& signature = *serialized.mutable_signature();
-    success = nym_->Sign(
+    success = nym_->Internal().Sign(
         serialized, crypto::SignatureRole::PeerRequest, signature, reason);
 
     if (success) {
@@ -285,6 +287,6 @@ auto Request::verify_signature(
     auto& sigProto = *serialized.mutable_signature();
     sigProto.CopyFrom(signature);
 
-    return nym_->Verify(serialized, sigProto);
+    return nym_->Internal().Verify(serialized, sigProto);
 }
 }  // namespace opentxs::contract::peer::implementation

@@ -8,7 +8,6 @@
 #include <stdexcept>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -91,8 +90,7 @@ auto PaymentCodeFixture::blinding_key_secret(
     auto& var = blind_key_secret_;
 
     if (false == bool(var)) {
-        const auto decoded =
-            api.Factory().Data(privateKey, ot::StringStyle::Hex);
+        const auto decoded = api.Factory().DataFromHex(privateKey);
         const auto key = api.Factory().SecretFromBytes(decoded->Bytes());
         var = api.Crypto().Asymmetric().InstantiateSecp256k1Key(key, reason);
     }

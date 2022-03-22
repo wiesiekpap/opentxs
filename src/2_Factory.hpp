@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "internal/core/contract/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
@@ -147,7 +148,7 @@ namespace credential
 {
 namespace internal
 {
-struct Base;
+class Base;
 struct Contact;
 struct Key;
 struct Primary;
@@ -158,8 +159,8 @@ struct Verification;
 
 namespace internal
 {
-struct Authority;
-struct Nym;
+class Authority;
+class Nym;
 }  // namespace internal
 
 namespace wot

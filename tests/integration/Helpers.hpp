@@ -15,7 +15,7 @@
 
 #include "Basic.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -31,6 +31,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/IdentityType.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Container.hpp"

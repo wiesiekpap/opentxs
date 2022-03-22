@@ -7,10 +7,10 @@
 
 #include <ostream>
 
+#include "internal/util/Mutex.hpp"
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Receiver.hpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"

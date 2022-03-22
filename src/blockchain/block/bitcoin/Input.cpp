@@ -584,7 +584,7 @@ auto Input::decode_coinbase() const noexcept -> UnallocatedCString
 
     auto out = std::stringstream{};
     const auto hex = [&] {
-        const auto data = api_.Factory().Data(reader(coinbase_));
+        const auto data = api_.Factory().DataFromBytes(reader(coinbase_));
         out << "      hex: " << data->asHex();
 
         return out.str();
@@ -729,7 +729,7 @@ auto Input::FindMatches(
         if (reader(outpoint) != previous_.Bytes()) { continue; }
 
         inputs.emplace_back(
-            api_.Factory().Data(txid), previous_.Bytes(), element);
+            api_.Factory().DataFromBytes(txid), previous_.Bytes(), element);
         const auto& [index, subchainID] = element;
         const auto& [subchain, account] = subchainID;
         cache_.add({account->str(), subchain, index});
@@ -818,7 +818,7 @@ auto Input::Print() const noexcept -> UnallocatedCString
     const auto total = witness_.size();
 
     for (const auto& witness : witness_) {
-        const auto bytes = api_.Factory().Data(reader(witness));
+        const auto bytes = api_.Factory().DataFromBytes(reader(witness));
         out << "    witness " << std::to_string(++count);
         out << " of " << std::to_string(total) << '\n';
         out << "      " << bytes->asHex() << '\n';

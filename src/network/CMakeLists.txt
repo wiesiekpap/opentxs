@@ -18,6 +18,7 @@ target_sources(
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/OpenDHT.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/ServerConnection.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/network/Types.hpp"
 )
 
 if(DHT_EXPORT)

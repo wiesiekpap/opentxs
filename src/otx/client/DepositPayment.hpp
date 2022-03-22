@@ -7,9 +7,9 @@
 
 #include "core/StateMachine.hpp"
 #include "internal/otx/client/Client.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/otx/client/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

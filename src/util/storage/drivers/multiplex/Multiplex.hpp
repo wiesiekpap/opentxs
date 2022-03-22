@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "internal/util/storage/drivers/Drivers.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/util/Bytes.hpp"

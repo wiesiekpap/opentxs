@@ -11,7 +11,6 @@
 #include <type_traits>
 
 #include "internal/api/session/UI.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/UI.hpp"

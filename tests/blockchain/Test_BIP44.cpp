@@ -10,7 +10,6 @@
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
@@ -139,7 +138,10 @@ TEST_F(Test_BIP44, generate_expected_keys)
         [&](auto subchain, auto index, auto& vector) -> bool {
         auto output{true};
         const auto pKey = api_.Crypto().Seed().GetHDKey(
-            id, ot::EcdsaCurve::secp256k1, MakePath(subchain, index), reason_);
+            id,
+            ot::crypto::EcdsaCurve::secp256k1,
+            MakePath(subchain, index),
+            reason_);
 
         EXPECT_TRUE(pKey);
 
@@ -208,9 +210,9 @@ TEST_F(Test_BIP44, balance_elements)
 
         if (output) { return output; }
 
-        const auto correct = api_.Factory().Data(bytes);
-        const auto fromPublic = api_.Factory().Data(pubBytes);
-        const auto fromSecret = api_.Factory().Data(secBytes);
+        const auto correct = api_.Factory().DataFromBytes(bytes);
+        const auto fromPublic = api_.Factory().DataFromBytes(pubBytes);
+        const auto fromSecret = api_.Factory().DataFromBytes(secBytes);
 
         std::cout << "Failure at row " << std::to_string(i) << '\n';
         EXPECT_EQ(fromPublic->asHex(), correct->asHex());

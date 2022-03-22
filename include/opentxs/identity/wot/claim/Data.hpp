@@ -15,7 +15,6 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"

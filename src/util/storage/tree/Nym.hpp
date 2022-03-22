@@ -18,7 +18,7 @@
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
 #include "internal/util/Flag.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"

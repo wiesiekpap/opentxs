@@ -11,7 +11,6 @@
 
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/interface/rpc/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"

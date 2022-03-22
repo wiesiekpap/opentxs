@@ -21,7 +21,7 @@
 #include "internal/api/session/Wallet.hpp"
 #include "internal/crypto/Parameters.hpp"
 #include "internal/crypto/key/Key.hpp"
-#include "internal/identity/Identity.hpp"
+#include "internal/identity/Authority.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/Credential.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
@@ -42,6 +42,7 @@
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/identity/Source.hpp"
+#include "opentxs/identity/credential/Base.hpp"
 #include "opentxs/identity/credential/Key.hpp"
 #include "opentxs/identity/credential/Verification.hpp"
 #include "opentxs/util/Container.hpp"
@@ -568,7 +569,7 @@ void Authority::extract_child(
     const identity::Source& source,
     internal::Authority& authority,
     const credential::internal::Primary& master,
-    const credential::Base::SerializedType& serialized,
+    const credential::internal::Base::SerializedType& serialized,
     const proto::KeyMode mode,
     const proto::CredentialRole role,
     UnallocatedMap<OTIdentifier, std::unique_ptr<Type>>& map) noexcept(false)
@@ -1242,7 +1243,7 @@ auto Authority::Verify(
         return false;
     }
 
-    return credential->Verify(plaintext, sig, key);
+    return credential->Internal().Verify(plaintext, sig, key);
 }
 
 auto Authority::Verify(const proto::Verification& item) const -> bool

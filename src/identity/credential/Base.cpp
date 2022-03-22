@@ -16,7 +16,8 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/crypto/key/Key.hpp"
-#include "internal/identity/Identity.hpp"
+#include "internal/identity/Authority.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/identity/credential/Credential.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -476,7 +477,7 @@ auto Base::verify_master_signature(const Lock& lock) const -> bool
         return false;
     }
 
-    return (parent_.GetMasterCredential().Verify(
+    return (parent_.GetMasterCredential().Internal().Verify(
         *serialized, role_, parent_.GetMasterCredID(), *masterSig));
 }
 }  // namespace opentxs::identity::credential::implementation

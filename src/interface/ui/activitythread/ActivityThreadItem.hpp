@@ -11,10 +11,10 @@
 #include "interface/ui/base/Row.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "internal/util/Flag.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/interface/ui/ActivityThreadItem.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -84,7 +84,7 @@ public:
     auto Pending() const noexcept -> bool final { return pending_.get(); }
     auto Text() const noexcept -> UnallocatedCString final;
     auto Timestamp() const noexcept -> Time final;
-    auto Type() const noexcept -> StorageBox final { return box_; }
+    auto Type() const noexcept -> otx::client::StorageBox final { return box_; }
 
     ~ActivityThreadItem() override = default;
 
@@ -92,7 +92,7 @@ protected:
     const identifier::Nym& nym_id_;
     const Time time_;
     const Identifier& item_id_;
-    const StorageBox& box_;
+    const otx::client::StorageBox& box_;
     const Identifier& account_id_;
     UnallocatedCString from_;
     UnallocatedCString text_;

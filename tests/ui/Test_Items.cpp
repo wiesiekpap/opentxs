@@ -13,10 +13,10 @@
 
 #include "interface/ui/base/Items.hpp"
 #include "internal/interface/ui/UI.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Types.hpp"
 
 namespace ot = opentxs;
 

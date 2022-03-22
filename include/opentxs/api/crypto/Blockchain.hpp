@@ -12,7 +12,6 @@
 #include <cstdint>
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"

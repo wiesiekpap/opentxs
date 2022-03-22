@@ -11,12 +11,15 @@
 
 #include "Proto.hpp"
 #include "identity/credential/Base.hpp"
+#include "internal/identity/Types.hpp"
 #include "internal/identity/credential/Credential.hpp"
+#include "internal/identity/credential/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "internal/util/Types.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
@@ -46,7 +49,7 @@ namespace identity
 {
 namespace internal
 {
-struct Authority;
+class Authority;
 }  // namespace internal
 
 class Source;

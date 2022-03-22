@@ -7,7 +7,6 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Iterator.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

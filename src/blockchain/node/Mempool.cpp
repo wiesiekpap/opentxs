@@ -16,7 +16,7 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"

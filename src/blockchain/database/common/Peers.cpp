@@ -15,6 +15,7 @@
 #include <random>
 #include <utility>
 
+#include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/serialization/protobuf/Check.hpp"

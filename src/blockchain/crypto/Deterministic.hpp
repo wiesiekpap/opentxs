@@ -17,7 +17,7 @@
 #include "Proto.hpp"
 #include "blockchain/crypto/Subaccount.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"

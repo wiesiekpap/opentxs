@@ -21,6 +21,8 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/core/contract/Contract.hpp"
+#include "internal/core/contract/Types.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/ServerContract.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -62,7 +64,8 @@ auto Factory::ServerContract(
     using ReturnType = contract::implementation::Server;
 
     if (false == bool(nym)) { return {}; }
-    if (false == nym->HasCapability(NymCapability::AUTHENTICATE_CONNECTION)) {
+    if (false ==
+        nym->HasCapability(identity::NymCapability::AUTHENTICATE_CONNECTION)) {
         return {};
     }
 
@@ -184,7 +187,7 @@ Server::Server(
           serialized.terms(),
           serialized.name(),
           extract_endpoints(serialized),
-          api.Factory().Data(serialized.transportkey(), StringStyle::Raw),
+          api.Factory().DataFromBytes(serialized.transportkey()),
           api.Factory().ServerID(serialized.id()),
           serialized.has_signature()
               ? Signatures{std::make_shared<proto::Signature>(
@@ -372,7 +375,7 @@ auto Server::Serialize(proto::ServerContract& serialized, bool includeNym) const
 
     if (includeNym && nym_) {
         auto publicNym = proto::Nym{};
-        if (false == nym_->Serialize(publicNym)) { return false; }
+        if (false == nym_->Internal().Serialize(publicNym)) { return false; }
         *(serialized.mutable_publicnym()) = publicNym;
     }
 
@@ -420,7 +423,7 @@ auto Server::update_signature(const Lock& lock, const PasswordPrompt& reason)
     signatures_.clear();
     auto serialized = SigVersion(lock);
     auto& signature = *serialized.mutable_signature();
-    success = nym_->Sign(
+    success = nym_->Internal().Sign(
         serialized, crypto::SignatureRole::ServerContract, signature, reason);
 
     if (success) {
@@ -482,6 +485,6 @@ auto Server::verify_signature(
     auto& sigProto = *serialized.mutable_signature();
     sigProto.CopyFrom(signature);
 
-    return nym_->Verify(serialized, sigProto);
+    return nym_->Internal().Verify(serialized, sigProto);
 }
 }  // namespace opentxs::contract::implementation

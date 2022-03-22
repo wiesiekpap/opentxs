@@ -13,7 +13,7 @@
 #include "Proto.hpp"
 #include "interface/ui/base/Row.hpp"
 #include "internal/interface/ui/UI.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"

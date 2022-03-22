@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

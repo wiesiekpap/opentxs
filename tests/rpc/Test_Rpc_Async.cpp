@@ -19,7 +19,6 @@
 #include "internal/serialization/protobuf/verify/RPCPush.hpp"
 #include "internal/serialization/protobuf/verify/RPCResponse.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"

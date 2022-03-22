@@ -15,6 +15,7 @@
 #include <string_view>
 #include <type_traits>
 
+#include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/session/Wallet.hpp"
@@ -48,6 +49,7 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/SecretType.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/wot/claim/Data.hpp"
 #include "opentxs/identity/wot/claim/Group.hpp"
 #include "opentxs/identity/wot/claim/Item.hpp"
@@ -62,6 +64,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -889,9 +892,11 @@ void Pair::process_peer_replies(const Lock& lock, const identifier::Nym& nymID)
     for (const auto& it : replies) {
         const auto replyID = Identifier::Factory(it.first);
         auto reply = proto::PeerReply{};
-        if (false ==
-            client_.Wallet().Internal().PeerReply(
-                nymID, replyID, StorageBox::INCOMINGPEERREPLY, reply)) {
+        if (false == client_.Wallet().Internal().PeerReply(
+                         nymID,
+                         replyID,
+                         otx::client::StorageBox::INCOMINGPEERREPLY,
+                         reply)) {
 
             LogError()(OT_PRETTY_CLASS())("Failed to load peer reply ")(
                 it.first)(".")
@@ -949,7 +954,7 @@ void Pair::process_peer_requests(const Lock& lock, const identifier::Nym& nymID)
         if (false == client_.Wallet().Internal().PeerRequest(
                          nymID,
                          requestID,
-                         StorageBox::INCOMINGPEERREQUEST,
+                         otx::client::StorageBox::INCOMINGPEERREQUEST,
                          time,
                          request)) {
 

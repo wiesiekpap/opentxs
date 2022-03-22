@@ -19,7 +19,6 @@
 #include "internal/crypto/key/Null.hpp"
 #include "internal/otx/common/crypto/OTSignatureMetadata.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -159,7 +158,7 @@ Asymmetric::Asymmetric(
           true,
           proto::KEYMODE_PRIVATE == serialized.mode(),
           serialized.version(),
-          serialized.has_key() ? api.Factory().Data(serialized.key())
+          serialized.has_key() ? api.Factory().DataFromBytes(serialized.key())
                                : api.Factory().Data(),
           getEncrypted)
 {
@@ -197,7 +196,7 @@ Asymmetric::Asymmetric(const Asymmetric& rhs, const ReadView newPublic) noexcept
           true,
           false,
           rhs.version_,
-          rhs.api_.Factory().Data(newPublic),
+          rhs.api_.Factory().DataFromBytes(newPublic),
           [&](auto&, auto&) -> EncryptedKey { return {}; })
 {
 }
@@ -538,14 +537,14 @@ auto Asymmetric::get_tag(
     return nullptr != std::memcpy(&tag, hashed->data(), sizeof(tag));
 }
 
-auto Asymmetric::hasCapability(const NymCapability& capability) const noexcept
-    -> bool
+auto Asymmetric::hasCapability(
+    const identity::NymCapability& capability) const noexcept -> bool
 {
     switch (capability) {
-        case (NymCapability::SIGN_CHILDCRED):
-        case (NymCapability::SIGN_MESSAGE):
-        case (NymCapability::ENCRYPT_MESSAGE):
-        case (NymCapability::AUTHENTICATE_CONNECTION): {
+        case (identity::NymCapability::SIGN_CHILDCRED):
+        case (identity::NymCapability::SIGN_MESSAGE):
+        case (identity::NymCapability::ENCRYPT_MESSAGE):
+        case (identity::NymCapability::AUTHENTICATE_CONNECTION): {
 
             return true;
         }

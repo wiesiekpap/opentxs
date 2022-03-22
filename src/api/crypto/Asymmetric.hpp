@@ -10,7 +10,6 @@
 
 #include "Proto.hpp"
 #include "internal/api/crypto/Asymmetric.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -148,14 +147,14 @@ public:
     auto NewHDKey(
         const UnallocatedCString& seedID,
         const Secret& seed,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const opentxs::crypto::Bip32::Path& path,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::HD> final;
     auto NewHDKey(
         const UnallocatedCString& seedID,
         const Secret& seed,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const opentxs::crypto::Bip32::Path& path,
         const opentxs::crypto::key::asymmetric::Role role,
         const PasswordPrompt& reason) const
@@ -163,7 +162,7 @@ public:
     auto NewHDKey(
         const UnallocatedCString& seedID,
         const Secret& seed,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const opentxs::crypto::Bip32::Path& path,
         const VersionNumber version,
         const PasswordPrompt& reason) const
@@ -171,7 +170,7 @@ public:
     auto NewHDKey(
         const UnallocatedCString& seedID,
         const Secret& seed,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const opentxs::crypto::Bip32::Path& path,
         const opentxs::crypto::key::asymmetric::Role role,
         const VersionNumber version,
@@ -231,8 +230,9 @@ public:
     ~Asymmetric() final = default;
 
 private:
-    using TypeMap =
-        UnallocatedMap<EcdsaCurve, opentxs::crypto::key::asymmetric::Algorithm>;
+    using TypeMap = UnallocatedMap<
+        opentxs::crypto::EcdsaCurve,
+        opentxs::crypto::key::asymmetric::Algorithm>;
 
     static const VersionNumber serialized_path_version_;
     static const TypeMap curve_to_key_type_;

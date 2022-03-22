@@ -201,7 +201,7 @@ public:
             GetOutputs(node::TxoState::UnconfirmedNew, alloc::System());
 
         for (const auto& [outpoint, output] : unconfirmed) {
-            out.emplace(api_.Factory().Data(outpoint.Txid()));
+            out.emplace(api_.Factory().DataFromBytes(outpoint.Txid()));
         }
 
         return out;
@@ -1071,7 +1071,7 @@ public:
                     throw std::runtime_error{"Failed to update output state"};
                 }
 
-                const auto& txid = api_.Factory().Data(id.Txid());
+                const auto& txid = api_.Factory().DataFromBytes(id.Txid());
 
                 for (const auto& key : output.Keys()) {
                     api.Unconfirm(key, txid);
@@ -1389,7 +1389,7 @@ private:
         auto temp = UnallocatedSet<block::pTxid>{};
 
         for (auto& [outpoint, output] : outputs) {
-            temp.emplace(api_.Factory().Data(outpoint.Txid()));
+            temp.emplace(api_.Factory().DataFromBytes(outpoint.Txid()));
         }
 
         out.reserve(temp.size());
@@ -1593,7 +1593,7 @@ private:
         }();
 
         for (const auto& newOutpoint : created) {
-            const auto rhs = api_.Factory().Data(newOutpoint.Txid());
+            const auto rhs = api_.Factory().DataFromBytes(newOutpoint.Txid());
 
             if (txid != rhs) {
                 static constexpr auto state = node::TxoState::OrphanedNew;

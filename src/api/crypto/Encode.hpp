@@ -10,10 +10,10 @@
 #include <iosfwd>
 
 #include "internal/api/crypto/Encode.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

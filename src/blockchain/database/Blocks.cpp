@@ -19,12 +19,12 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
@@ -44,7 +44,7 @@ Blocks::Blocks(
     , genesis_([&] {
         const auto& hex = params::Data::Chains().at(chain_).genesis_hash_hex_;
 
-        return api_.Factory().Data(hex, StringStyle::Hex);
+        return api_.Factory().DataFromHex(hex);
     }())
 {
     if (blank_position_.first == Tip().first) {
@@ -57,7 +57,7 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
 {
     if (block == genesis_) {
         const auto& hex = params::Data::Chains().at(chain_).genesis_block_hex_;
-        const auto data = api_.Factory().Data(hex, StringStyle::Hex);
+        const auto data = api_.Factory().DataFromHex(hex);
 
         if (data->empty()) {
             LogError()(OT_PRETTY_CLASS())("Invalid genesis hex").Flush();

@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Types.hpp"

@@ -11,7 +11,6 @@
 #include <cstdint>
 
 #include "ListRow.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
@@ -46,7 +45,7 @@ public:
     virtual auto Pending() const noexcept -> bool = 0;
     virtual auto Text() const noexcept -> UnallocatedCString = 0;
     virtual auto Timestamp() const noexcept -> Time = 0;
-    virtual auto Type() const noexcept -> StorageBox = 0;
+    virtual auto Type() const noexcept -> otx::client::StorageBox = 0;
 
     ~ActivityThreadItem() override = default;
 

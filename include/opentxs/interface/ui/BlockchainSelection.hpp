@@ -7,7 +7,6 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/interface/ui/List.hpp"
 #include "opentxs/util/SharedPimpl.hpp"

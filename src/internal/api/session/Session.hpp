@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <mutex>
 
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/util/Container.hpp"
 

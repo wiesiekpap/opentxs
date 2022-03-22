@@ -10,7 +10,6 @@
 #include <cstdint>
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/identity/Types.hpp"
@@ -21,12 +20,16 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
-namespace proto
+namespace identity
 {
-class Credential;
-class ContactData;
-class VerificationSet;
-}  // namespace proto
+namespace credential
+{
+namespace internal
+{
+class Base;
+}  // namespace internal
+}  // namespace credential
+}  // namespace identity
 
 class PasswordPrompt;
 class Secret;
@@ -39,45 +42,26 @@ namespace opentxs::identity::credential
 class OPENTXS_EXPORT Base : virtual public opentxs::contract::Signable
 {
 public:
-    using SerializedType = proto::Credential;
-
     virtual auto asString(const bool asPrivate = false) const
         -> UnallocatedCString = 0;
     virtual auto CredentialID() const -> const Identifier& = 0;
-    virtual auto GetContactData(proto::ContactData& contactData) const
-        -> bool = 0;
-    virtual auto GetVerificationSet(
-        proto::VerificationSet& verificationSet) const -> bool = 0;
     virtual auto hasCapability(const NymCapability& capability) const
         -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Base& = 0;
     virtual auto MasterSignature() const -> Signature = 0;
     virtual auto Mode() const -> crypto::key::asymmetric::Mode = 0;
     virtual auto Role() const -> identity::CredentialRole = 0;
     virtual auto Private() const -> bool = 0;
     virtual auto Save() const -> bool = 0;
-    virtual auto SelfSignature(
-        CredentialModeFlag version = PUBLIC_VERSION) const -> Signature = 0;
-    using Signable::Serialize;
-    OPENTXS_NO_EXPORT virtual auto Serialize(
-        SerializedType& serialized,
-        const SerializationModeFlag asPrivate,
-        const SerializationSignatureFlag asSigned) const -> bool = 0;
     virtual auto SourceSignature() const -> Signature = 0;
     virtual auto TransportKey(
         Data& publicKey,
         Secret& privateKey,
         const PasswordPrompt& reason) const -> bool = 0;
     virtual auto Type() const -> identity::CredentialType = 0;
-    virtual auto Verify(
-        const Data& plaintext,
-        const proto::Signature& sig,
-        const opentxs::crypto::key::asymmetric::Role key =
-            opentxs::crypto::key::asymmetric::Role::Sign) const -> bool = 0;
-    virtual auto Verify(
-        const proto::Credential& credential,
-        const identity::CredentialRole& role,
-        const Identifier& masterID,
-        const proto::Signature& masterSig) const -> bool = 0;
+
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Base& = 0;
 
     ~Base() override = default;
 

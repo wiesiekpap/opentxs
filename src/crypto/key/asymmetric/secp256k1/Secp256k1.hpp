@@ -11,7 +11,6 @@
 #include "Proto.hpp"
 #include "crypto/key/asymmetric/EllipticCurve.hpp"
 #include "crypto/key/asymmetric/HD.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/ParameterType.hpp"

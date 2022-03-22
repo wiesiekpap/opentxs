@@ -9,11 +9,11 @@
 
 #include <stdexcept>
 
+#include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/interface/rpc/RPC.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/RPCCommand.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/interface/rpc/CommandType.hpp"
 #include "opentxs/interface/rpc/request/GetAccountActivity.hpp"
 #include "opentxs/interface/rpc/request/GetAccountBalance.hpp"

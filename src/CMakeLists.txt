@@ -144,10 +144,8 @@ generate_export_header(
   OPENTXS_EXPORT
 )
 
-set(cxx-install-headers
-    "${opentxs_BINARY_DIR}/src/opentxs/Export.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/OT.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/Types.hpp"
+set(cxx-install-headers "${opentxs_BINARY_DIR}/src/opentxs/Export.hpp"
+                        "${opentxs_SOURCE_DIR}/include/opentxs/OT.hpp"
 )
 target_sources(
   opentxs-common

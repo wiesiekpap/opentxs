@@ -16,7 +16,6 @@
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Seed.hpp"

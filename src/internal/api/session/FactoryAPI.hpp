@@ -64,6 +64,7 @@ class Contract;
 class Identifier;
 class Item;
 class Ledger;
+class Message;
 class NumList;
 class OTCron;
 class OTCronItem;

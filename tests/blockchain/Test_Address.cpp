@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -134,8 +133,7 @@ TEST_F(Test_Address, segwit)
         const auto& [chain, payload] = data;
         const auto [bytes, style, chains, supported] =
             api_.Crypto().Blockchain().DecodeAddress(address);
-        const auto expected =
-            api_.Factory().Data(payload, ot::StringStyle::Hex);
+        const auto expected = api_.Factory().DataFromHex(payload);
 
         EXPECT_EQ(style, Style::P2WPKH);
         ASSERT_EQ(chains.size(), 1);
@@ -148,8 +146,7 @@ TEST_F(Test_Address, segwit)
         const auto& [chain, payload] = data;
         const auto [bytes, style, chains, supported] =
             api_.Crypto().Blockchain().DecodeAddress(address);
-        const auto expected =
-            api_.Factory().Data(payload, ot::StringStyle::Hex);
+        const auto expected = api_.Factory().DataFromHex(payload);
 
         EXPECT_EQ(style, Style::P2WSH);
         ASSERT_EQ(chains.size(), 1);

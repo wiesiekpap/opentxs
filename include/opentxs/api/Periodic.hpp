@@ -7,8 +7,14 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Types.hpp"
+#include <functional>
+
 #include "opentxs/util/Time.hpp"
+
+namespace opentxs
+{
+using PeriodicTask = std::function<void()>;
+}  // namespace opentxs
 
 namespace opentxs::api
 {

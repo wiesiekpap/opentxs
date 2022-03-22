@@ -19,7 +19,6 @@
 #include "internal/otx/common/crypto/OTSignatureMetadata.hpp"
 #include "internal/otx/common/crypto/Signature.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -376,7 +375,7 @@ auto Key::new_key(
             const auto curve =
                 crypto::AsymmetricProvider::KeyTypeToCurve(params.Algorithm());
 
-            if (EcdsaCurve::invalid == curve) {
+            if (crypto::EcdsaCurve::invalid == curve) {
                 throw std::runtime_error("Invalid curve type");
             }
 

@@ -9,6 +9,7 @@
 
 #include <mutex>
 
+#include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

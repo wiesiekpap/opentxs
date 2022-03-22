@@ -11,7 +11,7 @@
 
 #include "internal/otx/client/obsolete/OT_API.hpp"
 #include "internal/util/Lockable.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/contract/Unit.hpp"

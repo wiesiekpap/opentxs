@@ -13,7 +13,7 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"

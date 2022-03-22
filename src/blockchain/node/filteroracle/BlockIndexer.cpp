@@ -20,7 +20,6 @@
 #include "internal/api/network/Asio.hpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -39,6 +38,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Types.hpp"
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
 

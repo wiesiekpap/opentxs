@@ -11,8 +11,9 @@
 
 #include "Proto.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/consensus/Client.hpp"

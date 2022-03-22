@@ -13,7 +13,6 @@
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -124,20 +123,15 @@ struct Test_BitcoinTransaction : public ::testing::Test {
 
     Test_BitcoinTransaction()
         : api_(ot::Context().StartClientSession(0))
-        , tx_id_(api_.Factory().Data(txid_hex_, ot::StringStyle::Hex))
-        , tx_bytes_(api_.Factory().Data(transaction_hex_, ot::StringStyle::Hex))
-        , mutated_bytes_(api_.Factory().Data(
-              mutated_transaction_hex_,
-              ot::StringStyle::Hex))
-        , outpoint_1_(
-              api_.Factory().Data(outpoint_hex_1_, ot::StringStyle::Hex))
-        , outpoint_2_(
-              api_.Factory().Data(outpoint_hex_2_, ot::StringStyle::Hex))
-        , outpoint_3_(
-              api_.Factory().Data(outpoint_hex_3_, ot::StringStyle::Hex))
-        , in_script_1_(api_.Factory().Data(in_hex_1_, ot::StringStyle::Hex))
-        , in_script_2_(api_.Factory().Data(in_hex_2_, ot::StringStyle::Hex))
-        , in_script_3_(api_.Factory().Data(in_hex_3_, ot::StringStyle::Hex))
+        , tx_id_(api_.Factory().DataFromHex(txid_hex_))
+        , tx_bytes_(api_.Factory().DataFromHex(transaction_hex_))
+        , mutated_bytes_(api_.Factory().DataFromHex(mutated_transaction_hex_))
+        , outpoint_1_(api_.Factory().DataFromHex(outpoint_hex_1_))
+        , outpoint_2_(api_.Factory().DataFromHex(outpoint_hex_2_))
+        , outpoint_3_(api_.Factory().DataFromHex(outpoint_hex_3_))
+        , in_script_1_(api_.Factory().DataFromHex(in_hex_1_))
+        , in_script_2_(api_.Factory().DataFromHex(in_hex_2_))
+        , in_script_3_(api_.Factory().DataFromHex(in_hex_3_))
     {
     }
 };
@@ -531,8 +525,7 @@ TEST_F(Test_BitcoinTransaction, normalized_id)
 
 TEST_F(Test_BitcoinTransaction, vbytes)
 {
-    const auto bytes =
-        api_.Factory().Data(vbyte_test_transaction_hex_, ot::StringStyle::Hex);
+    const auto bytes = api_.Factory().DataFromHex(vbyte_test_transaction_hex_);
     const auto tx = api_.Factory().BitcoinTransaction(
         ot::blockchain::Type::Bitcoin, bytes->Bytes(), false);
 
@@ -545,7 +538,7 @@ TEST_F(Test_BitcoinTransaction, vbytes)
 TEST_F(Test_BitcoinTransaction, native_p2wpkh)
 {
     const auto& hex = bip143_.at(0);
-    const auto bytes = api_.Factory().Data(hex, ot::StringStyle::Hex);
+    const auto bytes = api_.Factory().DataFromHex(hex);
     const auto tx = api_.Factory().BitcoinTransaction(
         ot::blockchain::Type::Bitcoin, bytes->Bytes(), false);
 
@@ -556,7 +549,7 @@ TEST_F(Test_BitcoinTransaction, native_p2wpkh)
 TEST_F(Test_BitcoinTransaction, p2sh_p2wpkh)
 {
     const auto& hex = bip143_.at(1);
-    const auto bytes = api_.Factory().Data(hex, ot::StringStyle::Hex);
+    const auto bytes = api_.Factory().DataFromHex(hex);
     const auto tx = api_.Factory().BitcoinTransaction(
         ot::blockchain::Type::Bitcoin, bytes->Bytes(), false);
 
@@ -567,7 +560,7 @@ TEST_F(Test_BitcoinTransaction, p2sh_p2wpkh)
 TEST_F(Test_BitcoinTransaction, native_p2wsh)
 {
     const auto& hex = bip143_.at(2);
-    const auto bytes = api_.Factory().Data(hex, ot::StringStyle::Hex);
+    const auto bytes = api_.Factory().DataFromHex(hex);
     const auto tx = api_.Factory().BitcoinTransaction(
         ot::blockchain::Type::Bitcoin, bytes->Bytes(), false);
 
@@ -578,7 +571,7 @@ TEST_F(Test_BitcoinTransaction, native_p2wsh)
 TEST_F(Test_BitcoinTransaction, native_p2wsh_anyonecanpay)
 {
     const auto& hex = bip143_.at(3);
-    const auto bytes = api_.Factory().Data(hex, ot::StringStyle::Hex);
+    const auto bytes = api_.Factory().DataFromHex(hex);
     const auto tx = api_.Factory().BitcoinTransaction(
         ot::blockchain::Type::Bitcoin, bytes->Bytes(), false);
 
@@ -589,7 +582,7 @@ TEST_F(Test_BitcoinTransaction, native_p2wsh_anyonecanpay)
 TEST_F(Test_BitcoinTransaction, p2sh_p2wpsh)
 {
     const auto& hex = bip143_.at(4);
-    const auto bytes = api_.Factory().Data(hex, ot::StringStyle::Hex);
+    const auto bytes = api_.Factory().DataFromHex(hex);
     const auto tx = api_.Factory().BitcoinTransaction(
         ot::blockchain::Type::Bitcoin, bytes->Bytes(), false);
 
@@ -600,7 +593,7 @@ TEST_F(Test_BitcoinTransaction, p2sh_p2wpsh)
 TEST_F(Test_BitcoinTransaction, no_find_and_delete)
 {
     const auto& hex = bip143_.at(5);
-    const auto bytes = api_.Factory().Data(hex, ot::StringStyle::Hex);
+    const auto bytes = api_.Factory().DataFromHex(hex);
     const auto tx = api_.Factory().BitcoinTransaction(
         ot::blockchain::Type::Bitcoin, bytes->Bytes(), false);
 

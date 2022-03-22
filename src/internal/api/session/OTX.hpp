@@ -43,7 +43,7 @@ public:
         const Identifier& accountIDHint,
         identifier::Notary& depositServer,
         identifier::UnitDefinition& unitID,
-        Identifier& depositAccount) const -> Depositability = 0;
+        Identifier& depositAccount) const -> otx::client::Depositability = 0;
     virtual auto finish_task(
         const TaskID taskID,
         const bool success,

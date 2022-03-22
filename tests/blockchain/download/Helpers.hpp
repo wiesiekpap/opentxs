@@ -66,8 +66,9 @@ struct DownloadManager : public ManagerType {
         output.reserve(hashes.size());
 
         for (const auto& hash : hashes) {
-            output.emplace_back(
-                start++, ot::Data::Factory(hash, ot::Data::Mode::Raw));
+            auto& [height, bHash] =
+                output.emplace_back(start++, ot::Data::Factory());
+            bHash->DecodeHex(hash);
         }
 
         generated_positions_.insert(
@@ -155,7 +156,9 @@ private:
     }
 };
 
-const bb::Position DownloadManager::genesis_{
-    0,
-    ot::Data::Factory("0", ot::Data::Mode::Raw)};
+const bb::Position DownloadManager::genesis_{0, [] {
+                                                 auto out = ot::Data::Factory();
+                                                 out->DecodeHex("0");
+                                                 return out;
+                                             }()};
 }  // namespace ottest

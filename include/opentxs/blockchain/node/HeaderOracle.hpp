@@ -10,7 +10,6 @@
 #include <cstdint>
 #include <tuple>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"

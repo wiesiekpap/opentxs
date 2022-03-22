@@ -10,7 +10,6 @@
 
 #include "Helpers.hpp"
 #include "VectorsV3.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -71,10 +70,10 @@ TEST_F(Test_PaymentCode_v1_v3, generate)
         api_.Crypto().Encode().IdentifierDecode(alice_pc_secret_.asBase58());
     const auto decode2 =
         api_.Crypto().Encode().IdentifierDecode(alice_pc_public_.asBase58());
-    auto data1 =
-        api_.Factory().Data(ot::ReadView{decode1.data(), decode1.size()});
-    auto data2 =
-        api_.Factory().Data(ot::ReadView{decode2.data(), decode2.size()});
+    auto data1 = api_.Factory().DataFromBytes(
+        ot::ReadView{decode1.data(), decode1.size()});
+    auto data2 = api_.Factory().DataFromBytes(
+        ot::ReadView{decode2.data(), decode2.size()});
 
     EXPECT_EQ(alice_pc_secret_.asBase58(), alice_pc_public_.asBase58());
     EXPECT_EQ(alice_pc_secret_.asBase58(), GetVectors3().chris_.payment_code_);
@@ -122,8 +121,8 @@ TEST_F(Test_PaymentCode_v1_v3, outgoing_btc)
         ASSERT_TRUE(pKey);
 
         const auto& key = *pKey;
-        const auto expect = api_.Factory().Data(
-            GetVectors3().chris_.receive_keys_.at(i), ot::StringStyle::Hex);
+        const auto expect = api_.Factory().DataFromHex(
+            GetVectors3().chris_.receive_keys_.at(i));
 
         EXPECT_EQ(expect->Bytes(), key.PublicKey());
     }
@@ -138,8 +137,8 @@ TEST_F(Test_PaymentCode_v1_v3, incoming_btc)
         ASSERT_TRUE(pKey);
 
         const auto& key = *pKey;
-        const auto expect = api_.Factory().Data(
-            GetVectors3().chris_.receive_keys_.at(i), ot::StringStyle::Hex);
+        const auto expect = api_.Factory().DataFromHex(
+            GetVectors3().chris_.receive_keys_.at(i));
 
         EXPECT_EQ(expect->Bytes(), key.PublicKey());
     }
@@ -154,8 +153,8 @@ TEST_F(Test_PaymentCode_v1_v3, outgoing_testnet)
         ASSERT_TRUE(pKey);
 
         const auto& key = *pKey;
-        const auto expect = api_.Factory().Data(
-            GetVectors3().daniel_.receive_keys_.at(i), ot::StringStyle::Hex);
+        const auto expect = api_.Factory().DataFromHex(
+            GetVectors3().daniel_.receive_keys_.at(i));
 
         EXPECT_EQ(expect->Bytes(), key.PublicKey());
     }
@@ -170,8 +169,8 @@ TEST_F(Test_PaymentCode_v1_v3, incoming_testnet)
         ASSERT_TRUE(pKey);
 
         const auto& key = *pKey;
-        const auto expect = api_.Factory().Data(
-            GetVectors3().daniel_.receive_keys_.at(i), ot::StringStyle::Hex);
+        const auto expect = api_.Factory().DataFromHex(
+            GetVectors3().daniel_.receive_keys_.at(i));
 
         EXPECT_NE(
             GetVectors3().daniel_.receive_keys_.at(i),
@@ -189,8 +188,8 @@ TEST_F(Test_PaymentCode_v1_v3, cross_chain_address_reuse)
         ASSERT_TRUE(pKey);
 
         const auto& key = *pKey;
-        const auto expect = api_.Factory().Data(
-            GetVectors3().chris_.receive_keys_.at(i), ot::StringStyle::Hex);
+        const auto expect = api_.Factory().DataFromHex(
+            GetVectors3().chris_.receive_keys_.at(i));
 
         EXPECT_EQ(expect->Bytes(), key.PublicKey());
     }
@@ -198,18 +197,18 @@ TEST_F(Test_PaymentCode_v1_v3, cross_chain_address_reuse)
 
 TEST_F(Test_PaymentCode_v1_v3, blind_alice)
 {
-    const auto sec = api_.Factory().Data(
-        GetVectors3().chris_.change_key_secret_, ot::StringStyle::Hex);
-    const auto pub = api_.Factory().Data(
-        GetVectors3().chris_.change_key_public_, ot::StringStyle::Hex);
+    const auto sec =
+        api_.Factory().DataFromHex(GetVectors3().chris_.change_key_secret_);
+    const auto pub =
+        api_.Factory().DataFromHex(GetVectors3().chris_.change_key_public_);
 
     EXPECT_EQ(sec->Bytes(), alice_blind_secret_.PrivateKey(reason_));
     EXPECT_EQ(pub->Bytes(), alice_blind_public_.PublicKey());
     EXPECT_EQ(alice_blind_secret_.PublicKey(), alice_blind_public_.PublicKey());
 
     {
-        const auto expect = api_.Factory().Data(
-            GetVectors3().chris_.blinded_payment_code_, ot::StringStyle::Hex);
+        const auto expect = api_.Factory().DataFromHex(
+            GetVectors3().chris_.blinded_payment_code_);
         auto blinded = api_.Factory().Data();
 
         EXPECT_TRUE(alice_pc_secret_.BlindV3(
@@ -236,21 +235,19 @@ TEST_F(Test_PaymentCode_v1_v3, blind_alice)
     const auto& G = elements.at(2);
 
     {
-        const auto got = api_.Factory().Data(ot::reader(A));
+        const auto got = api_.Factory().DataFromBytes(ot::reader(A));
 
         EXPECT_EQ(got->Bytes(), alice_blind_public_.PublicKey());
     }
     {
-        const auto expect =
-            api_.Factory().Data(GetVectors3().chris_.F_, ot::StringStyle::Hex);
-        const auto got = api_.Factory().Data(ot::reader(F));
+        const auto expect = api_.Factory().DataFromHex(GetVectors3().chris_.F_);
+        const auto got = api_.Factory().DataFromBytes(ot::reader(F));
 
         EXPECT_EQ(expect.get(), got.get());
     }
     {
-        const auto expect =
-            api_.Factory().Data(GetVectors3().chris_.G_, ot::StringStyle::Hex);
-        const auto got = api_.Factory().Data(ot::reader(G));
+        const auto expect = api_.Factory().DataFromHex(GetVectors3().chris_.G_);
+        const auto got = api_.Factory().DataFromBytes(ot::reader(G));
         constexpr auto ignore = std::size_t{16};
         const auto v1 =
             ot::ReadView{expect->Bytes().data(), expect->size() - ignore};
@@ -272,10 +269,10 @@ TEST_F(Test_PaymentCode_v1_v3, blind_alice)
 TEST_F(Test_PaymentCode_v1_v3, blind_bob)
 {
     {
-        const auto sec = api_.Factory().Data(
-            GetVectors3().daniel_.change_key_secret_, ot::StringStyle::Hex);
-        const auto pub = api_.Factory().Data(
-            GetVectors3().daniel_.change_key_public_, ot::StringStyle::Hex);
+        const auto sec = api_.Factory().DataFromHex(
+            GetVectors3().daniel_.change_key_secret_);
+        const auto pub = api_.Factory().DataFromHex(
+            GetVectors3().daniel_.change_key_public_);
 
         EXPECT_EQ(sec->Bytes(), bob_blind_secret_.PrivateKey(reason_));
         EXPECT_EQ(pub->Bytes(), bob_blind_public_.PublicKey());
@@ -296,10 +293,9 @@ TEST_F(Test_PaymentCode_v1_v3, blind_bob)
             reason_));
     }
 
-    const auto outpoint =
-        api_.Factory().Data(GetVectors3().outpoint_, ot::StringStyle::Hex);
-    const auto blinded = api_.Factory().Data(
-        GetVectors3().daniel_.blinded_payment_code_, ot::StringStyle::Hex);
+    const auto outpoint = api_.Factory().DataFromHex(GetVectors3().outpoint_);
+    const auto blinded =
+        api_.Factory().DataFromHex(GetVectors3().daniel_.blinded_payment_code_);
 
     {
         auto data = api_.Factory().Data();

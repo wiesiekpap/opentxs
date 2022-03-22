@@ -956,12 +956,6 @@ auto Factory::Data(const std::uint32_t input) const -> OTData
     return Data::Factory(input);
 }
 
-auto Factory::Data(const UnallocatedCString& input, const StringStyle mode)
-    const -> OTData
-{
-    return Data::Factory(input, static_cast<Data::Mode>(mode));
-}
-
 auto Factory::Data(const UnallocatedVector<unsigned char>& input) const
     -> OTData
 {
@@ -973,9 +967,17 @@ auto Factory::Data(const UnallocatedVector<std::byte>& input) const -> OTData
     return Data::Factory(input);
 }
 
-auto Factory::Data(ReadView input) const -> OTData
+auto Factory::DataFromBytes(ReadView input) const -> OTData
 {
     return Data::Factory(input.data(), input.size());
+}
+
+auto Factory::DataFromHex(ReadView input) const -> OTData
+{
+    auto out = this->Data();
+    out->DecodeHex(input);
+
+    return out;
 }
 
 auto Factory::Envelope() const noexcept -> OTEnvelope
@@ -1087,7 +1089,7 @@ auto Factory::instantiate_secp256k1(
             api_.Crypto().Internal().EllipticProvider(Type::Secp256k1),
             blank,
             SecretFromBytes(chaincode),
-            Data(key),
+            DataFromBytes(key),
             path,
             {},
             opentxs::crypto::key::asymmetric::Role::Sign,
@@ -1339,7 +1341,7 @@ auto Factory::Keypair(
     const Bip32Index nym,
     const Bip32Index credset,
     const Bip32Index credindex,
-    const EcdsaCurve& curve,
+    const opentxs::crypto::EcdsaCurve& curve,
     const opentxs::crypto::key::asymmetric::Role role,
     const opentxs::PasswordPrompt& reason) const -> OTKeypair
 {

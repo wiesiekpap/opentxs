@@ -16,7 +16,6 @@
 
 #include "internal/otx/common/StringXML.hpp"
 #include "internal/util/Log.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

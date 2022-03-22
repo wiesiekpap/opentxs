@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -78,7 +78,7 @@ void Test_RequestRouter::requestSocketThread(const ot::UnallocatedCString& msg)
         return out;
     }());
 
-    ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
+    ASSERT_EQ(result, ot::otx::client::SendResult::VALID_REPLY);
     // RouterSocket removes the identity frame and RequestSocket removes the
     // delimiter.
     ASSERT_EQ(1, message.size());
@@ -106,7 +106,7 @@ void Test_RequestRouter::requestSocketThreadMultipart()
 
     auto [result, message] = requestSocket->Send(std::move(multipartMessage));
 
-    ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
+    ASSERT_EQ(result, ot::otx::client::SendResult::VALID_REPLY);
     // RouterSocket removes the identity frame and RequestSocket removes the
     // delimiter.
     ASSERT_EQ(4, message.size());

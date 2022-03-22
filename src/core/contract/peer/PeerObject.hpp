@@ -9,12 +9,12 @@
 #include <memory>
 #include <optional>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"

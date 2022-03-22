@@ -9,7 +9,7 @@
 
 #include "Proto.hpp"
 #include "crypto/key/asymmetric/Asymmetric.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"

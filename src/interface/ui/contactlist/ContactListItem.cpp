@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "internal/interface/ui/UI.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

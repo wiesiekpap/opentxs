@@ -10,7 +10,6 @@
 
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/basket/BasketItem.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

@@ -12,7 +12,6 @@
 #include <ios>
 
 #include "internal/util/Flag.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"

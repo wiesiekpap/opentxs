@@ -142,7 +142,7 @@ public:
         const opentxs::blockchain::Type chain,
         const ReadView id,
         const ReadView success) noexcept
-        : Imp(chain, api.Factory().Data(id), [&]() -> bool {
+        : Imp(chain, api.Factory().DataFromBytes(id), [&]() -> bool {
             if (0u == success.size()) { return false; }
 
             return success_byte_ ==

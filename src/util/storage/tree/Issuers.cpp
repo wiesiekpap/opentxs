@@ -16,7 +16,6 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/Issuer.hpp"
 #include "internal/serialization/protobuf/verify/StorageIssuers.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/Issuer.pb.h"

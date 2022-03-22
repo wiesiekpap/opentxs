@@ -14,7 +14,6 @@
 #include <optional>
 #include <tuple>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"

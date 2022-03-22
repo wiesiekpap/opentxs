@@ -9,8 +9,9 @@
 
 #include "Proto.hpp"
 #include "identity/credential/Base.hpp"
+#include "internal/identity/Types.hpp"
 #include "internal/identity/credential/Credential.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/ContactData.pb.h"
 
@@ -33,7 +34,7 @@ namespace identity
 {
 namespace internal
 {
-struct Authority;
+class Authority;
 }  // namespace internal
 
 class Source;

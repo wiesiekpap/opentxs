@@ -9,12 +9,11 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
-{
-namespace crypto
+namespace opentxs::crypto
 {
 enum class HashType : std::uint8_t;
 enum class Language : std::uint8_t;
@@ -23,12 +22,24 @@ enum class SecretStyle : std::uint8_t;
 enum class SeedStrength : std::size_t;
 enum class SeedStyle : std::uint8_t;
 enum class SignatureRole : std::uint16_t;
-}  // namespace crypto
+enum class EcdsaCurve : std::uint8_t {
+    invalid = 0,
+    secp256k1 = 1,
+    ed25519 = 2,
+};
+}  // namespace opentxs::crypto
 
+namespace opentxs
+{
+using GetPreimage = std::function<UnallocatedCString()>;
 using Bip32Network = std::uint32_t;
 using Bip32Depth = std::uint8_t;
 using Bip32Fingerprint = std::uint32_t;
 using Bip32Index = std::uint32_t;
+
+using BIP44Chain = bool;
+static const BIP44Chain INTERNAL_CHAIN = true;
+static const BIP44Chain EXTERNAL_CHAIN = false;
 
 enum class Bip32Child : Bip32Index;
 enum class Bip43Purpose : Bip32Index;

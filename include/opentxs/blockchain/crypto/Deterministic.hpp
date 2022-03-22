@@ -9,7 +9,6 @@
 
 #include <optional>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"

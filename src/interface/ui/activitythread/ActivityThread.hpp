@@ -22,7 +22,6 @@
 #include "interface/ui/base/List.hpp"
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/OTX.hpp"
@@ -32,9 +31,11 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/interface/ui/ActivityThread.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
+#include "opentxs/util/Types.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Blank.hpp"
 #include "util/Work.hpp"
@@ -85,8 +86,10 @@ class Contact;
 
 namespace std
 {
-using STORAGEID = std::
-    tuple<opentxs::OTIdentifier, opentxs::StorageBox, opentxs::OTIdentifier>;
+using STORAGEID = std::tuple<
+    opentxs::OTIdentifier,
+    opentxs::otx::client::StorageBox,
+    opentxs::OTIdentifier>;
 
 template <>
 struct less<STORAGEID> {
@@ -160,12 +163,12 @@ public:
         const UnallocatedCString& amount,
         const Identifier& sourceAccount,
         const UnallocatedCString& memo,
-        const PaymentType type) const noexcept -> bool final;
+        const otx::client::PaymentType type) const noexcept -> bool final;
     auto Pay(
         const Amount amount,
         const Identifier& sourceAccount,
         const UnallocatedCString& memo,
-        const PaymentType type) const noexcept -> bool final;
+        const otx::client::PaymentType type) const noexcept -> bool final;
     auto PaymentCode(const UnitType currency) const noexcept
         -> UnallocatedCString final;
     auto SendDraft() const noexcept -> bool final;
@@ -203,7 +206,7 @@ private:
     UnallocatedCString me_;
     UnallocatedCString display_name_;
     UnallocatedMap<UnitType, UnallocatedCString> payment_codes_;
-    std::optional<Messagability> can_message_;
+    std::optional<otx::client::Messagability> can_message_;
     mutable UnallocatedCString draft_;
     mutable UnallocatedMap<api::session::OTX::TaskID, DraftTask> draft_tasks_;
     mutable std::optional<Callbacks> callbacks_;
@@ -241,7 +244,8 @@ private:
     auto state_machine() noexcept -> bool final;
     auto startup() noexcept -> void;
     auto update_display_name() noexcept -> bool;
-    auto update_messagability(Messagability value) noexcept -> bool;
+    auto update_messagability(otx::client::Messagability value) noexcept
+        -> bool;
     auto update_payment_codes() noexcept -> bool;
 
     ActivityThread() = delete;

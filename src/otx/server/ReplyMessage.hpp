@@ -11,9 +11,9 @@
 #include "internal/otx/Types.hpp"
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/Editor.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 

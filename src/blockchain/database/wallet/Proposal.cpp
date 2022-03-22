@@ -14,7 +14,7 @@
 #include "Proto.tpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainTransactionProposal.pb.h"

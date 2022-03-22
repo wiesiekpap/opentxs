@@ -13,7 +13,6 @@
 #include <functional>
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Types.hpp"
@@ -23,7 +22,9 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
+#include "opentxs/util/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -212,20 +213,20 @@ public:
     virtual auto Load(
         const UnallocatedCString& nymID,
         const UnallocatedCString& id,
-        const StorageBox box,
+        const otx::client::StorageBox box,
         UnallocatedCString& output,
         UnallocatedCString& alias,
         const bool checking = false) const -> bool = 0;
     virtual auto Load(
         const UnallocatedCString& nymID,
         const UnallocatedCString& id,
-        const StorageBox box,
+        const otx::client::StorageBox box,
         proto::PeerReply& request,
         const bool checking = false) const -> bool = 0;
     virtual auto Load(
         const UnallocatedCString& nymID,
         const UnallocatedCString& id,
-        const StorageBox box,
+        const otx::client::StorageBox box,
         proto::PeerRequest& request,
         std::time_t& time,
         const bool checking = false) const -> bool = 0;
@@ -285,7 +286,7 @@ public:
         const UnallocatedCString& itemID) const -> bool = 0;
     virtual auto NymBoxList(
         const UnallocatedCString& nymID,
-        const StorageBox box) const -> ObjectList = 0;
+        const otx::client::StorageBox box) const -> ObjectList = 0;
     virtual auto NymList() const -> ObjectList = 0;
     virtual auto PaymentWorkflowList(const UnallocatedCString& nymID) const
         -> ObjectList = 0;
@@ -321,7 +322,7 @@ public:
         const Data& txid) const noexcept -> bool = 0;
     virtual auto RemoveNymBoxItem(
         const UnallocatedCString& nymID,
-        const StorageBox box,
+        const otx::client::StorageBox box,
         const UnallocatedCString& itemID) const -> bool = 0;
     virtual auto RemoveServer(const UnallocatedCString& id) const -> bool = 0;
     virtual auto RemoveThreadItem(
@@ -353,7 +354,7 @@ public:
     virtual auto SetPeerRequestTime(
         const UnallocatedCString& nymID,
         const UnallocatedCString& id,
-        const StorageBox box) const -> bool = 0;
+        const otx::client::StorageBox box) const -> bool = 0;
     virtual auto SetReadState(
         const UnallocatedCString& nymId,
         const UnallocatedCString& threadId,
@@ -412,7 +413,7 @@ public:
         const std::uint64_t time,
         const UnallocatedCString& alias,
         const UnallocatedCString& data,
-        const StorageBox box,
+        const otx::client::StorageBox box,
         const UnallocatedCString& account = {}) const -> bool = 0;
     virtual auto Store(
         const identifier::Nym& nym,
@@ -423,11 +424,11 @@ public:
     virtual auto Store(
         const proto::PeerReply& data,
         const UnallocatedCString& nymid,
-        const StorageBox box) const -> bool = 0;
+        const otx::client::StorageBox box) const -> bool = 0;
     virtual auto Store(
         const proto::PeerRequest& data,
         const UnallocatedCString& nymid,
-        const StorageBox box) const -> bool = 0;
+        const otx::client::StorageBox box) const -> bool = 0;
     virtual auto Store(const identifier::Nym& nym, const proto::Purse& purse)
         const -> bool = 0;
     virtual auto Store(const proto::Seed& data) const -> bool = 0;

@@ -23,14 +23,15 @@
 
 #include "Proto.hpp"
 #include "internal/api/session/Wallet.hpp"
-#include "internal/identity/Identity.hpp"
+#include "internal/identity/Authority.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/network/zeromq/Handle.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
 #include "internal/util/Editor.hpp"
 #include "internal/util/Lockable.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -42,16 +43,19 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/NymEditor.hpp"
+#include "opentxs/util/Types.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -78,7 +82,7 @@ namespace identity
 {
 namespace internal
 {
-struct Nym;
+class Nym;
 }  // namespace internal
 
 class Nym;
@@ -249,12 +253,12 @@ public:
     auto PeerReply(
         const identifier::Nym& nym,
         const Identifier& reply,
-        const StorageBox& box,
+        const otx::client::StorageBox& box,
         proto::PeerReply& serialized) const -> bool final;
     auto PeerReply(
         const identifier::Nym& nym,
         const Identifier& reply,
-        const StorageBox& box,
+        const otx::client::StorageBox& box,
         AllocateOutput destination) const -> bool final;
     auto PeerReplyComplete(
         const identifier::Nym& nym,
@@ -279,13 +283,13 @@ public:
     auto PeerRequest(
         const identifier::Nym& nym,
         const Identifier& request,
-        const StorageBox& box,
+        const otx::client::StorageBox& box,
         std::time_t& time,
         proto::PeerRequest& serialized) const -> bool final;
     auto PeerRequest(
         const identifier::Nym& nym,
         const Identifier& request,
-        const StorageBox& box,
+        const otx::client::StorageBox& box,
         std::time_t& time,
         AllocateOutput destination) const -> bool final;
     auto PeerRequestComplete(
@@ -300,7 +304,7 @@ public:
     auto PeerRequestDelete(
         const identifier::Nym& nym,
         const Identifier& request,
-        const StorageBox& box) const -> bool final;
+        const otx::client::StorageBox& box) const -> bool final;
     auto PeerRequestSent(const identifier::Nym& nym) const -> ObjectList final;
     auto PeerRequestIncoming(const identifier::Nym& nym) const
         -> ObjectList final;
@@ -314,7 +318,7 @@ public:
     auto PeerRequestUpdate(
         const identifier::Nym& nym,
         const Identifier& request,
-        const StorageBox& box) const -> bool final;
+        const otx::client::StorageBox& box) const -> bool final;
     auto PublishNotary(const identifier::Notary& id) const noexcept
         -> bool final;
     auto PublishNym(const identifier::Nym& id) const noexcept -> bool final;

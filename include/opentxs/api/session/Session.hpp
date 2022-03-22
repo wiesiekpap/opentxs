@@ -10,6 +10,7 @@
 #include <chrono>
 
 #include "opentxs/api/Periodic.hpp"
+#include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

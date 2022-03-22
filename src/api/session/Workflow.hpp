@@ -18,7 +18,7 @@
 #include "internal/otx/common/Message.hpp"
 #include "internal/otx/common/OTTransaction.hpp"
 #include "internal/util/Lockable.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -27,6 +27,7 @@
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
@@ -397,7 +398,7 @@ private:
         const identifier::Nym& remoteNymID,
         const Identifier& sourceID,
         const Identifier& workflowID,
-        const StorageBox type,
+        const otx::client::StorageBox type,
         Time time) const -> bool;
     void update_rpc(
         const UnallocatedCString& localNymID,

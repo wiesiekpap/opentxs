@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <utility>
 
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Container.hpp"
 

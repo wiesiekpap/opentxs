@@ -6,24 +6,15 @@
 #include "Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
-#include <algorithm>
 #include <chrono>
 #include <utility>
 
-#include "integration/Helpers.hpp"
-#include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
-#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/UI.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
-#include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
@@ -39,12 +30,10 @@
 #include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/interface/ui/AccountActivity.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "rpc/Helpers.hpp"
@@ -220,7 +209,7 @@ TEST_F(Regtest_fixture_hd, account_activity_immature)
         {{u8"0", u8"0 units"}},
         {
             {
-                ot::StorageBox::BLOCKCHAIN,
+                ot::otx::client::StorageBox::BLOCKCHAIN,
                 1,
                 10000004950,
                 u8"100.000\u202F049\u202F5 units",
@@ -342,7 +331,7 @@ TEST_F(Regtest_fixture_hd, account_activity_mature)
         {{u8"100.0000495", u8"100.000\u202F049\u202F5 units"}},
         {
             {
-                ot::StorageBox::BLOCKCHAIN,
+                ot::otx::client::StorageBox::BLOCKCHAIN,
                 1,
                 10000004950,
                 u8"100.000\u202F049\u202F5 units",
@@ -429,7 +418,7 @@ TEST_F(Regtest_fixture_hd, account_activity_reorg)
         {{u8"100.0000495", u8"100.000\u202F049\u202F5 units"}},
         {
             {
-                ot::StorageBox::BLOCKCHAIN,
+                ot::otx::client::StorageBox::BLOCKCHAIN,
                 1,
                 10000004950,
                 u8"100.000\u202F049\u202F5 units",
@@ -517,7 +506,7 @@ TEST_F(Regtest_fixture_hd, account_activity_final)
         {{u8"100.0000495", u8"100.000\u202F049\u202F5 units"}},
         {
             {
-                ot::StorageBox::BLOCKCHAIN,
+                ot::otx::client::StorageBox::BLOCKCHAIN,
                 1,
                 10000004950,
                 u8"100.000\u202F049\u202F5 units",

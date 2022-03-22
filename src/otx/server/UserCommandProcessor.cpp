@@ -16,6 +16,7 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/contract/Contract.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/otx/Types.hpp"
 #include "internal/otx/blind/Mint.hpp"
@@ -37,7 +38,6 @@
 #include "internal/util/Editor.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
@@ -59,7 +59,9 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/wot/claim/Attribute.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/otx/blind/Mint.hpp"  // IWYU pragma: keep
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/util/Container.hpp"
@@ -555,7 +557,7 @@ auto UserCommandProcessor::cmd_check_nym(ReplyMessage& reply) const -> bool
 
     if (nym) {
         auto publicNym = proto::Nym{};
-        if (false == nym->Serialize(publicNym)) {
+        if (false == nym->Internal().Serialize(publicNym)) {
             LogError()(OT_PRETTY_CLASS())("Failed to serialize nym ")(targetNym)
                 .Flush();
             reply.SetBool(false);
@@ -943,7 +945,7 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
 
             if (contract) {
                 auto publicNym = proto::Nym{};
-                if (false == contract->Serialize(publicNym)) {
+                if (false == contract->Internal().Serialize(publicNym)) {
                     LogError()(OT_PRETTY_CLASS())("Failed to serialize nym.")
                         .Flush();
                     return false;

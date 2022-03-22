@@ -11,7 +11,6 @@
 
 #include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"

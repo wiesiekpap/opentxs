@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
@@ -427,8 +426,7 @@ public:
             auto expected = client_.Factory().Data();
             expected->DecodeHex(key);
             const auto decoded = crypto_.Encode().IdentifierDecode(value);
-            const auto output =
-                client_.Factory().Data(decoded, ot::StringStyle::Raw);
+            const auto output = client_.Factory().DataFromBytes(decoded);
 
             EXPECT_EQ(expected.get(), output.get());
         }
@@ -473,7 +471,7 @@ public:
             const auto seed = client_.Factory().SecretFromBytes(data->Bytes());
             const auto seedID = library.SeedID(seed->Bytes())->str();
             const auto serialized =
-                library.DeriveKey(ot::EcdsaCurve::secp256k1, seed, {});
+                library.DeriveKey(ot::crypto::EcdsaCurve::secp256k1, seed, {});
             auto pKey = client_.Crypto().Asymmetric().InstantiateKey(
                 ot::crypto::key::asymmetric::Algorithm::Secp256k1,
                 seedID,
@@ -520,8 +518,8 @@ public:
 
         output &= library.DeserializePrivate(
             rhs, rNetwork, rDepth, rParent, rIndex, rChainCode, rKey);
-        auto lKeyData = client_.Factory().Data(lKey->Bytes());
-        auto rKeyData = client_.Factory().Data(rKey->Bytes());
+        auto lKeyData = client_.Factory().DataFromBytes(lKey->Bytes());
+        auto rKeyData = client_.Factory().DataFromBytes(rKey->Bytes());
 
         EXPECT_TRUE(output);
         EXPECT_EQ(lNetwork, rNetwork);
@@ -592,8 +590,8 @@ public:
                 const auto pSeed = get_seed(hex);
                 const auto& seed = pSeed.get();
                 const auto seedID = library.SeedID(seed.Bytes())->str();
-                const auto serialized =
-                    library.DeriveKey(ot::EcdsaCurve::secp256k1, seed, rawPath);
+                const auto serialized = library.DeriveKey(
+                    ot::crypto::EcdsaCurve::secp256k1, seed, rawPath);
                 auto pKey = client_.Crypto().Asymmetric().InstantiateKey(
                     ot::crypto::key::asymmetric::Algorithm::Secp256k1,
                     seedID,

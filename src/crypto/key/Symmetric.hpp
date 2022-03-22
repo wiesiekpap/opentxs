@@ -14,7 +14,7 @@
 
 #include "Proto.hpp"
 #include "internal/crypto/key/Factory.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

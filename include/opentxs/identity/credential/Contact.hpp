@@ -9,7 +9,6 @@
 
 #include <cstdint>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/identity/credential/Base.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Container.hpp"

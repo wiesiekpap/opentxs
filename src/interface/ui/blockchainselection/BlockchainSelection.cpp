@@ -15,7 +15,6 @@
 #include "interface/ui/base/List.hpp"
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"

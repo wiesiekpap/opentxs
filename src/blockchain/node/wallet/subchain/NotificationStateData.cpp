@@ -123,7 +123,7 @@ auto NotificationStateData::calculate_id(
     const Type chain,
     const opentxs::PaymentCode& code) noexcept -> OTIdentifier
 {
-    auto preimage = api.Factory().Data(code.ID().Bytes());
+    auto preimage = api.Factory().DataFromBytes(code.ID().Bytes());
     preimage->Concatenate(&chain, sizeof(chain));
     auto output = api.Factory().Identifier();
     output->CalculateDigest(preimage->Bytes());

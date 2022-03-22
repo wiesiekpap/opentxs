@@ -11,7 +11,7 @@
 
 #include "interface/ui/base/Widget.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 
 namespace opentxs::factory
 {

@@ -32,7 +32,6 @@
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -54,6 +53,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Types.hpp"
 #include "util/ScopeGuard.hpp"
 
 namespace opentxs::factory
@@ -217,7 +217,7 @@ auto FilterOracle::compare_header_to_checkpoint(
     if (auto it = cp.find(height); cp.end() != it) {
         const auto& bytes = it->second.at(default_type_);
         const auto expectedHeader =
-            api_.Factory().Data(ReadView{bytes.data(), bytes.size()});
+            api_.Factory().DataFromBytes(ReadView{bytes.data(), bytes.size()});
 
         if (expectedHeader == receivedHeader) {
             LogConsole()(print(chain_))(" filter header at height ")(
@@ -261,8 +261,7 @@ auto FilterOracle::compare_tips_to_checkpoint() noexcept -> void
 
         try {
             const auto& cpHeader = i->second.at(default_type_);
-            const auto cpBytes =
-                api_.Factory().Data(cpHeader, StringStyle::Hex);
+            const auto cpBytes = api_.Factory().DataFromHex(cpHeader);
 
             if (existingHeader == cpBytes) { break; }
 
@@ -772,7 +771,7 @@ auto FilterOracle::process_block(
             input.end(),
             std::back_inserter(output),
             [&](const auto& element) -> OTData {
-                return api_.Factory().Data(reader(element));
+                return api_.Factory().DataFromBytes(reader(element));
             });
 
         return output;

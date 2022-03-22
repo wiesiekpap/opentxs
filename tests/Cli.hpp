@@ -10,7 +10,6 @@
 #include <iostream>
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Options.hpp"
 
 namespace ot = opentxs;

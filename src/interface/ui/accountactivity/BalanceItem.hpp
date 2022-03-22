@@ -13,13 +13,13 @@
 #include "1_Internal.hpp"
 #include "interface/ui/base/Row.hpp"
 #include "internal/interface/ui/UI.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/contract/Unit.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/interface/ui/BalanceItem.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -86,19 +86,22 @@ public:
     auto DisplayAmount() const noexcept -> UnallocatedCString override;
     auto Text() const noexcept -> UnallocatedCString override;
     auto Timestamp() const noexcept -> Time final;
-    auto Type() const noexcept -> StorageBox override { return type_; }
+    auto Type() const noexcept -> otx::client::StorageBox override
+    {
+        return type_;
+    }
 
     ~BalanceItem() override;
 
 protected:
     const OTNymID nym_id_;
     const UnallocatedCString workflow_;
-    const StorageBox type_;
+    const otx::client::StorageBox type_;
     UnallocatedCString text_;
     Time time_;
 
     static auto extract_type(const proto::PaymentWorkflow& workflow) noexcept
-        -> StorageBox;
+        -> otx::client::StorageBox;
 
     auto get_contact_name(const identifier::Nym& nymID) const noexcept
         -> UnallocatedCString;

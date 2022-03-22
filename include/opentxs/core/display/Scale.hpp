@@ -14,7 +14,6 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

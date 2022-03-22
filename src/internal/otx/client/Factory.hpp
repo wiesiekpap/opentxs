@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "opentxs/Types.hpp"
+#include "internal/util/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

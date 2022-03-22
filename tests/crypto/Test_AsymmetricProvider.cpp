@@ -13,7 +13,6 @@
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "internal/util/LogMacros.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Config.hpp"
@@ -86,56 +85,63 @@ public:
               "response seminar brave tip suit recall often sound stick owner "
               "lottery motion",
               ""))
-        , ed_(get_key(api_, ot::EcdsaCurve::ed25519, Role::Sign))
+        , ed_(get_key(api_, ot::crypto::EcdsaCurve::ed25519, Role::Sign))
         , ed_hd_([&] {
             if (have_hd_) {
 
-                return get_hd_key(api_, fingerprint_, ot::EcdsaCurve::ed25519);
+                return get_hd_key(
+                    api_, fingerprint_, ot::crypto::EcdsaCurve::ed25519);
             } else {
 
-                return get_key(api_, ot::EcdsaCurve::ed25519, Role::Sign);
+                return get_key(
+                    api_, ot::crypto::EcdsaCurve::ed25519, Role::Sign);
             }
         }())
         , ed_2_([&] {
             if (have_hd_) {
 
                 return get_hd_key(
-                    api_, fingerprint_, ot::EcdsaCurve::ed25519, 1);
+                    api_, fingerprint_, ot::crypto::EcdsaCurve::ed25519, 1);
             } else {
 
-                return get_key(api_, ot::EcdsaCurve::ed25519, Role::Sign);
+                return get_key(
+                    api_, ot::crypto::EcdsaCurve::ed25519, Role::Sign);
             }
         }())
-        , secp_(get_key(api_, ot::EcdsaCurve::secp256k1, Role::Sign))
+        , secp_(get_key(api_, ot::crypto::EcdsaCurve::secp256k1, Role::Sign))
         , secp_hd_([&] {
             if (have_hd_) {
 
                 return get_hd_key(
-                    api_, fingerprint_, ot::EcdsaCurve::secp256k1);
+                    api_, fingerprint_, ot::crypto::EcdsaCurve::secp256k1);
             } else {
 
-                return get_key(api_, ot::EcdsaCurve::secp256k1, Role::Sign);
+                return get_key(
+                    api_, ot::crypto::EcdsaCurve::secp256k1, Role::Sign);
             }
         }())
         , secp_2_([&] {
             if (have_hd_) {
 
                 return get_hd_key(
-                    api_, fingerprint_, ot::EcdsaCurve::secp256k1, 1);
+                    api_, fingerprint_, ot::crypto::EcdsaCurve::secp256k1, 1);
             } else {
 
-                return get_key(api_, ot::EcdsaCurve::secp256k1, Role::Sign);
+                return get_key(
+                    api_, ot::crypto::EcdsaCurve::secp256k1, Role::Sign);
             }
         }())
-        , rsa_sign_1_(get_key(api_, ot::EcdsaCurve::invalid, Role::Sign))
-        , rsa_sign_2_(get_key(api_, ot::EcdsaCurve::invalid, Role::Sign))
+        , rsa_sign_1_(
+              get_key(api_, ot::crypto::EcdsaCurve::invalid, Role::Sign))
+        , rsa_sign_2_(
+              get_key(api_, ot::crypto::EcdsaCurve::invalid, Role::Sign))
     {
     }
 
     static ot::OTAsymmetricKey get_hd_key(
         const ot::api::session::Client& api,
         const ot::UnallocatedCString& fingerprint,
-        const ot::EcdsaCurve& curve,
+        const ot::crypto::EcdsaCurve& curve,
         const std::uint32_t index = 0)
     {
         auto reason = api.Factory().PasswordPrompt(__func__);
@@ -159,16 +165,16 @@ public:
     }
     [[maybe_unused]] static ot::OTAsymmetricKey get_key(
         const ot::api::session::Client& api,
-        const ot::EcdsaCurve curve,
+        const ot::crypto::EcdsaCurve curve,
         const Role role)
     {
         const auto reason = api.Factory().PasswordPrompt(__func__);
         const auto params = [&] {
-            if (ot::EcdsaCurve::secp256k1 == curve) {
+            if (ot::crypto::EcdsaCurve::secp256k1 == curve) {
 
                 return ot::crypto::Parameters{
                     ot::crypto::ParameterType::secp256k1};
-            } else if (ot::EcdsaCurve::ed25519 == curve) {
+            } else if (ot::crypto::EcdsaCurve::ed25519 == curve) {
 
                 return ot::crypto::Parameters{
                     ot::crypto::ParameterType::ed25519};

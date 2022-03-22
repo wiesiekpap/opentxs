@@ -18,6 +18,7 @@ target_sources(
     "${opentxs_SOURCE_DIR}/src/internal/util/Lockable.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Log.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/LogMacros.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/util/Mutex.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Shared.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Signals.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/TSV.hpp"
@@ -86,6 +87,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Pimpl.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/SharedPimpl.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Time.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/Types.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/WorkType.hpp"
 )
 

@@ -10,7 +10,6 @@
 #include <mutex>
 
 #include "internal/crypto/Seed.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Language.hpp"

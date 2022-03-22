@@ -18,16 +18,18 @@
 #include "internal/api/session/Activity.hpp"
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/Lockable.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Activity.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Time.hpp"
+#include "opentxs/util/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -87,38 +89,39 @@ public:
     auto AddPaymentEvent(
         const identifier::Nym& nymID,
         const Identifier& threadID,
-        const StorageBox type,
+        const otx::client::StorageBox type,
         const Identifier& itemID,
         const Identifier& workflowID,
         Time time) const noexcept -> bool final;
     auto Mail(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox& box) const noexcept -> std::unique_ptr<Message> final
+        const otx::client::StorageBox& box) const noexcept
+        -> std::unique_ptr<Message> final
     {
         return mail_.LoadMail(nym, id, box);
     }
     auto Mail(
         const identifier::Nym& nym,
         const Message& mail,
-        const StorageBox box,
+        const otx::client::StorageBox box,
         const PeerObject& text) const noexcept -> UnallocatedCString final;
     auto Mail(
         const identifier::Nym& nym,
         const Message& mail,
-        const StorageBox box,
+        const otx::client::StorageBox box,
         const UnallocatedCString& text) const noexcept
         -> UnallocatedCString final;
-    auto Mail(const identifier::Nym& nym, const StorageBox box) const noexcept
-        -> ObjectList final;
+    auto Mail(const identifier::Nym& nym, const otx::client::StorageBox box)
+        const noexcept -> ObjectList final;
     auto MailRemove(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox box) const noexcept -> bool final;
+        const otx::client::StorageBox box) const noexcept -> bool final;
     auto MailText(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox& box,
+        const otx::client::StorageBox& box,
         const PasswordPrompt& reason) const noexcept
         -> std::shared_future<UnallocatedCString> final
     {

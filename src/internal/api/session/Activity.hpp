@@ -11,6 +11,8 @@
 
 #include "opentxs/api/session/Activity.hpp"
 
+#include "opentxs/otx/client/Types.hpp"
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
@@ -56,7 +58,8 @@ public:
     virtual auto Mail(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox& box) const noexcept -> std::unique_ptr<Message> = 0;
+        const otx::client::StorageBox& box) const noexcept
+        -> std::unique_ptr<Message> = 0;
     /**   Store a mail object
      *
      *    \param[in] nym the identifier of the nym who owns the mail box
@@ -68,12 +71,12 @@ public:
     virtual auto Mail(
         const identifier::Nym& nym,
         const Message& mail,
-        const StorageBox box,
+        const otx::client::StorageBox box,
         const PeerObject& text) const noexcept -> UnallocatedCString = 0;
     virtual auto Mail(
         const identifier::Nym& nym,
         const Message& mail,
-        const StorageBox box,
+        const otx::client::StorageBox box,
         const UnallocatedCString& text) const noexcept
         -> UnallocatedCString = 0;
     virtual auto Transfer(

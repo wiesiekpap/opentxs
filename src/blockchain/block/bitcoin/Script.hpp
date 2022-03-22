@@ -13,7 +13,6 @@
 #include <optional>
 
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"

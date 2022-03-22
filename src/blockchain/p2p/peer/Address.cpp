@@ -11,7 +11,7 @@
 
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 
 namespace opentxs::blockchain::p2p::peer
 {

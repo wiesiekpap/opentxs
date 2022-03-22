@@ -14,7 +14,6 @@
 
 #include "Basic.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"

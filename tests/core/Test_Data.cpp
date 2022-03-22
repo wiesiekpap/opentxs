@@ -72,8 +72,16 @@ TEST_F(Default_Data, hex)
 
 TEST_F(Default_Data, comparison_equal_size)
 {
-    const auto one = ot::Data::Factory(hex_.at(2), ot::Data::Mode::Hex);
-    const auto two = ot::Data::Factory(hex_.at(3), ot::Data::Mode::Hex);
+    const auto one = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(hex_.at(2));
+    const auto two = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(hex_.at(3));
 
     EXPECT_FALSE(one.get() == two.get());
     EXPECT_FALSE(two.get() == one.get());
@@ -91,8 +99,16 @@ TEST_F(Default_Data, comparison_equal_size)
 
 TEST_F(Default_Data, comparison_lhs_short)
 {
-    const auto one = ot::Data::Factory(hex_.at(3), ot::Data::Mode::Hex);
-    const auto two = ot::Data::Factory(hex_.at(4), ot::Data::Mode::Hex);
+    const auto one = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(hex_.at(3));
+    const auto two = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(hex_.at(4));
 
     EXPECT_FALSE(one.get() == two.get());
     EXPECT_FALSE(two.get() == one.get());
@@ -110,8 +126,16 @@ TEST_F(Default_Data, comparison_lhs_short)
 
 TEST_F(Default_Data, comparison_rhs_short)
 {
-    const auto one = ot::Data::Factory(hex_.at(5), ot::Data::Mode::Hex);
-    const auto two = ot::Data::Factory(hex_.at(6), ot::Data::Mode::Hex);
+    const auto one = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(hex_.at(5));
+    const auto two = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(hex_.at(6));
 
     EXPECT_FALSE(one.get() == two.get());
     EXPECT_FALSE(two.get() == one.get());
@@ -187,12 +211,16 @@ TEST(Data, copy_from_interface)
 
 TEST(Data, map_1)
 {
-    const auto one = ot::Data::Factory(
-        "4860eb18bf1b1620e37e9490fc8a427514416fd75159ab86688e9a8300000000",
-        ot::Data::Mode::Hex);
-    const auto two = ot::Data::Factory(
-        "bddd99ccfda39da1b108ce1a5d70038d0a967bacb68b6b63065f626a00000000",
-        ot::Data::Mode::Hex);
+    const auto one = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }("4860eb18bf1b1620e37e9490fc8a427514416fd75159ab86688e9a8300000000");
+    const auto two = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }("bddd99ccfda39da1b108ce1a5d70038d0a967bacb68b6b63065f626a00000000");
 
     EXPECT_FALSE(one == two);
     EXPECT_TRUE(one != two);
@@ -229,12 +257,16 @@ TEST(Data, map_1)
 
 TEST(Data, map_2)
 {
-    const auto one = ot::Data::Factory(
-        "4860eb18bf1b1620e37e9490fc8a427514416fd75159ab86688e9a8300000000",
-        ot::Data::Mode::Hex);
-    const auto two = ot::Data::Factory(
-        "4860eb18bf1b1620e37e9490fc8a427514416fd75159ab86688e9a8300000001",
-        ot::Data::Mode::Hex);
+    const auto one = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }("4860eb18bf1b1620e37e9490fc8a427514416fd75159ab86688e9a8300000000");
+    const auto two = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }("4860eb18bf1b1620e37e9490fc8a427514416fd75159ab86688e9a8300000001");
 
     EXPECT_FALSE(one == two);
     EXPECT_TRUE(one != two);
@@ -271,13 +303,21 @@ TEST(Data, map_2)
 
 TEST(Data, is_null)
 {
-    const auto one = ot::Data::Factory("00000000", ot::Data::Mode::Hex);
-    const auto two = ot::Data::Factory(
-        "4860eb18bf1b1620e37e9490fc8a427514416fd75159ab86688e9a8300000001",
-        ot::Data::Mode::Hex);
-    const auto three = ot::Data::Factory(
-        "0000000000000000000000000000000000000000000000000000000000000001",
-        ot::Data::Mode::Hex);
+    const auto one = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }("00000000");
+    const auto two = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }("4860eb18bf1b1620e37e9490fc8a427514416fd75159ab86688e9a8300000001");
+    const auto three = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }("0000000000000000000000000000000000000000000000000000000000000001");
     const auto four = ot::Data::Factory();
 
     EXPECT_TRUE(one->IsNull());
@@ -292,7 +332,11 @@ TEST(Data, endian_16)
 
     EXPECT_STREQ(data1->asHex().c_str(), "1000");
 
-    auto data2 = ot::Data::Factory("1000", ot::Data::Mode::Hex);
+    auto data2 = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }("1000");
     auto recovered = std::uint16_t{};
 
     EXPECT_TRUE(data2->Extract(recovered));
@@ -309,7 +353,11 @@ TEST(Data, endian_32)
 
     EXPECT_STREQ(data1->asHex().c_str(), "10000000");
 
-    auto data2 = ot::Data::Factory("10000000", ot::Data::Mode::Hex);
+    auto data2 = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }("10000000");
     auto recovered = std::uint32_t{};
 
     EXPECT_TRUE(data2->Extract(recovered));
@@ -326,7 +374,11 @@ TEST(Data, endian_64)
 
     EXPECT_STREQ(data1->asHex().c_str(), "1000000000000000");
 
-    auto data2 = ot::Data::Factory("1000000000000000", ot::Data::Mode::Hex);
+    auto data2 = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }("1000000000000000");
     auto recovered1 = std::uint64_t{};
 
     EXPECT_TRUE(data2->Extract(recovered1));
@@ -344,11 +396,21 @@ TEST(Data, endian_64)
 
 TEST(Data, extract)
 {
-    const auto vector = ot::Data::Factory(
-        "00000000000000000000ffff178140ba", ot::Data::Mode::Hex);
-    const auto prefix =
-        ot::Data::Factory("00000000000000000000ffff", ot::Data::Mode::Hex);
-    const auto suffix = ot::Data::Factory("178140ba", ot::Data::Mode::Hex);
+    const auto vector = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }("00000000000000000000ffff178140ba");
+    const auto prefix = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }("00000000000000000000ffff");
+    const auto suffix = [](const auto& hex) {
+        auto out = ot::Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }("178140ba");
 
     auto calculatedPrefix = ot::Data::Factory();
     auto calculatedSuffix = ot::Data::Factory();

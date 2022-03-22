@@ -153,7 +153,7 @@ public:
         const opentxs::blockchain::Type chain,
         const ReadView id,
         const ReadView payload) noexcept
-        : Imp(chain, api.Factory().Data(id), space(payload))
+        : Imp(chain, api.Factory().DataFromBytes(id), space(payload))
     {
     }
 

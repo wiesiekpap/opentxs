@@ -13,7 +13,6 @@
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/NumList.hpp"
 #include "internal/otx/common/OTTransactionType.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"

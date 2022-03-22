@@ -13,7 +13,6 @@
 #include "internal/core/Core.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"

@@ -14,7 +14,6 @@
 #include "internal/otx/common/OTTransaction.hpp"
 #include "internal/otx/common/recurring/OTPaymentPlan.hpp"
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

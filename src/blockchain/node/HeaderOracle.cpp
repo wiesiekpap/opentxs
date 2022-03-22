@@ -64,8 +64,11 @@ auto HeaderOracle::GenesisBlockHash(const blockchain::Type type)
         }
 
         const auto& data = params::Data::Chains().at(type);
-        const auto [it, added] = cache.emplace(
-            type, Data::Factory(data.genesis_hash_hex_, Data::Mode::Hex));
+        const auto [it, added] = cache.emplace(type, [&] {
+            auto out = Data::Factory();
+            out->DecodeHex(data.genesis_hash_hex_);
+            return out;
+        }());
 
         return it->second;
     } catch (...) {
@@ -769,9 +772,9 @@ auto HeaderOracle::GetDefaultCheckpoint() const noexcept -> CheckpointData
 
     return CheckpointData{
         checkpoint.height_,
-        api_.Factory().Data(checkpoint.block_hash_, StringStyle::Hex),
-        api_.Factory().Data(checkpoint.previous_block_hash_, StringStyle::Hex),
-        api_.Factory().Data(checkpoint.filter_header_, StringStyle::Hex)};
+        api_.Factory().DataFromHex(checkpoint.block_hash_),
+        api_.Factory().DataFromHex(checkpoint.previous_block_hash_),
+        api_.Factory().DataFromHex(checkpoint.filter_header_)};
 }
 
 auto HeaderOracle::GetCheckpoint() const noexcept -> block::Position

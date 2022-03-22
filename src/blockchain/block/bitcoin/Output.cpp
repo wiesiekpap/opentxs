@@ -160,8 +160,7 @@ auto BitcoinTransactionOutput(
                 if (const auto& hash = in.mined_block(); 0 < hash.size()) {
 
                     return std::make_pair(
-                        in.mined_height(),
-                        api.Factory().Data(hash, StringStyle::Raw));
+                        in.mined_height(), api.Factory().DataFromBytes(hash));
                 } else {
 
                     return make_blank<blockchain::block::Position>::value(api);

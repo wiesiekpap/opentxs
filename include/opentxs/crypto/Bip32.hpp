@@ -11,7 +11,6 @@
 #include <memory>
 #include <tuple>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

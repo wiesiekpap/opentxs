@@ -32,6 +32,7 @@
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
@@ -380,9 +381,11 @@ namespace opentxs::blockchain::block
 {
 auto BlankHash() noexcept -> pHash
 {
-    return Data::Factory(
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-        Data::Mode::Hex);
+    auto out = Data::Factory();
+    out->DecodeHex(
+        "0x0000000000000000000000000000000000000000000000000000000000000000");
+
+    return out;
 }
 }  // namespace opentxs::blockchain::block
 

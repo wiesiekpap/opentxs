@@ -1249,7 +1249,7 @@ auto Workflow::ClearCheque(
             recipientNymID,
             Identifier::Factory(*cheque),
             Identifier::Factory(workflow->id()),
-            StorageBox::OUTGOINGCHEQUE,
+            otx::client::StorageBox::OUTGOINGCHEQUE,
             extract_conveyed_time(*workflow));
     }
 
@@ -1353,7 +1353,7 @@ auto Workflow::ClearTransfer(
             depositorNymID,
             Identifier::Factory(*transfer),
             Identifier::Factory(workflow->id()),
-            StorageBox::OUTGOINGTRANSFER,
+            otx::client::StorageBox::OUTGOINGTRANSFER,
             time);
         update_rpc(
 
@@ -1493,7 +1493,7 @@ auto Workflow::convey_incoming_transfer(
             transfer.GetNymID(),
             Identifier::Factory(transfer),
             workflowID,
-            StorageBox::INCOMINGTRANSFER,
+            otx::client::StorageBox::INCOMINGTRANSFER,
             time);
         update_rpc(
 
@@ -2283,7 +2283,7 @@ auto Workflow::ImportCheque(
             cheque.GetSenderNymID(),
             Identifier::Factory(cheque),
             workflowID,
-            StorageBox::INCOMINGCHEQUE,
+            otx::client::StorageBox::INCOMINGCHEQUE,
             time);
         update_rpc(
 
@@ -2623,7 +2623,7 @@ auto Workflow::ReceiveCheque(
             cheque.GetSenderNymID(),
             Identifier::Factory(cheque),
             workflowID,
-            StorageBox::INCOMINGCHEQUE,
+            otx::client::StorageBox::INCOMINGCHEQUE,
             time);
         update_rpc(
 
@@ -2842,7 +2842,7 @@ auto Workflow::update_activity(
     const identifier::Nym& remoteNymID,
     const Identifier& sourceID,
     const Identifier& workflowID,
-    const StorageBox type,
+    const otx::client::StorageBox type,
     Time time) const -> bool
 {
     const auto contactID = contact_.ContactID(remoteNymID);
@@ -3001,7 +3001,7 @@ auto Workflow::WriteCheque(const opentxs::Cheque& cheque) const -> OTIdentifier
             cheque.GetRecipientNymID(),
             Identifier::Factory(cheque),
             workflowID,
-            StorageBox::OUTGOINGCHEQUE,
+            otx::client::StorageBox::OUTGOINGCHEQUE,
             time);
     }
 

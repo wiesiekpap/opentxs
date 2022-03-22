@@ -21,7 +21,7 @@
 #include <utility>
 
 #include "interface/qt/SendMonitor.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -79,9 +79,11 @@
 #include "opentxs/interface/ui/UnitList.hpp"
 #include "opentxs/interface/ui/UnitListItem.hpp"
 #include "opentxs/interface/ui/Widget.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "opentxs/util/Types.hpp"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Blank.hpp"
 
@@ -378,7 +380,8 @@ using ActivityThreadPrimaryID = OTNymID;
 using ActivityThreadExternalInterface = ui::ActivityThread;
 using ActivityThreadInternalInterface = ui::internal::ActivityThread;
 /** item id, box, accountID, taskID */
-using ActivityThreadRowID = std::tuple<OTIdentifier, StorageBox, OTIdentifier>;
+using ActivityThreadRowID =
+    std::tuple<OTIdentifier, otx::client::StorageBox, OTIdentifier>;
 using ActivityThreadRowInterface = ui::ActivityThreadItem;
 using ActivityThreadRowInternal = ui::internal::ActivityThreadItem;
 using ActivityThreadRowBlank = ui::internal::blank::ActivityThreadItem;
@@ -1187,9 +1190,9 @@ struct ActivitySummaryItem final
     auto Text() const noexcept -> UnallocatedCString final { return {}; }
     auto ThreadID() const noexcept -> UnallocatedCString final { return {}; }
     auto Timestamp() const noexcept -> Time final { return {}; }
-    auto Type() const noexcept -> StorageBox final
+    auto Type() const noexcept -> otx::client::StorageBox final
     {
-        return StorageBox::UNKNOWN;
+        return otx::client::StorageBox::UNKNOWN;
     }
 
     auto reindex(
@@ -1215,9 +1218,9 @@ struct ActivityThreadItem final : public Row,
     auto Pending() const noexcept -> bool final { return false; }
     auto Text() const noexcept -> UnallocatedCString final { return {}; }
     auto Timestamp() const noexcept -> Time final { return {}; }
-    auto Type() const noexcept -> StorageBox final
+    auto Type() const noexcept -> otx::client::StorageBox final
     {
-        return StorageBox::UNKNOWN;
+        return otx::client::StorageBox::UNKNOWN;
     }
 
     auto reindex(
@@ -1243,9 +1246,9 @@ struct BalanceItem final : public Row, public internal::BalanceItem {
     auto Workflow() const noexcept -> UnallocatedCString final { return {}; }
     auto Text() const noexcept -> UnallocatedCString final { return {}; }
     auto Timestamp() const noexcept -> Time final { return {}; }
-    auto Type() const noexcept -> StorageBox final
+    auto Type() const noexcept -> otx::client::StorageBox final
     {
-        return StorageBox::UNKNOWN;
+        return otx::client::StorageBox::UNKNOWN;
     }
     auto UUID() const noexcept -> UnallocatedCString final { return {}; }
 

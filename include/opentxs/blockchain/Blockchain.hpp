@@ -11,7 +11,6 @@
 #include <optional>  // IWYU pragma: keep
 #include <tuple>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"

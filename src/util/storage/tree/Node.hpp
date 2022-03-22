@@ -16,11 +16,12 @@
 
 #include "Proto.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Types.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/StorageEnums.pb.h"
 #include "util/storage/Plugin.hpp"

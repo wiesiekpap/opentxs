@@ -18,7 +18,7 @@
 
 #include "Proto.hpp"
 #include "internal/api/crypto/Seed.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/core/Secret.hpp"
@@ -131,27 +131,27 @@ public:
         -> std::pair<UnallocatedCString, std::size_t> final;
     auto GetHDKey(
         const UnallocatedCString& seedID,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const UnallocatedVector<Bip32Index>& path,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::HD> final;
     auto GetHDKey(
         const UnallocatedCString& seedID,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const UnallocatedVector<Bip32Index>& path,
         const opentxs::crypto::key::asymmetric::Role role,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::HD> final;
     auto GetHDKey(
         const UnallocatedCString& seedID,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const UnallocatedVector<Bip32Index>& path,
         const VersionNumber version,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::HD> final;
     auto GetHDKey(
         const UnallocatedCString& seedID,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const UnallocatedVector<Bip32Index>& path,
         const opentxs::crypto::key::asymmetric::Role role,
         const VersionNumber version,

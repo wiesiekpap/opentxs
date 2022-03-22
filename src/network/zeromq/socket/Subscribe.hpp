@@ -5,10 +5,10 @@
 
 #pragma once
 
+#include "internal/util/Mutex.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Receiver.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/util/Container.hpp"
 

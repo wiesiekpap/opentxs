@@ -13,7 +13,6 @@
 #include <thread>
 #include <tuple>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Periodic.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"

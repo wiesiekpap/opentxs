@@ -18,7 +18,6 @@
 #include "blockchain/database/wallet/Types.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/util/TSV.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

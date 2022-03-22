@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "opentxs/Types.hpp"
-
 namespace opentxs
 {
 template <typename I>

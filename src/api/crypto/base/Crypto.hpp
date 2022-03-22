@@ -19,7 +19,6 @@
 #include "internal/crypto/library/OpenSSL.hpp"
 #include "internal/crypto/library/Secp256k1.hpp"
 #include "internal/crypto/library/Sodium.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"

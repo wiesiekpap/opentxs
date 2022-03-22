@@ -12,7 +12,7 @@
 
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 
 namespace opentxs::factory
 {

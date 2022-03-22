@@ -15,7 +15,7 @@
 #include "internal/otx/client/Issuer.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/Lockable.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"

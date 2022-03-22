@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "blockchain/node/base/Base.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/util/Bytes.hpp"

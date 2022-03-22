@@ -14,6 +14,7 @@
 
 #include "2_Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -258,7 +259,8 @@ auto ZMQ::SocksProxy() const -> UnallocatedCString
     return output;
 }
 
-auto ZMQ::Status(const UnallocatedCString& server) const -> ConnectionState
+auto ZMQ::Status(const UnallocatedCString& server) const
+    -> opentxs::network::ConnectionState
 {
     Lock lock(lock_);
     const auto it = server_connections_.find(server);
@@ -268,14 +270,14 @@ auto ZMQ::Status(const UnallocatedCString& server) const -> ConnectionState
     if (haveConnection) {
         if (it->second->Status()) {
 
-            return ConnectionState::ACTIVE;
+            return opentxs::network::ConnectionState::ACTIVE;
         } else {
 
-            return ConnectionState::STALLED;
+            return opentxs::network::ConnectionState::STALLED;
         }
     }
 
-    return ConnectionState::NOT_ESTABLISHED;
+    return opentxs::network::ConnectionState::NOT_ESTABLISHED;
 }
 
 auto ZMQ::verify_lock(const Lock& lock) const -> bool

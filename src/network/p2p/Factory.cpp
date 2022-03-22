@@ -21,7 +21,6 @@
 #include "internal/serialization/protobuf/verify/P2PBlockchainHello.hpp"
 #include "internal/serialization/protobuf/verify/P2PBlockchainSync.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"

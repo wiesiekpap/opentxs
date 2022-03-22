@@ -16,7 +16,6 @@
 #include <memory>
 #include <mutex>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
@@ -60,11 +59,14 @@ namespace claim
 class Data;
 }  // namespace claim
 }  // namespace wot
+
+class Nym;
 }  // namespace identity
 
 namespace proto
 {
 class ContactData;
+class Nym;
 }  // namespace proto
 
 class Identifier;
@@ -81,7 +83,7 @@ public:
     NymData(const NymData&);
     NymData(NymData&&);
 
-    auto asPublicNym() const -> identity::Nym::Serialized;
+    OPENTXS_NO_EXPORT auto asPublicNym() const -> proto::Nym;
     auto BestEmail() const -> UnallocatedCString;
     auto BestPhoneNumber() const -> UnallocatedCString;
     auto BestSocialMediaProfile(

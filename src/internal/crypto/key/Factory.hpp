@@ -13,7 +13,6 @@
 #include <cstdint>
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Types.hpp"
 #include "opentxs/util/Bytes.hpp"

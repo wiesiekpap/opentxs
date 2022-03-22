@@ -10,11 +10,13 @@
 #include <ctime>
 #include <memory>
 
+#include "Proto.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/PeerReply.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -28,6 +30,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -202,13 +205,17 @@ auto Reply::LoadRequest(
     std::time_t notUsed = 0;
 
     auto loaded = api.Wallet().Internal().PeerRequest(
-        nym->ID(), requestID, StorageBox::INCOMINGPEERREQUEST, notUsed, output);
+        nym->ID(),
+        requestID,
+        otx::client::StorageBox::INCOMINGPEERREQUEST,
+        notUsed,
+        output);
 
     if (false == loaded) {
         loaded = api.Wallet().Internal().PeerRequest(
             nym->ID(),
             requestID,
-            StorageBox::PROCESSEDPEERREQUEST,
+            otx::client::StorageBox::PROCESSEDPEERREQUEST,
             notUsed,
             output);
 
@@ -258,7 +265,7 @@ auto Reply::update_signature(const Lock& lock, const PasswordPrompt& reason)
     signatures_.clear();
     auto serialized = SigVersion(lock);
     auto& signature = *serialized.mutable_signature();
-    success = nym_->Sign(
+    success = nym_->Internal().Sign(
         serialized, crypto::SignatureRole::PeerReply, signature, reason);
 
     if (success) {
@@ -324,6 +331,6 @@ auto Reply::verify_signature(
     auto& sigProto = *serialized.mutable_signature();
     sigProto.CopyFrom(signature);
 
-    return nym_->Verify(serialized, sigProto);
+    return nym_->Internal().Verify(serialized, sigProto);
 }
 }  // namespace opentxs::contract::peer::implementation

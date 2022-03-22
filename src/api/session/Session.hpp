@@ -17,7 +17,7 @@
 #include "api/session/base/Storage.hpp"
 #include "api/session/base/ZMQ.hpp"
 #include "internal/api/session/Session.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"

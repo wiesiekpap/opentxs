@@ -10,7 +10,6 @@
 #include <chrono>
 #include <functional>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

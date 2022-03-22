@@ -654,17 +654,17 @@ auto Storage::Load(
 auto Storage::Load(
     const UnallocatedCString& nymID,
     const UnallocatedCString& id,
-    const StorageBox box,
+    const otx::client::StorageBox box,
     UnallocatedCString& output,
     UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     switch (box) {
-        case StorageBox::MAILINBOX: {
+        case otx::client::StorageBox::MAILINBOX: {
             return Root().Tree().Nyms().Nym(nymID).MailInbox().Load(
                 id, output, alias, checking);
         }
-        case StorageBox::MAILOUTBOX: {
+        case otx::client::StorageBox::MAILOUTBOX: {
             return Root().Tree().Nyms().Nym(nymID).MailOutbox().Load(
                 id, output, alias, checking);
         }
@@ -677,26 +677,26 @@ auto Storage::Load(
 auto Storage::Load(
     const UnallocatedCString& nymID,
     const UnallocatedCString& id,
-    const StorageBox box,
+    const otx::client::StorageBox box,
     proto::PeerReply& output,
     const bool checking) const -> bool
 {
     auto temp = std::make_shared<proto::PeerReply>(output);
     const auto rc = [&] {
         switch (box) {
-            case StorageBox::SENTPEERREPLY: {
+            case otx::client::StorageBox::SENTPEERREPLY: {
                 return Root().Tree().Nyms().Nym(nymID).SentReplyBox().Load(
                     id, temp, checking);
             }
-            case StorageBox::INCOMINGPEERREPLY: {
+            case otx::client::StorageBox::INCOMINGPEERREPLY: {
                 return Root().Tree().Nyms().Nym(nymID).IncomingReplyBox().Load(
                     id, temp, checking);
             }
-            case StorageBox::FINISHEDPEERREPLY: {
+            case otx::client::StorageBox::FINISHEDPEERREPLY: {
                 return Root().Tree().Nyms().Nym(nymID).FinishedReplyBox().Load(
                     id, temp, checking);
             }
-            case StorageBox::PROCESSEDPEERREPLY: {
+            case otx::client::StorageBox::PROCESSEDPEERREPLY: {
                 return Root().Tree().Nyms().Nym(nymID).ProcessedReplyBox().Load(
                     id, temp, checking);
             }
@@ -714,7 +714,7 @@ auto Storage::Load(
 auto Storage::Load(
     const UnallocatedCString& nymID,
     const UnallocatedCString& id,
-    const StorageBox box,
+    const otx::client::StorageBox box,
     proto::PeerRequest& output,
     std::time_t& time,
     const bool checking) const -> bool
@@ -723,11 +723,11 @@ auto Storage::Load(
     auto alias = UnallocatedCString{};
     const auto rc = [&] {
         switch (box) {
-            case StorageBox::SENTPEERREQUEST: {
+            case otx::client::StorageBox::SENTPEERREQUEST: {
                 return Root().Tree().Nyms().Nym(nymID).SentRequestBox().Load(
                     id, temp, alias, checking);
             }
-            case StorageBox::INCOMINGPEERREQUEST: {
+            case otx::client::StorageBox::INCOMINGPEERREQUEST: {
                 return Root()
                     .Tree()
                     .Nyms()
@@ -735,7 +735,7 @@ auto Storage::Load(
                     .IncomingRequestBox()
                     .Load(id, temp, alias, checking);
             }
-            case StorageBox::FINISHEDPEERREQUEST: {
+            case otx::client::StorageBox::FINISHEDPEERREQUEST: {
                 return Root()
                     .Tree()
                     .Nyms()
@@ -743,7 +743,7 @@ auto Storage::Load(
                     .FinishedRequestBox()
                     .Load(id, temp, alias, checking);
             }
-            case StorageBox::PROCESSEDPEERREQUEST: {
+            case otx::client::StorageBox::PROCESSEDPEERREQUEST: {
                 return Root()
                     .Tree()
                     .Nyms()
@@ -982,7 +982,7 @@ auto Storage::MoveThreadItem(
     const auto thread = fromThread.Items();
     auto found{false};
     auto time = std::uint64_t{};
-    auto box = StorageBox{};
+    auto box = otx::client::StorageBox{};
     const auto alias = UnallocatedCString{};
     const auto contents = UnallocatedCString{};
     auto index = std::uint64_t{};
@@ -992,7 +992,7 @@ auto Storage::MoveThreadItem(
         if (item.id() == itemID) {
             found = true;
             time = item.time();
-            box = static_cast<StorageBox>(item.box());
+            box = static_cast<otx::client::StorageBox>(item.box());
             index = item.index();
             account = item.account();
 
@@ -1046,38 +1046,39 @@ auto Storage::mutable_Root() const -> Editor<opentxs::storage::Root>
     return Editor<opentxs::storage::Root>(write_lock_, root(), callback);
 }
 
-auto Storage::NymBoxList(const UnallocatedCString& nymID, const StorageBox box)
-    const -> ObjectList
+auto Storage::NymBoxList(
+    const UnallocatedCString& nymID,
+    const otx::client::StorageBox box) const -> ObjectList
 {
     switch (box) {
-        case StorageBox::SENTPEERREQUEST: {
+        case otx::client::StorageBox::SENTPEERREQUEST: {
             return Root().Tree().Nyms().Nym(nymID).SentRequestBox().List();
         }
-        case StorageBox::INCOMINGPEERREQUEST: {
+        case otx::client::StorageBox::INCOMINGPEERREQUEST: {
             return Root().Tree().Nyms().Nym(nymID).IncomingRequestBox().List();
         }
-        case StorageBox::SENTPEERREPLY: {
+        case otx::client::StorageBox::SENTPEERREPLY: {
             return Root().Tree().Nyms().Nym(nymID).SentReplyBox().List();
         }
-        case StorageBox::INCOMINGPEERREPLY: {
+        case otx::client::StorageBox::INCOMINGPEERREPLY: {
             return Root().Tree().Nyms().Nym(nymID).IncomingReplyBox().List();
         }
-        case StorageBox::FINISHEDPEERREQUEST: {
+        case otx::client::StorageBox::FINISHEDPEERREQUEST: {
             return Root().Tree().Nyms().Nym(nymID).FinishedRequestBox().List();
         }
-        case StorageBox::FINISHEDPEERREPLY: {
+        case otx::client::StorageBox::FINISHEDPEERREPLY: {
             return Root().Tree().Nyms().Nym(nymID).FinishedReplyBox().List();
         }
-        case StorageBox::PROCESSEDPEERREQUEST: {
+        case otx::client::StorageBox::PROCESSEDPEERREQUEST: {
             return Root().Tree().Nyms().Nym(nymID).ProcessedRequestBox().List();
         }
-        case StorageBox::PROCESSEDPEERREPLY: {
+        case otx::client::StorageBox::PROCESSEDPEERREPLY: {
             return Root().Tree().Nyms().Nym(nymID).ProcessedReplyBox().List();
         }
-        case StorageBox::MAILINBOX: {
+        case otx::client::StorageBox::MAILINBOX: {
             return Root().Tree().Nyms().Nym(nymID).MailInbox().List();
         }
-        case StorageBox::MAILOUTBOX: {
+        case otx::client::StorageBox::MAILOUTBOX: {
             return Root().Tree().Nyms().Nym(nymID).MailOutbox().List();
         }
         default: {
@@ -1255,11 +1256,11 @@ auto Storage::RemoveBlockchainThreadItem(
 
 auto Storage::RemoveNymBoxItem(
     const UnallocatedCString& nymID,
-    const StorageBox box,
+    const otx::client::StorageBox box,
     const UnallocatedCString& itemID) const -> bool
 {
     switch (box) {
-        case StorageBox::SENTPEERREQUEST: {
+        case otx::client::StorageBox::SENTPEERREQUEST: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -1272,7 +1273,7 @@ auto Storage::RemoveNymBoxItem(
                 .get()
                 .Delete(itemID);
         }
-        case StorageBox::INCOMINGPEERREQUEST: {
+        case otx::client::StorageBox::INCOMINGPEERREQUEST: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -1285,7 +1286,7 @@ auto Storage::RemoveNymBoxItem(
                 .get()
                 .Delete(itemID);
         }
-        case StorageBox::SENTPEERREPLY: {
+        case otx::client::StorageBox::SENTPEERREPLY: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -1298,7 +1299,7 @@ auto Storage::RemoveNymBoxItem(
                 .get()
                 .Delete(itemID);
         }
-        case StorageBox::INCOMINGPEERREPLY: {
+        case otx::client::StorageBox::INCOMINGPEERREPLY: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -1311,7 +1312,7 @@ auto Storage::RemoveNymBoxItem(
                 .get()
                 .Delete(itemID);
         }
-        case StorageBox::FINISHEDPEERREQUEST: {
+        case otx::client::StorageBox::FINISHEDPEERREQUEST: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -1324,7 +1325,7 @@ auto Storage::RemoveNymBoxItem(
                 .get()
                 .Delete(itemID);
         }
-        case StorageBox::FINISHEDPEERREPLY: {
+        case otx::client::StorageBox::FINISHEDPEERREPLY: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -1337,7 +1338,7 @@ auto Storage::RemoveNymBoxItem(
                 .get()
                 .Delete(itemID);
         }
-        case StorageBox::PROCESSEDPEERREQUEST: {
+        case otx::client::StorageBox::PROCESSEDPEERREQUEST: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -1350,7 +1351,7 @@ auto Storage::RemoveNymBoxItem(
                 .get()
                 .Delete(itemID);
         }
-        case StorageBox::PROCESSEDPEERREPLY: {
+        case otx::client::StorageBox::PROCESSEDPEERREPLY: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -1363,7 +1364,7 @@ auto Storage::RemoveNymBoxItem(
                 .get()
                 .Delete(itemID);
         }
-        case StorageBox::MAILINBOX: {
+        case otx::client::StorageBox::MAILINBOX: {
             const bool foundInThread = mutable_Root()
                                            .get()
                                            .mutable_Tree()
@@ -1393,7 +1394,7 @@ auto Storage::RemoveNymBoxItem(
 
             return foundInThread || foundInBox;
         }
-        case StorageBox::MAILOUTBOX: {
+        case otx::client::StorageBox::MAILOUTBOX: {
             const bool foundInThread = mutable_Root()
                                            .get()
                                            .mutable_Tree()
@@ -1653,12 +1654,12 @@ auto Storage::SetNymAlias(
 auto Storage::SetPeerRequestTime(
     const UnallocatedCString& nymID,
     const UnallocatedCString& id,
-    const StorageBox box) const -> bool
+    const otx::client::StorageBox box) const -> bool
 {
     const UnallocatedCString now = std::to_string(time(nullptr));
 
     switch (box) {
-        case StorageBox::SENTPEERREQUEST: {
+        case otx::client::StorageBox::SENTPEERREQUEST: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -1671,7 +1672,7 @@ auto Storage::SetPeerRequestTime(
                 .get()
                 .SetAlias(id, now);
         }
-        case StorageBox::INCOMINGPEERREQUEST: {
+        case otx::client::StorageBox::INCOMINGPEERREQUEST: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -1684,7 +1685,7 @@ auto Storage::SetPeerRequestTime(
                 .get()
                 .SetAlias(id, now);
         }
-        case StorageBox::FINISHEDPEERREQUEST: {
+        case otx::client::StorageBox::FINISHEDPEERREQUEST: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -1697,7 +1698,7 @@ auto Storage::SetPeerRequestTime(
                 .get()
                 .SetAlias(id, now);
         }
-        case StorageBox::PROCESSEDPEERREQUEST: {
+        case otx::client::StorageBox::PROCESSEDPEERREQUEST: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -2016,7 +2017,7 @@ auto Storage::Store(
     const std::uint64_t time,
     const UnallocatedCString& alias,
     const UnallocatedCString& data,
-    const StorageBox box,
+    const otx::client::StorageBox box,
     const UnallocatedCString& account) const -> bool
 {
     return mutable_Root()
@@ -2060,7 +2061,7 @@ auto Storage::Store(
         .Add(
             id,
             Clock::to_time_t(time),
-            StorageBox::BLOCKCHAIN,
+            otx::client::StorageBox::BLOCKCHAIN,
             alias,
             txid.str(),
             0,
@@ -2071,10 +2072,10 @@ auto Storage::Store(
 auto Storage::Store(
     const proto::PeerReply& data,
     const UnallocatedCString& nymID,
-    const StorageBox box) const -> bool
+    const otx::client::StorageBox box) const -> bool
 {
     switch (box) {
-        case StorageBox::SENTPEERREPLY: {
+        case otx::client::StorageBox::SENTPEERREPLY: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -2087,7 +2088,7 @@ auto Storage::Store(
                 .get()
                 .Store(data);
         }
-        case StorageBox::INCOMINGPEERREPLY: {
+        case otx::client::StorageBox::INCOMINGPEERREPLY: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -2100,7 +2101,7 @@ auto Storage::Store(
                 .get()
                 .Store(data);
         }
-        case StorageBox::FINISHEDPEERREPLY: {
+        case otx::client::StorageBox::FINISHEDPEERREPLY: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -2113,7 +2114,7 @@ auto Storage::Store(
                 .get()
                 .Store(data);
         }
-        case StorageBox::PROCESSEDPEERREPLY: {
+        case otx::client::StorageBox::PROCESSEDPEERREPLY: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -2135,14 +2136,14 @@ auto Storage::Store(
 auto Storage::Store(
     const proto::PeerRequest& data,
     const UnallocatedCString& nymID,
-    const StorageBox box) const -> bool
+    const otx::client::StorageBox box) const -> bool
 {
     // Use the alias field to store the time at which the request was saved.
     // Useful for managing retry logic in the high level api
     const UnallocatedCString now = std::to_string(time(nullptr));
 
     switch (box) {
-        case StorageBox::SENTPEERREQUEST: {
+        case otx::client::StorageBox::SENTPEERREQUEST: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -2155,7 +2156,7 @@ auto Storage::Store(
                 .get()
                 .Store(data, now);
         }
-        case StorageBox::INCOMINGPEERREQUEST: {
+        case otx::client::StorageBox::INCOMINGPEERREQUEST: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -2168,7 +2169,7 @@ auto Storage::Store(
                 .get()
                 .Store(data, now);
         }
-        case StorageBox::FINISHEDPEERREQUEST: {
+        case otx::client::StorageBox::FINISHEDPEERREQUEST: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()
@@ -2181,7 +2182,7 @@ auto Storage::Store(
                 .get()
                 .Store(data, now);
         }
-        case StorageBox::PROCESSEDPEERREQUEST: {
+        case otx::client::StorageBox::PROCESSEDPEERREQUEST: {
             return mutable_Root()
                 .get()
                 .mutable_Tree()

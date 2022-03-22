@@ -8,7 +8,6 @@
 
 #include "crypto/Bip32Vectors.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
@@ -65,8 +64,7 @@ TEST_F(Test_BIP32, cases)
 {
     for (const auto& item : bip32_test_cases_) {
         const auto seedID = [&] {
-            const auto bytes =
-                api_.Factory().Data(item.seed_, ot::StringStyle::Hex);
+            const auto bytes = api_.Factory().DataFromHex(item.seed_);
             const auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
 
             return api_.Crypto().Seed().ImportRaw(seed, reason_);
@@ -78,7 +76,10 @@ TEST_F(Test_BIP32, cases)
 
         for (const auto& child : item.children_) {
             const auto pKey = api_.Crypto().Seed().GetHDKey(
-                id, ot::EcdsaCurve::secp256k1, make_path(child.path_), reason_);
+                id,
+                ot::crypto::EcdsaCurve::secp256k1,
+                make_path(child.path_),
+                reason_);
             const auto& key = *pKey;
 
             ASSERT_TRUE(pKey);
@@ -94,8 +95,7 @@ TEST_F(Test_BIP32, stress)
     const auto& item = bip32_test_cases_.at(0u);
     const auto& child = item.children_.at(3u);
     const auto seedID = [&] {
-        const auto bytes =
-            api_.Factory().Data(item.seed_, ot::StringStyle::Hex);
+        const auto bytes = api_.Factory().DataFromHex(item.seed_);
         const auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
 
         return api_.Crypto().Seed().ImportRaw(seed, reason_);
@@ -106,7 +106,10 @@ TEST_F(Test_BIP32, stress)
     for (auto i{0}; i < 1000; ++i) {
         auto id{seedID};
         const auto pKey = api_.Crypto().Seed().GetHDKey(
-            id, ot::EcdsaCurve::secp256k1, make_path(child.path_), reason_);
+            id,
+            ot::crypto::EcdsaCurve::secp256k1,
+            make_path(child.path_),
+            reason_);
         const auto& key = *pKey;
 
         ASSERT_TRUE(pKey);

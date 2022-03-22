@@ -36,6 +36,7 @@
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Asio.hpp"
@@ -937,7 +938,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
         const auto path = [&] {
             auto out = proto::HDPath{};
 
-            if (false == nym.PaymentCodePath(out)) {
+            if (false == nym.Internal().PaymentCodePath(out)) {
                 rc = SendResult::HDDerivationFailure;
 
                 throw std::runtime_error{
@@ -994,7 +995,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
             amount.Serialize(writer(txout.mutable_amount()));
             txout.set_index(index.value());
             txout.set_paymentcodechannel(account.ID().str());
-            const auto pubkey = api_.Factory().Data(key.PublicKey());
+            const auto pubkey = api_.Factory().DataFromBytes(key.PublicKey());
             LogVerbose()(OT_PRETTY_CLASS())(" using derived public key ")(
                 pubkey->asHex())(
                 " at "

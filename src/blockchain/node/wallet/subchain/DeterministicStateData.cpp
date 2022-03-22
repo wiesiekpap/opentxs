@@ -18,7 +18,6 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -43,6 +42,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "opentxs/util/Types.hpp"
 #include "util/ScopeGuard.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -210,7 +210,7 @@ auto DeterministicStateData::process(
                     log_(OT_PRETTY_CLASS())(name_)(" element ")(
                         index)(": P2PK match found for ")(print(node_.Chain()))(
                         " transaction ")(txid->asHex())(" output ")(i)(" via ")(
-                        api_.Factory().Data(key.PublicKey())->asHex())
+                        api_.Factory().DataFromBytes(key.PublicKey())->asHex())
                         .Flush();
                     outputs.emplace_back(i);
                     const auto confirmed = api_.Crypto().Blockchain().Confirm(
@@ -285,7 +285,7 @@ auto DeterministicStateData::process(
                         m.value())(" of ")(n.value())(" P2MS match found for ")(
                         print(node_.Chain()))(" transaction ")(txid->asHex())(
                         " output ")(i)(" via ")(
-                        api_.Factory().Data(key.PublicKey())->asHex())
+                        api_.Factory().DataFromBytes(key.PublicKey())->asHex())
                         .Flush();
                     outputs.emplace_back(i);
                     const auto confirmed = api_.Crypto().Blockchain().Confirm(

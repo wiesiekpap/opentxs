@@ -32,7 +32,6 @@
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/SourceType.hpp"
-#include "opentxs/identity/credential/Base.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/Credential.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
@@ -176,7 +175,7 @@ auto Primary::serialize(
     const Lock& lock,
     const SerializationModeFlag asPrivate,
     const SerializationSignatureFlag asSigned) const
-    -> std::shared_ptr<identity::credential::Base::SerializedType>
+    -> std::shared_ptr<internal::Base::SerializedType>
 {
     auto output = Key::serialize(lock, asPrivate, asSigned);
 

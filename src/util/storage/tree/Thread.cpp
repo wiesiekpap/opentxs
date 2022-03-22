@@ -69,7 +69,7 @@ Thread::Thread(
 auto Thread::Add(
     const UnallocatedCString& id,
     const std::uint64_t time,
-    const StorageBox& box,
+    const otx::client::StorageBox& box,
     const UnallocatedCString& alias,
     const UnallocatedCString& contents,
     const std::uint64_t index,
@@ -82,21 +82,21 @@ auto Thread::Add(
     auto unread{true};
 
     switch (box) {
-        case StorageBox::MAILINBOX: {
+        case otx::client::StorageBox::MAILINBOX: {
             saved = mail_inbox_.Store(id, contents, alias);
         } break;
-        case StorageBox::MAILOUTBOX: {
+        case otx::client::StorageBox::MAILOUTBOX: {
             saved = mail_outbox_.Store(id, contents, alias);
             unread = false;
         } break;
-        case StorageBox::OUTGOINGCHEQUE:
-        case StorageBox::OUTGOINGTRANSFER:
-        case StorageBox::INTERNALTRANSFER: {
+        case otx::client::StorageBox::OUTGOINGCHEQUE:
+        case otx::client::StorageBox::OUTGOINGTRANSFER:
+        case otx::client::StorageBox::INTERNALTRANSFER: {
             unread = false;
         } break;
-        case StorageBox::BLOCKCHAIN:
-        case StorageBox::INCOMINGCHEQUE:
-        case StorageBox::INCOMINGTRANSFER: {
+        case otx::client::StorageBox::BLOCKCHAIN:
+        case otx::client::StorageBox::INCOMINGCHEQUE:
+        case otx::client::StorageBox::INCOMINGTRANSFER: {
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())("Warning: unknown box.").Flush();
@@ -124,7 +124,7 @@ auto Thread::Add(
     item.set_account(account);
     item.set_unread(unread);
 
-    if (StorageBox::BLOCKCHAIN == box) {
+    if (otx::client::StorageBox::BLOCKCHAIN == box) {
         item.set_chain(chain);
         item.set_txid(contents);
     }
@@ -224,17 +224,17 @@ auto Thread::Remove(const UnallocatedCString& id) -> bool
     if (items_.end() == it) { return false; }
 
     auto& item = it->second;
-    auto box = static_cast<StorageBox>(item.box());
+    auto box = static_cast<otx::client::StorageBox>(item.box());
     items_.erase(it);
 
     switch (box) {
-        case StorageBox::MAILINBOX: {
+        case otx::client::StorageBox::MAILINBOX: {
             mail_inbox_.Delete(id);
         } break;
-        case StorageBox::MAILOUTBOX: {
+        case otx::client::StorageBox::MAILOUTBOX: {
             mail_outbox_.Delete(id);
         } break;
-        case StorageBox::BLOCKCHAIN: {
+        case otx::client::StorageBox::BLOCKCHAIN: {
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())("Warning: unknown box.").Flush();
@@ -343,10 +343,10 @@ void Thread::upgrade(const Lock& lock)
 
     for (auto& it : items_) {
         auto& item = it.second;
-        const auto box = static_cast<StorageBox>(item.box());
+        const auto box = static_cast<otx::client::StorageBox>(item.box());
 
         switch (box) {
-            case StorageBox::MAILOUTBOX: {
+            case otx::client::StorageBox::MAILOUTBOX: {
                 if (item.unread()) {
                     item.set_unread(false);
                     changed = true;

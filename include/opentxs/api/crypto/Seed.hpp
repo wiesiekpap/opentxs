@@ -14,12 +14,12 @@
 #include <string_view>
 #include <tuple>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/Types.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -81,27 +81,27 @@ public:
         -> std::pair<UnallocatedCString, std::size_t> = 0;
     virtual auto GetHDKey(
         const UnallocatedCString& seedID,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const UnallocatedVector<Bip32Index>& path,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::HD> = 0;
     virtual auto GetHDKey(
         const UnallocatedCString& seedID,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const UnallocatedVector<Bip32Index>& path,
         const opentxs::crypto::key::asymmetric::Role,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::HD> = 0;
     virtual auto GetHDKey(
         const UnallocatedCString& seedID,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const UnallocatedVector<Bip32Index>& path,
         const VersionNumber version,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::HD> = 0;
     virtual auto GetHDKey(
         const UnallocatedCString& seedID,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const UnallocatedVector<Bip32Index>& path,
         const opentxs::crypto::key::asymmetric::Role,
         const VersionNumber version,

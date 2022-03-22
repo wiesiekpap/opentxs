@@ -9,8 +9,10 @@
 
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
+#include "internal/identity/Types.hpp"
 #include "internal/identity/credential/Credential.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/identity/credential/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -18,6 +20,7 @@
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/CredentialType.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Credential.pb.h"
@@ -41,7 +44,7 @@ namespace identity
 {
 namespace internal
 {
-struct Authority;
+class Authority;
 }  // namespace internal
 
 class Source;

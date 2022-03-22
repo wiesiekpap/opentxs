@@ -31,7 +31,6 @@ extern "C" {
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -350,10 +349,9 @@ private:
             constexpr auto filterType = opentxs::blockchain::cfilter::Type::ES;
             auto gcs = [&] {
                 const auto& filter = Params::Filters().at(chain).at(filterType);
-                const auto bytes =
-                    api_.Factory().Data(filter.second, StringStyle::Hex);
-                const auto blockHash = api_.Factory().Data(
-                    data.genesis_hash_hex_, StringStyle::Hex);
+                const auto bytes = api_.Factory().DataFromHex(filter.second);
+                const auto blockHash =
+                    api_.Factory().DataFromHex(data.genesis_hash_hex_);
                 auto output = std::unique_ptr<const opentxs::blockchain::GCS>{
                     factory::GCS(
                         api_,
@@ -368,7 +366,7 @@ private:
             }();
             auto output = Items{};
             const auto header =
-                api_.Factory().Data(data.genesis_header_hex_, StringStyle::Hex);
+                api_.Factory().DataFromHex(data.genesis_header_hex_);
             const auto filter = gcs->Compressed();
             output.emplace_back(
                 chain,

@@ -9,7 +9,8 @@
 
 #include "api/session/Wallet.hpp"
 #include "internal/util/Editor.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
+#include "opentxs/identity/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

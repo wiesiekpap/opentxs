@@ -19,7 +19,7 @@
 #include "api/session/Session.hpp"
 #include "internal/api/session/Notary.hpp"
 #include "internal/api/session/Session.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"

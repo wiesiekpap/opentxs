@@ -18,7 +18,7 @@
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/common/Cheque.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -28,6 +28,7 @@
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -93,22 +94,22 @@ auto PaymentItem::Amount() const noexcept -> opentxs::Amount
 auto PaymentItem::Deposit() const noexcept -> bool
 {
     switch (box_) {
-        case StorageBox::INCOMINGCHEQUE: {
+        case otx::client::StorageBox::INCOMINGCHEQUE: {
         } break;
-        case StorageBox::OUTGOINGCHEQUE:
-        case StorageBox::SENTPEERREQUEST:
-        case StorageBox::INCOMINGPEERREQUEST:
-        case StorageBox::SENTPEERREPLY:
-        case StorageBox::INCOMINGPEERREPLY:
-        case StorageBox::FINISHEDPEERREQUEST:
-        case StorageBox::FINISHEDPEERREPLY:
-        case StorageBox::PROCESSEDPEERREQUEST:
-        case StorageBox::PROCESSEDPEERREPLY:
-        case StorageBox::MAILINBOX:
-        case StorageBox::MAILOUTBOX:
-        case StorageBox::BLOCKCHAIN:
-        case StorageBox::DRAFT:
-        case StorageBox::UNKNOWN:
+        case otx::client::StorageBox::OUTGOINGCHEQUE:
+        case otx::client::StorageBox::SENTPEERREQUEST:
+        case otx::client::StorageBox::INCOMINGPEERREQUEST:
+        case otx::client::StorageBox::SENTPEERREPLY:
+        case otx::client::StorageBox::INCOMINGPEERREPLY:
+        case otx::client::StorageBox::FINISHEDPEERREQUEST:
+        case otx::client::StorageBox::FINISHEDPEERREPLY:
+        case otx::client::StorageBox::PROCESSEDPEERREQUEST:
+        case otx::client::StorageBox::PROCESSEDPEERREPLY:
+        case otx::client::StorageBox::MAILINBOX:
+        case otx::client::StorageBox::MAILOUTBOX:
+        case otx::client::StorageBox::BLOCKCHAIN:
+        case otx::client::StorageBox::DRAFT:
+        case otx::client::StorageBox::UNKNOWN:
         default: {
 
             return false;
@@ -164,8 +165,8 @@ auto PaymentItem::extract(
     auto& [amount, displayAmount, memo, payment] = output;
 
     switch (box) {
-        case StorageBox::INCOMINGCHEQUE:
-        case StorageBox::OUTGOINGCHEQUE: {
+        case otx::client::StorageBox::INCOMINGCHEQUE:
+        case otx::client::StorageBox::OUTGOINGCHEQUE: {
             auto message =
                 api.Activity().PaymentText(nym, itemID->str(), account->str());
 
@@ -192,19 +193,19 @@ auto PaymentItem::extract(
                 payment->SetTempValues(reason);
             }
         } break;
-        case StorageBox::SENTPEERREQUEST:
-        case StorageBox::INCOMINGPEERREQUEST:
-        case StorageBox::SENTPEERREPLY:
-        case StorageBox::INCOMINGPEERREPLY:
-        case StorageBox::FINISHEDPEERREQUEST:
-        case StorageBox::FINISHEDPEERREPLY:
-        case StorageBox::PROCESSEDPEERREQUEST:
-        case StorageBox::PROCESSEDPEERREPLY:
-        case StorageBox::MAILINBOX:
-        case StorageBox::MAILOUTBOX:
-        case StorageBox::BLOCKCHAIN:
-        case StorageBox::DRAFT:
-        case StorageBox::UNKNOWN:
+        case otx::client::StorageBox::SENTPEERREQUEST:
+        case otx::client::StorageBox::INCOMINGPEERREQUEST:
+        case otx::client::StorageBox::SENTPEERREPLY:
+        case otx::client::StorageBox::INCOMINGPEERREPLY:
+        case otx::client::StorageBox::FINISHEDPEERREQUEST:
+        case otx::client::StorageBox::FINISHEDPEERREPLY:
+        case otx::client::StorageBox::PROCESSEDPEERREQUEST:
+        case otx::client::StorageBox::PROCESSEDPEERREPLY:
+        case otx::client::StorageBox::MAILINBOX:
+        case otx::client::StorageBox::MAILOUTBOX:
+        case otx::client::StorageBox::BLOCKCHAIN:
+        case otx::client::StorageBox::DRAFT:
+        case otx::client::StorageBox::UNKNOWN:
         default: {
             OT_FAIL
         }

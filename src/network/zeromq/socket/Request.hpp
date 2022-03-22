@@ -5,9 +5,9 @@
 
 #pragma once
 
+#include "internal/util/Mutex.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Container.hpp"

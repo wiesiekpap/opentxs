@@ -21,7 +21,6 @@
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
@@ -102,8 +101,7 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
 
         const auto& block = *pBlock;
         const auto& blockHash = block.Hash();
-        const auto bytes =
-            api_.Factory().Data(genesis.second, StringStyle::Hex);
+        const auto bytes = api_.Factory().DataFromHex(genesis.second);
         auto gcs = std::unique_ptr<const GCS>{factory::GCS(
             api_,
             style,
@@ -116,7 +114,7 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
         auto success{false};
 
         if (needHeader) {
-            auto header = api_.Factory().Data(genesis.first, StringStyle::Hex);
+            auto header = api_.Factory().DataFromHex(genesis.first);
             auto headers = Vector<node::internal::FilterDatabase::Header>{
                 {blockHash, std::move(header), filterHash->Bytes()}};
             success = common_.StoreFilterHeaders(style, headers);

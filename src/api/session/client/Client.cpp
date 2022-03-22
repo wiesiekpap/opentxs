@@ -34,6 +34,7 @@
 #include "internal/otx/client/obsolete/OT_API.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"

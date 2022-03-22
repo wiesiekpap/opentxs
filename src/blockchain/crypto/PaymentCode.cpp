@@ -223,7 +223,7 @@ PaymentCode::PaymentCode(
         auto out = UnallocatedSet<opentxs::blockchain::block::pTxid>{};
 
         for (const auto& notif : serialized.outgoing().notification()) {
-            out.emplace(api_.Factory().Data(notif, StringStyle::Raw));
+            out.emplace(api_.Factory().DataFromBytes(notif));
         }
 
         return out;
@@ -232,7 +232,7 @@ PaymentCode::PaymentCode(
         auto out = UnallocatedSet<opentxs::blockchain::block::pTxid>{};
 
         for (const auto& notif : serialized.incoming().notification()) {
-            out.emplace(api_.Factory().Data(notif, StringStyle::Raw));
+            out.emplace(api_.Factory().DataFromBytes(notif));
         }
 
         return out;

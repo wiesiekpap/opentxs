@@ -10,7 +10,7 @@
 #include "Proto.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"

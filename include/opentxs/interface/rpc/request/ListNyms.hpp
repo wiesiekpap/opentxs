@@ -7,7 +7,6 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Types.hpp"
 #include "opentxs/interface/rpc/request/Base.hpp"
 #include "opentxs/util/Numbers.hpp"
 

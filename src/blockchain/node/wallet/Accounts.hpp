@@ -25,7 +25,6 @@
 #include "internal/blockchain/node/wallet/subchain/Subchain.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/Timer.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

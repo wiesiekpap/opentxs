@@ -11,9 +11,8 @@
 
 #include "internal/api/session/Client.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
@@ -28,6 +27,7 @@
 #include "opentxs/crypto/key/Secp256k1.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/NymEditor.hpp"

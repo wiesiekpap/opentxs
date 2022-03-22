@@ -130,7 +130,7 @@ Element::Element(
               auto out = Transactions{};
 
               for (const auto& txid : address.unconfirmed()) {
-                  out.emplace(api.Factory().Data(txid, StringStyle::Raw));
+                  out.emplace(api.Factory().DataFromBytes(txid));
               }
 
               return out;
@@ -139,7 +139,7 @@ Element::Element(
               auto out = Transactions{};
 
               for (const auto& txid : address.confirmed()) {
-                  out.emplace(api.Factory().Data(txid, StringStyle::Raw));
+                  out.emplace(api.Factory().DataFromBytes(txid));
               }
 
               return out;
@@ -172,7 +172,7 @@ auto Element::Address(const blockchain::crypto::AddressStyle format)
     auto lock = rLock{lock_};
 
     return blockchain_.CalculateAddress(
-        chain_, format, api_.Factory().Data(pkey_->PublicKey()));
+        chain_, format, api_.Factory().DataFromBytes(pkey_->PublicKey()));
 }
 
 auto Element::Confirmed() const noexcept -> Txids
@@ -218,7 +218,7 @@ auto Element::Elements() const noexcept -> UnallocatedSet<OTData>
 auto Element::elements(const rLock&) const noexcept -> UnallocatedSet<OTData>
 {
     auto output = UnallocatedSet<OTData>{};
-    auto pubkey = api_.Factory().Data(pkey_->PublicKey());
+    auto pubkey = api_.Factory().DataFromBytes(pkey_->PublicKey());
 
     try {
         output.emplace(blockchain_.Internal().PubkeyHash(chain_, pubkey));
@@ -348,7 +348,7 @@ auto Element::PrivateKey(const PasswordPrompt& reason) const noexcept -> ECKey
 auto Element::PubkeyHash() const noexcept -> OTData
 {
     auto lock = rLock{lock_};
-    const auto key = api_.Factory().Data(pkey_->PublicKey());
+    const auto key = api_.Factory().DataFromBytes(pkey_->PublicKey());
 
     return blockchain_.Internal().PubkeyHash(chain_, key);
 }

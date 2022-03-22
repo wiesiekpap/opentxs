@@ -11,7 +11,6 @@
 
 #include "blockchain/regtest/Helpers.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
@@ -213,7 +212,7 @@ TEST_F(RPC_BC, blockchain_payment)
     EXPECT_NE(pending.at(0).second.size(), 0);
 
     transactions_.emplace_back(
-        client_1_.Factory().Data(pending.at(0).second, ot::StringStyle::Hex));
+        client_1_.Factory().DataFromHex(pending.at(0).second));
 }
 
 TEST_F(RPC_BC, postconditions)

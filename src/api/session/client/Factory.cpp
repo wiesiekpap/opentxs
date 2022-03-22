@@ -17,6 +17,7 @@
 #include <tuple>
 #include <utility>
 
+#include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/api/session/Factory.hpp"
 #if OT_BLOCKCHAIN

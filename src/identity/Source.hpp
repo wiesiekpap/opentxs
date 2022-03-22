@@ -11,7 +11,6 @@
 
 #include "Proto.hpp"
 #include "internal/util/Types.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"

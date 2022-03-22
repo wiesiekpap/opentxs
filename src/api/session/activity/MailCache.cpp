@@ -19,6 +19,7 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -32,11 +33,13 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Types.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/ByteLiterals.hpp"
 #include "util/JobCounter.hpp"
@@ -53,7 +56,7 @@ struct MailCache::Imp {
         const OTPasswordPrompt reason_;
         const OTNymID nym_;
         const OTIdentifier item_;
-        const StorageBox box_;
+        const otx::client::StorageBox box_;
         const SimpleCallback done_;
         std::promise<UnallocatedCString> promise_;
 
@@ -61,7 +64,7 @@ struct MailCache::Imp {
             const api::Session& api,
             const identifier::Nym& nym,
             const Identifier& id,
-            const StorageBox box,
+            const otx::client::StorageBox box,
             const PasswordPrompt& reason,
             SimpleCallback done,
             JobCounter& jobs) noexcept
@@ -95,7 +98,8 @@ struct MailCache::Imp {
     auto Mail(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox& box) const noexcept -> std::unique_ptr<Message>
+        const otx::client::StorageBox& box) const noexcept
+        -> std::unique_ptr<Message>
     {
         auto output = std::unique_ptr<Message>{};
         auto raw = UnallocatedCString{};
@@ -194,7 +198,7 @@ struct MailCache::Imp {
     auto CacheText(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox box,
+        const otx::client::StorageBox box,
         const UnallocatedCString& text) noexcept -> void
     {
         auto key = this->key(nym, id, box);
@@ -206,7 +210,7 @@ struct MailCache::Imp {
     auto Get(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox box,
+        const otx::client::StorageBox box,
         const PasswordPrompt& reason) noexcept
         -> std::shared_future<UnallocatedCString>
     {
@@ -276,7 +280,7 @@ private:
     auto key(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox box) const noexcept -> OTIdentifier
+        const otx::client::StorageBox box) const noexcept -> OTIdentifier
     {
         const auto preimage = [&] {
             auto out = space(nym.size() + id.size() + sizeof(box));
@@ -350,7 +354,7 @@ MailCache::MailCache(
 auto MailCache::CacheText(
     const identifier::Nym& nym,
     const Identifier& id,
-    const StorageBox box,
+    const otx::client::StorageBox box,
     const UnallocatedCString& text) noexcept -> void
 {
     return imp_->CacheText(nym, id, box, text);
@@ -359,7 +363,7 @@ auto MailCache::CacheText(
 auto MailCache::GetText(
     const identifier::Nym& nym,
     const Identifier& id,
-    const StorageBox box,
+    const otx::client::StorageBox box,
     const PasswordPrompt& reason) noexcept
     -> std::shared_future<UnallocatedCString>
 {
@@ -369,7 +373,8 @@ auto MailCache::GetText(
 auto MailCache::LoadMail(
     const identifier::Nym& nym,
     const Identifier& id,
-    const StorageBox& box) const noexcept -> std::unique_ptr<Message>
+    const otx::client::StorageBox& box) const noexcept
+    -> std::unique_ptr<Message>
 {
     return imp_->Mail(nym, id, box);
 }

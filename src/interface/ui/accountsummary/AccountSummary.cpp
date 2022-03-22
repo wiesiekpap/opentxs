@@ -17,7 +17,7 @@
 #include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/otx/client/Issuer.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -25,6 +25,8 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
+#include "opentxs/network/Types.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -111,11 +113,11 @@ auto AccountSummary::extract_key(
     }
 
     switch (api_.ZMQ().Status(serverID->str())) {
-        case ConnectionState::ACTIVE: {
+        case network::ConnectionState::ACTIVE: {
             state = true;
         } break;
-        case ConnectionState::NOT_ESTABLISHED:
-        case ConnectionState::STALLED:
+        case network::ConnectionState::NOT_ESTABLISHED:
+        case network::ConnectionState::STALLED:
         default: {
         }
     }

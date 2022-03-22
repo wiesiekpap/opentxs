@@ -56,7 +56,8 @@ auto SetIntersection(
         std::back_inserter(output.second),
         [&](const auto& match) -> Match {
             return {
-                api.Factory().Data(txid), parsed.map_.at(reader(match))->first};
+                api.Factory().DataFromBytes(txid),
+                parsed.map_.at(reader(match))->first};
         });
 
     return output;

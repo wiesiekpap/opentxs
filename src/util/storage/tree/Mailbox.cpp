@@ -16,7 +16,6 @@
 #include "Proto.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/StorageNymList.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/StorageEnums.pb.h"

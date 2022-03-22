@@ -32,6 +32,8 @@ namespace proto
 class BlockchainPeerAddress;
 }  // namespace proto
 
+class Identifier;
+
 using OTBlockchainAddress = Pimpl<blockchain::p2p::Address>;
 // }  // namespace v1
 }  // namespace opentxs

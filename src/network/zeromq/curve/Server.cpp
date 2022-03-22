@@ -13,8 +13,8 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/util/Log.hpp"
 

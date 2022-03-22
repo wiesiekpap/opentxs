@@ -8,10 +8,10 @@
 #include <ostream>
 #include <string_view>
 
+#include "internal/util/Mutex.hpp"
 #include "network/zeromq/socket/Bidirectional.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Pair.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"

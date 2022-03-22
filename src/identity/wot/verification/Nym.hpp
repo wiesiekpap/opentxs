@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "internal/identity/wot/verification/Verification.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/verification/Item.hpp"

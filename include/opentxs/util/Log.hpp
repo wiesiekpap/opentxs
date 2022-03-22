@@ -14,7 +14,6 @@
 #include <string_view>
 #include <utility>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/display/Definition.hpp"

@@ -23,7 +23,6 @@
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
 #include "internal/util/Editor.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

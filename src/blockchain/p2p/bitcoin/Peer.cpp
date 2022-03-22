@@ -38,7 +38,6 @@
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Util.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -65,6 +64,7 @@
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Types.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
@@ -280,7 +280,7 @@ auto Peer::broadcast_inv_transaction(ReadView txid) noexcept -> void
         }
     }();
     auto inv = UnallocatedVector<Inventory>{};
-    inv.emplace_back(type, api_.Factory().Data(txid));
+    inv.emplace_back(type, api_.Factory().DataFromBytes(txid));
     broadcast_inv(std::move(inv));
 }
 
@@ -1798,7 +1798,7 @@ auto Peer::reconcile_mempool() noexcept -> void
     auto inv = UnallocatedVector<Inventory>{};
 
     for (const auto& hash : missing) {
-        inv.emplace_back(type, api_.Factory().Data(hash));
+        inv.emplace_back(type, api_.Factory().DataFromBytes(hash));
     }
 
     broadcast_inv(std::move(inv));

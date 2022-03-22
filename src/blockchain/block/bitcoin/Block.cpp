@@ -277,8 +277,8 @@ auto Block::at(const ReadView txid) const noexcept -> const value_type&
         return transactions_.at(txid);
     } catch (...) {
         LogError()(OT_PRETTY_CLASS())("transaction ")(
-            api_.Factory().Data(txid)->asHex())(" not found in block ")(
-            header_.Hash().asHex())
+            api_.Factory().DataFromBytes(txid)->asHex())(
+            " not found in block ")(header_.Hash().asHex())
             .Flush();
 
         return null_tx_;
@@ -351,7 +351,7 @@ auto Block::calculate_merkle_value(
     if (0 == txids.size()) {
         constexpr auto blank = Hash{};
 
-        return api.Factory().Data(ReadView{
+        return api.Factory().DataFromBytes(ReadView{
             reinterpret_cast<const char*>(blank.data()), blank.size()});
     }
 
@@ -364,14 +364,16 @@ auto Block::calculate_merkle_value(
     auto counter{0};
     calculate_merkle_row(api, chain, txids, a);
 
-    if (1u == a.size()) { return api.Factory().Data(reader(a.at(0))); }
+    if (1u == a.size()) { return api.Factory().DataFromBytes(reader(a.at(0))); }
 
     while (true) {
         const auto& src = (1 == (++counter % 2)) ? a : b;
         auto& dst = (0 == (counter % 2)) ? a : b;
         calculate_merkle_row(api, chain, src, dst);
 
-        if (1u == dst.size()) { return api.Factory().Data(reader(dst.at(0))); }
+        if (1u == dst.size()) {
+            return api.Factory().DataFromBytes(reader(dst.at(0)));
+        }
     }
 }
 

@@ -404,7 +404,7 @@ auto HD::Xprv(const PasswordPrompt& reason) const noexcept -> UnallocatedCString
         depth,
         parent_,
         child,
-        api_.Factory().Data(chaincode(lock, reason)),
+        api_.Factory().DataFromBytes(chaincode(lock, reason)),
         privateKey);
 }
 
@@ -422,7 +422,7 @@ auto HD::Xpub(const PasswordPrompt& reason) const noexcept -> UnallocatedCString
         depth,
         parent_,
         child,
-        api_.Factory().Data(chaincode(lock, reason)),
-        api_.Factory().Data(PublicKey()));
+        api_.Factory().DataFromBytes(chaincode(lock, reason)),
+        api_.Factory().DataFromBytes(PublicKey()));
 }
 }  // namespace opentxs::crypto::key::implementation

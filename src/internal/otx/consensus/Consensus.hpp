@@ -7,6 +7,7 @@
 
 #include "internal/otx/Types.hpp"
 #include "internal/util/Editor.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/Server.hpp"

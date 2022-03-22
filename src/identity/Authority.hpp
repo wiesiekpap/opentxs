@@ -10,10 +10,10 @@
 #include <utility>
 
 #include "Proto.hpp"
-#include "internal/identity/Identity.hpp"
+#include "internal/identity/Authority.hpp"
+#include "internal/identity/Types.hpp"
 #include "internal/identity/credential/Credential.hpp"
 #include "internal/util/Types.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/HashType.hpp"
@@ -60,6 +60,7 @@ namespace identity
 {
 namespace credential
 {
+class Base;
 class Key;
 class Primary;
 }  // namespace credential
@@ -281,7 +282,7 @@ private:
         const identity::Source& source,
         internal::Authority& authority,
         const credential::internal::Primary& master,
-        const credential::Base::SerializedType& serialized,
+        const credential::internal::Base::SerializedType& serialized,
         const proto::KeyMode mode,
         const proto::CredentialRole role,
         UnallocatedMap<OTIdentifier, std::unique_ptr<Type>>&

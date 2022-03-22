@@ -11,11 +11,13 @@
 #include "Proto.hpp"
 #include "identity/credential/Base.hpp"
 #include "identity/credential/Key.hpp"
+#include "internal/identity/Types.hpp"
 #include "internal/identity/credential/Credential.hpp"
+#include "internal/util/Mutex.hpp"
 #include "internal/util/Types.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/SourceProofType.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/credential/Base.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -41,7 +43,7 @@ namespace identity
 {
 namespace internal
 {
-struct Authority;
+class Authority;
 }  // namespace internal
 
 class Source;
@@ -103,7 +105,7 @@ private:
         const Lock& lock,
         const SerializationModeFlag asPrivate,
         const SerializationSignatureFlag asSigned) const
-        -> std::shared_ptr<identity::credential::Base::SerializedType> final;
+        -> std::shared_ptr<internal::Base::SerializedType> final;
     auto verify_against_source(const Lock& lock) const -> bool;
     auto verify_internally(const Lock& lock) const -> bool final;
 

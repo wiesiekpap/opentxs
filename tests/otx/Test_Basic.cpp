@@ -32,7 +32,6 @@
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
@@ -73,8 +72,10 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
+#include "opentxs/network/Types.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
@@ -82,6 +83,7 @@
 #include "opentxs/otx/blind/Token.hpp"
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
@@ -93,6 +95,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "opentxs/util/Types.hpp"
 #include "otx/server/Server.hpp"
 #include "otx/server/Transactor.hpp"
 
@@ -224,28 +227,28 @@ public:
         }
     }
 
-    static ot::SendResult translate_result(
+    static ot::otx::client::SendResult translate_result(
         const ot::otx::LastReplyStatus status)
     {
         switch (status) {
             case ot::otx::LastReplyStatus::MessageSuccess:
             case ot::otx::LastReplyStatus::MessageFailed: {
 
-                return ot::SendResult::VALID_REPLY;
+                return ot::otx::client::SendResult::VALID_REPLY;
             }
             case ot::otx::LastReplyStatus::Unknown: {
 
-                return ot::SendResult::TIMEOUT;
+                return ot::otx::client::SendResult::TIMEOUT;
             }
             case ot::otx::LastReplyStatus::NotSent: {
 
-                return ot::SendResult::UNNECESSARY;
+                return ot::otx::client::SendResult::UNNECESSARY;
             }
             case ot::otx::LastReplyStatus::Invalid:
             case ot::otx::LastReplyStatus::None:
             default: {
 
-                return ot::SendResult::Error;
+                return ot::otx::client::SendResult::Error;
             }
         }
     }
@@ -456,7 +459,7 @@ public:
         EXPECT_TRUE(client_1_.Wallet().PeerReply(
             alice_nym_id_,
             peerreply->ID(),
-            ot::StorageBox::INCOMINGPEERREPLY,
+            ot::otx::client::StorageBox::INCOMINGPEERREPLY,
             ot::writer(bytes)));
         auto incomingreply =
             client_1_.Factory().PeerReply(recipient, ot::reader(bytes));
@@ -481,7 +484,7 @@ public:
         EXPECT_TRUE(client_1_.Wallet().PeerRequest(
             alice_nym_id_,
             peerrequest->ID(),
-            ot::StorageBox::FINISHEDPEERREQUEST,
+            ot::otx::client::StorageBox::FINISHEDPEERREQUEST,
             notused,
             ot::writer(bytes)));
         auto finishedrequest =
@@ -512,7 +515,7 @@ public:
         EXPECT_TRUE(client_1_.Wallet().PeerReply(
             alice_nym_id_,
             peerreply->ID(),
-            ot::StorageBox::PROCESSEDPEERREPLY,
+            ot::otx::client::StorageBox::PROCESSEDPEERREPLY,
             ot::writer(bytes)));
         auto processedreply =
             client_1_.Factory().PeerReply(recipient, ot::reader(bytes));
@@ -580,7 +583,7 @@ public:
         EXPECT_TRUE(client_2_.Wallet().PeerRequest(
             bob_nym_id_,
             peerrequest->ID(),
-            ot::StorageBox::INCOMINGPEERREQUEST,
+            ot::otx::client::StorageBox::INCOMINGPEERREQUEST,
             notused,
             ot::writer(bytes)));
         auto incomingrequest =
@@ -656,7 +659,7 @@ public:
         EXPECT_TRUE(client_2_.Wallet().PeerReply(
             bob_nym_id_,
             peerreply->ID(),
-            ot::StorageBox::SENTPEERREPLY,
+            ot::otx::client::StorageBox::SENTPEERREPLY,
             ot::writer(bytes)));
         auto sentreply = client_2_.Factory().PeerReply(nym, ot::reader(bytes));
 
@@ -680,7 +683,7 @@ public:
         auto loaded = client_2_.Wallet().PeerRequest(
             bob_nym_id_,
             peerrequest->ID(),
-            ot::StorageBox::PROCESSEDPEERREQUEST,
+            ot::otx::client::StorageBox::PROCESSEDPEERREQUEST,
             notused,
             ot::writer(processedrequest));
 
@@ -706,7 +709,7 @@ public:
         loaded = client_2_.Wallet().PeerReply(
             bob_nym_id_,
             peerreply->ID(),
-            ot::StorageBox::FINISHEDPEERREPLY,
+            ot::otx::client::StorageBox::FINISHEDPEERREPLY,
             ot::writer(finishedreply));
 
         ASSERT_TRUE(loaded);
@@ -775,7 +778,7 @@ public:
         EXPECT_TRUE(client_1_.Wallet().PeerRequest(
             alice_nym_id_,
             peerrequest->ID(),
-            ot::StorageBox::SENTPEERREQUEST,
+            ot::otx::client::StorageBox::SENTPEERREQUEST,
             notused,
             ot::writer(bytes)));
         auto sentrequest =
@@ -1073,7 +1076,7 @@ public:
         const ot::RequestNumber initialRequestNumber,
         const ot::RequestNumber finalRequestNumber,
         const ot::RequestNumber messageRequestNumber,
-        const ot::SendResult messageResult,
+        const ot::otx::client::SendResult messageResult,
         const std::shared_ptr<ot::Message>& message,
         const bool messageSuccess,
         const std::size_t expectedNymboxItems,
@@ -1086,7 +1089,7 @@ public:
             serverContext.RemoteNymboxHash(), clientContext.LocalNymboxHash());
         EXPECT_EQ(
             serverContext.LocalNymboxHash(), serverContext.RemoteNymboxHash());
-        EXPECT_EQ(ot::SendResult::VALID_REPLY, messageResult);
+        EXPECT_EQ(ot::otx::client::SendResult::VALID_REPLY, messageResult);
         ASSERT_TRUE(message);
         EXPECT_EQ(messageSuccess, message->m_bSuccess);
 
@@ -1132,7 +1135,7 @@ std::shared_ptr<ot::otx::blind::Purse> Test_Basic::untrusted_purse_{};
 TEST_F(Test_Basic, zmq_disconnected)
 {
     EXPECT_EQ(
-        ot::ConnectionState::NOT_ESTABLISHED,
+        ot::network::ConnectionState::NOT_ESTABLISHED,
         client_1_.ZMQ().Status(server_1_id_.str()));
 }
 
@@ -1158,7 +1161,7 @@ TEST_F(Test_Basic, getRequestNumber_not_registered)
 TEST_F(Test_Basic, zmq_connected)
 {
     EXPECT_EQ(
-        ot::ConnectionState::ACTIVE,
+        ot::network::ConnectionState::ACTIVE,
         client_1_.ZMQ().Status(server_1_id_.str()));
 }
 
@@ -3009,14 +3012,17 @@ TEST_F(Test_Basic, receive_message)
         SUCCESS,
         0,
         bob_counter_);
-    const auto mailList =
-        client_2_.Activity().Mail(bob_nym_id_, ot::StorageBox::MAILINBOX);
+    const auto mailList = client_2_.Activity().Mail(
+        bob_nym_id_, ot::otx::client::StorageBox::MAILINBOX);
 
     ASSERT_EQ(1, mailList.size());
 
     const auto mailID = ot::Identifier::Factory(std::get<0>(*mailList.begin()));
     const auto text = client_2_.Activity().MailText(
-        bob_nym_id_, mailID, ot::StorageBox::MAILINBOX, reason_c2_);
+        bob_nym_id_,
+        mailID,
+        ot::otx::client::StorageBox::MAILINBOX,
+        reason_c2_);
 
     EXPECT_STREQ(MESSAGE_TEXT, text.get().c_str());
 }

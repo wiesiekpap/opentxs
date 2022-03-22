@@ -6,9 +6,10 @@
 #pragma once
 
 #include "core/contract/peer/PeerReply.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/contract/peer/BailmentReply.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 

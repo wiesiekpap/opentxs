@@ -9,7 +9,6 @@
 
 #include "Helpers.hpp"
 #include "VectorsV1.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -40,7 +39,7 @@ public:
         constexpr auto style = ot::blockchain::crypto::AddressStyle::P2PKH;
 
         return api_.Crypto().Blockchain().CalculateAddress(
-            chain_, style, api_.Factory().Data(key.PublicKey()));
+            chain_, style, api_.Factory().DataFromBytes(key.PublicKey()));
     }
 
     Test_PaymentCode_v1()
@@ -105,10 +104,10 @@ TEST_F(Test_PaymentCode_v1, incoming)
 
 TEST_F(Test_PaymentCode_v1, blind)
 {
-    const auto outpoint = api_.Factory().Data(
-        GetVectors1().alice_.outpoint_, ot::StringStyle::Hex);
-    const auto expected = api_.Factory().Data(
-        GetVectors1().alice_.blinded_, ot::StringStyle::Hex);
+    const auto outpoint =
+        api_.Factory().DataFromHex(GetVectors1().alice_.outpoint_);
+    const auto expected =
+        api_.Factory().DataFromHex(GetVectors1().alice_.blinded_);
     auto data = api_.Factory().Data();
     const auto blind = alice_pc_secret_.Blind(
         bob_pc_public_,
@@ -123,10 +122,10 @@ TEST_F(Test_PaymentCode_v1, blind)
 
 TEST_F(Test_PaymentCode_v1, unblind)
 {
-    const auto outpoint = api_.Factory().Data(
-        GetVectors1().alice_.outpoint_, ot::StringStyle::Hex);
-    const auto blinded = api_.Factory().Data(
-        GetVectors1().alice_.blinded_, ot::StringStyle::Hex);
+    const auto outpoint =
+        api_.Factory().DataFromHex(GetVectors1().alice_.outpoint_);
+    const auto blinded =
+        api_.Factory().DataFromHex(GetVectors1().alice_.blinded_);
     const auto& expected = GetVectors1().alice_.payment_code_;
     auto data = api_.Factory().Data();
     const auto pPC = bob_pc_secret_.Unblind(

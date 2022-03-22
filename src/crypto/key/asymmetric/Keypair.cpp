@@ -74,8 +74,8 @@ Keypair::Keypair(const Keypair& rhs) noexcept
 {
 }
 
-auto Keypair::CheckCapability(const NymCapability& capability) const noexcept
-    -> bool
+auto Keypair::CheckCapability(
+    const identity::NymCapability& capability) const noexcept -> bool
 {
     bool output{false};
 

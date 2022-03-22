@@ -9,10 +9,10 @@
 
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Types.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 /// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -126,14 +126,14 @@ public:
     virtual auto NewHDKey(
         const UnallocatedCString& seedID,
         const Secret& seed,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const opentxs::crypto::Bip32::Path& path,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::HD> = 0;
     virtual auto NewHDKey(
         const UnallocatedCString& seedID,
         const Secret& seed,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const opentxs::crypto::Bip32::Path& path,
         const opentxs::crypto::key::asymmetric::Role role,
         const PasswordPrompt& reason) const
@@ -141,7 +141,7 @@ public:
     virtual auto NewHDKey(
         const UnallocatedCString& seedID,
         const Secret& seed,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const opentxs::crypto::Bip32::Path& path,
         const VersionNumber version,
         const PasswordPrompt& reason) const
@@ -149,7 +149,7 @@ public:
     virtual auto NewHDKey(
         const UnallocatedCString& seedID,
         const Secret& seed,
-        const EcdsaCurve& curve,
+        const opentxs::crypto::EcdsaCurve& curve,
         const opentxs::crypto::Bip32::Path& path,
         const opentxs::crypto::key::asymmetric::Role role,
         const VersionNumber version,

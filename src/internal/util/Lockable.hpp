@@ -8,7 +8,7 @@
 #include <mutex>
 #include <shared_mutex>
 
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Log.hpp"
 

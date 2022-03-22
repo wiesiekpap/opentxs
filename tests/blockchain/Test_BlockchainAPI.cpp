@@ -18,7 +18,6 @@
 #include "internal/api/session/Client.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -255,9 +254,8 @@ public:
                     .Nym({fingerprint_a_, 1}, individual_, *reason_p_, "Daniel")
                     ->ID()});
 
-            address_1_p_.reset(new ot::OTData{api.Factory().Data(
-                "0xf54a5851e9372b87810a8e60cdd2e7cfd80b6e31",
-                ot::StringStyle::Hex)});
+            address_1_p_.reset(new ot::OTData{api.Factory().DataFromHex(
+                "0xf54a5851e9372b87810a8e60cdd2e7cfd80b6e31")});
             empty_p_.reset(new ot::OTIdentifier{api.Factory().Identifier()});
             contact_alex_p_.reset(
                 new ot::OTIdentifier{api.Contacts().ContactID(*alex_p_)});
@@ -734,7 +732,7 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_1)
 {
     const auto& test = bip32_test_cases_.at(0);
     const ot::UnallocatedCString empty{};
-    auto bytes = api_.Factory().Data(test.seed_, ot::StringStyle::Hex);
+    auto bytes = api_.Factory().DataFromHex(test.seed_);
     auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
     const auto fingerprint = api_.Crypto().Seed().ImportRaw(seed, reason_);
 
@@ -773,7 +771,7 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_3)
 {
     const auto& test = bip32_test_cases_.at(2);
     const ot::UnallocatedCString empty{};
-    auto bytes = api_.Factory().Data(test.seed_, ot::StringStyle::Hex);
+    auto bytes = api_.Factory().DataFromHex(test.seed_);
     auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
     const auto fingerprint = api_.Crypto().Seed().ImportRaw(seed, reason_);
 

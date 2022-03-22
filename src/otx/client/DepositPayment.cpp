@@ -16,6 +16,7 @@
 
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"

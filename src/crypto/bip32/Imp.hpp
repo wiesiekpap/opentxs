@@ -11,7 +11,6 @@
 
 #include "crypto/HDNode.hpp"
 #include "internal/crypto/Crypto.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

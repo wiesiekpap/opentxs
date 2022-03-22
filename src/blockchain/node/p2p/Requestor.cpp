@@ -309,8 +309,7 @@ auto Requestor::Imp::process_sync_processed(Message&& in) noexcept -> void
     OT_ASSERT(2 < body.size());
 
     local_position_ = {
-        body.at(1).as<block::Height>(),
-        api_.Factory().Data(body.at(2).Bytes())};
+        body.at(1).as<block::Height>(), api_.Factory().Data(body.at(2))};
     processing_ = false;
 }
 

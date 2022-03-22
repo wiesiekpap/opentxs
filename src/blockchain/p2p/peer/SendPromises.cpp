@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "blockchain/p2p/peer/Peer.hpp"  // IWYU pragma: associated
 
+#include "internal/util/Mutex.hpp"
+
 namespace opentxs::blockchain::p2p::implementation
 {
 Peer::SendPromises::SendPromises() noexcept

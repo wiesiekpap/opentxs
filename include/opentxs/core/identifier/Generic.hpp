@@ -9,7 +9,6 @@
 
 #include <functional>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Types.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
@@ -32,6 +31,7 @@ class Cheque;
 class Contract;
 class Identifier;
 class Item;
+class String;
 
 using OTIdentifier = Pimpl<Identifier>;
 // }  // namespace v1

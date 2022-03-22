@@ -23,11 +23,12 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/crypto/key/Factory.hpp"
+#include "internal/identity/Types.hpp"
+#include "internal/identity/credential/Credential.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/Credential.hpp"
 #include "internal/serialization/protobuf/verify/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
@@ -82,7 +83,7 @@ PaymentCode::PaymentCode(
     : api_(api)
     , version_(version)
     , hasBitmessage_(hasBitmessage)
-    , pubkey_(api.Factory().Data(pubkey))
+    , pubkey_(api.Factory().DataFromBytes(pubkey))
     , chain_code_(api.Factory().SecretFromBytes(chaincode))
     , bitmessage_version_(bitmessageVersion)
     , bitmessage_stream_(bitmessageStream)
@@ -199,12 +200,12 @@ auto PaymentCode::asBase58() const noexcept -> UnallocatedCString
         case 1:
         case 2: {
             return api_.Crypto().Encode().IdentifierEncode(
-                api_.Factory().Data(base58_preimage()));
+                api_.Factory().DataFromBytes(base58_preimage()));
         }
         case 3:
         default: {
             return api_.Crypto().Encode().IdentifierEncode(
-                api_.Factory().Data(base58_preimage_v3()));
+                api_.Factory().DataFromBytes(base58_preimage_v3()));
         }
     }
 }
@@ -952,7 +953,8 @@ auto PaymentCode::Sign(
     auto serialized = proto::Credential{};
 
     if (false ==
-        credential.Serialize(serialized, AS_PUBLIC, WITHOUT_SIGNATURES)) {
+        credential.Internal().Serialize(
+            serialized, identity::AS_PUBLIC, identity::WITHOUT_SIGNATURES)) {
         return false;
     }
 
@@ -1029,7 +1031,7 @@ auto PaymentCode::Unblind(
                        local.ECDSA(),
                        api_.Factory().Secret(0),
                        api_.Factory().SecretFromBytes(pre.xpub_.Chaincode()),
-                       api_.Factory().Data(pre.xpub_.Key()),
+                       api_.Factory().DataFromBytes(pre.xpub_.Key()),
                        proto::HDPath{},
                        Bip32Fingerprint{},
                        crypto::key::asymmetric::Role::Sign,
@@ -1116,7 +1118,7 @@ auto PaymentCode::unblind_v1(
                    ecdsa,
                    api_.Factory().Secret(0),
                    api_.Factory().SecretFromBytes(pre.xpub_.Chaincode()),
-                   api_.Factory().Data(pre.xpub_.Key()),
+                   api_.Factory().DataFromBytes(pre.xpub_.Key()),
                    proto::HDPath{},
                    Bip32Fingerprint{},
                    crypto::key::asymmetric::Role::Sign,
@@ -1171,7 +1173,7 @@ auto PaymentCode::unblind_v3(
                    ecdsa,
                    api_.Factory().Secret(0),
                    code,
-                   api_.Factory().Data(pre.Key()),
+                   api_.Factory().DataFromBytes(pre.Key()),
                    proto::HDPath{},
                    Bip32Fingerprint{},
                    crypto::key::asymmetric::Role::Sign,

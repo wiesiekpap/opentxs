@@ -9,7 +9,6 @@
 
 #include <utility>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
@@ -81,7 +80,9 @@ auto RPC::get_account_activity(const request::Base& base) const
 
                     if (0u < contacts.size()) {
                         return contacts.front();
-                    } else if (StorageBox::INTERNALTRANSFER == row.Type()) {
+                    } else if (
+                        otx::client::StorageBox::INTERNALTRANSFER ==
+                        row.Type()) {
 
                         return api.Contacts().ContactID(owner)->str();
                     }
@@ -140,27 +141,28 @@ auto RPC::get_account_activity(const request::Base& base) const
     return reply();
 }
 
-auto RPC::get_account_event_type(StorageBox storagebox, Amount amount) noexcept
-    -> rpc::AccountEventType
+auto RPC::get_account_event_type(
+    otx::client::StorageBox storagebox,
+    Amount amount) noexcept -> rpc::AccountEventType
 {
     switch (storagebox) {
-        case StorageBox::INCOMINGCHEQUE: {
+        case otx::client::StorageBox::INCOMINGCHEQUE: {
 
             return AccountEventType::incoming_cheque;
         }
-        case StorageBox::OUTGOINGCHEQUE: {
+        case otx::client::StorageBox::OUTGOINGCHEQUE: {
 
             return AccountEventType::outgoing_cheque;
         }
-        case StorageBox::INCOMINGTRANSFER: {
+        case otx::client::StorageBox::INCOMINGTRANSFER: {
 
             return AccountEventType::incoming_transfer;
         }
-        case StorageBox::OUTGOINGTRANSFER: {
+        case otx::client::StorageBox::OUTGOINGTRANSFER: {
 
             return AccountEventType::outgoing_transfer;
         }
-        case StorageBox::INTERNALTRANSFER: {
+        case otx::client::StorageBox::INTERNALTRANSFER: {
             if (0 > amount) {
 
                 return AccountEventType::outgoing_transfer;
@@ -169,7 +171,7 @@ auto RPC::get_account_event_type(StorageBox storagebox, Amount amount) noexcept
                 return AccountEventType::incoming_transfer;
             }
         }
-        case StorageBox::BLOCKCHAIN: {
+        case otx::client::StorageBox::BLOCKCHAIN: {
             if (0 > amount) {
 
                 return AccountEventType::outgoing_blockchain;

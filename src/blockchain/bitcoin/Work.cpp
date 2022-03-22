@@ -29,7 +29,11 @@ auto Work(const UnallocatedCString& hex) -> blockchain::Work*
     using ReturnType = blockchain::implementation::Work;
     using ValueType = ReturnType::Type;
 
-    const auto bytes = Data::Factory(hex, Data::Mode::Hex);
+    const auto bytes = [](const auto& hex) {
+        auto out = Data::Factory();
+        out->DecodeHex(hex);
+        return out;
+    }(hex);
 
     if (bytes->empty()) { return new ReturnType(); }
 

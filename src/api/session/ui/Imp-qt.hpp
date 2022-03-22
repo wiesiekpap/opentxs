@@ -15,7 +15,6 @@
 
 #include "api/session/ui/Imp-base.hpp"
 #include "api/session/ui/UI.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Types.hpp"
@@ -45,6 +44,7 @@
 #include "opentxs/interface/qt/UnitList.hpp"
 #include "opentxs/interface/ui/Blockchains.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Types.hpp"
 
 class QAbstractItemModel;
 

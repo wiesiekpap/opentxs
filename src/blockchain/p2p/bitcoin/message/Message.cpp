@@ -9,13 +9,14 @@
 
 #include <cstring>
 #include <limits>
-#include <memory>
 #include <stdexcept>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/util/Log.hpp"
@@ -159,7 +160,7 @@ auto VerifyChecksum(
     switch (params::Data::Chains().at(header.Network()).p2p_protocol_) {
         case p2p::Protocol::bitcoin: {
             if (0 == payload.size()) {
-                checksum = Data::Factory("0x5df6e0e2", Data::Mode::Hex);
+                checksum = api.Factory().DataFromHex("0x5df6e0e2");
             } else {
                 P2PMessageHash(
                     api,

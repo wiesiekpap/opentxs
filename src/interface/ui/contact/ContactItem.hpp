@@ -10,7 +10,7 @@
 #include "1_Internal.hpp"
 #include "interface/ui/base/Row.hpp"
 #include "internal/interface/ui/UI.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Item.hpp"
 #include "opentxs/interface/ui/ContactItem.hpp"

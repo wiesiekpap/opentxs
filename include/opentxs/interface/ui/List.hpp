@@ -10,7 +10,6 @@
 #include <cassert>
 #include <limits>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/interface/ui/Widget.hpp"
 
 namespace opentxs::ui

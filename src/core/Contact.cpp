@@ -23,7 +23,7 @@
 #include "internal/serialization/protobuf/verify/ContactItem.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -39,6 +39,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/Attribute.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/Data.hpp"
@@ -148,7 +149,7 @@ struct Contact::Imp {
     {
         auto output = std::
             tuple<OTData, blockchain::crypto::AddressStyle, blockchain::Type>{
-                api.Factory().Data(value, StringStyle::Hex),
+                api.Factory().DataFromHex(value),
                 translate_style(subtype),
                 UnitToBlockchain(chain)};
         auto& [outBytes, outStyle, outChain] = output;

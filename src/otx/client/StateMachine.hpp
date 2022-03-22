@@ -21,7 +21,6 @@
 #include "internal/otx/client/Client.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/util/UniqueQueue.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/OTX.hpp"
@@ -69,7 +68,8 @@ class Secret;
 
 namespace std
 {
-using MESSAGETASK = tuple<opentxs::OTNymID, string, opentxs::SetID>;
+using MESSAGETASK =
+    tuple<opentxs::OTNymID, string, opentxs::otx::client::SetID>;
 using PAYMENTTASK =
     pair<opentxs::OTIdentifier, shared_ptr<const opentxs::OTPayment>>;
 using PEERREPLYTASK =

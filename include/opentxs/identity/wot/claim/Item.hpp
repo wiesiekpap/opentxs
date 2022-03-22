@@ -17,7 +17,6 @@
 #include <ctime>
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"

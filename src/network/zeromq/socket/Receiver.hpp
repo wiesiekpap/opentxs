@@ -10,8 +10,8 @@
 #include <mutex>
 #include <thread>
 
+#include "internal/util/Mutex.hpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"

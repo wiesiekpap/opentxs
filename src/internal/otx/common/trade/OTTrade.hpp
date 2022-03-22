@@ -15,12 +15,12 @@
 #include "internal/otx/common/cron/OTCronItem.hpp"
 #include "internal/otx/common/trade/OTMarket.hpp"
 #include "internal/otx/common/trade/OTOffer.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/identity/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

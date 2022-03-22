@@ -11,6 +11,7 @@
 #include <memory>
 #include <stdexcept>
 
+#include "Proto.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/StorageRoot.hpp"
 #include "internal/util/LogMacros.hpp"

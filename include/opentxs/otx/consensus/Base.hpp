@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/util/Container.hpp"

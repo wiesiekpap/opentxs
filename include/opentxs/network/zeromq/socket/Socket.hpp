@@ -14,8 +14,8 @@
 #include <string_view>
 #include <tuple>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -48,7 +48,7 @@ namespace opentxs::network::zeromq::socket
 class OPENTXS_EXPORT Socket
 {
 public:
-    using SendResult = std::pair<opentxs::SendResult, Message>;
+    using SendResult = std::pair<otx::client::SendResult, Message>;
 
     virtual operator void*() const noexcept = 0;
 

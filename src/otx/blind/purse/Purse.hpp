@@ -12,7 +12,6 @@
 
 #include "Proto.hpp"
 #include "internal/otx/blind/Purse.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Notary.hpp"

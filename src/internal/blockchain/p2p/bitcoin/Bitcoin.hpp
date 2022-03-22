@@ -16,7 +16,6 @@
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"

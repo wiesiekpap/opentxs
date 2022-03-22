@@ -17,13 +17,13 @@
 #include "interface/ui/base/List.hpp"
 #include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -127,7 +127,8 @@ auto ActivitySummary::newest_item(
     OT_ASSERT(nullptr != output);
 
     custom.emplace_back(new UnallocatedCString(output->id()));
-    custom.emplace_back(new StorageBox(static_cast<StorageBox>(output->box())));
+    custom.emplace_back(new otx::client::StorageBox(
+        static_cast<otx::client::StorageBox>(output->box())));
     custom.emplace_back(new UnallocatedCString(output->account()));
     custom.emplace_back(time);
     custom.emplace_back(new OTIdentifier{id});

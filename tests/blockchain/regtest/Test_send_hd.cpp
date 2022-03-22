@@ -12,7 +12,6 @@
 
 #include "integration/Helpers.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -43,6 +42,7 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/interface/ui/AccountActivity.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -220,7 +220,7 @@ TEST_F(Regtest_fixture_hd, account_activity_immature)
         {{u8"0", u8"0 units"}},
         {
             {
-                ot::StorageBox::BLOCKCHAIN,
+                ot::otx::client::StorageBox::BLOCKCHAIN,
                 1,
                 10000004950,
                 u8"100.000\u202F049\u202F5 units",
@@ -308,7 +308,7 @@ TEST_F(Regtest_fixture_hd, account_activity_one_block_before_maturation)
         {{u8"0", u8"0 units"}},
         {
             {
-                ot::StorageBox::BLOCKCHAIN,
+                ot::otx::client::StorageBox::BLOCKCHAIN,
                 1,
                 10000004950,
                 u8"100.000\u202F049\u202F5 units",
@@ -433,7 +433,7 @@ TEST_F(Regtest_fixture_hd, account_activity_mature)
         {{u8"100.0000495", u8"100.000\u202F049\u202F5 units"}},
         {
             {
-                ot::StorageBox::BLOCKCHAIN,
+                ot::otx::client::StorageBox::BLOCKCHAIN,
                 1,
                 10000004950,
                 u8"100.000\u202F049\u202F5 units",
@@ -519,7 +519,7 @@ TEST_F(Regtest_fixture_hd, account_activity_failed_spend)
         {{u8"100.0000495", u8"100.000\u202F049\u202F5 units"}},
         {
             {
-                ot::StorageBox::BLOCKCHAIN,
+                ot::otx::client::StorageBox::BLOCKCHAIN,
                 1,
                 10000004950,
                 u8"100.000\u202F049\u202F5 units",
@@ -629,7 +629,7 @@ TEST_F(Regtest_fixture_hd, account_activity_unconfirmed_spend)
         {{u8"86.00002652", u8"86.000\u202F026\u202F52 units"}},
         {
             {
-                ot::StorageBox::BLOCKCHAIN,
+                ot::otx::client::StorageBox::BLOCKCHAIN,
                 -1,
                 -1400002298,
                 u8"-14.000\u202F022\u202F98 units",
@@ -642,7 +642,7 @@ TEST_F(Regtest_fixture_hd, account_activity_unconfirmed_spend)
                 0,
             },
             {
-                ot::StorageBox::BLOCKCHAIN,
+                ot::otx::client::StorageBox::BLOCKCHAIN,
                 1,
                 10000004950,
                 u8"100.000\u202F049\u202F5 units",
@@ -774,7 +774,7 @@ TEST_F(Regtest_fixture_hd, account_activity_confirmed_spend)
         {{u8"86.00002652", u8"86.000\u202F026\u202F52 units"}},
         {
             {
-                ot::StorageBox::BLOCKCHAIN,
+                ot::otx::client::StorageBox::BLOCKCHAIN,
                 -1,
                 -1400002298,
                 u8"-14.000\u202F022\u202F98 units",
@@ -787,7 +787,7 @@ TEST_F(Regtest_fixture_hd, account_activity_confirmed_spend)
                 1,
             },
             {
-                ot::StorageBox::BLOCKCHAIN,
+                ot::otx::client::StorageBox::BLOCKCHAIN,
                 1,
                 10000004950,
                 u8"100.000\u202F049\u202F5 units",

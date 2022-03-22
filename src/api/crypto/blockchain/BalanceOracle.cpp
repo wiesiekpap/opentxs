@@ -20,7 +20,6 @@
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -46,6 +45,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Types.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
@@ -257,7 +257,7 @@ auto BalanceOracle::Imp::process_registration(Message&& in) noexcept -> void
     }
     ();
     const auto& id =
-        subscribers.emplace(api_.Factory().Data(connectionID.Bytes()))
+        subscribers.emplace(api_.Factory().DataFromBytes(connectionID.Bytes()))
             .first->get();
     const auto& log = LogTrace();
     log(OT_PRETTY_CLASS())(id.asHex())(" subscribed to ")(print(chain))(

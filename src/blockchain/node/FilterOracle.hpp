@@ -22,7 +22,7 @@
 #include "core/Worker.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/network/zeromq/Types.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"

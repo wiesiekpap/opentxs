@@ -10,10 +10,10 @@
 #include <mutex>
 #include <string_view>
 
+#include "internal/util/Mutex.hpp"
 #include "network/zeromq/socket/Receiver.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Sender.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Container.hpp"
 

@@ -35,9 +35,9 @@
 #include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "network/asio/Endpoint.hpp"
 #include "network/asio/Socket.hpp"  // IWYU pragma: keep
-#include "opentxs/Types.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"

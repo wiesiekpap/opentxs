@@ -30,7 +30,6 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/Account.hpp"
 #include "internal/blockchain/node/wallet/Accounts.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"

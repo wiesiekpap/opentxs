@@ -10,8 +10,8 @@
 #include <memory>
 
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "internal/util/storage/drivers/Factory.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::factory

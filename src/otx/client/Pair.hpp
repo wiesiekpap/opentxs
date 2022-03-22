@@ -19,7 +19,7 @@
 #include "core/StateMachine.hpp"
 #include "internal/otx/client/Pair.hpp"
 #include "internal/util/Lockable.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"

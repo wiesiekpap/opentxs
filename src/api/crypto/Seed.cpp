@@ -59,6 +59,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Types.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 #include "serialization/protobuf/Seed.pb.h"
@@ -166,7 +167,8 @@ auto Seed::AccountKey(
 
     path.emplace_back(change);
 
-    return GetHDKey(fingerprint, EcdsaCurve::secp256k1, path, reason);
+    return GetHDKey(
+        fingerprint, opentxs::crypto::EcdsaCurve::secp256k1, path, reason);
 }
 
 auto Seed::AllowedSeedTypes() const noexcept
@@ -247,7 +249,7 @@ auto Seed::Bip32Root(
 
     try {
         const auto& seed = get_seed(lock, seedID, reason);
-        const auto entropy = factory_.Data(seed.Entropy().Bytes());
+        const auto entropy = factory_.DataFromBytes(seed.Entropy().Bytes());
 
         return entropy->asHex();
     } catch (const std::exception& e) {
@@ -267,7 +269,7 @@ auto Seed::DefaultSeed() const -> std::pair<UnallocatedCString, std::size_t>
 
 auto Seed::GetHDKey(
     const UnallocatedCString& fingerprint,
-    const EcdsaCurve& curve,
+    const opentxs::crypto::EcdsaCurve& curve,
     const UnallocatedVector<Bip32Index>& path,
     const PasswordPrompt& reason) const
     -> std::unique_ptr<opentxs::crypto::key::HD>
@@ -283,7 +285,7 @@ auto Seed::GetHDKey(
 
 auto Seed::GetHDKey(
     const UnallocatedCString& fingerprint,
-    const EcdsaCurve& curve,
+    const opentxs::crypto::EcdsaCurve& curve,
     const UnallocatedVector<Bip32Index>& path,
     const opentxs::crypto::key::asymmetric::Role role,
     const PasswordPrompt& reason) const
@@ -300,7 +302,7 @@ auto Seed::GetHDKey(
 
 auto Seed::GetHDKey(
     const UnallocatedCString& fingerprint,
-    const EcdsaCurve& curve,
+    const opentxs::crypto::EcdsaCurve& curve,
     const UnallocatedVector<Bip32Index>& path,
     const VersionNumber version,
     const PasswordPrompt& reason) const
@@ -317,7 +319,7 @@ auto Seed::GetHDKey(
 
 auto Seed::GetHDKey(
     const UnallocatedCString& fingerprint,
-    const EcdsaCurve& curve,
+    const opentxs::crypto::EcdsaCurve& curve,
     const UnallocatedVector<Bip32Index>& path,
     const opentxs::crypto::key::asymmetric::Role role,
     const VersionNumber version,
@@ -420,7 +422,7 @@ auto Seed::GetPaymentCode(
         api.Crypto().Internal().EllipticProvider(Type::Secp256k1),
         factory_.SecretFromBytes(key.PrivateKey(reason)),
         code,
-        factory_.Data(key.PublicKey()),
+        factory_.DataFromBytes(key.PublicKey()),
         path,
         key.Parent(),
         key.Role(),
@@ -434,7 +436,7 @@ auto Seed::GetStorageKey(
 {
     auto pKey = GetHDKey(
         fingerprint,
-        EcdsaCurve::secp256k1,
+        opentxs::crypto::EcdsaCurve::secp256k1,
         {HDIndex{Bip43Purpose::FS, Bip32Child::HARDENED},
          HDIndex{Bip32Child::ENCRYPT_KEY, Bip32Child::HARDENED}},
         reason);

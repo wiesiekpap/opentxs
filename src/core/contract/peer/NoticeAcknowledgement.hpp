@@ -7,12 +7,13 @@
 
 #include "Proto.hpp"
 #include "core/contract/peer/PeerReply.hpp"
-#include "opentxs/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/NoticeAcknowledgement.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

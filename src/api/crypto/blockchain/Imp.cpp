@@ -22,6 +22,7 @@
 
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
+#include "internal/identity/Nym.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
@@ -240,9 +241,8 @@ auto Blockchain::Imp::address_prefix(
     const Style style,
     const opentxs::blockchain::Type chain) const noexcept(false) -> OTData
 {
-    return api_.Factory().Data(
-        address_prefix_map_.at(address_style_map_.at({style, chain}).first),
-        StringStyle::Hex);
+    return api_.Factory().DataFromHex(
+        address_prefix_map_.at(address_style_map_.at({style, chain}).first));
 }
 
 auto Blockchain::Imp::AssignContact(
@@ -539,8 +539,8 @@ auto Blockchain::Imp::decode_legacy(const UnallocatedCString& encoded)
     auto& [data, style, chains, supported] = output;
 
     try {
-        const auto bytes = api_.Factory().Data(
-            api_.Crypto().Encode().IdentifierDecode(encoded), StringStyle::Raw);
+        const auto bytes = api_.Factory().DataFromBytes(
+            api_.Crypto().Encode().IdentifierDecode(encoded));
         auto type = api_.Factory().Data();
 
         if (0 == bytes->size()) { throw std::runtime_error("not base58"); }
@@ -831,7 +831,7 @@ auto Blockchain::Imp::NewHDSubaccount(
 
     auto nymPath = proto::HDPath{};
 
-    if (false == nym->Path(nymPath)) {
+    if (false == nym->Internal().Path(nymPath)) {
         LogError()(OT_PRETTY_CLASS())("No nym path.").Flush();
 
         return blank;

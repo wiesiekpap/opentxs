@@ -15,8 +15,8 @@
 #include "Proto.hpp"
 #include "internal/api/session/Contacts.hpp"
 #include "internal/util/Editor.hpp"
+#include "internal/util/Mutex.hpp"
 #include "internal/util/Timer.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Types.hpp"
@@ -25,6 +25,7 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Types.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 

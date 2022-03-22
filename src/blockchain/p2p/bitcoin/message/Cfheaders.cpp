@@ -139,7 +139,7 @@ Cfheaders::Cfheaders(
     : Message(api, network, bitcoin::Command::cfheaders)
     , type_(type)
     , stop_(stop)
-    , previous_(api_.Factory().Data(previousHeader))
+    , previous_(api_.Factory().DataFromBytes(previousHeader))
     , payload_(headers)
 {
     init_hash();

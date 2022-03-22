@@ -104,7 +104,7 @@ Address::Address(
     , id_(calculate_id(api, version, protocol, network, bytes, port, chain))
     , protocol_(protocol)
     , network_(network)
-    , bytes_(api.Factory().Data(bytes))
+    , bytes_(api.Factory().DataFromBytes(bytes))
     , port_(port)
     , chain_(chain)
     , previous_last_connected_(lastConnected)

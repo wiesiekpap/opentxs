@@ -7,9 +7,9 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -79,7 +79,7 @@ public:
         const otx::context::Server& context,
         const Message& message,
         const PasswordPrompt& reason,
-        const Push push = Push::Enable) -> NetworkReplyMessage = 0;
+        const Push push = Push::Enable) -> otx::client::NetworkReplyMessage = 0;
     virtual auto Status() const -> bool = 0;
 
     virtual ~ServerConnection() = default;
