@@ -94,6 +94,10 @@ auto Secret(const ReadView bytes, const bool mode) noexcept
 
 namespace opentxs
 {
+auto check_subset(
+    const std::size_t available,
+    const std::size_t requested,
+    const std::size_t position) noexcept -> bool;
 auto translate(const AddressType in) noexcept -> proto::AddressType;
 auto translate(const proto::AddressType in) noexcept -> AddressType;
 }  // namespace opentxs

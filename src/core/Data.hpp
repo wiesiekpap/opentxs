@@ -31,18 +31,6 @@ class Data : virtual public opentxs::Data
 public:
     using Vector = UnallocatedVector<std::uint8_t>;
 
-    auto operator==(const opentxs::Data& rhs) const noexcept -> bool final;
-    auto operator!=(const opentxs::Data& rhs) const noexcept -> bool final;
-    auto operator<(const opentxs::Data& rhs) const noexcept -> bool final;
-    auto operator>(const opentxs::Data& rhs) const noexcept -> bool final;
-    auto operator<=(const opentxs::Data& rhs) const noexcept -> bool final;
-    auto operator>=(const opentxs::Data& rhs) const noexcept -> bool final;
-    auto operator+=(const opentxs::Data& rhs) -> Data& final;
-    auto operator+=(const std::uint8_t rhs) -> Data& final;
-    auto operator+=(const std::uint16_t rhs) -> Data& final;
-    auto operator+=(const std::uint32_t rhs) -> Data& final;
-    auto operator+=(const std::uint64_t rhs) -> Data& final;
-
     auto asHex() const -> UnallocatedCString final;
     auto asHex(alloc::Resource* alloc) const -> CString final;
     auto at(const std::size_t position) const -> const std::byte& final
@@ -86,6 +74,12 @@ public:
         -> bool final;
     auto IsEmpty() const -> bool final { return empty(); }
     auto IsNull() const -> bool final;
+    auto operator==(const opentxs::Data& rhs) const noexcept -> bool final;
+    auto operator!=(const opentxs::Data& rhs) const noexcept -> bool final;
+    auto operator<(const opentxs::Data& rhs) const noexcept -> bool final;
+    auto operator>(const opentxs::Data& rhs) const noexcept -> bool final;
+    auto operator<=(const opentxs::Data& rhs) const noexcept -> bool final;
+    auto operator>=(const opentxs::Data& rhs) const noexcept -> bool final;
     auto GetPointer() const -> const void* final { return data_.data(); }
     auto GetSize() const -> std::size_t final { return size(); }
     auto size() const -> std::size_t final { return data_.size(); }
@@ -105,6 +99,7 @@ public:
         return reinterpret_cast<std::byte&>(data_.at(position));
     }
     auto begin() -> iterator final { return iterator(this, 0); }
+    auto clear() noexcept -> void final { data_.clear(); }
     auto Concatenate(const ReadView data) noexcept -> bool final
     {
         return Concatenate(data.data(), data.size());
@@ -114,15 +109,19 @@ public:
     auto data() -> void* final { return data_.data(); }
     auto DecodeHex(const std::string_view hex) -> bool final;
     auto end() -> iterator final { return iterator(this, data_.size()); }
+    auto operator+=(const opentxs::Data& rhs) noexcept(false) -> Data& final;
+    auto operator+=(const ReadView rhs) noexcept(false) -> Data& final;
+    auto operator+=(const std::uint8_t rhs) noexcept(false) -> Data& final;
+    auto operator+=(const std::uint16_t rhs) noexcept(false) -> Data& final;
+    auto operator+=(const std::uint32_t rhs) noexcept(false) -> Data& final;
+    auto operator+=(const std::uint64_t rhs) noexcept(false) -> Data& final;
     auto Randomize(const std::size_t size) -> bool override;
-    void Release() final;
-    void resize(const std::size_t size) final { data_.resize(size); }
-    void SetSize(const std::size_t size) final;
+    auto resize(const std::size_t size) -> bool final;
+    auto SetSize(const std::size_t size) -> bool final;
     auto str() const -> UnallocatedCString override;
     auto str(alloc::Resource* alloc) const -> CString override;
-    void swap(opentxs::Data&& rhs) final;
     auto WriteInto() noexcept -> AllocateOutput final;
-    void zeroMemory() final;
+    auto zeroMemory() -> void final;
 
     ~Data() override = default;
 

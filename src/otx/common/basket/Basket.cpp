@@ -372,7 +372,7 @@ void Basket::CalculateContractID(Identifier& newID) const
 
 void Basket::Release_Basket()
 {
-    m_RequestAccountID->Release();
+    m_RequestAccountID->clear();
 
     while (!m_dequeItems.empty()) {
         BasketItem* pItem = m_dequeItems.front();

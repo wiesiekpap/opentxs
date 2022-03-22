@@ -479,7 +479,7 @@ void OTOffer::SetDateAddedToMarket(const Time tDate)  // Used in OTCron when
 void OTOffer::Release_Offer()
 {
     // If there were any dynamically allocated objects, clean them up here.
-    m_CURRENCY_TYPE_ID->Release();
+    m_CURRENCY_TYPE_ID->clear();
 }
 
 void OTOffer::Release()

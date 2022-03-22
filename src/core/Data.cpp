@@ -21,6 +21,7 @@ extern "C" {
 #include <sstream>
 #include <utility>
 
+#include "internal/core/Core.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -30,6 +31,22 @@ template class opentxs::Pimpl<opentxs::Data>;
 
 namespace opentxs
 {
+auto check_subset(
+    const std::size_t size,
+    const std::size_t target,
+    const std::size_t pos) noexcept -> bool
+{
+    if (pos > size) { return false; }
+
+    if ((std::numeric_limits<std::size_t>::max() - pos) < target) {
+        return false;
+    }
+
+    if ((pos + target) > size) { return false; }
+
+    return true;
+}
+
 auto operator==(const OTData& lhs, const Data& rhs) noexcept -> bool
 {
     return lhs.get() == rhs;
@@ -93,6 +110,38 @@ auto operator+=(OTData& lhs, const std::uint64_t rhs) -> OTData&
     lhs.get() += rhs;
 
     return lhs;
+}
+
+auto to_hex(const std::byte* in, std::size_t size) noexcept
+    -> UnallocatedCString
+{
+    if (nullptr == in) { return {}; }
+
+    auto out = std::stringstream{};
+
+    for (auto i = std::size_t{0}; i < size; ++i, ++in) {
+        out << std::hex << std::setfill('0') << std::setw(2)
+            << std::to_integer<int>(*in);
+    }
+
+    return out.str();
+}
+
+auto to_hex(
+    const std::byte* in,
+    std::size_t size,
+    alloc::Resource* alloc) noexcept -> CString
+{
+    if (nullptr == in) { return CString{alloc}; }
+
+    auto out = std::stringstream{};  // TODO c++20 use allocator
+
+    for (auto i = std::size_t{0}; i < size; ++i, ++in) {
+        out << std::hex << std::setfill('0') << std::setw(2)
+            << std::to_integer<int>(*in);
+    }
+
+    return CString{alloc}.append(out.str());
 }
 
 auto Data::Factory() -> OTData { return OTData(new implementation::Data()); }
@@ -227,6 +276,13 @@ auto Data::operator+=(const opentxs::Data& rhs) -> Data&
     return *this;
 }
 
+auto Data::operator+=(const ReadView rhs) -> Data&
+{
+    Concatenate(rhs);
+
+    return *this;
+}
+
 auto Data::operator+=(const std::uint8_t rhs) -> Data&
 {
     data_.emplace_back(rhs);
@@ -263,28 +319,14 @@ auto Data::operator+=(const std::uint64_t rhs) -> Data&
 
 auto Data::asHex() const -> UnallocatedCString
 {
-    std::stringstream out{};
-
-    // TODO: std::to_integer<int>(byte)
-
-    for (const auto byte : data_) {
-        out << std::hex << std::setfill('0') << std::setw(2)
-            << static_cast<const int&>(byte);
-    }
-
-    return out.str();
+    return to_hex(
+        reinterpret_cast<const std::byte*>(data_.data()), data_.size());
 }
 
 auto Data::asHex(alloc::Resource* alloc) const -> CString
 {
-    std::stringstream out{};  // TODO c++20 use allocator
-
-    for (const auto byte : data_) {
-        out << std::hex << std::setfill('0') << std::setw(2)
-            << static_cast<const int&>(byte);
-    }
-
-    return CString{alloc}.append(out.str());
+    return to_hex(
+        reinterpret_cast<const std::byte*>(data_.data()), data_.size(), alloc);
 }
 
 auto Data::Assign(const void* data, const std::size_t size) noexcept -> bool
@@ -307,17 +349,7 @@ auto Data::Assign(const void* data, const std::size_t size) noexcept -> bool
 auto Data::check_sub(const std::size_t pos, const std::size_t target) const
     -> bool
 {
-    const auto size = data_.size();
-
-    if (pos > size) { return false; }
-
-    if ((std::numeric_limits<std::size_t>::max() - pos) < target) {
-        return false;
-    }
-
-    if ((pos + target) > size) { return false; }
-
-    return true;
+    return check_subset(data_.size(), target, pos);
 }
 
 void Data::concatenate(const Vector& data)
@@ -442,17 +474,20 @@ auto Data::Randomize(const std::size_t size) -> bool
     return true;
 }
 
-void Data::Release()
+auto Data::resize(const std::size_t size) -> bool
 {
-    zeroMemory();
-    Initialize();
+    data_.resize(size);
+
+    return true;
 }
 
-void Data::SetSize(const std::size_t size)
+auto Data::SetSize(const std::size_t size) -> bool
 {
-    Release();
+    clear();
 
     if (size > 0) { data_.assign(size, 0); }
+
+    return true;
 }
 
 auto Data::spaceship(const opentxs::Data& rhs) const noexcept -> int
@@ -477,12 +512,6 @@ auto Data::str(alloc::Resource* alloc) const -> CString
     return CString{Bytes(), alloc};
 }
 
-void Data::swap(opentxs::Data&& rhs)
-{
-    auto& in = dynamic_cast<Data&>(rhs);
-    std::swap(data_, in.data_);
-}
-
 auto Data::WriteInto() noexcept -> AllocateOutput
 {
     return [this](const auto size) {
@@ -493,9 +522,9 @@ auto Data::WriteInto() noexcept -> AllocateOutput
     };
 }
 
-void Data::zeroMemory()
+auto Data::zeroMemory() -> void
 {
-    if (0 < data_.size()) { data_.assign(data_.size(), 0); }
+    ::sodium_memzero(data_.data(), data_.size());
 }
 }  // namespace implementation
 }  // namespace opentxs

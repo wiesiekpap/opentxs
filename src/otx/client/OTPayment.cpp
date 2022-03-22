@@ -276,7 +276,7 @@ auto OTPayment::SetTempValuesFromCheque(const Cheque& theInput) -> bool
                 m_RecipientNymID = theInput.GetRecipientNymID();
             } else {
                 m_bHasRecipient = false;
-                m_RecipientNymID->Release();
+                m_RecipientNymID->clear();
             }
 
             if (theInput.HasRemitter()) {
@@ -285,15 +285,15 @@ auto OTPayment::SetTempValuesFromCheque(const Cheque& theInput) -> bool
                 m_RemitterAcctID = theInput.GetRemitterAcctID();
             } else {
                 m_bHasRemitter = false;
-                m_RemitterNymID->Release();
-                m_RemitterAcctID->Release();
+                m_RemitterNymID->clear();
+                m_RemitterAcctID->clear();
             }
 
             // NOTE: the "Recipient Acct" is NOT KNOWN when cheque is written,
             // but only once the cheque gets deposited. Therefore if type is
             // CHEQUE, then Recipient Acct ID is not set, and attempts to read
             // it will result in failure.
-            m_RecipientAcctID->Release();
+            m_RecipientAcctID->clear();
 
             m_VALID_FROM = theInput.GetValidFrom();
             m_VALID_TO = theInput.GetValidTo();
@@ -424,8 +424,8 @@ void OTPayment::lowLevelSetTempValuesFromPaymentPlan(
     m_RecipientNymID = theInput.GetRecipientNymID();
     m_RecipientAcctID = theInput.GetRecipientAcctID();
 
-    m_RemitterNymID->Release();
-    m_RemitterAcctID->Release();
+    m_RemitterNymID->clear();
+    m_RemitterAcctID->clear();
 
     m_VALID_FROM = theInput.GetValidFrom();
     m_VALID_TO = theInput.GetValidTo();
@@ -508,16 +508,16 @@ void OTPayment::lowLevelSetTempValuesFromSmartContract(
     m_strMemo->Release();  // not used here.
 
     m_NotaryID = theInput.GetNotaryID();
-    m_InstrumentDefinitionID->Release();  // not used here.
+    m_InstrumentDefinitionID->clear();  // not used here.
 
     m_SenderNymID = theInput.GetSenderNymID();
-    m_SenderAcctID->Release();
+    m_SenderAcctID->clear();
 
-    m_RecipientNymID->Release();   // not used here.
-    m_RecipientAcctID->Release();  // not used here.
+    m_RecipientNymID->clear();   // not used here.
+    m_RecipientAcctID->clear();  // not used here.
 
-    m_RemitterNymID->Release();
-    m_RemitterAcctID->Release();
+    m_RemitterNymID->clear();
+    m_RemitterAcctID->clear();
 
     m_VALID_FROM = theInput.GetValidFrom();
     m_VALID_TO = theInput.GetValidTo();
@@ -1299,7 +1299,7 @@ auto OTPayment::VerifyCurrentDate(bool& bVerified) -> bool
 
 auto OTPayment::GetInstrumentDefinitionID(Identifier& theOutput) const -> bool
 {
-    theOutput.Release();
+    theOutput.clear();
 
     if (!m_bAreTempValuesSet) return false;
 
@@ -1329,7 +1329,7 @@ auto OTPayment::GetInstrumentDefinitionID(Identifier& theOutput) const -> bool
 
 auto OTPayment::GetNotaryID(Identifier& theOutput) const -> bool
 {
-    theOutput.Release();
+    theOutput.clear();
 
     if (!m_bAreTempValuesSet) {
         LogError()(OT_PRETTY_CLASS())("Object not yet instantiated.").Flush();
@@ -1363,7 +1363,7 @@ auto OTPayment::GetNotaryID(Identifier& theOutput) const -> bool
 //
 auto OTPayment::GetRemitterNymID(identifier::Nym& theOutput) const -> bool
 {
-    theOutput.Release();
+    theOutput.clear();
 
     if (!m_bAreTempValuesSet) return false;
 
@@ -1391,7 +1391,7 @@ auto OTPayment::GetRemitterNymID(identifier::Nym& theOutput) const -> bool
 //
 auto OTPayment::GetRemitterAcctID(Identifier& theOutput) const -> bool
 {
-    theOutput.Release();
+    theOutput.clear();
 
     if (!m_bAreTempValuesSet) return false;
 
@@ -1430,7 +1430,7 @@ auto OTPayment::GetSenderAcctIDForDisplay(Identifier& theOutput) const -> bool
 
 auto OTPayment::GetSenderNymID(identifier::Nym& theOutput) const -> bool
 {
-    theOutput.Release();
+    theOutput.clear();
 
     if (!m_bAreTempValuesSet) return false;
 
@@ -1457,7 +1457,7 @@ auto OTPayment::GetSenderNymID(identifier::Nym& theOutput) const -> bool
 
 auto OTPayment::GetSenderAcctID(Identifier& theOutput) const -> bool
 {
-    theOutput.Release();
+    theOutput.clear();
 
     if (!m_bAreTempValuesSet) return false;
 
@@ -1487,7 +1487,7 @@ auto OTPayment::GetSenderAcctID(Identifier& theOutput) const -> bool
 
 auto OTPayment::GetRecipientNymID(identifier::Nym& theOutput) const -> bool
 {
-    theOutput.Release();
+    theOutput.clear();
 
     if (!m_bAreTempValuesSet) return false;
 
@@ -1529,7 +1529,7 @@ auto OTPayment::GetRecipientAcctID(Identifier& theOutput) const -> bool
     // known at the time
     // that the cheque is written...
 
-    theOutput.Release();
+    theOutput.clear();
 
     if (!m_bAreTempValuesSet) return false;
 
@@ -1838,14 +1838,14 @@ void OTPayment::Release_Payment()
     m_bHasRecipient = false;
     m_bHasRemitter = false;
     m_strMemo->Release();
-    m_InstrumentDefinitionID->Release();
-    m_NotaryID->Release();
-    m_SenderNymID->Release();
-    m_SenderAcctID->Release();
-    m_RecipientNymID->Release();
-    m_RecipientAcctID->Release();
-    m_RemitterNymID->Release();
-    m_RemitterAcctID->Release();
+    m_InstrumentDefinitionID->clear();
+    m_NotaryID->clear();
+    m_SenderNymID->clear();
+    m_SenderAcctID->clear();
+    m_RecipientNymID->clear();
+    m_RecipientAcctID->clear();
+    m_RemitterNymID->clear();
+    m_RemitterAcctID->clear();
 }
 
 auto OTPayment::SetPayment(const String& strPayment) -> bool

@@ -135,8 +135,6 @@ public:
         proto::Identifier& out) const noexcept -> bool = 0;
     virtual void SetString(const UnallocatedCString& encoded) = 0;
     virtual void SetString(const String& encoded) = 0;
-    using ot_super::swap;
-    virtual void swap(Identifier& rhs) = 0;
 
     ~Identifier() override = default;
 

@@ -1211,8 +1211,8 @@ auto OTTrade::IssueTrade(OTOffer& offer, char stopSign, const Amount& stopPrice)
 void OTTrade::Release_Trade()
 {
     // If there were any dynamically allocated objects, clean them up here.
-    currencyTypeID_->Release();
-    currencyAcctID_->Release();
+    currencyTypeID_->clear();
+    currencyAcctID_->clear();
 
     marketOffer_->Release();
 }

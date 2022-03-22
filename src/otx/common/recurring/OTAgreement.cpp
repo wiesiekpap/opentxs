@@ -1143,8 +1143,8 @@ void OTAgreement::Release_Agreement()
 {
     // If there were any dynamically allocated objects, clean them up here.
     //
-    m_RECIPIENT_ACCT_ID->Release();
-    m_RECIPIENT_NYM_ID->Release();
+    m_RECIPIENT_ACCT_ID->clear();
+    m_RECIPIENT_NYM_ID->clear();
 
     m_strConsideration->Release();
     m_strMerchantSignedCopy->Release();
@@ -1227,7 +1227,7 @@ auto OTAgreement::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             // else log
         } else {
             m_bCanceled = false;
-            m_pCancelerNymID->Release();
+            m_pCancelerNymID->clear();
         }
 
         const auto NOTARY_ID = api_.Factory().ServerID(strNotaryID);

@@ -17,7 +17,6 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
-#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -925,14 +924,6 @@ auto Identifier::str(alloc::Resource* alloc) const -> CString
     // TODO c++20 avoid a copy by using an allocator in to_string
 
     return CString{alloc}.append(to_string());
-}
-
-auto Identifier::swap(opentxs::Identifier& rhs) -> void
-{
-    auto& input = dynamic_cast<Identifier&>(rhs);
-    ot_super::swap(std::move(input));
-    std::swap(algorithm_, input.algorithm_);
-    std::swap(type_, input.type_);
 }
 
 auto Identifier::to_string() const noexcept -> UnallocatedCString

@@ -2836,10 +2836,10 @@ void OTMarket::InitMarket() { m_strContractType = String::Factory("MARKET"); }
 
 void OTMarket::Release_Market()
 {
-    m_INSTRUMENT_DEFINITION_ID->Release();
-    m_CURRENCY_TYPE_ID->Release();
+    m_INSTRUMENT_DEFINITION_ID->clear();
+    m_CURRENCY_TYPE_ID->clear();
 
-    m_NOTARY_ID->Release();
+    m_NOTARY_ID->clear();
 
     // Elements of this list are cleaned up automatically.
     if (nullptr != m_pTradeList) {

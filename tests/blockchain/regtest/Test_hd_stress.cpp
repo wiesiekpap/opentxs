@@ -466,7 +466,7 @@ TEST_F(Regtest_stress, generate_transactions)
 
                     OT_ASSERT(false == txid->empty());
 
-                    transactions.at(++f)->swap(std::move(txid.get()));
+                    transactions.at(++f)->Assign(txid.get());
                 } catch (...) {
 
                     OT_FAIL;

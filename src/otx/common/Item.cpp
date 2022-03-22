@@ -1208,7 +1208,7 @@ void Item::Release_Item()
 {
     ReleaseItems();
 
-    m_AcctToID->Release();
+    m_AcctToID->clear();
     m_lAmount = 0;
     m_lNewOutboxTransNum = 0;
     m_lClosingTransactionNo = 0;

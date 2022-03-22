@@ -71,6 +71,12 @@ OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint8_t rhs) -> OTData&;
 OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint16_t rhs) -> OTData&;
 OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint32_t rhs) -> OTData&;
 OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint64_t rhs) -> OTData&;
+OPENTXS_EXPORT auto to_hex(const std::byte* in, std::size_t size) noexcept
+    -> UnallocatedCString;
+OPENTXS_EXPORT auto to_hex(
+    const std::byte* in,
+    std::size_t size,
+    alloc::Resource* alloc) noexcept -> CString;
 }  // namespace opentxs
 
 namespace opentxs
@@ -92,19 +98,13 @@ public:
     static auto Factory(const UnallocatedVector<std::byte>& source) -> OTData;
     static auto Factory(const network::zeromq::Frame& message) -> OTData;
     static auto Factory(const std::uint8_t in) -> OTData;
-    /// Bytes will be stored in big endian order
+    /// Bytes are stored in big endian order
     static auto Factory(const std::uint16_t in) -> OTData;
-    /// Bytes will be stored in big endian order
+    /// Bytes are stored in big endian order
     static auto Factory(const std::uint32_t in) -> OTData;
-    /// Bytes will be stored in big endian order
+    /// Bytes are stored in big endian order
     static auto Factory(const std::uint64_t in) -> OTData;
 
-    virtual auto operator==(const Data& rhs) const noexcept -> bool = 0;
-    virtual auto operator!=(const Data& rhs) const noexcept -> bool = 0;
-    virtual auto operator<(const Data& rhs) const noexcept -> bool = 0;
-    virtual auto operator>(const Data& rhs) const noexcept -> bool = 0;
-    virtual auto operator<=(const Data& rhs) const noexcept -> bool = 0;
-    virtual auto operator>=(const Data& rhs) const noexcept -> bool = 0;
     virtual auto asHex() const -> UnallocatedCString = 0;
     virtual auto asHex(alloc::Resource* alloc) const -> CString = 0;
     virtual auto at(const std::size_t position) const -> const std::byte& = 0;
@@ -121,47 +121,60 @@ public:
         const std::size_t pos = 0) const -> bool = 0;
     virtual auto Extract(std::uint8_t& output, const std::size_t pos = 0) const
         -> bool = 0;
+    /// Bytes are interpreted as big endian
     virtual auto Extract(std::uint16_t& output, const std::size_t pos = 0) const
         -> bool = 0;
+    /// Bytes are interpreted as big endian
     virtual auto Extract(std::uint32_t& output, const std::size_t pos = 0) const
         -> bool = 0;
+    /// Bytes are interpreted as big endian
     virtual auto Extract(std::uint64_t& output, const std::size_t pos = 0) const
         -> bool = 0;
     [[deprecated]] virtual auto GetPointer() const -> const void* = 0;
     [[deprecated]] virtual auto GetSize() const -> std::size_t = 0;
     [[deprecated]] virtual auto IsEmpty() const -> bool = 0;
     virtual auto IsNull() const -> bool = 0;
+    virtual auto operator==(const Data& rhs) const noexcept -> bool = 0;
+    virtual auto operator!=(const Data& rhs) const noexcept -> bool = 0;
+    virtual auto operator<(const Data& rhs) const noexcept -> bool = 0;
+    virtual auto operator>(const Data& rhs) const noexcept -> bool = 0;
+    virtual auto operator<=(const Data& rhs) const noexcept -> bool = 0;
+    virtual auto operator>=(const Data& rhs) const noexcept -> bool = 0;
     virtual auto size() const -> std::size_t = 0;
     virtual auto str() const -> UnallocatedCString = 0;
     virtual auto str(alloc::Resource* alloc) const -> CString = 0;
 
-    virtual auto operator+=(const Data& rhs) -> Data& = 0;
-    virtual auto operator+=(const std::uint8_t rhs) -> Data& = 0;
-    /// Bytes will be stored in big endian order
-    virtual auto operator+=(const std::uint16_t rhs) -> Data& = 0;
-    /// Bytes will be stored in big endian order
-    virtual auto operator+=(const std::uint32_t rhs) -> Data& = 0;
-    /// Bytes will be stored in big endian order
-    virtual auto operator+=(const std::uint64_t rhs) -> Data& = 0;
     virtual auto Assign(const Data& source) noexcept -> bool = 0;
     virtual auto Assign(const ReadView source) noexcept -> bool = 0;
     virtual auto Assign(const void* data, const std::size_t size) noexcept
         -> bool = 0;
     virtual auto at(const std::size_t position) -> std::byte& = 0;
     virtual auto begin() -> iterator = 0;
+    virtual auto clear() noexcept -> void = 0;
     virtual auto Concatenate(const ReadView data) noexcept -> bool = 0;
     virtual auto Concatenate(const void* data, const std::size_t size) noexcept
         -> bool = 0;
     virtual auto data() -> void* = 0;
     virtual auto DecodeHex(const std::string_view hex) -> bool = 0;
     virtual auto end() -> iterator = 0;
+    virtual auto operator+=(const Data& rhs) noexcept(false) -> Data& = 0;
+    virtual auto operator+=(const ReadView rhs) noexcept(false) -> Data& = 0;
+    virtual auto operator+=(const std::uint8_t rhs) noexcept(false)
+        -> Data& = 0;
+    /// Bytes are stored in big endian order
+    virtual auto operator+=(const std::uint16_t rhs) noexcept(false)
+        -> Data& = 0;
+    /// Bytes are stored in big endian order
+    virtual auto operator+=(const std::uint32_t rhs) noexcept(false)
+        -> Data& = 0;
+    /// Bytes are stored in big endian order
+    virtual auto operator+=(const std::uint64_t rhs) noexcept(false)
+        -> Data& = 0;
     virtual auto Randomize(const std::size_t size) -> bool = 0;
-    virtual void Release() = 0;
-    virtual void resize(const std::size_t size) = 0;
-    virtual void SetSize(const std::size_t size) = 0;
-    virtual void swap(Data&& rhs) = 0;
+    virtual auto resize(const std::size_t size) -> bool = 0;
+    virtual auto SetSize(const std::size_t size) -> bool = 0;
     virtual auto WriteInto() noexcept -> AllocateOutput = 0;
-    virtual void zeroMemory() = 0;
+    virtual auto zeroMemory() -> void = 0;
 
     virtual ~Data() = default;
 

@@ -75,8 +75,8 @@ void OTTrackable::GetAllTransactionNumbers(NumList& numlistOutput) const
 
 void OTTrackable::Release_Trackable()
 {
-    m_SENDER_ACCT_ID->Release();
-    m_SENDER_NYM_ID->Release();
+    m_SENDER_ACCT_ID->clear();
+    m_SENDER_NYM_ID->clear();
 }
 
 void OTTrackable::Release()

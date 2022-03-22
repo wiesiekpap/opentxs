@@ -349,7 +349,7 @@ auto NymFile::GetHash(
 
     bool bRetVal =
         false;  // default is false: "No, I didn't find a hash for that id."
-    theOutput.Release();
+    theOutput.clear();
 
     // The Pseudonym has a map of its recent hashes, one for each server
     // (nymbox) or account (inbox/outbox).
