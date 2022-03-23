@@ -12,6 +12,7 @@ executors:
   host_executor:
     machine:
       image: ubuntu-2004:current
+    resource_class: large
       
 commands:
   prepare_env:
