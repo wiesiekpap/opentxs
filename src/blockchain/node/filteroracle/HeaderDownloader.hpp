@@ -55,7 +55,7 @@ public:
                   auto promise = std::promise<cfilter::Header>{};
                   const auto tip = db.FilterHeaderTip(type);
                   promise.set_value(
-                      db.LoadFilterHeader(type, tip.second->Bytes()));
+                      db.LoadFilterHeader(type, tip.second.Bytes()));
 
                   return Finished{promise.get_future()};
               }(),
@@ -196,7 +196,7 @@ private:
             if (first != current) {
                 auto promise = std::promise<cfilter::Header>{};
                 promise.set_value(
-                    db_.LoadFilterHeader(type_, first.second->Bytes()));
+                    db_.LoadFilterHeader(type_, first.second.Bytes()));
                 prior.emplace(std::move(first), promise.get_future());
             }
         }
@@ -209,8 +209,8 @@ private:
 
         OT_ASSERT(3 < body.size());
 
-        auto position = Position{
-            body.at(1).as<block::Height>(), api_.Factory().Data(body.at(2))};
+        auto position =
+            Position{body.at(1).as<block::Height>(), body.at(2).Bytes()};
         auto promise = std::promise<cfilter::Header>{};
         promise.set_value(body.at(3).Bytes());
         Reset(position, promise.get_future());
@@ -220,22 +220,22 @@ private:
         if (0 == data.size()) { return; }
 
         const auto& previous = data.front()->previous_.get();
-        auto hashes = Vector<block::pHash>{};
+        auto hashes = Vector<cfilter::Hash>{};
         auto headers = Vector<internal::FilterDatabase::CFHeaderParams>{};
 
         for (const auto& task : data) {
             const auto& hash = hashes.emplace_back(task->data_.get());
             auto header = blockchain::internal::FilterHashToHeader(
-                api_, hash->Bytes(), task->previous_.get().Bytes());
+                api_, hash.Bytes(), task->previous_.get().Bytes());
             const auto& position = task->position_;
             const auto check = checkpoint_(position, header);
 
             if (check == position) {
-                headers.emplace_back(position.second, header, hash->Bytes());
+                headers.emplace_back(position.second, header, hash);
                 task->process(std::move(header));
             } else {
                 const auto good =
-                    db_.LoadFilterHeader(type_, check.second->Bytes());
+                    db_.LoadFilterHeader(type_, check.second.Bytes());
 
                 OT_ASSERT(false == good.IsNull());
 

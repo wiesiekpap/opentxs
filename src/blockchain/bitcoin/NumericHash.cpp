@@ -23,7 +23,6 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/NumericHash.hpp"
-#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -62,13 +61,13 @@ auto NumericHashNBits(const std::uint32_t input) noexcept
     return std::make_unique<ReturnType>(target);
 }
 
-auto NumericHash(const blockchain::block::Hash& hash) noexcept
+auto NumericHash(const Data& hash) noexcept
     -> std::unique_ptr<blockchain::NumericHash>
 {
     using ReturnType = blockchain::implementation::NumericHash;
     ReturnType::Type value{};
 
-    if (hash.empty()) { return std::make_unique<ReturnType>(); }
+    if (hash.IsNull()) { return std::make_unique<ReturnType>(); }
 
     try {
         // Interpret hash as little endian

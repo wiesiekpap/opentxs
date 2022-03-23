@@ -15,6 +15,7 @@
 
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/util/Container.hpp"
@@ -43,8 +44,7 @@ namespace opentxs::blockchain::database::common
 using Chain = Type;
 using Address = p2p::internal::Address;
 using Address_p = std::unique_ptr<Address>;
-using FilterData = node::internal::FilterDatabase::Filter;
-using FilterHash = node::internal::FilterDatabase::Hash;
+using CFilterParams = node::internal::FilterDatabase::CFilterParams;
 using CFHeaderParams = node::internal::FilterDatabase::CFHeaderParams;
 using Position = block::Position;
 using Protocol = p2p::Protocol;

@@ -31,6 +31,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
@@ -354,9 +355,15 @@ auto BitcoinTransaction(
                     }
                 }(),
                 [&] {
-                    auto out = api.Factory().Data();
+                    auto out = blockchain::block::Hash();
 
-                    if (in.has_mined_block()) { out->Assign(in.mined_block()); }
+                    if (in.has_mined_block()) {
+                        const auto rc = out.Assign(in.mined_block());
+
+                        if (false == rc) {
+                            throw std::runtime_error{"invalid mined_block"};
+                        }
+                    }
 
                     return out;
                 }()});
@@ -899,9 +906,9 @@ auto Transaction::Serialize() const noexcept -> std::optional<SerializeType>
     output.set_is_generation(is_generation_);
     const auto& [height, hash] = cache_.position();
 
-    if ((0 <= height) && (false == hash->empty())) {
+    if ((0 <= height) && (false == hash.IsNull())) {
         output.set_mined_height(height);
-        output.set_mined_block(hash->str());
+        output.set_mined_block(hash.str());
     }
 
     return std::move(output);

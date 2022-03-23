@@ -23,7 +23,9 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/core/Data.hpp"
@@ -78,7 +80,7 @@ namespace opentxs::blockchain::database
 struct Headers {
 public:
     auto BestBlock(const block::Height position) const noexcept(false)
-        -> block::pHash;
+        -> block::Hash;
     auto CurrentBest() const noexcept -> std::unique_ptr<block::Header>
     {
         return load_header(best().second);
@@ -98,7 +100,7 @@ public:
         return load_header(hash);
     }
     auto RecentHashes(alloc::Resource* alloc) const noexcept
-        -> Vector<block::pHash>;
+        -> Vector<block::Hash>;
     auto SiblingHashes() const noexcept -> node::Hashes;
     // Returns null pointer if the header does not exist
     auto TryLoadBitcoinHeader(const block::Hash& hash) const noexcept
@@ -140,6 +142,6 @@ private:
         const bool setTip,
         MDB_txn* parent) const noexcept -> bool;
     auto recent_hashes(const Lock& lock, alloc::Resource* alloc) const noexcept
-        -> Vector<block::pHash>;
+        -> Vector<block::Hash>;
 };
 }  // namespace opentxs::blockchain::database

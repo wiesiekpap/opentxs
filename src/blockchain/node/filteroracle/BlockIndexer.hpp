@@ -29,6 +29,9 @@
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
@@ -149,7 +152,7 @@ struct FilterOracle::BlockIndexerData {
     const Task& incoming_data_;
     const cfilter::Type type_;
     cfilter::Hash filter_hash_;
-    internal::FilterDatabase::Filter& filter_data_;
+    internal::FilterDatabase::CFilterParams& filter_data_;
     internal::FilterDatabase::CFHeaderParams& header_data_;
     Outstanding& job_counter_;
 
@@ -157,7 +160,7 @@ struct FilterOracle::BlockIndexerData {
         cfilter::Hash blank,
         const Task& data,
         const cfilter::Type type,
-        internal::FilterDatabase::Filter& filter,
+        internal::FilterDatabase::CFilterParams& filter,
         internal::FilterDatabase::CFHeaderParams& header,
         Outstanding& jobCounter) noexcept
         : incoming_data_(data)

@@ -12,6 +12,7 @@
 #include <future>
 #include <memory>
 
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -50,7 +51,7 @@ public:
     using BitcoinBlock = block::bitcoin::Block;
     using BitcoinBlock_p = std::shared_ptr<const BitcoinBlock>;
     using BitcoinBlockFuture = std::shared_future<BitcoinBlock_p>;
-    using BlockHashes = UnallocatedVector<block::pHash>;
+    using BlockHashes = UnallocatedVector<block::Hash>;
     using BitcoinBlockFutures = UnallocatedVector<BitcoinBlockFuture>;
 
     virtual auto Tip() const noexcept -> block::Position = 0;

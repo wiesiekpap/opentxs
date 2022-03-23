@@ -48,6 +48,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
@@ -581,7 +582,7 @@ auto Base::init() noexcept -> void
 
         const auto position = best->Position();
         LogVerbose()(print(chain_))(" chain initialized with best hash ")(
-            position.second->asHex())(" at height ")(position.first)
+            print(position))
             .Flush();
     }
 
@@ -1051,8 +1052,8 @@ auto Base::process_sync_data(network::zeromq::Message&& in) noexcept -> void
             std::max(state.Position().first, remote_chain_height_.load()));
     }
 
-    auto prior = block::BlankHash();
-    auto hashes = UnallocatedVector<block::pHash>{};
+    auto prior = block::Hash{};
+    auto hashes = UnallocatedVector<block::Hash>{};
     const auto accepted =
         header_.Internal().ProcessSyncData(prior, hashes, data);
 
@@ -1385,7 +1386,7 @@ auto Base::UpdateLocalHeight(const block::Position position) const noexcept
 
     const auto& [height, hash] = position;
     LogDetail()(print(chain_))(" block header chain updated to hash ")(
-        hash->asHex())(" at height ")(height)
+        print(position))
         .Flush();
     local_chain_height_.store(height);
     trigger();

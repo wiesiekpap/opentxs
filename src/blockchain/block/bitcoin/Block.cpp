@@ -31,7 +31,9 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
@@ -344,18 +346,13 @@ auto Block::calculate_merkle_row(
 auto Block::calculate_merkle_value(
     const api::Session& api,
     const Type chain,
-    const TxidIndex& txids) -> block::pHash
+    const TxidIndex& txids) -> block::Hash
 {
     using Hash = std::array<std::byte, 32>;
 
-    if (0 == txids.size()) {
-        constexpr auto blank = Hash{};
+    if (0 == txids.size()) { return {}; }
 
-        return api.Factory().DataFromBytes(ReadView{
-            reinterpret_cast<const char*>(blank.data()), blank.size()});
-    }
-
-    if (1 == txids.size()) { return api.Factory().Data(txids.at(0)); }
+    if (1 == txids.size()) { return reader(txids.at(0)); }
 
     auto a = UnallocatedVector<Hash>{};
     auto b = UnallocatedVector<Hash>{};
@@ -364,16 +361,14 @@ auto Block::calculate_merkle_value(
     auto counter{0};
     calculate_merkle_row(api, chain, txids, a);
 
-    if (1u == a.size()) { return api.Factory().DataFromBytes(reader(a.at(0))); }
+    if (1u == a.size()) { return reader(a.at(0)); }
 
     while (true) {
         const auto& src = (1 == (++counter % 2)) ? a : b;
         auto& dst = (0 == (counter % 2)) ? a : b;
         calculate_merkle_row(api, chain, src, dst);
 
-        if (1u == dst.size()) {
-            return api.Factory().DataFromBytes(reader(dst.at(0)));
-        }
+        if (1u == dst.size()) { return reader(dst.at(0)); }
     }
 }
 

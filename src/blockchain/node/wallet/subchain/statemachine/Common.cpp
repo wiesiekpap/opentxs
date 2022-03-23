@@ -11,17 +11,15 @@
 
 #include <cstring>
 #include <iterator>
+#include <type_traits>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -58,8 +56,10 @@ auto decode(
             return out;
         }();
         auto hash = [&] {
-            auto out = api.Factory().Data();
-            out->Assign(i, bytes - fixed);
+            auto out = block::Hash{};
+            const auto rc = out.Assign(i, bytes - fixed);
+
+            OT_ASSERT(rc);
 
             return out;
         }();
@@ -80,7 +80,7 @@ auto encode(
 
     for (const auto& [status, position] : in) {
         const auto& [height, hash] = position;
-        const auto size = fixed + hash->size();
+        const auto size = fixed + hash.size();  // TODO constexpr
         auto bytes = out.AppendBytes()(size);
 
         OT_ASSERT(bytes.valid(size));
@@ -90,7 +90,7 @@ auto encode(
         std::advance(i, sizeof(status));
         std::memcpy(i, &height, sizeof(height));
         std::advance(i, sizeof(height));
-        std::memcpy(i, hash->data(), hash->size());
+        std::memcpy(i, hash.data(), hash.size());
     }
 }
 
@@ -129,8 +129,10 @@ auto extract_dirty(
             return out;
         }();
         auto hash = [&] {
-            auto out = api.Factory().Data();
-            out->Assign(i, bytes - fixed);
+            auto out = block::Hash{};
+            const auto rc = out.Assign(i, bytes - fixed);
+
+            OT_ASSERT(rc);
 
             return out;
         }();

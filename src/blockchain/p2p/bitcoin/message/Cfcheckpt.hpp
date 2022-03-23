@@ -15,6 +15,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -91,7 +92,7 @@ public:
 
 private:
     const cfilter::Type type_;
-    const block::pHash stop_;
+    const block::Hash stop_;
     const Vector<cfilter::Header> payload_;
 
     using implementation::Message::payload;

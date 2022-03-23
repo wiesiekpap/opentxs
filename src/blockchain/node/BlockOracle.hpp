@@ -22,6 +22,8 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/core/Data.hpp"
@@ -127,7 +129,7 @@ private:
 
     using Promise = std::promise<BitcoinBlock_p>;
     using PendingData = std::tuple<Time, Promise, BitcoinBlockFuture, bool>;
-    using Pending = UnallocatedMap<block::pHash, PendingData>;
+    using Pending = UnallocatedMap<block::Hash, PendingData>;
 
     struct Cache {
         auto DownloadQueue() const noexcept -> std::size_t;
@@ -158,13 +160,13 @@ private:
             auto find(const ReadView& id) const noexcept -> BitcoinBlockFuture;
 
             auto clear() noexcept -> void;
-            auto push(block::pHash&& id, BitcoinBlockFuture&& future) noexcept
+            auto push(block::Hash&& id, BitcoinBlockFuture&& future) noexcept
                 -> void;
 
             Mem(const std::size_t limit) noexcept;
 
         private:
-            using CachedBlock = std::pair<block::pHash, BitcoinBlockFuture>;
+            using CachedBlock = std::pair<block::Hash, BitcoinBlockFuture>;
             using Completed = UnallocatedDeque<CachedBlock>;
             using Index =
                 boost::container::flat_map<ReadView, const CachedBlock*>;

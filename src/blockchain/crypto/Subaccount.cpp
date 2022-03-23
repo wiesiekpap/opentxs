@@ -23,10 +23,10 @@
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/key/HD.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Container.hpp"
@@ -97,7 +97,7 @@ Subaccount::AddressData::AddressData(
     bool contact) noexcept
     : type_(type)
     , set_contact_(contact)
-    , progress_(-1, block::BlankHash())
+    , progress_(-1, block::Hash{})
     , map_()
 {
 }
@@ -312,7 +312,7 @@ void Subaccount::process_unspent(
 
 auto Subaccount::ScanProgress(Subchain type) const noexcept -> block::Position
 {
-    static const auto blank = block::Position{-1, api_.Factory().Data()};
+    static const auto blank = block::Position{-1, block::Hash{}};
 
     return blank;
 }

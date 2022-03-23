@@ -19,6 +19,7 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"

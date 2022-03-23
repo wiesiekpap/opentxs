@@ -21,7 +21,6 @@
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
-#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
@@ -85,7 +84,7 @@ auto BitcoinP2PCfcheckpt(
 
     if (count > 0) {
         for (std::size_t i{0}; i < count; ++i) {
-            expectedSize += blockchain::cfilter::Header::payload_size;
+            expectedSize += blockchain::cfilter::Header::payload_size_;
 
             if (expectedSize > size) {
                 LogError()("opentxs::factory::")(__func__)(
@@ -97,8 +96,8 @@ auto BitcoinP2PCfcheckpt(
 
             headers.emplace_back(ReadView{
                 reinterpret_cast<const char*>(it),
-                blockchain::cfilter::Header::payload_size});
-            it += blockchain::cfilter::Header::payload_size;
+                blockchain::cfilter::Header::payload_size_});
+            it += blockchain::cfilter::Header::payload_size_;
         }
     }
 

@@ -10,7 +10,6 @@
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
 #include "integration/Helpers.hpp"
-#include "internal/blockchain/Params.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -26,6 +25,7 @@
 #include "opentxs/core/contract/ProtocolVersion.hpp"
 #include "opentxs/core/identifier/Type.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/network/p2p/Acknowledgement.hpp"
 #include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/network/p2p/Data.hpp"

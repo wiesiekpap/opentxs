@@ -11,9 +11,7 @@
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -45,20 +43,20 @@ auto BlockOracle::Cache::Mem::find(const ReadView& id) const noexcept
 }
 
 auto BlockOracle::Cache::Mem::push(
-    block::pHash&& id,
+    block::Hash&& id,
     BitcoinBlockFuture&& future) noexcept -> void
 {
-    if (0 == id->size()) { return; }
+    if (id.IsNull()) { return; }
 
     auto i = queue_.emplace(queue_.end(), std::move(id), std::move(future));
     const auto& item = *i;
-    const auto [j, added] = index_.try_emplace(item.first->Bytes(), &item);
+    const auto [j, added] = index_.try_emplace(item.first.Bytes(), &item);
 
     OT_ASSERT(added);
 
     while (queue_.size() > limit_) {
         const auto& item = queue_.front();
-        index_.erase(item.first->Bytes());
+        index_.erase(item.first.Bytes());
         queue_.pop_front();
     }
 }

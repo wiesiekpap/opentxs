@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <tuple>
 
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
@@ -43,7 +44,7 @@ namespace opentxs::blockchain::node
 class OPENTXS_EXPORT HeaderOracle
 {
 public:
-    using Hashes = Vector<block::pHash>;
+    using Hashes = Vector<block::Hash>;
     using Positions = UnallocatedVector<block::Position>;
 
     /// Throws std::out_of_range for invalid type
@@ -87,7 +88,7 @@ public:
         const block::Position& tip,
         const std::size_t limit = 0) const noexcept(false) -> Positions = 0;
     virtual auto BestHash(const block::Height height) const noexcept
-        -> block::pHash = 0;
+        -> block::Hash = 0;
     /** Returns best hash at specified height if the provides position is still
      *  in the best chain
      *
@@ -97,7 +98,7 @@ public:
      */
     virtual auto BestHash(
         const block::Height height,
-        const block::Position& check) const noexcept -> block::pHash = 0;
+        const block::Position& check) const noexcept -> block::Hash = 0;
     virtual auto BestHashes(
         const block::Height start,
         const std::size_t limit = 0,
@@ -151,7 +152,7 @@ public:
         -> std::unique_ptr<block::Header> = 0;
     virtual auto RecentHashes(
         alloc::Resource* alloc = alloc::System()) const noexcept -> Hashes = 0;
-    virtual auto Siblings() const noexcept -> UnallocatedSet<block::pHash> = 0;
+    virtual auto Siblings() const noexcept -> UnallocatedSet<block::Hash> = 0;
 
     virtual auto AddCheckpoint(
         const block::Height position,

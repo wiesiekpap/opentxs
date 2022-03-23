@@ -20,6 +20,7 @@
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
@@ -174,7 +175,7 @@ TEST_F(Regtest_fixture_hd, first_block)
         client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto blockHash = blockchain.HeaderOracle().BestHash(1);
 
-    ASSERT_FALSE(blockHash->empty());
+    ASSERT_FALSE(blockHash.IsNull());
 
     const auto pBlock = blockchain.BlockOracle().LoadBitcoin(blockHash).get();
 

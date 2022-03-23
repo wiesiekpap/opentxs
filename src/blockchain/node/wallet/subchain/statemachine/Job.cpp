@@ -21,10 +21,10 @@
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
@@ -212,10 +212,10 @@ auto Job::process_block(Message&& in) noexcept -> void
 
     if (parent_.chain_ != chain) { return; }
 
-    process_block(parent_.api_.Factory().Data(body.at(2)));
+    process_block(block::Hash{body.at(2).Bytes()});
 }
 
-auto Job::process_block(block::pHash&&) noexcept -> void
+auto Job::process_block(block::Hash&&) noexcept -> void
 {
     LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type").Flush();
 
@@ -236,9 +236,8 @@ auto Job::process_filter(Message&& in) noexcept -> void
 
     if (type != parent_.node_.FilterOracleInternal().DefaultType()) { return; }
 
-    process_filter(block::Position{
-        body.at(3).as<block::Height>(),
-        parent_.api_.Factory().Data(body.at(4))});
+    process_filter(
+        block::Position{body.at(3).as<block::Height>(), body.at(4).Bytes()});
 }
 
 auto Job::process_filter(block::Position&& tip) noexcept -> void
@@ -270,9 +269,8 @@ auto Job::process_process(Message&& in) noexcept -> void
 
     OT_ASSERT(2 < body.size());
 
-    process_process(block::Position{
-        body.at(1).as<block::Height>(),
-        parent_.api_.Factory().Data(body.at(2))});
+    process_process(
+        block::Position{body.at(1).as<block::Height>(), body.at(2).Bytes()});
 }
 
 auto Job::process_process(block::Position&&) noexcept -> void

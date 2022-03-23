@@ -49,7 +49,7 @@ public:
             if (first != current) {
                 auto promise = std::promise<cfilter::Header>{};
                 auto cfheader =
-                    db_.LoadFilterHeader(type_, first.second->Bytes());
+                    db_.LoadFilterHeader(type_, first.second.Bytes());
 
                 OT_ASSERT(false == cfheader.IsNull());
 
@@ -77,7 +77,7 @@ public:
                   auto promise = std::promise<cfilter::Header>{};
                   const auto tip = db.FilterTip(type);
                   promise.set_value(
-                      db.LoadFilterHeader(type, tip.second->Bytes()));
+                      db.LoadFilterHeader(type, tip.second.Bytes()));
 
                   return Finished{promise.get_future()};
               }(),
@@ -188,7 +188,7 @@ private:
         OT_ASSERT(3 < body.size());
 
         auto position = Position{
-            body.at(1).as<block::Height>(), api_.Factory().Data(body.at(2))};
+            body.at(1).as<block::Height>(), block::Hash{body.at(2).Bytes()}};
         auto promise = std::promise<cfilter::Header>{};
         promise.set_value(body.at(3).Bytes());
         Reset(position, promise.get_future());
@@ -197,24 +197,22 @@ private:
     {
         if (0 == data.size()) { return; }
 
-        auto filters = Vector<internal::FilterDatabase::Filter>{};
+        auto filters = Vector<internal::FilterDatabase::CFilterParams>{};
 
         for (const auto& task : data) {
             const auto& priorCfheader = task->previous_.get();
             auto& gcs =
                 const_cast<std::unique_ptr<const GCS>&>(task->data_.get());
-            const auto block = task->position_.second->Bytes();
-            const auto expected = db_.LoadFilterHash(type_, block);
+            const auto& block = task->position_.second;
+            const auto expected = db_.LoadFilterHash(type_, block.Bytes());
 
             if (expected == gcs->Hash()) {
                 task->process(gcs->Header(priorCfheader));
                 filters.emplace_back(block, gcs.release());
             } else {
-                LogError()("Filter for block ")(
-                    task->position_.second->asHex())(" at height ")(
-                    task->position_.first)(
+                LogError()("Filter for block ")(print(task->position_))(
                     " does not match header. Received: ")(gcs->Hash().asHex())(
-                    " expected: ")(expected->asHex())
+                    " expected: ")(expected.asHex())
                     .Flush();
                 task->redownload();
                 break;

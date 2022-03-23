@@ -86,6 +86,7 @@ class Transaction;
 }  // namespace bitcoin
 
 class Block;
+class Hash;
 class Header;
 }  // namespace block
 }  // namespace blockchain

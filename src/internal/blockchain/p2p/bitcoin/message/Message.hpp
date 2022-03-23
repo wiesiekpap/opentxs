@@ -24,6 +24,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
@@ -120,7 +121,7 @@ struct FilterPrefixBasic {
     ClientFilterTypeField type_;
     HashField hash_;
 
-    auto Hash() const noexcept -> block::pHash;
+    auto Hash() const noexcept -> block::Hash;
     auto Type(const blockchain::Type chain) const noexcept -> cfilter::Type;
 
     FilterPrefixBasic(
@@ -135,7 +136,7 @@ struct FilterPrefixChained {
     HashField previous_;
 
     auto Previous() const noexcept -> cfilter::Header;
-    auto Stop() const noexcept -> block::pHash;
+    auto Stop() const noexcept -> block::Hash;
     auto Type(const blockchain::Type chain) const noexcept -> cfilter::Type;
 
     FilterPrefixChained(
@@ -151,7 +152,7 @@ struct FilterRequest {
     HashField stop_;
 
     auto Start() const noexcept -> block::Height;
-    auto Stop() const noexcept -> block::pHash;
+    auto Stop() const noexcept -> block::Hash;
     auto Type(const blockchain::Type chain) const noexcept -> cfilter::Type;
 
     FilterRequest(
@@ -295,7 +296,7 @@ struct Getheaders : virtual public bitcoin::Message {
     virtual auto begin() const noexcept -> const_iterator = 0;
     virtual auto end() const noexcept -> const_iterator = 0;
     virtual auto size() const noexcept -> std::size_t = 0;
-    virtual auto StopHash() const noexcept -> block::pHash = 0;
+    virtual auto StopHash() const noexcept -> block::Hash = 0;
     virtual auto Version() const noexcept -> ProtocolVersionUnsigned = 0;
 
     ~Getheaders() override = default;
@@ -615,8 +616,8 @@ auto BitcoinP2PGetheaders(
     const api::Session& api,
     const blockchain::Type network,
     const blockchain::p2p::bitcoin::ProtocolVersionUnsigned version,
-    Vector<blockchain::block::pHash>&& history,
-    blockchain::block::pHash&& stop)
+    Vector<blockchain::block::Hash>&& history,
+    const blockchain::block::Hash& stop)
     -> blockchain::p2p::bitcoin::message::internal::Getheaders*;
 auto BitcoinP2PHeaders(
     const api::Session& api,

@@ -11,13 +11,11 @@
 #include <cstring>
 #include <iterator>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "internal/util/Mutex.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::blockchain::database::wallet::db
@@ -29,7 +27,7 @@ Position::Position(const block::Position& position) noexcept
         auto* it = reinterpret_cast<std::byte*>(out.data());
         std::memcpy(it, &height, sizeof(height));
         std::advance(it, sizeof(height));
-        std::memcpy(it, hash->data(), hash->size());
+        std::memcpy(it, hash.data(), hash.size());
 
         return out;
     }())
@@ -54,9 +52,7 @@ auto Position::Decode(const api::Session& api) const noexcept
 {
     auto lock = Lock{lock_};
 
-    if (false == position_.has_value()) {
-        position_.emplace(Height(), api.Factory().DataFromBytes(Hash()));
-    }
+    if (false == position_.has_value()) { position_.emplace(Height(), Hash()); }
 
     return position_.value();
 }

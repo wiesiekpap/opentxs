@@ -5,12 +5,12 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "Helpers.hpp"
-#include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/core/Data.hpp"
 
 namespace ottest
 {
@@ -26,7 +26,7 @@ TEST_F(Test_HeaderOracle, add_checkpoint_disconnected)
     const auto [height, hash] = header_oracle_.GetCheckpoint();
 
     EXPECT_EQ(height, 2);
-    EXPECT_EQ(hash->asHex(), get_block_hash(BLOCK_9)->asHex());
+    EXPECT_EQ(hash.asHex(), get_block_hash(BLOCK_9).asHex());
     EXPECT_TRUE(verify_post_state(post_state_9_));
     EXPECT_TRUE(verify_best_chain(best_chain_9_));
     EXPECT_TRUE(verify_siblings(siblings_9_));

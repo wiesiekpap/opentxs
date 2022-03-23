@@ -31,13 +31,13 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/blockchain/node/TxoTag.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
@@ -160,7 +160,7 @@ auto BitcoinTransactionOutput(
                 if (const auto& hash = in.mined_block(); 0 < hash.size()) {
 
                     return std::make_pair(
-                        in.mined_height(), api.Factory().DataFromBytes(hash));
+                        in.mined_height(), blockchain::block::Hash{hash});
                 } else {
 
                     return make_blank<blockchain::block::Position>::value(api);
@@ -564,7 +564,7 @@ auto Output::Serialize(SerializeType& out) const noexcept -> bool
 
     if (const auto& [height, hash] = cache_.position(); 0 <= height) {
         out.set_mined_height(height);
-        out.set_mined_block(hash->data(), hash->size());
+        out.set_mined_block(hash.data(), hash.size());
     }
 
     if (auto state = cache_.state(); node::TxoState::Error != state) {

@@ -25,6 +25,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/display/Definition.hpp"
@@ -255,7 +256,7 @@ auto GCS(
     const ReadView key,
     const ReadView encoded) noexcept -> std::unique_ptr<blockchain::GCS>;
 #endif  // OT_BLOCKCHAIN
-auto NumericHash(const blockchain::block::Hash& hash) noexcept
+auto NumericHash(const Data& hash) noexcept
     -> std::unique_ptr<blockchain::NumericHash>;
 auto NumericHashNBits(const std::uint32_t nBits) noexcept
     -> std::unique_ptr<blockchain::NumericHash>;

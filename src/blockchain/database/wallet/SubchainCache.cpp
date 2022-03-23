@@ -23,7 +23,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
-#include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
@@ -64,12 +64,7 @@ auto SubchainCache::AddMatch(
     MDB_txn* tx) noexcept -> bool
 {
     try {
-        const auto hash = [&] {
-            auto out = api_.Factory().Data();
-            out->Assign(key);
-
-            return out;
-        }();
+        const auto hash = block::Hash{key};
         auto lock = boost::unique_lock<Mutex>{match_index_lock_};
         auto& index = match_index_[hash];
         auto [it, added] = index.emplace(value);
@@ -371,12 +366,7 @@ auto SubchainCache::load_match_index(const ReadView key) noexcept
 {
     auto lock = boost::upgrade_lock<Mutex>{match_index_lock_};
     auto& map = match_index_;
-    const auto hash = [&] {
-        auto out = api_.Factory().Data();
-        out->Assign(key);
-
-        return out;
-    }();
+    const auto hash = block::Hash{key};
 
     if (auto it = map.find(hash); map.end() != it) { return it->second; }
 

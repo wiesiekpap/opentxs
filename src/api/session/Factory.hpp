@@ -30,6 +30,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/Header.hpp"
 #endif  // OT_BLOCKCHAIN

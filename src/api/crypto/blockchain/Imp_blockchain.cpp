@@ -31,6 +31,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -463,7 +464,7 @@ auto BlockchainImp::ReportScan(
     OT_ASSERT(false == id.empty());
 
     const auto bytes = id.Bytes();
-    const auto hash = progress.second->Bytes();
+    const auto hash = progress.second.Bytes();
     scan_updates_->Send([&] {
         auto work = opentxs::network::zeromq::tagged_message(
             WorkType::BlockchainWalletScanProgress);

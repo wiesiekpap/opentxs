@@ -14,6 +14,7 @@
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/Timer.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
@@ -26,6 +27,11 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
+namespace block
+{
+class Hash;
+}  // namespace block
+
 namespace node
 {
 namespace wallet
@@ -109,7 +115,7 @@ private:
     auto transition_state_shutdown() noexcept -> void;
 
     virtual auto do_startup() noexcept -> void = 0;
-    virtual auto process_block(block::pHash&& block) noexcept -> void;
+    virtual auto process_block(block::Hash&& block) noexcept -> void;
     virtual auto process_key(Message&& in) noexcept -> void;
     virtual auto process_filter(block::Position&& tip) noexcept -> void;
     virtual auto process_mempool(Message&& in) noexcept -> void;

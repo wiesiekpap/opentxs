@@ -85,7 +85,7 @@ auto BitcoinP2PCfheaders(
 
     if (count > 0) {
         for (std::size_t i{0}; i < count; ++i) {
-            expectedSize += blockchain::cfilter::Hash::payload_size;
+            expectedSize += blockchain::cfilter::Hash::payload_size_;
 
             if (expectedSize > size) {
                 LogError()("opentxs::factory::")(__func__)(
@@ -97,8 +97,8 @@ auto BitcoinP2PCfheaders(
 
             hashes.emplace_back(ReadView{
                 reinterpret_cast<const char*>(it),
-                blockchain::cfilter::Hash::payload_size});
-            it += blockchain::cfilter::Hash::payload_size;
+                blockchain::cfilter::Hash::payload_size_});
+            it += blockchain::cfilter::Hash::payload_size_;
         }
     }
 

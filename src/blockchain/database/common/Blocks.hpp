@@ -14,6 +14,7 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
@@ -53,7 +54,7 @@ class Blocks
 {
 public:
     using Hash = opentxs::blockchain::block::Hash;
-    using pHash = opentxs::blockchain::block::pHash;
+    using pHash = opentxs::blockchain::block::Hash;
 
     auto Exists(const Hash& block) const noexcept -> bool;
     auto Load(const Hash& block) const noexcept -> BlockReader;

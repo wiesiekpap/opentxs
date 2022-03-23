@@ -89,7 +89,7 @@ struct FilterOracle::SyncClientFilterData {
     const block::Hash& block_hash_;
     const network::p2p::Block& incoming_data_;
     cfilter::Hash filter_hash_;
-    internal::FilterDatabase::Filter& filter_data_;
+    internal::FilterDatabase::CFilterParams& filter_data_;
     internal::FilterDatabase::CFHeaderParams& header_data_;
     Outstanding& job_counter_;
     Future previous_header_;
@@ -98,7 +98,7 @@ struct FilterOracle::SyncClientFilterData {
     SyncClientFilterData(
         const block::Hash& block,
         const network::p2p::Block& data,
-        internal::FilterDatabase::Filter& filter,
+        internal::FilterDatabase::CFilterParams& filter,
         internal::FilterDatabase::CFHeaderParams& header,
         Outstanding& jobCounter,
         Future&& previous) noexcept
@@ -259,7 +259,7 @@ auto FilterOracle::compare_tips_to_checkpoint() noexcept -> void
 
         checkPosition = block::Position{cpHeight, header_.BestHash(cpHeight)};
         const auto existingHeader = database_.LoadFilterHeader(
-            default_type_, checkPosition.second->Bytes());
+            default_type_, checkPosition.second.Bytes());
 
         try {
             const auto& cpHeader = i->second.at(default_type_);
@@ -364,7 +364,7 @@ auto FilterOracle::LoadFilterOrResetTip(
     const auto parent = height - 1;
     const auto hash = header_.BestHash(parent);
 
-    OT_ASSERT(false == hash->empty());
+    OT_ASSERT(false == hash.IsNull());
 
     reset_tips_to(type, block::Position{parent, hash}, false, true);
 
@@ -416,11 +416,10 @@ auto FilterOracle::ProcessBlock(
 {
     const auto& id = block.ID();
     const auto& header = block.Header();
-    auto filters = Vector<internal::FilterDatabase::Filter>{};
+    auto filters = Vector<internal::FilterDatabase::CFilterParams>{};
     auto headers = Vector<internal::FilterDatabase::CFHeaderParams>{};
     const auto& pGCS =
-        filters.emplace_back(id.Bytes(), process_block(default_type_, block))
-            .second;
+        filters.emplace_back(id, process_block(default_type_, block)).second;
 
     if (false == bool(pGCS)) {
         LogError()(OT_PRETTY_CLASS())("Failed to calculate ")(print(chain_))(
@@ -481,7 +480,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
         auto& [blockHashView, pGCS] = data.filter_data_;
         auto& [blockHash, filterHeader, filterHashView] = data.header_data_;
         blockHash = block;
-        blockHashView = blockHash->Bytes();
+        blockHashView = blockHash.Bytes();
         const auto pBlock = task.data_.get();
 
         if (false == bool(pBlock)) {
@@ -491,7 +490,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
 
             throw std::runtime_error(
                 UnallocatedCString{"failed to load block "} +
-                blockHash->asHex());
+                blockHash.asHex());
         }
 
         pGCS = process_block(data.type_, *pBlock);
@@ -509,7 +508,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
         LogTrace()(OT_PRETTY_CLASS())("Finished calculating cfilter for ")(
             print(chain_))(" block at height ")(height)
             .Flush();
-        filterHashView = data.filter_hash_.Bytes();
+        filterHashView = data.filter_hash_;
     } catch (...) {
         task.process(std::current_exception());
     }
@@ -517,10 +516,10 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
 
 auto FilterOracle::ProcessSyncData(
     const block::Hash& prior,
-    const UnallocatedVector<block::pHash>& hashes,
+    const UnallocatedVector<block::Hash>& hashes,
     const network::p2p::Data& data) const noexcept -> void
 {
-    auto filters = Vector<internal::FilterDatabase::Filter>{};
+    auto filters = Vector<internal::FilterDatabase::CFilterParams>{};
     auto headers = Vector<internal::FilterDatabase::CFHeaderParams>{};
     auto cache = UnallocatedVector<SyncClientFilterData>{};
     const auto& blocks = data.Blocks();
@@ -593,15 +592,11 @@ auto FilterOracle::ProcessSyncData(
                 return output;
             }
         }();
-        static const auto blankHash = cfilter::Hash();
-        static const auto blankCfheader = cfilter::Header{};
-        static const auto blankView = ReadView{};
         auto first{true};
 
         for (auto i = std::size_t{0u}; i < count; ++i) {
-            auto& filter = filters.emplace_back(blankView, nullptr);
-            auto& header =
-                headers.emplace_back(blankHash, blankCfheader, blankView);
+            auto& filter = filters.emplace_back();
+            auto& header = headers.emplace_back();
             auto& job = cache.emplace_back(
                 hashes.at(i), blocks.at(i), filter, header, jobCounter, [&] {
                     if (first) {
@@ -677,7 +672,7 @@ auto FilterOracle::ProcessSyncData(SyncClientFilterData& data) const noexcept
         auto& [blockHashView, pGCS] = data.filter_data_;
         auto& [blockHash, filterHeader, filterHashView] = data.header_data_;
         blockHash = block;
-        blockHashView = blockHash->Bytes();
+        blockHashView = blockHash.Bytes();
         const auto params = blockchain::internal::GetFilterParams(type);
         pGCS = factory::GCS(
             api_,

@@ -25,11 +25,10 @@
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainFilterHeader.pb.h"
 #include "serialization/protobuf/GCS.pb.h"
 #include "util/ByteLiterals.hpp"
@@ -121,7 +120,7 @@ auto BlockFilter::LoadFilter(const cfilter::Type type, const ReadView blockHash)
 
 auto BlockFilter::LoadFilters(
     const cfilter::Type type,
-    const Vector<block::pHash>& blocks) const noexcept
+    const Vector<block::Hash>& blocks) const noexcept
     -> Vector<std::unique_ptr<const GCS>>
 {
     auto output = Vector<std::unique_ptr<const GCS>>{blocks.get_allocator()};
@@ -139,7 +138,7 @@ auto BlockFilter::LoadFilters(
         for (const auto& hash : blocks) {
             try {
                 auto& index = out.emplace_back();
-                load_filter_index(type, hash->Bytes(), tx, index);
+                load_filter_index(type, hash.Bytes(), tx, index);
             } catch (const std::exception& e) {
                 LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
                 out.pop_back();
@@ -302,7 +301,7 @@ auto BlockFilter::StoreFilterHeaders(
 
         try {
             const auto stored = lmdb_.Store(
-                translate_header(type), block->Bytes(), reader(bytes), tx);
+                translate_header(type), block.Bytes(), reader(bytes), tx);
 
             if (false == stored.first) { return false; }
         } catch (const std::exception& e) {
@@ -317,7 +316,7 @@ auto BlockFilter::StoreFilterHeaders(
 
 auto BlockFilter::StoreFilters(
     const cfilter::Type type,
-    Vector<FilterData>& filters) const noexcept -> bool
+    const Vector<CFilterParams>& filters) const noexcept -> bool
 {
     auto tx = lmdb_.TransactionRW();
     auto lock = Lock{bulk_.Mutex()};
@@ -327,7 +326,9 @@ auto BlockFilter::StoreFilters(
 
         const auto& filter = *pFilter;
 
-        if (false == store(lock, tx, block, type, filter)) { return false; }
+        if (false == store(lock, tx, block.Bytes(), type, filter)) {
+            return false;
+        }
     }
 
     return tx.Finalize(true);
@@ -336,7 +337,7 @@ auto BlockFilter::StoreFilters(
 auto BlockFilter::StoreFilters(
     const cfilter::Type type,
     const Vector<CFHeaderParams>& headers,
-    const Vector<FilterData>& filters) const noexcept -> bool
+    const Vector<CFilterParams>& filters) const noexcept -> bool
 {
     try {
         if (headers.size() != filters.size()) {
@@ -381,7 +382,7 @@ auto BlockFilter::StoreFilters(
                         google::protobuf::Arena::Create<proto::GCS>(&arena),
                         0,
                         BulkIndex{});
-                bHash = std::get<0>(*h)->Bytes();
+                bHash = std::get<0>(*h).Bytes();
                 const auto* cfheaderProto = [&] {
                     const auto& [block, header, hash] = *h;
                     auto* proto = google::protobuf::Arena::Create<

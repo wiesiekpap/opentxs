@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
-#include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "blockchain/DownloadTask.hpp"
@@ -47,7 +47,9 @@
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
@@ -56,6 +58,7 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/p2p/Peer.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -597,7 +600,7 @@ auto Peer::process_cfheaders(
         if (filterHash != receivedFilterHeader) {
             LogVerbose()(OT_PRETTY_CLASS())("Unexpected filter header: ")(
                 receivedFilterHeader.asHex())(". Expected: ")(
-                filterHash->asHex())
+                filterHash.asHex())
                 .Flush();
 
             return;
@@ -1148,7 +1151,8 @@ auto Peer::process_getdata(
             } break;
             case Type::MsgBlock: {
                 const auto& oracle = network_.BlockOracle();
-                auto future = oracle.LoadBitcoin(inv.hash_);
+                auto future =
+                    oracle.LoadBitcoin(block::Hash{inv.hash_->Bytes()});
                 const auto have =
                     std::future_status::ready == future.wait_for(0ms);
 
@@ -1307,7 +1311,7 @@ auto Peer::process_headers(
         if (checkpointHash != receivedBlockHash) {
             LogVerbose()(OT_PRETTY_CLASS())("Unexpected block header hash: ")(
                 receivedBlockHash.asHex())(". Expected: ")(
-                checkpointHash->asHex())
+                checkpointHash.asHex())
                 .Flush();
 
             return;
@@ -1378,7 +1382,7 @@ auto Peer::process_inv(
         switch (inv.type_) {
             case Type::MsgBlock:
             case Type::MsgWitnessBlock: {
-                request_headers(hash);
+                request_headers(block::Hash{hash.Bytes()});
             } break;
             case Type::MsgTx:
             case Type::MsgWitnessTx: {
@@ -2063,7 +2067,9 @@ auto Peer::request_checkpoint_filter_header() noexcept -> void
 
 auto Peer::request_headers() noexcept -> void
 {
-    request_headers(api_.Factory().Data());
+    static const auto blank = block::Hash{};
+
+    request_headers(blank);
 }
 
 auto Peer::request_headers(const block::Hash& hash) noexcept -> void

@@ -7,8 +7,44 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
+#include <functional>
+#include <string_view>
+
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
+
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+// inline namespace v1
+// {
+namespace blockchain
+{
+namespace cfilter
+{
+class Hash;
+}  // namespace cfilter
+}  // namespace blockchain
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
+
+namespace std
+{
+template <>
+struct OPENTXS_EXPORT hash<opentxs::blockchain::cfilter::Hash> {
+    auto operator()(const opentxs::blockchain::cfilter::Hash& data)
+        const noexcept -> std::size_t;
+};
+
+template <>
+struct OPENTXS_EXPORT less<opentxs::blockchain::cfilter::Hash> {
+    auto operator()(
+        const opentxs::blockchain::cfilter::Hash& lhs,
+        const opentxs::blockchain::cfilter::Hash& rhs) const noexcept -> bool;
+};
+}  // namespace std
 
 namespace opentxs::blockchain::cfilter
 {

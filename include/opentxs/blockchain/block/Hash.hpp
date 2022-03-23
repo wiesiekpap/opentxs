@@ -21,10 +21,10 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
-namespace cfilter
+namespace block
 {
-class Header;
-}  // namespace cfilter
+class Hash;
+}  // namespace block
 }  // namespace blockchain
 // }  // namespace v1
 }  // namespace opentxs
@@ -33,29 +33,29 @@ class Header;
 namespace std
 {
 template <>
-struct OPENTXS_EXPORT hash<opentxs::blockchain::cfilter::Header> {
-    auto operator()(const opentxs::blockchain::cfilter::Header& data)
-        const noexcept -> std::size_t;
+struct OPENTXS_EXPORT hash<opentxs::blockchain::block::Hash> {
+    auto operator()(const opentxs::blockchain::block::Hash& data) const noexcept
+        -> std::size_t;
 };
 
 template <>
-struct OPENTXS_EXPORT less<opentxs::blockchain::cfilter::Header> {
+struct OPENTXS_EXPORT less<opentxs::blockchain::block::Hash> {
     auto operator()(
-        const opentxs::blockchain::cfilter::Header& lhs,
-        const opentxs::blockchain::cfilter::Header& rhs) const noexcept -> bool;
+        const opentxs::blockchain::block::Hash& lhs,
+        const opentxs::blockchain::block::Hash& rhs) const noexcept -> bool;
 };
 }  // namespace std
 
-namespace opentxs::blockchain::cfilter
+namespace opentxs::blockchain::block
 {
-class Header : virtual public FixedByteArray<32>
+class Hash : virtual public FixedByteArray<32>
 {
 public:
-    Header() noexcept;
-    Header(const ReadView bytes) noexcept(false);
-    Header(const Header& rhs) noexcept;
-    auto operator=(const Header& rhs) noexcept -> Header&;
+    Hash() noexcept;
+    Hash(const ReadView bytes) noexcept(false);
+    Hash(const Hash& rhs) noexcept;
+    auto operator=(const Hash& rhs) noexcept -> Hash&;
 
-    ~Header() override;
+    ~Hash() override;
 };
-}  // namespace opentxs::blockchain::cfilter
+}  // namespace opentxs::blockchain::block

@@ -9,22 +9,21 @@
 #include "Helpers.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
 {
 TEST_F(Test_HeaderOracle, test_block_serialization)
 {
-    const auto empty = ot::Data::Factory();
+    const auto empty = ot::blockchain::block::Hash();
 
     ASSERT_TRUE(make_test_block(BLOCK_1, empty));
 
     const auto hash1 = get_block_hash(BLOCK_1);
 
-    EXPECT_FALSE(hash1->empty());
+    EXPECT_FALSE(hash1.IsNull());
 
     auto header = get_test_block(BLOCK_1);
 
@@ -44,7 +43,7 @@ TEST_F(Test_HeaderOracle, test_block_serialization)
 
     const auto hash2 = get_block_hash(BLOCK_2);
 
-    EXPECT_FALSE(hash2->empty());
+    EXPECT_FALSE(hash2.IsNull());
 
     header = get_test_block(BLOCK_2);
 

@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <memory>
 #include <random>
-#include <type_traits>
 #include <utility>
 
 #include "Helpers.hpp"

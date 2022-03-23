@@ -5,7 +5,6 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <type_traits>
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
 #include "Helpers.hpp"
@@ -16,6 +15,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/NumericHash.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
@@ -100,7 +100,7 @@ TEST_F(Test_BlockHeader, btc_genesis_block_header)
 
     const auto [height, hash] = header.Position();
 
-    EXPECT_EQ(header.Hash(), hash.get());
+    EXPECT_EQ(header.Hash(), hash);
     EXPECT_EQ(header.Height(), height);
 }
 
@@ -136,7 +136,7 @@ TEST_F(Test_BlockHeader, ltc_genesis_block_header)
 
     const auto [height, hash] = header.Position();
 
-    EXPECT_EQ(header.Hash(), hash.get());
+    EXPECT_EQ(header.Hash(), hash);
     EXPECT_EQ(header.Height(), height);
 }
 

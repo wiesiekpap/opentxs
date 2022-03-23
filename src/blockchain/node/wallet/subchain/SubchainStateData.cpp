@@ -34,6 +34,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
@@ -43,7 +44,6 @@
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -305,8 +305,7 @@ auto SubchainStateData::do_reorg(
     std::atomic_int& errors,
     const block::Position ancestor) noexcept -> void
 {
-    log_(OT_PRETTY_CLASS())(name_)(" processing reorg to ")(
-        ancestor.second->asHex())(" at height ")(ancestor.first)
+    log_(OT_PRETTY_CLASS())(name_)(" processing reorg to ")(print(ancestor))
         .Flush();
     const auto tip = db_.SubchainLastScanned(db_key_);
     // TODO use ancestor
@@ -347,8 +346,8 @@ auto SubchainStateData::do_reorg(
         }
     } catch (...) {
         LogError()(OT_PRETTY_CLASS())(
-            name_)(" header oracle claims existing tip ")(tip.second->asHex())(
-            " at height ")(tip.first)(" is invalid")
+            name_)(" header oracle claims existing tip ")(print(tip))(
+            " is invalid")
             .Flush();
         ++errors;
     }
@@ -541,7 +540,7 @@ auto SubchainStateData::ProcessBlock(
     const auto& type = filter_type_;
     const auto& node = node_;
     const auto& filters = node.FilterOracleInternal();
-    const auto& blockHash = position.second.get();
+    const auto& blockHash = position.second;
     auto matches = Indices{};
     auto buf = std::array<std::byte, 16_KiB>{};
     auto alloc = alloc::BoostMonotonic{
@@ -584,7 +583,7 @@ auto SubchainStateData::ProcessBlock(
     const auto handledMatches = Clock::now();
     const auto db = db_.SubchainMatchBlock(db_key_, [&] {
         auto out = UnallocatedVector<std::pair<ReadView, Indices>>{};
-        out.emplace_back(position.second->Bytes(), [&] {
+        out.emplace_back(position.second.Bytes(), [&] {
             auto out = Indices{};
 
             for (const auto& [id, element] : potential) {
@@ -734,7 +733,7 @@ auto SubchainStateData::scan(
     // TODO adjust this once Data and GCS are allocator aware
     static constexpr auto allocBytes =
         (scan_batch_ *
-         (sizeof(block::pHash) + sizeof(std::unique_ptr<const GCS>))) +
+         (sizeof(block::Hash) + sizeof(std::unique_ptr<const GCS>))) +
         4_KiB;
     auto alloc = alloc::BoostMonotonic{allocBytes, upstream};
     const auto targets = get_account_targets(&alloc);
@@ -751,7 +750,7 @@ auto SubchainStateData::scan(
     auto i = startHeight;
 
     for (auto end = cfilters.end(); f != end; ++f, ++b, ++i) {
-        const auto& blockHash = b->get();
+        const auto& blockHash = *b;
         const auto& pFilter = *f;
         auto testPosition = block::Position{i, blockHash};
 

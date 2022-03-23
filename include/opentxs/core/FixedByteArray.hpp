@@ -22,7 +22,7 @@ template <std::size_t N>
 class OPENTXS_EXPORT FixedByteArray : virtual public Data
 {
 public:
-    static constexpr auto payload_size = std::size_t{N};
+    static constexpr auto payload_size_ = std::size_t{N};
 
     auto asHex() const -> UnallocatedCString override;
     auto asHex(alloc::Resource* alloc) const -> CString override;
@@ -32,7 +32,7 @@ public:
     auto cbegin() const -> const_iterator final;
     auto cend() const -> const_iterator final;
     auto data() const -> const void* final;
-    auto empty() const -> bool final;
+    auto empty() const -> bool final { return false; }
     auto end() const -> const_iterator final;
     [[nodiscard]] auto Extract(
         const std::size_t amount,
@@ -47,8 +47,8 @@ public:
     [[nodiscard]] auto Extract(std::uint64_t& output, const std::size_t pos = 0)
         const -> bool final;
     auto GetPointer() const -> const void* final;
-    auto GetSize() const -> std::size_t final;
-    auto IsEmpty() const -> bool final;
+    auto GetSize() const -> std::size_t final { return N; }
+    auto IsEmpty() const -> bool final { return false; }
     auto IsNull() const -> bool final;
     auto operator==(const Data& rhs) const noexcept -> bool final;
     auto operator!=(const Data& rhs) const noexcept -> bool final;
@@ -56,7 +56,7 @@ public:
     auto operator>(const Data& rhs) const noexcept -> bool final;
     auto operator<=(const Data& rhs) const noexcept -> bool final;
     auto operator>=(const Data& rhs) const noexcept -> bool final;
-    auto size() const -> std::size_t final;
+    auto size() const -> std::size_t final { return N; }
     auto str() const -> UnallocatedCString override;
     auto str(alloc::Resource* alloc) const -> CString override;
 
@@ -67,10 +67,15 @@ public:
     auto at(const std::size_t position) -> std::byte& final;
     auto begin() -> iterator final;
     auto clear() noexcept -> void final;
-    [[nodiscard]] auto Concatenate(const ReadView data) noexcept -> bool final;
-    [[nodiscard]] auto Concatenate(
-        const void* data,
-        const std::size_t size) noexcept -> bool final;
+    [[nodiscard]] auto Concatenate(const ReadView) noexcept -> bool final
+    {
+        return false;
+    }
+    [[nodiscard]] auto Concatenate(const void*, const std::size_t) noexcept
+        -> bool final
+    {
+        return false;
+    }
     auto data() -> void* final;
     [[nodiscard]] auto DecodeHex(const ReadView hex) -> bool final;
     auto end() -> iterator final;
@@ -87,8 +92,11 @@ public:
     [[nodiscard]] auto operator+=(const std::uint64_t rhs) noexcept(false)
         -> FixedByteArray& final;
     [[nodiscard]] auto Randomize(const std::size_t size) -> bool final;
-    [[nodiscard]] auto resize(const std::size_t size) -> bool final;
-    [[nodiscard]] auto SetSize(const std::size_t size) -> bool final;
+    [[nodiscard]] auto resize(const std::size_t) -> bool final { return false; }
+    [[nodiscard]] auto SetSize(const std::size_t) -> bool final
+    {
+        return false;
+    }
     auto WriteInto() noexcept -> AllocateOutput final;
     auto zeroMemory() -> void final;
 

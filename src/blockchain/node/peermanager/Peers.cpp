@@ -287,6 +287,8 @@ auto PeerManager::Peers::get_default_peer() const noexcept -> Endpoint
 
 auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
 {
+    if (api_.GetOptions().TestMode()) { return {}; }
+
     try {
         const auto& data = params::Data::Chains().at(chain_);
         const auto& dns = data.dns_seeds_;

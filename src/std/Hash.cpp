@@ -17,11 +17,15 @@
 #include "internal/crypto/Parameters.hpp"
 #include "internal/network/zeromq/message/FrameIterator.hpp"
 #include "internal/serialization/protobuf/Contact.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
-#include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -37,6 +41,21 @@
 
 namespace std
 {
+auto hash<opentxs::blockchain::block::Hash>::operator()(
+    const opentxs::blockchain::block::Hash& data) const noexcept -> std::size_t
+{
+    // NOTE block hashes are cryptographic so no further hashing is required
+
+    auto out = std::size_t{};
+
+    static_assert(
+        sizeof(out) <= opentxs::blockchain::block::Hash::payload_size_);
+
+    std::memcpy(&out, data.data(), sizeof(out));
+
+    return out;
+}
+
 #if OT_BLOCKCHAIN
 auto hash<opentxs::blockchain::block::Outpoint>::operator()(
     const opentxs::blockchain::block::Outpoint& data) const noexcept
@@ -56,12 +75,44 @@ auto hash<opentxs::blockchain::block::Position>::operator()(
     -> std::size_t
 {
     const auto& [height, hash] = data;
-    const auto bytes = hash->Bytes();
+    const auto bytes = hash.Bytes();
 
     return opentxs::crypto::sodium::Siphash(
         opentxs::crypto::sodium::MakeSiphashKey(
             {reinterpret_cast<const char*>(&height), sizeof(height)}),
         {bytes.data(), std::min(bytes.size(), sizeof(std::size_t))});
+}
+
+auto hash<opentxs::blockchain::cfilter::Hash>::operator()(
+    const opentxs::blockchain::cfilter::Hash& data) const noexcept
+    -> std::size_t
+{
+    // NOTE cfilter hashes are cryptographic so no further hashing is required
+
+    auto out = std::size_t{};
+
+    static_assert(
+        sizeof(out) <= opentxs::blockchain::cfilter::Hash::payload_size_);
+
+    std::memcpy(&out, data.data(), sizeof(out));
+
+    return out;
+}
+
+auto hash<opentxs::blockchain::cfilter::Header>::operator()(
+    const opentxs::blockchain::cfilter::Header& data) const noexcept
+    -> std::size_t
+{
+    // NOTE cfheaders are cryptographic so no further hashing is required
+
+    auto out = std::size_t{};
+
+    static_assert(
+        sizeof(out) <= opentxs::blockchain::cfilter::Header::payload_size_);
+
+    std::memcpy(&out, data.data(), sizeof(out));
+
+    return out;
 }
 
 #if OT_BLOCKCHAIN

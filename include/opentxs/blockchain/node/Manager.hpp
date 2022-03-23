@@ -9,6 +9,7 @@
 
 #include <future>
 
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

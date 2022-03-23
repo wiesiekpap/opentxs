@@ -12,10 +12,10 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::node
 {
@@ -118,7 +118,7 @@ auto UpdateTransaction::disconnected() const noexcept -> DisconnectedList&
 }
 
 auto UpdateTransaction::EffectiveBestBlock(const block::Height height) const
-    noexcept(false) -> block::pHash
+    noexcept(false) -> block::Hash
 {
     try {
 

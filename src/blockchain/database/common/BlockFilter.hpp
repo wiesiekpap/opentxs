@@ -32,6 +32,11 @@ class Session;
 
 namespace blockchain
 {
+namespace block
+{
+class Hash;
+}  // namespace block
+
 namespace database
 {
 namespace common
@@ -72,7 +77,7 @@ public:
         const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>;
     auto LoadFilters(
         const cfilter::Type type,
-        const Vector<block::pHash>& blocks) const noexcept
+        const Vector<block::Hash>& blocks) const noexcept
         -> Vector<std::unique_ptr<const GCS>>;
     auto LoadFilterHash(
         const cfilter::Type type,
@@ -85,12 +90,13 @@ public:
     auto StoreFilterHeaders(
         const cfilter::Type type,
         const Vector<CFHeaderParams>& headers) const noexcept -> bool;
-    auto StoreFilters(const cfilter::Type type, Vector<FilterData>& filters)
-        const noexcept -> bool;
+    auto StoreFilters(
+        const cfilter::Type type,
+        const Vector<CFilterParams>& filters) const noexcept -> bool;
     auto StoreFilters(
         const cfilter::Type type,
         const Vector<CFHeaderParams>& headers,
-        const Vector<FilterData>& filters) const noexcept -> bool;
+        const Vector<CFilterParams>& filters) const noexcept -> bool;
 
     BlockFilter(
         const api::Session& api,

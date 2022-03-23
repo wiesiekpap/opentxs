@@ -16,7 +16,6 @@
 #include <stdexcept>
 #include <string_view>
 #include <thread>
-#include <type_traits>
 #include <utility>
 
 #include "internal/blockchain/Params.hpp"
@@ -29,8 +28,10 @@
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Container.hpp"
@@ -383,7 +384,7 @@ auto Deserialize(const api::Session& api, const ReadView in) noexcept
 
     if (0u < size) {
         std::advance(it, sizeof(output.first));
-        auto bytes = output.second->WriteInto()(size);
+        auto bytes = output.second.WriteInto()(size);
 
         if (false == bytes.valid(size)) { return output; }
 
@@ -466,11 +467,11 @@ auto Serialize(const Type chain, const cfilter::Type type) noexcept(false)
 
 auto Serialize(const block::Position& in) noexcept -> Space
 {
-    auto output = space(sizeof(in.first) + in.second->size());
+    auto output = space(sizeof(in.first) + in.second.size());
     auto it = output.data();
     std::memcpy(it, &in.first, sizeof(in.first));
     std::advance(it, sizeof(in.first));
-    std::memcpy(it, in.second->data(), in.second->size());
+    std::memcpy(it, in.second.data(), in.second.size());
 
     return output;
 }

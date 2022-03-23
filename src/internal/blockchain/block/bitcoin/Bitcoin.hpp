@@ -26,6 +26,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
@@ -87,6 +88,7 @@ class Script;
 class Transaction;
 }  // namespace bitcoin
 
+class Hash;
 class Header;
 class Outpoint;
 }  // namespace block
@@ -384,7 +386,7 @@ auto BitcoinBlockHeader(
     const opentxs::blockchain::block::Header& previous,
     const std::uint32_t nBits,
     const std::int32_t version,
-    opentxs::blockchain::block::pHash&& merkle,
+    opentxs::blockchain::block::Hash&& merkle,
     const AbortFunction abort) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Header>;
 auto BitcoinBlockHeader(

@@ -33,7 +33,9 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/network/p2p/Acknowledgement.hpp"
 #include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/network/p2p/Data.hpp"
@@ -48,7 +50,6 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/P2PBlockchainChainState.pb.h"
@@ -131,7 +132,7 @@ auto Requestor::Imp::add_to_queue(
 auto Requestor::Imp::blank(const api::Session& api) noexcept
     -> const block::Position&
 {
-    static const auto output = block::Position{-1, api.Factory().Data()};
+    static const auto output = block::Position{-1, block::Hash{}};
 
     return output;
 }
@@ -297,8 +298,7 @@ auto Requestor::Imp::process_sync_ack(Message&& in) noexcept -> void
     const auto& ack = base->asAcknowledgement();
     update_remote_position(ack.State(chain_));
     log_(OT_PRETTY_CLASS())("best chain tip for ")(print(chain_))(
-        " according to sync peer is ")(remote_position_.second->asHex())(
-        " at height ")(remote_position_.first)
+        " according to sync peer is ")(print(remote_position_))
         .Flush();
 }
 
@@ -309,7 +309,7 @@ auto Requestor::Imp::process_sync_processed(Message&& in) noexcept -> void
     OT_ASSERT(2 < body.size());
 
     local_position_ = {
-        body.at(1).as<block::Height>(), api_.Factory().Data(body.at(2))};
+        body.at(1).as<block::Height>(), block::Hash{body.at(2).Bytes()}};
     processing_ = false;
 }
 

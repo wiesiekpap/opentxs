@@ -41,7 +41,7 @@ public:
         const noexcept -> std::unique_ptr<const GCS> = 0;
     virtual auto LoadFilters(
         const cfilter::Type type,
-        const Vector<block::pHash>& blocks) const noexcept
+        const Vector<block::Hash>& blocks) const noexcept
         -> Vector<std::unique_ptr<const GCS>> = 0;
     virtual auto LoadFilterHeader(
         const cfilter::Type type,

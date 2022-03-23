@@ -13,6 +13,7 @@
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -62,7 +63,7 @@ public:
     {
         return const_iterator(this, payload_.size());
     }
-    auto StopHash() const noexcept -> block::pHash final { return stop_; }
+    auto StopHash() const noexcept -> block::Hash final { return stop_; }
     auto size() const noexcept -> std::size_t final { return payload_.size(); }
     auto Version() const noexcept -> bitcoin::ProtocolVersionUnsigned final
     {
@@ -73,21 +74,21 @@ public:
         const api::Session& api,
         const blockchain::Type network,
         const bitcoin::ProtocolVersionUnsigned version,
-        Vector<block::pHash>&& hashes,
-        block::pHash&& stop) noexcept;
+        Vector<block::Hash>&& hashes,
+        const block::Hash& stop) noexcept;
     Getheaders(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const bitcoin::ProtocolVersionUnsigned version,
-        Vector<block::pHash>&& hashes,
-        block::pHash&& stop) noexcept;
+        Vector<block::Hash>&& hashes,
+        const block::Hash& stop) noexcept;
 
     ~Getheaders() final = default;
 
 private:
     const bitcoin::ProtocolVersionUnsigned version_;
-    const Vector<block::pHash> payload_;
-    const block::pHash stop_;
+    const Vector<block::Hash> payload_;
+    const block::Hash stop_;
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
