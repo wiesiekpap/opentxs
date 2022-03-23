@@ -12,10 +12,7 @@
 #include "Basic.hpp"
 #include "common/mocks/util/PasswordCallbackMock.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/core/Secret.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/PasswordCallback.hpp"
 #include "opentxs/util/PasswordCaller.hpp"
 #include "util/license/License.hpp"
 

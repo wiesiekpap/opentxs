@@ -18,7 +18,7 @@
 
 #include "blockchain/DownloadManager.hpp"
 #include "blockchain/DownloadTask.hpp"
-#include "blockchain/node/FilterOracle.hpp"
+#include "blockchain/node/filteroracle/FilterOracle.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"

@@ -6,6 +6,7 @@
 if(OT_BLOCKCHAIN_EXPORT)
   add_subdirectory(base)
   add_subdirectory(bitcoin)
+  add_subdirectory(filteroracle)
   add_subdirectory(p2p)
   add_subdirectory(peermanager)
   add_subdirectory(wallet)
@@ -25,15 +26,8 @@ if(OT_BLOCKCHAIN_EXPORT)
       "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/Node.hpp"
       "blockoracle/Cache.cpp"
       "blockoracle/Mem.cpp"
-      "filteroracle/BlockIndexer.cpp"
-      "filteroracle/BlockIndexer.hpp"
-      "filteroracle/FilterCheckpoints.hpp"
-      "filteroracle/FilterDownloader.hpp"
-      "filteroracle/HeaderDownloader.hpp"
       "BlockOracle.cpp"
       "BlockOracle.hpp"
-      "FilterOracle.cpp"
-      "FilterOracle.hpp"
       "HeaderOracle.cpp"
       "HeaderOracle.hpp"
       "Mempool.cpp"
@@ -46,7 +40,6 @@ if(OT_BLOCKCHAIN_EXPORT)
     APPEND
     cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/BlockOracle.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/FilterOracle.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/HeaderOracle.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/Manager.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/TxoState.hpp"

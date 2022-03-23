@@ -986,7 +986,7 @@ auto HeaderOracle::LoadHeader(const block::Hash& hash) const noexcept
 
 auto HeaderOracle::ProcessSyncData(
     block::Hash& prior,
-    UnallocatedVector<block::Hash>& hashes,
+    Vector<block::Hash>& hashes,
     const network::p2p::Data& data) noexcept -> std::size_t
 {
     auto output = std::size_t{0};

@@ -72,7 +72,7 @@ public:
         -> std::unique_ptr<block::bitcoin::Header> = 0;
     virtual auto ProcessSyncData(
         block::Hash& prior,
-        UnallocatedVector<block::Hash>& hashes,
+        Vector<block::Hash>& hashes,
         const network::p2p::Data& data) noexcept -> std::size_t = 0;
 
     ~HeaderOracle() override = default;

@@ -150,7 +150,7 @@ public:
     auto Internal() noexcept -> internal::HeaderOracle& final { return *this; }
     auto ProcessSyncData(
         block::Hash& prior,
-        UnallocatedVector<block::Hash>& hashes,
+        Vector<block::Hash>& hashes,
         const network::p2p::Data& data) noexcept -> std::size_t final;
 
     HeaderOracle(
