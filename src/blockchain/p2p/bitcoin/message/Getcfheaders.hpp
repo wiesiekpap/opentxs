@@ -14,6 +14,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -65,14 +66,14 @@ public:
         std::unique_ptr<Header> header,
         const cfilter::Type type,
         const block::Height start,
-        block::pHash&& stop) noexcept;
+        block::Hash&& stop) noexcept;
 
     ~Getcfheaders() final = default;
 
 private:
     const cfilter::Type type_;
     const block::Height start_;
-    const block::pHash stop_;
+    const block::Hash stop_;
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;

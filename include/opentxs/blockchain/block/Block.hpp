@@ -32,6 +32,7 @@ namespace internal
 struct Block;
 }  // namespace internal
 
+class Hash;
 class Header;
 }  // namespace block
 }  // namespace blockchain

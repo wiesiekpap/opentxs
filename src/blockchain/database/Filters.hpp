@@ -22,7 +22,10 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/core/Data.hpp"
@@ -72,9 +75,8 @@ class Filters
 {
 public:
     using Parent = node::internal::FilterDatabase;
-    using Hash = Parent::Hash;
     using CFHeaderParams = Parent::CFHeaderParams;
-    using Filter = Parent::Filter;
+    using CFilterParams = Parent::CFilterParams;
 
     auto CurrentHeaderTip(const cfilter::Type type) const noexcept
         -> block::Position;
@@ -87,10 +89,10 @@ public:
         const noexcept -> std::unique_ptr<const blockchain::GCS>;
     auto LoadFilters(
         const cfilter::Type type,
-        const Vector<block::pHash>& blocks) const noexcept
+        const Vector<block::Hash>& blocks) const noexcept
         -> Vector<std::unique_ptr<const GCS>>;
     auto LoadFilterHash(const cfilter::Type type, const ReadView block)
-        const noexcept -> Hash;
+        const noexcept -> cfilter::Hash;
     auto LoadFilterHeader(const cfilter::Type type, const ReadView block)
         const noexcept -> cfilter::Header;
     auto SetHeaderTip(const cfilter::Type type, const block::Position& position)
@@ -100,9 +102,9 @@ public:
     auto StoreFilters(
         const cfilter::Type type,
         const Vector<CFHeaderParams>& headers,
-        const Vector<Filter>& filters,
+        const Vector<CFilterParams>& filters,
         const block::Position& tip) const noexcept -> bool;
-    auto StoreFilters(const cfilter::Type type, Vector<Filter> filters)
+    auto StoreFilters(const cfilter::Type type, Vector<CFilterParams> filters)
         const noexcept -> bool;
     auto StoreHeaders(
         const cfilter::Type type,

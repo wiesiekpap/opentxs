@@ -72,7 +72,7 @@ auto print(const blockchain::block::Position& in) noexcept -> UnallocatedCString
 {
     const auto& [height, hash] = in;
     auto out = std::stringstream{};
-    out << hash->asHex();
+    out << hash.asHex();
     out << " at height ";
     out << std::to_string(height);
 

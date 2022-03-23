@@ -11,7 +11,9 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/NumericHash.hpp"
 #include "opentxs/blockchain/bitcoin/Work.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/core/Data.hpp"
@@ -85,9 +87,9 @@ protected:
     static const VersionNumber default_version_{1};
 
     const api::Session& api_;
-    const OTData hash_;
+    const block::Hash hash_;
     const OTData pow_;
-    const OTData parent_hash_;
+    const block::Hash parent_hash_;
     const blockchain::Type type_;
 
     static auto minimum_work(const blockchain::Type chain) -> OTWork;
@@ -96,9 +98,9 @@ protected:
         const api::Session& api,
         const VersionNumber version,
         const blockchain::Type type,
-        block::pHash&& hash,
-        block::pHash&& pow,
-        block::pHash&& parentHash,
+        block::Hash&& hash,
+        block::Hash&& pow,
+        block::Hash&& parentHash,
         const block::Height height,
         const Status status,
         const Status inheritStatus,

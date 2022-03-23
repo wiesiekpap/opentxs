@@ -154,19 +154,6 @@ auto FixedByteArray<N>::clone() const -> Data*
 }
 
 template <std::size_t N>
-auto FixedByteArray<N>::Concatenate(const ReadView) noexcept -> bool
-{
-    return false;
-}
-
-template <std::size_t N>
-auto FixedByteArray<N>::Concatenate(const void*, const std::size_t) noexcept
-    -> bool
-{
-    return false;
-}
-
-template <std::size_t N>
 auto FixedByteArray<N>::data() const -> const void*
 {
     return data_.data();
@@ -207,12 +194,6 @@ auto FixedByteArray<N>::DecodeHex(const std::string_view hex) -> bool
     }
 
     return true;
-}
-
-template <std::size_t N>
-auto FixedByteArray<N>::empty() const -> bool
-{
-    return data_.empty();
 }
 
 template <std::size_t N>
@@ -291,12 +272,6 @@ auto FixedByteArray<N>::Extract(std::uint64_t& output, const std::size_t pos)
 }
 
 template <std::size_t N>
-auto FixedByteArray<N>::IsEmpty() const -> bool
-{
-    return empty();
-}
-
-template <std::size_t N>
 auto FixedByteArray<N>::IsNull() const -> bool
 {
     if (data_.empty()) { return true; }
@@ -314,12 +289,6 @@ template <std::size_t N>
 auto FixedByteArray<N>::GetPointer() const -> const void*
 {
     return data_.data();
-}
-
-template <std::size_t N>
-auto FixedByteArray<N>::GetSize() const -> std::size_t
-{
-    return size();
 }
 
 template <std::size_t N>
@@ -413,24 +382,6 @@ auto FixedByteArray<N>::Randomize(const std::size_t size) -> bool
     ::randombytes_buf(data_.data(), N);
 
     return true;
-}
-
-template <std::size_t N>
-auto FixedByteArray<N>::resize(const std::size_t) -> bool
-{
-    return false;
-}
-
-template <std::size_t N>
-auto FixedByteArray<N>::SetSize(const std::size_t size) -> bool
-{
-    return false;
-}
-
-template <std::size_t N>
-auto FixedByteArray<N>::size() const -> std::size_t
-{
-    return data_.size();
 }
 
 template <std::size_t N>

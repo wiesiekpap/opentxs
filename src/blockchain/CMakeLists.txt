@@ -4,11 +4,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(bitcoin)
+add_subdirectory(block)
 add_subdirectory(crypto)
 add_subdirectory(node)
 
 if(OT_BLOCKCHAIN_EXPORT)
-  add_subdirectory(block)
   add_subdirectory(database)
   add_subdirectory(p2p)
 endif()

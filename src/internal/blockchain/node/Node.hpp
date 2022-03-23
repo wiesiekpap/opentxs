@@ -31,6 +31,8 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #if OT_BLOCKCHAIN
@@ -191,7 +193,7 @@ struct make_blank<blockchain::block::Position> {
     {
         return {
             make_blank<blockchain::block::Height>::value(api),
-            blockchain::block::BlankHash()};
+            blockchain::block::Hash{}};
     }
 };
 }  // namespace opentxs
@@ -199,16 +201,16 @@ struct make_blank<blockchain::block::Position> {
 namespace opentxs::blockchain::node
 {
 // parent hash, child hash
-using ChainSegment = std::pair<block::pHash, block::pHash>;
+using ChainSegment = std::pair<block::Hash, block::Hash>;
 using UpdatedHeader = UnallocatedMap<
-    block::pHash,
+    block::Hash,
     std::pair<std::unique_ptr<block::Header>, bool>>;
-using BestHashes = UnallocatedMap<block::Height, block::pHash>;
-using Hashes = UnallocatedSet<block::pHash>;
-using HashVector = Vector<block::pHash>;
+using BestHashes = UnallocatedMap<block::Height, block::Hash>;
+using Hashes = UnallocatedSet<block::Hash>;
+using HashVector = Vector<block::Hash>;
 using Segments = UnallocatedSet<ChainSegment>;
 // parent block hash, disconnected block hash
-using DisconnectedList = UnallocatedMultimap<block::pHash, block::pHash>;
+using DisconnectedList = UnallocatedMultimap<block::Hash, block::Hash>;
 
 using CfheaderJob =
     download::Batch<cfilter::Hash, cfilter::Header, cfilter::Type>;
@@ -275,11 +277,9 @@ struct Config {
 };
 
 struct FilterDatabase {
-    using Hash = block::pHash;
-    /// block hash, filter header, filter hash
-    using CFHeaderParams = std::tuple<block::pHash, cfilter::Header, ReadView>;
-    /// block hash, filter
-    using Filter = std::pair<ReadView, std::unique_ptr<const GCS>>;
+    using CFHeaderParams =
+        std::tuple<block::Hash, cfilter::Header, cfilter::Hash>;
+    using CFilterParams = std::pair<block::Hash, std::unique_ptr<const GCS>>;
 
     virtual auto FilterHeaderTip(const cfilter::Type type) const noexcept
         -> block::Position = 0;
@@ -294,10 +294,10 @@ struct FilterDatabase {
         const noexcept -> std::unique_ptr<const blockchain::GCS> = 0;
     virtual auto LoadFilters(
         const cfilter::Type type,
-        const Vector<block::pHash>& blocks) const noexcept
+        const Vector<block::Hash>& blocks) const noexcept
         -> Vector<std::unique_ptr<const GCS>> = 0;
     virtual auto LoadFilterHash(const cfilter::Type type, const ReadView block)
-        const noexcept -> Hash = 0;
+        const noexcept -> cfilter::Hash = 0;
     virtual auto LoadFilterHeader(
         const cfilter::Type type,
         const ReadView block) const noexcept -> cfilter::Header = 0;
@@ -309,11 +309,11 @@ struct FilterDatabase {
         const block::Position& position) noexcept -> bool = 0;
     virtual auto StoreFilters(
         const cfilter::Type type,
-        Vector<Filter> filters) noexcept -> bool = 0;
+        Vector<CFilterParams> filters) noexcept -> bool = 0;
     virtual auto StoreFilters(
         const cfilter::Type type,
         const Vector<CFHeaderParams>& headers,
-        const Vector<Filter>& filters,
+        const Vector<CFilterParams>& filters,
         const block::Position& tip) noexcept -> bool = 0;
     virtual auto StoreFilterHeaders(
         const cfilter::Type type,
@@ -335,7 +335,7 @@ struct FilterOracle : virtual public node::FilterOracle {
         -> bool = 0;
     virtual auto ProcessSyncData(
         const block::Hash& prior,
-        const UnallocatedVector<block::pHash>& hashes,
+        const UnallocatedVector<block::Hash>& hashes,
         const network::p2p::Data& data) const noexcept -> void = 0;
     virtual auto Tip(const cfilter::Type type) const noexcept
         -> block::Position = 0;
@@ -351,7 +351,7 @@ struct HeaderDatabase {
         -> bool = 0;
     // Throws std::out_of_range if no block at that position
     virtual auto BestBlock(const block::Height position) const noexcept(false)
-        -> block::pHash = 0;
+        -> block::Hash = 0;
     virtual auto CurrentBest() const noexcept
         -> std::unique_ptr<block::Header> = 0;
     virtual auto CurrentCheckpoint() const noexcept -> block::Position = 0;

@@ -8,6 +8,7 @@
 #include "internal/blockchain/block/Block.hpp"
 
 #include "opentxs/blockchain/block/Block.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 
@@ -20,6 +21,14 @@ namespace api
 {
 class Session;
 }  // namespace api
+
+namespace blockchain
+{
+namespace block
+{
+class Hash;
+}  // namespace block
+}  // namespace blockchain
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)

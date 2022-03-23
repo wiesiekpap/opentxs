@@ -48,9 +48,9 @@ FilterPrefixBasic::FilterPrefixBasic() noexcept
     static_assert(33 == sizeof(FilterPrefixBasic));
 }
 
-auto FilterPrefixBasic::Hash() const noexcept -> block::pHash
+auto FilterPrefixBasic::Hash() const noexcept -> block::Hash
 {
-    return Data::Factory(hash_.data(), hash_.size());
+    return ReadView{reinterpret_cast<const char*>(hash_.data()), hash_.size()};
 }
 
 auto FilterPrefixBasic::Type(const blockchain::Type chain) const noexcept
@@ -96,9 +96,9 @@ auto FilterPrefixChained::Previous() const noexcept -> cfilter::Header
         reinterpret_cast<const char*>(previous_.data()), previous_.size()};
 }
 
-auto FilterPrefixChained::Stop() const noexcept -> block::pHash
+auto FilterPrefixChained::Stop() const noexcept -> block::Hash
 {
-    return Data::Factory(hash_.data(), hash_.size());
+    return ReadView{reinterpret_cast<const char*>(hash_.data()), hash_.size()};
 }
 
 auto FilterPrefixChained::Type(const blockchain::Type chain) const noexcept
@@ -141,9 +141,9 @@ auto FilterRequest::Start() const noexcept -> block::Height
     return start_.value();
 }
 
-auto FilterRequest::Stop() const noexcept -> block::pHash
+auto FilterRequest::Stop() const noexcept -> block::Hash
 {
-    return Data::Factory(stop_.data(), stop_.size());
+    return ReadView{reinterpret_cast<const char*>(stop_.data()), stop_.size()};
 }
 
 auto FilterRequest::Type(const blockchain::Type chain) const noexcept

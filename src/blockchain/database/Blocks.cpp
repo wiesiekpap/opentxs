@@ -23,6 +23,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -43,8 +44,12 @@ Blocks::Blocks(
     , chain_(type)
     , genesis_([&] {
         const auto& hex = params::Data::Chains().at(chain_).genesis_hash_hex_;
+        auto out = block::Hash{};
+        const auto rc = out.DecodeHex(hex);
 
-        return api_.Factory().DataFromHex(hex);
+        OT_ASSERT(rc);
+
+        return out;
     }())
 {
     if (blank_position_.first == Tip().first) {

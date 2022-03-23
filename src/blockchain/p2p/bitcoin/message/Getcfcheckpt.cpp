@@ -18,7 +18,6 @@
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/util/Log.hpp"
 
@@ -92,7 +91,7 @@ Getcfcheckpt::Getcfcheckpt(
     const api::Session& api,
     std::unique_ptr<Header> header,
     const cfilter::Type type,
-    block::pHash&& stop) noexcept
+    block::Hash&& stop) noexcept
     : Message(api, std::move(header))
     , type_(type)
     , stop_(std::move(stop))

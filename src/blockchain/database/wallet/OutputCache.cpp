@@ -35,7 +35,6 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -757,8 +756,7 @@ auto OutputCache::Print() const noexcept -> void
     log(OT_PRETTY_CLASS())("Outputs by block:\n");
 
     for (const auto& [position, outputs] : positions_) {
-        const auto& [height, hash] = position;
-        log("  * block ")(hash->asHex())(" at height ")(height)("\n");
+        log("  * block ")(print(position))("\n");
 
         for (const auto& outpoint : outputs) {
             log("    * ")(outpoint.str())("\n");

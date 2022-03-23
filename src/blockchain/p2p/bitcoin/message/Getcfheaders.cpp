@@ -99,7 +99,7 @@ Getcfheaders::Getcfheaders(
     std::unique_ptr<Header> header,
     const cfilter::Type type,
     const block::Height start,
-    block::pHash&& stop) noexcept
+    block::Hash&& stop) noexcept
     : Message(api, std::move(header))
     , type_(type)
     , start_(start)

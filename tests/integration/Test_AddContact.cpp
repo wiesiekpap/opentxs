@@ -13,6 +13,7 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Notary.hpp"  // IWYU pragma: keep
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/core/identifier/Notary.hpp"

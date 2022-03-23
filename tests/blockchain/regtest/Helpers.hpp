@@ -43,6 +43,8 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -237,7 +239,7 @@ private:
 class MinedBlocks
 {
 public:
-    using BlockHash = b::block::pHash;
+    using BlockHash = b::block::Hash;
     using Promise = std::promise<BlockHash>;
     using Future = std::shared_future<BlockHash>;
 
@@ -282,7 +284,7 @@ private:
 };
 
 struct SyncSubscriber {
-    using BlockHash = ot::blockchain::block::pHash;
+    using BlockHash = ot::blockchain::block::Hash;
     using SyncPromise = std::promise<BlockHash>;
     using SyncFuture = std::shared_future<BlockHash>;
 

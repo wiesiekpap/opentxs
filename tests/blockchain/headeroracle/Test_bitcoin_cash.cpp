@@ -5,7 +5,6 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <type_traits>
 #include <utility>
 
 #include "Helpers.hpp"

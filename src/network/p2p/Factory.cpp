@@ -3,30 +3,27 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                  // IWYU pragma: associated
-#include "1_Internal.hpp"                // IWYU pragma: associated
-#include "opentxs/network/p2p/Base.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                      // IWYU pragma: associated
+#include "1_Internal.hpp"                    // IWYU pragma: associated
+#include "internal/network/p2p/Factory.hpp"  // IWYU pragma: associated
+#include "opentxs/network/p2p/Base.hpp"      // IWYU pragma: associated
 
 #include <iterator>
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
 #include "Proto.tpp"
-#include "internal/network/p2p/Factory.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/P2PBlockchainHello.hpp"
 #include "internal/serialization/protobuf/verify/P2PBlockchainSync.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/network/p2p/Acknowledgement.hpp"
 #include "opentxs/network/p2p/Data.hpp"
@@ -47,7 +44,6 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/P2PBlockchainChainState.pb.h"
 #include "serialization/protobuf/P2PBlockchainHello.pb.h"
@@ -206,15 +202,9 @@ auto BlockchainSyncMessage(
             auto out = UnallocatedVector<network::p2p::State>{};
 
             for (const auto& state : hello.state()) {
-                auto hash = [&] {
-                    auto out = api.Factory().Data();
-                    out->Assign(state.hash().data(), state.hash().size());
-
-                    return out;
-                }();
                 out.emplace_back(network::p2p::State{
                     static_cast<opentxs::blockchain::Type>(state.chain()),
-                    {state.height(), std::move(hash)}});
+                    {state.height(), blockchain::block::Hash{state.hash()}}});
             }
 
             return out;

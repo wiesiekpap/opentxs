@@ -7,6 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/network/p2p/Block.hpp"

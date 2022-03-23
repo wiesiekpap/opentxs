@@ -63,6 +63,7 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/AccountType.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -260,22 +261,12 @@ struct BlockListener::Imp {
                     case ot::WorkType::BlockchainNewHeader: {
                         OT_ASSERT(3 < body.size());
 
-                        return {body.at(3).as<Height>(), [&] {
-                                    auto output = api_.Factory().Data();
-                                    output->Assign(body.at(2).Bytes());
-
-                                    return output;
-                                }()};
+                        return {body.at(3).as<Height>(), body.at(2).Bytes()};
                     }
                     case ot::WorkType::BlockchainReorg: {
                         OT_ASSERT(5 < body.size());
 
-                        return {body.at(5).as<Height>(), [&] {
-                                    auto output = api_.Factory().Data();
-                                    output->Assign(body.at(4).Bytes());
-
-                                    return output;
-                                }()};
+                        return {body.at(5).as<Height>(), body.at(4).Bytes()};
                     }
                     default: {
 
@@ -1605,7 +1596,7 @@ struct ScanListener::Imp {
             }
         }
 
-        Data(Height height, ot::OTData&& hash) noexcept
+        Data(Height height, ot::blockchain::block::Hash&& hash) noexcept
             : pos_(height, std::move(hash))
             , target_()
             , promise_()
@@ -1656,14 +1647,7 @@ struct ScanListener::Imp {
         }();
         const auto sub = body.at(5).as<Subchain>();
         const auto height = body.at(6).as<Height>();
-        auto hash = [&] {
-            auto out = api_.Factory().Data();
-            out->Assign(body.at(7).Bytes());
-
-            OT_ASSERT(false == out->empty());
-
-            return out;
-        }();
+        auto hash = ot::blockchain::block::Hash{body.at(7).Bytes()};
         auto lock = ot::Lock{lock_};
         auto& map = map_[std::move(nymID)][chain][std::move(accountID)];
         auto it = [&] {
@@ -1719,7 +1703,7 @@ auto ScanListener::get_future(
 
             return i;
         } else {
-            return map.try_emplace(subchain, -1, imp_->api_.Factory().Data())
+            return map.try_emplace(subchain, -1, ot::blockchain::block::Hash{})
                 .first;
         }
     }();

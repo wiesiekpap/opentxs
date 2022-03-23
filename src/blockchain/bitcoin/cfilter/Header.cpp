@@ -12,7 +12,7 @@ namespace opentxs::blockchain::cfilter
 Header::Header() noexcept
     : FixedByteArray()
 {
-    static_assert(payload_size == 32u);
+    static_assert(payload_size_ == 32u);
 }
 
 Header::Header(const ReadView bytes) noexcept(false)

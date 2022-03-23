@@ -17,8 +17,6 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
@@ -37,8 +35,12 @@ Sync::Sync(
     , chain_(type)
     , genesis_([&] {
         const auto& hex = params::Data::Chains().at(chain_).genesis_hash_hex_;
+        auto out = block::Hash{};
+        const auto rc = out.DecodeHex(hex);
 
-        return api_.Factory().DataFromHex(hex);
+        OT_ASSERT(rc);
+
+        return out;
     }())
 {
     auto tip = Tip();

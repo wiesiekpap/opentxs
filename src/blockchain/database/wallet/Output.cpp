@@ -36,7 +36,9 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
@@ -48,7 +50,6 @@
 #include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -638,6 +639,10 @@ public:
         try {
             const auto current = cache.GetPosition().Decode(api_);
             const auto start = current.first;
+            LogTrace()(OT_PRETTY_CLASS())("incoming position: ")(print(pos))
+                .Flush();
+            LogTrace()(OT_PRETTY_CLASS())(" current position: ")(print(current))
+                .Flush();
 
             if (pos == current) { return true; }
             if (pos.first < current.first) { return true; }
@@ -1012,8 +1017,7 @@ public:
         const SubchainID& subchain,
         const block::Position& position) noexcept -> bool
     {
-        LogTrace()(OT_PRETTY_CLASS())("rolling back block ")(
-            position.second->asHex())(" at height ")(position.first)
+        LogTrace()(OT_PRETTY_CLASS())("rolling back block ")(print(position))
             .Flush();
         auto handle = lock();
         auto& cache = *handle;
@@ -1097,13 +1101,7 @@ public:
         , chain_(chain)
         , subchain_(subchains)
         , proposals_(proposals)
-        , blank_([&] {
-            auto out = make_blank<block::Position>::value(api_);
-
-            OT_ASSERT(0 < out.second->size());
-
-            return out;
-        }())
+        , blank_(-1, block::Hash{})
         , maturation_target_(
               params::Data::Chains().at(chain_).maturation_interval_)
         , cache_(api_, lmdb_, chain_, blank_)

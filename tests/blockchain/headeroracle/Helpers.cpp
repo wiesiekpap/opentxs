@@ -16,8 +16,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 
 namespace ottest
 {
@@ -2651,9 +2650,9 @@ auto Test_HeaderOracle_base::create_blocks(
     const ot::UnallocatedVector<Block>& vector) -> bool
 {
     for (const auto& [parent, child] : vector) {
-        const bb::pHash previous{
+        const bb::Hash previous{
             parent.empty() ? bc::HeaderOracle::GenesisBlockHash(type_)
-                           : get_block_hash(parent).get()};
+                           : get_block_hash(parent)};
 
         if (false == make_test_block(child, previous)) { return false; }
     }
@@ -2662,14 +2661,14 @@ auto Test_HeaderOracle_base::create_blocks(
 }
 
 auto Test_HeaderOracle_base::get_block_hash(const ot::UnallocatedCString& hash)
-    -> bb::pHash
+    -> bb::Hash
 {
     try {
 
         return test_blocks_.at(hash)->Hash();
     } catch (...) {
 
-        return ot::Data::Factory();
+        return {};
     }
 }
 
@@ -2704,14 +2703,14 @@ auto Test_HeaderOracle_base::make_position(
     const bb::Height height,
     const std::string_view hash) -> bb::Position
 {
-    return bb::Position{height, api_.Factory().DataFromBytes(hash)};
+    return bb::Position{height, hash};
 }
 
 auto Test_HeaderOracle_base::make_test_block(
     const ot::UnallocatedCString& hash,
     const bb::Hash& parent) -> bool
 {
-    const auto child = ot::Data::Factory(hash.data(), hash.size());
+    const auto child = ot::blockchain::block::Hash{hash};
     auto pHeader = api_.Factory().BlockHeaderForUnitTests(child, parent, -1);
 
     if (false == bool(pHeader)) { return false; }
@@ -2727,9 +2726,9 @@ auto Test_HeaderOracle_base::verify_best_chain(const BestChainVector& vector)
     bb::Height i{0};
 
     for (const auto& expectedHash : vector) {
-        const bb::pHash compareHash{
+        const bb::Hash compareHash{
             expectedHash.empty() ? bc::HeaderOracle::GenesisBlockHash(type_)
-                                 : get_block_hash(expectedHash).get()};
+                                 : get_block_hash(expectedHash)};
         const auto hash = header_oracle_.BestHash(i);
 
         EXPECT_EQ(compareHash, hash);
@@ -2769,9 +2768,9 @@ auto Test_HeaderOracle_base::verify_post_state(const PostStateVector& vector)
 {
     for (const auto& [sHash, spHash, height, status, pStatus] : vector) {
         const auto hash = get_block_hash(sHash);
-        const bb::pHash pHash{
+        const bb::Hash pHash{
             spHash.empty() ? bc::HeaderOracle::GenesisBlockHash(type_)
-                           : get_block_hash(spHash).get()};
+                           : get_block_hash(spHash)};
         const auto pBlock = header_oracle_.LoadHeader(hash);
 
         EXPECT_TRUE(pBlock);

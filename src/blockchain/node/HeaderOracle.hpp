@@ -18,6 +18,9 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
@@ -82,9 +85,9 @@ public:
     auto BestChain(const block::Position& tip, const std::size_t limit) const
         noexcept(false) -> Positions final;
     auto BestHash(const block::Height height) const noexcept
-        -> block::pHash final;
+        -> block::Hash final;
     auto BestHash(const block::Height height, const block::Position& check)
-        const noexcept -> block::pHash final;
+        const noexcept -> block::Hash final;
     auto BestHashes(
         const block::Height start,
         const std::size_t limit,
@@ -133,7 +136,7 @@ public:
     {
         return database_.RecentHashes(alloc);
     }
-    auto Siblings() const noexcept -> UnallocatedSet<block::pHash> final;
+    auto Siblings() const noexcept -> UnallocatedSet<block::Hash> final;
 
     auto AddCheckpoint(
         const block::Height position,
@@ -147,7 +150,7 @@ public:
     auto Internal() noexcept -> internal::HeaderOracle& final { return *this; }
     auto ProcessSyncData(
         block::Hash& prior,
-        UnallocatedVector<block::pHash>& hashes,
+        UnallocatedVector<block::Hash>& hashes,
         const network::p2p::Data& data) noexcept -> std::size_t final;
 
     HeaderOracle(
@@ -180,14 +183,14 @@ private:
         const block::Position& tip,
         const std::size_t limit) const noexcept -> Positions;
     auto best_hash(const Lock& lock, const block::Height height) const noexcept
-        -> block::pHash;
+        -> block::Hash;
     auto best_hashes(
         const Lock& lock,
         const block::Height start,
         const block::Hash& stop,
         const std::size_t limit,
         alloc::Resource* alloc) const noexcept -> Hashes;
-    auto blank_hash() const noexcept -> const block::pHash&;
+    auto blank_hash() const noexcept -> const block::Hash&;
     auto blank_position() const noexcept -> const block::Position&;
     auto calculate_reorg(const Lock& lock, const block::Position& tip) const
         noexcept(false) -> Positions;
@@ -235,8 +238,7 @@ private:
         UpdateTransaction& update,
         Candidates& candidates,
         block::Header& child,
-        const block::Hash& stopHash = Data::Factory()) noexcept(false)
-        -> Candidate&;
+        const block::Hash& stopHash = {}) noexcept(false) -> Candidate&;
     auto is_disconnected(
         const block::Hash& parent,
         UpdateTransaction& update) noexcept -> const block::Header*;

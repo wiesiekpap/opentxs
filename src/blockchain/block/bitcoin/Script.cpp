@@ -26,6 +26,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Opcodes.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/core/PaymentCode.hpp"

@@ -14,6 +14,7 @@
 #include "internal/api/crypto/blockchain/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/Timer.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"

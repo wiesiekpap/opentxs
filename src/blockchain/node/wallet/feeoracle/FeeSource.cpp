@@ -29,6 +29,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Options.hpp"
 
 namespace opentxs::factory
 {
@@ -44,6 +45,8 @@ auto FeeSources(
     using ReturnType = blockchain::node::wallet::FeeSource::Imp;
     auto alloc = ReturnType::allocator_type{mr};
     auto out = ForwardList<blockchain::node::wallet::FeeSource>{alloc};
+
+    if (api.GetOptions().TestMode()) { return out; }
 
     switch (chain) {
         case blockchain::Type::Bitcoin: {

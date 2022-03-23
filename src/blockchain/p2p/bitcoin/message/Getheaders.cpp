@@ -19,10 +19,9 @@
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -67,7 +66,7 @@ auto BitcoinP2PGetheaders(
         return nullptr;
     }
 
-    std::size_t count{0};
+    auto count = std::size_t{0};
     const bool haveCount =
         network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);
 
@@ -77,12 +76,11 @@ auto BitcoinP2PGetheaders(
         return nullptr;
     }
 
-    Vector<blockchain::block::pHash> hashes{};
+    auto hashes = Vector<blockchain::block::Hash>{};
 
     if (count > 0) {
         for (std::size_t i{0}; i < count; ++i) {
-            expectedSize +=
-                sizeof(blockchain::p2p::bitcoin::BlockHeaderHashField);
+            expectedSize += blockchain::block::Hash::payload_size_;
 
             if (expectedSize > size) {
                 LogError()("opentxs::factory::")(__func__)(
@@ -92,13 +90,14 @@ auto BitcoinP2PGetheaders(
                 return nullptr;
             }
 
-            hashes.emplace_back(Data::Factory(
-                it, sizeof(blockchain::p2p::bitcoin::BlockHeaderHashField)));
-            it += sizeof(blockchain::p2p::bitcoin::BlockHeaderHashField);
+            hashes.emplace_back(ReadView{
+                reinterpret_cast<const char*>(it),
+                blockchain::block::Hash::payload_size_});
+            it += blockchain::block::Hash::payload_size_;
         }
     }
 
-    expectedSize += sizeof(blockchain::p2p::bitcoin::BlockHeaderHashField);
+    expectedSize += blockchain::block::Hash::payload_size_;
 
     if (expectedSize > size) {
         LogError()("opentxs::factory::")(__func__)(
@@ -108,8 +107,9 @@ auto BitcoinP2PGetheaders(
         return nullptr;
     }
 
-    auto stop = Data::Factory(
-        it, sizeof(blockchain::p2p::bitcoin::BlockHeaderHashField));
+    auto stop = blockchain::block::Hash{ReadView{
+        reinterpret_cast<const char*>(it),
+        blockchain::block::Hash::payload_size_}};
 
     return new ReturnType(
         api,
@@ -123,8 +123,8 @@ auto BitcoinP2PGetheaders(
     const api::Session& api,
     const blockchain::Type network,
     const blockchain::p2p::bitcoin::ProtocolVersionUnsigned version,
-    Vector<blockchain::block::pHash>&& history,
-    blockchain::block::pHash&& stop)
+    Vector<blockchain::block::Hash>&& history,
+    const blockchain::block::Hash& stop)
     -> blockchain::p2p::bitcoin::message::internal::Getheaders*
 {
     namespace bitcoin = blockchain::p2p::bitcoin;
@@ -141,12 +141,12 @@ Getheaders::Getheaders(
     const api::Session& api,
     const blockchain::Type network,
     const bitcoin::ProtocolVersionUnsigned version,
-    Vector<block::pHash>&& hashes,
-    block::pHash&& stop) noexcept
+    Vector<block::Hash>&& hashes,
+    const block::Hash& stop) noexcept
     : Message(api, network, bitcoin::Command::getheaders)
     , version_(version)
     , payload_(std::move(hashes))
-    , stop_(std::move(stop))
+    , stop_(stop)
 {
     init_hash();
 }
@@ -155,12 +155,12 @@ Getheaders::Getheaders(
     const api::Session& api,
     std::unique_ptr<Header> header,
     const bitcoin::ProtocolVersionUnsigned version,
-    Vector<block::pHash>&& hashes,
-    block::pHash&& stop) noexcept
+    Vector<block::Hash>&& hashes,
+    const block::Hash& stop) noexcept
     : Message(api, std::move(header))
     , version_(version)
     , payload_(std::move(hashes))
-    , stop_(std::move(stop))
+    , stop_(stop)
 {
 }
 
@@ -189,25 +189,12 @@ auto Getheaders::payload(AllocateOutput out) const noexcept -> bool
         std::advance(i, cs.size());
 
         for (const auto& hash : payload_) {
-            std::memcpy(i, hash->data(), standard_hash_size_);
+            std::memcpy(i, hash.data(), standard_hash_size_);
             std::advance(i, standard_hash_size_);
         }
 
-        const auto& stop = [this]() -> const auto&
-        {
-            if (standard_hash_size_ == stop_->size()) {
-
-                return stop_.get();
-            } else {
-                static const auto blank = block::BlankHash();
-
-                return blank.get();
-            }
-        }
-        ();
-
-        std::memcpy(i, stop.data(), stop.size());
-        std::advance(i, stop.size());
+        std::memcpy(i, stop_.data(), stop_.size());
+        std::advance(i, stop_.size());
 
         return true;
     } catch (const std::exception& e) {

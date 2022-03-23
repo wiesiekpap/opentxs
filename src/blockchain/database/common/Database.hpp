@@ -22,6 +22,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
@@ -145,7 +146,7 @@ public:
         const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>;
     auto LoadFilters(
         const cfilter::Type type,
-        const Vector<block::pHash>& blocks) const noexcept
+        const Vector<block::Hash>& blocks) const noexcept
         -> Vector<std::unique_ptr<const GCS>>;
     auto LoadFilterHash(
         const cfilter::Type type,
@@ -173,12 +174,12 @@ public:
     auto StoreFilterHeaders(
         const cfilter::Type type,
         const Vector<CFHeaderParams>& headers) const noexcept -> bool;
-    auto StoreFilters(const cfilter::Type type, Vector<FilterData>& filters)
+    auto StoreFilters(const cfilter::Type type, Vector<CFilterParams>& filters)
         const noexcept -> bool;
     auto StoreFilters(
         const cfilter::Type type,
         const Vector<CFHeaderParams>& headers,
-        const Vector<FilterData>& filters) const noexcept -> bool;
+        const Vector<CFilterParams>& filters) const noexcept -> bool;
     auto StoreSync(const Chain chain, const SyncItems& items) const noexcept
         -> bool;
     auto StoreTransaction(const block::bitcoin::Transaction& tx) const noexcept

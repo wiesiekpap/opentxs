@@ -8,6 +8,7 @@
 #include <string_view>
 
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

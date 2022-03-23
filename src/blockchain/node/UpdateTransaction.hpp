@@ -9,6 +9,8 @@
 #include <optional>
 
 #include "internal/blockchain/node/Node.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -44,7 +46,7 @@ public:
     auto Connected() const -> const Segments& { return connect_; }
     auto Disconnected() const -> const Segments& { return disconnected_; }
     auto EffectiveBestBlock(const block::Height height) const noexcept(false)
-        -> block::pHash;
+        -> block::Hash;
     auto EffectiveCheckpoint() const noexcept -> bool;
     auto EffectiveDisconnectedHashes() const noexcept -> const DisconnectedList&
     {

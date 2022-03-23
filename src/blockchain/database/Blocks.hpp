@@ -21,6 +21,8 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/core/Data.hpp"
@@ -100,6 +102,6 @@ private:
     const storage::lmdb::LMDB& lmdb_;
     const block::Position blank_position_;
     const blockchain::Type chain_;
-    const block::pHash genesis_;
+    const block::Hash genesis_;
 };
 }  // namespace opentxs::blockchain::database

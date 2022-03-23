@@ -15,6 +15,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 #include "internal/blockchain/node/HeaderOracle.hpp"
@@ -35,8 +36,8 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -186,8 +187,10 @@ auto Accounts::Imp::process_block_header(Message&& in) noexcept -> void
 
     if (chain_ != chain) { return; }
 
-    const auto position = block::Position{
-        body.at(3).as<block::Height>(), api_.Factory().Data(body.at(2))};
+    const auto position =
+        block::Position{body.at(3).as<block::Height>(), body.at(2).Bytes()};
+    log_(OT_PRETTY_CLASS())("processing block header for ")(print(position))
+        .Flush();
     db_.AdvanceTo(position);
 }
 
@@ -241,10 +244,8 @@ auto Accounts::Imp::process_reorg(Message&& in) noexcept -> void
     if (chain_ != chain) { return; }
 
     process_reorg(
-        std::make_pair(
-            body.at(3).as<block::Height>(), api_.Factory().Data(body.at(2))),
-        std::make_pair(
-            body.at(5).as<block::Height>(), api_.Factory().Data(body.at(4))));
+        std::make_pair(body.at(3).as<block::Height>(), body.at(2).Bytes()),
+        std::make_pair(body.at(5).as<block::Height>(), body.at(4).Bytes()));
 }
 
 auto Accounts::Imp::process_reorg(
@@ -294,9 +295,7 @@ auto Accounts::Imp::process_reorg(
 
         OT_ASSERT(rc);
     });
-    LogConsole()(name_)(": reorg to ")(tip.second->asHex())(" at height ")(
-        tip.first)(" finished")
-        .Flush();
+    LogConsole()(name_)(": reorg to ")(print(tip))(" finished").Flush();
 }
 
 auto Accounts::Imp::Shutdown() noexcept -> void

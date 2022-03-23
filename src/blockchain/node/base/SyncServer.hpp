@@ -28,6 +28,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/network/p2p/Block.hpp"
@@ -239,13 +240,13 @@ private:
 
         if (type != type_) { return; }
 
-        process_position(Position{
-            body.at(2).as<block::Height>(), api_.Factory().Data(body.at(3))});
+        process_position(
+            Position{body.at(2).as<block::Height>(), body.at(3).Bytes()});
     }
     auto process_position(const Position& pos) noexcept -> void
     {
         LogTrace()(OT_PRETTY_CLASS())(__func__)(": processing block ")(
-            pos.second->asHex())(" at height ")(pos.first)
+            print(pos))
             .Flush();
 
         try {
@@ -253,15 +254,14 @@ private:
             auto hashes = header_.Ancestors(current, pos, 2000);
             LogTrace()(OT_PRETTY_CLASS())(__func__)(
                 ": current position best known position is block ")(
-                current.second->asHex())(" at height ")(current.first)
+                print(current))
                 .Flush();
 
             OT_ASSERT(0 < hashes.size());
 
             if (1 == hashes.size()) {
                 LogTrace()(OT_PRETTY_CLASS())(__func__)(
-                    ": current position matches incoming block ")(
-                    pos.second->asHex())(" at height ")(pos.first)
+                    ": current position matches incoming block ")(print(pos))
                     .Flush();
 
                 return;
@@ -285,10 +285,8 @@ private:
                 }
 
                 LogTrace()(OT_PRETTY_CLASS())(__func__)(
-                    ": scheduling download starting from block ")(
-                    first.second->asHex())(" at height ")(first.first)(
-                    " until block ")(last.second->asHex())(" at height ")(
-                    last.first)
+                    ": scheduling download starting from block ")(print(first))(
+                    " until block ")(print(last))
                     .Flush();
             }
             update_position(std::move(hashes), type_, std::move(prior));
@@ -358,7 +356,7 @@ private:
                 if (false == bool(pHeader)) {
                     throw std::runtime_error(
                         UnallocatedCString{"failed to load block header "} +
-                        task->position_.second->asHex());
+                        task->position_.second.asHex());
                 }
 
                 const auto& header = *pHeader;
@@ -372,7 +370,7 @@ private:
                             UnallocatedCString{
                                 "failed to previous filter header for "
                                 "block  "} +
-                            task->position_.second->asHex());
+                            task->position_.second.asHex());
                     }
                 }
 
@@ -381,7 +379,7 @@ private:
                 if (false == bool(pGCS)) {
                     throw std::runtime_error(
                         UnallocatedCString{"failed to load gcs for block "} +
-                        task->position_.second->asHex());
+                        task->position_.second.asHex());
                 }
 
                 const auto& gcs = *pGCS;

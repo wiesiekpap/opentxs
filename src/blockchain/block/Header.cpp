@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "internal/blockchain/Blockchain.hpp"
@@ -23,6 +24,7 @@
 #include "opentxs/blockchain/bitcoin/Work.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -72,9 +74,9 @@ Header::Header(
     const api::Session& api,
     const VersionNumber version,
     const blockchain::Type type,
-    block::pHash&& hash,
-    block::pHash&& pow,
-    block::pHash&& parentHash,
+    block::Hash&& hash,
+    block::Hash&& pow,
+    block::Hash&& parentHash,
     const block::Height height,
     const Status status,
     const Status inheritStatus,
@@ -235,7 +237,7 @@ auto Header::Valid() const noexcept -> bool { return NumericHash() < Target(); }
 
 auto Header::Work() const noexcept -> OTWork
 {
-    if (parent_hash_->IsNull()) {
+    if (parent_hash_.IsNull()) {
         return work_;
     } else {
         return work_ + inherit_work_;

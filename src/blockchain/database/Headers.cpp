@@ -13,6 +13,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 #include "Proto.tpp"
@@ -30,7 +31,7 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Container.hpp"
@@ -104,7 +105,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                          .Store(
                              ChainData,
                              tsv(static_cast<std::size_t>(Key::CheckpointHash)),
-                             update.Checkpoint().second->Bytes(),
+                             update.Checkpoint().second.Bytes(),
                              parentTxn)
                          .first) {
             LogError()(OT_PRETTY_CLASS())("Failed to save checkpoint hash")
@@ -118,8 +119,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
         if (false == lmdb_
                          .Store(
                              BlockHeaderDisconnected,
-                             parent->Bytes(),
-                             child->Bytes(),
+                             parent.Bytes(),
+                             child.Bytes(),
                              parentTxn)
                          .first) {
             LogError()(OT_PRETTY_CLASS())("Failed to save disconnected hash")
@@ -132,8 +133,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     for (const auto& [parent, child] : update.Connected()) {
         if (false == lmdb_.Delete(
                          BlockHeaderDisconnected,
-                         parent->Bytes(),
-                         child->Bytes(),
+                         parent.Bytes(),
+                         child.Bytes(),
                          parentTxn)) {
             LogError()(OT_PRETTY_CLASS())("Failed to delete disconnected hash")
                 .Flush();
@@ -143,13 +144,11 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     }
 
     for (const auto& hash : update.SiblingsToAdd()) {
-        if (false == lmdb_
-                         .Store(
-                             BlockHeaderSiblings,
-                             hash->Bytes(),
-                             hash->Bytes(),
-                             parentTxn)
-                         .first) {
+        if (false ==
+            lmdb_
+                .Store(
+                    BlockHeaderSiblings, hash.Bytes(), hash.Bytes(), parentTxn)
+                .first) {
             LogError()(OT_PRETTY_CLASS())("Failed to save sibling hash")
                 .Flush();
 
@@ -158,14 +157,14 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     }
 
     for (const auto& hash : update.SiblingsToDelete()) {
-        lmdb_.Delete(BlockHeaderSiblings, hash->Bytes(), parentTxn);
+        lmdb_.Delete(BlockHeaderSiblings, hash.Bytes(), parentTxn);
     }
 
     for (const auto& data : update.UpdatedHeaders()) {
         const auto& [hash, pair] = data;
         const auto result = lmdb_.Store(
             BlockHeaderMetadata,
-            hash->Bytes(),
+            hash.Bytes(),
             [&] {
                 auto out = block::Header::SerializedType{};
                 data.second.first->Serialize(out);
@@ -221,13 +220,13 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
 
     const auto position = best(lock);
     const auto& [height, hash] = position;
-    const auto bytes = hash->Bytes();
+    const auto bytes = hash.Bytes();
 
     if (update.HaveReorg()) {
         const auto [pHeight, pHash] = update.ReorgParent();
-        const auto pBytes = pHash->Bytes();
+        const auto pBytes = pHash.Bytes();
         LogConsole()(print(network_.Chain()))(
-            " reorg detected. Last common ancestor is ")(pHash->asHex())(
+            " reorg detected. Last common ancestor is ")(pHash.asHex())(
             " at height ")(pHeight)
             .Flush();
         auto work = MakeWork(WorkType::BlockchainReorg);
@@ -251,18 +250,24 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
 }
 
 auto Headers::BestBlock(const block::Height position) const noexcept(false)
-    -> block::pHash
+    -> block::Hash
 {
-    auto output = Data::Factory();
+    auto output = block::Hash{};
 
     if (0 > position) { return output; }
 
     lmdb_.Load(
         BlockHeaderBest,
         tsv(static_cast<std::size_t>(position)),
-        [&](const auto in) -> void { output->Assign(in.data(), in.size()); });
+        [&](const auto in) -> void {
+            const auto rc = output.Assign(in.data(), in.size());
 
-    if (output->empty()) {
+            if (!rc) {
+                throw std::runtime_error("Database contains invalid hash");
+            }
+        });
+
+    if (output.IsNull()) {
         // TODO some callers which should be catching this exception aren't.
         // Clean up those call sites then start throwing this exception.
         // throw std::out_of_range("No best hash at specified height");
@@ -297,7 +302,9 @@ auto Headers::best(const Lock& lock) const noexcept -> block::Position
 
     if (false ==
         lmdb_.Load(BlockHeaderBest, tsv(height), [&](const auto in) -> void {
-            output.second->Assign(in.data(), in.size());
+            const auto rc = output.second.Assign(in.data(), in.size());
+
+            OT_ASSERT(rc);  // TODO exception
         })) {
 
         return make_blank<block::Position>::value(api_);
@@ -328,7 +335,10 @@ auto Headers::checkpoint(const Lock& lock) const noexcept -> block::Position
                      ChainData,
                      tsv(static_cast<std::size_t>(Key::CheckpointHash)),
                      [&](const auto in) -> void {
-                         output.second->Assign(in.data(), in.size());
+                         const auto rc =
+                             output.second.Assign(in.data(), in.size());
+
+                         OT_ASSERT(rc);  // TODO exception
                      })) {
 
         return make_blank<block::Position>::value(api_);
@@ -353,9 +363,7 @@ auto Headers::DisconnectedHashes() const noexcept -> node::DisconnectedList
     lmdb_.Read(
         BlockHeaderDisconnected,
         [&](const auto key, const auto value) -> bool {
-            output.emplace(
-                Data::Factory(key.data(), key.size()),
-                Data::Factory(value.data(), value.size()));
+            output.emplace(block::Hash{key}, block::Hash{value});
 
             return true;
         },
@@ -533,7 +541,7 @@ auto Headers::push_best(
     auto output = lmdb_.Store(
         BlockHeaderBest,
         tsv(static_cast<std::size_t>(next.first)),
-        next.second->Bytes(),
+        next.second.Bytes(),
         parent);
 
     if (output.first && setTip) {
@@ -548,7 +556,7 @@ auto Headers::push_best(
 }
 
 auto Headers::RecentHashes(alloc::Resource* alloc) const noexcept
-    -> Vector<block::pHash>
+    -> Vector<block::Hash>
 {
     Lock lock(lock_);
 
@@ -556,13 +564,13 @@ auto Headers::RecentHashes(alloc::Resource* alloc) const noexcept
 }
 
 auto Headers::recent_hashes(const Lock& lock, alloc::Resource* alloc)
-    const noexcept -> Vector<block::pHash>
+    const noexcept -> Vector<block::Hash>
 {
-    auto output = Vector<block::pHash>{alloc};
+    auto output = Vector<block::Hash>{alloc};
     lmdb_.Read(
         BlockHeaderBest,
         [&](const auto, const auto value) -> bool {
-            output.emplace_back(Data::Factory(value.data(), value.size()));
+            output.emplace_back(value);
 
             return 100 > output.size();
         },
@@ -578,7 +586,7 @@ auto Headers::SiblingHashes() const noexcept -> node::Hashes
     lmdb_.Read(
         BlockHeaderSiblings,
         [&](const auto, const auto value) -> bool {
-            output.emplace(Data::Factory(value.data(), value.size()));
+            output.emplace(value);
 
             return true;
         },

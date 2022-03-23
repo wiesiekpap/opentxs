@@ -19,6 +19,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
@@ -87,7 +88,7 @@ public:
     static auto calculate_merkle_value(
         const api::Session& api,
         const Type chain,
-        const TxidIndex& txids) -> block::pHash;
+        const TxidIndex& txids) -> block::Hash;
 
     auto at(const std::size_t index) const noexcept -> const value_type& final;
     auto at(const ReadView txid) const noexcept -> const value_type& final;

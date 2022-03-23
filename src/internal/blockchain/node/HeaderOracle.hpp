@@ -26,6 +26,11 @@ namespace bitcoin
 class Header;
 }  // namespace bitcoin
 }  // namespace block
+
+namespace cfilter
+{
+class Header;
+}  // namespace cfilter
 }  // namespace blockchain
 
 namespace network
@@ -44,14 +49,14 @@ namespace opentxs::blockchain::node::internal
 class HeaderOracle : virtual public node::HeaderOracle
 {
 public:
-    using CheckpointBlockHash = block::pHash;
-    using PreviousBlockHash = block::pHash;
-    using CheckpointFilterHash = block::pHash;
+    using CheckpointBlockHash = block::Hash;
+    using PreviousBlockHash = block::Hash;
+    using CheckpointCfheader = cfilter::Header;
     using CheckpointData = std::tuple<
         block::Height,
         CheckpointBlockHash,
         PreviousBlockHash,
-        CheckpointFilterHash>;
+        CheckpointCfheader>;
 
     using node::HeaderOracle::CalculateReorg;
     virtual auto CalculateReorg(const Lock& lock, const block::Position& tip)
@@ -67,7 +72,7 @@ public:
         -> std::unique_ptr<block::bitcoin::Header> = 0;
     virtual auto ProcessSyncData(
         block::Hash& prior,
-        UnallocatedVector<block::pHash>& hashes,
+        UnallocatedVector<block::Hash>& hashes,
         const network::p2p::Data& data) noexcept -> std::size_t = 0;
 
     ~HeaderOracle() override = default;

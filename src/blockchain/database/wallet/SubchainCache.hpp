@@ -19,6 +19,9 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -40,6 +43,11 @@ class Session;
 
 namespace blockchain
 {
+namespace block
+{
+class Hash;
+}  // namespace block
+
 namespace database
 {
 namespace wallet
@@ -133,7 +141,7 @@ private:
     using PatternIndexMap =
         robin_hood::unordered_node_map<pSubchainIndex, dbPatternIndex>;
     using MatchIndexMap =
-        robin_hood::unordered_node_map<block::pHash, dbPatternIndex>;
+        robin_hood::unordered_node_map<block::Hash, dbPatternIndex>;
     using Mutex = boost::upgrade_mutex;
 
     const api::Session& api_;

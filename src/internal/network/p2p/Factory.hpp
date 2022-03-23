@@ -15,6 +15,7 @@
 #include "opentxs/core/contract/Types.hpp"
 #include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -64,6 +65,7 @@ class Query;
 class QueryContract;
 class QueryContractReply;
 class Request;
+class State;
 }  // namespace p2p
 
 namespace zeromq

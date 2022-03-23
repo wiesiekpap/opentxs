@@ -6,7 +6,11 @@
 #include "0_stdafx.hpp"    // IWYU pragma: associated
 #include "1_Internal.hpp"  // IWYU pragma: associated
 
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -16,6 +20,27 @@
 
 namespace std
 {
+auto less<opentxs::blockchain::block::Hash>::operator()(
+    const opentxs::blockchain::block::Hash& lhs,
+    const opentxs::blockchain::block::Hash& rhs) const noexcept -> bool
+{
+    return lhs < rhs;
+}
+
+auto less<opentxs::blockchain::cfilter::Hash>::operator()(
+    const opentxs::blockchain::cfilter::Hash& lhs,
+    const opentxs::blockchain::cfilter::Hash& rhs) const noexcept -> bool
+{
+    return lhs < rhs;
+}
+
+auto less<opentxs::blockchain::cfilter::Header>::operator()(
+    const opentxs::blockchain::cfilter::Header& lhs,
+    const opentxs::blockchain::cfilter::Header& rhs) const noexcept -> bool
+{
+    return lhs < rhs;
+}
+
 auto less<opentxs::crypto::Seed>::operator()(
     const opentxs::crypto::Seed& lhs,
     const opentxs::crypto::Seed& rhs) const noexcept -> bool

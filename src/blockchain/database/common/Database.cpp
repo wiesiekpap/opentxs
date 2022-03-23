@@ -518,7 +518,7 @@ auto Database::LoadFilter(const cfilter::Type type, const ReadView blockHash)
 
 auto Database::LoadFilters(
     const cfilter::Type type,
-    const Vector<block::pHash>& blocks) const noexcept
+    const Vector<block::Hash>& blocks) const noexcept
     -> Vector<std::unique_ptr<const GCS>>
 {
     return imp_.filters_.LoadFilters(type, blocks);
@@ -626,7 +626,7 @@ auto Database::StoreFilterHeaders(
 
 auto Database::StoreFilters(
     const cfilter::Type type,
-    Vector<FilterData>& filters) const noexcept -> bool
+    Vector<CFilterParams>& filters) const noexcept -> bool
 {
     return imp_.filters_.StoreFilters(type, filters);
 }
@@ -634,7 +634,7 @@ auto Database::StoreFilters(
 auto Database::StoreFilters(
     const cfilter::Type type,
     const Vector<CFHeaderParams>& headers,
-    const Vector<FilterData>& filters) const noexcept -> bool
+    const Vector<CFilterParams>& filters) const noexcept -> bool
 {
     return imp_.filters_.StoreFilters(type, headers, filters);
 }

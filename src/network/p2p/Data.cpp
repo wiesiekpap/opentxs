@@ -20,7 +20,9 @@
 #include "network/p2p/Base.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/State.hpp"
@@ -171,8 +173,8 @@ auto Data::Blocks() const noexcept -> const SyncData& { return imp_->blocks_; }
 auto Data::LastPosition(const api::Session& api) const noexcept
     -> opentxs::blockchain::block::Position
 {
-    static const auto blank =
-        opentxs::blockchain::block::Position{-1, api.Factory().Data()};
+    static const auto blank = opentxs::blockchain::block::Position{
+        -1, opentxs::blockchain::block::Hash{}};
 #if OT_BLOCKCHAIN
     const auto& blocks = imp_->blocks_;
 

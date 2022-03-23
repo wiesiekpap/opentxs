@@ -143,7 +143,7 @@ struct SubchainData::Imp {
         const auto position =
             headers.Internal().GetPosition(headerOracleLock, target);
         LogTrace()(OT_PRETTY_CLASS())("resetting last scanned to ")(
-            position.second->asHex())(" at height ")(target)
+            print(position))
             .Flush();
 
         if (false == cache_.SetLastScanned(subchain, position, tx)) {

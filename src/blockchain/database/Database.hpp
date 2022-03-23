@@ -35,8 +35,11 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
@@ -173,7 +176,7 @@ public:
     }
     // Throws std::out_of_range if no block at that position
     auto BestBlock(const block::Height position) const noexcept(false)
-        -> block::pHash final
+        -> block::Hash final
     {
         return headers_.BestBlock(position);
     }
@@ -384,13 +387,13 @@ public:
     }
     auto LoadFilters(
         const cfilter::Type type,
-        const Vector<block::pHash>& blocks) const noexcept
+        const Vector<block::Hash>& blocks) const noexcept
         -> Vector<std::unique_ptr<const blockchain::GCS>> final
     {
         return filters_.LoadFilters(type, blocks);
     }
     auto LoadFilterHash(const cfilter::Type type, const ReadView block)
-        const noexcept -> Hash final
+        const noexcept -> cfilter::Hash final
     {
         return filters_.LoadFilterHash(type, block);
     }
@@ -429,7 +432,7 @@ public:
         wallet_.PublishBalance();
     }
     auto RecentHashes(alloc::Resource* alloc) const noexcept
-        -> Vector<block::pHash> final
+        -> Vector<block::Hash> final
     {
         return headers_.RecentHashes(alloc);
     }
@@ -485,15 +488,16 @@ public:
     {
         return lmdb_.TransactionRW();
     }
-    auto StoreFilters(const cfilter::Type type, Vector<Filter> filters) noexcept
-        -> bool final
+    auto StoreFilters(
+        const cfilter::Type type,
+        Vector<CFilterParams> filters) noexcept -> bool final
     {
         return filters_.StoreFilters(type, std::move(filters));
     }
     auto StoreFilters(
         const cfilter::Type type,
         const Vector<CFHeaderParams>& headers,
-        const Vector<Filter>& filters,
+        const Vector<CFilterParams>& filters,
         const block::Position& tip) noexcept -> bool final
     {
         return filters_.StoreFilters(type, headers, filters, tip);

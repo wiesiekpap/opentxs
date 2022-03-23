@@ -26,6 +26,7 @@ extern "C" {
 #include "blockchain/block/pkt/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
@@ -34,12 +35,10 @@ extern "C" {
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/block/bitcoin/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace be = boost::endian;
 
@@ -148,13 +147,13 @@ struct PacketCrypt::Imp {
                         be::little_uint32_buf_t{ann.hdr.parentBlockHeight};
                     const auto hash = headers_.BestHash(height.value());
 
-                    if (32u != hash->size()) {
+                    if (hash.IsNull()) {
                         throw std::runtime_error{
                             "Failed to load parent block hash"};
                     }
 
-                    std::memcpy(i, hash->data(), hash->size());
-                    std::advance(i, hash->size());
+                    std::memcpy(i, hash.data(), hash.size());
+                    std::advance(i, hash.size());
                 }
 
                 return out;

@@ -23,23 +23,22 @@
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Types.hpp"
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
@@ -62,7 +61,7 @@ FilterOracle::BlockIndexer::BlockIndexer(
           [&] {
               auto promise = std::promise<cfilter::Header>{};
               const auto tip = db.FilterTip(type);
-              promise.set_value(db.LoadFilterHeader(type, tip.second->Bytes()));
+              promise.set_value(db.LoadFilterHeader(type, tip.second.Bytes()));
 
               return Finished{promise.get_future()};
           }(),
@@ -230,8 +229,8 @@ auto FilterOracle::BlockIndexer::process_position(
 
     OT_ASSERT(body.size() > 2);
 
-    process_position(Position{
-        body.at(1).as<block::Height>(), api_.Factory().Data(body.at(2))});
+    process_position(
+        Position{body.at(1).as<block::Height>(), body.at(2).Bytes()});
 }
 
 auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
@@ -239,12 +238,9 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
 {
     const auto current = known();
     auto compare{current};
-    LogTrace()(OT_PRETTY_CLASS())(" Current position: ")(current.first)(",")(
-        current.second->asHex())
+    LogTrace()(OT_PRETTY_CLASS())(" Current position: ")(print(current))
         .Flush();
-    LogTrace()(OT_PRETTY_CLASS())("Incoming position: ")(pos.first)(",")(
-        pos.second->asHex())
-        .Flush();
+    LogTrace()(OT_PRETTY_CLASS())("Incoming position: ")(print(pos)).Flush();
     auto hashes = decltype(header_.Ancestors(current, pos)){};
     auto prior = Previous{std::nullopt};
     auto searching{true};
@@ -263,8 +259,7 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
 
         auto postcondition = ScopeGuard{[&] { hashes.erase(hashes.begin()); }};
         auto& first = hashes.front();
-        LogTrace()(OT_PRETTY_CLASS())("         Ancestor: ")(first.first)(",")(
-            first.second->asHex())
+        LogTrace()(OT_PRETTY_CLASS())("         Ancestor: ")(print(first))
             .Flush();
 
         if (first == pos) { return; }
@@ -274,18 +269,18 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
             break;
         }
 
-        auto cfheader = db_.LoadFilterHeader(type_, first.second->Bytes());
-        const auto filter = db_.LoadFilter(type_, first.second->Bytes());
+        auto cfheader = db_.LoadFilterHeader(type_, first.second.Bytes());
+        const auto filter = db_.LoadFilter(type_, first.second.Bytes());
 
         if (cfheader.IsNull()) {
             LogError()(OT_PRETTY_CLASS())("Missing cfheader for block ")(
-                first.first)(",")(first.second->asHex())
+                print(first))
                 .Flush();
         }
 
         if (!filter) {
             LogError()(OT_PRETTY_CLASS())("Missing cfilter for block ")(
-                first.first)(",")(first.second->asHex())
+                print(first))
                 .Flush();
         }
 
@@ -311,7 +306,7 @@ auto FilterOracle::BlockIndexer::queue_processing(
 {
     if (0u == data.size()) { return; }
 
-    auto filters = Vector<internal::FilterDatabase::Filter>{};
+    auto filters = Vector<internal::FilterDatabase::CFilterParams>{};
     auto headers = Vector<internal::FilterDatabase::CFHeaderParams>{};
     auto cache = UnallocatedVector<BlockIndexerData>{};
     const auto& tip = data.back();
@@ -326,15 +321,12 @@ auto FilterOracle::BlockIndexer::queue_processing(
         headers.reserve(count);
         cache.reserve(count);
         static const auto blankHash = cfilter::Hash{};
-        static const auto blankHeader = cfilter::Header{};
-        static const auto blankView = ReadView{};
 
         for (const auto& task : data) {
             if (false == running_.load()) { return; }
 
-            auto& filter = filters.emplace_back(blankView, nullptr);
-            auto& header =
-                headers.emplace_back(blankHash, blankHeader, blankView);
+            auto& filter = filters.emplace_back();
+            auto& header = headers.emplace_back();
             auto& job = cache.emplace_back(
                 blankHash, *task, type_, filter, header, jobCounter);
             ++jobCounter;
@@ -374,7 +366,7 @@ auto FilterOracle::BlockIndexer::reset_to_genesis() noexcept -> void
     static const auto genesis =
         block::Position{0, header_.GenesisBlockHash(chain_)};
     auto promise = std::promise<cfilter::Header>{};
-    promise.set_value(db_.LoadFilterHeader(type_, genesis.second->Bytes()));
+    promise.set_value(db_.LoadFilterHeader(type_, genesis.second.Bytes()));
     Reset(genesis, promise.get_future());
 }
 

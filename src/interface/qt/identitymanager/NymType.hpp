@@ -8,6 +8,7 @@
 #include <QAbstractListModel>
 #include <tuple>
 
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/identity/IdentityType.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"

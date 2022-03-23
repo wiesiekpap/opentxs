@@ -8,8 +8,15 @@
 #include <gtest/gtest.h>
 
 #include "blockchain/DownloadManager.hpp"
+#include "opentxs/OT.hpp"
+#include "opentxs/api/Context.hpp"
+#include "opentxs/api/crypto/Crypto.hpp"
+#include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/crypto/HashType.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
@@ -64,11 +71,21 @@ struct DownloadManager : public ManagerType {
     {
         auto output = ManagerType::Positions{};
         output.reserve(hashes.size());
+        const auto& crypto = ot::Context().Crypto().Hash();
+        using namespace std::literals;
+        static constexpr auto preimage = "opentxs"sv;
 
         for (const auto& hash : hashes) {
-            auto& [height, bHash] =
-                output.emplace_back(start++, ot::Data::Factory());
-            bHash->DecodeHex(hash);
+            output.emplace_back(start++, [&] {
+                auto out = bb::Hash{};
+                crypto.HMAC(
+                    ot::crypto::HashType::Sha256D,
+                    hash,
+                    preimage,
+                    out.WriteInto());
+
+                return out;
+            }());
         }
 
         generated_positions_.insert(
@@ -156,9 +173,5 @@ private:
     }
 };
 
-const bb::Position DownloadManager::genesis_{0, [] {
-                                                 auto out = ot::Data::Factory();
-                                                 out->DecodeHex("0");
-                                                 return out;
-                                             }()};
+const bb::Position DownloadManager::genesis_{0, bb::Hash{}};
 }  // namespace ottest

@@ -33,6 +33,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -172,12 +173,12 @@ auto Process::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
     }
 }
 
-auto Process::Imp::process_block(block::pHash&& hash) noexcept -> void
+auto Process::Imp::process_block(block::Hash&& hash) noexcept -> void
 {
     if (auto index = downloading_index_.find(hash);
         downloading_index_.end() != index) {
         log_(OT_PRETTY_CLASS())(parent_.name_)(" processing block ")(
-            hash->asHex())
+            hash.asHex())
             .Flush();
         auto& data = index->second;
         const auto& [position, future] = *data;

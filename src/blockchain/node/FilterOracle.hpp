@@ -30,6 +30,9 @@
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -141,7 +144,7 @@ public:
     }
     auto LoadFilters(
         const cfilter::Type type,
-        const Vector<block::pHash>& blocks) const noexcept
+        const Vector<block::Hash>& blocks) const noexcept
         -> Vector<std::unique_ptr<const GCS>> final
     {
         return database_.LoadFilters(type, blocks);
@@ -160,7 +163,7 @@ public:
     auto ProcessBlock(BlockIndexerData& data) const noexcept -> void;
     auto ProcessSyncData(
         const block::Hash& prior,
-        const UnallocatedVector<block::pHash>& hashes,
+        const UnallocatedVector<block::Hash>& hashes,
         const network::p2p::Data& data) const noexcept -> void final;
     auto ProcessSyncData(SyncClientFilterData& data) const noexcept -> void;
     auto ProcessSyncData(

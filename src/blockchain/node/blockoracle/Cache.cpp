@@ -19,9 +19,10 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
@@ -29,7 +30,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace opentxs::blockchain::node::implementation
@@ -126,7 +126,7 @@ auto BlockOracle::Cache::ReceiveBlock(BitcoinBlock_p in) const noexcept -> void
     promise.set_value(std::move(in));
     publish(id);
     LogVerbose()(OT_PRETTY_CLASS())("Cached block ")(id.asHex()).Flush();
-    mem_.push(id, std::move(future));
+    mem_.push(block::Hash{id}, std::move(future));
     pending_.erase(pending);
     publish(pending_.size());
 }
@@ -148,7 +148,7 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
     output.reserve(hashes.size());
     auto ready = UnallocatedVector<const block::Hash*>{};
     auto download =
-        UnallocatedMap<block::pHash, BitcoinBlockFutures::iterator>{};
+        UnallocatedMap<block::Hash, BitcoinBlockFutures::iterator>{};
     auto lock = Lock{lock_};
 
     if (false == running_) {
@@ -166,9 +166,9 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
         const auto start = Clock::now();
         auto found{false};
 
-        if (auto future = mem_.find(block->Bytes()); future.valid()) {
+        if (auto future = mem_.find(block.Bytes()); future.valid()) {
             output.emplace_back(std::move(future));
-            ready.emplace_back(&block.get());
+            ready.emplace_back(&block);
             found = true;
         }
 
@@ -209,9 +209,9 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
 
             auto promise = Promise{};
             promise.set_value(std::move(pBlock));
-            mem_.push(OTData{block}, promise.get_future());
-            output.emplace_back(mem_.find(block->Bytes()));
-            ready.emplace_back(&block.get());
+            mem_.push(block::Hash{block}, promise.get_future());
+            output.emplace_back(mem_.find(block.Bytes()));
+            ready.emplace_back(&block);
             found = true;
         }
 
@@ -247,7 +247,7 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
             [](const auto& in) -> auto {
                 const auto& [key, value] = in;
 
-                return key->Bytes();
+                return key.Bytes();
             });
         LogVerbose()(OT_PRETTY_CLASS())("Downloading ")(blockList.size())(
             " blocks from peers")
@@ -309,14 +309,14 @@ auto BlockOracle::Cache::StateMachine() const noexcept -> bool
 
         if (timeout || (false == queued)) {
             LogVerbose()(OT_PRETTY_CLASS())("Requesting ")(print(chain_))(
-                " block ")(hash->asHex())(" from peers")
+                " block ")(hash.asHex())(" from peers")
                 .Flush();
-            blockList.emplace_back(hash->Bytes());
+            blockList.emplace_back(hash.Bytes());
             queued = true;
             time = now;
         } else {
             LogVerbose()(OT_PRETTY_CLASS())(elapsed)(" elapsed waiting for ")(
-                print(chain_))(" block ")(hash->asHex())
+                print(chain_))(" block ")(hash.asHex())
                 .Flush();
         }
     }

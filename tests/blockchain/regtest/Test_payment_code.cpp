@@ -24,6 +24,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
@@ -334,7 +335,7 @@ TEST_F(Regtest_payment_code, first_block)
         client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto blockHash = blockchain.HeaderOracle().BestHash(1);
 
-    ASSERT_FALSE(blockHash->empty());
+    ASSERT_FALSE(blockHash.IsNull());
 
     const auto pBlock = blockchain.BlockOracle().LoadBitcoin(blockHash).get();
 
@@ -945,7 +946,7 @@ TEST_F(Regtest_payment_code, second_block)
     const auto blockHash = blockchain.HeaderOracle().BestHash(height_);
     auto expected = ot::UnallocatedVector<ot::Space>{};
 
-    ASSERT_FALSE(blockHash->empty());
+    ASSERT_FALSE(blockHash.IsNull());
 
     const auto pBlock = blockchain.BlockOracle().LoadBitcoin(blockHash).get();
 

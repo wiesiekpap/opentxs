@@ -26,6 +26,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
@@ -112,7 +113,6 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
 
         OT_ASSERT(gcs);
 
-        const auto filterHash = gcs->Hash();
         auto success{false};
 
         if (needHeader) {
@@ -126,7 +126,7 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
 
                      return out;
                  }(genesis.first),
-                 filterHash.Bytes()}};
+                 gcs->Hash()}};
             success = common_.StoreFilterHeaders(style, headers);
 
             OT_ASSERT(success);
@@ -137,8 +137,9 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
         }
 
         if (needFilter) {
-            auto filters = Vector<node::internal::FilterDatabase::Filter>{};
-            filters.emplace_back(blockHash.Bytes(), std::move(gcs));
+            auto filters =
+                Vector<node::internal::FilterDatabase::CFilterParams>{};
+            filters.emplace_back(blockHash, std::move(gcs));
 
             success = common_.StoreFilters(style, filters);
 
@@ -159,23 +160,23 @@ auto Filters::LoadFilter(const cfilter::Type type, const ReadView block)
 
 auto Filters::LoadFilters(
     const cfilter::Type type,
-    const Vector<block::pHash>& blocks) const noexcept
+    const Vector<block::Hash>& blocks) const noexcept
     -> Vector<std::unique_ptr<const GCS>>
 {
     return common_.LoadFilters(type, blocks);
 }
 
 auto Filters::LoadFilterHash(const cfilter::Type type, const ReadView block)
-    const noexcept -> Hash
+    const noexcept -> cfilter::Hash
 {
-    auto output = api_.Factory().Data();
+    auto output = cfilter::Hash{};
 
-    if (common_.LoadFilterHash(type, block, output->WriteInto())) {
+    if (common_.LoadFilterHash(type, block, output.WriteInto())) {
 
         return output;
     }
 
-    return api_.Factory().Data();
+    return cfilter::Hash{};
 }
 
 auto Filters::LoadFilterHeader(const cfilter::Type type, const ReadView block)
@@ -217,7 +218,7 @@ auto Filters::SetTip(const cfilter::Type type, const block::Position& position)
 auto Filters::StoreFilters(
     const cfilter::Type type,
     const Vector<CFHeaderParams>& headers,
-    const Vector<Filter>& filters,
+    const Vector<CFilterParams>& filters,
     const block::Position& tip) const noexcept -> bool
 {
     auto output = common_.StoreFilters(type, headers, filters);
@@ -262,8 +263,9 @@ auto Filters::StoreFilters(
     return parentTxn.Finalize(true);
 }
 
-auto Filters::StoreFilters(const cfilter::Type type, Vector<Filter> filters)
-    const noexcept -> bool
+auto Filters::StoreFilters(
+    const cfilter::Type type,
+    Vector<CFilterParams> filters) const noexcept -> bool
 {
     return common_.StoreFilters(type, filters);
 }

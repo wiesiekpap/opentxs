@@ -22,7 +22,9 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
@@ -158,7 +160,7 @@ public:
     auto apply_blocks(const ot::UnallocatedVector<Test>& vector) -> bool;
     auto apply_blocks_batch(const ot::UnallocatedVector<Test>& vector) -> bool;
     auto create_blocks(const ot::UnallocatedVector<Block>& vector) -> bool;
-    auto get_block_hash(const ot::UnallocatedCString& hash) -> bb::pHash;
+    auto get_block_hash(const ot::UnallocatedCString& hash) -> bb::Hash;
     auto get_test_block(const ot::UnallocatedCString& hash)
         -> std::unique_ptr<bb::Header>;
     auto make_position(const bb::Height height, const std::string_view hash)

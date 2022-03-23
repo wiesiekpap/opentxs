@@ -18,6 +18,8 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/NumericHash.hpp"
 #include "opentxs/blockchain/bitcoin/Work.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
@@ -85,19 +87,19 @@ public:
     static auto calculate_hash(
         const api::Session& api,
         const blockchain::Type chain,
-        const ReadView serialized) -> block::pHash;
+        const ReadView serialized) -> block::Hash;
     static auto calculate_hash(
         const api::Session& api,
         const blockchain::Type chain,
-        const BitcoinFormat& serialized) -> block::pHash;
+        const BitcoinFormat& serialized) -> block::Hash;
     static auto calculate_pow(
         const api::Session& api,
         const blockchain::Type chain,
-        const ReadView serialized) -> block::pHash;
+        const ReadView serialized) -> block::Hash;
     static auto calculate_pow(
         const api::Session& api,
         const blockchain::Type chain,
-        const BitcoinFormat& serialized) -> block::pHash;
+        const BitcoinFormat& serialized) -> block::Hash;
 
     auto as_Bitcoin() const noexcept -> std::unique_ptr<bitcoin::Header> final
     {
@@ -130,11 +132,11 @@ public:
         const api::Session& api,
         const blockchain::Type chain,
         const VersionNumber subversion,
-        block::pHash&& hash,
-        block::pHash&& pow,
+        block::Hash&& hash,
+        block::Hash&& pow,
         const std::int32_t version,
-        block::pHash&& previous,
-        block::pHash&& merkle,
+        block::Hash&& previous,
+        block::Hash&& merkle,
         const Time timestamp,
         const std::uint32_t nbits,
         const std::uint32_t nonce,
@@ -156,17 +158,17 @@ private:
 
     const VersionNumber subversion_;
     const std::int32_t block_version_;
-    const OTData merkle_root_;
+    const block::Hash merkle_root_;
     const Time timestamp_;
     const std::uint32_t nbits_;
     const std::uint32_t nonce_;
 
     static auto calculate_hash(
         const api::Session& api,
-        const SerializedType& serialized) -> block::pHash;
+        const SerializedType& serialized) -> block::Hash;
     static auto calculate_pow(
         const api::Session& api,
-        const SerializedType& serialized) -> block::pHash;
+        const SerializedType& serialized) -> block::Hash;
     static auto calculate_work(
         const blockchain::Type chain,
         const std::uint32_t nbits) -> OTWork;
@@ -180,9 +182,9 @@ private:
         const api::Session& api,
         const VersionNumber version,
         const blockchain::Type chain,
-        block::pHash&& hash,
-        block::pHash&& pow,
-        block::pHash&& previous,
+        block::Hash&& hash,
+        block::Hash&& pow,
+        block::Hash&& previous,
         const block::Height height,
         const Status status,
         const Status inheritStatus,
@@ -190,7 +192,7 @@ private:
         const blockchain::Work& inheritWork,
         const VersionNumber subversion,
         const std::int32_t blockVersion,
-        block::pHash&& merkle,
+        block::Hash&& merkle,
         const Time timestamp,
         const std::uint32_t nbits,
         const std::uint32_t nonce,
