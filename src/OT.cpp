@@ -64,7 +64,7 @@ auto InitContext(const Options& args, PasswordCaller* externalPasswordCallback)
     -> const api::Context&
 {
     if (nullptr != instance_pointer_) {
-        std::runtime_error("Context is not initialized");
+        throw std::runtime_error("Context is already initialized");
     }
 
     instance_pointer_ =

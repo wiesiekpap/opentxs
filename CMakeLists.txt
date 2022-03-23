@@ -442,11 +442,16 @@ if(OPENTXS_BUILD_TESTS)
   if(OT_USE_VCPKG_TARGETS)
     find_package(
       GTest
+      1.11.0
       CONFIG
       REQUIRED
     )
   else()
-    find_package(GTest REQUIRED)
+    find_package(
+      GTest
+      1.11.0
+      REQUIRED
+    )
   endif()
   enable_testing()
 endif()

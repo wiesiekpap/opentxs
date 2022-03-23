@@ -94,6 +94,7 @@ endfunction()
 
 add_library(
   opentxs-test-helpers OBJECT
+  "common/mocks/util/PasswordCallbackMock.hpp"
   "Basic.cpp"
   "Basic.hpp"
   "Cli.hpp"
@@ -129,9 +130,9 @@ if(OT_QT_EXPORT)
 endif()
 
 if(OT_USE_VCPKG_TARGETS)
-  target_link_libraries(opentxs-test-helpers PUBLIC GTest::gtest)
+  target_link_libraries(opentxs-test-helpers PUBLIC GTest::gtest GTest::gmock)
 else()
-  target_link_libraries(opentxs-test-helpers PUBLIC GTest::GTest)
+  target_link_libraries(opentxs-test-helpers PUBLIC GTest::GTest GTest::gmock)
 endif()
 
 set_target_properties(
