@@ -28,6 +28,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/p2p/Block.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"
@@ -142,12 +143,13 @@ public:
     auto LoadBlockHeader(const BlockHash& hash) const noexcept(false)
         -> proto::BlockchainBlockHeader;
     auto LoadEnabledChains() const noexcept -> UnallocatedVector<EnabledChain>;
-    auto LoadFilter(const cfilter::Type type, const ReadView blockHash)
-        const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>;
+    auto LoadFilter(
+        const cfilter::Type type,
+        const ReadView blockHash,
+        alloc::Default alloc) const noexcept -> opentxs::blockchain::GCS;
     auto LoadFilters(
         const cfilter::Type type,
-        const Vector<block::Hash>& blocks) const noexcept
-        -> Vector<std::unique_ptr<const GCS>>;
+        const Vector<block::Hash>& blocks) const noexcept -> Vector<GCS>;
     auto LoadFilterHash(
         const cfilter::Type type,
         const ReadView blockHash,

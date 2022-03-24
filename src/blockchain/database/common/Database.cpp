@@ -510,16 +510,17 @@ auto Database::LoadBlockHeader(const BlockHash& hash) const noexcept(false)
     return imp_.headers_.Load(hash);
 }
 
-auto Database::LoadFilter(const cfilter::Type type, const ReadView blockHash)
-    const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>
+auto Database::LoadFilter(
+    const cfilter::Type type,
+    const ReadView blockHash,
+    alloc::Default alloc) const noexcept -> opentxs::blockchain::GCS
 {
-    return imp_.filters_.LoadFilter(type, blockHash);
+    return imp_.filters_.LoadFilter(type, blockHash, alloc);
 }
 
 auto Database::LoadFilters(
     const cfilter::Type type,
-    const Vector<block::Hash>& blocks) const noexcept
-    -> Vector<std::unique_ptr<const GCS>>
+    const Vector<block::Hash>& blocks) const noexcept -> Vector<GCS>
 {
     return imp_.filters_.LoadFilters(type, blocks);
 }

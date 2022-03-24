@@ -125,8 +125,12 @@ auto BitcoinP2PCfilter(
     namespace bitcoin = blockchain::p2p::bitcoin;
     using ReturnType = bitcoin::message::implementation::Cfilter;
 
-    return new ReturnType(
-        api, network, type, hash, filter.ElementCount(), filter.Compressed());
+    return new ReturnType(api, network, type, hash, filter.ElementCount(), [&] {
+        auto out = Space{};
+        filter.Compressed(writer(out));
+
+        return out;
+    }());
 }
 }  // namespace opentxs::factory
 

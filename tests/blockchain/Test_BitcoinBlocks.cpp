@@ -51,11 +51,11 @@ struct Test_BitcoinBlock : public ::testing::Test {
     const ot::api::session::Client& api_;
 
     auto CompareElements(
-        const ot::UnallocatedVector<ot::OTData>& input,
+        const ot::Vector<ot::OTData>& input,
         ot::UnallocatedVector<ot::UnallocatedCString> expected) const -> bool
     {
-        auto inputHex = ot::UnallocatedVector<ot::UnallocatedCString>{};
-        auto difference = ot::UnallocatedVector<ot::UnallocatedCString>{};
+        auto inputHex = ot::Vector<ot::UnallocatedCString>{};
+        auto difference = ot::Vector<ot::UnallocatedCString>{};
         std::transform(
             std::begin(input), std::end(input), std::back_inserter(inputHex), [
             ](const auto& in) -> auto { return in->asHex(); });
@@ -94,15 +94,22 @@ struct Test_BitcoinBlock : public ::testing::Test {
         const auto& hOracle = network.HeaderOracle();
         const auto& fOracle = network.FilterOracle();
         const auto genesisFilter =
-            fOracle.LoadFilter(filterType, hOracle.GenesisBlockHash(chain));
+            fOracle.LoadFilter(filterType, hOracle.GenesisBlockHash(chain), {});
         const auto genesisHeader = fOracle.LoadFilterHeader(
             filterType, hOracle.GenesisBlockHash(chain));
 
-        EXPECT_TRUE(genesisFilter);
+        EXPECT_TRUE(genesisFilter.IsValid());
 
-        if (false == bool(genesisFilter)) { return false; }
+        if (false == genesisFilter.IsValid()) { return false; }
 
-        EXPECT_EQ(filter.asHex(), genesisFilter->Encode()->asHex());
+        const auto encoded = [&] {
+            auto out = api_.Factory().Data();
+            genesisFilter.Encode(out->WriteInto());
+
+            return out;
+        }();
+
+        EXPECT_EQ(filter.asHex(), encoded->asHex());
         EXPECT_EQ(header.asHex(), genesisHeader.asHex());
 
         return true;
@@ -112,9 +119,9 @@ struct Test_BitcoinBlock : public ::testing::Test {
         const Bip158Vector& vector,
         const ot::blockchain::block::Block& block,
         const std::size_t encodedElements) const noexcept
-        -> ot::UnallocatedVector<ot::OTData>
+        -> ot::Vector<ot::OTData>
     {
-        auto output = ot::UnallocatedVector<ot::OTData>{};
+        auto output = ot::Vector<ot::OTData>{};
 
         for (const auto& bytes : block.Internal().ExtractElements(
                  ot::blockchain::cfilter::Type::Basic_BIP158)) {
@@ -159,33 +166,63 @@ struct Test_BitcoinBlock : public ::testing::Test {
         constexpr auto masked{ot::blockchain::cfilter::Type::Basic_BIP158};
         constexpr auto replace{ot::blockchain::cfilter::Type::Basic_BCHVariant};
 
-        const auto gcs = ot::factory::GCS(
-            api_, (filterType == masked) ? replace : filterType, *block);
+        const auto cfilter = ot::factory::GCS(
+            api_, (filterType == masked) ? replace : filterType, *block, {});
 
-        EXPECT_TRUE(gcs);
+        EXPECT_TRUE(cfilter.IsValid());
 
-        if (false == bool(gcs)) { return false; }
+        if (false == cfilter.IsValid()) { return false; }
 
         {
             const auto proto = [&] {
                 auto out = ot::Space{};
-                gcs->Serialize(ot::writer(out));
+                cfilter.Serialize(ot::writer(out));
 
                 return out;
             }();
-            const auto gcs2 = ot::factory::GCS(api_, ot::reader(proto));
+            const auto cfilter2 = ot::factory::GCS(api_, ot::reader(proto), {});
 
-            EXPECT_TRUE(gcs2);
+            EXPECT_TRUE(cfilter2.IsValid());
 
-            if (false == bool(gcs2)) { return false; }
+            if (false == cfilter2.IsValid()) { return false; }
 
-            EXPECT_EQ(gcs2->Compressed(), gcs->Compressed());
-            EXPECT_EQ(gcs2->Encode(), gcs->Encode());
+            const auto compressed1 = [&] {
+                auto out = api_.Factory().Data();
+                cfilter.Compressed(out->WriteInto());
+
+                return out;
+            }();
+            const auto compressed2 = [&] {
+                auto out = api_.Factory().Data();
+                cfilter2.Compressed(out->WriteInto());
+
+                return out;
+            }();
+            const auto encoded1 = [&] {
+                auto out = api_.Factory().Data();
+                cfilter.Encode(out->WriteInto());
+
+                return out;
+            }();
+            const auto encoded2 = [&] {
+                auto out = api_.Factory().Data();
+                cfilter2.Encode(out->WriteInto());
+
+                return out;
+            }();
+
+            EXPECT_EQ(compressed2, compressed1);
+            EXPECT_EQ(encoded2, encoded1);
         }
 
         static const auto blank = ot::blockchain::cfilter::Header{};
-        const auto filter = gcs->Encode();
-        const auto header = gcs->Header(blank);
+        const auto filter = [&] {
+            auto out = api_.Factory().Data();
+            cfilter.Encode(out->WriteInto());
+
+            return out;
+        }();
+        const auto header = cfilter.Header(blank);
         const auto& [expectedFilter, expectedHeader] = filterMap.at(filterType);
 
         EXPECT_EQ(filter->asHex(), expectedFilter);
@@ -334,22 +371,27 @@ TEST_F(Test_BitcoinBlock, bip158)
 
         static const auto params = ot::blockchain::internal::GetFilterParams(
             ot::blockchain::cfilter::Type::Basic_BIP158);
-        const auto pGCS = ot::factory::GCS(
+        const auto cfilter = ot::factory::GCS(
             api_,
             params.first,
             params.second,
             ot::blockchain::internal::BlockHashToFilterKey(block.ID().Bytes()),
-            ExtractElements(vector, block, encodedElements));
+            ExtractElements(vector, block, encodedElements),
+            {});
 
-        ASSERT_TRUE(pGCS);
+        ASSERT_TRUE(cfilter.IsValid());
 
-        const auto& gcs = *pGCS;
-        const auto filter = gcs.Encode();
+        const auto filter = [&] {
+            auto out = api_.Factory().Data();
+            cfilter.Encode(out->WriteInto());
+
+            return out;
+        }();
 
         EXPECT_EQ(filter.get(), encodedFilter.get());
 
         const auto header =
-            gcs.Header(vector.PreviousFilterHeader(api_)->Bytes());
+            cfilter.Header(vector.PreviousFilterHeader(api_)->Bytes());
 
         EXPECT_EQ(vector.FilterHeader(api_).get(), header);
     }
@@ -362,16 +404,16 @@ TEST_F(Test_BitcoinBlock, gcs_headers)
         const auto encodedFilter = vector.Filter(api_);
         const auto previousHeader = vector.PreviousFilterHeader(api_);
 
-        const auto pGCS = ot::factory::GCS(
+        const auto cfilter = ot::factory::GCS(
             api_,
             ot::blockchain::cfilter::Type::Basic_BIP158,
             ot::blockchain::internal::BlockHashToFilterKey(blockHash->Bytes()),
-            encodedFilter->Bytes());
+            encodedFilter->Bytes(),
+            {});
 
-        ASSERT_TRUE(pGCS);
+        ASSERT_TRUE(cfilter.IsValid());
 
-        const auto& gcs = *pGCS;
-        const auto header = gcs.Header(previousHeader->Bytes());
+        const auto header = cfilter.Header(previousHeader->Bytes());
 
         EXPECT_EQ(header, vector.FilterHeader(api_).get());
     }
@@ -406,16 +448,16 @@ TEST_F(Test_BitcoinBlock, bch_filter_1307544)
     const auto expectedHeader = api_.Factory().DataFromHex(
         "1aa1093ac9289923d390f3bdb2218095dc2d2559f14b4a68b20fcf1656b612b4");
 
-    const auto pGCS = ot::factory::GCS(
+    const auto cfilter = ot::factory::GCS(
         api_,
         ot::blockchain::cfilter::Type::Basic_BCHVariant,
         ot::blockchain::internal::BlockHashToFilterKey(blockHash->Bytes()),
-        encodedFilter);
+        encodedFilter,
+        {});
 
-    ASSERT_TRUE(pGCS);
+    ASSERT_TRUE(cfilter.IsValid());
 
-    const auto& gcs = *pGCS;
-    const auto header = gcs.Header(previousHeader->Bytes());
+    const auto header = cfilter.Header(previousHeader->Bytes());
 
     EXPECT_EQ(header, expectedHeader.get());
 }
@@ -432,16 +474,16 @@ TEST_F(Test_BitcoinBlock, bch_filter_1307723)
     const auto expectedHeader = api_.Factory().DataFromHex(
         "747d817e9a7b2130e000b197a08219fa2667c8dc8313591d00492bb9213293ae");
 
-    const auto pGCS = ot::factory::GCS(
+    const auto cfilter = ot::factory::GCS(
         api_,
         ot::blockchain::cfilter::Type::Basic_BCHVariant,
         ot::blockchain::internal::BlockHashToFilterKey(blockHash->Bytes()),
-        encodedFilter);
+        encodedFilter,
+        {});
 
-    ASSERT_TRUE(pGCS);
+    ASSERT_TRUE(cfilter.IsValid());
 
-    const auto& gcs = *pGCS;
-    const auto header = gcs.Header(previousHeader->Bytes());
+    const auto header = cfilter.Header(previousHeader->Bytes());
 
     EXPECT_EQ(header, expectedHeader.get());
 }

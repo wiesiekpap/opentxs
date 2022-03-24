@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <functional>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -32,7 +34,6 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
@@ -42,6 +43,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -71,13 +73,13 @@ auto GCS(
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
-    const UnallocatedVector<OTData>& elements) noexcept
-    -> std::unique_ptr<blockchain::GCS>
+    const Vector<OTData>& elements,
+    alloc::Default alloc) noexcept -> blockchain::GCS
 {
     using ReturnType = blockchain::implementation::GCS;
 
     try {
-        auto effective = UnallocatedVector<ReadView>{};
+        auto effective = blockchain::GCS::Targets{alloc};
 
         for (const auto& element : elements) {
             if (element->empty()) { continue; }
@@ -87,31 +89,66 @@ auto GCS(
 
         dedup(effective);
 
-        return std::make_unique<ReturnType>(api, bits, fpRate, key, effective);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtautological-type-limit-compare"
+        // std::size_t might be 32 bit
+        if (std::numeric_limits<std::uint32_t>::max() < effective.size()) {
+            throw std::runtime_error(
+                "Too many elements: " + std::to_string(effective.size()));
+        }
+#pragma GCC diagnostic pop
+
+        const auto count = static_cast<std::uint32_t>(effective.size());
+        auto hashed =
+            gcs::HashedSetConstruct(api, key, count, fpRate, effective, alloc);
+        auto compressed = gcs::GolombEncode(bits, hashed, alloc);
+
+        return std::make_unique<ReturnType>(
+                   api,
+                   bits,
+                   fpRate,
+                   count,
+                   key,
+                   std::move(hashed),
+                   std::move(compressed),
+                   alloc)
+            .release();
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
-        return nullptr;
+        return std::make_unique<blockchain::GCS::Imp>(alloc).release();
     }
 }
 
-auto GCS(const api::Session& api, const proto::GCS& in) noexcept
-    -> std::unique_ptr<blockchain::GCS>
+auto GCS(
+    const api::Session& api,
+    const proto::GCS& in,
+    alloc::Default alloc) noexcept -> blockchain::GCS
 {
     using ReturnType = blockchain::implementation::GCS;
 
     try {
+
         return std::make_unique<ReturnType>(
-            api, in.bits(), in.fprate(), in.count(), in.key(), in.filter());
+                   api,
+                   in.bits(),
+                   in.fprate(),
+                   in.count(),
+                   in.key(),
+                   in.filter(),
+                   alloc)
+            .release();
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
-        return nullptr;
+        return std::make_unique<blockchain::GCS::Imp>(alloc).release();
     }
 }
 
-auto GCS(const api::Session& api, const ReadView in) noexcept
-    -> std::unique_ptr<blockchain::GCS>
+auto GCS(
+    const api::Session& api,
+    const ReadView in,
+    alloc::Default alloc) noexcept -> blockchain::GCS
 {
     try {
         const auto proto = proto::Factory<proto::GCS>(in.data(), in.size());
@@ -120,11 +157,11 @@ auto GCS(const api::Session& api, const ReadView in) noexcept
             throw std::runtime_error{"invalid serialized gcs"};
         }
 
-        return GCS(api, proto);
+        return GCS(api, proto, alloc);
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
-        return nullptr;
+        return std::make_unique<blockchain::GCS::Imp>(alloc).release();
     }
 }
 
@@ -134,17 +171,20 @@ auto GCS(
     const std::uint32_t fpRate,
     const ReadView key,
     const std::uint32_t filterElementCount,
-    const ReadView filter) noexcept -> std::unique_ptr<blockchain::GCS>
+    const ReadView filter,
+    alloc::Default alloc) noexcept -> blockchain::GCS
 {
     using ReturnType = blockchain::implementation::GCS;
 
     try {
+
         return std::make_unique<ReturnType>(
-            api, bits, fpRate, filterElementCount, key, filter);
+                   api, bits, fpRate, filterElementCount, key, filter, alloc)
+            .release();
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
-        return nullptr;
+        return std::make_unique<blockchain::GCS::Imp>(alloc).release();
     }
 }
 
@@ -152,7 +192,8 @@ auto GCS(
     const api::Session& api,
     const blockchain::cfilter::Type type,
     const ReadView key,
-    const ReadView encoded) noexcept -> std::unique_ptr<blockchain::GCS>
+    const ReadView encoded,
+    alloc::Default alloc) noexcept -> blockchain::GCS
 {
     using ReturnType = blockchain::implementation::GCS;
     const auto params = blockchain::internal::GetFilterParams(type);
@@ -162,19 +203,26 @@ auto GCS(
             blockchain::internal::DecodeSerializedCfilter(encoded);
 
         return std::make_unique<ReturnType>(
-            api, params.first, params.second, elements, key, bytes);
+                   api,
+                   params.first,
+                   params.second,
+                   elements,
+                   key,
+                   bytes,
+                   alloc)
+            .release();
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
-        return nullptr;
+        return std::make_unique<blockchain::GCS::Imp>(alloc).release();
     }
 }
 
 auto GCS(
     const api::Session& api,
     const blockchain::cfilter::Type type,
-    const blockchain::block::Block& block) noexcept
-    -> std::unique_ptr<blockchain::GCS>
+    const blockchain::block::Block& block,
+    alloc::Default alloc) noexcept -> blockchain::GCS
 {
     using ReturnType = blockchain::implementation::GCS;
 
@@ -183,27 +231,48 @@ auto GCS(
             ": Filter can not be constructed without previous outputs")
             .Flush();
 
-        return nullptr;
+        return std::make_unique<blockchain::GCS::Imp>(alloc).release();
     }
 
     try {
         const auto params = blockchain::internal::GetFilterParams(type);
+        // TODO allocator
         const auto input = block.Internal().ExtractElements(type);
-        auto elements = UnallocatedVector<ReadView>{};
+        auto elements = blockchain::GCS::Targets{alloc};
         std::transform(
             std::begin(input), std::end(input), std::back_inserter(elements), [
             ](const auto& element) -> auto { return reader(element); });
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtautological-type-limit-compare"
+        // std::size_t might be 32 bit
+        if (std::numeric_limits<std::uint32_t>::max() < elements.size()) {
+            throw std::runtime_error(
+                "Too many elements: " + std::to_string(elements.size()));
+        }
+#pragma GCC diagnostic pop
+
+        const auto count = static_cast<std::uint32_t>(elements.size());
+        const auto key =
+            blockchain::internal::BlockHashToFilterKey(block.ID().Bytes());
+        auto hashed = gcs::HashedSetConstruct(
+            api, key, count, params.second, elements, alloc);
+        auto compressed = gcs::GolombEncode(params.first, hashed, alloc);
+
         return std::make_unique<ReturnType>(
-            api,
-            params.first,
-            params.second,
-            blockchain::internal::BlockHashToFilterKey(block.ID().Bytes()),
-            elements);
+                   api,
+                   params.first,
+                   params.second,
+                   count,
+                   key,
+                   std::move(hashed),
+                   std::move(compressed),
+                   alloc)
+            .release();
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
-        return nullptr;
+        return std::make_unique<blockchain::GCS::Imp>(alloc).release();
     }
 }
 }  // namespace opentxs::factory
@@ -256,10 +325,11 @@ auto golomb_encode(
 auto GolombDecode(
     const std::uint32_t N,
     const std::uint8_t P,
-    const Space& encoded) noexcept(false) -> UnallocatedVector<std::uint64_t>
+    const Vector<std::byte>& encoded,
+    alloc::Default alloc) noexcept(false) -> Elements
 {
-    auto output = UnallocatedVector<std::uint64_t>{};
-    auto stream = BitReader(encoded);
+    auto output = Elements{alloc};
+    auto stream = BitReader{encoded};
     auto last = std::uint64_t{0};
 
     for (auto i = std::size_t{0}; i < N; ++i) {
@@ -274,9 +344,10 @@ auto GolombDecode(
 
 auto GolombEncode(
     const std::uint8_t P,
-    const UnallocatedVector<std::uint64_t>& hashedSet) noexcept(false) -> Space
+    const Elements& hashedSet,
+    alloc::Default alloc) noexcept(false) -> Vector<std::byte>
 {
-    auto output = Space{};
+    auto output = Vector<std::byte>{alloc};
     output.reserve(hashedSet.size() * P * 2u);
     auto stream = BitWriter{output};
     auto last = std::uint64_t{0};
@@ -328,10 +399,10 @@ auto HashedSetConstruct(
     const ReadView key,
     const std::uint32_t N,
     const std::uint32_t M,
-    const UnallocatedVector<ReadView> items) noexcept(false)
-    -> UnallocatedVector<std::uint64_t>
+    const blockchain::GCS::Targets& items,
+    alloc::Default alloc) noexcept(false) -> Elements
 {
-    auto output = UnallocatedVector<std::uint64_t>{};
+    auto output = Elements{alloc};
     std::transform(
         std::begin(items),
         std::end(items),
@@ -348,24 +419,30 @@ auto HashedSetConstruct(
 namespace opentxs::blockchain::implementation
 {
 GCS::GCS(
+    const VersionNumber version,
     const api::Session& api,
     const std::uint8_t bits,
     const std::uint32_t fpRate,
-    const std::uint32_t filterElementCount,
-    const ReadView key,
-    const ReadView encoded) noexcept(false)
-    : version_(1)
+    const std::uint32_t count,
+    std::optional<gcs::Elements>&& elements,
+    Vector<std::byte>&& compressed,
+    ReadView key,
+    allocator_type alloc) noexcept(false)
+    : Imp(alloc)
+    , version_(version)
     , api_(api)
     , bits_(bits)
     , false_positive_rate_(fpRate)
-    , count_(filterElementCount)
-    , elements_()
-    , compressed_(api_.Factory().DataFromBytes(encoded))
-    , key_(api_.Factory().DataFromBytes(key))
+    , count_(count)
+    , key_()
+    , compressed_(std::move(compressed), alloc)
+    , elements_(std::move(elements))
 {
-    if (16u != key_->size()) {
+    static_assert(16u == sizeof(key_));
+
+    if (false == copy(key, writer(const_cast<Key&>(key_)))) {
         throw std::runtime_error(
-            "Invalid key size: " + std::to_string(key_->size()));
+            "Invalid key size: " + std::to_string(key.size()));
     }
 }
 
@@ -373,115 +450,206 @@ GCS::GCS(
     const api::Session& api,
     const std::uint8_t bits,
     const std::uint32_t fpRate,
+    const std::uint32_t count,
     const ReadView key,
-    const UnallocatedVector<ReadView>& elements) noexcept(false)
-    : version_(1)
-    , api_(api)
-    , bits_(bits)
-    , false_positive_rate_(fpRate)
-    , count_(static_cast<std::uint32_t>(elements.size()))
-    , elements_(gcs::HashedSetConstruct(
-          api_,
+    const ReadView encoded,
+    allocator_type alloc) noexcept(false)
+    : GCS(
+          1,
+          api,
+          bits,
+          fpRate,
+          count,
+          std::nullopt,
+          [&] {
+              auto out = Vector<std::byte>{alloc};
+              copy(encoded, writer(out));
+
+              return out;
+          }(),
           key,
-          static_cast<std::uint32_t>(elements.size()),
-          false_positive_rate_,
-          elements))
-    , compressed_(api_.Factory().DataFromBytes(
-          reader(gcs::GolombEncode(bits_, *elements_))))
-    , key_(api_.Factory().DataFromBytes(key))
+          alloc)
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wtautological-type-limit-compare"
-    // std::size_t might be 32 bit
-    if (std::numeric_limits<std::uint32_t>::max() < elements.size()) {
-        throw std::runtime_error(
-            "Too many elements: " + std::to_string(elements.size()));
-    }
-#pragma GCC diagnostic pop
-
-    if (16u != key_->size()) {
-        throw std::runtime_error(
-            "Invalid key size: " + std::to_string(key_->size()));
-    }
 }
 
-auto GCS::Compressed() const noexcept -> Space
+GCS::GCS(
+    const api::Session& api,
+    const std::uint8_t bits,
+    const std::uint32_t fpRate,
+    const std::uint32_t count,
+    const ReadView key,
+    Vector<std::byte>&& encoded,
+    allocator_type alloc) noexcept(false)
+    : GCS(1,
+          api,
+          bits,
+          fpRate,
+          count,
+          std::nullopt,
+          std::move(encoded),
+          key,
+          alloc)
 {
-    return {
-        reinterpret_cast<const std::byte*>(compressed_->data()),
-        reinterpret_cast<const std::byte*>(compressed_->data()) +
-            compressed_->size()};
 }
 
-auto GCS::decompress() const noexcept -> const Elements&
+GCS::GCS(
+    const api::Session& api,
+    const std::uint8_t bits,
+    const std::uint32_t fpRate,
+    const std::uint32_t count,
+    const ReadView key,
+    gcs::Elements&& hashed,
+    Vector<std::byte>&& compressed,
+    allocator_type alloc) noexcept(false)
+    : GCS(1,
+          api,
+          bits,
+          fpRate,
+          count,
+          std::move(hashed),
+          std::move(compressed),
+          key,
+          alloc)
+{
+}
+
+GCS::GCS(const GCS& rhs, allocator_type alloc) noexcept
+    : GCS(
+          rhs.version_,
+          rhs.api_,
+          rhs.bits_,
+          rhs.false_positive_rate_,
+          rhs.count_,
+          [&]() -> std::optional<gcs::Elements> {
+              if (rhs.elements_.has_value()) {
+
+                  return gcs::Elements{rhs.elements_.value(), alloc};
+              } else {
+
+                  return std::nullopt;
+              }
+          }(),
+          Vector<std::byte>{rhs.compressed_, alloc},
+          reader(rhs.key_),
+          alloc)
+{
+}
+
+auto GCS::Compressed(AllocateOutput out) const noexcept -> bool
+{
+    return copy(reader(compressed_), out);
+}
+
+auto GCS::decompress() const noexcept -> const gcs::Elements&
 {
     if (false == elements_.has_value()) {
-        auto& set = const_cast<std::optional<Elements>&>(elements_);
-        set = gcs::GolombDecode(
-            count_,
-            bits_,
-            Space{
-                reinterpret_cast<const std::byte*>(compressed_->data()),
-                reinterpret_cast<const std::byte*>(compressed_->data()) +
-                    compressed_->size()});
+        auto& set = elements_;
+        set = gcs::GolombDecode(count_, bits_, compressed_, alloc_);
         std::sort(set.value().begin(), set.value().end());
     }
 
     return elements_.value();
 }
 
-auto GCS::Encode() const noexcept -> OTData
+auto GCS::Encode(AllocateOutput cb) const noexcept -> bool
 {
+    if (!cb) {
+        LogError()(OT_PRETTY_CLASS())("invalid output").Flush();
+
+        return false;
+    }
+
     using CompactSize = network::blockchain::bitcoin::CompactSize;
     const auto bytes = CompactSize{count_}.Encode();
-    auto output = Data::Factory(bytes.data(), bytes.size());
-    output->Concatenate(compressed_->data(), compressed_->size());
+    const auto max = std::numeric_limits<std::size_t>::max() - bytes.size();
 
-    return output;
+    if (max < compressed_.size()) {
+        LogError()(OT_PRETTY_CLASS())("filter is too large to encode").Flush();
+
+        return false;
+    }
+
+    const auto target = bytes.size() + compressed_.size();
+    auto out = cb(target);
+
+    if (false == out.valid()) {
+        LogError()(OT_PRETTY_CLASS())("failed to allocate space for output")
+            .Flush();
+
+        return false;
+    }
+
+    auto i = out.as<std::byte>();
+    std::memcpy(i, bytes.data(), bytes.size());
+    std::advance(i, bytes.size());
+    std::memcpy(i, compressed_.data(), compressed_.size());
+    std::advance(i, compressed_.size());
+
+    return true;
 }
 
 auto GCS::Hash() const noexcept -> cfilter::Hash
 {
-    return internal::FilterToHash(api_, Encode()->Bytes());
+    auto preimage = Vector<std::byte>{get_allocator()};
+    Encode(writer(preimage));
+
+    return internal::FilterToHash(api_, reader(preimage));
 }
 
-auto GCS::hashed_set_construct(const UnallocatedVector<OTData>& elements)
-    const noexcept -> UnallocatedVector<std::uint64_t>
+auto GCS::hashed_set_construct(
+    const Vector<OTData>& elements,
+    allocator_type alloc) const noexcept -> gcs::Elements
 {
-    return hashed_set_construct(transform(elements));
+    return hashed_set_construct(transform(elements, alloc), alloc);
 }
 
-auto GCS::hashed_set_construct(const UnallocatedVector<Space>& elements)
-    const noexcept -> UnallocatedVector<std::uint64_t>
+auto GCS::hashed_set_construct(
+    const Vector<Space>& elements,
+    allocator_type alloc) const noexcept -> gcs::Elements
 {
-    return hashed_set_construct(transform(elements));
+    return hashed_set_construct(transform(elements, alloc), alloc);
 }
 
-auto GCS::hashed_set_construct(const UnallocatedVector<ReadView>& elements)
-    const noexcept -> UnallocatedVector<std::uint64_t>
+auto GCS::hashed_set_construct(const Targets& elements, allocator_type alloc)
+    const noexcept -> gcs::Elements
 {
     return gcs::HashedSetConstruct(
-        api_, key_->Bytes(), count_, false_positive_rate_, elements);
+        api_, reader(key_), count_, false_positive_rate_, elements, alloc);
 }
 
 auto GCS::hash_to_range(const ReadView in) const noexcept -> std::uint64_t
 {
     return gcs::HashToRange(
-        api_, key_->Bytes(), range(count_, false_positive_rate_), in);
+        api_, reader(key_), range(count_, false_positive_rate_), in);
 }
 
 auto GCS::Header(const cfilter::Header& previous) const noexcept
     -> cfilter::Header
 {
-    return internal::FilterToHeader(api_, Encode()->Bytes(), previous.Bytes());
+    auto preimage = Vector<std::byte>{get_allocator()};
+    Encode(writer(preimage));
+
+    return internal::FilterToHeader(api_, reader(preimage), previous.Bytes());
 }
 
-auto GCS::Match(const Targets& targets) const noexcept -> Matches
+auto GCS::Match(const Targets& targets, allocator_type alloc) const noexcept
+    -> Matches
 {
-    auto output = Matches{};
-    auto hashed = UnallocatedVector<std::uint64_t>{};
-    auto matches = UnallocatedVector<std::uint64_t>{};
-    auto map = UnallocatedMap<std::uint64_t, Targets::const_iterator>{};
+    static constexpr auto reserveMatches = std::size_t{16};
+    auto output = Matches{alloc};
+    output.reserve(reserveMatches);
+    using Map = opentxs::Map<std::uint64_t, Targets::const_iterator>;
+    static constexpr auto bytesPerTarget = (2 * sizeof(std::uint64_t));
+    auto allocHash = alloc::BoostMonotonic{targets.size() * bytesPerTarget};
+    auto hashed = gcs::Elements{&allocHash};
+    hashed.reserve(targets.size());
+    static constexpr auto bytesPerMatch =
+        sizeof(std::uint64_t) + sizeof(Map::value_type);
+    auto buf = std::array<std::byte, reserveMatches * bytesPerMatch>{};
+    auto allocMatches = alloc::BoostMonotonic{buf.data(), buf.size()};
+    auto matches = gcs::Elements{&allocMatches};
+    matches.reserve(reserveMatches);
+    auto map = Map{&allocMatches};
     const auto& set = decompress();
 
     for (auto i = targets.cbegin(); i != targets.cend(); ++i) {
@@ -510,10 +678,10 @@ auto GCS::Serialize(proto::GCS& output) const noexcept -> bool
     output.set_version(version_);
     output.set_bits(bits_);
     output.set_fprate(false_positive_rate_);
-    output.set_key(key_->data(), key_->size());
+    output.set_key(reinterpret_cast<const char*>(key_.data()), key_.size());
     output.set_count(count_);
     output.set_filter(
-        static_cast<const char*>(compressed_->data()), compressed_->size());
+        reinterpret_cast<const char*>(compressed_.data()), compressed_.size());
 
     return true;
 }
@@ -534,7 +702,17 @@ auto GCS::Test(const Data& target) const noexcept -> bool
 
 auto GCS::Test(const ReadView target) const noexcept -> bool
 {
-    const auto set = hashed_set_construct({target});
+    auto buf = std::array<
+        std::byte,
+        sizeof(target) + sizeof(ReadView) + sizeof(std::uint64_t)>{};
+    auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
+    const auto input = [&] {
+        auto out = Targets{&alloc};
+        out.emplace_back(target);
+
+        return out;
+    }();
+    const auto set = hashed_set_construct(input, &alloc);
 
     OT_ASSERT(1 == set.size());
 
@@ -553,18 +731,25 @@ auto GCS::Test(const ReadView target) const noexcept -> bool
     return false;
 }
 
-auto GCS::Test(const UnallocatedVector<OTData>& targets) const noexcept -> bool
+auto GCS::Test(const Vector<OTData>& targets) const noexcept -> bool
 {
-    return test(hashed_set_construct(targets));
+    const auto size =
+        targets.size() * ((2 * sizeof(ReadView)) + sizeof(std::uint64_t));
+    auto alloc = alloc::BoostMonotonic{size};
+
+    return test(hashed_set_construct(targets, &alloc));
 }
 
-auto GCS::Test(const UnallocatedVector<Space>& targets) const noexcept -> bool
+auto GCS::Test(const Vector<Space>& targets) const noexcept -> bool
 {
-    return test(hashed_set_construct(targets));
+    const auto size =
+        targets.size() * ((2 * sizeof(ReadView)) + sizeof(std::uint64_t));
+    auto alloc = alloc::BoostMonotonic{size};
+
+    return test(hashed_set_construct(targets, &alloc));
 }
 
-auto GCS::test(const UnallocatedVector<std::uint64_t>& targets) const noexcept
-    -> bool
+auto GCS::test(const gcs::Elements& targets) const noexcept -> bool
 {
     const auto& set = decompress();
     auto alloc = alloc::BoostMonotonic{1024};
@@ -579,10 +764,10 @@ auto GCS::test(const UnallocatedVector<std::uint64_t>& targets) const noexcept
     return 0 < matches.size();
 }
 
-auto GCS::transform(const UnallocatedVector<OTData>& in) noexcept
-    -> UnallocatedVector<ReadView>
+auto GCS::transform(const Vector<OTData>& in, allocator_type alloc) noexcept
+    -> Targets
 {
-    auto output = UnallocatedVector<ReadView>{};
+    auto output = Targets{alloc};
     std::transform(
         std::begin(in),
         std::end(in),
@@ -592,10 +777,10 @@ auto GCS::transform(const UnallocatedVector<OTData>& in) noexcept
     return output;
 }
 
-auto GCS::transform(const UnallocatedVector<Space>& in) noexcept
-    -> UnallocatedVector<ReadView>
+auto GCS::transform(const Vector<Space>& in, allocator_type alloc) noexcept
+    -> Targets
 {
-    auto output = UnallocatedVector<ReadView>{};
+    auto output = Targets{alloc};
     std::transform(
         std::begin(in),
         std::end(in),
@@ -605,3 +790,131 @@ auto GCS::transform(const UnallocatedVector<Space>& in) noexcept
     return output;
 }
 }  // namespace opentxs::blockchain::implementation
+
+namespace opentxs::blockchain
+{
+GCS::GCS(Imp* imp) noexcept
+    : imp_(imp)
+{
+    OT_ASSERT(nullptr != imp_);
+}
+
+GCS::GCS(allocator_type alloc) noexcept
+    : GCS(std::make_unique<Imp>(alloc).release())
+{
+}
+
+GCS::GCS(const GCS& rhs, allocator_type alloc) noexcept
+    : GCS(rhs.imp_->clone(alloc).release())
+{
+}
+
+GCS::GCS(GCS&& rhs) noexcept
+    : GCS(std::move(rhs), rhs.get_allocator())
+{
+}
+
+GCS::GCS(GCS&& rhs, allocator_type alloc) noexcept
+    : GCS(alloc)
+{
+    swap(rhs);
+}
+
+auto GCS::operator=(const GCS& rhs) noexcept -> GCS&
+{
+    auto old = std::unique_ptr<Imp>{imp_};
+    imp_ = rhs.imp_->clone(get_allocator()).release();
+
+    return *this;
+}
+
+auto GCS::operator=(GCS&& rhs) noexcept -> GCS&
+{
+    swap(rhs);
+
+    return *this;
+}
+
+auto GCS::Compressed(AllocateOutput out) const noexcept -> bool
+{
+    return imp_->Compressed(out);
+}
+
+auto GCS::ElementCount() const noexcept -> std::uint32_t
+{
+    return imp_->ElementCount();
+}
+
+auto GCS::Encode(AllocateOutput out) const noexcept -> bool
+{
+    return imp_->Encode(out);
+}
+
+auto GCS::get_allocator() const noexcept -> allocator_type
+{
+    return imp_->get_allocator();
+}
+
+auto GCS::Hash() const noexcept -> cfilter::Hash { return imp_->Hash(); }
+
+auto GCS::Header(const cfilter::Header& previous) const noexcept
+    -> cfilter::Header
+{
+    return imp_->Header(previous);
+}
+
+auto GCS::Internal() const noexcept -> const internal::GCS& { return *imp_; }
+
+auto GCS::IsValid() const noexcept -> bool { return imp_->IsValid(); }
+
+auto GCS::Match(const Targets& in, allocator_type alloc) const noexcept
+    -> Matches
+{
+    return imp_->Match(in, alloc);
+}
+
+auto GCS::Serialize(AllocateOutput out) const noexcept -> bool
+{
+    return imp_->Serialize(std::move(out));
+}
+
+auto GCS::swap(GCS& rhs) noexcept -> void
+{
+    if (imp_->get_allocator() == rhs.imp_->get_allocator()) {
+        std::swap(imp_, rhs.imp_);
+    } else {
+        auto oldLhs = std::unique_ptr<Imp>{imp_};
+        auto oldRhs = std::unique_ptr<Imp>{rhs.imp_};
+        imp_ = oldRhs->clone(get_allocator()).release();
+        rhs.imp_ = oldLhs->clone(rhs.get_allocator()).release();
+    }
+}
+
+auto GCS::Test(const Data& target) const noexcept -> bool
+{
+    return imp_->Test(target);
+}
+
+auto GCS::Test(const ReadView target) const noexcept -> bool
+{
+    return imp_->Test(target);
+}
+
+auto GCS::Test(const Vector<OTData>& targets) const noexcept -> bool
+{
+    return imp_->Test(targets);
+}
+
+auto GCS::Test(const Vector<Space>& targets) const noexcept -> bool
+{
+    return imp_->Test(targets);
+}
+
+GCS::~GCS()
+{
+    if (nullptr != imp_) {
+        delete imp_;
+        imp_ = nullptr;
+    }
+}
+}  // namespace opentxs::blockchain

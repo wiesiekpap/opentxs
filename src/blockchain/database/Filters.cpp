@@ -105,13 +105,14 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
         const auto& block = *pBlock;
         const auto& blockHash = block.Hash();
         const auto bytes = api_.Factory().DataFromHex(genesis.second);
-        auto gcs = std::unique_ptr<const GCS>{factory::GCS(
+        auto gcs = factory::GCS(
             api_,
             style,
             blockchain::internal::BlockHashToFilterKey(blockHash.Bytes()),
-            bytes->Bytes())};
+            bytes->Bytes(),
+            {});  // TODO allocator
 
-        OT_ASSERT(gcs);
+        OT_ASSERT(gcs.IsValid());
 
         auto success{false};
 
@@ -126,7 +127,7 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
 
                      return out;
                  }(genesis.first),
-                 gcs->Hash()}};
+                 gcs.Hash()}};
             success = common_.StoreFilterHeaders(style, headers);
 
             OT_ASSERT(success);
@@ -140,7 +141,6 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
             auto filters =
                 Vector<node::internal::FilterDatabase::CFilterParams>{};
             filters.emplace_back(blockHash, std::move(gcs));
-
             success = common_.StoreFilters(style, filters);
 
             OT_ASSERT(success);
@@ -149,19 +149,25 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
 
             OT_ASSERT(success);
         }
+
+        const auto loaded =
+            LoadFilter(style, blockHash.Bytes(), {});  // TODO allocator
+
+        OT_ASSERT(loaded.IsValid());
     }
 }
 
-auto Filters::LoadFilter(const cfilter::Type type, const ReadView block)
-    const noexcept -> std::unique_ptr<const blockchain::GCS>
+auto Filters::LoadFilter(
+    const cfilter::Type type,
+    const ReadView block,
+    alloc::Default alloc) const noexcept -> blockchain::GCS
 {
-    return common_.LoadFilter(type, block);
+    return common_.LoadFilter(type, block, alloc);
 }
 
 auto Filters::LoadFilters(
     const cfilter::Type type,
-    const Vector<block::Hash>& blocks) const noexcept
-    -> Vector<std::unique_ptr<const GCS>>
+    const Vector<block::Hash>& blocks) const noexcept -> Vector<GCS>
 {
     return common_.LoadFilters(type, blocks);
 }

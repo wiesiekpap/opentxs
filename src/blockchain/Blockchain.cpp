@@ -72,19 +72,10 @@ auto operator>(const Position& lhs, const Position& rhs) noexcept -> bool
 
 namespace opentxs::blockchain::internal
 {
-BitReader::BitReader(const Space& bytes)
-    : raw_data_(Data::Factory(bytes))
-    , data_(reinterpret_cast<std::uint8_t*>(raw_data_->data()))
-    , len_(raw_data_->size())
-    , accum_(0)
-    , n_(0)
-{
-}
-
-BitReader::BitReader(std::uint8_t* data, int len)
-    : raw_data_(Data::Factory(data, len))
-    , data_(reinterpret_cast<std::uint8_t*>(raw_data_->data()))
-    , len_(raw_data_->size())
+BitReader::BitReader(const Vector<std::byte>& data)
+    : raw_data_(data)
+    , data_(reinterpret_cast<const std::uint8_t*>(raw_data_.data()))
+    , len_(raw_data_.size())
     , accum_(0)
     , n_(0)
 {
@@ -174,7 +165,7 @@ auto BitReader::read(std::size_t nbits) -> std::uint64_t
 }
 
 // output will contain the result after flush.
-BitWriter::BitWriter(Space& output)
+BitWriter::BitWriter(Vector<std::byte>& output)
     : output_(output)
     , accum_(0)
     , n_(0)

@@ -1029,15 +1029,13 @@ TEST_F(Regtest_payment_code, second_block)
         EXPECT_EQ(elements, expected);
     }
 
-    const auto pFilter =
-        blockchain.FilterOracle().LoadFilter(FilterType::ES, blockHash);
+    const auto cfilter =
+        blockchain.FilterOracle().LoadFilter(FilterType::ES, blockHash, {});
 
-    ASSERT_TRUE(pFilter);
-
-    const auto& filter = *pFilter;
+    ASSERT_TRUE(cfilter.IsValid());
 
     for (const auto& element : expected) {
-        EXPECT_TRUE(filter.Test(ot::reader(element)));
+        EXPECT_TRUE(cfilter.Test(ot::reader(element)));
     }
 }
 

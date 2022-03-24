@@ -551,15 +551,14 @@ auto SubchainStateData::ProcessBlock(
     auto [elements, utxos, targets, outpoints] =
         get_block_targets(blockHash, matches, &alloc);
     const auto haveTargets = Clock::now();
-    const auto pFilter = filters.LoadFilter(type, blockHash);
+    const auto cfilter = filters.LoadFilter(type, blockHash, get_allocator());
 
-    OT_ASSERT(pFilter);
+    OT_ASSERT(cfilter.IsValid());
 
-    const auto& filter = *pFilter;
     const auto haveFilter = Clock::now();
     auto potential = node::internal::WalletDatabase::Patterns{&alloc};
 
-    for (const auto& it : filter.Match(targets)) {
+    for (const auto& it : cfilter.Match(targets)) {
         // NOTE GCS::Match returns const_iterators to items in the input vector
         const auto pos = std::distance(targets.cbegin(), it);
         auto& [id, element] = elements.at(pos);
@@ -731,11 +730,8 @@ auto SubchainStateData::scan(
         startHeight)(" to ")(stopHeight)
         .Flush();
     auto* upstream = alloc::standard_to_boost(get_allocator().resource());
-    // TODO adjust this once Data and GCS are allocator aware
     static constexpr auto allocBytes =
-        (scan_batch_ *
-         (sizeof(block::Hash) + sizeof(std::unique_ptr<const GCS>))) +
-        4_KiB;
+        (scan_batch_ * (sizeof(block::Hash) + sizeof(GCS))) + 4_KiB;
     auto alloc = alloc::BoostMonotonic{allocBytes, upstream};
     const auto targets = get_account_targets(&alloc);
     const auto target = static_cast<std::size_t>(stopHeight - startHeight + 1);
@@ -752,7 +748,7 @@ auto SubchainStateData::scan(
 
     for (auto end = cfilters.end(); f != end; ++f, ++b, ++i) {
         const auto& blockHash = *b;
-        const auto& pFilter = *f;
+        const auto& cfilter = *f;
         auto testPosition = block::Position{i, blockHash};
 
         if (blockHash.empty()) {
@@ -761,7 +757,7 @@ auto SubchainStateData::scan(
             break;
         }
 
-        if (false == bool(pFilter)) {
+        if (false == cfilter.IsValid()) {
             LogError()(OT_PRETTY_CLASS())(name)(" filter for block ")(
                 print(testPosition))(" not found ")
                 .Flush();
@@ -769,11 +765,10 @@ auto SubchainStateData::scan(
             break;
         }
 
-        const auto& filter = *pFilter;
         atLeastOnce = true;
         const auto hasMatches = [&] {
             const auto& [elements, utxos, patterns] = targets;
-            auto matches = filter.Match(patterns);
+            auto matches = cfilter.Match(patterns);
 
             if (0 < matches.size()) {
                 const auto printPosition =
@@ -784,7 +779,7 @@ auto SubchainStateData::scan(
                     .Flush();
                 const auto [untested, retest] =
                     get_block_targets(blockHash, utxos, &alloc);
-                matches = filter.Match(retest);
+                matches = cfilter.Match(retest);
 
                 if (0 < matches.size()) {
                     log_(OT_PRETTY_CLASS())(name)(" ")(matches.size())(

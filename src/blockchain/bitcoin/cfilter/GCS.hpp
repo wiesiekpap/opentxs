@@ -6,15 +6,20 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
+#include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <optional>
 
 #include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -38,75 +43,174 @@ class GCS;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::implementation
+namespace opentxs::blockchain
 {
-class GCS final : virtual public blockchain::GCS
+class GCS::Imp : virtual public Allocated, virtual public internal::GCS
 {
 public:
-    auto Compressed() const noexcept -> Space final;
+    using Targets = blockchain::GCS::Targets;
+    using Matches = blockchain::GCS::Matches;
+
+    const allocator_type alloc_;
+
+    virtual auto clone(allocator_type alloc) const noexcept
+        -> std::unique_ptr<Imp>
+    {
+        return std::make_unique<Imp>(alloc);
+    }
+    virtual auto Compressed(AllocateOutput out) const noexcept -> bool
+    {
+        return {};
+    }
+    virtual auto ElementCount() const noexcept -> std::uint32_t { return {}; }
+    virtual auto Encode(AllocateOutput out) const noexcept -> bool
+    {
+        return {};
+    }
+    auto get_allocator() const noexcept -> allocator_type final
+    {
+        return alloc_;
+    }
+    virtual auto Hash() const noexcept -> cfilter::Hash { return {}; }
+    virtual auto Header(const cfilter::Header& previous) const noexcept
+        -> cfilter::Header
+    {
+        return {};
+    }
+    virtual auto IsValid() const noexcept -> bool { return false; }
+    virtual auto Match(const Targets&, allocator_type) const noexcept -> Matches
+    {
+        return {};
+    }
+    auto Serialize(proto::GCS& out) const noexcept -> bool override
+    {
+        return {};
+    }
+    virtual auto Serialize(AllocateOutput out) const noexcept -> bool
+    {
+        return {};
+    }
+    virtual auto Test(const Data& target) const noexcept -> bool { return {}; }
+    virtual auto Test(const ReadView target) const noexcept -> bool
+    {
+        return {};
+    }
+    virtual auto Test(const Vector<OTData>& targets) const noexcept -> bool
+    {
+        return {};
+    }
+    virtual auto Test(const Vector<Space>& targets) const noexcept -> bool
+    {
+        return {};
+    }
+
+    Imp(allocator_type alloc) noexcept
+        : alloc_(alloc)
+    {
+    }
+
+    ~Imp() override = default;
+};
+}  // namespace opentxs::blockchain
+
+namespace opentxs::blockchain::implementation
+{
+class GCS final : public blockchain::GCS::Imp
+{
+public:
+    auto clone(allocator_type alloc) const noexcept
+        -> std::unique_ptr<Imp> final
+    {
+        return std::make_unique<GCS>(*this, alloc);
+    }
+    auto Compressed(AllocateOutput out) const noexcept -> bool final;
     auto ElementCount() const noexcept -> std::uint32_t final { return count_; }
-    auto Encode() const noexcept -> OTData final;
+    auto Encode(AllocateOutput out) const noexcept -> bool final;
     auto Hash() const noexcept -> cfilter::Hash final;
     auto Header(const cfilter::Header& previous) const noexcept
         -> cfilter::Header final;
-    auto Match(const Targets&) const noexcept -> Matches final;
+    auto IsValid() const noexcept -> bool final { return true; }
+    auto Match(const Targets&, allocator_type) const noexcept -> Matches final;
     auto Serialize(proto::GCS& out) const noexcept -> bool final;
     auto Serialize(AllocateOutput out) const noexcept -> bool final;
     auto Test(const Data& target) const noexcept -> bool final;
     auto Test(const ReadView target) const noexcept -> bool final;
-    auto Test(const UnallocatedVector<OTData>& targets) const noexcept
-        -> bool final;
-    auto Test(const UnallocatedVector<Space>& targets) const noexcept
-        -> bool final;
+    auto Test(const Vector<OTData>& targets) const noexcept -> bool final;
+    auto Test(const Vector<Space>& targets) const noexcept -> bool final;
 
     GCS(const api::Session& api,
         const std::uint8_t bits,
         const std::uint32_t fpRate,
-        const std::uint32_t filterElementCount,
+        const std::uint32_t count,
         const ReadView key,
-        const ReadView encoded)
+        const ReadView encoded,
+        allocator_type alloc)
     noexcept(false);
     GCS(const api::Session& api,
         const std::uint8_t bits,
         const std::uint32_t fpRate,
+        const std::uint32_t count,
         const ReadView key,
-        const UnallocatedVector<ReadView>& elements)
+        gcs::Elements&& hashed,
+        Vector<std::byte>&& compressed,
+        allocator_type alloc)
     noexcept(false);
+    GCS(const GCS& rhs, allocator_type alloc = {}) noexcept;
+    GCS() = delete;
+    GCS(GCS&&) = delete;
+    auto operator=(const GCS&) -> GCS& = delete;
+    auto operator=(GCS&&) -> GCS& = delete;
 
     ~GCS() final = default;
 
 private:
-    using Elements = UnallocatedVector<std::uint64_t>;
+    using Key = std::array<std::byte, 16>;
 
     const VersionNumber version_;
     const api::Session& api_;
     const std::uint8_t bits_;
     const std::uint32_t false_positive_rate_;
     const std::uint32_t count_;
-    const std::optional<Elements> elements_;
-    const OTData compressed_;
-    const OTData key_;
+    const Key key_;
+    const Vector<std::byte> compressed_;
+    mutable std::optional<gcs::Elements> elements_;
 
-    static auto transform(const UnallocatedVector<OTData>& in) noexcept
-        -> UnallocatedVector<ReadView>;
-    static auto transform(const UnallocatedVector<Space>& in) noexcept
-        -> UnallocatedVector<ReadView>;
+    static auto transform(
+        const Vector<OTData>& in,
+        allocator_type alloc) noexcept -> Targets;
+    static auto transform(
+        const Vector<Space>& in,
+        allocator_type alloc) noexcept -> Targets;
 
-    auto decompress() const noexcept -> const Elements&;
-    auto hashed_set_construct(const UnallocatedVector<OTData>& elements)
-        const noexcept -> UnallocatedVector<std::uint64_t>;
-    auto hashed_set_construct(const UnallocatedVector<Space>& elements)
-        const noexcept -> UnallocatedVector<std::uint64_t>;
-    auto hashed_set_construct(const UnallocatedVector<ReadView>& elements)
-        const noexcept -> UnallocatedVector<std::uint64_t>;
-    auto test(const UnallocatedVector<std::uint64_t>& targetHashes)
-        const noexcept -> bool;
+    auto decompress() const noexcept -> const gcs::Elements&;
+    auto hashed_set_construct(
+        const Vector<OTData>& elements,
+        allocator_type alloc) const noexcept -> gcs::Elements;
+    auto hashed_set_construct(
+        const Vector<Space>& elements,
+        allocator_type alloc) const noexcept -> gcs::Elements;
+    auto hashed_set_construct(const Targets& elements, allocator_type alloc)
+        const noexcept -> gcs::Elements;
+    auto test(const gcs::Elements& targetHashes) const noexcept -> bool;
     auto hash_to_range(const ReadView in) const noexcept -> std::uint64_t;
 
-    GCS() = delete;
-    GCS(const GCS&) = delete;
-    GCS(GCS&&) = delete;
-    auto operator=(const GCS&) -> GCS& = delete;
-    auto operator=(GCS&&) -> GCS& = delete;
+    GCS(const api::Session& api,
+        const std::uint8_t bits,
+        const std::uint32_t fpRate,
+        const std::uint32_t count,
+        const ReadView key,
+        Vector<std::byte>&& encoded,
+        allocator_type alloc)
+    noexcept(false);
+    GCS(const VersionNumber version,
+        const api::Session& api,
+        const std::uint8_t bits,
+        const std::uint32_t fpRate,
+        const std::uint32_t count,
+        std::optional<gcs::Elements>&& elements,
+        Vector<std::byte>&& compressed,
+        ReadView key,
+        allocator_type alloc)
+    noexcept(false);
 };
 }  // namespace opentxs::blockchain::implementation

@@ -348,12 +348,12 @@ auto FilterOracle::Heartbeat() const noexcept -> void
 
 auto FilterOracle::LoadFilterOrResetTip(
     const cfilter::Type type,
-    const block::Position& position) const noexcept
-    -> std::unique_ptr<const GCS>
+    const block::Position& position,
+    alloc::Default alloc) const noexcept -> GCS
 {
-    auto output = LoadFilter(type, position.second);
+    auto output = LoadFilter(type, position.second, alloc);
 
-    if (output) { return output; }
+    if (output.IsValid()) { return output; }
 
     const auto height = position.first;
 
@@ -416,10 +416,10 @@ auto FilterOracle::ProcessBlock(
     const auto& header = block.Header();
     auto filters = Vector<internal::FilterDatabase::CFilterParams>{};
     auto headers = Vector<internal::FilterDatabase::CFHeaderParams>{};
-    const auto& pGCS =
+    const auto& cfilter =
         filters.emplace_back(id, process_block(default_type_, block)).second;
 
-    if (false == bool(pGCS)) {
+    if (false == cfilter.IsValid()) {
         LogError()(OT_PRETTY_CLASS())("Failed to calculate ")(print(chain_))(
             " cfilter")
             .Flush();
@@ -427,7 +427,6 @@ auto FilterOracle::ProcessBlock(
         return false;
     }
 
-    const auto& gcs = *pGCS;
     const auto previousCfheader =
         LoadFilterHeader(default_type_, header.ParentHash());
 
@@ -439,9 +438,9 @@ auto FilterOracle::ProcessBlock(
         return false;
     }
 
-    const auto filterHash = gcs.Hash();
+    const auto filterHash = cfilter.Hash();
     const auto& cfheader = std::get<1>(headers.emplace_back(
-        id, gcs.Header(previousCfheader.Bytes()), filterHash.Bytes()));
+        id, cfilter.Header(previousCfheader.Bytes()), filterHash.Bytes()));
 
     if (cfheader.IsNull()) {
         LogError()(OT_PRETTY_CLASS())("failed to calculate ")(print(chain_))(
@@ -475,7 +474,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
         LogTrace()(OT_PRETTY_CLASS())("Calculating cfilter for ")(
             print(chain_))(" block at height ")(height)
             .Flush();
-        auto& [blockHashView, pGCS] = data.filter_data_;
+        auto& [blockHashView, cfilter] = data.filter_data_;
         auto& [blockHash, filterHeader, filterHashView] = data.header_data_;
         blockHash = block;
         blockHashView = blockHash.Bytes();
@@ -491,9 +490,9 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
                 blockHash.asHex());
         }
 
-        pGCS = process_block(data.type_, *pBlock);
+        cfilter = process_block(data.type_, *pBlock);
 
-        if (false == bool(pGCS)) {
+        if (false == cfilter.IsValid()) {
             LogError()(OT_PRETTY_CLASS())("Failed to instantiate ")(
                 print(chain_))(" cfilter #")(height)
                 .Flush();
@@ -501,8 +500,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
             throw std::runtime_error("Failed to instantiate gcs");
         }
 
-        const auto& gcs = *pGCS;
-        data.filter_hash_ = gcs.Hash();
+        data.filter_hash_ = cfilter.Hash();
         LogTrace()(OT_PRETTY_CLASS())("Finished calculating cfilter for ")(
             print(chain_))(" block at height ")(height)
             .Flush();
@@ -595,7 +593,7 @@ auto FilterOracle::ProcessSyncData(
             const auto& blockHash = *b;
             const auto& syncData = *d;
             const auto height = syncData.Height();
-            auto& [fBlockHash, pGCS] = filters.emplace_back(
+            auto& [fBlockHash, cfilter] = filters.emplace_back(
                 blockHash,
                 factory::GCS(
                     api_,
@@ -604,9 +602,10 @@ auto FilterOracle::ProcessSyncData(
                     blockchain::internal::BlockHashToFilterKey(
                         blockHash.Bytes()),
                     syncData.FilterElements(),
-                    syncData.Filter()));
+                    syncData.Filter(),
+                    {}));  // TODO allocator
 
-            if (false == bool(pGCS)) {
+            if (false == cfilter.IsValid()) {
                 LogError()(OT_PRETTY_CLASS())("Failed to instantiate ")(
                     print(chain_))(" cfilter #")(height)
                     .Flush();
@@ -614,10 +613,8 @@ auto FilterOracle::ProcessSyncData(
                 throw std::runtime_error("Failed to instantiate gcs");
             }
 
-            const auto& gcs = *pGCS;
-            auto& [hBlockHash, cfheader, cfhash] =
-                headers.emplace_back(blockHash, cfilter::Header{}, gcs.Hash());
-            cfheader = gcs.Header(*parent);
+            auto& [hBlockHash, cfheader, cfhash] = headers.emplace_back(
+                blockHash, cfilter.Header(*parent), cfilter.Hash());
             parent = &cfheader;
         }
 
@@ -644,14 +641,13 @@ auto FilterOracle::ProcessSyncData(
 
 auto FilterOracle::process_block(
     const cfilter::Type filterType,
-    const block::bitcoin::Block& block) const noexcept
-    -> std::unique_ptr<const GCS>
+    const block::bitcoin::Block& block) const noexcept -> GCS
 {
     const auto& id = block.ID();
     const auto params = blockchain::internal::GetFilterParams(filterType);
     const auto elements = [&] {
         const auto input = block.Internal().ExtractElements(filterType);
-        auto output = UnallocatedVector<OTData>{};
+        auto output = Vector<OTData>{};
         std::transform(
             input.begin(),
             input.end(),
@@ -668,7 +664,8 @@ auto FilterOracle::process_block(
         params.first,
         params.second,
         blockchain::internal::BlockHashToFilterKey(id.Bytes()),
-        elements);
+        elements,
+        {});  // TODO allocator
 }
 
 auto FilterOracle::reset_tips_to(

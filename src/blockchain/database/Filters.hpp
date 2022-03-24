@@ -30,6 +30,7 @@
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -85,12 +86,13 @@ public:
         const noexcept -> bool;
     auto HaveFilterHeader(const cfilter::Type type, const block::Hash& block)
         const noexcept -> bool;
-    auto LoadFilter(const cfilter::Type type, const ReadView block)
-        const noexcept -> std::unique_ptr<const blockchain::GCS>;
+    auto LoadFilter(
+        const cfilter::Type type,
+        const ReadView block,
+        alloc::Default alloc) const noexcept -> blockchain::GCS;
     auto LoadFilters(
         const cfilter::Type type,
-        const Vector<block::Hash>& blocks) const noexcept
-        -> Vector<std::unique_ptr<const GCS>>;
+        const Vector<block::Hash>& blocks) const noexcept -> Vector<GCS>;
     auto LoadFilterHash(const cfilter::Type type, const ReadView block)
         const noexcept -> cfilter::Hash;
     auto LoadFilterHeader(const cfilter::Type type, const ReadView block)

@@ -352,27 +352,32 @@ private:
                 const auto bytes = api_.Factory().DataFromHex(filter.second);
                 const auto blockHash =
                     api_.Factory().DataFromHex(data.genesis_hash_hex_);
-                auto output = std::unique_ptr<const opentxs::blockchain::GCS>{
-                    factory::GCS(
-                        api_,
-                        filterType,
-                        opentxs::blockchain::internal::BlockHashToFilterKey(
-                            blockHash->Bytes()),
-                        bytes->Bytes())};
+                auto output = factory::GCS(
+                    api_,
+                    filterType,
+                    opentxs::blockchain::internal::BlockHashToFilterKey(
+                        blockHash->Bytes()),
+                    bytes->Bytes(),
+                    {});  // TODO allocator
 
-                OT_ASSERT(output);
+                OT_ASSERT(output.IsValid());
 
                 return output;
             }();
             auto output = Items{};
             const auto header =
                 api_.Factory().DataFromHex(data.genesis_header_hex_);
-            const auto filter = gcs->Compressed();
+            const auto filter = [&] {
+                auto out = Space{};
+                gcs.Compressed(writer(out));
+
+                return out;
+            }();
             output.emplace_back(
                 chain,
                 0,
                 filterType,
-                gcs->ElementCount(),
+                gcs.ElementCount(),
                 header->Bytes(),
                 reader(filter));
 

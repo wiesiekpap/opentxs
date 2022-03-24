@@ -28,6 +28,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
@@ -41,6 +42,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -137,15 +139,16 @@ public:
     auto GetFilterJob() const noexcept -> CfilterJob final;
     auto GetHeaderJob() const noexcept -> CfheaderJob final;
     auto Heartbeat() const noexcept -> void final;
-    auto LoadFilter(const cfilter::Type type, const block::Hash& block)
-        const noexcept -> std::unique_ptr<const GCS> final
+    auto LoadFilter(
+        const cfilter::Type type,
+        const block::Hash& block,
+        alloc::Default alloc) const noexcept -> GCS final
     {
-        return database_.LoadFilter(type, block.Bytes());
+        return database_.LoadFilter(type, block.Bytes(), alloc);
     }
     auto LoadFilters(
         const cfilter::Type type,
-        const Vector<block::Hash>& blocks) const noexcept
-        -> Vector<std::unique_ptr<const GCS>> final
+        const Vector<block::Hash>& blocks) const noexcept -> Vector<GCS> final
     {
         return database_.LoadFilters(type, blocks);
     }
@@ -156,8 +159,8 @@ public:
     }
     auto LoadFilterOrResetTip(
         const cfilter::Type type,
-        const block::Position& position) const noexcept
-        -> std::unique_ptr<const GCS> final;
+        const block::Position& position,
+        alloc::Default alloc) const noexcept -> GCS final;
     auto ProcessBlock(const block::bitcoin::Block& block) const noexcept
         -> bool final;
     auto ProcessBlock(BlockIndexerData& data) const noexcept -> void;
@@ -222,8 +225,7 @@ private:
         const block::Position& tip) const noexcept -> void;
     auto process_block(
         const cfilter::Type type,
-        const block::bitcoin::Block& block) const noexcept
-        -> std::unique_ptr<const GCS>;
+        const block::bitcoin::Block& block) const noexcept -> GCS;
     auto reset_tips_to(
         const cfilter::Type type,
         const block::Position& position,
