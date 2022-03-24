@@ -636,8 +636,8 @@ auto BitcoinP2PInv(
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
-    const std::size_t size)
-    -> blockchain::p2p::bitcoin::message::internal::Inv*;
+    const std::size_t size) noexcept(false)
+    -> std::unique_ptr<blockchain::p2p::bitcoin::message::internal::Inv>;
 auto BitcoinP2PInv(
     const api::Session& api,
     const blockchain::Type network,

@@ -98,6 +98,8 @@ class Frame;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+
+class Log;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -253,6 +255,7 @@ protected:
     const node::internal::PeerManager& manager_;
     node::internal::PeerDatabase& database_;
     const node::internal::Mempool& mempool_;
+    const Log& log_;
     const blockchain::Type chain_;
     const UnallocatedCString display_chain_;
     std::atomic_bool header_probe_;

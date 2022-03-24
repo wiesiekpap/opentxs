@@ -53,6 +53,7 @@ Peer::Peer(
     , manager_(manager)
     , database_(database)
     , mempool_(mempool)
+    , log_(LogTrace())
     , chain_(address->Chain())
     , display_chain_(print(chain_))
     , header_probe_(false)
@@ -91,8 +92,8 @@ Peer::Peer(
 
 auto Peer::activity_timeout() noexcept -> void
 {
-    LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
-        address_.Display())(" due to activity timeout.")
+    log_("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(
+        " due to activity timeout.")
         .Flush();
     disconnect();
 }
@@ -115,7 +116,7 @@ auto Peer::check_download_peers() noexcept -> void
 auto Peer::check_init() noexcept -> void
 {
     if (connection_->is_initialized()) {
-        LogTrace()(display_chain_)(" peer ")(address_.Display())(" initialized")
+        log_(display_chain_)(" peer ")(address_.Display())(" initialized")
             .Flush();
         state_.value_.store(State::Connect);
         connect();
@@ -124,7 +125,7 @@ auto Peer::check_init() noexcept -> void
         const auto elapsed = Clock::now() - init_start_;
 
         if (limit <= elapsed) {
-            LogVerbose()("Disconnecting ")(display_chain_)(" peer ")(
+            log_("Disconnecting ")(display_chain_)(" peer ")(
                 address_.Display())(" due to connection timeout.")
                 .Flush();
             disconnect();
@@ -161,15 +162,15 @@ auto Peer::check_handshake() noexcept -> void
 
     if (state.first_action_ && state.second_action_ &&
         (false == state.done())) {
-        LogDetail()(
+        log_(
             address_.Incoming() ? "Incoming connection from "
                                 : "Connected to ")(print(address_.Chain()))(
             " peer at ")(address_.Display())
             .Flush();
-        LogVerbose()("Advertised services: ").Flush();
+        log_("Advertised services: ").Flush();
 
         for (const auto& service : address_.Services()) {
-            LogVerbose()(" * ")(p2p::DisplayService(service)).Flush();
+            log_(" * ")(p2p::DisplayService(service)).Flush();
         }
 
         update_address_activity();
@@ -203,7 +204,7 @@ auto Peer::disconnect() noexcept -> void
     } catch (...) {
     }
 
-    LogVerbose()(
+    log_(
         address_.Incoming() ? "Dropping incoming connection "
                             : "Disconnecting from ")(connection_->host())(":")(
         connection_->port())
@@ -273,8 +274,7 @@ auto Peer::init_connection_manager(
 
 auto Peer::on_connect() noexcept -> void
 {
-    LogTrace()(display_chain_)(" peer ")(address_.Display())(" connected")
-        .Flush();
+    log_(display_chain_)(" peer ")(address_.Display())(" connected").Flush();
 
     try {
         state_.connect_.promise_.set_value(true);
@@ -478,8 +478,7 @@ auto Peer::send(std::pair<zmq::Frame, zmq::Frame>&& frames) noexcept
 {
     try {
         if (false == state_.connect_.future_.get()) {
-            LogVerbose()(OT_PRETTY_CLASS())(
-                "Unable to send to disconnected peer")
+            log_(OT_PRETTY_CLASS())("Unable to send to disconnected peer")
                 .Flush();
 
             return {};
@@ -527,7 +526,7 @@ auto Peer::shutdown(std::promise<void>& promise) noexcept -> void
             update_address_activity();
         }
 
-        LogVerbose()("Disconnected from ")(address_.Display()).Flush();
+        log_("Disconnected from ")(address_.Display()).Flush();
         promise.set_value();
     }
 }
@@ -535,7 +534,7 @@ auto Peer::shutdown(std::promise<void>& promise) noexcept -> void
 auto Peer::start_verify() noexcept -> void
 {
     if (address_.Incoming()) {
-        LogVerbose()(OT_PRETTY_CLASS())("incoming peer ")(address_.Display())(
+        log_(OT_PRETTY_CLASS())("incoming peer ")(address_.Display())(
             " is not required to validate checkpoints")
             .Flush();
         state_.value_.store(State::Subscribe);
@@ -544,14 +543,12 @@ auto Peer::start_verify() noexcept -> void
         request_checkpoint_block_header();
 
         if (verify_filter_checkpoint_) {
-            LogVerbose()(OT_PRETTY_CLASS())("outgoing peer ")(
-                address_.Display())(
+            log_(OT_PRETTY_CLASS())("outgoing peer ")(address_.Display())(
                 " must validate block header and cfheader checkpoints")
                 .Flush();
             request_checkpoint_filter_header();
         } else {
-            LogVerbose()(OT_PRETTY_CLASS())("outgoing peer ")(
-                address_.Display())(
+            log_(OT_PRETTY_CLASS())("outgoing peer ")(address_.Display())(
                 " must validate block header checkpoints only")
                 .Flush();
         }
@@ -560,7 +557,7 @@ auto Peer::start_verify() noexcept -> void
 
 auto Peer::state_machine() noexcept -> bool
 {
-    LogTrace()(OT_PRETTY_CLASS()).Flush();
+    log_(OT_PRETTY_CLASS()).Flush();
 
     if (false == running_.load()) { return false; }
 
@@ -569,7 +566,7 @@ auto Peer::state_machine() noexcept -> bool
             case State::Listening: {
                 OT_ASSERT(address_.Incoming());
 
-                LogVerbose()(OT_PRETTY_CLASS())(
+                log_(OT_PRETTY_CLASS())(
                     "verifying incoming handshake protocol for ")(
                     address_.Display())
                     .Flush();
@@ -586,7 +583,7 @@ auto Peer::state_machine() noexcept -> bool
                 }
             } break;
             case State::Handshake: {
-                LogVerbose()(OT_PRETTY_CLASS())(
+                log_(OT_PRETTY_CLASS())(
                     "verifying outgoing handshake protocol for ")(
                     address_.Display())
                     .Flush();
@@ -603,7 +600,7 @@ auto Peer::state_machine() noexcept -> bool
                 }
             } break;
             case State::Verify: {
-                LogVerbose()(OT_PRETTY_CLASS())("verifying checkpoints for ")(
+                log_(OT_PRETTY_CLASS())("verifying checkpoints for ")(
                     address_.Display())
                     .Flush();
                 static constexpr auto timeout = 30s;
@@ -619,8 +616,8 @@ auto Peer::state_machine() noexcept -> bool
                 }
             } break;
             case State::Subscribe: {
-                LogVerbose()(OT_PRETTY_CLASS())(
-                    "achieved subscribe state for ")(address_.Display())
+                log_(OT_PRETTY_CLASS())("achieved subscribe state for ")(
+                    address_.Display())
                     .Flush();
                 subscribe();
                 state_.value_.store(State::Run);
@@ -628,7 +625,7 @@ auto Peer::state_machine() noexcept -> bool
                 [[fallthrough]];
             }
             case State::Run: {
-                LogVerbose()(OT_PRETTY_CLASS())("achieved run state for ")(
+                log_(OT_PRETTY_CLASS())("achieved run state for ")(
                     address_.Display())
                     .Flush();
                 process_state_machine();
@@ -640,8 +637,8 @@ auto Peer::state_machine() noexcept -> bool
             }
         }
     } catch (const std::exception& e) {
-        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
-            address_.Display())(" due to ")(e.what())
+        log_("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(
+            " due to ")(e.what())
             .Flush();
         disconnect();
     }
@@ -691,7 +688,7 @@ auto Peer::transmit(zmq::Message&& message) noexcept -> void
     auto success = bool{false};
     auto postcondition =
         ScopeGuard{[&] { send_promises_.SetPromise(index, success); }};
-    LogTrace()(OT_PRETTY_CLASS())("Sending ")(header.size() + payload.size())(
+    log_(OT_PRETTY_CLASS())("Sending ")(header.size() + payload.size())(
         " byte message:")
         .Flush();
     LogInsane()(Data::Factory(header)->asHex())(Data::Factory(payload)->asHex())
@@ -716,7 +713,7 @@ auto Peer::transmit(zmq::Message&& message) noexcept -> void
 
                 break;
             } else if (const auto time = Clock::now() - start; time >= limit) {
-                LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
+                log_("Disconnecting ")(display_chain_)(" peer ")(
                     address_.Display())(" due to transmit timeout.")
                     .Flush();
                 disconnect();
@@ -725,8 +722,8 @@ auto Peer::transmit(zmq::Message&& message) noexcept -> void
             }
         }
     } catch (const std::exception& e) {
-        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
-            address_.Display())(" due to transmit error: ")(e.what())
+        log_("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(
+            " due to transmit error: ")(e.what())
             .Flush();
         disconnect();
 
@@ -734,12 +731,11 @@ auto Peer::transmit(zmq::Message&& message) noexcept -> void
     }
 
     if (result) {
-        LogVerbose()(OT_PRETTY_CLASS())("Sent ")(payload.size())(" bytes")
-            .Flush();
+        log_(OT_PRETTY_CLASS())("Sent ")(payload.size())(" bytes").Flush();
         success = true;
     } else {
-        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
-            address_.Display())(" due to unspecified transmit error.")
+        log_("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(
+            " due to unspecified transmit error.")
             .Flush();
         success = false;
         disconnect();

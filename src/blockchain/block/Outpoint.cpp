@@ -16,6 +16,7 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace be = boost::endian;
@@ -158,8 +159,5 @@ auto Outpoint::str() const noexcept -> UnallocatedCString
     return out.str();
 }
 
-auto Outpoint::Txid() const noexcept -> ReadView
-{
-    return {reinterpret_cast<const char*>(txid_.data()), txid_.size()};
-}
+auto Outpoint::Txid() const noexcept -> ReadView { return reader(txid_); }
 }  // namespace opentxs::blockchain::block

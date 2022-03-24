@@ -110,7 +110,8 @@ auto BitcoinP2PMessage(
         } break;
         case bitcoin::Command::inv: {
             pMessage =
-                BitcoinP2PInv(api, std::move(pHeader), version, payload, size);
+                BitcoinP2PInv(api, std::move(pHeader), version, payload, size)
+                    .release();
         } break;
         case bitcoin::Command::mempool: {
             pMessage = BitcoinP2PMempool(api, std::move(pHeader));

@@ -35,7 +35,6 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "rpc/Helpers.hpp"
 #include "ui/Helpers.hpp"

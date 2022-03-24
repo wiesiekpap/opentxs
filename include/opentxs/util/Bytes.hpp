@@ -7,6 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -157,6 +158,12 @@ OPENTXS_EXPORT auto reader(const Space& in) noexcept -> ReadView;
 OPENTXS_EXPORT auto reader(const Vector<std::byte>& in) noexcept -> ReadView;
 OPENTXS_EXPORT auto reader(const UnallocatedVector<std::uint8_t>& in) noexcept
     -> ReadView;
+template <std::size_t N>
+OPENTXS_EXPORT auto reader(const std::array<std::byte, N>& in) noexcept
+    -> ReadView
+{
+    return {reinterpret_cast<const char*>(in.data()), N};
+}
 OPENTXS_EXPORT auto space(const std::size_t size) noexcept -> Space;
 OPENTXS_EXPORT auto space(
     const std::size_t size,
@@ -170,4 +177,9 @@ OPENTXS_EXPORT auto writer(UnallocatedCString* protobuf) noexcept
     -> AllocateOutput;
 OPENTXS_EXPORT auto writer(Space& in) noexcept -> AllocateOutput;
 OPENTXS_EXPORT auto writer(Vector<std::byte>& in) noexcept -> AllocateOutput;
+template <std::size_t N>
+OPENTXS_EXPORT auto writer(std::array<std::byte, N>& in) noexcept -> ReadView
+{
+    return preallocated(N, in.data());
+}
 }  // namespace opentxs
