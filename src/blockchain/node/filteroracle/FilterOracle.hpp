@@ -163,11 +163,8 @@ public:
     auto ProcessBlock(BlockIndexerData& data) const noexcept -> void;
     auto ProcessSyncData(
         const block::Hash& prior,
-        const UnallocatedVector<block::Hash>& hashes,
+        const Vector<block::Hash>& hashes,
         const network::p2p::Data& data) const noexcept -> void final;
-    auto ProcessSyncData(SyncClientFilterData& data) const noexcept -> void;
-    auto ProcessSyncData(
-        UnallocatedVector<SyncClientFilterData>& cache) const noexcept -> bool;
     auto Tip(const cfilter::Type type) const noexcept -> block::Position final
     {
         return database_.FilterTip(type);

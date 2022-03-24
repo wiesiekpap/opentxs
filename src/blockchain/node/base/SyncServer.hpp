@@ -18,7 +18,7 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "blockchain/DownloadManager.hpp"
-#include "blockchain/node/FilterOracle.hpp"
+#include "blockchain/node/filteroracle/FilterOracle.hpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/network/p2p/Factory.hpp"

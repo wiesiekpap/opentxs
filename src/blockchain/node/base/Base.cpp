@@ -1053,7 +1053,7 @@ auto Base::process_sync_data(network::zeromq::Message&& in) noexcept -> void
     }
 
     auto prior = block::Hash{};
-    auto hashes = UnallocatedVector<block::Hash>{};
+    auto hashes = Vector<block::Hash>{};
     const auto accepted =
         header_.Internal().ProcessSyncData(prior, hashes, data);
 
@@ -1065,11 +1065,10 @@ auto Base::process_sync_data(network::zeromq::Message&& in) noexcept -> void
             .Flush();
         filters_.ProcessSyncData(prior, hashes, data);
         const auto elapsed =
-            std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::duration_cast<std::chrono::nanoseconds>(
                 Clock::now() - start);
         LogDetail()("Processed ")(blocks.size())(" ")(print(chain_))(
-            " sync packets in ")(elapsed.count())(" microseconds (")(
-            blocks.size() * 1000000 / elapsed.count())(" blocks/sec)")
+            " sync packets in ")(elapsed)
             .Flush();
     } else {
         LogVerbose()("Invalid ")(print(chain_))(" sync data").Flush();

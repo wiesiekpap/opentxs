@@ -335,7 +335,7 @@ struct FilterOracle : virtual public node::FilterOracle {
         -> bool = 0;
     virtual auto ProcessSyncData(
         const block::Hash& prior,
-        const UnallocatedVector<block::Hash>& hashes,
+        const Vector<block::Hash>& hashes,
         const network::p2p::Data& data) const noexcept -> void = 0;
     virtual auto Tip(const cfilter::Type type) const noexcept
         -> block::Position = 0;
