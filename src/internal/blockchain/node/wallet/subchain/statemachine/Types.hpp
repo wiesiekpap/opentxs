@@ -68,7 +68,7 @@ enum class ScanState : std::uint8_t {
 
 using Cookie = unsigned long long int;
 using BlockMap = UnallocatedMap<Cookie, Work*>;
-using Indices = UnallocatedVector<Bip32Index>;
+using Indices = Vector<Bip32Index>;
 using Result = std::pair<ReadView, Indices>;
 using Results = UnallocatedVector<Result>;
 using ProgressBatch = UnallocatedVector<

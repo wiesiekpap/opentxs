@@ -647,9 +647,9 @@ auto Input::decode_coinbase() const noexcept -> UnallocatedCString
 }
 
 auto Input::ExtractElements(const cfilter::Type style) const noexcept
-    -> UnallocatedVector<Space>
+    -> Vector<Vector<std::byte>>
 {
-    auto output = UnallocatedVector<Space>{};
+    auto output = Vector<Vector<std::byte>>{};
 
     if (Script::Position::Coinbase == script_->Role()) { return output; }
 

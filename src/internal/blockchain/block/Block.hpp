@@ -49,7 +49,7 @@ namespace opentxs::blockchain::block
 using Subchain = blockchain::crypto::Subchain;
 using SubchainID = std::pair<Subchain, OTIdentifier>;
 using ElementID = std::pair<Bip32Index, SubchainID>;
-using Pattern = std::pair<ElementID, Space>;
+using Pattern = std::pair<ElementID, Vector<std::byte>>;
 using Patterns = Vector<Pattern>;
 using Match = std::pair<pTxid, ElementID>;
 using InputMatch = std::tuple<pTxid, Outpoint, ElementID>;
@@ -61,7 +61,7 @@ using ContactID = OTIdentifier;
 using KeyData = UnallocatedMap<KeyID, std::pair<ContactID, ContactID>>;
 
 struct ParsedPatterns {
-    UnallocatedVector<Space> data_;
+    Vector<Vector<std::byte>> data_;
     UnallocatedMap<ReadView, Patterns::const_iterator> map_;
 
     ParsedPatterns(const Patterns& in) noexcept;
@@ -73,7 +73,7 @@ namespace opentxs::blockchain::block::internal
 struct Block : virtual public block::Block {
     virtual auto CalculateSize() const noexcept -> std::size_t = 0;
     virtual auto ExtractElements(const cfilter::Type style) const noexcept
-        -> UnallocatedVector<Space> = 0;
+        -> Vector<Vector<std::byte>> = 0;
     virtual auto FindMatches(
         const cfilter::Type type,
         const Patterns& txos,
@@ -86,7 +86,7 @@ auto SetIntersection(
     const api::Session& api,
     const ReadView txid,
     const ParsedPatterns& patterns,
-    const UnallocatedVector<Space>& compare) noexcept -> Matches;
+    const Vector<Vector<std::byte>>& compare) noexcept -> Matches;
 }  // namespace opentxs::blockchain::block::internal
 
 namespace opentxs::factory

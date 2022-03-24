@@ -38,10 +38,10 @@ auto SetIntersection(
     const api::Session& api,
     const ReadView txid,
     const ParsedPatterns& parsed,
-    const UnallocatedVector<Space>& compare) noexcept -> Matches
+    const Vector<Vector<std::byte>>& compare) noexcept -> Matches
 {
     auto alloc = alloc::BoostMonotonic{4096};
-    auto matches = Vector<Space>{&alloc};
+    auto matches = Vector<Vector<std::byte>>{&alloc};
     auto output = Matches{};
     std::set_intersection(
         std::begin(parsed.data_),

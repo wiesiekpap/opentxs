@@ -73,7 +73,7 @@ public:
     }
     auto end() const noexcept -> const_iterator final { return cend(); }
     auto ExtractElements(const cfilter::Type style) const noexcept
-        -> UnallocatedVector<Space> final;
+        -> Vector<Vector<std::byte>> final;
     auto ExtractPatterns(const api::Session& api) const noexcept
         -> UnallocatedVector<PatternID> final;
     auto IsNotification(

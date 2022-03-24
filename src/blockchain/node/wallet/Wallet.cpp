@@ -156,7 +156,7 @@ auto Wallet::GetOutputs(TxoState type, alloc::Resource* alloc) const noexcept
 auto Wallet::GetOutputs(const identifier::Nym& owner, alloc::Resource* alloc)
     const noexcept -> Vector<UTXO>
 {
-    return GetOutputs(owner, TxoState::All);
+    return GetOutputs(owner, TxoState::All, alloc);
 }
 
 auto Wallet::GetOutputs(
@@ -172,7 +172,7 @@ auto Wallet::GetOutputs(
     const Identifier& subaccount,
     alloc::Resource* alloc) const noexcept -> Vector<UTXO>
 {
-    return GetOutputs(owner, subaccount, TxoState::All);
+    return GetOutputs(owner, subaccount, TxoState::All, alloc);
 }
 
 auto Wallet::GetOutputs(

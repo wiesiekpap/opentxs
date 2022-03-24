@@ -107,7 +107,7 @@ public:
     }
     auto end() const noexcept -> const_iterator final { return cend(); }
     auto ExtractElements(const cfilter::Type style) const noexcept
-        -> UnallocatedVector<Space> final;
+        -> Vector<Vector<std::byte>> final;
     auto FindMatches(
         const cfilter::Type type,
         const Patterns& outpoints,

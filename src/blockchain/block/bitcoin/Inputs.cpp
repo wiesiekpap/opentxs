@@ -144,9 +144,9 @@ auto Inputs::clone(const InputList& rhs) noexcept -> InputList
 }
 
 auto Inputs::ExtractElements(const cfilter::Type style) const noexcept
-    -> UnallocatedVector<Space>
+    -> Vector<Vector<std::byte>>
 {
-    auto output = UnallocatedVector<Space>{};
+    auto output = Vector<Vector<std::byte>>{};
     LogTrace()(OT_PRETTY_CLASS())("processing ")(size())(" inputs").Flush();
 
     for (const auto& txin : *this) {

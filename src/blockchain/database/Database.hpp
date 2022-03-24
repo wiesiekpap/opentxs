@@ -169,7 +169,7 @@ public:
     {
         return wallet_.AdvanceTo(pos);
     }
-    auto ApplyUpdate(const node::UpdateTransaction& update) const noexcept
+    auto ApplyUpdate(const node::UpdateTransaction& update) noexcept
         -> bool final
     {
         return headers_.ApplyUpdate(update);
@@ -532,7 +532,7 @@ public:
     }
     auto SubchainMatchBlock(
         const SubchainIndex& index,
-        const UnallocatedVector<std::pair<ReadView, MatchingIndices>>& results)
+        const Vector<std::pair<ReadView, MatchingIndices>>& results)
         const noexcept -> bool final
     {
         return wallet_.SubchainMatchBlock(index, results);

@@ -16,6 +16,7 @@
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/network/zeromq/Context.hpp"
+#include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -25,6 +26,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Types.hpp"
+#include "util/ByteLiterals.hpp"
 #include "util/ScopeGuard.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -91,7 +93,10 @@ auto DeterministicIndex::process(
     const std::optional<Bip32Index>& current,
     Bip32Index target) noexcept -> void
 {
-    auto elements = internal::WalletDatabase::ElementMap{};
+    constexpr auto allocBytes = 1_KiB;
+    auto buf = std::array<std::byte, allocBytes>{};
+    auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
+    auto elements = internal::WalletDatabase::ElementMap{&alloc};
     auto postcondition = ScopeGuard{[&] { done(elements); }};
     const auto& name = parent_.name_;
     const auto& subchain = parent_.subchain_;

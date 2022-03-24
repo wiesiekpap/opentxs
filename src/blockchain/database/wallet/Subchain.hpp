@@ -88,7 +88,7 @@ public:
         -> block::Position;
     auto SubchainMatchBlock(
         const SubchainIndex& index,
-        const UnallocatedVector<std::pair<ReadView, MatchingIndices>>& results)
+        const Vector<std::pair<ReadView, MatchingIndices>>& results)
         const noexcept -> bool;
     auto SubchainSetLastScanned(
         const SubchainIndex& subchain,

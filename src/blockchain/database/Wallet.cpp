@@ -313,8 +313,8 @@ auto Wallet::SubchainLastScanned(const SubchainIndex& index) const noexcept
 
 auto Wallet::SubchainMatchBlock(
     const SubchainIndex& index,
-    const UnallocatedVector<std::pair<ReadView, MatchingIndices>>& results)
-    const noexcept -> bool
+    const Vector<std::pair<ReadView, MatchingIndices>>& results) const noexcept
+    -> bool
 {
     return subchains_.SubchainMatchBlock(index, results);
 }
