@@ -24,6 +24,7 @@
 #include "Proto.tpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/api/session/Endpoints.hpp"
+#include "internal/blockchain/Params.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/network/p2p/Types.hpp"
 #include "internal/network/zeromq/Batch.hpp"
@@ -39,6 +40,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/network/p2p/Acknowledgement.hpp"
 #include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/network/p2p/Data.hpp"
@@ -391,13 +393,26 @@ auto Client::Imp::get_provider(Chain chain) const noexcept -> CString
 
 auto Client::Imp::get_required_height(Chain chain) const noexcept -> Height
 {
-    try {
+    const auto progress = [&]() -> Height {
+        try {
 
-        return progress_.at(chain);
-    } catch (...) {
+            return progress_.at(chain);
+        } catch (...) {
 
-        return 0;
-    }
+            return 0;
+        }
+    }();
+    const auto checkpoint = [&]() -> Height {
+        try {
+
+            return bc::params::Data::Chains().at(chain).checkpoint_.height_;
+        } catch (...) {
+
+            return 0;
+        }
+    }();
+
+    return std::max(progress, checkpoint);
 }
 
 auto Client::Imp::Init(const api::network::Blockchain& parent) noexcept -> void

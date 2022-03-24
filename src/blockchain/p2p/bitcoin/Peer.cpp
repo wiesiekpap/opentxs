@@ -242,7 +242,7 @@ auto Peer::broadcast_block(zmq::Message&& in) noexcept -> void
     }
 
     const auto& msg = *pMsg;
-    LogTrace()("sending inv (block) message to ")(display_chain_)(" peer ")(
+    log_("sending inv (block) message to ")(display_chain_)(" peer ")(
         address_.Display())
         .Flush();
     send(msg.Transmit());
@@ -261,7 +261,7 @@ auto Peer::broadcast_inv(
     }
 
     const auto& msg = *pMsg;
-    LogTrace()("sending inv message to ")(display_chain_)(" peer ")(
+    log_("sending inv message to ")(display_chain_)(" peer ")(
         address_.Display())
         .Flush();
     send(msg.Transmit());
@@ -306,8 +306,7 @@ auto Peer::broadcast_transaction(zmq::Message&& in) noexcept -> void
         return;
     }
 
-    LogTrace()("sending tx message to ")(display_chain_)(" peer ")(
-        address_.Display())
+    log_("sending tx message to ")(display_chain_)(" peer ")(address_.Display())
         .Flush();
     const auto& msg = *pMsg;
     send(msg.Transmit());
@@ -395,7 +394,7 @@ auto Peer::ping() noexcept -> void
         return;
     }
 
-    LogTrace()("sending ping message to ")(display_chain_)(" peer ")(
+    log_("sending ping message to ")(display_chain_)(" peer ")(
         address_.Display())
         .Flush();
     const auto& ping = *pPing;
@@ -413,7 +412,7 @@ auto Peer::pong(Nonce nonce) noexcept -> void
         return;
     }
 
-    LogTrace()("sending pong message to ")(display_chain_)(" peer ")(
+    log_("sending pong message to ")(display_chain_)(" peer ")(
         address_.Display())
         .Flush();
     const auto& pong = *pPong;
@@ -552,7 +551,7 @@ auto Peer::process_cfheaders(
     auto& success = state_.verify_.second_action_;
     auto postcondition = ScopeGuard{[this, &success] {
         if (verifying() && (false == success)) {
-            LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
+            log_()("Disconnecting ")(display_chain_)(" peer ")(
                 address_.Display())(" due to filter checkpoint failure.")
                 .Flush();
             disconnect();
@@ -578,12 +577,11 @@ auto Peer::process_cfheaders(
     const auto& message = *pMessage;
 
     if (verifying()) {
-        LogVerbose()(OT_PRETTY_CLASS())(
-            "Received checkpoint filter header message")
+        log_(OT_PRETTY_CLASS())("Received checkpoint filter header message")
             .Flush();
 
         if (1 != pMessage->size()) {
-            LogVerbose()(OT_PRETTY_CLASS())("Unexpected filter header count: ")(
+            log_(OT_PRETTY_CLASS())("Unexpected filter header count: ")(
                 pMessage->size())
                 .Flush();
 
@@ -598,7 +596,7 @@ auto Peer::process_cfheaders(
                 api_, message.at(0).Bytes(), message.Previous().Bytes());
 
         if (filterHash != receivedFilterHeader) {
-            LogVerbose()(OT_PRETTY_CLASS())("Unexpected filter header: ")(
+            log_(OT_PRETTY_CLASS())("Unexpected filter header: ")(
                 receivedFilterHeader.asHex())(". Expected: ")(
                 filterHash.asHex())
                 .Flush();
@@ -606,8 +604,8 @@ auto Peer::process_cfheaders(
             return;
         }
 
-        LogVerbose()("Filter checkpoint validated for ")(
-            display_chain_)(" peer ")(address_.Display())
+        log_("Filter checkpoint validated for ")(display_chain_)(" peer ")(
+            address_.Display())
             .Flush();
         cfilter_probe_ = true;
         success = true;
@@ -981,7 +979,7 @@ auto Peer::process_getcfheaders(
         return;
     }
 
-    LogTrace()("sending cfheaders message to ")(display_chain_)(" peer ")(
+    log_("sending cfheaders message to ")(display_chain_)(" peer ")(
         address_.Display())
         .Flush();
     const auto& message = *pOut;
@@ -1089,7 +1087,7 @@ auto Peer::process_getcfilters(
             return;
         }
 
-        LogTrace()("sending cfilter message to ")(display_chain_)(" peer ")(
+        log_("sending cfilter message to ")(display_chain_)(" peer ")(
             address_.Display())
             .Flush();
         const auto& message = *pOut;
@@ -1139,8 +1137,8 @@ auto Peer::process_getdata(
 
                     OT_ASSERT(pMsg);
 
-                    LogTrace()("sending tx message to ")(
-                        display_chain_)(" peer ")(address_.Display())
+                    log_("sending tx message to ")(display_chain_)(" peer ")(
+                        address_.Display())
                         .Flush();
 
                     const auto& msg = *pMsg;
@@ -1173,8 +1171,8 @@ auto Peer::process_getdata(
 
                     OT_ASSERT(pMsg);
 
-                    LogTrace()("sending block message to ")(
-                        display_chain_)(" peer ")(address_.Display())
+                    log_("sending block message to ")(display_chain_)(" peer ")(
+                        address_.Display())
                         .Flush();
 
                     const auto& msg = *pMsg;
@@ -1201,7 +1199,7 @@ auto Peer::process_getdata(
 
         OT_ASSERT(pMsg);
 
-        LogTrace()("sending notfound message to ")(display_chain_)(" peer ")(
+        log_("sending notfound message to ")(display_chain_)(" peer ")(
             address_.Display())
             .Flush();
 
@@ -1251,7 +1249,7 @@ auto Peer::process_getheaders(
         return;
     }
 
-    LogTrace()("sending headers message to ")(display_chain_)(" peer ")(
+    log_("sending headers message to ")(display_chain_)(" peer ")(
         address_.Display())
         .Flush();
 
@@ -1266,7 +1264,7 @@ auto Peer::process_headers(
     auto& success = state_.verify_.first_action_;
     auto postcondition = ScopeGuard{[this, &success] {
         if (verifying() && (false == success)) {
-            LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
+            log_()("Disconnecting ")(display_chain_)(" peer ")(
                 address_.Display())(" due to block checkpoint failure.")
                 .Flush();
             disconnect();
@@ -1282,8 +1280,7 @@ auto Peer::process_headers(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogVerbose()(OT_PRETTY_CLASS())("Failed to decode message payload")
-            .Flush();
+        log_(OT_PRETTY_CLASS())("Failed to decode message payload").Flush();
 
         return;
     }
@@ -1291,12 +1288,11 @@ auto Peer::process_headers(
     const auto& message = *pMessage;
 
     if (verifying()) {
-        LogVerbose()(OT_PRETTY_CLASS())(
-            "Received checkpoint block header message")
+        log_(OT_PRETTY_CLASS())("Received checkpoint block header message")
             .Flush();
 
         if (1 != pMessage->size()) {
-            LogVerbose()(OT_PRETTY_CLASS())("Unexpected header count: ")(
+            log_(OT_PRETTY_CLASS())("Unexpected header count: ")(
                 pMessage->size())
                 .Flush();
 
@@ -1309,7 +1305,7 @@ auto Peer::process_headers(
         const auto& receivedBlockHash = message.at(0).Hash();
 
         if (checkpointHash != receivedBlockHash) {
-            LogVerbose()(OT_PRETTY_CLASS())("Unexpected block header hash: ")(
+            log_(OT_PRETTY_CLASS())("Unexpected block header hash: ")(
                 receivedBlockHash.asHex())(". Expected: ")(
                 checkpointHash.asHex())
                 .Flush();
@@ -1317,8 +1313,8 @@ auto Peer::process_headers(
             return;
         }
 
-        LogVerbose()("Block checkpoint validated for ")(
-            display_chain_)(" peer ")(address_.Display())
+        log_("Block checkpoint validated for ")(display_chain_)(" peer ")(
+            address_.Display())
             .Flush();
         header_probe_ = true;
         success = true;
@@ -1351,73 +1347,81 @@ auto Peer::process_inv(
     if (false == running_.load()) { return; }
     if (State::Run != state_.value_.load()) { return; }
 
-    const std::unique_ptr<message::internal::Inv> pMessage{
-        factory::BitcoinP2PInv(
-            api_,
-            std::move(header),
-            protocol_.load(),
-            payload.data(),
-            payload.size())};
+    try {
+        const auto pMessage =
+            std::unique_ptr<message::internal::Inv>{factory::BitcoinP2PInv(
+                api_,
+                std::move(header),
+                protocol_.load(),
+                payload.data(),
+                payload.size())};
 
-    if (false == bool(pMessage)) {
-        LogError()(OT_PRETTY_CLASS())("failed to decode ")(
-            display_chain_)(" message payload")
+        if (false == bool(pMessage)) {
+            LogError()(OT_PRETTY_CLASS())("failed to decode ")(
+                display_chain_)(" message payload")
+                .Flush();
+
+            return;
+        }
+
+        const auto& message = *pMessage;
+        using Inventory = blockchain::bitcoin::Inventory;
+        using Type = Inventory::Type;
+        auto txReceived = UnallocatedVector<Inventory>{};
+        auto txToDownload = UnallocatedVector<Inventory>{};
+
+        for (const auto& inv : message) {
+            const auto& hash = inv.hash_.get();
+            log_("Received ")(display_chain_)(" ")(inv.DisplayType())(" hash ")(
+                hash.asHex())
+                .Flush();
+
+            switch (inv.type_) {
+                case Type::MsgBlock:
+                case Type::MsgWitnessBlock: {
+                    request_headers(block::Hash{hash.Bytes()});
+                } break;
+                case Type::MsgTx:
+                case Type::MsgWitnessTx: {
+                    known_transactions_.emplace(hash.Bytes());
+                    txReceived.emplace_back(inv);
+                } break;
+                default: {
+                }
+            }
+        }
+
+        if (0 < txReceived.size()) {
+            const auto hashes = [&] {
+                auto out = UnallocatedVector<ReadView>{};
+                std::transform(
+                    txReceived.begin(),
+                    txReceived.end(),
+                    std::back_inserter(out),
+                    [&](const auto& in) { return in.hash_->Bytes(); });
+
+                return out;
+            }();
+            const auto result = mempool_.Submit(hashes);
+
+            OT_ASSERT(txReceived.size() == result.size());
+
+            for (auto i{0u}; i < result.size(); ++i) {
+                const auto& download = result.at(i);
+
+                if (download) { txToDownload.emplace_back(txReceived.at(i)); }
+            }
+        }
+
+        if (0 < txToDownload.size()) {
+            request_transactions(std::move(txToDownload));
+        }
+    } catch (const std::exception& e) {
+        LogError()("Unable to process inv message from ")(
+            display_chain_)(" peer ")(address_.Display())(": ")(e.what())
             .Flush();
 
         return;
-    }
-
-    const auto& message = *pMessage;
-    using Inventory = blockchain::bitcoin::Inventory;
-    using Type = Inventory::Type;
-    auto txReceived = UnallocatedVector<Inventory>{};
-    auto txToDownload = UnallocatedVector<Inventory>{};
-
-    for (const auto& inv : message) {
-        const auto& hash = inv.hash_.get();
-        LogVerbose()("Received ")(display_chain_)(" ")(inv.DisplayType())(
-            " hash ")(hash.asHex())
-            .Flush();
-
-        switch (inv.type_) {
-            case Type::MsgBlock:
-            case Type::MsgWitnessBlock: {
-                request_headers(block::Hash{hash.Bytes()});
-            } break;
-            case Type::MsgTx:
-            case Type::MsgWitnessTx: {
-                known_transactions_.emplace(hash.Bytes());
-                txReceived.emplace_back(inv);
-            } break;
-            default: {
-            }
-        }
-    }
-
-    if (0 < txReceived.size()) {
-        const auto hashes = [&] {
-            auto out = UnallocatedVector<ReadView>{};
-            std::transform(
-                txReceived.begin(),
-                txReceived.end(),
-                std::back_inserter(out),
-                [&](const auto& in) { return in.hash_->Bytes(); });
-
-            return out;
-        }();
-        const auto result = mempool_.Submit(hashes);
-
-        OT_ASSERT(txReceived.size() == result.size());
-
-        for (auto i{0u}; i < result.size(); ++i) {
-            const auto& download = result.at(i);
-
-            if (download) { txToDownload.emplace_back(txReceived.at(i)); }
-        }
-    }
-
-    if (0 < txToDownload.size()) {
-        request_transactions(std::move(txToDownload));
     }
 }
 
@@ -1469,8 +1473,8 @@ auto Peer::process_message(zmq::Message&& message) noexcept -> void
     const auto body = message.Body();
 
     if (3 > body.size()) {
-        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
-            address_.Display())(" due to invalid message.")
+        log_()("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(
+            " due to invalid message.")
             .Flush();
         disconnect();
 
@@ -1483,8 +1487,8 @@ auto Peer::process_message(zmq::Message&& message) noexcept -> void
         factory::BitcoinP2PHeader(api_, headerBytes)};
 
     if (false == bool(pHeader)) {
-        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
-            address_.Display())(" due to invalid message header.")
+        log_()("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(
+            " due to invalid message header.")
             .Flush();
         disconnect();
 
@@ -1494,8 +1498,8 @@ auto Peer::process_message(zmq::Message&& message) noexcept -> void
     auto& header = *pHeader;
 
     if (header.Network() != chain_) {
-        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
-            address_.Display())(" due to invalid network.")
+        log_()("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(
+            " due to invalid network.")
             .Flush();
         disconnect();
 
@@ -1505,15 +1509,15 @@ auto Peer::process_message(zmq::Message&& message) noexcept -> void
     const auto command = header.Command();
 
     if (false == message::VerifyChecksum(api_, header, payloadBytes)) {
-        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
-            address_.Display())(" due to invalid message checksum.")
+        log_()("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(
+            " due to invalid message checksum.")
             .Flush();
         disconnect();
 
         return;
     }
 
-    LogTrace()(OT_PRETTY_CLASS())("Received ")(display_chain_)(" ")(
+    log_(OT_PRETTY_CLASS())("Received ")(display_chain_)(" ")(
         CommandName(command))(" command from ")(address_.Display())
         .Flush();
 
@@ -1524,7 +1528,8 @@ auto Peer::process_message(zmq::Message&& message) noexcept -> void
         auto raw = Data::Factory(headerBytes);
         auto unknown = Data::Factory();
         raw->Extract(12, unknown, 4);
-        LogError()(OT_PRETTY_CLASS())("No handler for command ")(unknown->str())
+        LogError()("Received unhandled command from ")(
+            display_chain_)(" peer ")(address_.Display())(": ")(unknown->str())
             .Flush();
 
         return;
@@ -1577,8 +1582,8 @@ auto Peer::process_ping(
     const auto& message = *pMessage;
     auto nonce = message.Nonce();
     if (nonce == nonce_) {
-        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
-            address_.Display())(" which is apparently us.")
+        log_()("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(
+            " which is apparently us.")
             .Flush();
         disconnect();
     }
@@ -1750,7 +1755,7 @@ auto Peer::process_version(
     }
 
     const auto& verack = *pVerack;
-    LogTrace()("sending verack message to ")(display_chain_)(" peer ")(
+    log_("sending verack message to ")(display_chain_)(" peer ")(
         address_.Display())
         .Flush();
     send(verack.Transmit());
@@ -1818,7 +1823,7 @@ auto Peer::request_addresses() noexcept -> void
         return;
     }
 
-    LogTrace()("sending getaddr message to ")(display_chain_)(" peer ")(
+    log_("sending getaddr message to ")(display_chain_)(" peer ")(
         address_.Display())
         .Flush();
     const auto& message = *pMessage;
@@ -1834,7 +1839,7 @@ auto Peer::request_block(zmq::Message&& in) noexcept -> void
 
         OT_FAIL;
     } else {
-        LogTrace()(OT_PRETTY_CLASS())(count - 1)(" blocks to request").Flush();
+        log_(OT_PRETTY_CLASS())(count - 1)(" blocks to request").Flush();
     }
 
     using Inventory = blockchain::bitcoin::Inventory;
@@ -1862,8 +1867,8 @@ auto Peer::request_block(zmq::Message&& in) noexcept -> void
             return;
         }
 
-        LogTrace()("sending getdata(block) message to ")(
-            display_chain_)(" peer ")(address_.Display())
+        log_("sending getdata(block) message to ")(display_chain_)(" peer ")(
+            address_.Display())
             .Flush();
         const auto& message = *pMessage;
         send(message.Transmit());
@@ -1895,8 +1900,8 @@ auto Peer::request_blocks() noexcept -> void
             throw std::runtime_error("Failed to construct getdata");
         }
 
-        LogTrace()("sending getdata(block) message to ")(
-            display_chain_)(" peer ")(address_.Display())
+        log_("sending getdata(block) message to ")(display_chain_)(" peer ")(
+            address_.Display())
             .Flush();
         const auto& message = *pMessage;
         send(message.Transmit());
@@ -1930,8 +1935,8 @@ auto Peer::request_cfheaders() noexcept -> void
             return;
         }
 
-        LogTrace()("sending getcfheaders message to ")(
-            display_chain_)(" peer ")(address_.Display())
+        log_("sending getcfheaders message to ")(display_chain_)(" peer ")(
+            address_.Display())
             .Flush();
         const auto& message = *pMessage;
         send(message.Transmit());
@@ -1964,7 +1969,7 @@ auto Peer::request_cfilter() noexcept -> void
             return;
         }
 
-        LogTrace()("sending getcfilters message to ")(display_chain_)(" peer ")(
+        log_("sending getcfilters message to ")(display_chain_)(" peer ")(
             address_.Display())
             .Flush();
         const auto& message = *pMessage;
@@ -1979,11 +1984,11 @@ auto Peer::request_checkpoint_block_header() noexcept -> void
     auto success = false;
     auto postcondition = ScopeGuard{[this, &success] {
         if (success) {
-            LogVerbose()("Requested checkpoint block header from ")(
-                display_chain_)(" peer ")(address_.Display())(".")
+            log_("Requested checkpoint block header from ")(display_chain_)(
+                " peer ")(address_.Display())(".")
                 .Flush();
         } else {
-            LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
+            log_()("Disconnecting ")(display_chain_)(" peer ")(
                 address_.Display())(" due to block checkpoint request failure.")
                 .Flush();
             disconnect();
@@ -2002,13 +2007,12 @@ auto Peer::request_checkpoint_block_header() noexcept -> void
             std::move(checkpointBlockHash))};
 
         if (false == bool(pMessage)) {
-            LogVerbose()(OT_PRETTY_CLASS())("Failed to construct getheaders")
-                .Flush();
+            log_(OT_PRETTY_CLASS())("Failed to construct getheaders").Flush();
 
             return;
         }
 
-        LogTrace()("sending getheaders message to ")(display_chain_)(" peer ")(
+        log_("sending getheaders message to ")(display_chain_)(" peer ")(
             address_.Display())
             .Flush();
         const auto& message = *pMessage;
@@ -2023,11 +2027,11 @@ auto Peer::request_checkpoint_filter_header() noexcept -> void
     auto success = false;
     auto postcondition = ScopeGuard{[this, &success] {
         if (success) {
-            LogVerbose()("Requested checkpoint filter header from ")(
-                display_chain_)(" peer ")(address_.Display())(".")
+            log_("Requested checkpoint filter header from ")(display_chain_)(
+                " peer ")(address_.Display())(".")
                 .Flush();
         } else {
-            LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
+            log_()("Disconnecting ")(display_chain_)(" peer ")(
                 address_.Display())(
                 " due to filter checkpoint request failure.")
                 .Flush();
@@ -2048,20 +2052,19 @@ auto Peer::request_checkpoint_filter_header() noexcept -> void
                 checkpointBlockHash)};
 
         if (false == bool(pMessage)) {
-            LogVerbose()(OT_PRETTY_CLASS())("Failed to construct getcfheaders")
-                .Flush();
+            log_(OT_PRETTY_CLASS())("Failed to construct getcfheaders").Flush();
 
             return;
         }
 
-        LogTrace()("sending getcfheaders message to ")(
-            display_chain_)(" peer ")(address_.Display())
+        log_("sending getcfheaders message to ")(display_chain_)(" peer ")(
+            address_.Display())
             .Flush();
         const auto& message = *pMessage;
         send(message.Transmit());
         success = true;
     } catch (...) {
-        LogVerbose()(OT_PRETTY_CLASS())("Invalid parameters").Flush();
+        log_(OT_PRETTY_CLASS())("Invalid parameters").Flush();
     }
 }
 
@@ -2085,7 +2088,7 @@ auto Peer::request_headers(const block::Hash& hash) noexcept -> void
         return;
     }
 
-    LogTrace()("sending getheaders message to ")(display_chain_)(" peer ")(
+    log_("sending getheaders message to ")(display_chain_)(" peer ")(
         address_.Display())
         .Flush();
     const auto& message = *pMessage;
@@ -2104,7 +2107,7 @@ auto Peer::request_mempool() noexcept -> void
         return;
     }
 
-    LogTrace()("sending mempool message to ")(display_chain_)(" peer ")(
+    log_("sending mempool message to ")(display_chain_)(" peer ")(
         address_.Display())
         .Flush();
     const auto& message = *pMessage;
@@ -2123,7 +2126,7 @@ auto Peer::request_transactions(
         return;
     }
 
-    LogTrace()("sending getdata(tx) message to ")(display_chain_)(" peer ")(
+    log_("sending getdata(tx) message to ")(display_chain_)(" peer ")(
         address_.Display())
         .Flush();
     const auto& message = *pMessage;
@@ -2136,7 +2139,7 @@ auto Peer::start_handshake() noexcept -> void
         const auto status = Connected().wait_for(5s);
 
         if (std::future_status::ready != status) {
-            LogVerbose()("Disconnecting ")(display_chain_)(" peer ")(
+            log_("Disconnecting ")(display_chain_)(" peer ")(
                 address_.Display())(" due to handshake timeout.")
                 .Flush();
             disconnect();
@@ -2144,8 +2147,8 @@ auto Peer::start_handshake() noexcept -> void
             return;
         }
     } catch (const std::exception& e) {
-        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
-            address_.Display())(" due to handshake error: ")(e.what())
+        log_()("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(
+            " due to handshake error: ")(e.what())
             .Flush();
         disconnect();
 
@@ -2173,14 +2176,14 @@ auto Peer::start_handshake() noexcept -> void
 
         OT_ASSERT(pVersion);
 
-        LogTrace()("sending version message to ")(display_chain_)(" peer ")(
+        log_("sending version message to ")(display_chain_)(" peer ")(
             address_.Display())
             .Flush();
         const auto& version = *pVersion;
         send(version.Transmit());
     } catch (const std::exception& e) {
-        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
-            address_.Display())(" due to handshake error: ")(e.what())
+        log_()("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(
+            " due to handshake error: ")(e.what())
             .Flush();
         disconnect();
     }

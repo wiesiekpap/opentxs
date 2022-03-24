@@ -241,7 +241,7 @@ auto FeeSource::Imp::state_machine() noexcept -> bool
             return true;
         }
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+        LogError()(e.what()).Flush();
 
         return false;
     }
