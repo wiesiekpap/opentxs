@@ -456,10 +456,10 @@ TEST_F(Regtest_payment_code, alice_txodb_inital_receive)
 TEST_F(Regtest_payment_code, send_to_bob)
 {
     account_activity_alice_.expected_ += 2;
-    account_activity_bob_.expected_ += 2;
-    account_list_alice_.expected_ += 1;
+    account_activity_bob_.expected_ += 3;
+    account_list_alice_.expected_ += 2;
     account_list_bob_.expected_ += 1;
-    account_tree_alice_.expected_ += 1;
+    account_tree_alice_.expected_ += 3;
     account_tree_bob_.expected_ += 1;
     contact_list_alice_.expected_ += 1;
     contact_list_bob_.expected_ += 1;
@@ -914,7 +914,7 @@ TEST_F(Regtest_payment_code, confirm_send)
     account_activity_bob_.expected_ += (count + 2);
     account_list_alice_.expected_ += 2;
     account_list_bob_.expected_ += 0;
-    account_tree_alice_.expected_ += 1;
+    account_tree_alice_.expected_ += 2;
     account_tree_bob_.expected_ += 0;
     const auto& txid = transactions_.at(1).get();
     const auto extra = [&] {
@@ -944,7 +944,7 @@ TEST_F(Regtest_payment_code, second_block)
     const auto& blockchain =
         client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto blockHash = blockchain.HeaderOracle().BestHash(height_);
-    auto expected = ot::UnallocatedVector<ot::Space>{};
+    auto expected = ot::Vector<ot::Vector<std::byte>>{};
 
     ASSERT_FALSE(blockHash.IsNull());
 
@@ -962,7 +962,7 @@ TEST_F(Regtest_payment_code, second_block)
         ASSERT_TRUE(pTx);
 
         const auto& tx = *pTx;
-        expected.emplace_back(ot::space(tx.ID().Bytes()));
+        expected.emplace_back(ot::space(tx.ID().Bytes(), ot::alloc::System()));
 
         EXPECT_EQ(tx.BlockPosition(), 0);
         EXPECT_EQ(tx.Outputs().size(), 1);
@@ -974,7 +974,7 @@ TEST_F(Regtest_payment_code, second_block)
         ASSERT_TRUE(pTx);
 
         const auto& tx = *pTx;
-        expected.emplace_back(ot::space(tx.ID().Bytes()));
+        expected.emplace_back(ot::space(tx.ID().Bytes(), ot::alloc::System()));
 
         EXPECT_EQ(tx.ID(), transactions_.at(1));
         EXPECT_EQ(tx.BlockPosition(), 1);
@@ -983,7 +983,8 @@ TEST_F(Regtest_payment_code, second_block)
 
         {
             const auto& input = tx.Inputs().at(0);
-            expected.emplace_back(ot::space(input.PreviousOutput().Bytes()));
+            expected.emplace_back(
+                ot::space(input.PreviousOutput().Bytes(), ot::alloc::System()));
         }
 
         ASSERT_EQ(tx.Outputs().size(), 2);
@@ -998,7 +999,8 @@ TEST_F(Regtest_payment_code, second_block)
 
             ASSERT_TRUE(bytes.has_value());
 
-            expected.emplace_back(ot::space(bytes.value()));
+            expected.emplace_back(
+                ot::space(bytes.value(), ot::alloc::System()));
         }
         {
             const auto& output = tx.Outputs().at(1);
@@ -1011,7 +1013,8 @@ TEST_F(Regtest_payment_code, second_block)
 
                 ASSERT_TRUE(bytes.has_value());
 
-                expected.emplace_back(ot::space(bytes.value()));
+                expected.emplace_back(
+                    ot::space(bytes.value(), ot::alloc::System()));
             }
         }
     }
@@ -1256,7 +1259,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_first_spend_confirmed)
         const auto gen = account.LastGenerated(subchain);
 
         ASSERT_TRUE(gen.has_value());
-        EXPECT_EQ(gen.value(), lookahead);
+        EXPECT_EQ(gen.value(), 40);
     }
     {
         constexpr auto subchain{Subchain::Outgoing};
@@ -1809,7 +1812,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_second_unconfirmed_incoming)
         const auto gen = account.LastGenerated(subchain);
 
         ASSERT_TRUE(gen.has_value());
-        EXPECT_EQ(gen.value(), lookahead);
+        EXPECT_EQ(gen.value(), 40);
     }
     {
         constexpr auto subchain{Subchain::Outgoing};
@@ -1938,7 +1941,7 @@ TEST_F(Regtest_payment_code, update_contacts)
     activity_thread_alice_bob_.expected_ += 4;
     activity_thread_bob_alice_.expected_ += 4;
     account_activity_alice_.expected_ += 2;
-    account_activity_bob_.expected_ += 2;
+    account_activity_bob_.expected_ += 3;
     contact_list_alice_.expected_ += 1;
     contact_list_bob_.expected_ += 1;
     client_1_.OTX().StartIntroductionServer(alice_.nym_id_);
@@ -2222,7 +2225,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
         const auto gen = account.LastGenerated(subchain);
 
         ASSERT_TRUE(gen.has_value());
-        EXPECT_EQ(gen.value(), lookahead);
+        EXPECT_EQ(gen.value(), 40);
     }
     {
         constexpr auto subchain{Subchain::Outgoing};
@@ -2342,7 +2345,7 @@ TEST_F(Regtest_payment_code, bob_activity_thread_after_otx)
 TEST_F(Regtest_payment_code, send_message_to_alice)
 {
     activity_thread_alice_bob_.expected_ += 1;
-    activity_thread_bob_alice_.expected_ += 2;
+    activity_thread_bob_alice_.expected_ += 3;  // check
 
     EXPECT_FALSE(activity_thread_send_message(bob_, alice_));
     EXPECT_TRUE(activity_thread_send_message(bob_, alice_, message_text_));

@@ -141,7 +141,7 @@ struct Input : virtual public bitcoin::Input {
         -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Input> = 0;
     virtual auto ExtractElements(const cfilter::Type style) const noexcept
-        -> UnallocatedVector<Space> = 0;
+        -> Vector<Vector<std::byte>> = 0;
     virtual auto FindMatches(
         const ReadView txid,
         const cfilter::Type type,
@@ -187,7 +187,7 @@ struct Inputs : virtual public bitcoin::Inputs {
         -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Inputs> = 0;
     virtual auto ExtractElements(const cfilter::Type style) const noexcept
-        -> UnallocatedVector<Space> = 0;
+        -> Vector<Vector<std::byte>> = 0;
     virtual auto FindMatches(
         const ReadView txid,
         const cfilter::Type type,
@@ -227,7 +227,7 @@ struct Output : virtual public bitcoin::Output {
     virtual auto CalculateSize() const noexcept -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Output> = 0;
     virtual auto ExtractElements(const cfilter::Type style) const noexcept
-        -> UnallocatedVector<Space> = 0;
+        -> Vector<Vector<std::byte>> = 0;
     virtual auto FindMatches(
         const ReadView txid,
         const cfilter::Type type,
@@ -272,7 +272,7 @@ struct Outputs : virtual public bitcoin::Outputs {
     virtual auto CalculateSize() const noexcept -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Outputs> = 0;
     virtual auto ExtractElements(const cfilter::Type style) const noexcept
-        -> UnallocatedVector<Space> = 0;
+        -> Vector<Vector<std::byte>> = 0;
     virtual auto FindMatches(
         const ReadView txid,
         const cfilter::Type type,
@@ -330,7 +330,7 @@ struct Transaction : virtual public bitcoin::Transaction {
         const Output& output) noexcept -> bool = 0;
     virtual auto CalculateSize() const noexcept -> std::size_t = 0;
     virtual auto ExtractElements(const cfilter::Type style) const noexcept
-        -> UnallocatedVector<Space> = 0;
+        -> Vector<Vector<std::byte>> = 0;
     virtual auto FindMatches(
         const cfilter::Type type,
         const Patterns& txos,

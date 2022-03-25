@@ -88,7 +88,7 @@ public:
         return std::make_unique<Input>(*this);
     }
     auto ExtractElements(const cfilter::Type style) const noexcept
-        -> UnallocatedVector<Space> final;
+        -> Vector<Vector<std::byte>> final;
     auto FindMatches(
         const ReadView txid,
         const cfilter::Type type,

@@ -528,7 +528,7 @@ auto Transaction::IDNormalized() const noexcept -> const Identifier&
 }
 
 auto Transaction::ExtractElements(const cfilter::Type style) const noexcept
-    -> UnallocatedVector<Space>
+    -> Vector<Vector<std::byte>>
 {
     auto output = inputs_->ExtractElements(style);
     LogTrace()(OT_PRETTY_CLASS())("extracted ")(output.size())(

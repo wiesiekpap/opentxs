@@ -226,7 +226,7 @@ struct SubchainData::Imp {
     }
     auto SubchainMatchBlock(
         const SubchainIndex& subchain,
-        const UnallocatedVector<std::pair<ReadView, MatchingIndices>>& results)
+        const Vector<std::pair<ReadView, MatchingIndices>>& results)
         const noexcept -> bool
     {
         auto lock = eLock{lock_};
@@ -342,7 +342,7 @@ private:
             for (const auto& data : cache_.GetPattern(id)) {
                 output.emplace_back(Parent::Pattern{
                     {data.Index(), {subchain, subaccount}},
-                    space(data.Data())});
+                    space(data.Data(), alloc)});
             }
         }
 
@@ -456,8 +456,8 @@ auto SubchainData::SubchainLastScanned(
 
 auto SubchainData::SubchainMatchBlock(
     const SubchainIndex& index,
-    const UnallocatedVector<std::pair<ReadView, MatchingIndices>>& results)
-    const noexcept -> bool
+    const Vector<std::pair<ReadView, MatchingIndices>>& results) const noexcept
+    -> bool
 {
     return imp_->SubchainMatchBlock(index, results);
 }

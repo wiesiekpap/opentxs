@@ -363,7 +363,7 @@ auto Output::CalculateSize() const noexcept -> std::size_t
 }
 
 auto Output::ExtractElements(const cfilter::Type style) const noexcept
-    -> UnallocatedVector<Space>
+    -> Vector<Vector<std::byte>>
 {
     return script_->ExtractElements(style);
 }

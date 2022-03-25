@@ -115,9 +115,9 @@ auto Outputs::clone(const OutputList& rhs) noexcept -> OutputList
 }
 
 auto Outputs::ExtractElements(const cfilter::Type style) const noexcept
-    -> UnallocatedVector<Space>
+    -> Vector<Vector<std::byte>>
 {
-    auto output = UnallocatedVector<Space>{};
+    auto output = Vector<Vector<std::byte>>{};
     LogTrace()(OT_PRETTY_CLASS())("processing ")(size())(" outputs").Flush();
 
     for (const auto& txout : *this) {

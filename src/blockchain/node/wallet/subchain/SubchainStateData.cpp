@@ -474,7 +474,8 @@ auto SubchainStateData::IndexElement(
         case cfilter::Type::ES: {
             for (const auto& [sw, p, s, e, script] : scripts) {
                 for (const auto& element : e) {
-                    list.emplace_back(space(element));
+                    list.emplace_back(
+                        space(element, list.get_allocator().resource()));
                 }
             }
         } break;
@@ -541,12 +542,12 @@ auto SubchainStateData::ProcessBlock(
     const auto& node = node_;
     const auto& filters = node.FilterOracleInternal();
     const auto& blockHash = position.second;
-    auto matches = Indices{};
     auto buf = std::array<std::byte, 16_KiB>{};
     auto alloc = alloc::BoostMonotonic{
         buf.data(),
         buf.size(),
         alloc::standard_to_boost(get_allocator().resource())};
+    auto matches = Indices{&alloc};
     auto [elements, utxos, targets, outpoints] =
         get_block_targets(blockHash, matches, &alloc);
     const auto haveTargets = Clock::now();
@@ -556,7 +557,7 @@ auto SubchainStateData::ProcessBlock(
 
     const auto& filter = *pFilter;
     const auto haveFilter = Clock::now();
-    auto potential = node::internal::WalletDatabase::Patterns{};
+    auto potential = node::internal::WalletDatabase::Patterns{&alloc};
 
     for (const auto& it : filter.Match(targets)) {
         // NOTE GCS::Match returns const_iterators to items in the input vector
@@ -582,9 +583,9 @@ auto SubchainStateData::ProcessBlock(
     handle_confirmed_matches(block, position, confirmed);
     const auto handledMatches = Clock::now();
     const auto db = db_.SubchainMatchBlock(db_key_, [&] {
-        auto out = UnallocatedVector<std::pair<ReadView, Indices>>{};
+        auto out = Vector<std::pair<ReadView, Indices>>{&alloc};
         out.emplace_back(position.second.Bytes(), [&] {
-            auto out = Indices{};
+            auto out = Indices{&alloc};
 
             for (const auto& [id, element] : potential) {
                 const auto& [index, subchain] = id;
@@ -1032,7 +1033,7 @@ auto SubchainStateData::translate(
                 WalletDatabase::ElementID{
                     static_cast<Bip32Index>(index),
                     {static_cast<Subchain>(subchain), std::move(account)}},
-                space(outpoint.Bytes()));
+                space(outpoint.Bytes(), outpoints.get_allocator().resource()));
         }
     }
 }

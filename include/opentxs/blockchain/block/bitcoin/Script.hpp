@@ -76,7 +76,7 @@ public:
     virtual auto cend() const noexcept -> const_iterator = 0;
     virtual auto end() const noexcept -> const_iterator = 0;
     virtual auto ExtractElements(const cfilter::Type style) const noexcept
-        -> UnallocatedVector<Space> = 0;
+        -> Vector<Vector<std::byte>> = 0;
     virtual auto ExtractPatterns(const api::Session& api) const noexcept
         -> UnallocatedVector<PatternID> = 0;
     virtual auto IsNotification(

@@ -628,7 +628,7 @@ auto Script::evaluate_segwit(const ScriptElements& script) noexcept -> Pattern
 }
 
 auto Script::ExtractElements(const cfilter::Type style) const noexcept
-    -> UnallocatedVector<Space>
+    -> Vector<Vector<std::byte>>
 {
     if (0 == elements_.size()) {
         LogTrace()(OT_PRETTY_CLASS())("skipping empty script").Flush();
@@ -636,7 +636,7 @@ auto Script::ExtractElements(const cfilter::Type style) const noexcept
         return {};
     }
 
-    auto output = UnallocatedVector<Space>{};
+    auto output = Vector<Vector<std::byte>>{};
 
     switch (style) {
         case cfilter::Type::ES: {

@@ -390,9 +390,9 @@ auto Block::calculate_size() const noexcept -> CalculatedSize
 }
 
 auto Block::ExtractElements(const cfilter::Type style) const noexcept
-    -> UnallocatedVector<Space>
+    -> Vector<Vector<std::byte>>
 {
-    auto output = UnallocatedVector<Space>{};
+    auto output = Vector<Vector<std::byte>>{};
     LogTrace()(OT_PRETTY_CLASS())("processing ")(transactions_.size())(
         " transactions")
         .Flush();
