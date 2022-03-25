@@ -19,7 +19,7 @@
 namespace opentxs
 {
 template <std::size_t N>
-class OPENTXS_EXPORT FixedByteArray : virtual public Data
+class FixedByteArray : virtual public Data
 {
 public:
     static constexpr auto payload_size_ = std::size_t{N};
@@ -113,4 +113,6 @@ private:
 
     auto clone() const -> Data* override;
 };
+
+extern template class OPENTXS_EXPORT_TEMPLATE FixedByteArray<32>;
 }  // namespace opentxs

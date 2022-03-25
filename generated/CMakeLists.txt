@@ -52,6 +52,12 @@ else()
   set(OPENTXS_CRYPTO_HAVE_RSA "false")
 endif()
 
+if(MSVC)
+  set(OPENTXS_EXPORT_TEMPLATE_PARAM "")
+else()
+  set(OPENTXS_EXPORT_TEMPLATE_PARAM "OPENTXS_EXPORT")
+endif()
+
 configure_file(
   "Version.hpp.in"
   "${opentxs_BINARY_DIR}/include/opentxs/Version.hpp"

@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"  // IWYU pragma: associated
 
+#include "core/FixedByteArray.tpp"
+
 namespace opentxs::blockchain::cfilter
 {
 Header::Header() noexcept

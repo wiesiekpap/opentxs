@@ -20,13 +20,13 @@ class PasswordCallbackMock : public opentxs::PasswordCallback
         (const char* szDisplay,
          opentxs::Secret& theOutput,
          const opentxs::UnallocatedCString& key),
-        (const, override));
+        (const, override)){};
     MOCK_METHOD(
         void,
         runTwo,
         (const char* szDisplay,
          opentxs::Secret& theOutput,
          const opentxs::UnallocatedCString& key),
-        (const, override));
+        (const, override)){};
 };
 }  // namespace common::mocks::util
