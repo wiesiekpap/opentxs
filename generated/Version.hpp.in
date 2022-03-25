@@ -3,11 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// clang-format off
 #pragma once
 
 #include "opentxs/Export.hpp"  // IWYU pragma: export
 
+// clang-format off
+#define OPENTXS_EXPORT_TEMPLATE @OPENTXS_EXPORT_TEMPLATE_PARAM@
 #define OT_BLOCKCHAIN @OT_BLOCKCHAIN_EXPORT@
 // clang-format on
 

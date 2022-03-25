@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "opentxs/blockchain/block/Hash.hpp"  // IWYU pragma: associated
 
+#include "core/FixedByteArray.tpp"
+
 namespace opentxs::blockchain::block
 {
 Hash::Hash() noexcept

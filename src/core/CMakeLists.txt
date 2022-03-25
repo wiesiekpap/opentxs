@@ -23,6 +23,7 @@ target_sources(
     "Data.cpp"
     "Data.hpp"
     "FixedByteArray.cpp"
+    "FixedByteArray.tpp"
     "Secret.cpp"
     "Secret.hpp"
     "Shutdown.cpp"

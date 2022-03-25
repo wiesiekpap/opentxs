@@ -20,7 +20,6 @@ boost-thread
 boost-type-index
 gettext
 gtest
-gmock
 libsodium
 lmdb
 openssl
