@@ -29,6 +29,7 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/display/Definition.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/GCS.pb.h"
@@ -79,29 +80,6 @@ class Amount;
 
 namespace be = boost::endian;
 
-namespace opentxs::gcs
-{
-auto GolombDecode(
-    const std::uint32_t N,
-    const std::uint8_t P,
-    const Space& encoded) noexcept(false) -> UnallocatedVector<std::uint64_t>;
-auto GolombEncode(
-    const std::uint8_t P,
-    const UnallocatedVector<std::uint64_t>& hashedSet) noexcept(false) -> Space;
-auto HashToRange(
-    const api::Session& api,
-    const ReadView key,
-    const std::uint64_t range,
-    const ReadView item) noexcept(false) -> std::uint64_t;
-auto HashedSetConstruct(
-    const api::Session& api,
-    const ReadView key,
-    const std::uint32_t N,
-    const std::uint32_t M,
-    const UnallocatedVector<ReadView> items) noexcept(false)
-    -> UnallocatedVector<std::uint64_t>;
-}  // namespace opentxs::gcs
-
 namespace opentxs::blockchain
 {
 auto GetDefinition(blockchain::Type) noexcept -> const display::Definition&;
@@ -119,15 +97,14 @@ public:
     auto eof() -> bool;
     auto read(std::size_t nbits) -> std::uint64_t;
 
-    BitReader(const Space& data);
-    BitReader(std::uint8_t* data, int len);
+    BitReader(const Vector<std::byte>& data);
 
 private:
-    OTData raw_data_;
-    std::uint8_t* data_{nullptr};
-    std::size_t len_{};
-    std::uint64_t accum_{};
-    std::size_t n_{};
+    const Vector<std::byte>& raw_data_;
+    const std::uint8_t* data_;
+    std::size_t len_;
+    std::uint64_t accum_;
+    std::size_t n_;
 
     BitReader() = delete;
     BitReader(const BitReader&) = delete;
@@ -146,14 +123,14 @@ public:
     void flush();
     void write(std::size_t nbits, std::uint64_t value);
 
-    BitWriter(Space& output);
+    BitWriter(Vector<std::byte>& output);
 
 private:
     static constexpr auto ACCUM_BITS = std::size_t{sizeof(std::uint64_t) * 8u};
 
-    Space& output_;
-    std::uint64_t accum_{};
-    std::size_t n_{};
+    Vector<std::byte>& output_;
+    std::uint64_t accum_;
+    std::size_t n_;
 
     BitWriter() = delete;
 };
@@ -232,29 +209,35 @@ auto GCS(
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
-    const UnallocatedVector<OTData>& elements) noexcept
-    -> std::unique_ptr<blockchain::GCS>;
+    const Vector<OTData>& elements,
+    alloc::Default alloc) noexcept -> blockchain::GCS;
 auto GCS(
     const api::Session& api,
     const blockchain::cfilter::Type type,
-    const blockchain::block::Block& block) noexcept
-    -> std::unique_ptr<blockchain::GCS>;
-auto GCS(const api::Session& api, const proto::GCS& serialized) noexcept
-    -> std::unique_ptr<blockchain::GCS>;
-auto GCS(const api::Session& api, const ReadView serialized) noexcept
-    -> std::unique_ptr<blockchain::GCS>;
+    const blockchain::block::Block& block,
+    alloc::Default alloc) noexcept -> blockchain::GCS;
+auto GCS(
+    const api::Session& api,
+    const proto::GCS& serialized,
+    alloc::Default alloc) noexcept -> blockchain::GCS;
+auto GCS(
+    const api::Session& api,
+    const ReadView serialized,
+    alloc::Default alloc) noexcept -> blockchain::GCS;
 auto GCS(
     const api::Session& api,
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
     const std::uint32_t filterElementCount,
-    const ReadView filter) noexcept -> std::unique_ptr<blockchain::GCS>;
+    const ReadView filter,
+    alloc::Default alloc) noexcept -> blockchain::GCS;
 auto GCS(
     const api::Session& api,
     const blockchain::cfilter::Type type,
     const ReadView key,
-    const ReadView encoded) noexcept -> std::unique_ptr<blockchain::GCS>;
+    const ReadView encoded,
+    alloc::Default alloc) noexcept -> blockchain::GCS;
 #endif  // OT_BLOCKCHAIN
 auto NumericHash(const Data& hash) noexcept
     -> std::unique_ptr<blockchain::NumericHash>;

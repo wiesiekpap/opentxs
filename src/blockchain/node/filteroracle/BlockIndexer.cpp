@@ -109,7 +109,7 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
     auto failures{0};
 
     for (auto& data : cache) {
-        auto& [blockHashView, pGCS] = data.filter_data_;
+        auto& [blockHashView, cfilter] = data.filter_data_;
         auto& task = data.incoming_data_;
         const auto& [height, block] = task.position_;
 
@@ -130,10 +130,9 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
                 throw std::runtime_error("timeout");
             }
 
-            OT_ASSERT(pGCS);
+            OT_ASSERT(cfilter.IsValid());
 
-            const auto& gcs = *pGCS;
-            cfheader = gcs.Header(previous.get().Bytes());
+            cfheader = cfilter.Header(previous.get().Bytes());
 
             if (cfheader.empty()) {
                 LogError()(OT_PRETTY_CLASS())("failed to calculate ")(
@@ -270,7 +269,8 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
         }
 
         auto cfheader = db_.LoadFilterHeader(type_, first.second.Bytes());
-        const auto filter = db_.LoadFilter(type_, first.second.Bytes());
+        // TODO allocator
+        const auto cfilter = db_.LoadFilter(type_, first.second.Bytes(), {});
 
         if (cfheader.IsNull()) {
             LogError()(OT_PRETTY_CLASS())("Missing cfheader for block ")(
@@ -278,13 +278,13 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
                 .Flush();
         }
 
-        if (!filter) {
+        if (false == cfilter.IsValid()) {
             LogError()(OT_PRETTY_CLASS())("Missing cfilter for block ")(
                 print(first))
                 .Flush();
         }
 
-        if (filter && (false == cfheader.IsNull())) {
+        if (cfilter.IsValid() && (false == cfheader.IsNull())) {
             auto promise = std::promise<cfilter::Header>{};
             promise.set_value(std::move(cfheader));
             prior.emplace(std::move(first), promise.get_future());

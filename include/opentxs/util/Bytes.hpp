@@ -178,7 +178,8 @@ OPENTXS_EXPORT auto writer(UnallocatedCString* protobuf) noexcept
 OPENTXS_EXPORT auto writer(Space& in) noexcept -> AllocateOutput;
 OPENTXS_EXPORT auto writer(Vector<std::byte>& in) noexcept -> AllocateOutput;
 template <std::size_t N>
-OPENTXS_EXPORT auto writer(std::array<std::byte, N>& in) noexcept -> ReadView
+OPENTXS_EXPORT auto writer(std::array<std::byte, N>& in) noexcept
+    -> AllocateOutput
 {
     return preallocated(N, in.data());
 }

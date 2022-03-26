@@ -21,6 +21,7 @@
 #include "Proto.tpp"
 #include "blockchain/database/common/Bulk.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
@@ -97,11 +98,11 @@ auto BlockFilter::load_filter_index(
     if (0 == out.size_) { throw std::out_of_range("Cfilter not found"); }
 }
 
-auto BlockFilter::LoadFilter(const cfilter::Type type, const ReadView blockHash)
-    const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>
+auto BlockFilter::LoadFilter(
+    const cfilter::Type type,
+    const ReadView blockHash,
+    alloc::Default alloc) const noexcept -> opentxs::blockchain::GCS
 {
-    auto output = std::unique_ptr<const opentxs::blockchain::GCS>{};
-
     try {
         const auto index = [&] {
             auto out = util::IndexData{};
@@ -109,21 +110,21 @@ auto BlockFilter::LoadFilter(const cfilter::Type type, const ReadView blockHash)
 
             return out;
         }();
-        output = factory::GCS(
-            api_, proto::Factory<proto::GCS>(bulk_.ReadView(index)));
+
+        return factory::GCS(
+            api_, proto::Factory<proto::GCS>(bulk_.ReadView(index)), alloc);
     } catch (const std::exception& e) {
         LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
-    }
 
-    return output;
+        return {alloc};
+    }
 }
 
 auto BlockFilter::LoadFilters(
     const cfilter::Type type,
-    const Vector<block::Hash>& blocks) const noexcept
-    -> Vector<std::unique_ptr<const GCS>>
+    const Vector<block::Hash>& blocks) const noexcept -> Vector<GCS>
 {
-    auto output = Vector<std::unique_ptr<const GCS>>{blocks.get_allocator()};
+    auto output = Vector<GCS>{blocks.get_allocator()};
     output.reserve(blocks.size());
     // TODO use a named constant for the cfilter scan batch size.
     constexpr auto allocBytes =
@@ -153,7 +154,9 @@ auto BlockFilter::LoadFilters(
     for (const auto& index : indices) {
         try {
             output.emplace_back(factory::GCS(
-                api_, proto::Factory<proto::GCS>(bulk_.ReadView(index))));
+                api_,
+                proto::Factory<proto::GCS>(bulk_.ReadView(index)),
+                blocks.get_allocator()));
         } catch (const std::exception& e) {
             LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
 
@@ -237,7 +240,7 @@ auto BlockFilter::store(
         const auto proto = [&] {
             auto out = proto::GCS{};
 
-            if (false == filter.Serialize(out)) {
+            if (false == filter.Internal().Serialize(out)) {
                 throw std::runtime_error{"Failed to serialize gcs"};
             }
 
@@ -321,12 +324,10 @@ auto BlockFilter::StoreFilters(
     auto tx = lmdb_.TransactionRW();
     auto lock = Lock{bulk_.Mutex()};
 
-    for (auto& [block, pFilter] : filters) {
-        OT_ASSERT(pFilter);
+    for (auto& [block, cfilter] : filters) {
+        OT_ASSERT(cfilter.IsValid());
 
-        const auto& filter = *pFilter;
-
-        if (false == store(lock, tx, block.Bytes(), type, filter)) {
+        if (false == store(lock, tx, block.Bytes(), type, cfilter)) {
             return false;
         }
     }
@@ -396,7 +397,8 @@ auto BlockFilter::StoreFilters(
                 proto::write(*cfheaderProto, writer(cfHeader));
 
                 if (auto& [b, filter] = *f;
-                    (!filter) || (!filter->Serialize(*cfilter))) {
+                    (false == filter.IsValid()) ||
+                    (false == filter.Internal().Serialize(*cfilter))) {
                     throw std::runtime_error{"Failed to serialize gcs"};
                 }
 

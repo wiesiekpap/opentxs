@@ -9,7 +9,7 @@
 
 #include <cstdint>
 
-#include "opentxs/core/Data.hpp"
+#include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -25,44 +25,60 @@ namespace cfilter
 class Hash;
 class Header;
 }  // namespace cfilter
-}  // namespace blockchain
 
-namespace proto
+namespace internal
 {
 class GCS;
-}  // namespace proto
+}  // namespace internal
+}  // namespace blockchain
+
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain
 {
-class OPENTXS_EXPORT GCS
+class OPENTXS_EXPORT GCS : virtual public Allocated
 {
 public:
-    using Targets = UnallocatedVector<ReadView>;
-    using Matches = UnallocatedVector<Targets::const_iterator>;
+    class Imp;
+
+    using Targets = Vector<ReadView>;
+    using Matches = Vector<Targets::const_iterator>;
 
     /// Serialized filter only, no element count
-    virtual auto Compressed() const noexcept -> Space = 0;
-    virtual auto ElementCount() const noexcept -> std::uint32_t = 0;
+    auto Compressed(AllocateOutput out) const noexcept -> bool;
+    auto ElementCount() const noexcept -> std::uint32_t;
     /// Element count as CompactSize followed by serialized filter
-    virtual auto Encode() const noexcept -> OTData = 0;
-    virtual auto Hash() const noexcept -> cfilter::Hash = 0;
-    virtual auto Header(const cfilter::Header& previous) const noexcept
-        -> cfilter::Header = 0;
-    virtual auto Match(const Targets&) const noexcept -> Matches = 0;
-    OPENTXS_NO_EXPORT virtual auto Serialize(proto::GCS& out) const noexcept
-        -> bool = 0;
-    virtual auto Serialize(AllocateOutput out) const noexcept -> bool = 0;
-    virtual auto Test(const Data& target) const noexcept -> bool = 0;
-    virtual auto Test(const ReadView target) const noexcept -> bool = 0;
-    virtual auto Test(const UnallocatedVector<OTData>& targets) const noexcept
-        -> bool = 0;
-    virtual auto Test(const UnallocatedVector<Space>& targets) const noexcept
-        -> bool = 0;
+    auto Encode(AllocateOutput out) const noexcept -> bool;
+    auto get_allocator() const noexcept -> allocator_type override;
+    auto Hash() const noexcept -> cfilter::Hash;
+    auto Header(const cfilter::Header& previous) const noexcept
+        -> cfilter::Header;
+    OPENTXS_NO_EXPORT auto Internal() const noexcept -> const internal::GCS&;
+    auto IsValid() const noexcept -> bool;
+    auto Match(const Targets& targets, allocator_type alloc = {}) const noexcept
+        -> Matches;
+    auto Serialize(AllocateOutput out) const noexcept -> bool;
+    auto Test(const Data& target) const noexcept -> bool;
+    auto Test(const ReadView target) const noexcept -> bool;
+    auto Test(const Vector<OTData>& targets) const noexcept -> bool;
+    auto Test(const Vector<Space>& targets) const noexcept -> bool;
 
-    virtual ~GCS() = default;
+    auto swap(GCS& rhs) noexcept -> void;
+
+    OPENTXS_NO_EXPORT GCS(Imp* imp) noexcept;
+    GCS(allocator_type alloc = {}) noexcept;
+    GCS(const GCS& rhs, allocator_type alloc = {}) noexcept;
+    GCS(GCS&& rhs) noexcept;
+    GCS(GCS&& rhs, allocator_type alloc) noexcept;
+    auto operator=(const GCS& rhs) noexcept -> GCS&;
+    auto operator=(GCS&& rhs) noexcept -> GCS&;
+
+    ~GCS() override;
+
+private:
+    Imp* imp_;
 };
-
 }  // namespace opentxs::blockchain

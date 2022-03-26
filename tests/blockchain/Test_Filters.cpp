@@ -9,12 +9,12 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iterator>
-#include <memory>
 #include <string_view>
 #include <utility>
 
 #include "1_Internal.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
@@ -45,7 +45,7 @@ namespace ottest
 const auto params_ = ot::blockchain::internal::GetFilterParams(
     ot::blockchain::cfilter::Type::Basic_BIP158);
 using Hash = ot::OTData;
-auto stress_test_ = ot::UnallocatedVector<Hash>{};
+auto stress_test_ = ot::Vector<Hash>{};
 
 class Test_Filters : public ::testing::Test
 {
@@ -69,7 +69,7 @@ public:
     {
         const auto& vector = gcs_.at(0);
         const auto block = api_.Factory().DataFromHex(vector.block_hash_);
-        auto elements = ot::UnallocatedVector<ot::OTData>{};
+        auto elements = ot::Vector<ot::OTData>{};
 
         for (const auto& element : vector.previous_) {
             elements.emplace_back(api_.Factory().DataFromHex(element));
@@ -79,19 +79,24 @@ public:
             elements.emplace_back(api_.Factory().DataFromHex(element));
         }
 
-        const auto pGCS = ot::factory::GCS(
+        const auto gcs = ot::factory::GCS(
             api_,
             params_.first,
             params_.second,
             ot::blockchain::internal::BlockHashToFilterKey(block->Bytes()),
-            elements);
+            elements,
+            {});
 
-        EXPECT_TRUE(pGCS);
+        EXPECT_TRUE(gcs.IsValid());
 
-        if (false == bool(pGCS)) { return false; }
+        if (false == gcs.IsValid()) { return false; }
 
-        const auto& gcs = *pGCS;
-        const auto encoded = gcs.Encode();
+        const auto encoded = [&] {
+            auto out = api_.Factory().Data();
+            gcs.Encode(out->WriteInto());
+
+            return out;
+        }();
 
         EXPECT_EQ(vector.filter_, encoded->asHex());
 
@@ -255,7 +260,7 @@ TEST_F(Test_Filters, bloom_filter)
 TEST_F(Test_Filters, bitstreams)
 {
     {
-        auto result = ot::Space{};
+        auto result = ot::Vector<std::byte>{};
         auto writer = ot::blockchain::internal::BitWriter{result};
         writer.write(1, 1);
         writer.write(1, 1);
@@ -272,7 +277,7 @@ TEST_F(Test_Filters, bitstreams)
     }
 
     {
-        auto result = ot::Space{};
+        auto result = ot::Vector<std::byte>{};
         auto writer = ot::blockchain::internal::BitWriter{result};
         writer.write(1, 1);
         writer.write(1, 0);
@@ -305,7 +310,7 @@ TEST_F(Test_Filters, bitstreams)
     }
 
     {
-        auto result = ot::Space{};
+        auto result = ot::Vector<std::byte>{};
         auto writer = ot::blockchain::internal::BitWriter{result};
         writer.write(1, 1);
         writer.write(1, 1);
@@ -321,7 +326,7 @@ TEST_F(Test_Filters, bitstreams)
     }
 
     {
-        auto result = ot::Space{};
+        auto result = ot::Vector<std::byte>{};
         auto writer = ot::blockchain::internal::BitWriter{result};
         writer.write(1, 1);
         writer.write(1, 1);
@@ -341,14 +346,14 @@ TEST_F(Test_Filters, bitstreams)
 
 TEST_F(Test_Filters, golomb_coding)
 {
-    const auto elements = ot::UnallocatedVector<std::uint64_t>{2, 3, 5, 8, 13};
+    const auto elements = ot::Vector<std::uint64_t>{2, 3, 5, 8, 13};
     const auto N = static_cast<std::uint32_t>(elements.size());
     const auto P = std::uint8_t{19};
-    const auto encoded = ot::gcs::GolombEncode(P, elements);
+    const auto encoded = ot::gcs::GolombEncode(P, elements, {});
 
     ASSERT_GT(encoded.size(), 0);
 
-    const auto decoded = ot::gcs::GolombDecode(N, P, encoded);
+    const auto decoded = ot::gcs::GolombDecode(N, P, encoded, {});
 
     ASSERT_EQ(elements.size(), decoded.size());
 
@@ -373,16 +378,13 @@ TEST_F(Test_Filters, gcs)
     const auto object6(ot::Data::Factory(s6.data(), s6.length()));
 
     auto includedElements =
-        ot::UnallocatedVector<ot::OTData>{object1, object2, object3, object4};
-    auto excludedElements = ot::UnallocatedVector<ot::OTData>{object5, object6};
+        ot::Vector<ot::OTData>{object1, object2, object3, object4};
+    auto excludedElements = ot::Vector<ot::OTData>{object5, object6};
     auto key = ot::UnallocatedCString{"0123456789abcdef"};
-    auto pGcs = ot::factory::GCS(
-        api_, params_.first, params_.second, key, includedElements);
+    const auto gcs = ot::factory::GCS(
+        api_, params_.first, params_.second, key, includedElements, {});
 
-    ASSERT_TRUE(pGcs);
-
-    const auto& gcs = *pGcs;
-
+    ASSERT_TRUE(gcs.IsValid());
     EXPECT_TRUE(gcs.Test(object1));
     EXPECT_TRUE(gcs.Test(object2));
     EXPECT_TRUE(gcs.Test(object3));
@@ -392,7 +394,7 @@ TEST_F(Test_Filters, gcs)
     EXPECT_TRUE(gcs.Test(includedElements));
     EXPECT_FALSE(gcs.Test(excludedElements));
 
-    const auto partial = ot::UnallocatedVector<ot::ReadView>{
+    const auto partial = ot::Vector<ot::ReadView>{
         object1->Bytes(), object4->Bytes(), object5->Bytes(), object6->Bytes()};
     const auto matches = gcs.Match(partial);
 
@@ -435,13 +437,10 @@ TEST_F(Test_Filters, bip158_case_1665877)
         "b263e994f9a0f4351e852968fba21f41a27628e900");
 
     auto key = ot::blockchain::internal::BlockHashToFilterKey(block->Bytes());
-    const auto pGcs = ot::factory::GCS(
-        api_, params_.first, params_.second, key, 154, encodedGCS->Bytes());
+    const auto gcs = ot::factory::GCS(
+        api_, params_.first, params_.second, key, 154, encodedGCS->Bytes(), {});
 
-    ASSERT_TRUE(pGcs);
-
-    const auto& gcs = *pGcs;
-
+    ASSERT_TRUE(gcs.IsValid());
     EXPECT_TRUE(gcs.Test(script));
 }
 
@@ -504,17 +503,17 @@ TEST_F(Test_Filters, hash)
         ot::blockchain::Type::Bitcoin_testnet3);
     const auto preimage = api_.Factory().DataFromHex("0x019dfca8");
     const auto filter_0 = api_.Factory().DataFromHex("0x9dfca8");
-    auto pGcs = ot::factory::GCS(
+    const auto gcs = ot::factory::GCS(
         api_,
         params_.first,
         params_.second,
         bc::BlockHashToFilterKey(block_0.Bytes()),
         1,
-        filter_0->Bytes());
+        filter_0->Bytes(),
+        {});
 
-    ASSERT_TRUE(pGcs);
+    ASSERT_TRUE(gcs.IsValid());
 
-    const auto& gcs = *pGcs;
     const auto hash_a = gcs.Hash();
     const auto hash_b = bc::FilterToHash(api_, preimage->Bytes());
 
@@ -558,16 +557,16 @@ TEST_F(Test_Filters, test_set_intersection)
 
         return out;
     }();
-    const auto pGCS = ot::factory::GCS(
+    const auto gcs = ot::factory::GCS(
         api_,
         params.first,
         params.second,
         bc::BlockHashToFilterKey(hash->Bytes()),
-        stress_test_);
+        stress_test_,
+        {});
 
-    ASSERT_TRUE(pGCS);
+    ASSERT_TRUE(gcs.IsValid());
 
-    const auto& gcs = *pGCS;
     const auto subset = [&] {
         constexpr auto count{1000u};
         auto copy{stress_test_};

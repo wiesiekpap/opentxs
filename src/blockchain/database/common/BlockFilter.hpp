@@ -15,6 +15,7 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
@@ -73,12 +74,13 @@ public:
         const noexcept -> bool;
     auto HaveFilterHeader(const cfilter::Type type, const ReadView blockHash)
         const noexcept -> bool;
-    auto LoadFilter(const cfilter::Type type, const ReadView blockHash)
-        const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>;
+    auto LoadFilter(
+        const cfilter::Type type,
+        const ReadView blockHash,
+        alloc::Default alloc) const noexcept -> opentxs::blockchain::GCS;
     auto LoadFilters(
         const cfilter::Type type,
-        const Vector<block::Hash>& blocks) const noexcept
-        -> Vector<std::unique_ptr<const GCS>>;
+        const Vector<block::Hash>& blocks) const noexcept -> Vector<GCS>;
     auto LoadFilterHash(
         const cfilter::Type type,
         const ReadView blockHash,

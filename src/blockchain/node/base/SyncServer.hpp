@@ -49,8 +49,7 @@
 
 namespace opentxs::blockchain::node::base
 {
-using SyncDM = download::
-    Manager<SyncServer, std::unique_ptr<const GCS>, int, cfilter::Type>;
+using SyncDM = download::Manager<SyncServer, GCS, int, cfilter::Type>;
 using SyncWorker = Worker<SyncServer, api::Session>;
 
 class SyncServer : public SyncDM, public SyncWorker
@@ -185,7 +184,9 @@ private:
         auto work = NextBatch();
 
         for (const auto& task : work.data_) {
-            task->download(filter_.LoadFilter(type_, task->position_.second));
+            // TODO allocator
+            task->download(
+                filter_.LoadFilter(type_, task->position_.second, {}));
         }
     }
     auto pipeline(const zmq::Message& in) noexcept -> void
@@ -374,22 +375,26 @@ private:
                     }
                 }
 
-                const auto& pGCS = task->data_.get();
+                const auto& cfilter = task->data_.get();
 
-                if (false == bool(pGCS)) {
+                if (false == cfilter.IsValid()) {
                     throw std::runtime_error(
                         UnallocatedCString{"failed to load gcs for block "} +
                         task->position_.second.asHex());
                 }
 
-                const auto& gcs = *pGCS;
                 const auto headerBytes = header.Encode();
-                const auto filterBytes = gcs.Compressed();
+                const auto filterBytes = [&] {
+                    auto out = Space{};
+                    cfilter.Compressed(writer(out));
+
+                    return out;
+                }();
                 items.emplace_back(
                     chain_,
                     task->position_.first,
                     type_,
-                    gcs.ElementCount(),
+                    cfilter.ElementCount(),
                     headerBytes->Bytes(),
                     reader(filterBytes));
                 task->process(1);

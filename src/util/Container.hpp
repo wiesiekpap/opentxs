@@ -22,8 +22,8 @@ auto contains(const UnallocatedVector<T>& vector, const T& value) noexcept
     return false;
 }
 
-template <typename T>
-auto dedup(UnallocatedVector<T>& vector) noexcept -> void
+template <typename Container>
+auto dedup(Container& vector) noexcept -> void
 {
     std::sort(vector.begin(), vector.end());
     vector.erase(std::unique(vector.begin(), vector.end()), vector.end());

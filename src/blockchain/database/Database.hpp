@@ -380,15 +380,17 @@ public:
     {
         return headers_.IsSibling(hash);
     }
-    auto LoadFilter(const cfilter::Type type, const ReadView block)
-        const noexcept -> std::unique_ptr<const blockchain::GCS> final
+    auto LoadFilter(
+        const cfilter::Type type,
+        const ReadView block,
+        alloc::Default alloc) const noexcept -> blockchain::GCS final
     {
-        return filters_.LoadFilter(type, block);
+        return filters_.LoadFilter(type, block, alloc);
     }
     auto LoadFilters(
         const cfilter::Type type,
         const Vector<block::Hash>& blocks) const noexcept
-        -> Vector<std::unique_ptr<const blockchain::GCS>> final
+        -> Vector<blockchain::GCS> final
     {
         return filters_.LoadFilters(type, blocks);
     }

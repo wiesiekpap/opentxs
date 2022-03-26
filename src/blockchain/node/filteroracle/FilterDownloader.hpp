@@ -26,7 +26,7 @@ namespace opentxs::blockchain::node::implementation
 {
 using FilterDM = download::Manager<
     FilterOracle::FilterDownloader,
-    std::unique_ptr<const GCS>,
+    GCS,
     cfilter::Header,
     cfilter::Type>;
 using FilterWorker = Worker<FilterOracle::FilterDownloader, api::Session>;
@@ -201,18 +201,17 @@ private:
 
         for (const auto& task : data) {
             const auto& priorCfheader = task->previous_.get();
-            auto& gcs =
-                const_cast<std::unique_ptr<const GCS>&>(task->data_.get());
+            auto& cfilter = const_cast<GCS&>(task->data_.get());
             const auto& block = task->position_.second;
             const auto expected = db_.LoadFilterHash(type_, block.Bytes());
 
-            if (expected == gcs->Hash()) {
-                task->process(gcs->Header(priorCfheader));
-                filters.emplace_back(block, gcs.release());
+            if (expected == cfilter.Hash()) {
+                task->process(cfilter.Header(priorCfheader));
+                filters.emplace_back(block, std::move(cfilter));
             } else {
                 LogError()("Filter for block ")(print(task->position_))(
-                    " does not match header. Received: ")(gcs->Hash().asHex())(
-                    " expected: ")(expected.asHex())
+                    " does not match header. Received: ")(
+                    cfilter.Hash().asHex())(" expected: ")(expected.asHex())
                     .Flush();
                 task->redownload();
                 break;

@@ -214,8 +214,7 @@ using DisconnectedList = UnallocatedMultimap<block::Hash, block::Hash>;
 
 using CfheaderJob =
     download::Batch<cfilter::Hash, cfilter::Header, cfilter::Type>;
-using CfilterJob =
-    download::Batch<std::unique_ptr<const GCS>, cfilter::Header, cfilter::Type>;
+using CfilterJob = download::Batch<GCS, cfilter::Header, cfilter::Type>;
 using BlockJob =
     download::Batch<std::shared_ptr<const block::bitcoin::Block>, int>;
 }  // namespace opentxs::blockchain::node
@@ -280,7 +279,7 @@ struct Config {
 struct FilterDatabase {
     using CFHeaderParams =
         std::tuple<block::Hash, cfilter::Header, cfilter::Hash>;
-    using CFilterParams = std::pair<block::Hash, std::unique_ptr<const GCS>>;
+    using CFilterParams = std::pair<block::Hash, GCS>;
 
     virtual auto FilterHeaderTip(const cfilter::Type type) const noexcept
         -> block::Position = 0;
@@ -291,12 +290,13 @@ struct FilterDatabase {
     virtual auto HaveFilterHeader(
         const cfilter::Type type,
         const block::Hash& block) const noexcept -> bool = 0;
-    virtual auto LoadFilter(const cfilter::Type type, const ReadView block)
-        const noexcept -> std::unique_ptr<const blockchain::GCS> = 0;
+    virtual auto LoadFilter(
+        const cfilter::Type type,
+        const ReadView block,
+        alloc::Default alloc) const noexcept -> blockchain::GCS = 0;
     virtual auto LoadFilters(
         const cfilter::Type type,
-        const Vector<block::Hash>& blocks) const noexcept
-        -> Vector<std::unique_ptr<const GCS>> = 0;
+        const Vector<block::Hash>& blocks) const noexcept -> Vector<GCS> = 0;
     virtual auto LoadFilterHash(const cfilter::Type type, const ReadView block)
         const noexcept -> cfilter::Hash = 0;
     virtual auto LoadFilterHeader(
@@ -331,8 +331,8 @@ struct FilterOracle : virtual public node::FilterOracle {
     virtual auto Heartbeat() const noexcept -> void = 0;
     virtual auto LoadFilterOrResetTip(
         const cfilter::Type type,
-        const block::Position& position) const noexcept
-        -> std::unique_ptr<const GCS> = 0;
+        const block::Position& position,
+        alloc::Default alloc) const noexcept -> GCS = 0;
     virtual auto ProcessBlock(const block::bitcoin::Block& block) const noexcept
         -> bool = 0;
     virtual auto ProcessSyncData(

@@ -696,20 +696,21 @@ auto Peer::process_cfilter(
             }
 
             const auto& blockHash = message.Hash();
-            auto gcs = factory::GCS(
+            auto cfilter = factory::GCS(
                 api_,
                 message.Bits(),
                 message.FPRate(),
                 blockchain::internal::BlockHashToFilterKey(blockHash.Bytes()),
                 message.ElementCount(),
-                message.Filter());
+                message.Filter(),
+                {});  // TODO allocator
 
-            if (false == bool(gcs)) {
-                throw std::runtime_error("Failed to instantiate gcs");
+            if (false == cfilter.IsValid()) {
+                throw std::runtime_error("Failed to instantiate cfilter");
             }
 
             cfilter_job_.Download(
-                block->Position(), std::move(gcs), message.Type());
+                block->Position(), std::move(cfilter), message.Type());
 
             if (cfilter_job_.isDownloaded()) { reset_cfilter_job(); }
         }
@@ -959,12 +960,12 @@ auto Peer::process_getcfheaders(
 
     for (auto i{start}; i < blocks.size(); ++i) {
         const auto& blockHash = blocks.at(i);
-        const auto pFilter = fOracle.LoadFilter(filterType, blockHash);
+        // TODO allocator
+        const auto cfilter = fOracle.LoadFilter(filterType, blockHash, {});
 
-        if (false == bool(pFilter)) { break; }
+        if (false == cfilter.IsValid()) { break; }
 
-        const auto& filter = *pFilter;
-        filterHashes.emplace_back(filter.Hash());
+        filterHashes.emplace_back(cfilter.Hash());
     }
 
     if (0 == filterHashes.size()) { return; }
@@ -1052,16 +1053,18 @@ auto Peer::process_getcfilters(
         return;
     }
 
-    auto data = UnallocatedVector<std::unique_ptr<const GCS>>{};
+    // TODO allocator
+    auto data = Vector<GCS>{};
     data.reserve(count);
     const auto& filters = network_.FilterOracle();
     const auto type = message.Type();
     const auto hashes = headers_.BestHashes(startHeight, stopHash);
 
     for (const auto& hash : hashes) {
-        const auto& pGCS = data.emplace_back(filters.LoadFilter(type, hash));
+        const auto& cfilter = data.emplace_back(
+            filters.LoadFilter(type, hash, data.get_allocator()));
 
-        if (!pGCS) { break; }
+        if (false == cfilter.IsValid()) { break; }
     }
 
     if (data.size() != count) {
@@ -1079,7 +1082,7 @@ auto Peer::process_getcfilters(
 
     for (auto g{data.begin()}; g != data.end(); ++g, ++h) {
         auto pOut = std::unique_ptr<message::internal::Cfilter>{
-            factory::BitcoinP2PCfilter(api_, chain_, type, *h, *(*g))};
+            factory::BitcoinP2PCfilter(api_, chain_, type, *h, *g)};
 
         if (false == bool(pOut)) {
             LogError()(OT_PRETTY_CLASS())("Failed to construct reply").Flush();
