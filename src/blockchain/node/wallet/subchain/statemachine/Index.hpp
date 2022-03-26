@@ -70,8 +70,7 @@ public:
     ~Imp() override = default;
 
 protected:
-    auto done(
-        const node::internal::WalletDatabase::ElementMap& elements) noexcept
+    auto done(node::internal::WalletDatabase::ElementMap&& elements) noexcept
         -> void;
 
 private:

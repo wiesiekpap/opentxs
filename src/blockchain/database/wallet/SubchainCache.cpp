@@ -23,7 +23,6 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
-#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
@@ -48,48 +47,12 @@ SubchainCache::SubchainCache(
     , patterns_()
     , pattern_index_lock_()
     , pattern_index_()
-    , match_index_lock_()
-    , match_index_()
 {
     subchain_id_.reserve(reserve_);
     last_indexed_.reserve(reserve_);
     last_scanned_.reserve(reserve_);
     pattern_index_.reserve(reserve_);
     patterns_.reserve(reserve_ * reserve_);
-}
-
-auto SubchainCache::AddMatch(
-    const ReadView key,
-    const PatternID& value,
-    MDB_txn* tx) noexcept -> bool
-{
-    try {
-        const auto hash = block::Hash{key};
-        auto lock = boost::unique_lock<Mutex>{match_index_lock_};
-        auto& index = match_index_[hash];
-        auto [it, added] = index.emplace(value);
-
-        if (false == added) {
-            LogTrace()(OT_PRETTY_CLASS())("Match index already exists").Flush();
-
-            return true;
-        }
-
-        const auto rc =
-            lmdb_.Store(wallet::match_index_, key, value.Bytes(), tx).first;
-
-        if (false == rc) {
-            index.erase(it);
-
-            throw std::runtime_error{"failed to write match index"};
-        }
-
-        return true;
-    } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
-
-        return false;
-    }
 }
 
 auto SubchainCache::AddPattern(
@@ -253,13 +216,6 @@ auto SubchainCache::GetLastScanned(const SubchainIndex& subchain) noexcept
     }
 }
 
-auto SubchainCache::GetMatchIndex(const ReadView id) noexcept
-    -> const dbPatternIndex&
-
-{
-    return load_match_index(id);
-}
-
 auto SubchainCache::GetPattern(const PatternID& id) noexcept
     -> const dbPatterns&
 {
@@ -359,33 +315,6 @@ auto SubchainCache::load_last_scanned(const SubchainIndex& key) noexcept(false)
                        " not found in database";
 
     throw std::out_of_range{error};
-}
-
-auto SubchainCache::load_match_index(const ReadView key) noexcept
-    -> const dbPatternIndex&
-{
-    auto lock = boost::upgrade_lock<Mutex>{match_index_lock_};
-    auto& map = match_index_;
-    const auto hash = block::Hash{key};
-
-    if (auto it = map.find(hash); map.end() != it) { return it->second; }
-
-    auto write = boost::upgrade_to_unique_lock<Mutex>{lock};
-    auto& index = map[hash];
-    lmdb_.Load(
-        wallet::match_index_,
-        key,
-        [&](const auto bytes) {
-            index.emplace([&] {
-                auto out = api_.Factory().Identifier();
-                out->Assign(bytes);
-
-                return out;
-            }());
-        },
-        Mode::Multiple);
-
-    return index;
 }
 
 auto SubchainCache::load_pattern(const PatternID& key) noexcept

@@ -8,11 +8,8 @@
 #include "blockchain/database/wallet/Subchain.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <array>
-#include <cstddef>
 #include <cstring>
 #include <future>
-#include <iterator>
 #include <shared_mutex>
 #include <stdexcept>
 #include <utility>
@@ -23,7 +20,6 @@
 #include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
-#include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/api/network/Asio.hpp"
@@ -33,6 +29,7 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -65,42 +62,6 @@ struct SubchainData::Imp {
             const auto& key = cache_.DecodeIndex(id);
 
             return load_patterns(lock, key, cache_.GetPatternIndex(id), alloc);
-        } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
-
-            return {};
-        }
-    }
-    auto GetUntestedPatterns(
-        const SubchainIndex& subchain,
-        const ReadView blockID,
-        alloc::Resource* alloc) const noexcept -> Patterns
-    {
-        auto lock = sLock{lock_};
-        upgrade_future_.get();
-
-        try {
-            const auto& key = cache_.DecodeIndex(subchain);
-            auto buf = std::array<std::byte, 1000u * sizeof(pPatternID)>{};
-            auto pmr = alloc::BoostMonotonic{
-                buf.data(), buf.size(), alloc::standard_to_boost(alloc)};
-            const auto patterns = [&] {
-                const auto& all = cache_.GetPatternIndex(subchain);
-                const auto& matches = cache_.GetMatchIndex(blockID);
-                const auto count = std::min(all.size(), matches.size());
-                auto out = Vector<pPatternID>{&pmr};
-                out.reserve(count);
-                std::set_difference(
-                    std::begin(all),
-                    std::end(all),
-                    std::begin(matches),
-                    std::end(matches),
-                    std::back_inserter(out));
-
-                return out;
-            }();
-
-            return load_patterns(lock, key, patterns, alloc);
         } catch (const std::exception& e) {
             LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
@@ -223,42 +184,6 @@ struct SubchainData::Imp {
         upgrade_future_.get();
 
         return cache_.GetLastScanned(subchain);
-    }
-    auto SubchainMatchBlock(
-        const SubchainIndex& subchain,
-        const Vector<std::pair<ReadView, MatchingIndices>>& results)
-        const noexcept -> bool
-    {
-        auto lock = eLock{lock_};
-        upgrade_future_.get();
-        auto tx = lmdb_.TransactionRW();
-        auto output{true};
-
-        try {
-            for (const auto& [blockID, indices] : results) {
-                for (const auto& index : indices) {
-                    const auto id = pattern_id(subchain, index);
-                    output = cache_.AddMatch(blockID, id, tx);
-
-                    if (false == output) {
-                        throw std::runtime_error{"Failed to add match"};
-                    }
-                }
-            }
-
-            output = tx.Finalize(true);
-
-            if (false == output) {
-                throw std::runtime_error{"failed to commit transaction"};
-            }
-
-            return output;
-        } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
-            cache_.Clear();
-
-            return false;
-        }
     }
     auto SubchainSetLastScanned(
         const SubchainIndex& subchain,
@@ -417,14 +342,6 @@ auto SubchainData::GetPatterns(
     return imp_->GetPatterns(subchain, alloc);
 }
 
-auto SubchainData::GetUntestedPatterns(
-    const SubchainIndex& subchain,
-    const ReadView blockID,
-    alloc::Resource* alloc) const noexcept -> Patterns
-{
-    return imp_->GetUntestedPatterns(subchain, blockID, alloc);
-}
-
 auto SubchainData::Reorg(
     const Lock& headerOracleLock,
     MDB_txn* tx,
@@ -452,14 +369,6 @@ auto SubchainData::SubchainLastScanned(
     const SubchainIndex& subchain) const noexcept -> block::Position
 {
     return imp_->SubchainLastScanned(subchain);
-}
-
-auto SubchainData::SubchainMatchBlock(
-    const SubchainIndex& index,
-    const Vector<std::pair<ReadView, MatchingIndices>>& results) const noexcept
-    -> bool
-{
-    return imp_->SubchainMatchBlock(index, results);
 }
 
 auto SubchainData::SubchainSetLastScanned(

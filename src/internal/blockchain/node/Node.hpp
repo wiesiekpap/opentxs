@@ -591,6 +591,9 @@ struct WalletDatabase {
         blockchain::block::Outpoint,
         std::unique_ptr<block::bitcoin::Output>>;
     using KeyID = blockchain::crypto::Key;
+    using TXOs =
+        Map<blockchain::block::Outpoint,
+            std::shared_ptr<const block::bitcoin::Output>>;
 
     virtual auto CompletedProposals() const noexcept
         -> UnallocatedSet<OTIdentifier> = 0;
@@ -643,11 +646,6 @@ struct WalletDatabase {
         const Subchain subchain,
         alloc::Resource* alloc = alloc::System()) const noexcept
         -> Vector<UTXO> = 0;
-    virtual auto GetUntestedPatterns(
-        const SubchainIndex& index,
-        const ReadView blockID,
-        alloc::Resource* alloc = alloc::System()) const noexcept
-        -> Patterns = 0;
     virtual auto GetWalletHeight() const noexcept -> block::Height = 0;
     virtual auto LoadProposal(const Identifier& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal> = 0;
@@ -660,10 +658,6 @@ struct WalletDatabase {
         -> std::optional<Bip32Index> = 0;
     virtual auto SubchainLastScanned(const SubchainIndex& index) const noexcept
         -> block::Position = 0;
-    virtual auto SubchainMatchBlock(
-        const SubchainIndex& index,
-        const Vector<std::pair<ReadView, MatchingIndices>>& results)
-        const noexcept -> bool = 0;
     virtual auto SubchainSetLastScanned(
         const SubchainIndex& index,
         const block::Position& position) const noexcept -> bool = 0;
@@ -673,13 +667,16 @@ struct WalletDatabase {
         const SubchainIndex& index,
         const block::Position& block,
         const std::size_t blockIndex,
-        const UnallocatedVector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction) noexcept -> bool = 0;
+        const Vector<std::uint32_t> outputIndices,
+        const block::bitcoin::Transaction& transaction,
+        TXOs& txoCreated,
+        TXOs& txoConsumed) noexcept -> bool = 0;
     virtual auto AddMempoolTransaction(
         const NodeID& balanceNode,
         const Subchain subchain,
-        const UnallocatedVector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction) noexcept -> bool = 0;
+        const Vector<std::uint32_t> outputIndices,
+        const block::bitcoin::Transaction& transaction,
+        TXOs& txoCreated) noexcept -> bool = 0;
     virtual auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,

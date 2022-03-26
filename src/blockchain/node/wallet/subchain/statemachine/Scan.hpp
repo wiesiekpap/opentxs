@@ -70,8 +70,6 @@ public:
     ~Imp() final = default;
 
 private:
-    static constexpr auto batch_size_ = block::Height{1000};
-
     network::zeromq::socket::Raw& to_process_;
     std::optional<block::Position> last_scanned_;
     std::optional<block::Position> filter_tip_;

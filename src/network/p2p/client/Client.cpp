@@ -411,8 +411,9 @@ auto Client::Imp::get_required_height(Chain chain) const noexcept -> Height
             return 0;
         }
     }();
+    static constexpr auto tolerance = Height{6};
 
-    return std::max(progress, checkpoint);
+    return std::max(std::max(progress, tolerance) - tolerance, checkpoint);
 }
 
 auto Client::Imp::Init(const api::network::Blockchain& parent) noexcept -> void

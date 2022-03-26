@@ -125,19 +125,23 @@ public:
     using Patterns = Parent::Patterns;
     using MatchingIndices = Parent::MatchingIndices;
     using UTXO = Parent::UTXO;
+    using TXOs = Parent::TXOs;
 
     auto AddConfirmedTransaction(
         const NodeID& accountID,
         const SubchainIndex& index,
         const block::Position& block,
         const std::size_t blockIndex,
-        const UnallocatedVector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction) const noexcept -> bool;
+        const Vector<std::uint32_t> outputIndices,
+        const block::bitcoin::Transaction& transaction,
+        TXOs& txoCreated,
+        TXOs& txoConsumed) const noexcept -> bool;
     auto AddMempoolTransaction(
         const NodeID& balanceNode,
         const Subchain subchain,
-        const UnallocatedVector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction) const noexcept -> bool;
+        const Vector<std::uint32_t> outputIndices,
+        const block::bitcoin::Transaction& transaction,
+        TXOs& txoCreated) const noexcept -> bool;
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
@@ -190,10 +194,6 @@ public:
         const NodeID& balanceNode,
         const Subchain subchain,
         alloc::Resource* alloc) const noexcept -> Vector<UTXO>;
-    auto GetUntestedPatterns(
-        const SubchainIndex& index,
-        const ReadView blockID,
-        alloc::Resource* alloc) const noexcept -> Patterns;
     auto GetWalletHeight() const noexcept -> block::Height;
     auto LoadProposal(const Identifier& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal>;
@@ -222,10 +222,6 @@ public:
         -> std::optional<Bip32Index>;
     auto SubchainLastScanned(const SubchainIndex& index) const noexcept
         -> block::Position;
-    auto SubchainMatchBlock(
-        const SubchainIndex& index,
-        const Vector<std::pair<ReadView, MatchingIndices>>& results)
-        const noexcept -> bool;
     auto SubchainSetLastScanned(
         const SubchainIndex& index,
         const block::Position& position) const noexcept -> bool;

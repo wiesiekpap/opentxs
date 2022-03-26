@@ -16,6 +16,8 @@ target_sources(
     "Common.cpp"
     "DeterministicIndex.cpp"
     "DeterministicIndex.hpp"
+    "ElementCache.cpp"
+    "ElementCache.cpp"
     "Index.cpp"
     "Index.cpp"
     "Job.cpp"

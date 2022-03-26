@@ -13,6 +13,7 @@
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <array>
 #include <cstddef>
+#include <utility>
 
 #include "blockchain/node/wallet/subchain/DeterministicStateData.hpp"
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
@@ -99,7 +100,7 @@ auto DeterministicIndex::process(
     auto buf = std::array<std::byte, allocBytes>{};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
     auto elements = internal::WalletDatabase::ElementMap{&alloc};
-    auto postcondition = ScopeGuard{[&] { done(elements); }};
+    auto postcondition = ScopeGuard{[&] { done(std::move(elements)); }};
     const auto& name = parent_.name_;
     const auto& subchain = parent_.subchain_;
     const auto first =

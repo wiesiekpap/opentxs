@@ -87,7 +87,7 @@ Process::Imp::Imp(
     , processing_(alloc)
     , txid_cache_()
     , counter_()
-    , running_(counter_.Allocate(4))
+    , running_(counter_.Allocate(8))
 {
     txid_cache_.reserve(1024);
 }
@@ -99,13 +99,7 @@ auto Process::Imp::do_process(
     OT_ASSERT(block);
 
     parent_.ProcessBlock(position, *block);
-    pipeline_.Push([&] {
-        auto out = MakeWork(Work::process);
-        out.AddFrame(position.first);
-        out.AddFrame(position.second);
-
-        return out;
-    }());
+    pipeline_.Push(MakeWork(Work::process));
 }
 
 auto Process::Imp::do_startup() noexcept -> void
@@ -220,33 +214,38 @@ auto Process::Imp::process_mempool(Message&& in) noexcept -> void
     }
 }
 
-auto Process::Imp::process_process(block::Position&& pos) noexcept -> void
+auto Process::Imp::process_process(Message&& in) noexcept -> void
 {
-    if (const auto i = processing_.find(pos); i == processing_.end()) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" block ")(print(pos))(
-            " has been removed from the processing list due to reorg")
-            .Flush();
+    const auto cb = [this](const auto& pos) {
+        if (const auto i = processing_.find(pos); i == processing_.end()) {
+            log_(OT_PRETTY_CLASS())(parent_.name_)(" block ")(print(pos))(
+                " has been removed from the processing list due to reorg")
+                .Flush();
+        } else {
+            processing_.erase(i);
+            const auto sent = to_index_.SendDeferred([&] {
+                auto out = MakeWork(Work::update);
+                encode(
+                    [&] {
+                        auto status = Vector<ScanStatus>{get_allocator()};
+                        status.emplace_back(ScanState::processed, pos);
 
-        return;
-    } else {
-        processing_.erase(i);
-        const auto sent = to_index_.SendDeferred([&] {
-            auto out = MakeWork(Work::update);
-            encode(
-                [&] {
-                    auto status = Vector<ScanStatus>{get_allocator()};
-                    status.emplace_back(ScanState::processed, std::move(pos));
+                        return status;
+                    }(),
+                    out);
 
-                    return status;
-                }(),
-                out);
+                return out;
+            }());
 
-            return out;
-        }());
+            OT_ASSERT(sent);
 
-        OT_ASSERT(sent);
-    }
-
+            log_(OT_PRETTY_CLASS())(parent_.name_)(
+                " finished processing block ")(print(pos))
+                .Flush();
+        }
+    };
+    const auto queue = waiting_.size() + downloading_.size() + ready_.size();
+    parent_.CheckCache(queue, cb);
     do_work();
 }
 

@@ -8,6 +8,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/smart_ptr/enable_shared_from_this.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <cs_shared_guarded.h>
 #include <atomic>
 #include <condition_variable>
 #include <cstddef>
@@ -16,10 +17,12 @@
 #include <mutex>
 #include <optional>
 #include <queue>
+#include <shared_mutex>
 #include <string_view>
 #include <tuple>
 #include <utility>
 
+#include "blockchain/node/wallet/subchain/statemachine/ElementCache.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -40,6 +43,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
@@ -47,6 +51,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -103,6 +108,8 @@ class ScriptForm;
 class Work;
 }  // namespace wallet
 }  // namespace node
+
+class GCS;
 }  // namespace blockchain
 
 namespace network
@@ -115,6 +122,8 @@ class Raw;
 }  // namespace socket
 }  // namespace zeromq
 }  // namespace network
+
+class Log;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -130,8 +139,10 @@ public:
     using WalletDatabase = node::internal::WalletDatabase;
     using Subchain = WalletDatabase::Subchain;
     using SubchainIndex = WalletDatabase::pSubchainIndex;
-
-    static constexpr auto scan_batch_ = std::size_t{1000u};
+    using ElementCache =
+        libguarded::shared_guarded<wallet::ElementCache, std::shared_mutex>;
+    // TODO callback should operate on a Vector<block::Position>
+    using FinishedCallback = std::function<void(const block::Position&)>;
 
     const api::Session& api_;
     const node::internal::Network& node_;
@@ -154,9 +165,14 @@ public:
     const CString to_process_endpoint_;
     const CString to_progress_endpoint_;
     const CString shutdown_endpoint_;
+    mutable ElementCache element_cache_;
 
     auto ChangeState(const State state, StateSequence reorg) noexcept
         -> bool final;
+    virtual auto CheckCache(const std::size_t outstanding, FinishedCallback cb)
+        const noexcept -> void
+    {
+    }
     auto IndexElement(
         const cfilter::Type type,
         const blockchain::crypto::Element& input,
@@ -191,31 +207,8 @@ public:
     ~SubchainStateData() override;
 
 protected:
-    using Transactions =
-        Vector<std::shared_ptr<const block::bitcoin::Transaction>>;
-    using Task = node::internal::Wallet::Task;
-    using Patterns = WalletDatabase::Patterns;
-    using UTXOs = Vector<WalletDatabase::UTXO>;
-    using Targets = GCS::Targets;
-    using Tested = WalletDatabase::MatchingIndices;
-
-    auto get_account_targets(alloc::Resource* alloc) const noexcept
-        -> std::tuple<Patterns, UTXOs, Targets>;
-    auto get_block_targets(
-        const block::Hash& id,
-        const UTXOs& utxos,
-        alloc::Resource* alloc) const noexcept -> std::pair<Patterns, Targets>;
-    auto get_block_targets(
-        const block::Hash& id,
-        Tested& tested,
-        alloc::Resource* alloc) const noexcept
-        -> std::tuple<Patterns, UTXOs, Targets, Patterns>;
+    using TXOs = WalletDatabase::TXOs;
     auto set_key_data(block::bitcoin::Transaction& tx) const noexcept -> void;
-    auto supported_scripts(const crypto::Element& element) const noexcept
-        -> UnallocatedVector<ScriptForm>;
-    auto translate(
-        const Vector<WalletDatabase::UTXO>& utxos,
-        Patterns& outpoints) const noexcept -> void;
 
     virtual auto do_startup() noexcept -> void;
     virtual auto work() noexcept -> bool;
@@ -235,7 +228,27 @@ protected:
 private:
     friend Actor<SubchainStateData, SubchainJobs>;
 
+    using Transactions =
+        Vector<std::shared_ptr<const block::bitcoin::Transaction>>;
+    using Task = node::internal::Wallet::Task;
+    using Patterns = WalletDatabase::Patterns;
+    using Targets = GCS::Targets;
+    using Tested = WalletDatabase::MatchingIndices;
+    using Elements = wallet::ElementCache::Elements;
     using HandledReorgs = Set<StateSequence>;
+    using SelectedKeyElement = std::pair<Vector<Bip32Index>, Targets>;
+    using SelectedTxoElement = std::pair<Vector<block::Outpoint>, Targets>;
+    using SelectedElements = std::tuple<
+        SelectedKeyElement,  // 20 byte
+        SelectedKeyElement,  // 32 byte
+        SelectedKeyElement,  // 33 byte
+        SelectedKeyElement,  // 64 byte
+        SelectedKeyElement,  // 65 byte
+        SelectedTxoElement>;
+    using BlockTarget = std::pair<block::Hash, SelectedElements>;
+    using BlockTargets = Vector<BlockTarget>;
+    using BlockHashes = HeaderOracle::Hashes;
+    using MatchesToTest = std::pair<Patterns, Patterns>;
 
     network::zeromq::socket::Raw& to_children_;
     std::atomic<State> pending_state_;
@@ -256,18 +269,14 @@ private:
         allocator_type alloc) noexcept -> CString;
 
     auto clear_children() noexcept -> void;
+    auto get_account_targets(const Elements& elements, alloc::Resource* alloc)
+        const noexcept -> Targets;
     virtual auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
         const noexcept -> Index = 0;
-    auto get_targets(
-        const Patterns& elements,
-        const Vector<WalletDatabase::UTXO>& utxos,
-        Targets& targets) const noexcept -> void;
-    auto get_targets(
-        const Patterns& elements,
-        const Vector<WalletDatabase::UTXO>& utxos,
-        Targets& targets,
-        Patterns& outpoints,
-        Tested& tested) const noexcept -> void;
+    auto get_targets(const Elements& elements, Targets& targets) const noexcept
+        -> void;
+    auto get_targets(const TXOs& utxos, Targets& targets) const noexcept
+        -> void;
     virtual auto handle_confirmed_matches(
         const block::bitcoin::Block& block,
         const block::Position& position,
@@ -276,7 +285,16 @@ private:
         const block::Matches& matches,
         std::unique_ptr<const block::bitcoin::Transaction> tx) const noexcept
         -> void = 0;
+    auto match(
+        const std::string_view procedure,
+        const Log& log,
+        const block::Position& position,
+        const BlockTarget& targets,
+        const GCS& cfilter,
+        wallet::ElementCache::Results& results) const noexcept -> bool;
     auto reorg_children() const noexcept -> std::size_t;
+    auto supported_scripts(const crypto::Element& element) const noexcept
+        -> UnallocatedVector<ScriptForm>;
     auto scan(
         const bool rescan,
         const block::Position best,
@@ -284,6 +302,23 @@ private:
         block::Position& highestTested,
         Vector<ScanStatus>& out) const noexcept
         -> std::optional<block::Position>;
+    auto select_matches(
+        const block::Position& block,
+        const Elements& in,
+        MatchesToTest& out) const noexcept -> void;
+    auto select_targets(
+        const BlockHashes& hashes,
+        const Elements& in,
+        block::Height height,
+        BlockTargets& out) const noexcept -> void;
+    auto select_targets(
+        const block::Position& block,
+        const Elements& in,
+        BlockTargets& out) const noexcept -> void;
+    auto to_patterns(const Elements& in, allocator_type alloc) const noexcept
+        -> Patterns;
+    auto translate(const TXOs& utxos, Patterns& outpoints) const noexcept
+        -> void;
 
     auto do_reorg(
         const Lock& headerOracleLock,
