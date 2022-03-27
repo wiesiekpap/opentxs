@@ -69,10 +69,6 @@ public:
         MDB_txn* tx) const noexcept -> pSubchainIndex;
     auto GetPatterns(const SubchainIndex& subchain, alloc::Resource* alloc)
         const noexcept -> Patterns;
-    auto GetUntestedPatterns(
-        const SubchainIndex& subchain,
-        const ReadView blockID,
-        alloc::Resource* alloc) const noexcept -> Patterns;
     auto Reorg(
         const Lock& headerOracleLock,
         MDB_txn* tx,
@@ -86,10 +82,6 @@ public:
         -> std::optional<Bip32Index>;
     auto SubchainLastScanned(const SubchainIndex& subchain) const noexcept
         -> block::Position;
-    auto SubchainMatchBlock(
-        const SubchainIndex& index,
-        const Vector<std::pair<ReadView, MatchingIndices>>& results)
-        const noexcept -> bool;
     auto SubchainSetLastScanned(
         const SubchainIndex& subchain,
         const block::Position& position) const noexcept -> bool;

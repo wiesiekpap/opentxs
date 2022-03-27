@@ -46,6 +46,7 @@
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/identity/IdentityType.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"

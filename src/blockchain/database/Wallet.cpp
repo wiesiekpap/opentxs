@@ -40,23 +40,33 @@ auto Wallet::AddConfirmedTransaction(
     const SubchainIndex& index,
     const block::Position& block,
     const std::size_t blockIndex,
-    const UnallocatedVector<std::uint32_t> outputIndices,
-    const block::bitcoin::Transaction& original) const noexcept -> bool
+    const Vector<std::uint32_t> outputIndices,
+    const block::bitcoin::Transaction& original,
+    TXOs& txoCreated,
+    TXOs& txoConsumed) const noexcept -> bool
 {
     return outputs_.AddConfirmedTransaction(
-        accountID, index, block, blockIndex, outputIndices, original);
+        accountID,
+        index,
+        block,
+        blockIndex,
+        outputIndices,
+        original,
+        txoCreated,
+        txoConsumed);
 }
 
 auto Wallet::AddMempoolTransaction(
     const NodeID& balanceNode,
     const Subchain subchain,
-    const UnallocatedVector<std::uint32_t> outputIndices,
-    const block::bitcoin::Transaction& original) const noexcept -> bool
+    const Vector<std::uint32_t> outputIndices,
+    const block::bitcoin::Transaction& original,
+    TXOs& txoCreated) const noexcept -> bool
 {
     const auto id = subchains_.GetSubchainID(balanceNode, subchain, nullptr);
 
     return outputs_.AddMempoolTransaction(
-        balanceNode, id, outputIndices, original);
+        balanceNode, id, outputIndices, original, txoCreated);
 }
 
 auto Wallet::AddOutgoingTransaction(
@@ -205,14 +215,6 @@ auto Wallet::GetUnspentOutputs(
     return outputs_.GetUnspentOutputs(id, alloc);
 }
 
-auto Wallet::GetUntestedPatterns(
-    const SubchainIndex& index,
-    const ReadView blockID,
-    alloc::Resource* alloc) const noexcept -> Patterns
-{
-    return subchains_.GetUntestedPatterns(index, blockID, alloc);
-}
-
 auto Wallet::GetWalletHeight() const noexcept -> block::Height
 {
     return outputs_.GetWalletHeight();
@@ -309,14 +311,6 @@ auto Wallet::SubchainLastScanned(const SubchainIndex& index) const noexcept
     -> block::Position
 {
     return subchains_.SubchainLastScanned(index);
-}
-
-auto Wallet::SubchainMatchBlock(
-    const SubchainIndex& index,
-    const Vector<std::pair<ReadView, MatchingIndices>>& results) const noexcept
-    -> bool
-{
-    return subchains_.SubchainMatchBlock(index, results);
 }
 
 auto Wallet::SubchainSetLastScanned(

@@ -5,13 +5,16 @@
 
 #pragma once
 
+#include <cs_ordered_guarded.h>
 #include <atomic>
+#include <cstddef>
 #include <functional>
 #include <iosfwd>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <queue>
+#include <shared_mutex>
 #include <string_view>
 #include <utility>
 
@@ -34,6 +37,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace boost
@@ -124,8 +128,20 @@ public:
     ~DeterministicStateData() final = default;
 
 private:
-    using MatchedTransaction = std::
-        pair<UnallocatedVector<Bip32Index>, const block::bitcoin::Transaction*>;
+    using MatchedTransaction = std::pair<
+        Vector<Bip32Index>,
+        std::shared_ptr<const block::bitcoin::Transaction>>;
+    using BlockMatches = Map<block::pTxid, MatchedTransaction>;
+    using CachedMatches = Map<block::Position, BlockMatches>;
+    using CacheData = std::pair<Time, CachedMatches>;
+    using Cache = libguarded::ordered_guarded<CacheData, std::shared_mutex>;
+
+    mutable Cache cache_;
+
+    auto CheckCache(const std::size_t outstanding, FinishedCallback cb)
+        const noexcept -> void final;
+    auto flush_cache(CachedMatches& matches, FinishedCallback cb) const noexcept
+        -> void;
 
     auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
         const noexcept -> Index final;

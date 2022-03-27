@@ -93,6 +93,7 @@ using Parent = node::internal::WalletDatabase;
 using NodeID = Parent::NodeID;
 using Subchain = Parent::Subchain;
 using UTXO = Parent::UTXO;
+using TXOs = Parent::TXOs;
 
 class Output
 {
@@ -136,13 +137,16 @@ public:
         const SubchainID& subchain,
         const block::Position& block,
         const std::size_t blockIndex,
-        const UnallocatedVector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction) noexcept -> bool;
+        const Vector<std::uint32_t> outputIndices,
+        const block::bitcoin::Transaction& transaction,
+        TXOs& txoCreated,
+        TXOs& txoConsumed) noexcept -> bool;
     auto AddMempoolTransaction(
         const AccountID& account,
         const SubchainID& subchain,
-        const UnallocatedVector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction) const noexcept -> bool;
+        const Vector<std::uint32_t> outputIndices,
+        const block::bitcoin::Transaction& transaction,
+        TXOs& txoConsumed) const noexcept -> bool;
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,

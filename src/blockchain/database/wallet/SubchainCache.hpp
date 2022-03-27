@@ -83,10 +83,6 @@ public:
     using dbPatterns = robin_hood::unordered_node_set<db::Pattern>;
     using dbPatternIndex = Set<pPatternID>;
 
-    auto AddMatch(
-        const ReadView key,
-        const PatternID& value,
-        MDB_txn* tx) noexcept -> bool;
     auto AddPattern(
         const PatternID& id,
         const Bip32Index index,
@@ -109,7 +105,6 @@ public:
         -> std::optional<Bip32Index>;
     auto GetLastScanned(const SubchainIndex& subchain) noexcept
         -> block::Position;
-    auto GetMatchIndex(const ReadView id) noexcept -> const dbPatternIndex&;
     auto GetPattern(const PatternID& id) noexcept -> const dbPatterns&;
     auto GetPatternIndex(const SubchainIndex& id) noexcept
         -> const dbPatternIndex&;
@@ -156,8 +151,6 @@ private:
     PatternsMap patterns_;
     Mutex pattern_index_lock_;
     PatternIndexMap pattern_index_;
-    Mutex match_index_lock_;
-    MatchIndexMap match_index_;
 
     auto subchain_index(
         const NodeID& subaccount,
@@ -171,7 +164,6 @@ private:
         -> const Bip32Index&;
     auto load_last_scanned(const SubchainIndex& key) noexcept(false)
         -> const db::Position&;
-    auto load_match_index(const ReadView key) noexcept -> const dbPatternIndex&;
     auto load_pattern(const PatternID& key) noexcept -> const dbPatterns&;
     auto load_pattern_index(const SubchainIndex& key) noexcept
         -> const dbPatternIndex&;

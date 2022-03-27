@@ -101,7 +101,7 @@ private:
     auto do_startup() noexcept -> void final;
     auto process_block(block::Hash&& block) noexcept -> void final;
     auto process_mempool(Message&& in) noexcept -> void final;
-    auto process_process(block::Position&& position) noexcept -> void final;
+    auto process_process(Message&& in) noexcept -> void final;
     auto process_update(Message&& msg) noexcept -> void final;
     auto queue_downloads() noexcept -> void;
     auto queue_process() noexcept -> void;

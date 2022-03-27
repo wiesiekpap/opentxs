@@ -14,6 +14,7 @@
 #include <array>
 #include <cstddef>
 #include <iterator>
+#include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -93,7 +94,7 @@ auto NotificationIndex::process(
     auto buf = std::array<std::byte, allocBytes>{};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
     auto elements = internal::WalletDatabase::ElementMap{&alloc};
-    auto postcondition = ScopeGuard{[&] { done(elements); }};
+    auto postcondition = ScopeGuard{[&] { done(std::move(elements)); }};
 
     for (auto i{code_.Version()}; i > 0; --i) {
         auto& vector = elements[i];

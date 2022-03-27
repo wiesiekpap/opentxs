@@ -10,9 +10,11 @@
 #include "blockchain/node/wallet/subchain/statemachine/Index.hpp"  // IWYU pragma: associated
 
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <memory>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
+#include "blockchain/node/wallet/subchain/statemachine/ElementCache.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
@@ -79,12 +81,13 @@ auto Index::Imp::do_startup() noexcept -> void
 }
 
 auto Index::Imp::done(
-    const node::internal::WalletDatabase::ElementMap& elements) noexcept -> void
+    node::internal::WalletDatabase::ElementMap&& elements) noexcept -> void
 {
     auto& db = parent_.db_;
     const auto& index = parent_.db_key_;
     db.SubchainAddElements(index, elements);
     last_indexed_ = parent_.db_.SubchainLastIndexed(index);
+    parent_.element_cache_.lock()->Add(std::move(elements));
 }
 
 auto Index::Imp::ProcessReorg(const block::Position& parent) noexcept -> void

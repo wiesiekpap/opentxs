@@ -232,10 +232,12 @@ public:
         const AccountID& account,
         const SubchainID& subchain,
         const block::Position& block,
-        const UnallocatedVector<std::uint32_t> outputIndices,
+        const Vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& original,
         const node::TxoState consumed,
-        const node::TxoState created) noexcept -> bool
+        const node::TxoState created,
+        TXOs& txoCreated,
+        TXOs& txoConsumed) noexcept -> bool
     {
         const auto& log = LogTrace();
         const auto start = Clock::now();
@@ -283,6 +285,12 @@ public:
                         log(OT_PRETTY_CLASS())("output ")(outpoint.str())(
                             " marked as ")(print(consumed))
                             .Flush();
+
+                        if (node::TxoState::ConfirmedSpend == consumed) {
+                            // NOTE the output will not be used so there is no
+                            // reason to copy it
+                            txoConsumed.emplace(outpoint, nullptr);
+                        }
                     } else {
                         LogError()(OT_PRETTY_CLASS())(
                             "Error updating consumed output state")
@@ -384,6 +392,8 @@ public:
                             "Error associating outpoint to nym"};
                     }
                 }
+
+                txoCreated.emplace(outpoint, output.Internal().clone());
             }
 
             const auto haveDatabase = Clock::now();
@@ -430,8 +440,10 @@ public:
         const AccountID& account,
         const SubchainID& subchain,
         const block::Position& block,
-        const UnallocatedVector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& original) noexcept -> bool
+        const Vector<std::uint32_t> outputIndices,
+        const block::bitcoin::Transaction& original,
+        TXOs& txoCreated,
+        TXOs& txoConsumed) noexcept -> bool
     {
         return AddTransaction(
             account,
@@ -440,15 +452,19 @@ public:
             outputIndices,
             original,
             node::TxoState::ConfirmedSpend,
-            node::TxoState::ConfirmedNew);
+            node::TxoState::ConfirmedNew,
+            txoCreated,
+            txoConsumed);
     }
     auto AddMempoolTransaction(
         const AccountID& account,
         const SubchainID& subchain,
-        const UnallocatedVector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& original) noexcept -> bool
+        const Vector<std::uint32_t> outputIndices,
+        const block::bitcoin::Transaction& original,
+        TXOs& txoCreated) noexcept -> bool
     {
         static const auto block = make_blank<block::Position>::value(api_);
+        auto txoConsumed = TXOs{};
 
         return AddTransaction(
             account,
@@ -457,7 +473,9 @@ public:
             outputIndices,
             original,
             node::TxoState::UnconfirmedSpend,
-            node::TxoState::UnconfirmedNew);
+            node::TxoState::UnconfirmedNew,
+            txoCreated,
+            txoConsumed);
     }
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
@@ -1809,21 +1827,30 @@ auto Output::AddConfirmedTransaction(
     const SubchainID& subchain,
     const block::Position& block,
     const std::size_t blockIndex,
-    const UnallocatedVector<std::uint32_t> outputIndices,
-    const block::bitcoin::Transaction& transaction) noexcept -> bool
+    const Vector<std::uint32_t> outputIndices,
+    const block::bitcoin::Transaction& transaction,
+    TXOs& txoCreated,
+    TXOs& txoConsumed) noexcept -> bool
 {
     return imp_->AddConfirmedTransaction(
-        account, subchain, block, outputIndices, transaction);
+        account,
+        subchain,
+        block,
+        outputIndices,
+        transaction,
+        txoCreated,
+        txoConsumed);
 }
 
 auto Output::AddMempoolTransaction(
     const AccountID& account,
     const SubchainID& subchain,
-    const UnallocatedVector<std::uint32_t> outputIndices,
-    const block::bitcoin::Transaction& transaction) const noexcept -> bool
+    const Vector<std::uint32_t> outputIndices,
+    const block::bitcoin::Transaction& transaction,
+    TXOs& txoCreated) const noexcept -> bool
 {
     return imp_->AddMempoolTransaction(
-        account, subchain, outputIndices, transaction);
+        account, subchain, outputIndices, transaction, txoCreated);
 }
 
 auto Output::AddOutgoingTransaction(

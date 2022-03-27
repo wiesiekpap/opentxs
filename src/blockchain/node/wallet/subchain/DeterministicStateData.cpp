@@ -9,12 +9,15 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <chrono>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string_view>
 #include <type_traits>
 #include <utility>
 
+#include "blockchain/node/wallet/subchain/statemachine/ElementCache.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -71,7 +74,83 @@ DeterministicStateData::DeterministicStateData(
           parent,
           std::move(alloc))
     , subaccount_(subaccount)
+    , cache_(Clock::now(), get_allocator())
 {
+}
+
+auto DeterministicStateData::CheckCache(
+    const std::size_t outstanding,
+    FinishedCallback cb) const noexcept -> void
+{
+    cache_.modify([=](auto& data) {
+        auto& [time, blockMap] = data;
+        const auto interval = Clock::now() - time;
+        using namespace std::literals;
+        static constexpr auto limit = 20s;
+
+        if ((0u == outstanding) || (interval > limit)) {
+            flush_cache(blockMap, cb);
+            time = Clock::now();
+        }
+    });
+}
+
+auto DeterministicStateData::flush_cache(
+    CachedMatches& matches,
+    FinishedCallback cb) const noexcept -> void
+{
+    const auto start = Clock::now();
+    const auto& log = log_;
+    auto txoCreated = TXOs{get_allocator()};
+    auto txoConsumed = TXOs{get_allocator()};
+
+    for (auto& [position, transactions] : matches) {
+        log(OT_PRETTY_CLASS())(name_)(" adding ")(transactions.size())(
+            " confirmed transactions from block ")(print(position))(
+            " to database")
+            .Flush();
+
+        for (const auto& [txid, data] : transactions) {
+            auto& [outputs, pTX] = data;
+
+            OT_ASSERT(pTX);
+
+            const auto& tx = *pTX;
+            const auto index = tx.BlockPosition();
+
+            OT_ASSERT(index.has_value());
+
+            // TODO create AddConfirmedTransactions that accepts multiple
+            // transactions
+            auto updated = db_.AddConfirmedTransaction(
+                id_,
+                db_key_,
+                position,
+                index.value(),
+                outputs,
+                *pTX,
+                txoCreated,
+                txoConsumed);
+
+            OT_ASSERT(updated);  // TODO handle database errors
+
+            log(OT_PRETTY_CLASS())(name_)(
+                " finished processing confirmed transaction ")(tx.ID().asHex())
+                .Flush();
+        }
+    }
+
+    element_cache_.lock()->Add(std::move(txoCreated), std::move(txoConsumed));
+
+    if (cb) {
+        for (auto& [position, tx] : matches) { cb(position); }
+    }
+
+    matches.clear();
+    log(OT_PRETTY_CLASS())(name_)(" finished flushing cache in ")(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(
+            Clock::now() - start))
+        .Flush();
 }
 
 auto DeterministicStateData::get_index(
@@ -86,13 +165,10 @@ auto DeterministicStateData::handle_confirmed_matches(
     const block::Position& position,
     const block::Matches& confirmed) const noexcept -> void
 {
+    const auto& log = log_;
     const auto start = Clock::now();
     const auto& [utxo, general] = confirmed;
-    auto transactions = UnallocatedMap<
-        block::pTxid,
-        std::pair<
-            UnallocatedVector<Bip32Index>,
-            const block::bitcoin::Transaction*>>{};
+    auto transactions = BlockMatches{get_allocator()};
 
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
@@ -113,43 +189,29 @@ auto DeterministicStateData::handle_confirmed_matches(
     for (const auto& [tx, outpoint, element] : utxo) {
         auto& pTx = transactions[tx].second;
 
-        if (nullptr == pTx) { pTx = block.at(tx->Bytes()).get(); }
+        if (!pTx) { pTx = block.at(tx->Bytes()); }
     }
 
     const auto buildTransactionMap = Clock::now();
-    log_(OT_PRETTY_CLASS())(name_)(" adding ")(transactions.size())(
-        " confirmed transaction to database")
+    log(OT_PRETTY_CLASS())(name_)(" adding ")(transactions.size())(
+        " confirmed transaction to cache")
         .Flush();
+    cache_.modify([position, matches = std::move(transactions)](auto& data) {
+        auto& [time, blockMap] = data;
 
-    for (const auto& [txid, data] : transactions) {
-        auto& [outputs, pTX] = data;
+        OT_ASSERT(0u == blockMap.count(position));
 
-        OT_ASSERT(nullptr != pTX);
-
-        const auto& tx = *pTX;
-        const auto index = tx.BlockPosition();
-
-        OT_ASSERT(index.has_value());
-
-        auto updated = db_.AddConfirmedTransaction(
-            id_, db_key_, position, index.value(), outputs, *pTX);
-
-        OT_ASSERT(updated);  // TODO handle database errors
-
-        log_(OT_PRETTY_CLASS())(name_)(
-            " finished processing confirmed transaction ")(tx.ID().asHex())
-            .Flush();
-    }
-
-    const auto updateDatabase = Clock::now();
-    log_(OT_PRETTY_CLASS())(name_)(" time to process matches: ")(
+        blockMap.emplace(std::move(position), std::move(matches));
+    });
+    const auto updateCache = Clock::now();
+    log(OT_PRETTY_CLASS())(name_)(" time to process matches: ")(
         std::chrono::nanoseconds{processMatches - start})
         .Flush();
-    log_(OT_PRETTY_CLASS())(name_)(" time to build transaction map: ")(
+    log(OT_PRETTY_CLASS())(name_)(" time to build transaction map: ")(
         std::chrono::nanoseconds{buildTransactionMap - processMatches})
         .Flush();
-    log_(OT_PRETTY_CLASS())(name_)(" time to update database: ")(
-        std::chrono::nanoseconds{updateDatabase - buildTransactionMap})
+    log(OT_PRETTY_CLASS())(name_)(" time to update cache: ")(
+        std::chrono::nanoseconds{updateCache - buildTransactionMap})
         .Flush();
 }
 
@@ -170,10 +232,13 @@ auto DeterministicStateData::handle_mempool_matches(
     if (nullptr == pTX) { return; }
 
     const auto& tx = *pTX;
-    auto updated = db_.AddMempoolTransaction(id_, subchain_, outputs, tx);
+    auto txoCreated = TXOs{get_allocator()};
+    auto updated =
+        db_.AddMempoolTransaction(id_, subchain_, outputs, tx, txoCreated);
 
     OT_ASSERT(updated);  // TODO handle database errors
 
+    element_cache_.lock()->Add(std::move(txoCreated), {});
     log_(OT_PRETTY_CLASS())(name_)(
         " finished processing unconfirmed transaction ")(tx.ID().asHex())
         .Flush();
@@ -219,7 +284,7 @@ auto DeterministicStateData::process(
 
                     OT_ASSERT(confirmed);
 
-                    if (nullptr == pTX) { pTX = &transaction; }
+                    if (!pTX) { pTX = transaction.Internal().clone(); }
                 }
             } break;
             case block::bitcoin::Script::Pattern::PayToPubkeyHash: {
@@ -239,7 +304,7 @@ auto DeterministicStateData::process(
 
                     OT_ASSERT(confirmed);
 
-                    if (nullptr == pTX) { pTX = &transaction; }
+                    if (!pTX) { pTX = pTX = transaction.Internal().clone(); }
                 }
             } break;
             case block::bitcoin::Script::Pattern::PayToWitnessPubkeyHash: {
@@ -259,7 +324,7 @@ auto DeterministicStateData::process(
 
                     OT_ASSERT(confirmed);
 
-                    if (nullptr == pTX) { pTX = &transaction; }
+                    if (!pTX) { pTX = pTX = transaction.Internal().clone(); }
                 }
             } break;
             case block::bitcoin::Script::Pattern::PayToMultisig: {
@@ -294,7 +359,7 @@ auto DeterministicStateData::process(
 
                     OT_ASSERT(confirmed);
 
-                    if (nullptr == pTX) { pTX = &transaction; }
+                    if (!pTX) { pTX = pTX = transaction.Internal().clone(); }
                 }
             } break;
             case block::bitcoin::Script::Pattern::PayToScriptHash:

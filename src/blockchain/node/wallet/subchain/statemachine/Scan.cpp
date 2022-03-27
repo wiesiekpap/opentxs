@@ -29,6 +29,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -156,8 +157,7 @@ auto Scan::Imp::work() noexcept -> bool
         return false;
     }
 
-    auto buf = std::
-        array<std::byte, scan_status_bytes_ * SubchainStateData::scan_batch_>{};
+    auto buf = std::array<std::byte, scan_status_bytes_ * 1000u>{};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
     auto clean = Vector<ScanStatus>{&alloc};
     auto dirty = Vector<ScanStatus>{&alloc};
