@@ -128,6 +128,7 @@ private:
     State state_;
     StateSequence reorg_counter_;
     AccountMap accounts_;
+    std::optional<StateSequence> startup_reorg_;
 
     auto do_reorg() noexcept -> void;
     auto do_shutdown() noexcept -> void;
@@ -143,11 +144,12 @@ private:
     auto process_nym(const identifier::Nym& nym) noexcept -> bool;
     auto process_reorg(Message&& in) noexcept -> void;
     auto process_reorg(
+        Message&& in,
         const block::Position& ancestor,
         const block::Position& tip) noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto transition_state_shutdown() noexcept -> void;
-    auto transition_state_reorg() noexcept -> void;
+    auto transition_state_reorg() noexcept -> bool;
     auto work() noexcept -> bool;
 
     Imp(const api::Session& api,

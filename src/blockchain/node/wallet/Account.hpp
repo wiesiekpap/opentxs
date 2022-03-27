@@ -187,9 +187,9 @@ private:
     auto scan_subchains() noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto state_reorg(const Work work, Message&& msg) noexcept -> void;
-    auto transition_state_normal() noexcept -> void;
-    auto transition_state_reorg(StateSequence id) noexcept -> void;
-    auto transition_state_shutdown() noexcept -> void;
+    auto transition_state_normal() noexcept -> bool;
+    auto transition_state_reorg(StateSequence id) noexcept -> bool;
+    auto transition_state_shutdown() noexcept -> bool;
     auto work() noexcept -> bool;
 
     Imp(const api::Session& api,

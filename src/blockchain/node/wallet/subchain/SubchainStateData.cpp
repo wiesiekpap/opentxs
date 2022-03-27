@@ -12,6 +12,7 @@
 #include <array>
 #include <chrono>
 #include <exception>
+#include <future>
 #include <iterator>
 #include <memory>
 #include <sstream>
@@ -225,20 +226,17 @@ auto SubchainStateData::ChangeState(
         case State::normal: {
             if (State::reorg != state_) { break; }
 
-            transition_state_normal();
-            output = true;
+            output = transition_state_normal();
         } break;
         case State::reorg: {
             if (State::shutdown == state_) { break; }
 
-            transition_state_reorg(reorg);
-            output = true;
+            output = transition_state_reorg(reorg);
         } break;
         case State::shutdown: {
             if (State::reorg == state_) { break; }
 
-            transition_state_shutdown();
-            output = true;
+            output = transition_state_shutdown();
         } break;
         default: {
             OT_FAIL;
@@ -249,8 +247,6 @@ auto SubchainStateData::ChangeState(
         LogError()(OT_PRETTY_CLASS())(name_)(" failed to change state from ")(
             print(state_))(" to ")(print(state))
             .Flush();
-
-        OT_FAIL;
     }
 
     return output;
@@ -620,7 +616,7 @@ auto SubchainStateData::process_watchdog_ack(Message&& in) noexcept -> void
 
 auto SubchainStateData::ProcessBlock(
     const block::Position& position,
-    const block::bitcoin::Block& block) const noexcept -> void
+    const block::bitcoin::Block& block) const noexcept -> bool
 {
     const auto start = Clock::now();
     const auto& name = name_;
@@ -633,9 +629,17 @@ auto SubchainStateData::ProcessBlock(
         buf.data(),
         buf.size(),
         alloc::standard_to_boost(get_allocator().resource())};
-    const auto elements = element_cache_.lock_shared()->Get(&alloc);
+    const auto elements = element_cache_.lock_shared()->Get(get_allocator());
     auto patterns = std::make_pair(Patterns{&alloc}, Patterns{&alloc});
-    select_matches(position, elements, patterns);
+
+    if (false == select_matches(position, elements, patterns)) {
+        // TODO blocks should only be queued for processing if they have been
+        // previously marked by a scan or rescan operation which updates the
+        // cache with the appropriate entries so it's not clear why this branch
+        // can ever be reached.
+        select_all(position, elements, patterns);
+    }
+
     const auto haveTargets = Clock::now();
     const auto cfilter = filters.LoadFilter(type, blockHash, get_allocator());
 
@@ -659,7 +663,7 @@ auto SubchainStateData::ProcessBlock(
     handle_confirmed_matches(block, position, confirmed);
     const auto handledMatches = Clock::now();
     const auto& log = log_;
-    log(OT_PRETTY_CLASS())(name)(" block ")(print(position))(" processed in ")(
+    LogConsole()(name)(" processed block ")(print(position))(" in ")(
         std::chrono::nanoseconds{Clock::now() - start})
         .Flush();
     log(OT_PRETTY_CLASS())(name)(" ")(general.size())(" of ")(key.size())(
@@ -683,6 +687,8 @@ auto SubchainStateData::ProcessBlock(
     log(OT_PRETTY_CLASS())(name)(" time to handle matches: ")(
         std::chrono::nanoseconds{handledMatches - haveHeader})
         .Flush();
+
+    return true;
 }
 
 auto SubchainStateData::ProcessTransaction(
@@ -693,8 +699,7 @@ auto SubchainStateData::ProcessTransaction(
         buf.data(),
         buf.size(),
         alloc::standard_to_boost(get_allocator().resource())};
-    const auto elements =
-        element_cache_.lock_shared()->Get(get_allocator().resource());
+    const auto elements = element_cache_.lock_shared()->Get(get_allocator());
     const auto targets = get_account_targets(elements, &alloc);
     const auto patterns = to_patterns(elements, &alloc);
     const auto parsed = block::ParsedPatterns{patterns};
@@ -768,9 +773,9 @@ auto SubchainStateData::scan(
     const auto& headers = node.HeaderOracle();
     const auto& filters = node.FilterOracleInternal();
     const auto start = Clock::now();
-    const auto elements =
-        element_cache_.lock_shared()->Get(get_allocator().resource());
+    const auto elements = element_cache_.lock_shared()->Get(get_allocator());
     constexpr auto GetBatchSize = [](std::size_t in) {
+        constexpr auto cap = std::size_t{1000};
         constexpr auto max = std::size_t{10000};
         constexpr auto min = std::size_t{100};
         static_assert(max > min);
@@ -780,13 +785,15 @@ auto SubchainStateData::scan(
             return min;
         } else {
 
-            return (max - in);
+            return std::min((max - in), cap);
         }
     };
-    static_assert(GetBatchSize(0) == 10000);
-    static_assert(GetBatchSize(10000) == 100);
-    static_assert(GetBatchSize(9900) == 100);
+    static_assert(GetBatchSize(0) == 1000);
+    static_assert(GetBatchSize(7999) == 1000);
+    static_assert(GetBatchSize(9000) == 1000);
     static_assert(GetBatchSize(9899) == 101);
+    static_assert(GetBatchSize(9900) == 100);
+    static_assert(GetBatchSize(10000) == 100);
     const auto scanBatch = GetBatchSize(elements.size());
     const auto startHeight = highestTested.first + 1;
     const auto stopHeight = std::min(
@@ -807,16 +814,25 @@ auto SubchainStateData::scan(
         startHeight)(" to ")(stopHeight)
         .Flush();
     const auto target = static_cast<std::size_t>(stopHeight - startHeight + 1);
-    auto* upstream = alloc::standard_to_boost(get_allocator().resource());
-    const auto allocBytes =
-        (scanBatch * (sizeof(block::Hash) + sizeof(GCS))) + 4_KiB;
-    auto alloc = alloc::BoostMonotonic{allocBytes, upstream};
-    const auto blocks = headers.BestHashes(startHeight, target, &alloc);
-    auto resultMap = wallet::ElementCache::Results{&alloc};
-    auto selected = BlockTargets{&alloc};
+    const auto blocks =
+        headers.BestHashes(startHeight, target, get_allocator().resource());
+    auto filterPromise = std::promise<Vector<GCS>>{};
+    auto filterFuture = filterPromise.get_future();
+    static constexpr auto filterBackgroundThreshold = std::size_t{100u};
+
+    if (blocks.size() >= filterBackgroundThreshold) {
+        api_.Network().Asio().Internal().Post(ThreadPool::Blockchain, [&] {
+            filterPromise.set_value(filters.LoadFilters(type, blocks));
+        });
+    } else {
+        filterPromise.set_value(filters.LoadFilters(type, blocks));
+    }
+
+    auto resultMap = wallet::ElementCache::Results{get_allocator()};
+    auto selected = BlockTargets{get_allocator()};
     select_targets(blocks, elements, startHeight, selected);
-    // TODO pre-hash all the selected targets and load cfilters asynchronously
-    const auto cfilters = filters.LoadFilters(type, blocks);
+    // TODO pre-hash all the selected targets while cfilters are loading
+    const auto cfilters = filterFuture.get();
 
     OT_ASSERT(cfilters.size() <= blocks.size());
 
@@ -863,10 +879,6 @@ auto SubchainStateData::scan(
             element_cache_.lock()->Add(std::move(resultMap));
         }
 
-        if (rescan && highestClean.has_value()) {
-            element_cache_.lock()->Forget(highestClean.value());
-        }
-
         const auto count = out.size();
         log(OT_PRETTY_CLASS())(name)(" ")(procedure)(" found ")(
             count)(" new potential matches between blocks ")(
@@ -880,10 +892,52 @@ auto SubchainStateData::scan(
     return highestClean;
 }
 
-auto SubchainStateData::select_matches(
+auto SubchainStateData::select_all(
     const block::Position& block,
     const Elements& in,
     MatchesToTest& out) const noexcept -> void
+{
+    const auto subchainID = WalletDatabase::SubchainID{subchain_, id_};
+    auto& [outpoint, key] = out;
+    auto alloc = outpoint.get_allocator();
+    const auto SelectKey = [&](const auto& all, auto& out) {
+        for (const auto& [index, data] : all) {
+            out.emplace_back(std::make_pair(
+                std::make_pair(index, subchainID),
+                space(reader(data), alloc.resource())));
+        }
+    };
+    const auto SelectTxo = [&](const auto& all, auto& out) {
+        const auto self = id_->str();
+
+        for (const auto& [outpoint, pOutput] : all) {
+            OT_ASSERT(pOutput);
+
+            for (const auto& key : pOutput->Keys()) {
+                const auto& [id, subchain, index] = key;
+
+                if (self != id) { continue; }
+                if (subchain_ != subchain) { continue; }
+
+                out.emplace_back(std::make_pair(
+                    std::make_pair(index, subchainID),
+                    space(outpoint.Bytes(), alloc.resource())));
+            }
+        }
+    };
+
+    SelectKey(in.elements_20_, key);
+    SelectKey(in.elements_32_, key);
+    SelectKey(in.elements_33_, key);
+    SelectKey(in.elements_64_, key);
+    SelectKey(in.elements_65_, key);
+    SelectTxo(in.txos_, outpoint);
+}
+
+auto SubchainStateData::select_matches(
+    const block::Position& block,
+    const Elements& in,
+    MatchesToTest& out) const noexcept -> bool
 {
     const auto subchainID = WalletDatabase::SubchainID{subchain_, id_};
     auto& [outpoint, key] = out;
@@ -932,10 +986,21 @@ auto SubchainStateData::select_matches(
         SelectKey(in.elements_64_, items.match_64_, key);
         SelectKey(in.elements_65_, items.match_65_, key);
         SelectTxo(in.txos_, items.match_txo_, outpoint);
-    } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS())(name_)(" ")(e.what()).Flush();
 
-        OT_FAIL;
+        return true;
+    } catch (...) {
+        // NOTE this should never happen because a block is only processed when
+        // a previous call to SubchainStateData::scan indicated this block had a
+        // match, and the scan function should have set the matched elements in
+        // the element cache. The only time this data is deleted is the call to
+        // ElementCache::Forget, but that should never be called until there is
+        // no possibility that blocks at or below that position will be
+        // processed.
+        LogError()(OT_PRETTY_CLASS())(name_)(" existing matches for block ")(
+            print(block))(" not found")
+            .Flush();
+
+        return false;
     }
 }
 
@@ -1193,9 +1258,9 @@ auto SubchainStateData::to_patterns(const Elements& in, allocator_type alloc)
     return out;
 }
 
-auto SubchainStateData::transition_state_normal() noexcept -> void
+auto SubchainStateData::transition_state_normal() noexcept -> bool
 {
-    OT_ASSERT(have_children_);
+    if (false == have_children_) { return false; }
 
     disable_automatic_processing_ = false;
     auto rc = scan_->ChangeState(JobState::normal, {});
@@ -1221,53 +1286,48 @@ auto SubchainStateData::transition_state_normal() noexcept -> void
     state_ = State::normal;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to normal state ").Flush();
     trigger();
+
+    return true;
 }
 
 auto SubchainStateData::transition_state_reorg(StateSequence id) noexcept
-    -> void
+    -> bool
 {
+    if (false == have_children_) { return false; }
+
     OT_ASSERT(0u < id);
 
+    auto output{true};
+
     if (0u == reorgs_.count(id)) {
+        output &= scan_->ChangeState(JobState::reorg, id);
+        output &= process_->ChangeState(JobState::reorg, id);
+        output &= index_->ChangeState(JobState::reorg, id);
+        output &= rescan_->ChangeState(JobState::reorg, id);
+        output &= progress_->ChangeState(JobState::reorg, id);
+
+        if (false == output) { return false; }
+
         reorgs_.emplace(id);
-
-        OT_ASSERT(have_children_);
-
         disable_automatic_processing_ = true;
-        auto rc = scan_->ChangeState(JobState::reorg, id);
-
-        OT_ASSERT(rc);
-
-        rc = process_->ChangeState(JobState::reorg, id);
-
-        OT_ASSERT(rc);
-
-        rc = index_->ChangeState(JobState::reorg, id);
-
-        OT_ASSERT(rc);
-
-        rc = rescan_->ChangeState(JobState::reorg, id);
-
-        OT_ASSERT(rc);
-
-        rc = progress_->ChangeState(JobState::reorg, id);
-
-        OT_ASSERT(rc);
-
         state_ = State::reorg;
         log_(OT_PRETTY_CLASS())(name_)(" ready to process reorg ")(id).Flush();
     } else {
         log_(OT_PRETTY_CLASS())(name_)(" reorg ")(id)(" already handled")
             .Flush();
     }
+
+    return output;
 }
 
-auto SubchainStateData::transition_state_shutdown() noexcept -> void
+auto SubchainStateData::transition_state_shutdown() noexcept -> bool
 {
     clear_children();
     state_ = State::shutdown;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to shutdown state ").Flush();
     signal_shutdown();
+
+    return true;
 }
 
 auto SubchainStateData::translate(const TXOs& utxos, Patterns& outpoints)

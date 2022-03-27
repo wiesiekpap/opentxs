@@ -124,6 +124,7 @@ public:
     using Pattern = Parent::Pattern;
     using Patterns = Parent::Patterns;
     using MatchingIndices = Parent::MatchingIndices;
+    using BatchedMatches = Parent::BatchedMatches;
     using UTXO = Parent::UTXO;
     using TXOs = Parent::TXOs;
 
@@ -136,6 +137,12 @@ public:
         const block::bitcoin::Transaction& transaction,
         TXOs& txoCreated,
         TXOs& txoConsumed) const noexcept -> bool;
+    auto AddConfirmedTransactions(
+        const NodeID& account,
+        const SubchainIndex& index,
+        const BatchedMatches& transactions,
+        TXOs& txoCreated,
+        TXOs& txoConsumed) noexcept -> bool;
     auto AddMempoolTransaction(
         const NodeID& balanceNode,
         const Subchain subchain,
@@ -181,6 +188,7 @@ public:
         -> UnallocatedSet<node::TxoTag>;
     auto GetPatterns(const SubchainIndex& index, alloc::Resource* alloc)
         const noexcept -> Patterns;
+    auto GetPosition() const noexcept -> block::Position;
     auto GetSubchainID(const NodeID& balanceNode, const Subchain subchain)
         const noexcept -> pSubchainIndex;
     auto GetTransactions() const noexcept -> UnallocatedVector<block::pTxid>;

@@ -147,15 +147,26 @@ public:
             txoCreated,
             txoConsumed);
     }
+
+    auto AddConfirmedTransactions(
+        const NodeID& account,
+        const SubchainIndex& index,
+        const BatchedMatches& transactions,
+        TXOs& txoCreated,
+        TXOs& txoConsumed) noexcept -> bool final
+    {
+        return wallet_.AddConfirmedTransactions(
+            account, index, std::move(transactions), txoCreated, txoConsumed);
+    }
     auto AddMempoolTransaction(
-        const NodeID& balanceNode,
+        const NodeID& account,
         const Subchain subchain,
         const Vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction,
         TXOs& txoCreated) noexcept -> bool final
     {
         return wallet_.AddMempoolTransaction(
-            balanceNode, subchain, outputIndices, transaction, txoCreated);
+            account, subchain, outputIndices, transaction, txoCreated);
     }
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
@@ -316,10 +327,14 @@ public:
     {
         return wallet_.GetPatterns(index, alloc);
     }
-    auto GetSubchainID(const NodeID& balanceNode, const Subchain subchain)
+    auto GetPosition() const noexcept -> block::Position final
+    {
+        return wallet_.GetPosition();
+    }
+    auto GetSubchainID(const NodeID& account, const Subchain subchain)
         const noexcept -> pSubchainIndex final
     {
-        return wallet_.GetSubchainID(balanceNode, subchain);
+        return wallet_.GetSubchainID(account, subchain);
     }
     auto GetTransactions() const noexcept
         -> UnallocatedVector<block::pTxid> final
@@ -342,11 +357,11 @@ public:
         return wallet_.GetUnspentOutputs(alloc);
     }
     auto GetUnspentOutputs(
-        const NodeID& balanceNode,
+        const NodeID& account,
         const Subchain subchain,
         alloc::Resource* alloc) const noexcept -> Vector<UTXO> final
     {
-        return wallet_.GetUnspentOutputs(balanceNode, subchain, alloc);
+        return wallet_.GetUnspentOutputs(account, subchain, alloc);
     }
     auto GetWalletHeight() const noexcept -> block::Height final
     {
@@ -449,13 +464,13 @@ public:
         const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         const node::HeaderOracle& headers,
-        const NodeID& balanceNode,
+        const NodeID& account,
         const Subchain subchain,
         const SubchainIndex& index,
         const UnallocatedVector<block::Position>& reorg) noexcept -> bool final
     {
         return wallet_.ReorgTo(
-            headerOracleLock, tx, headers, balanceNode, subchain, index, reorg);
+            headerOracleLock, tx, headers, account, subchain, index, reorg);
     }
     auto ReserveUTXO(
         const identifier::Nym& spender,

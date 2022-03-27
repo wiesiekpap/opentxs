@@ -84,11 +84,15 @@ auto DeterministicStateData::CheckCache(
 {
     cache_.modify([=](auto& data) {
         auto& [time, blockMap] = data;
-        const auto interval = Clock::now() - time;
         using namespace std::literals;
-        static constexpr auto limit = 20s;
+        static constexpr auto maxTime = 30s;
+        static constexpr auto maxBlocks = std::size_t{100};
+        const auto blocks = blockMap.size();
+        const auto interval = Clock::now() - time;
+        const auto flush =
+            (0u == outstanding) || (interval > maxTime) || (maxBlocks < blocks);
 
-        if ((0u == outstanding) || (interval > limit)) {
+        if (flush) {
             flush_cache(blockMap, cb);
             time = Clock::now();
         }
@@ -96,55 +100,28 @@ auto DeterministicStateData::CheckCache(
 }
 
 auto DeterministicStateData::flush_cache(
-    CachedMatches& matches,
+    WalletDatabase::BatchedMatches& matches,
     FinishedCallback cb) const noexcept -> void
 {
     const auto start = Clock::now();
     const auto& log = log_;
     auto txoCreated = TXOs{get_allocator()};
     auto txoConsumed = TXOs{get_allocator()};
+    auto positions = Vector<block::Position>{get_allocator()};
+    positions.reserve(matches.size());
+    std::transform(
+        matches.begin(),
+        matches.end(),
+        std::back_inserter(positions),
+        [](const auto& data) { return data.first; });
+    auto updated = db_.AddConfirmedTransactions(
+        id_, db_key_, matches, txoCreated, txoConsumed);
 
-    for (auto& [position, transactions] : matches) {
-        log(OT_PRETTY_CLASS())(name_)(" adding ")(transactions.size())(
-            " confirmed transactions from block ")(print(position))(
-            " to database")
-            .Flush();
-
-        for (const auto& [txid, data] : transactions) {
-            auto& [outputs, pTX] = data;
-
-            OT_ASSERT(pTX);
-
-            const auto& tx = *pTX;
-            const auto index = tx.BlockPosition();
-
-            OT_ASSERT(index.has_value());
-
-            // TODO create AddConfirmedTransactions that accepts multiple
-            // transactions
-            auto updated = db_.AddConfirmedTransaction(
-                id_,
-                db_key_,
-                position,
-                index.value(),
-                outputs,
-                *pTX,
-                txoCreated,
-                txoConsumed);
-
-            OT_ASSERT(updated);  // TODO handle database errors
-
-            log(OT_PRETTY_CLASS())(name_)(
-                " finished processing confirmed transaction ")(tx.ID().asHex())
-                .Flush();
-        }
-    }
+    OT_ASSERT(updated);  // TODO handle database errors
 
     element_cache_.lock()->Add(std::move(txoCreated), std::move(txoConsumed));
 
-    if (cb) {
-        for (auto& [position, tx] : matches) { cb(position); }
-    }
+    if (cb) { cb(positions); }
 
     matches.clear();
     log(OT_PRETTY_CLASS())(name_)(" finished flushing cache in ")(
@@ -168,7 +145,7 @@ auto DeterministicStateData::handle_confirmed_matches(
     const auto& log = log_;
     const auto start = Clock::now();
     const auto& [utxo, general] = confirmed;
-    auto transactions = BlockMatches{get_allocator()};
+    auto transactions = WalletDatabase::BlockMatches{get_allocator()};
 
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
@@ -224,7 +201,7 @@ auto DeterministicStateData::handle_mempool_matches(
 
     if (0u == general.size()) { return; }
 
-    auto data = MatchedTransaction{};
+    auto data = WalletDatabase::MatchedTransaction{};
     auto& [outputs, pTX] = data;
 
     for (const auto& match : general) { process(match, *in, data); }
@@ -247,7 +224,7 @@ auto DeterministicStateData::handle_mempool_matches(
 auto DeterministicStateData::process(
     const block::Match match,
     const block::bitcoin::Transaction& transaction,
-    MatchedTransaction& output) const noexcept -> void
+    WalletDatabase::MatchedTransaction& output) const noexcept -> void
 {
     auto& [outputs, pTX] = output;
     const auto& [txid, elementID] = match;

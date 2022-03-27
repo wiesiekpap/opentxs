@@ -189,6 +189,7 @@ public:
     {
         return is_synchronized_headers();
     }
+    auto IsWalletScanEnabled() const noexcept -> bool final;
     auto JobReady(const node::internal::PeerManager::Task type) const noexcept
         -> void final;
     auto Internal() const noexcept -> const internal::Network& final
@@ -356,6 +357,8 @@ private:
     mutable WorkPromises work_promises_;
     mutable SendPromises send_promises_;
     Timer heartbeat_;
+    Time header_sync_;
+    Time filter_sync_;
     std::atomic<State> state_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;

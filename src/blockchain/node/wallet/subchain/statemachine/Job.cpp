@@ -150,21 +150,17 @@ auto Job::ChangeState(const State state, StateSequence reorg) noexcept -> bool
     switch (state) {
         case State::normal: {
             if (State::reorg != state_) { break; }
-
-            transition_state_normal();
-            output = true;
+            output = transition_state_normal();
         } break;
         case State::reorg: {
             if (State::shutdown == state_) { break; }
 
-            transition_state_reorg(reorg);
-            output = true;
+            output = transition_state_reorg(reorg);
         } break;
         case State::shutdown: {
             if (State::reorg == state_) { break; }
 
-            transition_state_shutdown();
-            output = true;
+            output = transition_state_shutdown();
         } break;
         default: {
             OT_FAIL;
@@ -175,8 +171,6 @@ auto Job::ChangeState(const State state, StateSequence reorg) noexcept -> bool
         LogError()(OT_PRETTY_CLASS())(name_)(" failed to change state from ")(
             print(state_))(" to ")(print(state))
             .Flush();
-
-        OT_FAIL;
     }
 
     return output;
@@ -391,15 +385,17 @@ auto Job::state_reorg(const Work work, Message&& msg) noexcept -> void
     }
 }
 
-auto Job::transition_state_normal() noexcept -> void
+auto Job::transition_state_normal() noexcept -> bool
 {
     disable_automatic_processing_ = false;
     state_ = State::normal;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to normal state ").Flush();
     trigger();
+
+    return true;
 }
 
-auto Job::transition_state_reorg(StateSequence id) noexcept -> void
+auto Job::transition_state_reorg(StateSequence id) noexcept -> bool
 {
     OT_ASSERT(0u < id);
 
@@ -412,12 +408,16 @@ auto Job::transition_state_reorg(StateSequence id) noexcept -> void
         log_(OT_PRETTY_CLASS())(name_)(" reorg ")(id)(" already handled")
             .Flush();
     }
+
+    return true;
 }
 
-auto Job::transition_state_shutdown() noexcept -> void
+auto Job::transition_state_shutdown() noexcept -> bool
 {
     state_ = State::shutdown;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to shutdown state ").Flush();
+
+    return true;
 }
 
 Job::~Job() = default;

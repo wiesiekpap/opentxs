@@ -179,20 +179,17 @@ auto Account::Imp::ChangeState(const State state, StateSequence reorg) noexcept
         case State::normal: {
             if (State::reorg != state_) { break; }
 
-            transition_state_normal();
-            output = true;
+            output = transition_state_normal();
         } break;
         case State::reorg: {
             if (State::shutdown == state_) { break; }
 
-            transition_state_reorg(reorg);
-            output = true;
+            output = transition_state_reorg(reorg);
         } break;
         case State::shutdown: {
             if (State::reorg == state_) { break; }
 
-            transition_state_shutdown();
-            output = true;
+            output = transition_state_shutdown();
         } break;
         default: {
             OT_FAIL;
@@ -203,8 +200,6 @@ auto Account::Imp::ChangeState(const State state, StateSequence reorg) noexcept
         LogError()(OT_PRETTY_CLASS())(name_)(" failed to change state from ")(
             print(state_))(" to ")(print(state))
             .Flush();
-
-        OT_FAIL;
     }
 
     return output;
@@ -521,7 +516,7 @@ auto Account::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
     }
 }
 
-auto Account::Imp::transition_state_normal() noexcept -> void
+auto Account::Imp::transition_state_normal() noexcept -> bool
 {
     disable_automatic_processing_ = false;
     const auto cb = [](auto& value) {
@@ -533,35 +528,44 @@ auto Account::Imp::transition_state_normal() noexcept -> void
     state_ = State::normal;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to normal state ").Flush();
     trigger();
+
+    return true;
 }
 
-auto Account::Imp::transition_state_reorg(StateSequence id) noexcept -> void
+auto Account::Imp::transition_state_reorg(StateSequence id) noexcept -> bool
 {
     OT_ASSERT(0u < id);
 
-    if (0u == reorgs_.count(id)) {
-        reorgs_.emplace(id);
-        disable_automatic_processing_ = true;
-        const auto cb = [=](auto& value) {
-            auto rc = value.second->ChangeState(Subchain::State::reorg, id);
+    auto success{true};
 
-            OT_ASSERT(rc);
+    if (0u == reorgs_.count(id)) {
+        const auto cb = [&](auto& value) {
+            success &= value.second->ChangeState(Subchain::State::reorg, id);
         };
         for_each(cb);
+
+        if (false == success) { return false; }
+
+        reorgs_.emplace(id);
+        disable_automatic_processing_ = true;
         state_ = State::reorg;
         log_(OT_PRETTY_CLASS())(name_)(" ready to process reorg ")(id).Flush();
     } else {
         log_(OT_PRETTY_CLASS())(name_)(" reorg ")(id)(" already handled")
             .Flush();
     }
+
+    return true;
 }
 
-auto Account::Imp::transition_state_shutdown() noexcept -> void
+auto Account::Imp::transition_state_shutdown() noexcept -> bool
 {
     clear_children();
     state_ = State::shutdown;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to shutdown state ").Flush();
     signal_shutdown();
+
+    return true;
 }
 
 auto Account::Imp::VerifyState(const State state) const noexcept -> void

@@ -56,6 +56,17 @@ auto Wallet::AddConfirmedTransaction(
         txoConsumed);
 }
 
+auto Wallet::AddConfirmedTransactions(
+    const NodeID& account,
+    const SubchainIndex& index,
+    const BatchedMatches& transactions,
+    TXOs& txoCreated,
+    TXOs& txoConsumed) noexcept -> bool
+{
+    return outputs_.AddConfirmedTransactions(
+        account, index, std::move(transactions), txoCreated, txoConsumed);
+}
+
 auto Wallet::AddMempoolTransaction(
     const NodeID& balanceNode,
     const Subchain subchain,
@@ -174,6 +185,11 @@ auto Wallet::GetPatterns(const SubchainIndex& index, alloc::Resource* alloc)
     const noexcept -> Patterns
 {
     return subchains_.GetPatterns(index, alloc);
+}
+
+auto Wallet::GetPosition() const noexcept -> block::Position
+{
+    return outputs_.GetPosition();
 }
 
 auto Wallet::GetSubchainID(const NodeID& balanceNode, const Subchain subchain)

@@ -12,6 +12,7 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <atomic>
 #include <chrono>
+#include <cstddef>
 #include <mutex>
 #include <stdexcept>
 #include <string_view>
@@ -129,6 +130,7 @@ Accounts::Imp::Imp(
     , state_(State::normal)
     , reorg_counter_(0)
     , accounts_(alloc)
+    , startup_reorg_(std::nullopt)
 {
 }
 
@@ -156,6 +158,34 @@ auto Accounts::Imp::do_shutdown() noexcept -> void { accounts_.clear(); }
 auto Accounts::Imp::do_startup() noexcept -> void
 {
     for (const auto& id : api_.Wallet().LocalNyms()) { process_nym(id); }
+
+    const auto oldPosition = db_.GetPosition();
+    log_(OT_PRETTY_CLASS())(name_)(" last wallet position is ")(
+        print(oldPosition))
+        .Flush();
+
+    if (0 > oldPosition.first) { return; }
+
+    const auto [parent, best] = node_.HeaderOracle().CommonParent(oldPosition);
+
+    if (parent == oldPosition) {
+        log_(OT_PRETTY_CLASS())(name_)(" last wallet position is in best chain")
+            .Flush();
+    } else {
+        log_(OT_PRETTY_CLASS())(name_)(" last wallet position is stale")
+            .Flush();
+        startup_reorg_.emplace(++reorg_counter_);
+        pipeline_.Push([&](const auto& ancestor, const auto& tip) {
+            auto out = MakeWork(Work::reorg);
+            out.AddFrame(chain_);
+            out.AddFrame(ancestor.second);
+            out.AddFrame(ancestor.first);
+            out.AddFrame(tip.second);
+            out.AddFrame(tip.first);
+
+            return out;
+        }(parent, best));
+    }
 }
 
 auto Accounts::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
@@ -175,6 +205,8 @@ auto Accounts::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 
 auto Accounts::Imp::process_block_header(Message&& in) noexcept -> void
 {
+    if (startup_reorg_.has_value()) { defer(std::move(in)); }
+
     const auto body = in.Body();
 
     if (3 >= body.size()) {
@@ -244,15 +276,26 @@ auto Accounts::Imp::process_reorg(Message&& in) noexcept -> void
     if (chain_ != chain) { return; }
 
     process_reorg(
+        std::move(in),
         std::make_pair(body.at(3).as<block::Height>(), body.at(2).Bytes()),
         std::make_pair(body.at(5).as<block::Height>(), body.at(4).Bytes()));
 }
 
 auto Accounts::Imp::process_reorg(
+    Message&& in,
     const block::Position& ancestor,
     const block::Position& tip) noexcept -> void
 {
-    transition_state_reorg();
+    if (false == transition_state_reorg()) {
+        LogError()(OT_PRETTY_CLASS())(
+            name_)(" failed to transaction to reorg state (possibly due to "
+                   "startup condition")
+            .Flush();
+        pipeline_.Push(std::move(in));
+
+        return;
+    }
+
     auto errors = std::atomic_int{0};
 
     {
@@ -339,21 +382,37 @@ auto Accounts::Imp::state_normal(const Work work, Message&& msg) noexcept
     }
 }
 
-auto Accounts::Imp::transition_state_reorg() noexcept -> void
+auto Accounts::Imp::transition_state_reorg() noexcept -> bool
 {
-    const auto id = ++reorg_counter_;
+    const auto id = [this] {
+        if (startup_reorg_.has_value()) {
+
+            return startup_reorg_.value();
+        } else {
+
+            return ++reorg_counter_;
+        }
+    }();
     log_(OT_PRETTY_CLASS())(name_)(": processing reorg ")(id).Flush();
-    shutdown_socket_.SendDeferred([=] {
-        auto out = MakeWork(AccountJobs::prepare_reorg);
-        out.AddFrame(id);
 
-        return out;
-    }());
-    for_each([=](auto& a) {
-        auto rc = a.second.ChangeState(Account::State::reorg, id);
+    if (false == startup_reorg_.has_value()) {
+        shutdown_socket_.SendDeferred([=] {
+            auto out = MakeWork(AccountJobs::prepare_reorg);
+            out.AddFrame(id);
 
-        OT_ASSERT(rc);
+            return out;
+        }());
+    }
+
+    auto success{true};
+
+    for_each([&](auto& a) {
+        success &= a.second.ChangeState(Account::State::reorg, id);
     });
+
+    if (success) { startup_reorg_.reset(); }
+
+    return success;
 }
 
 auto Accounts::Imp::transition_state_shutdown() noexcept -> void
