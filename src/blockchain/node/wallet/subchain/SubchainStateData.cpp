@@ -11,11 +11,11 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
-#include <exception>
 #include <future>
 #include <iterator>
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
@@ -158,6 +158,7 @@ SubchainStateData::SubchainStateData(
           db_.GetPatterns(db_key_, alloc.resource()),
           db_.GetUnspentOutputs(id_, subchain_, alloc.resource()),
           alloc)
+    , match_cache_(alloc)
     , to_children_(pipeline_.Internal().ExtraSocket(0))
     , pending_state_(State::normal)
     , state_(State::normal)
@@ -473,7 +474,7 @@ auto SubchainStateData::match(
     const block::Position& position,
     const BlockTarget& targets,
     const GCS& cfilter,
-    wallet::ElementCache::Results& resultMap) const noexcept -> bool
+    wallet::MatchCache::Results& resultMap) const noexcept -> bool
 {
     const auto GetKeys = [&](const auto& selected) {
         auto& input = selected.first;
@@ -629,25 +630,37 @@ auto SubchainStateData::ProcessBlock(
         buf.data(),
         buf.size(),
         alloc::standard_to_boost(get_allocator().resource())};
-    const auto elements = element_cache_.lock_shared()->Get(get_allocator());
-    auto patterns = std::make_pair(Patterns{&alloc}, Patterns{&alloc});
+    auto haveTargets = Time{};
+    auto haveFilter = Time{};
+    auto keyMatches = std::size_t{};
+    auto txoMatches = std::size_t{};
+    const auto confirmed = [&] {
+        const auto handle = element_cache_.lock_shared();
+        const auto matches = match_cache_.lock_shared()->GetMatches(position);
+        const auto& elements = handle->GetElements();
+        auto patterns = std::make_pair(Patterns{&alloc}, Patterns{&alloc});
 
-    if (false == select_matches(position, elements, patterns)) {
-        // TODO blocks should only be queued for processing if they have been
-        // previously marked by a scan or rescan operation which updates the
-        // cache with the appropriate entries so it's not clear why this branch
-        // can ever be reached.
-        select_all(position, elements, patterns);
-    }
+        if (false == select_matches(matches, position, elements, patterns)) {
+            // TODO blocks should only be queued for processing if they have
+            // been previously marked by a scan or rescan operation which
+            // updates the cache with the appropriate entries so it's not clear
+            // why this branch can ever be reached.
+            select_all(position, elements, patterns);
+        }
 
-    const auto haveTargets = Clock::now();
-    const auto cfilter = filters.LoadFilter(type, blockHash, get_allocator());
+        haveTargets = Clock::now();
+        const auto cfilter =
+            filters.LoadFilter(type, blockHash, get_allocator());
 
-    OT_ASSERT(cfilter.IsValid());
+        OT_ASSERT(cfilter.IsValid());
 
-    const auto haveFilter = Clock::now();
-    const auto& [outpoint, key] = patterns;
-    const auto confirmed = block.Internal().FindMatches(type, outpoint, key);
+        haveFilter = Clock::now();
+        const auto& [outpoint, key] = patterns;
+        keyMatches = key.size();
+        txoMatches = outpoint.size();
+
+        return block.Internal().FindMatches(type, outpoint, key);
+    }();
     const auto haveMatches = Clock::now();
     const auto& [utxo, general] = confirmed;
     const auto& oracle = node.HeaderOracle();
@@ -666,11 +679,11 @@ auto SubchainStateData::ProcessBlock(
     LogConsole()(name)(" processed block ")(print(position))(" in ")(
         std::chrono::nanoseconds{Clock::now() - start})
         .Flush();
-    log(OT_PRETTY_CLASS())(name)(" ")(general.size())(" of ")(key.size())(
-        " potential key matches confirmed.")
+    log(OT_PRETTY_CLASS())(name)(" ")(general.size())(" of ")(
+        keyMatches)(" potential key matches confirmed.")
         .Flush();
-    log(OT_PRETTY_CLASS())(name)(" ")(utxo.size())(" of ")(outpoint.size())(
-        " potential utxo matches confirmed.")
+    log(OT_PRETTY_CLASS())(name)(" ")(utxo.size())(" of ")(
+        txoMatches)(" potential utxo matches confirmed.")
         .Flush();
     log(OT_PRETTY_CLASS())(name)(" time to load match targets: ")(
         std::chrono::nanoseconds{haveTargets - start})
@@ -699,22 +712,25 @@ auto SubchainStateData::ProcessTransaction(
         buf.data(),
         buf.size(),
         alloc::standard_to_boost(get_allocator().resource())};
-    const auto elements = element_cache_.lock_shared()->Get(get_allocator());
-    const auto targets = get_account_targets(elements, &alloc);
-    const auto patterns = to_patterns(elements, &alloc);
-    const auto parsed = block::ParsedPatterns{patterns};
-    const auto outpoints = [&]() {
-        auto out = SubchainStateData::Patterns{&alloc};
-        translate(elements.txos_, out);
-
-        return out;
-    }();
     auto copy = tx.clone();
 
     OT_ASSERT(copy);
 
-    const auto matches =
-        copy->Internal().FindMatches(filter_type_, outpoints, parsed);
+    const auto matches = [&] {
+        auto handle = element_cache_.lock_shared();
+        const auto& elements = handle->GetElements();
+        const auto targets = get_account_targets(elements, &alloc);
+        const auto patterns = to_patterns(elements, &alloc);
+        const auto parsed = block::ParsedPatterns{patterns};
+        const auto outpoints = [&]() {
+            auto out = SubchainStateData::Patterns{&alloc};
+            translate(elements.txos_, out);
+
+            return out;
+        }();
+
+        return copy->Internal().FindMatches(filter_type_, outpoints, parsed);
+    }();
     handle_mempool_matches(matches, std::move(copy));
 }
 
@@ -764,132 +780,149 @@ auto SubchainStateData::scan(
     block::Position& highestTested,
     Vector<ScanStatus>& out) const noexcept -> std::optional<block::Position>
 {
-    using namespace std::literals;
-    const auto procedure = rescan ? "rescan"sv : "scan"sv;
-    const auto& log = log_;
-    const auto& name = name_;
-    const auto& node = node_;
-    const auto& type = filter_type_;
-    const auto& headers = node.HeaderOracle();
-    const auto& filters = node.FilterOracleInternal();
-    const auto start = Clock::now();
-    const auto elements = element_cache_.lock_shared()->Get(get_allocator());
-    constexpr auto GetBatchSize = [](std::size_t in) {
-        constexpr auto cap = std::size_t{1000};
-        constexpr auto max = std::size_t{10000};
-        constexpr auto min = std::size_t{100};
-        static_assert(max > min);
+    try {
+        using namespace std::literals;
+        const auto procedure = rescan ? "rescan"sv : "scan"sv;
+        const auto& log = log_;
+        const auto& name = name_;
+        const auto& node = node_;
+        const auto& type = filter_type_;
+        const auto& headers = node.HeaderOracle();
+        const auto& filters = node.FilterOracleInternal();
+        const auto start = Clock::now();
+        const auto startHeight = highestTested.first + 1;
+        auto atLeastOnce{false};
+        auto highestClean = std::optional<block::Position>{std::nullopt};
+        auto resultMap = [&] {
+            auto results = wallet::MatchCache::Results{get_allocator()};
+            auto handle = element_cache_.lock_shared();
+            const auto& elements = handle->GetElements();
+            constexpr auto GetBatchSize = [](std::size_t in) {
+                constexpr auto cap = std::size_t{1000};
+                constexpr auto max = std::size_t{10000};
+                constexpr auto min = std::size_t{100};
+                static_assert(max > min);
 
-        if (in > (max - min)) {
+                if (in > (max - min)) {
 
-            return min;
+                    return min;
+                } else {
+
+                    return std::min((max - in), cap);
+                }
+            };
+            static_assert(GetBatchSize(0) == 1000);
+            static_assert(GetBatchSize(7999) == 1000);
+            static_assert(GetBatchSize(9000) == 1000);
+            static_assert(GetBatchSize(9899) == 101);
+            static_assert(GetBatchSize(9900) == 100);
+            static_assert(GetBatchSize(10000) == 100);
+            const auto scanBatch = GetBatchSize(elements.size());
+            const auto stopHeight = std::min(
+                std::min<block::Height>(
+                    startHeight + scanBatch - 1, best.first),
+                stop);
+
+            if (startHeight > stopHeight) {
+                log(OT_PRETTY_CLASS())(name)(" attempted to ")(
+                    procedure)(" filters from ")(startHeight)(" to ")(
+                    stopHeight)(" but this is impossible")
+                    .Flush();
+
+                throw std::runtime_error{""};
+            }
+
+            log(OT_PRETTY_CLASS())(name)(" ")(procedure)("ning filters from ")(
+                startHeight)(" to ")(stopHeight)
+                .Flush();
+            const auto target =
+                static_cast<std::size_t>(stopHeight - startHeight + 1);
+            const auto blocks = headers.BestHashes(
+                startHeight, target, get_allocator().resource());
+            auto filterPromise = std::promise<Vector<GCS>>{};
+            auto filterFuture = filterPromise.get_future();
+            static constexpr auto filterBackgroundThreshold = std::size_t{100u};
+
+            if (blocks.size() >= filterBackgroundThreshold) {
+                api_.Network().Asio().Internal().Post(
+                    ThreadPool::Blockchain, [&] {
+                        filterPromise.set_value(
+                            filters.LoadFilters(type, blocks));
+                    });
+            } else {
+                filterPromise.set_value(filters.LoadFilters(type, blocks));
+            }
+
+            auto selected = BlockTargets{get_allocator()};
+            select_targets(*handle, blocks, elements, startHeight, selected);
+            // TODO pre-hash all the selected targets while cfilters are loading
+            const auto cfilters = filterFuture.get();
+
+            OT_ASSERT(cfilters.size() <= blocks.size());
+
+            auto isClean{true};
+            auto s = selected.begin();
+            auto f = cfilters.begin();
+            auto i = startHeight;
+
+            for (auto end = cfilters.end(); f != end; ++f, ++s, ++i) {
+                const auto& blockHash = s->first;
+                const auto& cfilter = *f;
+                auto testPosition = block::Position{i, blockHash};
+
+                if (blockHash.empty()) {
+                    LogError()(OT_PRETTY_CLASS())(name)(" empty block hash")
+                        .Flush();
+
+                    break;
+                }
+
+                if (false == cfilter.IsValid()) {
+                    LogError()(OT_PRETTY_CLASS())(name)(" filter for block ")(
+                        print(testPosition))(" not found ")
+                        .Flush();
+
+                    break;
+                }
+
+                atLeastOnce = true;
+                const auto hasMatches =
+                    match(procedure, log, testPosition, *s, cfilter, results);
+
+                if (hasMatches) {
+                    isClean = false;
+                    out.emplace_back(ScanState::dirty, testPosition);
+                } else if (isClean) {
+                    highestClean = testPosition;
+                }
+
+                highestTested = std::move(testPosition);
+            }
+
+            return results;
+        }();
+
+        if (atLeastOnce) {
+            if (0u < resultMap.size()) {
+                match_cache_.lock()->Add(std::move(resultMap));
+            }
+
+            const auto count = out.size();
+            log(OT_PRETTY_CLASS())(name)(" ")(procedure)(" found ")(
+                count)(" new potential matches between blocks ")(
+                startHeight)(" and ")(highestTested.first)(" in ")(
+                std::chrono::nanoseconds{Clock::now() - start})
+                .Flush();
         } else {
-
-            return std::min((max - in), cap);
+            log_(OT_PRETTY_CLASS())(name)(" ")(procedure)(" interrupted")
+                .Flush();
         }
-    };
-    static_assert(GetBatchSize(0) == 1000);
-    static_assert(GetBatchSize(7999) == 1000);
-    static_assert(GetBatchSize(9000) == 1000);
-    static_assert(GetBatchSize(9899) == 101);
-    static_assert(GetBatchSize(9900) == 100);
-    static_assert(GetBatchSize(10000) == 100);
-    const auto scanBatch = GetBatchSize(elements.size());
-    const auto startHeight = highestTested.first + 1;
-    const auto stopHeight = std::min(
-        std::min<block::Height>(startHeight + scanBatch - 1, best.first), stop);
-    auto atLeastOnce{false};
-    auto highestClean = std::optional<block::Position>{std::nullopt};
 
-    if (startHeight > stopHeight) {
-        log(OT_PRETTY_CLASS())(name)(" attempted to ")(
-            procedure)(" filters from ")(startHeight)(" to ")(
-            stopHeight)(" but this is impossible")
-            .Flush();
+        return highestClean;
+    } catch (...) {
 
         return std::nullopt;
     }
-
-    log(OT_PRETTY_CLASS())(name)(" ")(procedure)("ning filters from ")(
-        startHeight)(" to ")(stopHeight)
-        .Flush();
-    const auto target = static_cast<std::size_t>(stopHeight - startHeight + 1);
-    const auto blocks =
-        headers.BestHashes(startHeight, target, get_allocator().resource());
-    auto filterPromise = std::promise<Vector<GCS>>{};
-    auto filterFuture = filterPromise.get_future();
-    static constexpr auto filterBackgroundThreshold = std::size_t{100u};
-
-    if (blocks.size() >= filterBackgroundThreshold) {
-        api_.Network().Asio().Internal().Post(ThreadPool::Blockchain, [&] {
-            filterPromise.set_value(filters.LoadFilters(type, blocks));
-        });
-    } else {
-        filterPromise.set_value(filters.LoadFilters(type, blocks));
-    }
-
-    auto resultMap = wallet::ElementCache::Results{get_allocator()};
-    auto selected = BlockTargets{get_allocator()};
-    select_targets(blocks, elements, startHeight, selected);
-    // TODO pre-hash all the selected targets while cfilters are loading
-    const auto cfilters = filterFuture.get();
-
-    OT_ASSERT(cfilters.size() <= blocks.size());
-
-    auto isClean{true};
-    auto s = selected.begin();
-    auto f = cfilters.begin();
-    auto i = startHeight;
-
-    for (auto end = cfilters.end(); f != end; ++f, ++s, ++i) {
-        const auto& blockHash = s->first;
-        const auto& cfilter = *f;
-        auto testPosition = block::Position{i, blockHash};
-
-        if (blockHash.empty()) {
-            LogError()(OT_PRETTY_CLASS())(name)(" empty block hash").Flush();
-
-            break;
-        }
-
-        if (false == cfilter.IsValid()) {
-            LogError()(OT_PRETTY_CLASS())(name)(" filter for block ")(
-                print(testPosition))(" not found ")
-                .Flush();
-
-            break;
-        }
-
-        atLeastOnce = true;
-        const auto hasMatches =
-            match(procedure, log, testPosition, *s, cfilter, resultMap);
-
-        if (hasMatches) {
-            isClean = false;
-            out.emplace_back(ScanState::dirty, testPosition);
-        } else if (isClean) {
-            highestClean = testPosition;
-        }
-
-        highestTested = std::move(testPosition);
-    }
-
-    if (atLeastOnce) {
-        if (0u < resultMap.size()) {
-            element_cache_.lock()->Add(std::move(resultMap));
-        }
-
-        const auto count = out.size();
-        log(OT_PRETTY_CLASS())(name)(" ")(procedure)(" found ")(
-            count)(" new potential matches between blocks ")(
-            startHeight)(" and ")(highestTested.first)(" in ")(
-            std::chrono::nanoseconds{Clock::now() - start})
-            .Flush();
-    } else {
-        log_(OT_PRETTY_CLASS())(name)(" ")(procedure)(" interrupted").Flush();
-    }
-
-    return highestClean;
 }
 
 auto SubchainStateData::select_all(
@@ -935,6 +968,7 @@ auto SubchainStateData::select_all(
 }
 
 auto SubchainStateData::select_matches(
+    const std::optional<wallet::MatchCache::Index>& matches,
     const block::Position& block,
     const Elements& in,
     MatchesToTest& out) const noexcept -> bool
@@ -978,8 +1012,8 @@ auto SubchainStateData::select_matches(
             }
         };
 
-    try {
-        const auto& items = in.results_.at(block).confirmed_match_;
+    if (matches.has_value()) {
+        const auto& items = matches->confirmed_match_;
         SelectKey(in.elements_20_, items.match_20_, key);
         SelectKey(in.elements_32_, items.match_32_, key);
         SelectKey(in.elements_33_, items.match_33_, key);
@@ -988,7 +1022,7 @@ auto SubchainStateData::select_matches(
         SelectTxo(in.txos_, items.match_txo_, outpoint);
 
         return true;
-    } catch (...) {
+    } else {
         // NOTE this should never happen because a block is only processed when
         // a previous call to SubchainStateData::scan indicated this block had a
         // match, and the scan function should have set the matched elements in
@@ -1005,17 +1039,19 @@ auto SubchainStateData::select_matches(
 }
 
 auto SubchainStateData::select_targets(
+    const wallet::ElementCache& cache,
     const BlockHashes& hashes,
     const Elements& in,
     block::Height height,
     BlockTargets& out) const noexcept -> void
 {
     for (const auto& hash : hashes) {
-        select_targets(block::Position{height++, hash}, in, out);
+        select_targets(cache, block::Position{height++, hash}, in, out);
     }
 }
 
 auto SubchainStateData::select_targets(
+    const wallet::ElementCache& cache,
     const block::Position& block,
     const Elements& in,
     BlockTargets& out) const noexcept -> void
@@ -1051,82 +1087,83 @@ auto SubchainStateData::select_targets(
         out.first.emplace_back(outpoint);
         out.second.emplace_back(outpoint.Bytes());
     };
+    const auto matches = match_cache_.lock_shared()->GetMatches(block);
 
     for (const auto& [index, data] : in.elements_20_) {
-        if (auto r = in.results_.find(block); in.results_.end() == r) {
-            ChooseKey(index, data, s20);
-        } else {
-            const auto& no = r->second.confirmed_no_match_.match_20_;
-            const auto& yes = r->second.confirmed_match_.match_20_;
+        if (matches.has_value()) {
+            const auto& no = matches->confirmed_no_match_.match_20_;
+            const auto& yes = matches->confirmed_match_.match_20_;
 
             if ((0u == no.count(index)) && (0u == yes.count(index))) {
                 ChooseKey(index, data, s20);
             }
+        } else {
+            ChooseKey(index, data, s20);
         }
     }
 
     for (const auto& [index, data] : in.elements_32_) {
-        if (auto r = in.results_.find(block); in.results_.end() == r) {
-            ChooseKey(index, data, s32);
-        } else {
-            const auto& no = r->second.confirmed_no_match_.match_32_;
-            const auto& yes = r->second.confirmed_match_.match_32_;
+        if (matches.has_value()) {
+            const auto& no = matches->confirmed_no_match_.match_32_;
+            const auto& yes = matches->confirmed_match_.match_32_;
 
             if ((0u == no.count(index)) && (0u == yes.count(index))) {
                 ChooseKey(index, data, s32);
             }
+        } else {
+            ChooseKey(index, data, s32);
         }
     }
 
     for (const auto& [index, data] : in.elements_33_) {
-        if (auto r = in.results_.find(block); in.results_.end() == r) {
-            ChooseKey(index, data, s33);
-        } else {
-            const auto& no = r->second.confirmed_no_match_.match_33_;
-            const auto& yes = r->second.confirmed_match_.match_33_;
+        if (matches.has_value()) {
+            const auto& no = matches->confirmed_no_match_.match_33_;
+            const auto& yes = matches->confirmed_match_.match_33_;
 
             if ((0u == no.count(index)) && (0u == yes.count(index))) {
                 ChooseKey(index, data, s33);
             }
+        } else {
+            ChooseKey(index, data, s33);
         }
     }
 
     for (const auto& [index, data] : in.elements_64_) {
-        if (auto r = in.results_.find(block); in.results_.end() == r) {
-            ChooseKey(index, data, s64);
-        } else {
-            const auto& no = r->second.confirmed_no_match_.match_64_;
-            const auto& yes = r->second.confirmed_match_.match_64_;
+        if (matches.has_value()) {
+            const auto& no = matches->confirmed_no_match_.match_64_;
+            const auto& yes = matches->confirmed_match_.match_64_;
 
             if ((0u == no.count(index)) && (0u == yes.count(index))) {
                 ChooseKey(index, data, s64);
             }
+        } else {
+            ChooseKey(index, data, s64);
         }
     }
 
     for (const auto& [index, data] : in.elements_65_) {
-        if (auto r = in.results_.find(block); in.results_.end() == r) {
-            ChooseKey(index, data, s65);
-        } else {
-            const auto& no = r->second.confirmed_no_match_.match_65_;
-            const auto& yes = r->second.confirmed_match_.match_65_;
+        if (matches.has_value()) {
+            const auto& no = matches->confirmed_no_match_.match_65_;
+            const auto& yes = matches->confirmed_match_.match_65_;
 
             if ((0u == no.count(index)) && (0u == yes.count(index))) {
                 ChooseKey(index, data, s65);
             }
+        } else {
+            ChooseKey(index, data, s65);
         }
     }
 
     for (const auto& [outpoint, output] : in.txos_) {
-        if (auto r = in.results_.find(block); in.results_.end() == r) {
-            ChooseTxo(outpoint, stxo);
-        } else {
-            const auto& no = r->second.confirmed_no_match_.match_txo_;
-            const auto& yes = r->second.confirmed_match_.match_txo_;
+        if (matches.has_value()) {
+            const auto& no = matches->confirmed_no_match_.match_txo_;
+            const auto& yes = matches->confirmed_match_.match_txo_;
 
             if ((0u == no.count(outpoint)) && (0u == yes.count(outpoint))) {
                 ChooseTxo(outpoint, stxo);
             }
+        } else {
+            ChooseTxo(outpoint, stxo);
         }
     }
 }

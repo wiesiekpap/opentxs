@@ -11,6 +11,7 @@
 
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <chrono>
 #include <iterator>
 #include <memory>
 #include <optional>
@@ -32,6 +33,7 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -86,7 +88,7 @@ auto Progress::Imp::process_update(Message&& msg) noexcept -> void
     }
 
     const auto database = Clock::now();
-    parent_.element_cache_.lock()->Forget(best);
+    parent_.match_cache_.lock()->Forget(best);
     const auto cache = Clock::now();
     log_(OT_PRETTY_CLASS())(name_)(" time to decode update: ")(
         std::chrono::nanoseconds{decoded - start})
