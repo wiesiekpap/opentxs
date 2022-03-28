@@ -25,24 +25,24 @@ ElementCache::ElementCache(
     allocator_type alloc) noexcept
     : log_(LogTrace())
     , data_(alloc)
-    , cache_(alloc)
+    , elements_(alloc)
 {
     log_(OT_PRETTY_CLASS())("caching ")(data.size())(" patterns").Flush();
     Add(convert(std::move(data), alloc));
     std::transform(
         txos.begin(),
         txos.end(),
-        std::inserter(cache_.txos_, cache_.txos_.end()),
+        std::inserter(elements_.txos_, elements_.txos_.end()),
         [](auto& utxo) {
             return std::make_pair(utxo.first, std::move(utxo.second));
         });
     log_(OT_PRETTY_CLASS())("cache contains:").Flush();
-    log_("  * ")(cache_.elements_20_.size())(" 20 byte elements").Flush();
-    log_("  * ")(cache_.elements_32_.size())(" 32 byte elements").Flush();
-    log_("  * ")(cache_.elements_33_.size())(" 33 byte elements").Flush();
-    log_("  * ")(cache_.elements_64_.size())(" 64 byte elements").Flush();
-    log_("  * ")(cache_.elements_65_.size())(" 65 byte elements").Flush();
-    log_("  * ")(cache_.txos_.size())(" txo elements").Flush();
+    log_("  * ")(elements_.elements_20_.size())(" 20 byte elements").Flush();
+    log_("  * ")(elements_.elements_32_.size())(" 32 byte elements").Flush();
+    log_("  * ")(elements_.elements_33_.size())(" 33 byte elements").Flush();
+    log_("  * ")(elements_.elements_64_.size())(" 64 byte elements").Flush();
+    log_("  * ")(elements_.elements_65_.size())(" 65 byte elements").Flush();
+    log_("  * ")(elements_.txos_.size())(" txo elements").Flush();
 }
 
 auto ElementCache::Add(internal::WalletDatabase::ElementMap&& data) noexcept
@@ -78,7 +78,7 @@ auto ElementCache::Add(internal::WalletDatabase::ElementMap&& data) noexcept
 auto ElementCache::Add(TXOs&& created, TXOs&& consumed) noexcept -> void
 {
     for (auto& [outpoint, output] : created) {
-        auto& map = cache_.txos_;
+        auto& map = elements_.txos_;
 
         if (auto i = map.find(outpoint); map.end() != i) {
             i->second = std::move(output);
@@ -88,14 +88,7 @@ auto ElementCache::Add(TXOs&& created, TXOs&& consumed) noexcept -> void
     }
 
     for (const auto& [outpoint, output] : consumed) {
-        cache_.txos_.erase(outpoint);
-    }
-}
-
-auto ElementCache::Add(Results&& results) noexcept -> void
-{
-    for (auto& [block, index] : results) {
-        cache_.results_[block].Merge(std::move(index));
+        elements_.txos_.erase(outpoint);
     }
 }
 
@@ -111,15 +104,9 @@ auto ElementCache::convert(Patterns&& in, allocator_type alloc) noexcept -> Map
     return out;
 }
 
-auto ElementCache::Forget(const block::Position& last) noexcept -> void
+auto ElementCache::GetElements() const noexcept -> const Elements&
 {
-    auto& map = cache_.results_;
-    map.erase(map.begin(), map.upper_bound(last));
-}
-
-auto ElementCache::Get(allocator_type alloc) const noexcept -> Elements
-{
-    return Elements{cache_, alloc};
+    return elements_;
 }
 
 auto ElementCache::get_allocator() const noexcept -> allocator_type
@@ -140,27 +127,27 @@ auto ElementCache::index(
 {
     switch (element.size()) {
         case 20: {
-            auto& data = cache_.elements_20_.emplace_back(
+            auto& data = elements_.elements_20_.emplace_back(
                 index, std::array<std::byte, 20>{});
             std::memcpy(data.second.data(), element.data(), 20);
         } break;
         case 33: {
-            auto& data = cache_.elements_33_.emplace_back(
+            auto& data = elements_.elements_33_.emplace_back(
                 index, std::array<std::byte, 33>{});
             std::memcpy(data.second.data(), element.data(), 33);
         } break;
         case 32: {
-            auto& data = cache_.elements_32_.emplace_back(
+            auto& data = elements_.elements_32_.emplace_back(
                 index, std::array<std::byte, 32>{});
             std::memcpy(data.second.data(), element.data(), 32);
         } break;
         case 65: {
-            auto& data = cache_.elements_65_.emplace_back(
+            auto& data = elements_.elements_65_.emplace_back(
                 index, std::array<std::byte, 65>{});
             std::memcpy(data.second.data(), element.data(), 65);
         } break;
         case 64: {
-            auto& data = cache_.elements_64_.emplace_back(
+            auto& data = elements_.elements_64_.emplace_back(
                 index, std::array<std::byte, 64>{});
             std::memcpy(data.second.data(), element.data(), 64);
         } break;
@@ -182,7 +169,6 @@ ElementCache::Elements::Elements(allocator_type alloc) noexcept
     , elements_64_(alloc)
     , elements_65_(alloc)
     , txos_(alloc)
-    , results_(alloc)
 
 {
 }
@@ -220,7 +206,6 @@ auto ElementCache::Elements::operator=(const Elements& rhs) noexcept
     elements_64_ = rhs.elements_64_;
     elements_65_ = rhs.elements_65_;
     txos_ = rhs.txos_;
-    results_ = rhs.results_;
 
     return *this;
 }
@@ -233,7 +218,6 @@ auto ElementCache::Elements::operator=(Elements&& rhs) noexcept -> Elements&
     elements_64_ = std::move(rhs.elements_64_);
     elements_65_ = std::move(rhs.elements_65_);
     txos_ = std::move(rhs.txos_);
-    results_ = std::move(rhs.results_);
 
     return *this;
 }
@@ -247,41 +231,79 @@ auto ElementCache::Elements::size() const noexcept -> std::size_t
 
 namespace opentxs::blockchain::node::wallet
 {
-ElementCache::Index::Index(allocator_type alloc) noexcept
+MatchCache::MatchCache(allocator_type alloc) noexcept
+    : results_(alloc)
+{
+}
+
+auto MatchCache::Add(Results&& results) noexcept -> void
+{
+    for (auto& [block, index] : results) {
+        results_[block].Merge(std::move(index));
+    }
+}
+
+auto MatchCache::Forget(const block::Position& last) noexcept -> void
+{
+    auto& map = results_;
+    map.erase(map.begin(), map.upper_bound(last));
+}
+
+auto MatchCache::get_allocator() const noexcept -> allocator_type
+{
+    return results_.get_allocator();
+}
+
+auto MatchCache::GetMatches(const block::Position& block) const noexcept
+    -> std::optional<Index>
+{
+    if (auto i = results_.find(block); results_.end() == i) {
+
+        return std::nullopt;
+    } else {
+
+        return i->second;
+    }
+}
+}  // namespace opentxs::blockchain::node::wallet
+
+namespace opentxs::blockchain::node::wallet
+{
+MatchCache::Index::Index(allocator_type alloc) noexcept
     : confirmed_no_match_(alloc)
     , confirmed_match_(alloc)
 {
 }
 
-ElementCache::Index::Index(const Index& rhs, allocator_type alloc) noexcept
+MatchCache::Index::Index(const Index& rhs, allocator_type alloc) noexcept
     : Index(alloc)
 {
     operator=(rhs);
 }
 
-ElementCache::Index::Index(Index&& rhs, allocator_type alloc) noexcept
+MatchCache::Index::Index(Index&& rhs, allocator_type alloc) noexcept
     : Index(alloc)
 {
     operator=(std::move(rhs));
 }
 
-ElementCache::Index::Index(Index&& rhs) noexcept
+MatchCache::Index::Index(Index&& rhs) noexcept
     : Index(std::move(rhs), rhs.get_allocator())
 {
 }
 
-auto ElementCache::Index::get_allocator() const noexcept -> allocator_type
+auto MatchCache::Index::get_allocator() const noexcept -> allocator_type
 {
     return confirmed_no_match_.get_allocator();
 }
 
-auto ElementCache::Index::Merge(Index&& rhs) noexcept -> void
+auto MatchCache::Index::Merge(Index&& rhs) noexcept -> void
 {
     confirmed_no_match_.Merge(std::move(rhs.confirmed_no_match_));
     confirmed_match_.Merge(std::move(rhs.confirmed_match_));
 }
 
-auto ElementCache::Index::operator=(const Index& rhs) noexcept -> Index&
+auto MatchCache::Index::operator=(const Index& rhs) noexcept -> Index&
 {
     confirmed_no_match_ = rhs.confirmed_no_match_;
     confirmed_match_ = rhs.confirmed_match_;
@@ -289,7 +311,7 @@ auto ElementCache::Index::operator=(const Index& rhs) noexcept -> Index&
     return *this;
 }
 
-auto ElementCache::Index::operator=(Index&& rhs) noexcept -> Index&
+auto MatchCache::Index::operator=(Index&& rhs) noexcept -> Index&
 {
     confirmed_no_match_ = std::move(rhs.confirmed_no_match_);
     confirmed_match_ = std::move(rhs.confirmed_match_);
@@ -300,7 +322,7 @@ auto ElementCache::Index::operator=(Index&& rhs) noexcept -> Index&
 
 namespace opentxs::blockchain::node::wallet
 {
-ElementCache::Matches::Matches(allocator_type alloc) noexcept
+MatchCache::Matches::Matches(allocator_type alloc) noexcept
     : match_20_(alloc)
     , match_32_(alloc)
     , match_33_(alloc)
@@ -310,31 +332,29 @@ ElementCache::Matches::Matches(allocator_type alloc) noexcept
 {
 }
 
-ElementCache::Matches::Matches(
-    const Matches& rhs,
-    allocator_type alloc) noexcept
+MatchCache::Matches::Matches(const Matches& rhs, allocator_type alloc) noexcept
     : Matches(alloc)
 {
     operator=(rhs);
 }
 
-ElementCache::Matches::Matches(Matches&& rhs, allocator_type alloc) noexcept
+MatchCache::Matches::Matches(Matches&& rhs, allocator_type alloc) noexcept
     : Matches(alloc)
 {
     operator=(std::move(rhs));
 }
 
-ElementCache::Matches::Matches(Matches&& rhs) noexcept
+MatchCache::Matches::Matches(Matches&& rhs) noexcept
     : Matches(std::move(rhs), rhs.get_allocator())
 {
 }
 
-auto ElementCache::Matches::get_allocator() const noexcept -> allocator_type
+auto MatchCache::Matches::get_allocator() const noexcept -> allocator_type
 {
     return match_20_.get_allocator();
 }
 
-auto ElementCache::Matches::Merge(Matches&& rhs) noexcept -> void
+auto MatchCache::Matches::Merge(Matches&& rhs) noexcept -> void
 {
     std::move(
         rhs.match_20_.begin(),
@@ -362,7 +382,7 @@ auto ElementCache::Matches::Merge(Matches&& rhs) noexcept -> void
         std::inserter(match_txo_, match_txo_.end()));
 }
 
-auto ElementCache::Matches::operator=(const Matches& rhs) noexcept -> Matches&
+auto MatchCache::Matches::operator=(const Matches& rhs) noexcept -> Matches&
 {
     match_20_ = rhs.match_20_;
     match_32_ = rhs.match_32_;
@@ -374,7 +394,7 @@ auto ElementCache::Matches::operator=(const Matches& rhs) noexcept -> Matches&
     return *this;
 }
 
-auto ElementCache::Matches::operator=(Matches&& rhs) noexcept -> Matches&
+auto MatchCache::Matches::operator=(Matches&& rhs) noexcept -> Matches&
 {
     match_20_ = std::move(rhs.match_20_);
     match_32_ = std::move(rhs.match_32_);

@@ -141,6 +141,8 @@ public:
     using SubchainIndex = WalletDatabase::pSubchainIndex;
     using ElementCache =
         libguarded::shared_guarded<wallet::ElementCache, std::shared_mutex>;
+    using MatchCache =
+        libguarded::shared_guarded<wallet::MatchCache, std::shared_mutex>;
     using FinishedCallback =
         std::function<void(const Vector<block::Position>&)>;
 
@@ -166,6 +168,7 @@ public:
     const CString to_progress_endpoint_;
     const CString shutdown_endpoint_;
     mutable ElementCache element_cache_;
+    mutable MatchCache match_cache_;
 
     auto ChangeState(const State state, StateSequence reorg) noexcept
         -> bool final;
@@ -291,7 +294,7 @@ private:
         const block::Position& position,
         const BlockTarget& targets,
         const GCS& cfilter,
-        wallet::ElementCache::Results& results) const noexcept -> bool;
+        wallet::MatchCache::Results& results) const noexcept -> bool;
     auto reorg_children() const noexcept -> std::size_t;
     auto supported_scripts(const crypto::Element& element) const noexcept
         -> UnallocatedVector<ScriptForm>;
@@ -307,15 +310,18 @@ private:
         const Elements& in,
         MatchesToTest& out) const noexcept -> void;
     auto select_matches(
+        const std::optional<wallet::MatchCache::Index>& matches,
         const block::Position& block,
         const Elements& in,
         MatchesToTest& out) const noexcept -> bool;
     auto select_targets(
+        const wallet::ElementCache& cache,
         const BlockHashes& hashes,
         const Elements& in,
         block::Height height,
         BlockTargets& out) const noexcept -> void;
     auto select_targets(
+        const wallet::ElementCache& cache,
         const block::Position& block,
         const Elements& in,
         BlockTargets& out) const noexcept -> void;

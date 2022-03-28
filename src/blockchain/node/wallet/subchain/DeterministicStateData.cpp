@@ -8,8 +8,10 @@
 #include "blockchain/node/wallet/subchain/DeterministicStateData.hpp"  // IWYU pragma: associated
 
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <algorithm>
 #include <chrono>
 #include <functional>
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <string_view>
@@ -85,7 +87,7 @@ auto DeterministicStateData::CheckCache(
     cache_.modify([=](auto& data) {
         auto& [time, blockMap] = data;
         using namespace std::literals;
-        static constexpr auto maxTime = 30s;
+        static constexpr auto maxTime = 20s;
         static constexpr auto maxBlocks = std::size_t{100};
         const auto blocks = blockMap.size();
         const auto interval = Clock::now() - time;
