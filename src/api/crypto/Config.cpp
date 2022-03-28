@@ -41,7 +41,7 @@ constexpr auto OT_KEY_SYMMETRIC_IV_SIZE = "symmetric_iv_size";
 constexpr auto OT_KEY_SYMMETRIC_BUFFER_SIZE = "symmetric_buffer_size";
 constexpr auto OT_KEY_PUBLIC_KEYSIZE = "public_keysize";
 constexpr auto OT_KEY_PUBLIC_KEYSIZE_MAX = "public_keysize_max";
-}    // namespace opentxs
+}  // namespace opentxs
 
 namespace opentxs::factory
 {

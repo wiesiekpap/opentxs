@@ -130,7 +130,7 @@ constexpr auto SEED_VERSION = 1;
 constexpr auto SESSION_DATA_VERSION = 1;
 constexpr auto RPCPUSH_VERSION = 3;
 constexpr auto TASKCOMPLETE_VERSION = 2;
-}    // namespace opentxs
+}  // namespace opentxs
 
 #define CHECK_INPUT(field, error)                                              \
     if (0 == command.field().size()) {                                         \

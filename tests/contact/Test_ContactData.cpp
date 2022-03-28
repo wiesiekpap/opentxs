@@ -505,7 +505,8 @@ TEST_F(Test_ContactData, copy_constructor)
 
     const ot::identity::wot::claim::Data copiedContactData(contactData);
 
-    ASSERT_EQ(opentxs::CONTACT_CONTACT_DATA_VERSION, copiedContactData.Version());
+    ASSERT_EQ(
+        opentxs::CONTACT_CONTACT_DATA_VERSION, copiedContactData.Version());
     ASSERT_NE(
         nullptr,
         copiedContactData.Section(

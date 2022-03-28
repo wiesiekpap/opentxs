@@ -18,9 +18,9 @@
 #include <string_view>
 #include <utility>
 
-#include "internal/blockchain/Params.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/api/network/Blockchain.hpp"
+#include "internal/blockchain/Params.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"

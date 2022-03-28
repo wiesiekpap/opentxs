@@ -304,7 +304,7 @@ auto ServerConnection::process_incoming(const zeromq::Message& in) -> void
 
         const auto message = otx::Reply::Factory(api_, proto);
 
-        if (false == message->Validate()) {
+        if (false == message.Validate()) {
             throw std::runtime_error{"Invalid message"};
         }
 
@@ -355,11 +355,11 @@ auto ServerConnection::register_for_push(
         otx::ServerRequestType::Activate,
         0,
         reason);
-    request->SetIncludeNym(true, reason);
+    request.SetIncludeNym(true, reason);
     auto message = zmq::Message{};
     message.AddFrame();
     auto serialized = proto::ServerRequest{};
-    if (false == request->Serialize(serialized)) {
+    if (false == request.Serialize(serialized)) {
         LogVerbose()(OT_PRETTY_CLASS())("Failed to serialize request.").Flush();
 
         return;
