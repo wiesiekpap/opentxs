@@ -507,6 +507,7 @@ struct Network : virtual public node::Manager {
     virtual auto GetTransactions(const identifier::Nym& account) const noexcept
         -> UnallocatedVector<block::pTxid> = 0;
     virtual auto IsSynchronized() const noexcept -> bool = 0;
+    virtual auto IsWalletScanEnabled() const noexcept -> bool = 0;
     virtual auto JobReady(const PeerManager::Task type) const noexcept
         -> void = 0;
     virtual auto Mempool() const noexcept -> const internal::Mempool& = 0;
@@ -587,6 +588,11 @@ struct WalletDatabase {
     using Pattern = std::pair<ElementID, Vector<std::byte>>;
     using Patterns = Vector<Pattern>;
     using MatchingIndices = Vector<Bip32Index>;
+    using MatchedTransaction = std::pair<
+        MatchingIndices,
+        std::shared_ptr<const block::bitcoin::Transaction>>;
+    using BlockMatches = Map<block::pTxid, MatchedTransaction>;
+    using BatchedMatches = Map<block::Position, BlockMatches>;
     using UTXO = std::pair<
         blockchain::block::Outpoint,
         std::unique_ptr<block::bitcoin::Output>>;
@@ -630,9 +636,9 @@ struct WalletDatabase {
         const SubchainIndex& index,
         alloc::Resource* alloc = alloc::System()) const noexcept
         -> Patterns = 0;
-    virtual auto GetSubchainID(
-        const NodeID& balanceNode,
-        const Subchain subchain) const noexcept -> pSubchainIndex = 0;
+    virtual auto GetPosition() const noexcept -> block::Position = 0;
+    virtual auto GetSubchainID(const NodeID& account, const Subchain subchain)
+        const noexcept -> pSubchainIndex = 0;
     virtual auto GetTransactions() const noexcept
         -> UnallocatedVector<block::pTxid> = 0;
     virtual auto GetTransactions(const identifier::Nym& account) const noexcept
@@ -642,7 +648,7 @@ struct WalletDatabase {
     virtual auto GetUnspentOutputs(alloc::Resource* alloc = alloc::System())
         const noexcept -> Vector<UTXO> = 0;
     virtual auto GetUnspentOutputs(
-        const NodeID& balanceNode,
+        const NodeID& account,
         const Subchain subchain,
         alloc::Resource* alloc = alloc::System()) const noexcept
         -> Vector<UTXO> = 0;
@@ -663,7 +669,7 @@ struct WalletDatabase {
         const block::Position& position) const noexcept -> bool = 0;
 
     virtual auto AddConfirmedTransaction(
-        const NodeID& balanceNode,
+        const NodeID& account,
         const SubchainIndex& index,
         const block::Position& block,
         const std::size_t blockIndex,
@@ -671,8 +677,14 @@ struct WalletDatabase {
         const block::bitcoin::Transaction& transaction,
         TXOs& txoCreated,
         TXOs& txoConsumed) noexcept -> bool = 0;
+    virtual auto AddConfirmedTransactions(
+        const NodeID& account,
+        const SubchainIndex& index,
+        const BatchedMatches& transactions,
+        TXOs& txoCreated,
+        TXOs& txoConsumed) noexcept -> bool = 0;
     virtual auto AddMempoolTransaction(
-        const NodeID& balanceNode,
+        const NodeID& account,
         const Subchain subchain,
         const Vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction,
@@ -695,7 +707,7 @@ struct WalletDatabase {
         const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         const node::HeaderOracle& headers,
-        const NodeID& balanceNode,
+        const NodeID& account,
         const Subchain subchain,
         const SubchainIndex& index,
         const UnallocatedVector<block::Position>& reorg) noexcept -> bool = 0;

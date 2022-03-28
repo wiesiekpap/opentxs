@@ -128,20 +128,16 @@ public:
     ~DeterministicStateData() final = default;
 
 private:
-    using MatchedTransaction = std::pair<
-        Vector<Bip32Index>,
-        std::shared_ptr<const block::bitcoin::Transaction>>;
-    using BlockMatches = Map<block::pTxid, MatchedTransaction>;
-    using CachedMatches = Map<block::Position, BlockMatches>;
-    using CacheData = std::pair<Time, CachedMatches>;
+    using CacheData = std::pair<Time, WalletDatabase::BatchedMatches>;
     using Cache = libguarded::ordered_guarded<CacheData, std::shared_mutex>;
 
     mutable Cache cache_;
 
     auto CheckCache(const std::size_t outstanding, FinishedCallback cb)
         const noexcept -> void final;
-    auto flush_cache(CachedMatches& matches, FinishedCallback cb) const noexcept
-        -> void;
+    auto flush_cache(
+        WalletDatabase::BatchedMatches& matches,
+        FinishedCallback cb) const noexcept -> void;
 
     auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
         const noexcept -> Index final;
@@ -156,7 +152,7 @@ private:
     auto process(
         const block::Match match,
         const block::bitcoin::Transaction& tx,
-        MatchedTransaction& output) const noexcept -> void;
+        WalletDatabase::MatchedTransaction& output) const noexcept -> void;
     auto ReportScan(const block::Position& pos) const noexcept -> void final;
 
     DeterministicStateData() = delete;

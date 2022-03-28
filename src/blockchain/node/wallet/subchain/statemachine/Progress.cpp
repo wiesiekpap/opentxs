@@ -12,10 +12,12 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <iterator>
+#include <memory>
 #include <optional>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
+#include "blockchain/node/wallet/subchain/statemachine/ElementCache.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
@@ -65,9 +67,11 @@ auto Progress::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
 
 auto Progress::Imp::process_update(Message&& msg) noexcept -> void
 {
+    const auto start = Clock::now();
     auto clean = Set<ScanStatus>{get_allocator()};
     auto dirty = Set<block::Position>{get_allocator()};
     decode(parent_.api_, msg, clean, dirty);
+    const auto decoded = Clock::now();
 
     OT_ASSERT(0u == dirty.size());
     OT_ASSERT(0u < clean.size());
@@ -80,6 +84,19 @@ auto Progress::Imp::process_update(Message&& msg) noexcept -> void
         last = best;
         notify(best);
     }
+
+    const auto database = Clock::now();
+    parent_.element_cache_.lock()->Forget(best);
+    const auto cache = Clock::now();
+    log_(OT_PRETTY_CLASS())(name_)(" time to decode update: ")(
+        std::chrono::nanoseconds{decoded - start})
+        .Flush();
+    log_(OT_PRETTY_CLASS())(name_)(" time to update database ")(
+        std::chrono::nanoseconds{database - decoded})
+        .Flush();
+    log_(OT_PRETTY_CLASS())(name_)(" time to update cache: ")(
+        std::chrono::nanoseconds{cache - database})
+        .Flush();
 }
 }  // namespace opentxs::blockchain::node::wallet
 

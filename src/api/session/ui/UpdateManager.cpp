@@ -10,6 +10,7 @@
 #include <functional>
 #include <mutex>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 #include "internal/network/zeromq/Context.hpp"

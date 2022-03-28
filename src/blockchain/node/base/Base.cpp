@@ -317,6 +317,8 @@ Base::Base(
     , work_promises_()
     , send_promises_()
     , heartbeat_(api_.Network().Asio().Internal().GetTimer())
+    , header_sync_()
+    , filter_sync_()
     , state_(State::UpdatingHeaders)
     , init_promise_()
     , init_(init_promise_.get_future())
@@ -593,6 +595,23 @@ auto Base::init() noexcept -> void
     reset_heartbeat();
 }
 
+auto Base::IsWalletScanEnabled() const noexcept -> bool
+{
+    switch (state_.load()) {
+        case State::UpdatingHeaders:
+        case State::UpdatingBlocks:
+        case State::UpdatingFilters: {
+
+            return false;
+        }
+        case State::UpdatingSyncData:
+        case State::Normal:
+        default: {
+            return true;
+        }
+    }
+}
+
 auto Base::is_synchronized_blocks() const noexcept -> bool
 {
     return block_.Tip().first >= this->target();
@@ -611,7 +630,7 @@ auto Base::is_synchronized_headers() const noexcept -> bool
     const auto target = remote_chain_height_.load();
     const auto progress = local_chain_height_.load();
 
-    return (progress >= target) || config_.use_sync_server_;
+    return (progress >= target);
 }
 
 auto Base::is_synchronized_sync_server() const noexcept -> bool
@@ -1188,15 +1207,20 @@ auto Base::state_machine() noexcept -> bool
 {
     if (false == running_.load()) { return false; }
 
-    LogDebug()(OT_PRETTY_CLASS())("Starting state machine for ")(print(chain_))
+    const auto& log = LogTrace();
+    log(OT_PRETTY_CLASS())("Starting state machine for ")(print(chain_))
         .Flush();
     state_machine_headers();
 
     switch (state_.load()) {
         case State::UpdatingHeaders: {
             if (is_synchronized_headers()) {
-                LogDetail()(OT_PRETTY_CLASS())(print(chain_))(
-                    " header oracle is synchronized")
+                header_sync_ = Clock::now();
+                const auto interval =
+                    std::chrono::duration_cast<std::chrono::nanoseconds>(
+                        header_sync_ - start_);
+                LogConsole()(print(chain_))(
+                    " block header chain synchronized in ")(interval)
                     .Flush();
                 using Policy = database::BlockStorage;
 
@@ -1206,19 +1230,19 @@ auto Base::state_machine() noexcept -> bool
                     state_transition_filters();
                 }
             } else {
-                LogDebug()(OT_PRETTY_CLASS())("updating ")(print(chain_))(
+                log(OT_PRETTY_CLASS())("updating ")(print(chain_))(
                     " header oracle")
                     .Flush();
             }
         } break;
         case State::UpdatingBlocks: {
             if (is_synchronized_blocks()) {
-                LogDetail()(OT_PRETTY_CLASS())(print(chain_))(
+                log(OT_PRETTY_CLASS())(print(chain_))(
                     " block oracle is synchronized")
                     .Flush();
                 state_transition_filters();
             } else {
-                LogDebug()(OT_PRETTY_CLASS())("updating ")(print(chain_))(
+                log(OT_PRETTY_CLASS())("updating ")(print(chain_))(
                     " block oracle")
                     .Flush();
 
@@ -1227,8 +1251,12 @@ auto Base::state_machine() noexcept -> bool
         } break;
         case State::UpdatingFilters: {
             if (is_synchronized_filters()) {
-                LogDetail()(OT_PRETTY_CLASS())(print(chain_))(
-                    " filter oracle is synchronized")
+                filter_sync_ = Clock::now();
+                const auto interval =
+                    std::chrono::duration_cast<std::chrono::nanoseconds>(
+                        filter_sync_ - start_);
+                LogConsole()(print(chain_))(" cfilter chain synchronized in ")(
+                    interval)
                     .Flush();
 
                 if (config_.provide_sync_server_) {
@@ -1237,7 +1265,7 @@ auto Base::state_machine() noexcept -> bool
                     state_transition_normal();
                 }
             } else {
-                LogDebug()(OT_PRETTY_CLASS())("updating ")(print(chain_))(
+                log(OT_PRETTY_CLASS())("updating ")(print(chain_))(
                     " filter oracle")
                     .Flush();
 
@@ -1246,12 +1274,12 @@ auto Base::state_machine() noexcept -> bool
         } break;
         case State::UpdatingSyncData: {
             if (is_synchronized_sync_server()) {
-                LogDetail()(OT_PRETTY_CLASS())(print(chain_))(
+                log(OT_PRETTY_CLASS())(print(chain_))(
                     " sync server is synchronized")
                     .Flush();
                 state_transition_normal();
             } else {
-                LogDebug()(OT_PRETTY_CLASS())("updating ")(print(chain_))(
+                log(OT_PRETTY_CLASS())("updating ")(print(chain_))(
                     " sync server")
                     .Flush();
 
@@ -1263,7 +1291,7 @@ auto Base::state_machine() noexcept -> bool
         }
     }
 
-    LogDebug()(OT_PRETTY_CLASS())("Completed state machine for ")(print(chain_))
+    log(OT_PRETTY_CLASS())("Completed state machine for ")(print(chain_))
         .Flush();
 
     return false;

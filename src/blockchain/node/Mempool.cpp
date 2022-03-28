@@ -97,6 +97,7 @@ struct Mempool::Imp {
     }
     auto Submit(Transactions&& txns) const noexcept -> void
     {
+        const auto now = Clock::now();
         auto lock = eLock{lock_};
 
         for (auto& tx : txns) {
@@ -109,7 +110,7 @@ struct Mempool::Imp {
             auto txid = Hash{tx->ID().Bytes()};
             const auto [it, added] = transactions_.try_emplace(txid, nullptr);
 
-            if (added) { unexpired_txid_.emplace(Clock::now(), txid); }
+            if (added) { unexpired_txid_.emplace(now, txid); }
 
             auto& existing = it->second;
 
@@ -117,7 +118,7 @@ struct Mempool::Imp {
                 existing = std::move(tx);
                 notify(txid);
                 active_.emplace(txid);
-                unexpired_tx_.emplace(Clock::now(), std::move(txid));
+                unexpired_tx_.emplace(now, std::move(txid));
             }
         }
     }
@@ -177,7 +178,7 @@ private:
     using Data = std::pair<Time, Hash>;
     using Cache = std::queue<Data>;
 
-    static constexpr auto tx_limit_ = std::chrono::hours{1};
+    static constexpr auto tx_limit_ = std::chrono::hours{2};
     static constexpr auto txid_limit_ = std::chrono::hours{24};
 
     const api::crypto::Blockchain& crypto_;

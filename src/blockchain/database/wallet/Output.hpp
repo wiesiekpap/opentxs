@@ -92,6 +92,7 @@ using SubchainID = Identifier;
 using Parent = node::internal::WalletDatabase;
 using NodeID = Parent::NodeID;
 using Subchain = Parent::Subchain;
+using BatchedMatches = Parent::BatchedMatches;
 using UTXO = Parent::UTXO;
 using TXOs = Parent::TXOs;
 
@@ -120,6 +121,7 @@ public:
         alloc::Resource* alloc) const noexcept -> Vector<UTXO>;
     auto GetOutputTags(const block::Outpoint& output) const noexcept
         -> UnallocatedSet<node::TxoTag>;
+    auto GetPosition() const noexcept -> block::Position;
     auto GetTransactions() const noexcept -> UnallocatedVector<block::pTxid>;
     auto GetTransactions(const identifier::Nym& account) const noexcept
         -> UnallocatedVector<block::pTxid>;
@@ -139,6 +141,12 @@ public:
         const std::size_t blockIndex,
         const Vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction,
+        TXOs& txoCreated,
+        TXOs& txoConsumed) noexcept -> bool;
+    auto AddConfirmedTransactions(
+        const NodeID& account,
+        const SubchainID& index,
+        const BatchedMatches& transactions,
         TXOs& txoCreated,
         TXOs& txoConsumed) noexcept -> bool;
     auto AddMempoolTransaction(

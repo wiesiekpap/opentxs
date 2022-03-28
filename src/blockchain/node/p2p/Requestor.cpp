@@ -18,6 +18,7 @@
 #include <string_view>
 #include <utility>
 
+#include "internal/blockchain/Params.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/network/zeromq/Context.hpp"
@@ -516,6 +517,11 @@ auto Requestor::Imp::state_sync(const Work work, Message&& msg) noexcept -> void
 
 auto Requestor::Imp::transition_state_run() noexcept -> void
 {
+    const auto checkpoint =
+        params::Data::Chains().at(chain_).checkpoint_.height_;
+
+    if (remote_position_.first < checkpoint) { return; }
+
     if (local_position_ != remote_position_) { return; }
 
     if (0 < queue_.size()) { return; }

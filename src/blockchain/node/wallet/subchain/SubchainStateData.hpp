@@ -141,8 +141,8 @@ public:
     using SubchainIndex = WalletDatabase::pSubchainIndex;
     using ElementCache =
         libguarded::shared_guarded<wallet::ElementCache, std::shared_mutex>;
-    // TODO callback should operate on a Vector<block::Position>
-    using FinishedCallback = std::function<void(const block::Position&)>;
+    using FinishedCallback =
+        std::function<void(const Vector<block::Position>&)>;
 
     const api::Session& api_;
     const node::internal::Network& node_;
@@ -180,7 +180,7 @@ public:
         WalletDatabase::ElementMap& output) const noexcept -> void;
     auto ProcessBlock(
         const block::Position& position,
-        const block::bitcoin::Block& block) const noexcept -> void;
+        const block::bitcoin::Block& block) const noexcept -> bool;
     auto ProcessTransaction(
         const block::bitcoin::Transaction& tx) const noexcept -> void;
     virtual auto ReportScan(const block::Position& pos) const noexcept -> void;
@@ -302,10 +302,14 @@ private:
         block::Position& highestTested,
         Vector<ScanStatus>& out) const noexcept
         -> std::optional<block::Position>;
-    auto select_matches(
+    auto select_all(
         const block::Position& block,
         const Elements& in,
         MatchesToTest& out) const noexcept -> void;
+    auto select_matches(
+        const block::Position& block,
+        const Elements& in,
+        MatchesToTest& out) const noexcept -> bool;
     auto select_targets(
         const BlockHashes& hashes,
         const Elements& in,
@@ -331,9 +335,9 @@ private:
     auto process_watchdog_ack(Message&& in) noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto state_reorg(const Work work, Message&& msg) noexcept -> void;
-    auto transition_state_normal() noexcept -> void;
-    auto transition_state_reorg(StateSequence id) noexcept -> void;
-    auto transition_state_shutdown() noexcept -> void;
+    auto transition_state_normal() noexcept -> bool;
+    auto transition_state_reorg(StateSequence id) noexcept -> bool;
+    auto transition_state_shutdown() noexcept -> bool;
 
     SubchainStateData(
         const api::Session& api,
