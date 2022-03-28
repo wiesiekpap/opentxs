@@ -14,6 +14,7 @@
 #include <future>
 #include <iterator>
 #include <memory>
+#include <numeric>
 #include <sstream>
 #include <stdexcept>
 #include <type_traits>
@@ -22,6 +23,7 @@
 #include "blockchain/node/wallet/subchain/ScriptForm.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/network/Asio.hpp"
+#include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
@@ -162,6 +164,8 @@ SubchainStateData::SubchainStateData(
     , to_children_(pipeline_.Internal().ExtraSocket(0))
     , pending_state_(State::normal)
     , state_(State::normal)
+    , filter_sizes_(alloc)
+    , elements_per_cfilter_(0)
     , reorgs_(alloc)
     , progress_(std::nullopt)
     , rescan_(std::nullopt)
@@ -795,29 +799,67 @@ auto SubchainStateData::scan(
         auto highestClean = std::optional<block::Position>{std::nullopt};
         auto resultMap = [&] {
             auto results = wallet::MatchCache::Results{get_allocator()};
-            auto handle = element_cache_.lock_shared();
-            const auto& elements = handle->GetElements();
-            constexpr auto GetBatchSize = [](std::size_t in) {
-                constexpr auto cap = std::size_t{1000};
-                constexpr auto max = std::size_t{10000};
-                constexpr auto min = std::size_t{100};
-                static_assert(max > min);
+            const auto elementsPerFilter = [this] {
+                const auto cached = elements_per_cfilter_.load();
 
-                if (in > (max - min)) {
+                if (0u == cached) {
+                    const auto chainDefault =
+                        params::Data::Chains()
+                            .at(chain_)
+                            .cfilter_element_count_estimate_;
 
-                    return min;
+                    return std::max<std::size_t>(1u, chainDefault);
                 } else {
 
-                    return std::min((max - in), cap);
+                    return cached;
                 }
+            }();
+
+            OT_ASSERT(0u < elementsPerFilter);
+
+            constexpr auto GetBatchSize = [](std::size_t cfilter,
+                                             std::size_t user) {
+                constexpr auto cfilterWeight = std::size_t{1u};
+                constexpr auto walletWeight = std::size_t{5u};
+                constexpr auto target = std::size_t{425000u};
+                constexpr auto max = std::size_t{10000u};
+
+                return std::min<std::size_t>(
+                    std::max<std::size_t>(
+                        (target * (cfilterWeight * walletWeight)) /
+                            ((cfilterWeight * cfilter) + (walletWeight * user)),
+                        1u),
+                    max);
             };
-            static_assert(GetBatchSize(0) == 1000);
-            static_assert(GetBatchSize(7999) == 1000);
-            static_assert(GetBatchSize(9000) == 1000);
-            static_assert(GetBatchSize(9899) == 101);
-            static_assert(GetBatchSize(9900) == 100);
-            static_assert(GetBatchSize(10000) == 100);
-            const auto scanBatch = GetBatchSize(elements.size());
+            static_assert(GetBatchSize(1, 1) == 10000);
+            static_assert(GetBatchSize(25, 40) == 9444);
+            static_assert(GetBatchSize(1000, 40) == 1770);
+            static_assert(GetBatchSize(25, 400) == 1049);
+            static_assert(GetBatchSize(1000, 400) == 708);
+            static_assert(GetBatchSize(25, 4000) == 106);
+            static_assert(GetBatchSize(25, 40000) == 10);
+            static_assert(GetBatchSize(1000, 40000) == 10);
+            static_assert(GetBatchSize(25, 400000) == 1);
+            static_assert(GetBatchSize(25, 4000000) == 1);
+            static_assert(GetBatchSize(10000, 4000000) == 1);
+            auto handle = element_cache_.lock_shared();
+            const auto& elements = handle->GetElements();
+            const auto elementCount =
+                std::max<std::size_t>(elements.size(), 1u);
+            // NOTE attempting to scan too many filters at once causes this
+            // function to take excessive time to execute, which means the Scan
+            // and Rescan Actors will be unable to process new messages for an
+            // extended amount of time which has many negative side effects. The
+            // GetBatchSize function attempts to prevent this from happening by
+            // limiting the batch size to a reasonable value based on the
+            // average cfilter element count (estimated) and match set for this
+            // subchain (known).
+            const auto scanBatch =
+                GetBatchSize(elementsPerFilter, elementCount);
+            log(OT_PRETTY_CLASS())(name)(" filter size: ")(
+                elementsPerFilter)(" wallet size: ")(
+                elementCount)(" batch size: ")(scanBatch)
+                .Flush();
             const auto stopHeight = std::min(
                 std::min<block::Height>(
                     startHeight + scanBatch - 1, best.first),
@@ -857,17 +899,29 @@ auto SubchainStateData::scan(
             select_targets(*handle, blocks, elements, startHeight, selected);
             // TODO pre-hash all the selected targets while cfilters are loading
             const auto cfilters = filterFuture.get();
+            const auto cfilterCount = cfilters.size();
 
-            OT_ASSERT(cfilters.size() <= blocks.size());
+            OT_ASSERT(cfilterCount <= blocks.size());
 
             auto isClean{true};
             auto s = selected.begin();
             auto f = cfilters.begin();
             auto i = startHeight;
+            auto blankFilterSizes = Deque<std::size_t>{get_allocator()};
+            auto& filterSizes = [&]() -> Deque<std::size_t>& {
+                if (rescan) {
+
+                    return blankFilterSizes;
+                } else {
+
+                    return filter_sizes_;
+                }
+            }();
 
             for (auto end = cfilters.end(); f != end; ++f, ++s, ++i) {
                 const auto& blockHash = s->first;
                 const auto& cfilter = *f;
+                filterSizes.push_back(cfilter.ElementCount());
                 auto testPosition = block::Position{i, blockHash};
 
                 if (blockHash.empty()) {
@@ -897,6 +951,21 @@ auto SubchainStateData::scan(
                 }
 
                 highestTested = std::move(testPosition);
+            }
+
+            if (false == rescan) {
+                // NOTE these statements calculate a 1000 block (or whatever
+                // cfilter_size_window_ is set to) simple moving average of
+                // cfilter element sizes
+
+                while (cfilter_size_window_ < filterSizes.size()) {
+                    filterSizes.pop_front();
+                }
+
+                const auto totalCfilterElements = std::accumulate(
+                    filterSizes.begin(), filterSizes.end(), std::size_t{0u});
+                elements_per_cfilter_.store(std::max<std::size_t>(
+                    1, totalCfilterElements / filterSizes.size()));
             }
 
             return results;

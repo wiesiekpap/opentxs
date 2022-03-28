@@ -35,6 +35,8 @@
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Types.hpp"
+#include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -78,22 +80,25 @@ Rescan::Imp::Imp(
 auto Rescan::Imp::adjust_last_scanned(
     std::optional<block::Position>&& highestClean) noexcept -> void
 {
-    const auto effective = highestClean.value_or(parent_.null_position_);
+    // NOTE before any dirty blocks have been received last_scanned_ simply
+    // follows the progress of the Scan operation. After Rescan is enabled
+    // last_scanned_ is controlled by work() until rescan catches up and active_
+    // is false.
 
     if (active_) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" ignoring scan position ")(
-            opentxs::print(effective))(" due to active rescan in progress")
+        log_(OT_PRETTY_CLASS())(parent_.name_)(
+            " ignoring scan position update due to active rescan in progress")
             .Flush();
+    } else {
+        const auto effective = highestClean.value_or(parent_.null_position_);
 
-        return;
-    }
+        if (highestClean.has_value()) {
+            log_(OT_PRETTY_CLASS())(parent_.name_)(" last scanned updated to ")(
+                opentxs::print(effective))
+                .Flush();
 
-    if (highestClean.has_value()) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" last scanned updated to ")(
-            opentxs::print(effective))
-            .Flush();
-
-        last_scanned_ = std::move(highestClean);
+            last_scanned_ = std::move(highestClean);
+        }
     }
 }
 
@@ -249,15 +254,40 @@ auto Rescan::Imp::prune() noexcept -> void
 auto Rescan::Imp::stop() const noexcept -> block::Height
 {
     if (0u == dirty_.size()) {
+        log_(OT_PRETTY_CLASS())(parent_.name_)(
+            " dirty list is empty so rescan may proceed to the end of the "
+            "chain")
+            .Flush();
 
         return std::numeric_limits<block::Height>::max();
     }
 
-    return std::max<block::Height>(0, dirty_.cbegin()->first - 1);
+    const auto& lowestDirty = *dirty_.cbegin();
+    const auto stopHeight = std::max<block::Height>(0, lowestDirty.first - 1);
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" first dirty block is ")(
+        print(lowestDirty))(" so rescan must stop at height ")(
+        stopHeight)(" until this block has been processed")
+        .Flush();
+
+    return stopHeight;
 }
 
 auto Rescan::Imp::work() noexcept -> bool
 {
+    auto post = ScopeGuard{[&] {
+        if (last_scanned_.has_value()) {
+            auto clean = Vector<ScanStatus>{get_allocator()};
+            to_progress_.SendDeferred([&] {
+                clean.emplace_back(
+                    ScanState::rescan_clean, last_scanned_.value());
+                auto out = MakeWork(Work::update);
+                encode(clean, out);
+
+                return out;
+            }());
+        }
+    }};
+
     if (false == active_) {
         log_(OT_PRETTY_CLASS())(parent_.name_)(" rescan is not necessary")
             .Flush();
@@ -265,24 +295,11 @@ auto Rescan::Imp::work() noexcept -> bool
         return false;
     }
 
-    const auto notify = [&] {
-        auto clean = Vector<ScanStatus>{get_allocator()};
-        to_progress_.SendDeferred([&] {
-            clean.emplace_back(ScanState::rescan_clean, last_scanned_.value());
-            auto out = MakeWork(Work::update);
-            encode(clean, out);
-
-            return out;
-        }());
-    };
-
     if (caught_up()) {
         active_ = false;
         log_(OT_PRETTY_CLASS())(parent_.name_)(
             " rescan has caught up to current filter tip")
             .Flush();
-
-        if (last_scanned_.has_value()) { notify(); }
 
         return false;
     }
@@ -292,8 +309,10 @@ auto Rescan::Imp::work() noexcept -> bool
     const auto stopHeight = stop();
 
     if (highestTested.first >= stopHeight) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(
-            " waiting for block processing to finish before continuing rescan")
+        log_(OT_PRETTY_CLASS())(parent_.name_)(" waiting for first of ")(
+            dirty_.size())(
+            " blocks to finish processing before continuing rescan "
+            "beyond height ")(highestTested.first)
             .Flush();
 
         return false;
@@ -317,7 +336,6 @@ auto Rescan::Imp::work() noexcept -> bool
         log_(OT_PRETTY_CLASS())(parent_.name_)(" progress updated to ")(
             opentxs::print(last_scanned_.value()))
             .Flush();
-        notify();
     } else {
         // NOTE: this should only happen if the genesis block has multiple
         // matching transactions, not all of which were discovered by the

@@ -600,14 +600,15 @@ auto Base::IsWalletScanEnabled() const noexcept -> bool
     switch (state_.load()) {
         case State::UpdatingHeaders:
         case State::UpdatingBlocks:
-        case State::UpdatingFilters: {
+        case State::UpdatingFilters:
+        case State::UpdatingSyncData:
+        case State::Normal: {
+
+            return true;
+        }
+        default: {
 
             return false;
-        }
-        case State::UpdatingSyncData:
-        case State::Normal:
-        default: {
-            return true;
         }
     }
 }
