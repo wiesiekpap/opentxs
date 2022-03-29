@@ -274,6 +274,13 @@ auto Job::process_process(block::Position&& position) noexcept -> void
     OT_FAIL;
 }
 
+auto Job::process_reprocess(Message&& msg) noexcept -> void
+{
+    LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type").Flush();
+
+    OT_FAIL;
+}
+
 auto Job::process_startup(Message&& msg) noexcept -> void
 {
     state_ = State::normal;
@@ -333,6 +340,9 @@ auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::watchdog: {
             process_watchdog(std::move(msg));
+        } break;
+        case Work::reprocess: {
+            process_reprocess(std::move(msg));
         } break;
         case Work::init: {
             do_init();

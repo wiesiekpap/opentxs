@@ -12,7 +12,10 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <algorithm>
+#include <chrono>
+#include <future>
 #include <memory>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -256,6 +259,41 @@ auto Process::Imp::process_process(block::Position&& pos) noexcept -> void
         log_(OT_PRETTY_CLASS())(parent_.name_)(" finished processing block ")(
             print(pos))
             .Flush();
+    }
+
+    do_work();
+}
+
+auto Process::Imp::process_reprocess(Message&& msg) noexcept -> void
+{
+    log_(OT_PRETTY_CLASS())(parent_.name_)(" received re-process request")
+        .Flush();
+    auto dirty = Vector<ScanStatus>{get_allocator()};
+    extract_dirty(parent_.api_, msg, dirty);
+
+    for (auto& [type, position] : dirty) {
+        log_(OT_PRETTY_CLASS())(parent_.name_)(
+            " scheduling re-processing for block ")(opentxs::print(position))
+            .Flush();
+        auto future = parent_.node_.BlockOracle().LoadBitcoin(position.second);
+        static constexpr auto ready = std::future_status::ready;
+        using namespace std::literals;
+        // NOTE re-process requests are holding up the Rescan job from updating
+        // its last scanned value, so instead of treating them like new process
+        // requests from the Scan we expedite them as much as is reasonable.
+
+        if (ready == future.wait_for(1s)) {
+            log_(OT_PRETTY_CLASS())(parent_.name_)(" adding block ")(
+                opentxs::print(position))(
+                " to front of process queue since it is already downloaded")
+                .Flush();
+            ready_.emplace(std::move(position), future.get());
+        } else {
+            log_(OT_PRETTY_CLASS())(parent_.name_)(" adding block ")(
+                opentxs::print(position))(" to front of download queue")
+                .Flush();
+            waiting_.emplace_front(std::move(position));
+        }
     }
 
     do_work();
