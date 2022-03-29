@@ -128,7 +128,7 @@ TEST_F(Test_Message, getblocks)
     }();
 
     std::unique_ptr<bitcoin::Header> pHeader{
-        ot::factory::BitcoinP2PHeader(api_, frame.at(0))};
+        ot::factory::BitcoinP2PHeader(api_, ot::blockchain::Type::BitcoinCash, frame.at(0))};
 
     if (payload->size() > 0) {
         std::unique_ptr<bitcoin::Message> pLoadedMsg{

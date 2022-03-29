@@ -100,6 +100,8 @@ auto BlockHash(
         case Type::Litecoin_testnet4:
         case Type::PKT:
         case Type::PKT_testnet:
+        case Type::BitcoinSV:
+        case Type::BitcoinSV_testnet3:
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
@@ -141,6 +143,8 @@ auto FilterHash(
         case Type::Litecoin_testnet4:
         case Type::PKT:
         case Type::PKT_testnet:
+        case Type::BitcoinSV:
+        case Type::BitcoinSV_testnet3:
         case Type::UnitTest:
         default: {
             return BlockHash(api, chain, input, output);
@@ -186,6 +190,8 @@ auto MerkleHash(
         case Type::Ethereum_ropsten:
         case Type::Litecoin:
         case Type::Litecoin_testnet4:
+        case Type::BitcoinSV:
+        case Type::BitcoinSV_testnet3:
         case Type::UnitTest:
         default: {
             return BlockHash(api, chain, input, output);
@@ -211,6 +217,8 @@ auto P2PMessageHash(
         case Type::Litecoin_testnet4:
         case Type::PKT:
         case Type::PKT_testnet:
+        case Type::BitcoinSV:
+        case Type::BitcoinSV_testnet3:
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
@@ -246,6 +254,8 @@ auto ProofOfWorkHash(
         case Type::Ethereum_ropsten:
         case Type::PKT:
         case Type::PKT_testnet:
+        case Type::BitcoinSV:
+        case Type::BitcoinSV_testnet3:
         default: {
             return BlockHash(api, chain, input, output);
         }
@@ -270,6 +280,8 @@ auto PubkeyHash(
         case Type::Litecoin_testnet4:
         case Type::PKT:
         case Type::PKT_testnet:
+        case Type::BitcoinSV:
+        case Type::BitcoinSV_testnet3:
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
@@ -296,6 +308,8 @@ auto ScriptHash(
         case Type::Litecoin_testnet4:
         case Type::PKT:
         case Type::PKT_testnet:
+        case Type::BitcoinSV:
+        case Type::BitcoinSV_testnet3:
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
@@ -322,6 +336,8 @@ auto ScriptHashSegwit(
         case Type::Litecoin_testnet4:
         case Type::PKT:
         case Type::PKT_testnet:
+        case Type::BitcoinSV:
+        case Type::BitcoinSV_testnet3:
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
@@ -369,6 +385,8 @@ auto TransactionHash(
         case Type::Litecoin_testnet4:
         case Type::PKT:
         case Type::PKT_testnet:
+        case Type::BitcoinSV:
+        case Type::BitcoinSV_testnet3:
         case Type::UnitTest:
         default: {
             return BlockHash(api, chain, input, output);
@@ -454,6 +472,16 @@ auto Data::Bip158() noexcept -> const FilterTypes&
              {cfilter::Type::Basic_BIP158, 0x0},
              {cfilter::Type::ES, 0x58},
          }},
+        {Type::BitcoinSV,
+         {
+             {cfilter::Type::Basic_BCHVariant, 0x0},
+             {cfilter::Type::ES, 0x58},
+         }},
+        {Type::BitcoinSV_testnet3,
+         {
+             {cfilter::Type::Basic_BCHVariant, 0x0},
+             {cfilter::Type::ES, 0x58},
+         }},
         {Type::UnitTest,
          {
              {cfilter::Type::Basic_BIP158, 0x0},
@@ -499,6 +527,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "6"},
              cfilter::Type::ES,
              p2p::Protocol::bitcoin,
+             70015,
              3652501241,
              8333,
              {
@@ -558,6 +587,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "9"},
              cfilter::Type::ES,
              p2p::Protocol::bitcoin,
+             70015,
              118034699,
              18333,
              {
@@ -614,6 +644,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "a"},
              cfilter::Type::ES,
              p2p::Protocol::bitcoin,
+             70015,
              3908297187,
              8333,
              {
@@ -670,6 +701,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "a"},
              cfilter::Type::ES,
              p2p::Protocol::bitcoin,
+             70015,
              4109624820,
              18333,
              {
@@ -710,6 +742,7 @@ auto Data::Chains() noexcept -> const ChainData&
              {},
              p2p::Protocol::ethereum,
              0,
+             0,
              30303,
              {},
              0,
@@ -739,6 +772,7 @@ auto Data::Chains() noexcept -> const ChainData&
              {0, "", "", ""},
              {},
              p2p::Protocol::ethereum,
+             0,
              0,
              30303,
              {},
@@ -785,6 +819,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "1"},
              cfilter::Type::ES,
              p2p::Protocol::bitcoin,
+             70015,
              3686187259,
              9333,
              {
@@ -841,6 +876,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "b"},
              cfilter::Type::ES,
              p2p::Protocol::bitcoin,
+             70015,
              4056470269,
              19335,
              {
@@ -1067,6 +1103,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "1"},
              cfilter::Type::ES,
              p2p::Protocol::bitcoin,
+             70015,
              137298172,
              64764,
              {
@@ -1112,6 +1149,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "c"},
              cfilter::Type::ES,
              p2p::Protocol::bitcoin,
+             70015,
              118034940,
              64764,
              {
@@ -1134,6 +1172,112 @@ auto Data::Chains() noexcept -> const ChainData&
              },
              100,
              25,
+         }},
+        {blockchain::Type::BitcoinSV,
+         {
+             true,
+             false,
+             false,
+             0,
+             opentxs::UnitType::Bsv,
+             Bip44Type::BITCOINSV,
+             486604799,  // 0x1d00ffff
+             "01000000000000000000000000000000000000000000000000000000000000000"
+             "00000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b"
+             "1e5e4a29ab5f49ffff001d1dac2b7c",
+             "6fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000",
+             "01000000000000000000000000000000000000000000000000000000000000000"
+             "00000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b"
+             "1e5e4a29ab5f49ffff001d1dac2b7c01010000000100000000000000000000000"
+             "00000000000000000000000000000000000000000ffffffff4d04ffff001d0104"
+             "455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f7"
+             "2206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f7220"
+             "62616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a"
+             "67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e5"
+             "1ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000",
+             {556767,
+              "2b66b102d8f8966ca9d04cdaafe000fc6fd915427156d901000000000000000"
+              "0",
+              "22938d4ece739b34d65de82f58c72c7a80d09bde4fd90201000000000000000"
+              "0",
+              "fb2e542d6e1aa15d763a3a1add8262fa7cb609063d8047372deae34118f8836"
+              "a"},
+             cfilter::Type::ES,
+             p2p::Protocol::bitcoin,
+             70016,
+             3908297187,
+             8333,
+             {
+                 "seed.bitcoinsv.io",
+                 "seed.cascharia.com",
+                 "seed.satoshisvision.network",
+             },
+             1000,
+             100,
+             {
+                 {Style::P2PKH, true},
+                 {Style::P2SH, true},
+                 {Style::P2WPKH, false},
+                 {Style::P2WSH, false},
+                 {Style::P2TR, false},
+             },
+             {
+                 {Style::P2PKH, "P2PKH"},
+             },
+             100,
+         }},
+        {blockchain::Type::BitcoinSV_testnet3,
+         {
+             true,
+             true,
+             false,
+             0,
+             opentxs::UnitType::Tnbsv,
+             Bip44Type::TESTNET,
+             486604799,  // 0x1d00ffff
+             "01000000000000000000000000000000000000000000000000000000000000000"
+             "00000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b"
+             "1e5e4adae5494dffff001d1aa4ae18",
+             "43497fd7f826957108f4a30fd9cec3aeba79972084e90ead01ea330900000000",
+             "01000000000000000000000000000000000000000000000000000000000000000"
+             "00000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b"
+             "1e5e4adae5494dffff001d1aa4ae1801010000000100000000000000000000000"
+             "00000000000000000000000000000000000000000ffffffff4d04ffff001d0104"
+             "455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f7"
+             "2206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f7220"
+             "62616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a"
+             "67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e5"
+             "1ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000",
+             {1479000,
+              "940feeb5ea744fad8ec32ed620023bf6de3718d3d7108cad220300000000000"
+              "0",
+              "173edd921667f2c301ad5fa37d1243ddf1789dad012ee2bde50100000000000"
+              "0",
+              "fb2e542d6e1aa15d763a3a1add8262fa7cb609063d8047372deae34118f8836"
+              "a"},
+             cfilter::Type::ES,
+             p2p::Protocol::bitcoin,
+             70016,
+             4109624820,
+             18333,
+             {
+                 "testnet-seed.bitcoinsv.io",
+                 "testnet-seed.cascharia.com",
+                 "testnet-seed.bitcoincloud.net",
+             },
+             1000,
+             100,
+             {
+                 {Style::P2PKH, true},
+                 {Style::P2SH, true},
+                 {Style::P2WPKH, false},
+                 {Style::P2WSH, false},
+                 {Style::P2TR, false},
+             },
+             {
+                 {Style::P2PKH, "P2PKH"},
+             },
+             100,
          }},
         {blockchain::Type::UnitTest,
          {
@@ -1166,6 +1310,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "8"},
              cfilter::Type::ES,
              p2p::Protocol::bitcoin,
+             70015,
              3669344250,
              18444,
              {},
@@ -1281,6 +1426,28 @@ auto Data::Filters() noexcept -> const FilterData&
               {"155e1700eff3f9019ba1716316295a8753ec44d2a7730eee1c1c73e2b511e13"
                "4",
                "02649a42b26e818d40"}},
+         }},
+        {blockchain::Type::BitcoinSV,
+         {
+             {cfilter::Type::Basic_BCHVariant,
+              {"9f3c30f0c37fb977cf3e1a3173c631e8ff119ad3088b6f5b2bced0802139c20"
+               "2",
+               "017fa880"}},
+             {cfilter::Type::ES,
+              {"fad52acc389a391c1d6d94e8984fe77323fbda24fb31299b88635d7bee0278e"
+               "8",
+               "049dc75e903561289b0029337bcf4e6720"}},
+         }},
+        {blockchain::Type::BitcoinSV_testnet3,
+         {
+             {cfilter::Type::Basic_BCHVariant,
+              {"50b781aed7b7129012a6d20e2d040027937f3affaee573779908ebb77945582"
+               "1",
+               "019dfca8"}},
+             {cfilter::Type::ES,
+              {"995cfe5d055c9158c5a388b71fb2ddbe292c9ca2d30dca91359d8cbbe4603e0"
+               "2",
+               "04e2f5880d851afd74c662d38d49e29130"}},
          }},
         {blockchain::Type::UnitTest,
          {
@@ -1414,6 +1581,38 @@ auto Data::Services() noexcept -> const ServiceBits&
              {p2p::bitcoin::Service::Bit7, p2p::Service::CompactFilters},
              {p2p::bitcoin::Service::Bit8, p2p::Service::Segwit2X},
              {p2p::bitcoin::Service::Bit11, p2p::Service::Limited},
+         }},
+        {blockchain::Type::BitcoinSV,
+         {
+             {p2p::bitcoin::Service::None, p2p::Service::None},
+             {p2p::bitcoin::Service::Bit1, p2p::Service::Network},
+             {p2p::bitcoin::Service::Bit2, p2p::Service::UTXO},
+             {p2p::bitcoin::Service::Bit3, p2p::Service::Bloom},
+             {p2p::bitcoin::Service::Bit4, p2p::Service::Witness},
+             {p2p::bitcoin::Service::Bit5, p2p::Service::XThin},
+             {p2p::bitcoin::Service::Bit6, p2p::Service::BitcoinCash},
+             {p2p::bitcoin::Service::Bit7, p2p::Service::Graphene},
+             {p2p::bitcoin::Service::Bit8, p2p::Service::WeakBlocks},
+             {p2p::bitcoin::Service::Bit9, p2p::Service::CompactFilters},
+             {p2p::bitcoin::Service::Bit10, p2p::Service::XThinner},
+             {p2p::bitcoin::Service::Bit11, p2p::Service::Limited},
+             {p2p::bitcoin::Service::Bit25, p2p::Service::Avalanche},
+         }},
+        {blockchain::Type::BitcoinSV_testnet3,
+         {
+             {p2p::bitcoin::Service::None, p2p::Service::None},
+             {p2p::bitcoin::Service::Bit1, p2p::Service::Network},
+             {p2p::bitcoin::Service::Bit2, p2p::Service::UTXO},
+             {p2p::bitcoin::Service::Bit3, p2p::Service::Bloom},
+             {p2p::bitcoin::Service::Bit4, p2p::Service::Witness},
+             {p2p::bitcoin::Service::Bit5, p2p::Service::XThin},
+             {p2p::bitcoin::Service::Bit6, p2p::Service::BitcoinCash},
+             {p2p::bitcoin::Service::Bit7, p2p::Service::Graphene},
+             {p2p::bitcoin::Service::Bit8, p2p::Service::WeakBlocks},
+             {p2p::bitcoin::Service::Bit9, p2p::Service::CompactFilters},
+             {p2p::bitcoin::Service::Bit10, p2p::Service::XThinner},
+             {p2p::bitcoin::Service::Bit11, p2p::Service::Limited},
+             {p2p::bitcoin::Service::Bit25, p2p::Service::Avalanche},
          }},
         {blockchain::Type::UnitTest,
          {

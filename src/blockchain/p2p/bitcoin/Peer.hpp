@@ -105,9 +105,9 @@ public:
         const UnallocatedCString& shutdown,
         const int id,
         std::unique_ptr<internal::Address> address,
+        const ProtocolVersion protocol = 0,
         const bool relay = true,
-        const UnallocatedSet<p2p::Service>& localServices = {},
-        const ProtocolVersion protocol = 0) noexcept;
+        const UnallocatedSet<p2p::Service>& localServices = {}) noexcept;
 
     ~Peer() final;
 

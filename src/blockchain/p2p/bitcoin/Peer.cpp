@@ -87,7 +87,8 @@ auto BitcoinP2PPeerLegacy(
     const blockchain::database::BlockStorage policy,
     const int id,
     std::unique_ptr<blockchain::p2p::internal::Address> address,
-    const UnallocatedCString& shutdown)
+    const UnallocatedCString& shutdown,
+    const blockchain::p2p::bitcoin::ProtocolVersion p2p_protocol_version)
     -> std::unique_ptr<blockchain::p2p::internal::Peer>
 {
     namespace p2p = blockchain::p2p;
@@ -128,7 +129,8 @@ auto BitcoinP2PPeerLegacy(
         policy,
         shutdown,
         id,
-        std::move(address));
+        std::move(address),
+        p2p_protocol_version);
 }
 }  // namespace opentxs::factory
 
@@ -186,9 +188,9 @@ Peer::Peer(
     const UnallocatedCString& shutdown,
     const int id,
     std::unique_ptr<internal::Address> address,
+    const ProtocolVersion protocol,
     const bool relay,
-    const UnallocatedSet<p2p::Service>& localServices,
-    const ProtocolVersion protocol) noexcept
+    const UnallocatedSet<p2p::Service>& localServices) noexcept
     : p2p::implementation::Peer(
           api,
           config,
@@ -345,7 +347,9 @@ auto Peer::get_local_services(
             output.emplace(p2p::Service::Witness);
         } break;
         case blockchain::Type::BitcoinCash:
-        case blockchain::Type::BitcoinCash_testnet3: {
+        case blockchain::Type::BitcoinCash_testnet3:
+        case blockchain::Type::BitcoinSV:
+        case blockchain::Type::BitcoinSV_testnet3: {
             output.emplace(p2p::Service::BitcoinCash);
         } break;
         case blockchain::Type::Unknown:
@@ -1487,7 +1491,7 @@ auto Peer::process_message(zmq::Message&& message) noexcept -> void
     const auto& headerBytes = body.at(1);
     const auto& payloadBytes = body.at(2);
     auto pHeader = std::unique_ptr<HeaderType>{
-        factory::BitcoinP2PHeader(api_, headerBytes)};
+        factory::BitcoinP2PHeader(api_, chain_, headerBytes)};
 
     if (false == bool(pHeader)) {
         log_()("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(
