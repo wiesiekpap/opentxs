@@ -525,6 +525,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2PKH, "P2PKH"},
              },
              100,
+             250,
          }},
         {blockchain::Type::Bitcoin_testnet3,
          {
@@ -580,6 +581,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2PKH, "P2PKH"},
              },
              100,
+             25,
          }},
         {blockchain::Type::BitcoinCash,
          {
@@ -635,6 +637,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2PKH, "P2PKH"},
              },
              100,
+             25,
          }},
         {blockchain::Type::BitcoinCash_testnet3,
          {
@@ -689,6 +692,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2PKH, "P2PKH"},
              },
              100,
+             25,
          }},
         {blockchain::Type::Ethereum_frontier,
          {
@@ -804,6 +808,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2PKH, "P2PKH"},
              },
              100,
+             25,
          }},
         {blockchain::Type::Litecoin_testnet4,
          {
@@ -857,6 +862,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2PKH, "P2PKH"},
              },
              100,
+             25,
          }},
         {blockchain::Type::PKT,
          {
@@ -1082,6 +1088,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2PKH, "P2PKH"},
              },
              100,
+             25,
          }},
         {blockchain::Type::PKT_testnet,
          {
@@ -1126,6 +1133,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2PKH, "P2PKH"},
              },
              100,
+             25,
          }},
         {blockchain::Type::UnitTest,
          {
@@ -1175,6 +1183,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2PKH, "P2PKH"},
              },
              10,
+             25,
          }},
     };
 

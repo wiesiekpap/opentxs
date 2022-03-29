@@ -106,6 +106,7 @@ private:
     auto process_block(Message&& in) noexcept -> void;
     auto process_filter(Message&& in) noexcept -> void;
     auto process_prepare_reorg(Message&& in) noexcept -> void;
+    auto process_process(Message&& in) noexcept -> void;
     auto process_watchdog(Message&& in) noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto state_reorg(const Work work, Message&& msg) noexcept -> void;
@@ -118,7 +119,7 @@ private:
     virtual auto process_key(Message&& in) noexcept -> void;
     virtual auto process_filter(block::Position&& tip) noexcept -> void;
     virtual auto process_mempool(Message&& in) noexcept -> void;
-    virtual auto process_process(Message&& in) noexcept -> void;
+    virtual auto process_process(block::Position&& position) noexcept -> void;
     virtual auto process_startup(Message&& in) noexcept -> void;
     virtual auto process_update(Message&& msg) noexcept -> void;
     virtual auto work() noexcept -> bool = 0;

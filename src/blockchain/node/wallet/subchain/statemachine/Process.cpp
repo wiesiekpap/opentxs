@@ -12,9 +12,7 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <algorithm>
-#include <chrono>
 #include <memory>
-#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -47,7 +45,6 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/Time.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
 
@@ -90,9 +87,33 @@ Process::Imp::Imp(
     , processing_(alloc)
     , txid_cache_()
     , counter_()
-    , running_(counter_.Allocate(8))
+    , running_(counter_.Allocate())
 {
     txid_cache_.reserve(1024);
+}
+
+auto Process::Imp::check_cache() noexcept -> void
+{
+    const auto cb = [this](const auto& positions) {
+        auto status = Vector<ScanStatus>{get_allocator()};
+
+        for (const auto& pos : positions) {
+            status.emplace_back(ScanState::processed, pos);
+        }
+
+        if (0u < status.size()) {
+            const auto sent = to_index_.SendDeferred([&] {
+                auto out = MakeWork(Work::update);
+                encode(status, out);
+
+                return out;
+            }());
+
+            OT_ASSERT(sent);
+        }
+    };
+    const auto queue = waiting_.size() + downloading_.size() + ready_.size();
+    parent_.CheckCache(queue, cb);
 }
 
 auto Process::Imp::do_process(
@@ -101,28 +122,15 @@ auto Process::Imp::do_process(
 {
     OT_ASSERT(block);
 
-    static constexpr auto limit{3};
-    auto failures{0};
+    if (false == parent_.ProcessBlock(position, *block)) { OT_FAIL; }
 
-    while (failures < limit) {
-        if (parent_.ProcessBlock(position, *block)) {
-            break;
-        } else {
-            // TODO this branch could be reached if a process job is started
-            // before the associated scan or rescan job has updated the cached
-            // state for this block, or else because the cached state for the
-            // associated block was erroneously removed. The possibility of
-            // either of these happening should be eliminated and this
-            // workaround should be removed.
-            ++failures;
-            using namespace std::literals;
-            Sleep(5s);
-        }
-    }
+    pipeline_.Push([&] {
+        auto out = MakeWork(Work::process);
+        out.AddFrame(position.first);
+        out.AddFrame(position.second);
 
-    if (failures == limit) { OT_FAIL; }
-
-    pipeline_.Push(MakeWork(Work::process));
+        return out;
+    }());
 }
 
 auto Process::Imp::do_startup() noexcept -> void
@@ -237,38 +245,19 @@ auto Process::Imp::process_mempool(Message&& in) noexcept -> void
     }
 }
 
-auto Process::Imp::process_process(Message&& in) noexcept -> void
+auto Process::Imp::process_process(block::Position&& pos) noexcept -> void
 {
-    const auto cb = [this](const auto& positions) {
-        auto status = Vector<ScanStatus>{get_allocator()};
+    if (const auto i = processing_.find(pos); i == processing_.end()) {
+        log_(OT_PRETTY_CLASS())(parent_.name_)(" block ")(print(pos))(
+            " has been removed from the processing list due to reorg")
+            .Flush();
+    } else {
+        processing_.erase(i);
+        log_(OT_PRETTY_CLASS())(parent_.name_)(" finished processing block ")(
+            print(pos))
+            .Flush();
+    }
 
-        for (const auto& pos : positions) {
-            if (const auto i = processing_.find(pos); i == processing_.end()) {
-                log_(OT_PRETTY_CLASS())(parent_.name_)(" block ")(print(pos))(
-                    " has been removed from the processing list due to reorg")
-                    .Flush();
-            } else {
-                processing_.erase(i);
-                status.emplace_back(ScanState::processed, pos);
-                log_(OT_PRETTY_CLASS())(parent_.name_)(
-                    " finished processing block ")(print(pos))
-                    .Flush();
-            }
-        }
-
-        if (0u < status.size()) {
-            const auto sent = to_index_.SendDeferred([&] {
-                auto out = MakeWork(Work::update);
-                encode(status, out);
-
-                return out;
-            }());
-
-            OT_ASSERT(sent);
-        }
-    };
-    const auto queue = waiting_.size() + downloading_.size() + ready_.size();
-    parent_.CheckCache(queue, cb);
     do_work();
 }
 
@@ -329,6 +318,7 @@ auto Process::Imp::queue_process() noexcept -> void
 
 auto Process::Imp::work() noexcept -> bool
 {
+    check_cache();
     queue_downloads();
     queue_process();
 

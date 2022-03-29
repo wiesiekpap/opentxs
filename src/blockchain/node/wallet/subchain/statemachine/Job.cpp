@@ -259,6 +259,16 @@ auto Job::process_prepare_reorg(Message&& in) noexcept -> void
 
 auto Job::process_process(Message&& in) noexcept -> void
 {
+    const auto body = in.Body();
+
+    OT_ASSERT(2 < body.size());
+
+    process_process(
+        block::Position{body.at(1).as<block::Height>(), body.at(2).Bytes()});
+}
+
+auto Job::process_process(block::Position&& position) noexcept -> void
+{
     LogError()(OT_PRETTY_CLASS())(name_)("unhandled message type").Flush();
 
     OT_FAIL;

@@ -87,8 +87,8 @@ auto DeterministicStateData::CheckCache(
     cache_.modify([=](auto& data) {
         auto& [time, blockMap] = data;
         using namespace std::literals;
-        static constexpr auto maxTime = 20s;
-        static constexpr auto maxBlocks = std::size_t{100};
+        static constexpr auto maxTime = 30s;
+        static constexpr auto maxBlocks = std::size_t{1000};
         const auto blocks = blockMap.size();
         const auto interval = Clock::now() - time;
         const auto flush =

@@ -85,6 +85,7 @@ struct Data {
     ScriptMap scripts_{};
     StylePref styles_{};
     block::Height maturation_interval_{};
+    std::size_t cfilter_element_count_estimate_{};
 
 #if OT_BLOCKCHAIN
     static auto Bip158() noexcept -> const FilterTypes&;

@@ -253,9 +253,13 @@ private:
     using BlockHashes = HeaderOracle::Hashes;
     using MatchesToTest = std::pair<Patterns, Patterns>;
 
+    static constexpr auto cfilter_size_window_ = std::size_t{1000u};
+
     network::zeromq::socket::Raw& to_children_;
     std::atomic<State> pending_state_;
     std::atomic<State> state_;
+    mutable Deque<std::size_t> filter_sizes_;
+    mutable std::atomic<std::size_t> elements_per_cfilter_;
     HandledReorgs reorgs_;
     std::optional<wallet::Progress> progress_;
     std::optional<wallet::Rescan> rescan_;
