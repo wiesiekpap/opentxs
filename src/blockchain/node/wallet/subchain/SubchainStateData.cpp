@@ -79,6 +79,7 @@ auto print(SubchainJobs job) noexcept -> std::string_view
             {Job::process, "process"},
             {Job::watchdog, "watchdog"},
             {Job::watchdog_ack, "watchdog_ack"},
+            {Job::reprocess, "reprocess"},
             {Job::init, "init"},
             {Job::key, "key"},
             {Job::prepare_shutdown, "prepare_shutdown"},
@@ -1279,6 +1280,7 @@ auto SubchainStateData::state_normal(const Work work, Message&& msg) noexcept
         case Work::block:
         case Work::update:
         case Work::watchdog:
+        case Work::reprocess:
         case Work::key:
         default: {
             LogError()(OT_PRETTY_CLASS())("unhandled message type ")(
@@ -1315,6 +1317,7 @@ auto SubchainStateData::state_reorg(const Work work, Message&& msg) noexcept
         case Work::block:
         case Work::update:
         case Work::watchdog:
+        case Work::reprocess:
         case Work::key:
         default: {
             LogError()(OT_PRETTY_CLASS())("unhandled message type ")(
