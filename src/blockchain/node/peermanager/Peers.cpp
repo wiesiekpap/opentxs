@@ -571,7 +571,8 @@ auto PeerManager::Peers::peer_factory(Endpoint endpoint, const int id) noexcept
                 policy_,
                 id,
                 std::move(endpoint),
-                shutdown_endpoint_);
+                shutdown_endpoint_,
+                params::Data::Chains().at(chain_).p2p_protocol_version_);
         }
         case blockchain::p2p::Protocol::opentxs:
         case blockchain::p2p::Protocol::ethereum:

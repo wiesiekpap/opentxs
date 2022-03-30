@@ -77,6 +77,7 @@ struct Data {
     Checkpoint checkpoint_{};
     cfilter::Type default_filter_type_{};
     p2p::Protocol p2p_protocol_{};
+    p2p::bitcoin::ProtocolVersion p2p_protocol_version_{};
     std::uint32_t p2p_magic_bits_{};
     std::uint16_t default_port_{};
     UnallocatedVector<UnallocatedCString> dns_seeds_{};

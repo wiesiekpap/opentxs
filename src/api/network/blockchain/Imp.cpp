@@ -316,7 +316,8 @@ auto BlockchainImp::Init(
     if (base_config_->use_sync_server_) { sync_client_.emplace(api_); }
 
     init_promise_.set_value();
-    static const auto defaultServers = Vector<UnallocatedCString>{
+
+    static const auto defaultServers = UnallocatedVector<UnallocatedCString>{
         "tcp://metier1.opentransactions.org:8814",
         "tcp://metier2.opentransactions.org:8814",
     };

@@ -1085,7 +1085,9 @@ private:
     {
         switch (chain_) {
             case Type::BitcoinCash:
-            case Type::BitcoinCash_testnet3: {
+            case Type::BitcoinCash_testnet3:
+            case Type::BitcoinSV:
+            case Type::BitcoinSV_testnet3: {
 
                 return sign_input_bch(index, input, bip143);
             }

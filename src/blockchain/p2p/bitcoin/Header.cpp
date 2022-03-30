@@ -29,13 +29,16 @@ namespace opentxs::factory
 {
 auto BitcoinP2PHeader(
     const api::Session& api,
+    const blockchain::Type& chain,
     const network::zeromq::Frame& bytes) -> blockchain::p2p::bitcoin::Header*
 {
     using ReturnType = opentxs::blockchain::p2p::bitcoin::Header;
     const ReturnType::BitcoinFormat raw{bytes};
-
+    if (false == raw.CheckNetwork(chain)) {
+        return nullptr;
+    }
     return new ReturnType(
-        api, raw.Network(), raw.Command(), raw.PayloadSize(), raw.Checksum());
+        api, chain, raw.Command(), raw.PayloadSize(), raw.Checksum());
 }
 }  // namespace opentxs::factory
 
@@ -120,15 +123,14 @@ auto Header::BitcoinFormat::Command() const noexcept -> bitcoin::Command
     return GetCommand(command_);
 }
 
-auto Header::BitcoinFormat::Network() const noexcept -> blockchain::Type
+auto Header::BitcoinFormat::CheckNetwork(const blockchain::Type& chain) const noexcept -> bool
 {
     static const auto build = []() -> auto
     {
-        auto output = UnallocatedMap<std::uint32_t, blockchain::Type>{};
-
+        auto output = UnallocatedMultimap<blockchain::Type, std::uint32_t>{};
         for (const auto& [chain, data] : params::Data::Chains()) {
             if (0 != data.p2p_magic_bits_) {
-                output.emplace(data.p2p_magic_bits_, chain);
+                output.emplace(chain, data.p2p_magic_bits_);
             }
         }
 
@@ -137,11 +139,13 @@ auto Header::BitcoinFormat::Network() const noexcept -> blockchain::Type
     static const auto map{build()};
 
     try {
-
-        return map.at(magic_.value());
+        auto search = map.find(chain);
+        if (map.end() != search) {
+            return search->second == magic_.value();
+        }
+        return false;
     } catch (...) {
-
-        return blockchain::Type::Unknown;
+        return false;
     }
 }
 

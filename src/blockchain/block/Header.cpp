@@ -47,6 +47,8 @@ auto GenesisBlockHeader(
         case blockchain::Type::Litecoin_testnet4:
         case blockchain::Type::PKT:
         case blockchain::Type::PKT_testnet:
+        case blockchain::Type::BitcoinSV:
+        case blockchain::Type::BitcoinSV_testnet3:
         case blockchain::Type::UnitTest: {
             const auto& hex =
                 blockchain::params::Data::Chains().at(type).genesis_header_hex_;
