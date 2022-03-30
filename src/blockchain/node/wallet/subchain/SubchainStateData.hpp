@@ -255,6 +255,7 @@ private:
 
     static constexpr auto cfilter_size_window_ = std::size_t{1000u};
 
+    network::zeromq::socket::Raw& to_block_oracle_;
     network::zeromq::socket::Raw& to_children_;
     std::atomic<State> pending_state_;
     std::atomic<State> state_;

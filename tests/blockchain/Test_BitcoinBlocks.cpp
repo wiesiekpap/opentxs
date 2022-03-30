@@ -365,7 +365,6 @@ TEST_F(Test_BitcoinBlock, bsv_genesis_testnet)
         ot::blockchain::cfilter::Type::ES));
 
     api_.Network().Blockchain().Stop(ot::blockchain::Type::BitcoinSV_testnet3);
-
 }
 
 TEST_F(Test_BitcoinBlock, bip158)

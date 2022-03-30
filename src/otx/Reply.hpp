@@ -94,7 +94,8 @@ private:
     auto Serialize() const noexcept -> OTData final;
     auto serialize(const Lock& lock, proto::ServerReply& output) const -> bool;
     auto signature_version(const Lock& lock) const -> proto::ServerReply;
-    auto update_signature(const Lock& lock, const PasswordPrompt& reason) -> bool final;
+    auto update_signature(const Lock& lock, const PasswordPrompt& reason)
+        -> bool final;
     auto validate(const Lock& lock) const -> bool final;
     auto verify_signature(const Lock& lock, const proto::Signature& signature)
         const -> bool final;

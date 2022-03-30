@@ -69,6 +69,7 @@ class Purse;
 namespace context
 {
 class Base;
+class ManagedNumber;
 }  // namespace context
 }  // namespace otx
 

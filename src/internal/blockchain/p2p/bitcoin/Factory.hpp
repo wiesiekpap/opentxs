@@ -31,7 +31,7 @@ namespace client
 {
 namespace internal
 {
-struct BlockOracle;
+class BlockOracle;
 struct Config;
 struct FilterOracle;
 class HeaderOracle;
@@ -44,7 +44,7 @@ namespace node
 {
 namespace internal
 {
-struct BlockOracle;
+class BlockOracle;
 struct Config;
 struct FilterOracle;
 class HeaderOracle;

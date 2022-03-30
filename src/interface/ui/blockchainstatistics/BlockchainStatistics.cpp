@@ -11,9 +11,12 @@
 #include <cstddef>
 #include <future>
 #include <memory>
+#include <stdexcept>
 #include <string_view>
+#include <utility>
 
 #include "interface/ui/base/List.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -59,6 +62,7 @@ BlockchainStatistics::BlockchainStatistics(
     : BlockchainStatisticsList(api, api.Factory().Identifier(), cb, false)
     , Worker(api, {})
     , blockchain_(api.Network().Blockchain())
+    , cache_()
 {
     init_executor({
         UnallocatedCString{api.Endpoints().BlockchainBlockDownloadQueue()},
@@ -82,7 +86,7 @@ auto BlockchainStatistics::construct_row(
 }
 
 auto BlockchainStatistics::custom(
-    const BlockchainStatisticsRowID& chain) const noexcept -> CustomData
+    const BlockchainStatisticsRowID& chain) noexcept -> CustomData
 {
     // NOTE:
     //  0: header oracle height
@@ -94,18 +98,17 @@ auto BlockchainStatistics::custom(
     auto out = CustomData{};
 
     try {
+        auto& data = get_cache(chain);
+        auto& [header, filter, connected, active, blocks, balance] = data;
         const auto& network = blockchain_.GetChain(chain);
-        const auto& header = network.HeaderOracle();
-        const auto& filter = network.FilterOracle();
-        const auto& block = network.BlockOracle();
-        out.emplace_back(
-            new blockchain::block::Height{header.BestChain().first});
-        out.emplace_back(new blockchain::block::Height{
-            filter.FilterTip(filter.DefaultType()).first});
-        out.emplace_back(new std::size_t{network.GetPeerCount()});
-        out.emplace_back(new std::size_t{network.GetVerifiedPeerCount()});
-        out.emplace_back(new std::size_t{block.DownloadQueue()});
-        out.emplace_back(new blockchain::Amount{network.GetBalance().second});
+        connected = network.GetPeerCount();
+        active = network.GetVerifiedPeerCount();
+        out.emplace_back(new blockchain::block::Height{header});
+        out.emplace_back(new blockchain::block::Height{filter});
+        out.emplace_back(new std::size_t{connected});
+        out.emplace_back(new std::size_t{active});
+        out.emplace_back(new std::size_t{blocks});
+        out.emplace_back(new blockchain::Amount{balance});
     } catch (...) {
         out.emplace_back(new blockchain::block::Height{-1});
         out.emplace_back(new blockchain::block::Height{-1});
@@ -116,6 +119,37 @@ auto BlockchainStatistics::custom(
     }
 
     return out;
+}
+
+auto BlockchainStatistics::get_cache(
+    const BlockchainStatisticsRowID& chain) noexcept(false) -> CachedData&
+{
+    if (auto i = cache_.find(chain); cache_.end() != i) {
+
+        return i->second;
+    } else {
+        auto& data = cache_[chain];
+        auto& [header, filter, connected, active, blocks, balance] = data;
+
+        try {
+            const auto& network = blockchain_.GetChain(chain);
+            const auto& hOracle = network.HeaderOracle();
+            const auto& fOracle = network.FilterOracle();
+            const auto& bOracle = network.BlockOracle();
+            header = hOracle.BestChain().first;
+            filter = fOracle.FilterTip(fOracle.DefaultType()).first;
+            connected = network.GetPeerCount();
+            active = network.GetVerifiedPeerCount();
+            blocks = bOracle.DownloadQueue();
+            balance = network.GetBalance().second;
+        } catch (...) {
+            cache_.erase(chain);
+
+            throw std::runtime_error{"chain is not active"};
+        }
+
+        return data;
+    }
 }
 
 auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
@@ -146,17 +180,29 @@ auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
                 shutdown(shutdown_promise_);
             }
         } break;
-        case Work::balance:
-        case Work::blockheader:
-        case Work::activepeer:
-        case Work::reorg:
-        case Work::filter:
-        case Work::block:
-        case Work::connectedpeer: {
+        case Work::blockheader: {
+            process_block_header(in);
+        } break;
+        case Work::activepeer: {
             process_work(in);
+        } break;
+        case Work::reorg: {
+            process_reorg(in);
         } break;
         case Work::statechange: {
             process_state(in);
+        } break;
+        case Work::filter: {
+            process_cfilter(in);
+        } break;
+        case Work::block: {
+            process_block(in);
+        } break;
+        case Work::connectedpeer: {
+            process_work(in);
+        } break;
+        case Work::balance: {
+            process_balance(in);
         } break;
         case Work::init: {
             startup();
@@ -174,12 +220,103 @@ auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
     }
 }
 
+auto BlockchainStatistics::process_balance(const Message& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(3 < body.size());
+
+    const auto chain = body.at(1).as<blockchain::Type>();
+
+    try {
+        auto& data = cache_[chain];
+        auto& [header, filter, connected, active, blocks, balance] = data;
+        balance = factory::Amount(body.at(3));
+    } catch (...) {
+    }
+
+    process_chain(chain);
+}
+
+auto BlockchainStatistics::process_block(const Message& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(2 < body.size());
+
+    const auto chain = body.at(1).as<blockchain::Type>();
+
+    try {
+        auto& data = cache_[chain];
+        auto& [header, filter, connected, active, blocks, balance] = data;
+        blocks = body.at(2).as<std::size_t>();
+    } catch (...) {
+    }
+
+    process_chain(chain);
+}
+
+auto BlockchainStatistics::process_block_header(const Message& in) noexcept
+    -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(3 < body.size());
+
+    const auto chain = body.at(1).as<blockchain::Type>();
+
+    try {
+        auto& data = cache_[chain];
+        auto& [header, filter, connected, active, blocks, balance] = data;
+        header = body.at(3).as<blockchain::block::Height>();
+    } catch (...) {
+    }
+
+    process_chain(chain);
+}
+
 auto BlockchainStatistics::process_chain(
     BlockchainStatisticsRowID chain) noexcept -> void
 {
     auto data = custom(chain);
     add_item(chain, UnallocatedCString{print(chain)}, data);
     delete_inactive(blockchain_.EnabledChains());
+}
+
+auto BlockchainStatistics::process_cfilter(const Message& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(3 < body.size());
+
+    const auto chain = body.at(1).as<blockchain::Type>();
+
+    try {
+        auto& data = cache_[chain];
+        auto& [header, filter, connected, active, blocks, balance] = data;
+        filter = body.at(3).as<blockchain::block::Height>();
+    } catch (...) {
+    }
+
+    process_chain(chain);
+}
+
+auto BlockchainStatistics::process_reorg(const Message& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(5 < body.size());
+
+    const auto chain = body.at(1).as<blockchain::Type>();
+
+    try {
+        auto& data = cache_[chain];
+        auto& [header, filter, connected, active, blocks, balance] = data;
+        header = body.at(5).as<blockchain::block::Height>();
+    } catch (...) {
+    }
+
+    process_chain(chain);
 }
 
 auto BlockchainStatistics::process_state(const Message& in) noexcept -> void

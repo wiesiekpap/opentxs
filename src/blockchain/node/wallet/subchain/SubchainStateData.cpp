@@ -25,7 +25,9 @@
 #include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/node/BlockOracle.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/BoostPMR.hpp"
@@ -46,6 +48,7 @@
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
@@ -129,6 +132,11 @@ SubchainStateData::SubchainStateData(
           },
           {},
           {
+              {SocketType::Push,
+               {
+                   {CString{node.BlockOracle().Internal().Endpoint(), alloc},
+                    Direction::Connect},
+               }},
               {SocketType::Publish,
                {
                    {toChildren, Direction::Bind},
@@ -162,7 +170,8 @@ SubchainStateData::SubchainStateData(
           db_.GetUnspentOutputs(id_, subchain_, alloc.resource()),
           alloc)
     , match_cache_(alloc)
-    , to_children_(pipeline_.Internal().ExtraSocket(0))
+    , to_block_oracle_(pipeline_.Internal().ExtraSocket(0))
+    , to_children_(pipeline_.Internal().ExtraSocket(1))
     , pending_state_(State::normal)
     , state_(State::normal)
     , filter_sizes_(alloc)
@@ -905,6 +914,7 @@ auto SubchainStateData::scan(
             OT_ASSERT(cfilterCount <= blocks.size());
 
             auto isClean{true};
+            auto blockRequest = MakeWork(node::BlockOracleJobs::request_blocks);
             auto s = selected.begin();
             auto f = cfilters.begin();
             auto i = startHeight;
@@ -947,11 +957,19 @@ auto SubchainStateData::scan(
                 if (hasMatches) {
                     isClean = false;
                     out.emplace_back(ScanState::dirty, testPosition);
+                    blockRequest.AddFrame(blockHash);
                 } else if (isClean) {
                     highestClean = testPosition;
                 }
 
                 highestTested = std::move(testPosition);
+            }
+
+            if (false == isClean) {
+                log_(OT_PRETTY_CLASS())(name_)(" requesting ")(out.size())(
+                    " block hashes from block oracle")
+                    .Flush();
+                to_block_oracle_.SendDeferred(std::move(blockRequest));
             }
 
             if (false == rescan) {

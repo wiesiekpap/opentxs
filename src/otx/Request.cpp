@@ -8,6 +8,7 @@
 #include "otx/Request.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <utility>
 
 #include "Proto.hpp"
 #include "Proto.tpp"
@@ -30,7 +31,6 @@
 #include "opentxs/otx/Request.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Nym.pb.h"
 #include "serialization/protobuf/ServerRequest.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
