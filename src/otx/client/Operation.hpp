@@ -230,7 +230,7 @@ private:
     std::optional<blind::Purse> purse_;
     UnallocatedSet<OTIdentifier> affected_accounts_;
     UnallocatedSet<OTIdentifier> redownload_accounts_;
-    UnallocatedSet<OTManagedNumber> numbers_;
+    UnallocatedSet<otx::context::ManagedNumber> numbers_;
     std::atomic<std::size_t> error_count_;
     OTPeerReply peer_reply_;
     OTPeerRequest peer_request_;
