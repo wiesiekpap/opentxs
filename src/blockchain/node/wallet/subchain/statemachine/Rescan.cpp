@@ -12,6 +12,7 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <algorithm>
+#include <atomic>
 #include <iterator>
 #include <limits>
 #include <utility>
@@ -97,8 +98,7 @@ auto Rescan::Imp::adjust_last_scanned(
             log_(OT_PRETTY_CLASS())(name_)(" last scanned updated to ")(
                 opentxs::print(effective))
                 .Flush();
-
-            last_scanned_ = highestClean;
+            set_last_scanned(highestClean);
         }
     }
 }
@@ -147,7 +147,7 @@ auto Rescan::Imp::do_startup() noexcept -> void
 {
     const auto& node = parent_.node_;
     const auto& filters = node.FilterOracleInternal();
-    last_scanned_ = parent_.db_.SubchainLastScanned(parent_.db_key_);
+    set_last_scanned(parent_.db_.SubchainLastScanned(parent_.db_key_));
     filter_tip_ = filters.FilterTip(parent_.filter_type_);
 
     OT_ASSERT(last_scanned_.has_value());
@@ -164,7 +164,7 @@ auto Rescan::Imp::do_startup() noexcept -> void
         log_(OT_PRETTY_CLASS())(name_)(" last scanned reset to ")(
             opentxs::print(filter_tip_.value()))
             .Flush();
-        last_scanned_ = filter_tip_;
+        set_last_scanned(filter_tip_);
     }
 }
 
@@ -190,7 +190,7 @@ auto Rescan::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
         log_(OT_PRETTY_CLASS())(name_)(" last scanned reset to ")(
             opentxs::print(parent))
             .Flush();
-        last_scanned_ = parent;
+        set_last_scanned(parent);
     }
 
     if (filter_tip_.has_value() && (filter_tip_.value() > parent)) {
@@ -244,7 +244,7 @@ auto Rescan::Imp::process_dirty(const Set<block::Position>& dirty) noexcept
                 opentxs::print(limit))(" based on dirty block ")(
                 opentxs::print(lowestDirty))
                 .Flush();
-            last_scanned_ = limit;
+            set_last_scanned(limit);
         }
     }
 }
@@ -308,6 +308,27 @@ auto Rescan::Imp::prune() noexcept -> void
     }
 }
 
+auto Rescan::Imp::set_last_scanned(const block::Position& value) noexcept
+    -> void
+{
+    last_scanned_ = value;
+    update_progress();
+}
+
+auto Rescan::Imp::set_last_scanned(
+    const std::optional<block::Position>& value) noexcept -> void
+{
+    last_scanned_ = value;
+    update_progress();
+}
+
+auto Rescan::Imp::set_last_scanned(
+    std::optional<block::Position>&& value) noexcept -> void
+{
+    last_scanned_ = std::move(value);
+    update_progress();
+}
+
 auto Rescan::Imp::stop() const noexcept -> block::Height
 {
     if (0u == dirty_.size()) {
@@ -327,6 +348,12 @@ auto Rescan::Imp::stop() const noexcept -> block::Height
         .Flush();
 
     return stopHeight;
+}
+
+auto Rescan::Imp::update_progress() noexcept -> void
+{
+    parent_.rescan_progress_.store(current().first);
+    to_process_.Send(MakeWork(Work::statemachine));
 }
 
 auto Rescan::Imp::work() noexcept -> bool
@@ -383,7 +410,7 @@ auto Rescan::Imp::work() noexcept -> bool
         log_(OT_PRETTY_CLASS())(name_)(" last scanned updated to ")(
             opentxs::print(highestClean.value()))
             .Flush();
-        last_scanned_ = std::move(highestClean);
+        set_last_scanned(std::move(highestClean));
         // TODO The interval used for rescanning should never include any dirty
         // blocks so is it possible for prune() to ever do anything?
         prune();

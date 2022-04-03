@@ -170,6 +170,7 @@ SubchainStateData::SubchainStateData(
           db_.GetUnspentOutputs(id_, subchain_, alloc.resource()),
           alloc)
     , match_cache_(alloc)
+    , rescan_progress_(-1)
     , to_block_oracle_(pipeline_.Internal().ExtraSocket(0))
     , to_children_(pipeline_.Internal().ExtraSocket(1))
     , pending_state_(State::normal)

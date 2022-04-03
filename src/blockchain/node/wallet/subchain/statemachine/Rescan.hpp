@@ -95,6 +95,12 @@ private:
     auto process_filter(block::Position&& tip) noexcept -> void final;
     auto process_update(Message&& msg) noexcept -> void final;
     auto prune() noexcept -> void;
+    auto set_last_scanned(const block::Position& value) noexcept -> void;
+    auto set_last_scanned(const std::optional<block::Position>& value) noexcept
+        -> void;
+    auto set_last_scanned(std::optional<block::Position>&& value) noexcept
+        -> void;
+    auto update_progress() noexcept -> void;
     auto work() noexcept -> bool final;
 };
 }  // namespace opentxs::blockchain::node::wallet
