@@ -529,7 +529,6 @@ struct LMDB::Imp {
         , pending_lock_()
         , write_lock_()
     {
-        LogConsole()(folder);
         init_environment(folder, init.size() + extraTables, flags);
         init_tables(init);
     }

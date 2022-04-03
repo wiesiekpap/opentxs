@@ -6,10 +6,12 @@
 #pragma once
 
 #include <atomic>
+#include <cstddef>
 #include <functional>
 #include <iosfwd>
 #include <memory>
 #include <mutex>
+#include <tuple>
 #include <utility>
 
 #include "1_Internal.hpp"
@@ -21,6 +23,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/interface/ui/BlockchainStatistics.hpp"
 #include "opentxs/interface/ui/Blockchains.hpp"
@@ -98,7 +101,6 @@ private:
 
     enum class Work : OTZMQWorkType {
         shutdown = value(WorkType::Shutdown),
-        balance = value(WorkType::BlockchainWalletUpdated),
         blockheader = value(WorkType::BlockchainNewHeader),
         activepeer = value(WorkType::BlockchainPeerAdded),
         reorg = value(WorkType::BlockchainReorg),
@@ -106,21 +108,36 @@ private:
         filter = value(WorkType::BlockchainNewFilter),
         block = value(WorkType::BlockchainBlockDownloadQueue),
         connectedpeer = value(WorkType::BlockchainPeerConnected),
+        balance = value(WorkType::BlockchainWalletUpdated),
         init = OT_ZMQ_INIT_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
+    using CachedData = std::tuple<
+        blockchain::block::Height,
+        blockchain::block::Height,
+        std::size_t,
+        std::size_t,
+        std::size_t,
+        blockchain::Amount>;
 
     const api::network::Blockchain& blockchain_;
+    Map<BlockchainStatisticsRowID, CachedData> cache_;
 
     auto construct_row(
         const BlockchainStatisticsRowID& id,
         const BlockchainStatisticsSortKey& index,
         CustomData& custom) const noexcept -> RowPointer final;
-    auto custom(const BlockchainStatisticsRowID& chain) const noexcept
-        -> CustomData;
 
+    auto custom(const BlockchainStatisticsRowID& chain) noexcept -> CustomData;
+    auto get_cache(const BlockchainStatisticsRowID& chain) noexcept(false)
+        -> CachedData&;
     auto pipeline(const Message& in) noexcept -> void;
+    auto process_balance(const Message& in) noexcept -> void;
+    auto process_block(const Message& in) noexcept -> void;
+    auto process_block_header(const Message& in) noexcept -> void;
+    auto process_cfilter(const Message& in) noexcept -> void;
     auto process_chain(BlockchainStatisticsRowID chain) noexcept -> void;
+    auto process_reorg(const Message& in) noexcept -> void;
     auto process_state(const Message& in) noexcept -> void;
     auto process_work(const Message& in) noexcept -> void;
     auto startup() noexcept -> void;

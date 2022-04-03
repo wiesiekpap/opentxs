@@ -3,33 +3,32 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                     // IWYU pragma: associated
-#include "1_Internal.hpp"                   // IWYU pragma: associated
-#include "blockchain/node/BlockOracle.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                           // IWYU pragma: associated
+#include "1_Internal.hpp"                         // IWYU pragma: associated
+#include "blockchain/node/blockoracle/MemDB.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <string_view>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/util/Bytes.hpp"
 
-namespace opentxs::blockchain::node::implementation
+namespace opentxs::blockchain::node::blockoracle
 {
-BlockOracle::Cache::Mem::Mem(const std::size_t limit) noexcept
+MemDB::MemDB(const std::size_t limit) noexcept
     : limit_(limit)
     , queue_()
     , index_()
 {
 }
 
-auto BlockOracle::Cache::Mem::clear() noexcept -> void
+auto MemDB::clear() noexcept -> void
 {
     index_.clear();
     queue_.clear();
 }
 
-auto BlockOracle::Cache::Mem::find(const ReadView& id) const noexcept
-    -> BitcoinBlockFuture
+auto MemDB::find(const ReadView& id) const noexcept -> BitcoinBlockResult
 {
     if ((nullptr == id.data()) || (0 == id.size())) { return {}; }
 
@@ -42,9 +41,7 @@ auto BlockOracle::Cache::Mem::find(const ReadView& id) const noexcept
     }
 }
 
-auto BlockOracle::Cache::Mem::push(
-    block::Hash&& id,
-    BitcoinBlockFuture&& future) noexcept -> void
+auto MemDB::push(block::Hash&& id, BitcoinBlockResult&& future) noexcept -> void
 {
     if (id.IsNull()) { return; }
 
@@ -60,4 +57,4 @@ auto BlockOracle::Cache::Mem::push(
         queue_.pop_front();
     }
 }
-}  // namespace opentxs::blockchain::node::implementation
+}  // namespace opentxs::blockchain::node::blockoracle

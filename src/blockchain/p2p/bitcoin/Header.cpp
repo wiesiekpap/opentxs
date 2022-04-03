@@ -34,9 +34,7 @@ auto BitcoinP2PHeader(
 {
     using ReturnType = opentxs::blockchain::p2p::bitcoin::Header;
     const ReturnType::BitcoinFormat raw{bytes};
-    if (false == raw.CheckNetwork(chain)) {
-        return nullptr;
-    }
+    if (false == raw.CheckNetwork(chain)) { return nullptr; }
     return new ReturnType(
         api, chain, raw.Command(), raw.PayloadSize(), raw.Checksum());
 }
@@ -123,7 +121,8 @@ auto Header::BitcoinFormat::Command() const noexcept -> bitcoin::Command
     return GetCommand(command_);
 }
 
-auto Header::BitcoinFormat::CheckNetwork(const blockchain::Type& chain) const noexcept -> bool
+auto Header::BitcoinFormat::CheckNetwork(
+    const blockchain::Type& chain) const noexcept -> bool
 {
     static const auto build = []() -> auto
     {
@@ -140,9 +139,7 @@ auto Header::BitcoinFormat::CheckNetwork(const blockchain::Type& chain) const no
 
     try {
         auto search = map.find(chain);
-        if (map.end() != search) {
-            return search->second == magic_.value();
-        }
+        if (map.end() != search) { return search->second == magic_.value(); }
         return false;
     } catch (...) {
         return false;

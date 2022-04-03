@@ -37,6 +37,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -121,7 +122,7 @@ auto Process::Imp::check_cache() noexcept -> void
 
 auto Process::Imp::do_process(
     const block::Position position,
-    const BlockOracle::BitcoinBlock_p block) noexcept -> void
+    const std::shared_ptr<const block::bitcoin::Block> block) noexcept -> void
 {
     OT_ASSERT(block);
 
