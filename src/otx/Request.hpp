@@ -23,25 +23,9 @@
 #include "serialization/protobuf/OTXEnums.pb.h"
 #include "serialization/protobuf/ServerRequest.pb.h"
 
-// NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs  // NOLINT
-{
-// inline namespace v1
-// {
-namespace api
-{
-class Session;
-}  // namespace api
-
-namespace proto
-{
-class Signature;
-}  // namespace proto
-
-class PasswordPrompt;
-// }  // namespace v1
-}  // namespace opentxs
-// NOLINTEND(modernize-concat-nested-namespaces)
+namespace opentxs{ class PasswordPrompt; }
+namespace opentxs::api{ class Session; }
+namespace opentxs::proto{ class Signature; }
 
 namespace opentxs::otx
 {
