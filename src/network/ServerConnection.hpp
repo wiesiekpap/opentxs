@@ -31,72 +31,39 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
-// NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs  // NOLINT
+namespace opentxs::api{ class Session; }
+namespace opentxs::api::network{ class ZMQ; }
+namespace opentxs::api::network::zeromq
 {
-// inline namespace v1
-// {
-namespace api
-{
-namespace network
-{
-class ZMQ;
-}  // namespace network
-
-class Session;
-}  // namespace api
-
-namespace network
-{
-namespace zeromq
-{
-namespace curve
-{
-class Client;
-}  // namespace curve
-
-namespace socket
+class Frame;
+class Message;
+}
+namespace opentxs::api::network::zeromq::curve{ class Client; }
+namespace opentxs::api::network::zeromq::socket
 {
 class Publish;
 class Socket;
-}  // namespace socket
+}
 
-class Frame;
-class Message;
-}  // namespace zeromq
-}  // namespace network
+namespace opentxs{ class PasswordPrompt; }
+namespace opentxs::otx::context{ class Server; }
 
-namespace otx
+namespace opentxs::network
 {
-namespace context
-{
-class Server;
-}  // namespace context
-}  // namespace otx
-
-class PasswordPrompt;
-// }  // namespace v1
-}  // namespace opentxs
-// NOLINTEND(modernize-concat-nested-namespaces)
-
-namespace opentxs::network::implementation
-{
-class ServerConnection final
-    : virtual public opentxs::network::ServerConnection,
-      Lockable
+class ServerConnection::Imp final : Lockable
 {
 public:
-    auto ChangeAddressType(const AddressType type) -> bool final;
-    auto ClearProxy() -> bool final;
-    auto EnableProxy() -> bool final;
+    auto ChangeAddressType(const AddressType type) -> bool;
+    auto ClearProxy() -> bool;
+    auto EnableProxy() -> bool;
     auto Send(
         const otx::context::Server& context,
         const Message& message,
         const PasswordPrompt& reason,
-        const Push push) -> otx::client::NetworkReplyMessage final;
-    auto Status() const -> bool final;
+        const Push push) -> otx::client::NetworkReplyMessage;
+    auto Status() const -> bool;
 
-    ~ServerConnection() final;
+    ~Imp() final;
 
 private:
     friend opentxs::network::ServerConnection;
@@ -120,7 +87,6 @@ private:
     UnallocatedMap<OTNymID, bool> registered_for_push_;
 
     auto async_socket(const Lock& lock) const -> OTZMQDealerSocket;
-    auto clone() const -> ServerConnection* final { return nullptr; }
     auto endpoint() const -> UnallocatedCString;
     auto form_endpoint(
         AddressType type,
@@ -147,15 +113,15 @@ private:
     auto reset_socket(const Lock& lock) -> void;
     auto reset_timer() -> void;
 
-    ServerConnection(
+    Imp(
         const api::Session& api,
         const api::network::ZMQ& zmq,
         const zeromq::socket::Publish& updates,
         const OTServerContract& contract);
-    ServerConnection() = delete;
-    ServerConnection(const ServerConnection&) = delete;
-    ServerConnection(ServerConnection&&) = delete;
-    auto operator=(const ServerConnection&) -> ServerConnection& = delete;
-    auto operator=(ServerConnection&&) -> ServerConnection& = delete;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> ServerConnection& = delete;
+    auto operator=(Imp&&) -> ServerConnection& = delete;
 };
-}  // namespace opentxs::network::implementation
+}  // namespace opentxs::network

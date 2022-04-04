@@ -23,26 +23,13 @@
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/ServerReply.pb.h"
 
-// NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs  // NOLINT
-{
-// inline namespace v1
-// {
-namespace api
-{
-class Session;
-}  // namespace api
-
-namespace proto
+namespace opentxs{ class PasswordPrompt; }
+namespace opentxs::api{ class Session; }
+namespace opentxs::proto
 {
 class OTXPush;
 class Signature;
-}  // namespace proto
-
-class PasswordPrompt;
-// }  // namespace v1
-}  // namespace opentxs
-// NOLINTEND(modernize-concat-nested-namespaces)
+}
 
 namespace opentxs::otx
 {

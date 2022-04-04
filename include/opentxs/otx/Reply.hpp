@@ -12,29 +12,19 @@
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/otx/Types.hpp"
 
-// NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs  // NOLINT
+namespace opentxs{ class PasswordPrompt; }
+namespace opentxs::api{ class Session; }
+namespace opentxs::identifier
 {
-// inline namespace v1
-// {
-namespace api
-{
-class Session;
-}  // namespace api
-
-namespace otx
-{
-class Reply;
-}  // namespace otx
-
-namespace proto
+class Notary;
+class Nym;
+}
+namespace opentxs::otx{ class Reply; }
+namespace opentxs::proto
 {
 class OTXPush;
 class ServerReply;
-}  // namespace proto
-// }  // namespace v1
-}  // namespace opentxs
-// NOLINTEND(modernize-concat-nested-namespaces)
+}
 
 namespace opentxs::otx
 {

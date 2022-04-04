@@ -12,29 +12,15 @@
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/otx/Types.hpp"
 
-// NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs  // NOLINT
+namespace opentxs{ class PasswordPrompt; }
+namespace opentxs::api{ class Session; }
+namespace opentxs::identifier
 {
-// inline namespace v1
-// {
-namespace api
-{
-class Session;
-}  // namespace api
-
-namespace otx
-{
-class Request;
-}  // namespace otx
-
-namespace proto
-{
-class ServerRequest;
-}  // namespace proto
-
-// }  // namespace v1
-}  // namespace opentxs
-// NOLINTEND(modernize-concat-nested-namespaces)
+class Notary;
+class Nym;
+}
+namespace opentxs::otx{ class Request; }
+namespace opentxs::proto{ class ServerRequest; }
 
 namespace opentxs::otx
 {
@@ -52,7 +38,7 @@ public:
         const identifier::Notary& server,
         const otx::ServerRequestType type,
         const RequestNumber number,
-        const PasswordPrompt& reason) -> Request;
+        const opentxs::PasswordPrompt& reason) -> Request;
     OPENTXS_NO_EXPORT static auto Factory(
         const api::Session& api,
         const proto::ServerRequest serialized) -> Request;
