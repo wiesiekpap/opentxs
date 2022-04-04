@@ -133,9 +133,12 @@ auto Cache::GetBatch(allocator_type alloc) noexcept
     // limits for inv requests.
     static constexpr auto GetTarget =
         [](auto available, auto peers, auto max, auto min) {
-        decltype(peers) min_peers{1u};
+            decltype(peers) min_peers{1u};
             return std::min(
-                max, std::min(available, std::max(min, available / std::max(peers, min_peers))));
+                max,
+                std::min(
+                    available,
+                    std::max(min, available / std::max(peers, min_peers))));
         };
 
     static_assert(GetTarget(1, 0, 50000, 10) == 1);

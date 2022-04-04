@@ -12,12 +12,46 @@
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs{ class PasswordPrompt; }
-namespace opentxs::api{ class Session; }
-namespace opentxs::api::network{ class ZMQ; }
-namespace opentxs::network{ class ServerConnection; }
-namespace opentxs::network::zeromq::socket { class Publish; }
-namespace opentxs::otx::context { class Server; }
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+// inline namespace v1
+// {
+namespace api
+{
+namespace network
+{
+class ZMQ;
+}  // namespace network
+
+class Session;
+}  // namespace api
+
+namespace network
+{
+namespace zeromq
+{
+namespace socket
+{
+class Publish;
+}  // namespace socket
+}  // namespace zeromq
+
+class ServerConnection;
+}  // namespace network
+
+namespace otx
+{
+namespace context
+{
+class Server;
+}  // namespace context
+}  // namespace otx
+
+class PasswordPrompt;
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::network
 {
@@ -52,7 +86,8 @@ public:
     OPENTXS_NO_EXPORT ServerConnection(Imp* imp) noexcept;
     ServerConnection(const ServerConnection&) noexcept = delete;
     ServerConnection(ServerConnection&&) noexcept;
-    auto operator=(const ServerConnection&) noexcept -> ServerConnection& = delete;
+    auto operator=(const ServerConnection&) noexcept
+        -> ServerConnection& = delete;
     auto operator=(ServerConnection&&) noexcept -> ServerConnection&;
 
     virtual ~ServerConnection();
