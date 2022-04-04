@@ -83,7 +83,7 @@ Process::Imp::Imp(
                }},
           })
     , download_limit_(
-          2u * params::Data::Chains().at(parent_.chain_).block_download_batch_)
+          2u * params::Chains().at(parent_.chain_).block_download_batch_)
     , to_index_(pipeline_.Internal().ExtraSocket(1))
     , waiting_(alloc)
     , downloading_(alloc)

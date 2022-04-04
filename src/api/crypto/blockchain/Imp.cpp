@@ -445,7 +445,7 @@ auto Blockchain::Imp::DecodeAddress(
         if (Style::Unknown == style) { return output; }
         if (0 == chains.size()) { return output; }
 
-        const auto& params = opentxs::blockchain::params::Data::Chains();
+        const auto& params = opentxs::blockchain::params::Chains();
 
         for (const auto& chain : chains) {
             try {

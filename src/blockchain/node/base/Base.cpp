@@ -307,8 +307,7 @@ Base::Base(
     , sync_socket_(
           api_.Network().ZeroMQ().PairSocket(sync_cb_, requestor_endpoint_))
     , local_chain_height_(0)
-    , remote_chain_height_(
-          params::Data::Chains().at(chain_).checkpoint_.height_)
+    , remote_chain_height_(params::Chains().at(chain_).checkpoint_.height_)
     , waiting_for_headers_(Flag::Factory(false))
     , headers_requested_(Clock::now())
     , headers_received_()
@@ -352,7 +351,7 @@ Base::Base(
 
                     return out;
                 }(),
-                params::Data::Chains().at(chain_).default_port_,
+                params::Chains().at(chain_).default_port_,
                 chain_,
                 {},
                 {},
@@ -388,7 +387,7 @@ Base::Base(
 
                     return out;
                 }(),
-                params::Data::Chains().at(chain_).default_port_,
+                params::Chains().at(chain_).default_port_,
                 chain_,
                 {},
                 {},
@@ -517,7 +516,7 @@ auto Base::FeeRate() const noexcept -> Amount
     // recent blocks
     // TODO on networks that support it, query the fee rate from network peers
     const auto http = wallet_.FeeEstimate();
-    const auto fallback = params::Data::Chains().at(chain_).default_fee_rate_;
+    const auto fallback = params::Chains().at(chain_).default_fee_rate_;
     const auto chain = print(chain_);
     LogConsole()(chain)(" defined minimum fee rate is: ")(fallback).Flush();
 
