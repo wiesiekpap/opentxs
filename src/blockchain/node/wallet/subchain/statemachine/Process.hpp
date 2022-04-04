@@ -109,6 +109,10 @@ private:
         const std::shared_ptr<const block::bitcoin::Block> block) noexcept
         -> void;
     auto do_startup() noexcept -> void final;
+    auto download(block::Position&& position) noexcept -> void;
+    auto download(
+        block::Position&& position,
+        BitcoinBlockResult&& future) noexcept -> void;
     auto process_block(block::Hash&& block) noexcept -> void final;
     auto process_mempool(Message&& in) noexcept -> void final;
     auto process_process(block::Position&& position) noexcept -> void final;

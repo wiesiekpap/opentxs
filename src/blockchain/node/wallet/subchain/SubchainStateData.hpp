@@ -169,6 +169,7 @@ public:
     const CString shutdown_endpoint_;
     mutable ElementCache element_cache_;
     mutable MatchCache match_cache_;
+    mutable std::atomic<block::Height> rescan_progress_;
 
     auto ChangeState(const State state, StateSequence reorg) noexcept
         -> bool final;

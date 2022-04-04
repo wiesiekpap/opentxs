@@ -12,6 +12,7 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <future>
 #include <memory>
@@ -148,6 +149,21 @@ auto Process::Imp::do_startup() noexcept -> void
     }
 
     do_work();
+}
+
+auto Process::Imp::download(
+    block::Position&& position,
+    BitcoinBlockResult&& future) noexcept -> void
+{
+    auto [it, added] =
+        downloading_.try_emplace(std::move(position), std::move(future));
+    downloading_index_.emplace(it->first.second, it);
+}
+
+auto Process::Imp::download(block::Position&& position) noexcept -> void
+{
+    auto future = parent_.node_.BlockOracle().LoadBitcoin(position.second);
+    download(std::move(position), std::move(future));
 }
 
 auto Process::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
@@ -291,9 +307,9 @@ auto Process::Imp::process_reprocess(Message&& msg) noexcept -> void
             ready_.emplace(std::move(position), future.get());
         } else {
             log_(OT_PRETTY_CLASS())(parent_.name_)(" adding block ")(
-                opentxs::print(position))(" to front of download queue")
+                opentxs::print(position))(" to download queue")
                 .Flush();
-            waiting_.emplace_front(std::move(position));
+            download(std::move(position), std::move(future));
         }
     }
 
@@ -320,22 +336,25 @@ auto Process::Imp::queue_downloads() noexcept -> void
         log_(OT_PRETTY_CLASS())(parent_.name_)(" adding block ")(
             opentxs::print(position))(" to download queue")
             .Flush();
-        auto future = parent_.node_.BlockOracle().LoadBitcoin(position.second);
-        auto [it, added] =
-            downloading_.try_emplace(std::move(position), std::move(future));
-        downloading_index_.emplace(it->first.second, it);
+        download(std::move(position));
         waiting_.pop_front();
     }
 }
 
 auto Process::Imp::queue_process() noexcept -> void
 {
-    const auto ready = [this] {
-        return (processing_.size() < download_limit_) && (0u < ready_.size()) &&
-               (false == running_.is_limited());
+    const auto CanProcess = [this](const auto& data) {
+        const auto& height = data.first.first;
+
+        return (processing_.size() < download_limit_) &&
+               (false == running_.is_limited()) &&
+               (height <= (parent_.rescan_progress_.load() +
+                           static_cast<block::Height>(download_limit_)));
     };
 
-    while (ready()) {
+    while (0u < ready_.size()) {
+        if (false == CanProcess(*ready_.cbegin())) { break; }
+
         const auto i = processing_.insert(
             processing_.begin(), ready_.extract(ready_.begin()));
 
