@@ -133,18 +133,28 @@ auto Cache::GetBatch(allocator_type alloc) noexcept
     // limits for inv requests.
     static constexpr auto GetTarget =
         [](auto available, auto peers, auto max, auto min) {
+        decltype(peers) min_peers{1u};
             return std::min(
-                max, std::min(available, std::max(min, available / peers)));
+                max, std::min(available, std::max(min, available / std::max(peers, min_peers))));
         };
+
+    static_assert(GetTarget(1, 0, 50000, 10) == 1);
     static_assert(GetTarget(1, 4, 50000, 10) == 1);
+    static_assert(GetTarget(9, 0, 50000, 10) == 9);
     static_assert(GetTarget(9, 4, 50000, 10) == 9);
     static_assert(GetTarget(11, 4, 50000, 10) == 10);
+    static_assert(GetTarget(11, 0, 50000, 10) == 11);
     static_assert(GetTarget(40, 4, 50000, 10) == 10);
+    static_assert(GetTarget(40, 0, 50000, 10) == 40);
     static_assert(GetTarget(45, 4, 50000, 10) == 11);
     static_assert(GetTarget(45, 2, 50000, 10) == 22);
+    static_assert(GetTarget(45, 0, 50000, 10) == 45);
     static_assert(GetTarget(45, 2, 2, 10) == 2);
+    static_assert(GetTarget(45, 0, 2, 10) == 2);
     static_assert(GetTarget(0, 2, 50000, 10) == 0);
+    static_assert(GetTarget(0, 0, 50000, 10) == 0);
     static_assert(GetTarget(1000000, 4, 50000, 10) == 50000);
+    static_assert(GetTarget(1000000, 0, 50000, 10) == 50000);
     const auto target = GetTarget(available, peers, max, min);
     LogTrace()(OT_PRETTY_CLASS())("creating download batch for ")(
         target)(" block hashes out of ")(available)(" waiting in queue")
