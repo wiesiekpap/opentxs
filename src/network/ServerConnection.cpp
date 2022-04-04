@@ -88,7 +88,8 @@ ServerConnection::ServerConnection(ServerConnection&& rhs) noexcept
     swap(rhs);
 }
 
-auto ServerConnection::operator=(ServerConnection&& rhs) noexcept -> ServerConnection&
+auto ServerConnection::operator=(ServerConnection&& rhs) noexcept
+    -> ServerConnection&
 {
     swap(rhs);
 
@@ -113,15 +114,9 @@ auto ServerConnection::ChangeAddressType(const AddressType type) -> bool
     return imp_->ChangeAddressType(type);
 }
 
-auto ServerConnection::ClearProxy() -> bool
-{
-    return imp_->ClearProxy();
-}
+auto ServerConnection::ClearProxy() -> bool { return imp_->ClearProxy(); }
 
-auto ServerConnection::EnableProxy() -> bool
-{
-    return imp_->EnableProxy();
-}
+auto ServerConnection::EnableProxy() -> bool { return imp_->EnableProxy(); }
 
 auto ServerConnection::Send(
     const otx::context::Server& context,
@@ -131,11 +126,7 @@ auto ServerConnection::Send(
 {
     return imp_->Send(context, message, reason, push);
 }
-auto ServerConnection::Status() const -> bool
-{
-    return imp_->Status();
-}
-
+auto ServerConnection::Status() const -> bool { return imp_->Status(); }
 
 ServerConnection::Imp::Imp(
     const api::Session& api,
@@ -202,7 +193,8 @@ auto ServerConnection::Imp::activity_timer() -> void
     }
 }
 
-auto ServerConnection::Imp::async_socket(const Lock& lock) const -> OTZMQDealerSocket
+auto ServerConnection::Imp::async_socket(const Lock& lock) const
+    -> OTZMQDealerSocket
 {
     auto output =
         zmq_.Context().DealerSocket(callback_, zmq::socket::Direction::Connect);
@@ -289,7 +281,8 @@ auto ServerConnection::Imp::form_endpoint(
     return output.str();
 }
 
-auto ServerConnection::Imp::get_async(const Lock& lock) -> zeromq::socket::Dealer&
+auto ServerConnection::Imp::get_async(const Lock& lock)
+    -> zeromq::socket::Dealer&
 {
     OT_ASSERT(verify_lock(lock))
 
@@ -302,7 +295,8 @@ auto ServerConnection::Imp::get_async(const Lock& lock) -> zeromq::socket::Deale
     return registration_socket_;
 }
 
-auto ServerConnection::Imp::get_sync(const Lock& lock) -> zeromq::socket::Request&
+auto ServerConnection::Imp::get_sync(const Lock& lock)
+    -> zeromq::socket::Request&
 {
     OT_ASSERT(verify_lock(lock))
 
@@ -646,7 +640,8 @@ auto ServerConnection::Imp::set_timeouts(
     OT_ASSERT(set);
 }
 
-auto ServerConnection::Imp::sync_socket(const Lock& lock) const -> OTZMQRequestSocket
+auto ServerConnection::Imp::sync_socket(const Lock& lock) const
+    -> OTZMQRequestSocket
 {
     auto output = zmq_.Context().RequestSocket();
     set_timeouts(lock, output);
@@ -657,4 +652,4 @@ auto ServerConnection::Imp::sync_socket(const Lock& lock) const -> OTZMQRequestS
 }
 
 auto ServerConnection::Imp::Status() const -> bool { return status_.get(); }
-}  // namespace opentxs::network::implementation
+}  // namespace opentxs::network

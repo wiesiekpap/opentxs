@@ -24,6 +24,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
@@ -31,22 +32,50 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
-namespace opentxs::api{ class Session; }
-namespace opentxs::api::network{ class ZMQ; }
-namespace opentxs::api::network::zeromq
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
 {
-class Frame;
-class Message;
-}
-namespace opentxs::api::network::zeromq::curve{ class Client; }
-namespace opentxs::api::network::zeromq::socket
+// inline namespace v1
+// {
+namespace api
+{
+namespace network
+{
+class ZMQ;
+}  // namespace network
+
+class Session;
+}  // namespace api
+
+namespace network
+{
+namespace zeromq
+{
+namespace curve
+{
+class Client;
+}  // namespace curve
+
+namespace socket
 {
 class Publish;
 class Socket;
-}
+}  // namespace socket
+}  // namespace zeromq
+}  // namespace network
 
-namespace opentxs{ class PasswordPrompt; }
-namespace opentxs::otx::context{ class Server; }
+namespace otx
+{
+namespace context
+{
+class Server;
+}  // namespace context
+}  // namespace otx
+
+class PasswordPrompt;
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::network
 {
@@ -113,8 +142,7 @@ private:
     auto reset_socket(const Lock& lock) -> void;
     auto reset_timer() -> void;
 
-    Imp(
-        const api::Session& api,
+    Imp(const api::Session& api,
         const api::network::ZMQ& zmq,
         const zeromq::socket::Publish& updates,
         const OTServerContract& contract);
