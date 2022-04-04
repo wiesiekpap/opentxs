@@ -815,7 +815,7 @@ auto SubchainStateData::scan(
 
                 if (0u == cached) {
                     const auto chainDefault =
-                        params::Data::Chains()
+                        params::Chains()
                             .at(chain_)
                             .cfilter_element_count_estimate_;
 

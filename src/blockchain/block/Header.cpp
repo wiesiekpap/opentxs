@@ -25,7 +25,6 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
-#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
@@ -51,7 +50,7 @@ auto GenesisBlockHeader(
         case blockchain::Type::BitcoinSV_testnet3:
         case blockchain::Type::UnitTest: {
             const auto& hex =
-                blockchain::params::Data::Chains().at(type).genesis_header_hex_;
+                blockchain::params::Chains().at(type).genesis_header_hex_;
             const auto data = api.Factory().DataFromHex(hex);
 
             return factory::BitcoinBlockHeader(api, type, data->Bytes());

@@ -85,7 +85,7 @@ Header::BitcoinFormat::BitcoinFormat(
     const bitcoin::Command command,
     const std::size_t payload,
     const OTData checksum) noexcept(false)
-    : magic_(params::Data::Chains().at(network).p2p_magic_bits_)
+    : magic_(params::Chains().at(network).p2p_magic_bits_)
     , command_(SerializeCommand(command))
     , length_(static_cast<std::uint32_t>(payload))
     , checksum_()
@@ -127,7 +127,7 @@ auto Header::BitcoinFormat::CheckNetwork(
     static const auto build = []() -> auto
     {
         auto output = UnallocatedMultimap<blockchain::Type, std::uint32_t>{};
-        for (const auto& [chain, data] : params::Data::Chains()) {
+        for (const auto& [chain, data] : params::Chains()) {
             if (0 != data.p2p_magic_bits_) {
                 output.emplace(chain, data.p2p_magic_bits_);
             }

@@ -517,8 +517,7 @@ auto Requestor::Imp::state_sync(const Work work, Message&& msg) noexcept -> void
 
 auto Requestor::Imp::transition_state_run() noexcept -> void
 {
-    const auto checkpoint =
-        params::Data::Chains().at(chain_).checkpoint_.height_;
+    const auto checkpoint = params::Chains().at(chain_).checkpoint_.height_;
 
     if (remote_position_.first < checkpoint) { return; }
 

@@ -277,7 +277,7 @@ auto Peer::broadcast_inv_transaction(ReadView txid) noexcept -> void
     using Inventory = blockchain::bitcoin::Inventory;
     using Type = Inventory::Type;
     const auto type = [&] {
-        const auto& segwit = params::Data::Chains().at(chain_).segwit_;
+        const auto& segwit = params::Chains().at(chain_).segwit_;
 
         if (segwit) {
 
@@ -1835,7 +1835,7 @@ auto Peer::reconcile_mempool() noexcept -> void
     using Inventory = blockchain::bitcoin::Inventory;
     using Type = Inventory::Type;
     const auto type = [&] {
-        const auto& segwit = params::Data::Chains().at(chain_).segwit_;
+        const auto& segwit = params::Chains().at(chain_).segwit_;
 
         if (segwit) {
 

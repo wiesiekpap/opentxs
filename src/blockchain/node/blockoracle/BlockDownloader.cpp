@@ -76,7 +76,7 @@ auto BlockDownloader::batch_ready() const noexcept -> void
 auto BlockDownloader::batch_size(const std::size_t in) const noexcept
     -> std::size_t
 {
-    const auto limit = params::Data::Chains().at(chain_).block_download_batch_;
+    const auto limit = params::Chains().at(chain_).block_download_batch_;
 
     if (in < 10) {
 

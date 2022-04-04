@@ -520,8 +520,7 @@ auto BlockchainImp::start(
 
     namespace p2p = opentxs::blockchain::p2p;
 
-    switch (
-        opentxs::blockchain::params::Data::Chains().at(type).p2p_protocol_) {
+    switch (opentxs::blockchain::params::Chains().at(type).p2p_protocol_) {
         case p2p::Protocol::bitcoin: {
             auto endpoint = UnallocatedCString{};
 
