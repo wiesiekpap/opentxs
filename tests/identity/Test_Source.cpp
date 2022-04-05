@@ -207,7 +207,9 @@ TEST_F(Test_Source, Constructor_WithCredentialTypeError_ShouldThrow)
         std::runtime_error);
 }
 
-TEST_F(Test_Source, Constructor_WithParametersCredentialTypeHD_ShouldNotReturnNullptr)
+TEST_F(
+    Test_Source,
+    Constructor_WithParametersCredentialTypeHD_ShouldNotReturnNullptr)
 {
     crypto::Parameters parameters{
         crypto::key::asymmetric::Algorithm::Secp256k1,
