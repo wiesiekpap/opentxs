@@ -546,7 +546,6 @@ auto SubchainStateData::match(
 
     const auto& selected = targets.second;
     const auto& [s20, s32, s33, s64, s65, stxo] = selected;
-    const auto matchedTxo = GetOutpoints(stxo);
     auto& results = resultMap[position];
     auto output = std::pair<std::size_t, std::size_t>{};
     GetResults(

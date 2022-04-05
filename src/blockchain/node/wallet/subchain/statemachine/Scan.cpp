@@ -12,6 +12,7 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <array>
+#include <atomic>
 #include <cstddef>
 #include <limits>
 #include <utility>
@@ -75,8 +76,12 @@ Scan::Imp::Imp(
 
 auto Scan::Imp::caught_up() const noexcept -> bool
 {
-    return last_scanned_.value_or(parent_.null_position_) ==
-           filter_tip_.value_or(parent_.null_position_);
+    return current() == filter_tip_.value_or(parent_.null_position_);
+}
+
+auto Scan::Imp::current() const noexcept -> block::Position
+{
+    return last_scanned_.value_or(parent_.null_position_);
 }
 
 auto Scan::Imp::do_startup() noexcept -> void
@@ -174,11 +179,24 @@ auto Scan::Imp::work() noexcept -> bool
         return false;
     }
 
+    const auto height = current().first;
+    const auto rescan = parent_.rescan_progress_.load();
+    static constexpr auto threshold = block::Height{1000};
+
+    if ((height - rescan) > threshold) {
+        log_(OT_PRETTY_CLASS())(parent_.name_)(
+            " waiting to continue scan until rescan has caught up to block ")(
+            height - threshold)(" from current position of ")(rescan)
+            .Flush();
+
+        return false;
+    }
+
     auto buf = std::array<std::byte, scan_status_bytes_ * 1000u>{};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
     auto clean = Vector<ScanStatus>{&alloc};
     auto dirty = Vector<ScanStatus>{&alloc};
-    auto highestTested = last_scanned_.value_or(parent_.null_position_);
+    auto highestTested = current();
     const auto highestClean = parent_.Scan(
         filter_tip_.value(),
         std::numeric_limits<block::Height>::max(),
@@ -186,7 +204,7 @@ auto Scan::Imp::work() noexcept -> bool
         dirty);
     last_scanned_ = std::move(highestTested);
     log_(OT_PRETTY_CLASS())(parent_.name_)(" last scanned updated to ")(
-        opentxs::print(last_scanned_.value_or(parent_.null_position_)))
+        opentxs::print(current()))
         .Flush();
 
     if (auto count = dirty.size(); 0u < count) {

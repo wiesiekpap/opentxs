@@ -119,7 +119,7 @@ private:
     auto process_reprocess(Message&& msg) noexcept -> void final;
     auto process_update(Message&& msg) noexcept -> void final;
     auto queue_downloads() noexcept -> void;
-    auto queue_process() noexcept -> void;
+    auto queue_process() noexcept -> bool;
     auto work() noexcept -> bool final;
 };
 }  // namespace opentxs::blockchain::node::wallet

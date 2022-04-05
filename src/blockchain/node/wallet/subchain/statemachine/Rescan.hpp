@@ -71,6 +71,7 @@ public:
     ~Imp() final = default;
 
 private:
+    network::zeromq::socket::Raw& to_scan_;
     network::zeromq::socket::Raw& to_process_;
     network::zeromq::socket::Raw& to_progress_;
     bool active_;
