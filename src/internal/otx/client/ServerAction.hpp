@@ -162,7 +162,7 @@ public:
         const Amount amount,
         const UnallocatedCString& memo) const -> Action = 0;
 
-    OPENTXS_NO_EXPORT virtual ~ServerAction() = default;
+    virtual ~ServerAction() = default;
 
 protected:
     ServerAction() = default;
