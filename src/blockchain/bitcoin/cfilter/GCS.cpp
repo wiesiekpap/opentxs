@@ -638,7 +638,7 @@ auto GCS::Match(const Targets& targets, allocator_type alloc) const noexcept
     static constexpr auto reserveMatches = std::size_t{16};
     auto output = Matches{alloc};
     output.reserve(reserveMatches);
-    using Map = opentxs::Map<std::uint64_t, Targets::const_iterator>;
+    using Map = opentxs::Map<std::uint64_t, Vector<Targets::const_iterator>>;
     static constexpr auto bytesPerTarget = (2 * sizeof(std::uint64_t));
     auto allocHash = alloc::BoostMonotonic{targets.size() * bytesPerTarget};
     auto hashed = gcs::Elements{&allocHash};
@@ -654,7 +654,7 @@ auto GCS::Match(const Targets& targets, allocator_type alloc) const noexcept
 
     for (auto i = targets.cbegin(); i != targets.cend(); ++i) {
         const auto& hash = hashed.emplace_back(hash_to_range(*i));
-        map.emplace(hash, i);
+        map[hash].emplace_back(i);
     }
 
     std::sort(std::begin(hashed), std::end(hashed));
@@ -664,11 +664,11 @@ auto GCS::Match(const Targets& targets, allocator_type alloc) const noexcept
         std::begin(set),
         std::end(set),
         std::back_inserter(matches));
-    std::transform(
-        std::begin(matches),
-        std::end(matches),
-        std::back_inserter(output),
-        [&](const auto& in) { return map.at(in); });
+
+    for (const auto& match : matches) {
+        auto& values = map.at(match);
+        std::copy(values.begin(), values.end(), std::back_inserter(output));
+    }
 
     return output;
 }

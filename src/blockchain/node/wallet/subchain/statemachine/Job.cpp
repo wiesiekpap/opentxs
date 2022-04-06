@@ -376,6 +376,8 @@ auto Job::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::prepare_reorg:
         case Work::update:
         case Work::process:
+        case Work::reprocess:
+        case Work::key:
         case Work::statemachine: {
             log_(OT_PRETTY_CLASS())(name_)(" deferring ")(print(work))(
                 " message processing until reorg is complete")
@@ -394,7 +396,7 @@ auto Job::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::watchdog: {
             process_watchdog(std::move(msg));
         } break;
-        case Work::key:
+        case Work::watchdog_ack:
         default: {
             LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type ")(
                 static_cast<OTZMQWorkType>(work))

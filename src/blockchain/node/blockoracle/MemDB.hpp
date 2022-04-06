@@ -17,6 +17,7 @@
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
+#include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -43,22 +44,27 @@ class Hash;
 
 namespace opentxs::blockchain::node::blockoracle
 {
-class MemDB
+class MemDB final : public Allocated
 {
 public:
-    auto find(const ReadView& id) const noexcept -> BitcoinBlockResult;
+    auto find(const ReadView id) const noexcept -> BitcoinBlockResult;
+    auto get_allocator() const noexcept -> allocator_type final
+    {
+        return queue_.get_allocator();
+    }
 
     auto clear() noexcept -> void;
     auto push(block::Hash&& id, BitcoinBlockResult&& future) noexcept -> void;
 
-    MemDB(const std::size_t limit) noexcept;
+    MemDB(const std::size_t limit, allocator_type alloc) noexcept;
 
 private:
     using CachedBlock = std::pair<block::Hash, BitcoinBlockResult>;
-    using Completed = UnallocatedDeque<CachedBlock>;
-    using Index = boost::container::flat_map<ReadView, const CachedBlock*>;
+    using Completed = Deque<CachedBlock>;
+    using Index = Map<ReadView, const CachedBlock*>;
 
     const std::size_t limit_;
+    std::size_t bytes_;
     Completed queue_;
     Index index_;
 };

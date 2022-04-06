@@ -8,17 +8,22 @@
 #include "blockchain/node/blockoracle/MemDB.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <string_view>
+#include <future>
+#include <memory>
 
+#include "internal/blockchain/block/Block.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs::blockchain::node::blockoracle
 {
-MemDB::MemDB(const std::size_t limit) noexcept
+MemDB::MemDB(const std::size_t limit, allocator_type alloc) noexcept
     : limit_(limit)
-    , queue_()
-    , index_()
+    , bytes_(0)
+    , queue_(alloc)
+    , index_(alloc)
 {
 }
 
@@ -26,16 +31,21 @@ auto MemDB::clear() noexcept -> void
 {
     index_.clear();
     queue_.clear();
+    bytes_ = 0;
 }
 
-auto MemDB::find(const ReadView& id) const noexcept -> BitcoinBlockResult
+auto MemDB::find(const ReadView id) const noexcept -> BitcoinBlockResult
 {
-    if ((nullptr == id.data()) || (0 == id.size())) { return {}; }
+    if (false == valid(id)) {
+        LogError()(OT_PRETTY_CLASS())("invalid block id").Flush();
 
-    try {
+        return {};
+    }
 
-        return index_.at(id)->second;
-    } catch (...) {
+    if (auto i = index_.find(id); index_.end() != i) {
+
+        return i->second->second;
+    } else {
 
         return {};
     }
@@ -43,17 +53,38 @@ auto MemDB::find(const ReadView& id) const noexcept -> BitcoinBlockResult
 
 auto MemDB::push(block::Hash&& id, BitcoinBlockResult&& future) noexcept -> void
 {
-    if (id.IsNull()) { return; }
+    if (id.IsNull()) {
+        LogError()(OT_PRETTY_CLASS())("invalid block id").Flush();
 
-    auto i = queue_.emplace(queue_.end(), std::move(id), std::move(future));
-    const auto& item = *i;
-    const auto [j, added] = index_.try_emplace(item.first.Bytes(), &item);
+        return;
+    }
 
-    OT_ASSERT(added);
+    if (0u < index_.count(id.Bytes())) {
+        LogError()(OT_PRETTY_CLASS())("block ")(id.asHex())(" already cached")
+            .Flush();
 
-    while (queue_.size() > limit_) {
+        return;
+    }
+
+    OT_ASSERT(future.valid());
+
+    const auto& pBlock = future.get();
+
+    OT_ASSERT(pBlock);
+
+    const auto& block = *pBlock;
+    const auto& item = queue_.emplace_back(std::move(id), std::move(future));
+    bytes_ += block.Internal().CalculateSize();
+    index_.try_emplace(item.first.Bytes(), &item);
+
+    while ((bytes_ > limit_) && (0u < queue_.size())) {
         const auto& item = queue_.front();
+        const auto& id = item.first;
+        LogTrace()(OT_PRETTY_CLASS())("dropping oldest block ")(id.asHex())(
+            " from cache due to exceeding byte limit")
+            .Flush();
         index_.erase(item.first.Bytes());
+        bytes_ -= item.second.get()->Internal().CalculateSize();
         queue_.pop_front();
     }
 }

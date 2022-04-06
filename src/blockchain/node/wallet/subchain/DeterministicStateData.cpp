@@ -108,25 +108,32 @@ auto DeterministicStateData::flush_cache(
 {
     const auto start = Clock::now();
     const auto& log = log_;
-    auto txoCreated = TXOs{get_allocator()};
-    auto txoConsumed = TXOs{get_allocator()};
-    auto positions = Vector<block::Position>{get_allocator()};
-    positions.reserve(matches.size());
-    std::transform(
-        matches.begin(),
-        matches.end(),
-        std::back_inserter(positions),
-        [](const auto& data) { return data.first; });
-    auto updated = db_.AddConfirmedTransactions(
-        id_, db_key_, matches, txoCreated, txoConsumed);
 
-    OT_ASSERT(updated);  // TODO handle database errors
+    if (0u < matches.size()) {
+        auto txoCreated = TXOs{get_allocator()};
+        auto txoConsumed = TXOs{get_allocator()};
+        auto positions = Vector<block::Position>{get_allocator()};
+        positions.reserve(matches.size());
+        std::transform(
+            matches.begin(),
+            matches.end(),
+            std::back_inserter(positions),
+            [](const auto& data) { return data.first; });
+        auto updated = db_.AddConfirmedTransactions(
+            id_, db_key_, matches, txoCreated, txoConsumed);
 
-    element_cache_.lock()->Add(std::move(txoCreated), std::move(txoConsumed));
+        OT_ASSERT(updated);  // TODO handle database errors
 
-    if (cb) { cb(positions); }
+        element_cache_.lock()->Add(
+            std::move(txoCreated), std::move(txoConsumed));
 
-    matches.clear();
+        if (cb) { cb(positions); }
+
+        matches.clear();
+    } else {
+        log(OT_PRETTY_CLASS())(name_)(" no cached transactions").Flush();
+    }
+
     log(OT_PRETTY_CLASS())(name_)(" finished flushing cache in ")(
         std::chrono::duration_cast<std::chrono::nanoseconds>(
             Clock::now() - start))

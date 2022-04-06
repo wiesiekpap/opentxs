@@ -63,6 +63,10 @@ Rescan::Imp::Imp(
           {
               {SocketType::Push,
                {
+                   {parent->to_scan_endpoint_, Direction::Connect},
+               }},
+              {SocketType::Push,
+               {
                    {parent->to_process_endpoint_, Direction::Connect},
                }},
               {SocketType::Push,
@@ -70,8 +74,9 @@ Rescan::Imp::Imp(
                    {parent->to_progress_endpoint_, Direction::Connect},
                }},
           })
-    , to_process_(pipeline_.Internal().ExtraSocket(1))
-    , to_progress_(pipeline_.Internal().ExtraSocket(2))
+    , to_scan_(pipeline_.Internal().ExtraSocket(1))
+    , to_process_(pipeline_.Internal().ExtraSocket(2))
+    , to_progress_(pipeline_.Internal().ExtraSocket(3))
     , active_(false)
     , last_scanned_(std::nullopt)
     , filter_tip_(std::nullopt)
@@ -353,7 +358,7 @@ auto Rescan::Imp::stop() const noexcept -> block::Height
 auto Rescan::Imp::update_progress() noexcept -> void
 {
     parent_.rescan_progress_.store(current().first);
-    to_process_.Send(MakeWork(Work::statemachine));
+    to_scan_.Send(MakeWork(Work::statemachine));
 }
 
 auto Rescan::Imp::work() noexcept -> bool

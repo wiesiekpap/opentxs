@@ -546,7 +546,6 @@ auto SubchainStateData::match(
 
     const auto& selected = targets.second;
     const auto& [s20, s32, s33, s64, s65, stxo] = selected;
-    const auto matchedTxo = GetOutpoints(stxo);
     auto& results = resultMap[position];
     auto output = std::pair<std::size_t, std::size_t>{};
     GetResults(
@@ -641,10 +640,8 @@ auto SubchainStateData::ProcessBlock(
     const auto& filters = node.FilterOracleInternal();
     const auto& blockHash = position.second;
     auto buf = std::array<std::byte, 16_KiB>{};
-    auto alloc = alloc::BoostMonotonic{
-        buf.data(),
-        buf.size(),
-        alloc::standard_to_boost(get_allocator().resource())};
+    auto upstream = alloc::StandardToBoost{get_allocator().resource()};
+    auto alloc = alloc::BoostMonotonic{buf.data(), buf.size(), &upstream};
     auto haveTargets = Time{};
     auto haveFilter = Time{};
     auto keyMatches = std::size_t{};
@@ -723,10 +720,8 @@ auto SubchainStateData::ProcessTransaction(
     const block::bitcoin::Transaction& tx) const noexcept -> void
 {
     auto buf = std::array<std::byte, 4_KiB>{};
-    auto alloc = alloc::BoostMonotonic{
-        buf.data(),
-        buf.size(),
-        alloc::standard_to_boost(get_allocator().resource())};
+    auto upstream = alloc::StandardToBoost{get_allocator().resource()};
+    auto alloc = alloc::BoostMonotonic{buf.data(), buf.size(), &upstream};
     auto copy = tx.clone();
 
     OT_ASSERT(copy);

@@ -40,10 +40,11 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/ByteLiterals.hpp"
 
 namespace opentxs::blockchain::node::blockoracle
 {
-const std::size_t Cache::cache_limit_{16};
+const std::size_t Cache::cache_limit_{8_MiB};
 const std::chrono::seconds Cache::download_timeout_{60};
 
 Cache::Cache(
@@ -83,7 +84,7 @@ Cache::Cache(
     , batch_index_(alloc)
     , hash_index_(alloc)
     , hash_cache_(alloc)
-    , mem_(cache_limit_)
+    , mem_(cache_limit_, alloc)
     , peer_target_(std::nullopt)
     , running_(true)
 {

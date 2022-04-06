@@ -12,7 +12,6 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <algorithm>
-#include <atomic>
 #include <chrono>
 #include <future>
 #include <memory>
@@ -341,20 +340,19 @@ auto Process::Imp::queue_downloads() noexcept -> void
     }
 }
 
-auto Process::Imp::queue_process() noexcept -> void
+auto Process::Imp::queue_process() noexcept -> bool
 {
-    const auto CanProcess = [this](const auto& data) {
-        const auto& height = data.first.first;
+    auto counter = 0u;
+    const auto limit = std::max(std::thread::hardware_concurrency(), 1u);
+    const auto CanProcess = [&] {
+        ++counter;
 
-        return (processing_.size() < download_limit_) &&
-               (false == running_.is_limited()) &&
-               (height <= (parent_.rescan_progress_.load() +
-                           static_cast<block::Height>(download_limit_)));
+        return (counter <= limit) && (processing_.size() < download_limit_) &&
+               (false == running_.is_limited());
     };
+    const auto HaveItems = [this] { return 0u < ready_.size(); };
 
-    while (0u < ready_.size()) {
-        if (false == CanProcess(*ready_.cbegin())) { break; }
-
+    while (HaveItems() && CanProcess()) {
         const auto i = processing_.insert(
             processing_.begin(), ready_.extract(ready_.begin()));
 
@@ -364,23 +362,24 @@ auto Process::Imp::queue_process() noexcept -> void
         log_(OT_PRETTY_CLASS())(parent_.name_)(" adding block ")(
             opentxs::print(position))(" to process queue")
             .Flush();
-        ++running_;
-        auto post = std::make_shared<ScopeGuard>([this] { --running_; });
         parent_.api_.Network().Asio().Internal().Post(
             ThreadPool::Blockchain,
-            [this, post, pos{i->first}, ptr{i->second}] {
-                do_process(pos, ptr);
-            });
+            [this,
+             post = std::make_shared<ScopeGuard>(
+                 [this] { ++running_; }, [this] { --running_; }),
+             pos{i->first},
+             ptr{i->second}] { do_process(pos, ptr); });
     }
+
+    return HaveItems();
 }
 
 auto Process::Imp::work() noexcept -> bool
 {
     check_cache();
     queue_downloads();
-    queue_process();
 
-    return false;
+    return queue_process();
 }
 }  // namespace opentxs::blockchain::node::wallet
 
