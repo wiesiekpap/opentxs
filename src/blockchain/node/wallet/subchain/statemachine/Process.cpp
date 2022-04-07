@@ -12,10 +12,12 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <future>
 #include <memory>
 #include <string_view>
+#include <thread>
 #include <type_traits>
 #include <utility>
 
@@ -94,6 +96,12 @@ Process::Imp::Imp(
     , running_(counter_.Allocate())
 {
     txid_cache_.reserve(1024);
+}
+
+auto Process::Imp::active() const noexcept -> std::size_t
+{
+    return waiting_.size() + downloading_.size() + ready_.size() +
+           processing_.size();
 }
 
 auto Process::Imp::check_cache() noexcept -> void
@@ -215,6 +223,8 @@ auto Process::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
             }
         }
     }
+
+    parent_.process_queue_.store(active());
 }
 
 auto Process::Imp::process_block(block::Hash&& hash) noexcept -> void
@@ -271,6 +281,7 @@ auto Process::Imp::process_process(block::Position&& pos) noexcept -> void
             " has been removed from the processing list due to reorg")
             .Flush();
     } else {
+        --parent_.process_queue_;
         processing_.erase(i);
         log_(OT_PRETTY_CLASS())(parent_.name_)(" finished processing block ")(
             print(pos))
@@ -286,6 +297,7 @@ auto Process::Imp::process_reprocess(Message&& msg) noexcept -> void
         .Flush();
     auto dirty = Vector<ScanStatus>{get_allocator()};
     extract_dirty(parent_.api_, msg, dirty);
+    parent_.process_queue_ += dirty.size();
 
     for (auto& [type, position] : dirty) {
         log_(OT_PRETTY_CLASS())(parent_.name_)(
@@ -319,6 +331,7 @@ auto Process::Imp::process_update(Message&& msg) noexcept -> void
 {
     auto dirty = Vector<ScanStatus>{get_allocator()};
     extract_dirty(parent_.api_, msg, dirty);
+    parent_.process_queue_ += dirty.size();
 
     for (auto& [type, position] : dirty) {
         waiting_.emplace_back(std::move(position));

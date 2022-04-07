@@ -7,23 +7,28 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"  // IWYU pragma: associated
 
+#include <boost/container/container_fwd.hpp>
 #include <boost/system/error_code.hpp>
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cstdint>
 #include <future>
 #include <iterator>
 #include <memory>
 #include <numeric>
 #include <sstream>
 #include <stdexcept>
+#include <thread>
 #include <type_traits>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/ScriptForm.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/network/Asio.hpp"
+#include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/BlockOracle.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
@@ -64,6 +69,8 @@
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/ByteLiterals.hpp"
+#include "util/Container.hpp"
+#include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -98,6 +105,246 @@ auto print(SubchainJobs job) noexcept -> std::string_view
         OT_FAIL;
     }
 }
+}  // namespace opentxs::blockchain::node::wallet
+
+namespace opentxs::blockchain::node::wallet
+{
+class SubchainStateData::PrehashData
+{
+public:
+    const std::size_t job_count_;
+
+    auto operator()(
+        const std::string_view procedure,
+        const Log& log,
+        const block::Position& position,
+        const GCS& cfilter,
+        const BlockTarget& targets,
+        const std::size_t index,
+        wallet::MatchCache::Results& results) const noexcept -> bool
+    {
+        return match(
+            procedure,
+            log,
+            position,
+            cfilter,
+            targets,
+            data_.at(index),
+            results);
+    }
+
+    auto operator()(std::size_t job) noexcept -> void
+    {
+        const auto end = targets_.size();
+
+        for (auto i = job; i < end; i += job_count_) {
+            hash(targets_.at(i), data_.at(i));
+        }
+    }
+
+    PrehashData(
+        const api::Session& api,
+        const BlockTargets& targets,
+        const std::string_view name,
+        std::size_t jobs,
+        allocator_type alloc) noexcept
+        : job_count_(jobs)
+        , api_(api)
+        , targets_(targets)
+        , name_(name)
+        , data_(alloc)
+    {
+        OT_ASSERT(0 < job_count_);
+
+        data_.reserve(targets.size());
+
+        for (const auto& [block, elements] : targets) {
+            const auto& [e20, e32, e33, e64, e65, eTxo] = elements;
+            auto& [data20, data32, data33, data64, data65, dataTxo] =
+                data_.emplace_back();
+            data20.first.reserve(e20.first.size());
+            data32.first.reserve(e32.first.size());
+            data33.first.reserve(e33.first.size());
+            data64.first.reserve(e64.first.size());
+            data65.first.reserve(e65.first.size());
+            dataTxo.first.reserve(eTxo.first.size());
+        }
+
+        OT_ASSERT(targets_.size() == data_.size());
+    }
+
+private:
+    using Hash = std::uint64_t;
+    using Hashes = Vector<Hash>;
+    using ElementHashMap = Map<Hash, Vector<const Bip32Index*>>;
+    using TxoHashMap = Map<Hash, Vector<const block::Outpoint*>>;
+    using ElementData = std::pair<Hashes, ElementHashMap>;
+    using TxoData = std::pair<Hashes, TxoHashMap>;
+    using BlockData = std::tuple<
+        ElementData,  // 20 byte
+        ElementData,  // 32 byte
+        ElementData,  // 33 byte
+        ElementData,  // 64 byte
+        ElementData,  // 65 byte
+        TxoData>;
+    using Data = Vector<BlockData>;
+
+    const api::Session& api_;
+    const BlockTargets& targets_;
+    const std::string_view name_;
+    Data data_;
+
+    auto hash(const BlockTarget& target, BlockData& row) noexcept -> void
+    {
+        const auto& [block, elements] = target;
+        const auto& [e20, e32, e33, e64, e65, eTxo] = elements;
+        auto& [data20, data32, data33, data64, data65, dataTxo] = row;
+        hash(block, e20, data20);
+        hash(block, e32, data32);
+        hash(block, e33, data33);
+        hash(block, e64, data64);
+        hash(block, e65, data65);
+        hash(block, eTxo, dataTxo);
+    }
+    template <typename Input, typename Output>
+    auto hash(
+        const block::Hash& block,
+        const std::pair<Vector<Input>, Targets>& targets,
+        Output& dest) noexcept -> void
+    {
+        const auto key =
+            blockchain::internal::BlockHashToFilterKey(block.Bytes());
+        const auto& [indices, bytes] = targets;
+        auto& [hashes, map] = dest;
+        auto i = indices.cbegin();
+        auto t = bytes.cbegin();
+        auto end = indices.cend();
+
+        for (; i < end; ++i, ++t) {
+            auto& hash = hashes.emplace_back(gcs::Siphash(api_, key, *t));
+            map[hash].emplace_back(&(*i));
+        }
+
+        dedup(hashes);
+    }
+    auto match(
+        const std::string_view procedure,
+        const Log& log,
+        const block::Position& position,
+        const GCS& cfilter,
+        const BlockTarget& targets,
+        const BlockData& prehashed,
+        wallet::MatchCache::Results& resultMap) const noexcept -> bool
+    {
+        const auto alloc = resultMap.get_allocator();
+        const auto GetKeys = [&](const auto& data) {
+            auto out = Set<Bip32Index>{alloc};
+            const auto& [hashes, map] = data;
+            const auto start = hashes.cbegin();
+
+            for (const auto& match : cfilter.Internal().Match(hashes)) {
+                const auto dist = std::distance(start, match);
+
+                OT_ASSERT(0 <= dist);
+
+                const auto& hash = hashes.at(static_cast<std::size_t>(dist));
+
+                for (const auto* item : map.at(hash)) { out.emplace(*item); }
+            }
+
+            return out;
+        };
+        const auto GetOutpoints = [&](const auto& data) {
+            auto out = Set<block::Outpoint>{alloc};
+            const auto& [hashes, map] = data;
+            const auto start = hashes.cbegin();
+
+            for (const auto& match : cfilter.Internal().Match(hashes)) {
+                const auto dist = std::distance(start, match);
+
+                OT_ASSERT(0 <= dist);
+
+                const auto& hash = hashes.at(static_cast<std::size_t>(dist));
+
+                for (const auto* item : map.at(hash)) { out.emplace(*item); }
+            }
+
+            return out;
+        };
+        const auto GetResults = [&](const auto& cb,
+                                    const auto& prehashed,
+                                    const auto& selected,
+                                    auto& clean,
+                                    auto& dirty,
+                                    auto& output) {
+            const auto matches = cb(prehashed);
+
+            for (const auto& index : selected.first) {
+                if (0u == matches.count(index)) {
+                    clean.emplace(index);
+                } else {
+                    dirty.emplace(index);
+                }
+            }
+
+            output.first += matches.size();
+            output.second += selected.first.size();
+        };
+        const auto& selected = targets.second;
+        const auto& [p20, p32, p33, p64, p65, pTxo] = prehashed;
+        const auto& [s20, s32, s33, s64, s65, sTxo] = selected;
+        auto& results = resultMap[position];
+        auto output = std::pair<std::size_t, std::size_t>{};
+        GetResults(
+            GetKeys,
+            p20,
+            s20,
+            results.confirmed_no_match_.match_20_,
+            results.confirmed_match_.match_20_,
+            output);
+        GetResults(
+            GetKeys,
+            p32,
+            s32,
+            results.confirmed_no_match_.match_32_,
+            results.confirmed_match_.match_32_,
+            output);
+        GetResults(
+            GetKeys,
+            p33,
+            s33,
+            results.confirmed_no_match_.match_33_,
+            results.confirmed_match_.match_33_,
+            output);
+        GetResults(
+            GetKeys,
+            p64,
+            s64,
+            results.confirmed_no_match_.match_64_,
+            results.confirmed_match_.match_64_,
+            output);
+        GetResults(
+            GetKeys,
+            p65,
+            s65,
+            results.confirmed_no_match_.match_65_,
+            results.confirmed_match_.match_65_,
+            output);
+        GetResults(
+            GetOutpoints,
+            pTxo,
+            sTxo,
+            results.confirmed_no_match_.match_txo_,
+            results.confirmed_match_.match_txo_,
+            output);
+        const auto& [count, of] = output;
+        log(OT_PRETTY_CLASS())(name_)(" GCS ")(procedure)(" for block ")(
+            print(position))(" matched ")(count)(" of ")(of)(" target elements")
+            .Flush();
+
+        return 0u < count;
+    }
+};
 }  // namespace opentxs::blockchain::node::wallet
 
 namespace opentxs::blockchain::node::wallet
@@ -170,6 +417,8 @@ SubchainStateData::SubchainStateData(
           db_.GetUnspentOutputs(id_, subchain_, alloc.resource()),
           alloc)
     , match_cache_(alloc)
+    , scan_dirty_(false)
+    , process_queue_(0)
     , rescan_progress_(-1)
     , to_block_oracle_(pipeline_.Internal().ExtraSocket(0))
     , to_children_(pipeline_.Internal().ExtraSocket(1))
@@ -177,6 +426,7 @@ SubchainStateData::SubchainStateData(
     , state_(State::normal)
     , filter_sizes_(alloc)
     , elements_per_cfilter_(0)
+    , job_counter_()
     , reorgs_(alloc)
     , progress_(std::nullopt)
     , rescan_(std::nullopt)
@@ -266,6 +516,20 @@ auto SubchainStateData::ChangeState(
     }
 
     return output;
+}
+
+auto SubchainStateData::choose_thread_count(bool rescan) const noexcept
+    -> std::size_t
+{
+    if (rescan || (0u == process_queue_.load())) {
+        static constexpr auto max = 16u;
+
+        return std::min(
+            max, std::max(std::thread::hardware_concurrency(), 2u) - 1u);
+    } else {
+
+        return 1u;
+    }
 }
 
 auto SubchainStateData::clear_children() noexcept -> void
@@ -481,115 +745,6 @@ auto SubchainStateData::Init(boost::shared_ptr<SubchainStateData> me) noexcept
     -> void
 {
     signal_startup(me);
-}
-
-auto SubchainStateData::match(
-    const std::string_view procedure,
-    const Log& log,
-    const block::Position& position,
-    const BlockTarget& targets,
-    const GCS& cfilter,
-    wallet::MatchCache::Results& resultMap) const noexcept -> bool
-{
-    const auto GetKeys = [&](const auto& selected) {
-        auto& input = selected.first;
-        auto out = Set<Bip32Index>{input.get_allocator()};
-        const auto start = selected.second.begin();
-
-        for (const auto& match : cfilter.Match(selected.second)) {
-            const auto index = std::distance(start, match);
-
-            OT_ASSERT(0 <= index);
-
-            const auto i = static_cast<std::size_t>(index);
-
-            out.emplace(input.at(i));
-        }
-
-        return out;
-    };
-    const auto GetOutpoints = [&](const auto& selected) {
-        auto& input = selected.first;
-        auto out = Set<block::Outpoint>{input.get_allocator()};
-        const auto start = selected.second.begin();
-
-        for (const auto& match : cfilter.Match(selected.second)) {
-            const auto index = std::distance(start, match);
-
-            OT_ASSERT(0 <= index);
-
-            const auto i = static_cast<std::size_t>(index);
-
-            out.emplace(input.at(i));
-        }
-
-        return out;
-    };
-    const auto GetResults = [&](const auto& cb,
-                                const auto& selected,
-                                auto& clean,
-                                auto& dirty,
-                                auto& output) {
-        const auto matches = cb(selected);
-
-        for (const auto& index : selected.first) {
-            if (0u == matches.count(index)) {
-                clean.emplace(index);
-            } else {
-                dirty.emplace(index);
-            }
-        }
-
-        output.first += matches.size();
-        output.second += selected.first.size();
-    };
-
-    const auto& selected = targets.second;
-    const auto& [s20, s32, s33, s64, s65, stxo] = selected;
-    auto& results = resultMap[position];
-    auto output = std::pair<std::size_t, std::size_t>{};
-    GetResults(
-        GetKeys,
-        s20,
-        results.confirmed_no_match_.match_20_,
-        results.confirmed_match_.match_20_,
-        output);
-    GetResults(
-        GetKeys,
-        s32,
-        results.confirmed_no_match_.match_32_,
-        results.confirmed_match_.match_32_,
-        output);
-    GetResults(
-        GetKeys,
-        s33,
-        results.confirmed_no_match_.match_33_,
-        results.confirmed_match_.match_33_,
-        output);
-    GetResults(
-        GetKeys,
-        s64,
-        results.confirmed_no_match_.match_64_,
-        results.confirmed_match_.match_64_,
-        output);
-    GetResults(
-        GetKeys,
-        s65,
-        results.confirmed_no_match_.match_65_,
-        results.confirmed_match_.match_65_,
-        output);
-    GetResults(
-        GetOutpoints,
-        stxo,
-        results.confirmed_no_match_.match_txo_,
-        results.confirmed_match_.match_txo_,
-        output);
-    const auto& [count, of] = output;
-    log(OT_PRETTY_CLASS())(name_)(" GCS ")(procedure)(" for block ")(
-        print(position))(" matched ")(count)(" of ")(of)(" target elements")
-        .Flush();
-
-    return 0u < count;
 }
 
 auto SubchainStateData::pipeline(const Work work, Message&& msg) noexcept
@@ -860,8 +1015,9 @@ auto SubchainStateData::scan(
             // limiting the batch size to a reasonable value based on the
             // average cfilter element count (estimated) and match set for this
             // subchain (known).
+            const auto threads = choose_thread_count(rescan);
             const auto scanBatch =
-                GetBatchSize(elementsPerFilter, elementCount);
+                GetBatchSize(elementsPerFilter, elementCount) * threads;
             log(OT_PRETTY_CLASS())(name)(" filter size: ")(
                 elementsPerFilter)(" wallet size: ")(
                 elementCount)(" batch size: ")(scanBatch)
@@ -889,22 +1045,50 @@ auto SubchainStateData::scan(
                 startHeight, target, get_allocator().resource());
             auto filterPromise = std::promise<Vector<GCS>>{};
             auto filterFuture = filterPromise.get_future();
-            static constexpr auto filterBackgroundThreshold = std::size_t{100u};
+            auto tp =
+                api_.Network().Asio().Internal().Post(ThreadPool::General, [&] {
+                    filterPromise.set_value(filters.LoadFilters(type, blocks));
+                });
 
-            if (blocks.size() >= filterBackgroundThreshold) {
-                api_.Network().Asio().Internal().Post(
-                    ThreadPool::Blockchain, [&] {
-                        filterPromise.set_value(
-                            filters.LoadFilters(type, blocks));
-                    });
-            } else {
-                filterPromise.set_value(filters.LoadFilters(type, blocks));
-            }
+            if (false == tp) { throw std::runtime_error{""}; }
 
             auto selected = BlockTargets{get_allocator()};
             select_targets(*handle, blocks, elements, startHeight, selected);
-            // TODO pre-hash all the selected targets while cfilters are loading
+            auto prehash = PrehashData{
+                api_,
+                selected,
+                name_,
+                std::min(threads, selected.size()),
+                get_allocator()};
+
+            if (1u < prehash.job_count_) {
+                auto count = job_counter_.Allocate();
+
+                for (auto n{0u}; n < prehash.job_count_; ++n) {
+                    tp = api_.Network().Asio().Internal().Post(
+                        ThreadPool::General,
+                        [post = std::make_shared<ScopeGuard>(
+                             [&] { ++count; }, [&] { --count; }),
+                         n,
+                         &prehash] { prehash(n); });
+
+                    if (false == tp) { throw std::runtime_error{""}; }
+                }
+            } else {
+                prehash(0u);
+            }
+
+            const auto havePrehash = Clock::now();
+            log_(OT_PRETTY_CLASS())(name)(" ")(
+                procedure)(" calculated target hashes for ")(blocks.size())(
+                " cfilters in ")(std::chrono::nanoseconds{havePrehash - start})
+                .Flush();
             const auto cfilters = filterFuture.get();
+            const auto haveCfilters = Clock::now();
+            log_(OT_PRETTY_CLASS())(name)(" ")(
+                procedure)(" loaded cfilters in ")(
+                std::chrono::nanoseconds{haveCfilters - havePrehash})
+                .Flush();
             const auto cfilterCount = cfilters.size();
 
             OT_ASSERT(cfilterCount <= blocks.size());
@@ -914,6 +1098,7 @@ auto SubchainStateData::scan(
             auto s = selected.begin();
             auto f = cfilters.begin();
             auto i = startHeight;
+            auto n = std::size_t{0};
             auto blankFilterSizes = Deque<std::size_t>{get_allocator()};
             auto& filterSizes = [&]() -> Deque<std::size_t>& {
                 if (rescan) {
@@ -925,7 +1110,7 @@ auto SubchainStateData::scan(
                 }
             }();
 
-            for (auto end = cfilters.end(); f != end; ++f, ++s, ++i) {
+            for (auto end = cfilters.end(); f != end; ++f, ++s, ++i, ++n) {
                 const auto& blockHash = s->first;
                 const auto& cfilter = *f;
                 filterSizes.push_back(cfilter.ElementCount());
@@ -947,8 +1132,8 @@ auto SubchainStateData::scan(
                 }
 
                 atLeastOnce = true;
-                const auto hasMatches =
-                    match(procedure, log, testPosition, *s, cfilter, results);
+                const auto hasMatches = prehash(
+                    procedure, log, testPosition, cfilter, *s, n, results);
 
                 if (hasMatches) {
                     isClean = false;
@@ -1107,14 +1292,14 @@ auto SubchainStateData::select_matches(
 
         return true;
     } else {
-        // NOTE this should never happen because a block is only processed when
+        // TODO this should never happen because a block is only processed when
         // a previous call to SubchainStateData::scan indicated this block had a
         // match, and the scan function should have set the matched elements in
         // the element cache. The only time this data is deleted is the call to
         // ElementCache::Forget, but that should never be called until there is
         // no possibility that blocks at or below that position will be
         // processed.
-        LogError()(OT_PRETTY_CLASS())(name_)(" existing matches for block ")(
+        log_(OT_PRETTY_CLASS())(name_)(" existing matches for block ")(
             print(block))(" not found")
             .Flush();
 
