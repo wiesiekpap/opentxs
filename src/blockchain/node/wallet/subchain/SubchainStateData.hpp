@@ -282,7 +282,8 @@ private:
         const Subchain subchain,
         allocator_type alloc) noexcept -> CString;
 
-    auto choose_thread_count(bool rescan) const noexcept -> std::size_t;
+    auto choose_thread_count(std::size_t elements) const noexcept
+        -> std::size_t;
     auto clear_children() noexcept -> void;
     auto get_account_targets(const Elements& elements, alloc::Resource* alloc)
         const noexcept -> Targets;
