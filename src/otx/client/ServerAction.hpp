@@ -31,8 +31,8 @@ class Client;
 
 namespace identifier
 {
-class Nym;
 class Notary;
+class Nym;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -171,7 +171,7 @@ public:
         const api::session::Client& api,
         const ContextLockCallback& lockCallback);
 
-    OPENTXS_NO_EXPORT ~ServerAction() final = default;
+    ~ServerAction() final = default;
 
 private:
     const api::session::Client& api_;

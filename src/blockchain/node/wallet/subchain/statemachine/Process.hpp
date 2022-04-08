@@ -103,6 +103,8 @@ private:
     JobCounter counter_;
     Outstanding running_;
 
+    auto active() const noexcept -> std::size_t;
+
     auto check_cache() noexcept -> void;
     auto do_process(
         const block::Position position,

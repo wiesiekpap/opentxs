@@ -76,7 +76,7 @@ private:
     bool enabled_;
 
     auto caught_up() const noexcept -> bool;
-    auto current() const noexcept -> block::Position;
+    auto current() const noexcept -> const block::Position&;
 
     auto do_startup() noexcept -> void final;
     auto process_filter(block::Position&& tip) noexcept -> void final;

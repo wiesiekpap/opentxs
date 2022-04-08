@@ -79,9 +79,15 @@ auto Scan::Imp::caught_up() const noexcept -> bool
     return current() == filter_tip_.value_or(parent_.null_position_);
 }
 
-auto Scan::Imp::current() const noexcept -> block::Position
+auto Scan::Imp::current() const noexcept -> const block::Position&
 {
-    return last_scanned_.value_or(parent_.null_position_);
+    if (last_scanned_.has_value()) {
+
+        return last_scanned_.value();
+    } else {
+
+        return parent_.null_position_;
+    }
 }
 
 auto Scan::Imp::do_startup() noexcept -> void
@@ -183,7 +189,7 @@ auto Scan::Imp::work() noexcept -> bool
     const auto rescan = parent_.rescan_progress_.load();
     static constexpr auto threshold = block::Height{1000};
 
-    if ((height - rescan) > threshold) {
+    if (parent_.scan_dirty_ && ((height - rescan) > threshold)) {
         log_(OT_PRETTY_CLASS())(parent_.name_)(
             " waiting to continue scan until rescan has caught up to block ")(
             height - threshold)(" from current position of ")(rescan)

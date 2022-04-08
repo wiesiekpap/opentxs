@@ -11,10 +11,12 @@
 #include "internal/otx/client/Factory.hpp"
 #include "internal/otx/client/ServerAction.hpp"
 #include "internal/otx/common/Account.hpp"
+#include "internal/util/Shared.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "otx/client/obsolete/OTAPI_Func.hpp"
 
 namespace opentxs::factory

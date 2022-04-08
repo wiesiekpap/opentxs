@@ -77,7 +77,6 @@ Rescan::Imp::Imp(
     , to_scan_(pipeline_.Internal().ExtraSocket(1))
     , to_process_(pipeline_.Internal().ExtraSocket(2))
     , to_progress_(pipeline_.Internal().ExtraSocket(3))
-    , active_(false)
     , last_scanned_(std::nullopt)
     , filter_tip_(std::nullopt)
     , dirty_(alloc)
@@ -89,10 +88,10 @@ auto Rescan::Imp::adjust_last_scanned(
 {
     // NOTE before any dirty blocks have been received last_scanned_ simply
     // follows the progress of the Scan operation. After Rescan is enabled
-    // last_scanned_ is controlled by work() until rescan catches up and active_
-    // is false.
+    // last_scanned_ is controlled by work() until rescan catches up and
+    // parent_.scan_dirty_ is false.
 
-    if (active_) {
+    if (parent_.scan_dirty_) {
         log_(OT_PRETTY_CLASS())(name_)(
             " ignoring scan position update due to active rescan in progress")
             .Flush();
@@ -143,9 +142,15 @@ auto Rescan::Imp::caught_up() const noexcept -> bool
     return current() == filter_tip_.value_or(parent_.null_position_);
 }
 
-auto Rescan::Imp::current() const noexcept -> block::Position
+auto Rescan::Imp::current() const noexcept -> const block::Position&
 {
-    return last_scanned_.value_or(parent_.null_position_);
+    if (last_scanned_.has_value()) {
+
+        return last_scanned_.value();
+    } else {
+
+        return parent_.null_position_;
+    }
 }
 
 auto Rescan::Imp::do_startup() noexcept -> void
@@ -224,11 +229,10 @@ auto Rescan::Imp::process_dirty(const Set<block::Position>& dirty) noexcept
     -> void
 {
     if (0u < dirty.size()) {
-        if (false == active_) {
+        if (auto val = parent_.scan_dirty_.exchange(true); false == val) {
             log_(OT_PRETTY_CLASS())(name_)(
                 " enabling rescan since update contains dirty blocks")
                 .Flush();
-            active_ = true;
         }
 
         for (auto& position : dirty) {
@@ -286,7 +290,7 @@ auto Rescan::Imp::process_update(Message&& msg) noexcept -> void
     process_dirty(dirty);
     process_clean(clean);
 
-    if (active_) {
+    if (parent_.scan_dirty_) {
         do_work();
     } else if (0u < clean.size()) {
         to_progress_.SendDeferred(std::move(msg));
@@ -380,14 +384,14 @@ auto Rescan::Imp::work() noexcept -> bool
         }
     }};
 
-    if (false == active_) {
+    if (false == parent_.scan_dirty_) {
         log_(OT_PRETTY_CLASS())(name_)(" rescan is not necessary").Flush();
 
         return false;
     }
 
     if (caught_up()) {
-        active_ = false;
+        parent_.scan_dirty_ = false;
         log_(OT_PRETTY_CLASS())(name_)(
             " rescan has caught up to current filter tip")
             .Flush();
