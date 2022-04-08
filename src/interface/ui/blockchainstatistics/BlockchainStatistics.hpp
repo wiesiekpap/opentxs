@@ -19,6 +19,7 @@
 #include "interface/ui/base/List.hpp"
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
+#include "internal/util/Timer.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -109,6 +110,7 @@ private:
         block = value(WorkType::BlockchainBlockDownloadQueue),
         connectedpeer = value(WorkType::BlockchainPeerConnected),
         balance = value(WorkType::BlockchainWalletUpdated),
+        timer = OT_ZMQ_INTERNAL_SIGNAL + 0,
         init = OT_ZMQ_INIT_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
@@ -122,6 +124,7 @@ private:
 
     const api::network::Blockchain& blockchain_;
     Map<BlockchainStatisticsRowID, CachedData> cache_;
+    Timer timer_;
 
     auto construct_row(
         const BlockchainStatisticsRowID& id,
@@ -139,7 +142,9 @@ private:
     auto process_chain(BlockchainStatisticsRowID chain) noexcept -> void;
     auto process_reorg(const Message& in) noexcept -> void;
     auto process_state(const Message& in) noexcept -> void;
+    auto process_timer(const Message& in) noexcept -> void;
     auto process_work(const Message& in) noexcept -> void;
+    auto reset_timer() noexcept -> void;
     auto startup() noexcept -> void;
 
     BlockchainStatistics() = delete;

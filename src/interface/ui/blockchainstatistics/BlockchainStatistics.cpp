@@ -7,7 +7,9 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "interface/ui/blockchainstatistics/BlockchainStatistics.hpp"  // IWYU pragma: associated
 
+#include <boost/system/error_code.hpp>  // IWYU pragma: keep
 #include <atomic>
+#include <chrono>
 #include <cstddef>
 #include <future>
 #include <memory>
@@ -16,8 +18,10 @@
 #include <utility>
 
 #include "interface/ui/base/List.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -38,6 +42,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Options.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -63,6 +68,7 @@ BlockchainStatistics::BlockchainStatistics(
     , Worker(api, {})
     , blockchain_(api.Network().Blockchain())
     , cache_()
+    , timer_(api.Network().Asio().Internal().GetTimer())
 {
     init_executor({
         UnallocatedCString{api.Endpoints().BlockchainBlockDownloadQueue()},
@@ -204,6 +210,9 @@ auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
         case Work::balance: {
             process_balance(in);
         } break;
+        case Work::timer: {
+            process_timer(in);
+        } break;
         case Work::init: {
             startup();
         } break;
@@ -328,6 +337,21 @@ auto BlockchainStatistics::process_state(const Message& in) noexcept -> void
     process_chain(body.at(1).as<blockchain::Type>());
 }
 
+auto BlockchainStatistics::process_timer(const Message& in) noexcept -> void
+{
+    for (auto& [chain, data] : cache_) {
+        auto& [header, filter, connected, active, blocks, balance] = data;
+
+        try {
+            balance = blockchain_.GetChain(chain).GetBalance().second;
+            process_chain(chain);
+        } catch (...) {
+        }
+    }
+
+    reset_timer();
+}
+
 auto BlockchainStatistics::process_work(const Message& in) noexcept -> void
 {
     const auto body = in.Body();
@@ -337,6 +361,17 @@ auto BlockchainStatistics::process_work(const Message& in) noexcept -> void
     process_chain(body.at(1).as<blockchain::Type>());
 }
 
+auto BlockchainStatistics::reset_timer() noexcept -> void
+{
+    if (Widget::api_.GetOptions().TestMode()) { return; }
+
+    using namespace std::literals;
+    timer_.SetRelative(60s);
+    timer_.Wait([this](const auto& ec) {
+        if (!ec) { pipeline_.Push(MakeWork(Work::timer)); }
+    });
+}
+
 auto BlockchainStatistics::startup() noexcept -> void
 {
     for (const auto& chain : blockchain_.EnabledChains()) {
@@ -344,10 +379,12 @@ auto BlockchainStatistics::startup() noexcept -> void
     }
 
     finish_startup();
+    reset_timer();
 }
 
 BlockchainStatistics::~BlockchainStatistics()
 {
+    timer_.Cancel();
     wait_for_startup();
     signal_shutdown().get();
 }

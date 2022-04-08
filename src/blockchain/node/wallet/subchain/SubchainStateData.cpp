@@ -518,18 +518,30 @@ auto SubchainStateData::ChangeState(
     return output;
 }
 
-auto SubchainStateData::choose_thread_count(bool rescan) const noexcept
+auto SubchainStateData::choose_thread_count(std::size_t elements) const noexcept
     -> std::size_t
 {
-    if (rescan || (0u == process_queue_.load())) {
-        static constexpr auto max = 16u;
+    const auto max = [=]() {
+        if (1000 > elements) {
 
-        return std::min(
-            max, std::max(std::thread::hardware_concurrency(), 2u) - 1u);
-    } else {
+            return 1u;
+        } else if (10000 > elements) {
 
-        return 1u;
-    }
+            return 2u;
+        } else if (100000 > elements) {
+
+            return 4u;
+        } else if (1000000 > elements) {
+
+            return 8u;
+        } else {
+
+            return 16u;
+        }
+    }();
+
+    return std::min(
+        max, std::max(std::thread::hardware_concurrency(), 2u) - 1u);
 }
 
 auto SubchainStateData::clear_children() noexcept -> void
