@@ -1683,7 +1683,6 @@ auto SubchainStateData::translate(const TXOs& utxos, Patterns& outpoints)
 
 auto SubchainStateData::work() noexcept -> bool
 {
-    to_children_.Send(MakeWork(Work::watchdog));
     const auto now = Clock::now();
     using namespace std::literals;
     static constexpr auto timeout = 90s;
