@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include <cxxabi.h>
+
 #include "0_stdafx.hpp"    // IWYU pragma: associated
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"  // IWYU pragma: associated
@@ -114,25 +116,6 @@ class SubchainStateData::PrehashData
 public:
     const std::size_t job_count_;
 
-    auto operator()(
-        const std::string_view procedure,
-        const Log& log,
-        const block::Position& position,
-        const GCS& cfilter,
-        const BlockTarget& targets,
-        const std::size_t index,
-        wallet::MatchCache::Results& results) const noexcept -> bool
-    {
-        return match(
-            procedure,
-            log,
-            position,
-            cfilter,
-            targets,
-            data_.at(index),
-            results);
-    }
-
     auto operator()(std::size_t job) noexcept -> void
     {
         const auto end = targets_.size();
@@ -140,6 +123,56 @@ public:
         for (auto i = job; i < end; i += job_count_) {
             hash(targets_.at(i), data_.at(i));
         }
+    }
+
+    auto operator()(
+        const std::string_view procedure,
+        const Log& log,
+        const Vector<GCS>& cfilters,
+        std::atomic_bool& atLeastOnce,
+        std::size_t i,
+        block::Height height,
+        wallet::MatchCache::Results& results,
+        MatchResults& data) noexcept -> void
+    {
+        const auto end = std::min(targets_.size(), cfilters.size());
+        auto alloc = results.get_allocator();
+        auto cache = std::make_shared<AsyncResults>(std::make_tuple(
+            Positions{alloc}, Positions{alloc}, FilterMap{alloc}));
+
+        for (; i < end; i += job_count_, ++height) {
+            atLeastOnce.store(true);
+            const auto& cfilter = cfilters.at(i);
+            const auto& selected = targets_.at(i);
+            const auto& data = data_.at(i);
+            const auto position = block::Position{height, selected.first};
+            auto& result = results.at(position);
+            match(
+                procedure,
+                log,
+                position,
+                cfilter,
+                selected,
+                data,
+                *cache,
+                result);
+        }
+        data.modify_detach([cached = std::move(cache)](auto& out) {
+            const auto& [iClean, iDirty, iSizes] = *cached;
+            auto& [oClean, oDirty, oSizes] = out;
+            std::copy(
+                iClean.begin(),
+                iClean.end(),
+                std::inserter(oClean, oClean.end()));
+            std::copy(
+                iDirty.begin(),
+                iDirty.end(),
+                std::inserter(oDirty, oDirty.end()));
+            std::copy(
+                iSizes.begin(),
+                iSizes.end(),
+                std::inserter(oSizes, oSizes.end()));
+        });
     }
 
     PrehashData(
@@ -234,9 +267,10 @@ private:
         const GCS& cfilter,
         const BlockTarget& targets,
         const BlockData& prehashed,
-        wallet::MatchCache::Results& resultMap) const noexcept -> bool
+        AsyncResults& cache,
+        wallet::MatchCache::Index& results) const noexcept -> void
     {
-        const auto alloc = resultMap.get_allocator();
+        const auto alloc = results.get_allocator();
         const auto GetKeys = [&](const auto& data) {
             auto out = Set<Bip32Index>{alloc};
             const auto& [hashes, map] = data;
@@ -293,7 +327,6 @@ private:
         const auto& selected = targets.second;
         const auto& [p20, p32, p33, p64, p65, pTxo] = prehashed;
         const auto& [s20, s32, s33, s64, s65, sTxo] = selected;
-        auto& results = resultMap[position];
         auto output = std::pair<std::size_t, std::size_t>{};
         GetResults(
             GetKeys,
@@ -341,8 +374,15 @@ private:
         log(OT_PRETTY_CLASS())(name_)(" GCS ")(procedure)(" for block ")(
             print(position))(" matched ")(count)(" of ")(of)(" target elements")
             .Flush();
+        auto& [clean, dirty, sizes] = cache;
 
-        return 0u < count;
+        if (0u == count) {
+            clean.emplace(position);
+        } else {
+            dirty.emplace(position);
+        }
+
+        sizes.emplace(position.first, cfilter.ElementCount());
     }
 };
 }  // namespace opentxs::blockchain::node::wallet
@@ -722,6 +762,39 @@ auto SubchainStateData::get_targets(const TXOs& utxos, Targets& targets)
     }
 }
 
+auto SubchainStateData::highest_clean(
+    const AsyncResults& results,
+    block::Position& highestTested) noexcept -> std::optional<block::Position>
+{
+    const auto& [clean, dirty, sizes] = results;
+    const auto haveClean = (0 < clean.size());
+    const auto haveDirty = (0 < dirty.size());
+
+    if ((false == haveClean) && haveDirty) {
+        highestTested = *dirty.crbegin();
+
+        return std::nullopt;
+    } else if ((false == haveDirty) && haveClean) {
+        highestTested = *clean.crbegin();
+
+        return highestTested;
+    } else if (haveClean && haveDirty) {
+        highestTested = std::max(*clean.crbegin(), *dirty.crbegin());
+        const auto& lowestDirty = *dirty.cbegin();
+
+        if (auto i = clean.upper_bound(lowestDirty); clean.begin() == i) {
+
+            return std::nullopt;
+        } else {
+
+            return *std::prev(i);
+        }
+    } else {
+
+        return std::nullopt;
+    }
+}
+
 auto SubchainStateData::IndexElement(
     const cfilter::Type type,
     const blockchain::crypto::Element& input,
@@ -968,10 +1041,9 @@ auto SubchainStateData::scan(
         const auto& filters = node.FilterOracleInternal();
         const auto start = Clock::now();
         const auto startHeight = highestTested.first + 1;
-        auto atLeastOnce{false};
+        auto atLeastOnce = std::atomic_bool{false};
         auto highestClean = std::optional<block::Position>{std::nullopt};
         auto resultMap = [&] {
-            auto results = wallet::MatchCache::Results{get_allocator()};
             const auto elementsPerFilter = [this] {
                 const auto cached = elements_per_cfilter_.load();
 
@@ -1095,7 +1167,19 @@ auto SubchainStateData::scan(
                 procedure)(" calculated target hashes for ")(blocks.size())(
                 " cfilters in ")(std::chrono::nanoseconds{havePrehash - start})
                 .Flush();
-            const auto cfilters = filterFuture.get();
+            const auto cfilters = [&] {
+                auto out = filterFuture.get();
+                out.erase(
+                    std::find_if(
+                        out.begin(),
+                        out.end(),
+                        [](const auto& filter) {
+                            return false == filter.IsValid();
+                        }),
+                    out.end());
+
+                return out;
+            }();
             const auto haveCfilters = Clock::now();
             log_(OT_PRETTY_CLASS())(name)(" ")(
                 procedure)(" loaded cfilters in ")(
@@ -1105,85 +1189,108 @@ auto SubchainStateData::scan(
 
             OT_ASSERT(cfilterCount <= blocks.size());
 
-            auto isClean{true};
-            auto blockRequest = MakeWork(node::BlockOracleJobs::request_blocks);
-            auto s = selected.begin();
-            auto f = cfilters.begin();
-            auto i = startHeight;
-            auto n = std::size_t{0};
             auto blankFilterSizes = Deque<std::size_t>{get_allocator()};
-            auto& filterSizes = [&]() -> Deque<std::size_t>& {
-                if (rescan) {
+            auto results = wallet::MatchCache::Results{get_allocator()};
+            auto data = MatchResults{std::make_tuple(
+                Positions{get_allocator()},
+                Positions{get_allocator()},
+                FilterMap{get_allocator()})};
+            {
+                auto height{startHeight};
 
-                    return blankFilterSizes;
-                } else {
-
-                    return filter_sizes_;
+                for (const auto& [hash, data] : selected) {
+                    results[block::Position{height++, hash}];
                 }
-            }();
-
-            for (auto end = cfilters.end(); f != end; ++f, ++s, ++i, ++n) {
-                const auto& blockHash = s->first;
-                const auto& cfilter = *f;
-                filterSizes.push_back(cfilter.ElementCount());
-                auto testPosition = block::Position{i, blockHash};
-
-                if (blockHash.empty()) {
-                    LogError()(OT_PRETTY_CLASS())(name)(" empty block hash")
-                        .Flush();
-
-                    break;
-                }
-
-                if (false == cfilter.IsValid()) {
-                    LogError()(OT_PRETTY_CLASS())(name)(" filter for block ")(
-                        print(testPosition))(" not found ")
-                        .Flush();
-
-                    break;
-                }
-
-                atLeastOnce = true;
-                const auto hasMatches = prehash(
-                    procedure, log, testPosition, cfilter, *s, n, results);
-
-                if (hasMatches) {
-                    isClean = false;
-                    out.emplace_back(ScanState::dirty, testPosition);
-                    blockRequest.AddFrame(blockHash);
-                } else if (isClean) {
-                    highestClean = testPosition;
-                }
-
-                highestTested = std::move(testPosition);
             }
 
-            if (false == isClean) {
-                log_(OT_PRETTY_CLASS())(name_)(" requesting ")(out.size())(
-                    " block hashes from block oracle")
-                    .Flush();
-                to_block_oracle_.SendDeferred(std::move(blockRequest));
+            OT_ASSERT(0u < selected.size());
+
+            if ((1u < prehash.job_count_)) {
+                auto count = job_counter_.Allocate();
+
+                for (auto n{0u}; n < prehash.job_count_; ++n) {
+                    tp = api_.Network().Asio().Internal().Post(
+                        ThreadPool::General,
+                        [&,
+                         post = std::make_shared<ScopeGuard>(
+                             [&] { ++count; }, [&] { --count; })] {
+                            prehash(
+                                procedure,
+                                log,
+                                cfilters,
+                                atLeastOnce,
+                                n,
+                                startHeight,
+                                results,
+                                data);
+                        });
+
+                    if (false == tp) { throw std::runtime_error{""}; }
+                }
+            } else {
+                prehash(
+                    procedure,
+                    log,
+                    cfilters,
+                    atLeastOnce,
+                    0u,
+                    startHeight,
+                    results,
+                    data);
             }
 
-            if (false == rescan) {
-                // NOTE these statements calculate a 1000 block (or whatever
-                // cfilter_size_window_ is set to) simple moving average of
-                // cfilter element sizes
+            {
+                auto handle = data.lock_shared();
+                const auto& [clean, dirty, sizes] = *handle;
 
-                while (cfilter_size_window_ < filterSizes.size()) {
-                    filterSizes.pop_front();
+                if (auto size = dirty.size(); 0 < size) {
+                    log_(OT_PRETTY_CLASS())(name_)(" requesting ")(
+                        size)(" block hashes from block oracle")
+                        .Flush();
+                    to_block_oracle_.SendDeferred([&](const auto& dirty) {
+                        auto work =
+                            MakeWork(node::BlockOracleJobs::request_blocks);
+
+                        for (const auto& position : dirty) {
+                            const auto& [height, hash] = position;
+                            work.AddFrame(hash);
+                            out.emplace_back(ScanState::dirty, position);
+                        }
+
+                        return work;
+                    }(dirty));
                 }
 
-                const auto totalCfilterElements = std::accumulate(
-                    filterSizes.begin(), filterSizes.end(), std::size_t{0u});
-                elements_per_cfilter_.store(std::max<std::size_t>(
-                    1, totalCfilterElements / filterSizes.size()));
+                highestClean = highest_clean(*handle, highestTested);
+
+                if (false == rescan) {
+                    std::transform(
+                        sizes.begin(),
+                        sizes.end(),
+                        std::back_inserter(filter_sizes_),
+                        [](const auto& in) { return in.second; });
+
+                    // NOTE these statements calculate a 1000 block (or whatever
+                    // cfilter_size_window_ is set to) simple moving average of
+                    // cfilter element sizes
+
+                    while (cfilter_size_window_ < filter_sizes_.size()) {
+                        filter_sizes_.pop_front();
+                    }
+
+                    const auto totalCfilterElements = std::accumulate(
+                        filter_sizes_.begin(),
+                        filter_sizes_.end(),
+                        std::size_t{0u});
+                    elements_per_cfilter_.store(std::max<std::size_t>(
+                        1, totalCfilterElements / filter_sizes_.size()));
+                }
             }
 
             return results;
         }();
 
-        if (atLeastOnce) {
+        if (atLeastOnce.load()) {
             if (0u < resultMap.size()) {
                 match_cache_.lock()->Add(std::move(resultMap));
             }

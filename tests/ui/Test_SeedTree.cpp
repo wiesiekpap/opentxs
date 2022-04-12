@@ -5,7 +5,6 @@
 
 #include <gtest/gtest.h>
 #include <atomic>
-#include <memory>
 #include <optional>
 
 #include "integration/Helpers.hpp"
@@ -13,14 +12,15 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
-#include "opentxs/core/Contact.hpp"
-#include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/core/Secret.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Language.hpp"
-#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/identity/IdentityType.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"

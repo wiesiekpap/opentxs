@@ -30,6 +30,7 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
