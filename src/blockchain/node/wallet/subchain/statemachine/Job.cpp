@@ -9,6 +9,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/statemachine/Job.hpp"  // IWYU pragma: associated
 
+#include <boost/system/error_code.hpp>  // IWYU pragma: keep
 #include <algorithm>
 #include <chrono>
 #include <iterator>
@@ -16,11 +17,15 @@
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/network/Asio.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
@@ -133,6 +138,7 @@ Job::Job(
     , pending_state_(State::normal)
     , state_(State::normal)
     , reorgs_(alloc)
+    , watchdog_(parent_.api_.Network().Asio().Internal().GetTimer())
 {
     OT_ASSERT(parent_p_);
 }
@@ -194,6 +200,8 @@ auto Job::pipeline(const Work work, Message&& msg) noexcept -> void
             OT_FAIL;
         }
     }
+
+    process_watchdog();
 }
 
 auto Job::process_block(Message&& in) noexcept -> void
@@ -304,7 +312,7 @@ auto Job::process_update(Message&& msg) noexcept -> void
     OT_FAIL;
 }
 
-auto Job::process_watchdog(Message&& in) noexcept -> void
+auto Job::process_watchdog() noexcept -> void
 {
     to_parent_.Send([&] {
         auto out = MakeWork(Work::watchdog_ack);
@@ -312,6 +320,12 @@ auto Job::process_watchdog(Message&& in) noexcept -> void
 
         return out;
     }());
+    using namespace std::literals;
+    watchdog_.Cancel();
+    watchdog_.SetRelative(10s);
+    watchdog_.Wait([this](const auto& ec) {
+        if (!ec) { pipeline_.Push(MakeWork(Work::watchdog)); }
+    });
 }
 
 auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
@@ -339,7 +353,7 @@ auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
             process_process(std::move(msg));
         } break;
         case Work::watchdog: {
-            process_watchdog(std::move(msg));
+            process_watchdog();
         } break;
         case Work::reprocess: {
             process_reprocess(std::move(msg));
@@ -394,7 +408,7 @@ auto Job::state_reorg(const Work work, Message&& msg) noexcept -> void
             OT_FAIL;
         }
         case Work::watchdog: {
-            process_watchdog(std::move(msg));
+            process_watchdog();
         } break;
         case Work::watchdog_ack:
         default: {
@@ -442,5 +456,5 @@ auto Job::transition_state_shutdown() noexcept -> bool
     return true;
 }
 
-Job::~Job() = default;
+Job::~Job() { watchdog_.Cancel(); }
 }  // namespace opentxs::blockchain::node::wallet::statemachine

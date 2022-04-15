@@ -8,10 +8,12 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/smart_ptr/enable_shared_from_this.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <cs_deferred_guarded.h>
 #include <cs_shared_guarded.h>
 #include <atomic>
 #include <condition_variable>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -255,6 +257,11 @@ private:
     using BlockTargets = Vector<BlockTarget>;
     using BlockHashes = HeaderOracle::Hashes;
     using MatchesToTest = std::pair<Patterns, Patterns>;
+    using Positions = Set<block::Position>;
+    using FilterMap = Map<block::Height, std::uint32_t>;
+    using AsyncResults = std::tuple<Positions, Positions, FilterMap>;
+    using MatchResults =
+        libguarded::deferred_guarded<AsyncResults, std::shared_mutex>;
 
     class PrehashData;
 
@@ -281,6 +288,10 @@ private:
         const crypto::Subaccount& account,
         const Subchain subchain,
         allocator_type alloc) noexcept -> CString;
+    static auto highest_clean(
+        const AsyncResults& results,
+        block::Position& highestTested) noexcept
+        -> std::optional<block::Position>;
 
     auto choose_thread_count(std::size_t elements) const noexcept
         -> std::size_t;

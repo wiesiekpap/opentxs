@@ -100,6 +100,7 @@ private:
     std::atomic<State> pending_state_;
     std::atomic<State> state_;
     HandledReorgs reorgs_;
+    Timer watchdog_;
 
     auto do_shutdown() noexcept -> void;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
@@ -107,7 +108,7 @@ private:
     auto process_filter(Message&& in) noexcept -> void;
     auto process_prepare_reorg(Message&& in) noexcept -> void;
     auto process_process(Message&& in) noexcept -> void;
-    auto process_watchdog(Message&& in) noexcept -> void;
+    auto process_watchdog() noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto state_reorg(const Work work, Message&& msg) noexcept -> void;
     auto transition_state_normal() noexcept -> bool;

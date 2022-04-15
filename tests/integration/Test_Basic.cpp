@@ -22,6 +22,7 @@
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
+#include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/api/session/Wallet.hpp"
