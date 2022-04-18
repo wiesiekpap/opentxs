@@ -75,6 +75,5 @@ private:
 
     auto do_startup() noexcept -> void final {}
     auto process_update(Message&& msg) noexcept -> void final;
-    auto work() noexcept -> bool final { return false; }
 };
 }  // namespace opentxs::blockchain::node::wallet

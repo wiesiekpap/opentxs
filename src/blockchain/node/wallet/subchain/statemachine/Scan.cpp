@@ -39,7 +39,9 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Types.hpp"
 #include "util/Actor.hpp"
+#include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -153,6 +155,8 @@ auto Scan::Imp::process_filter(block::Position&& tip) noexcept -> void
 
 auto Scan::Imp::work() noexcept -> bool
 {
+    auto post = ScopeGuard{[&] { Job::work(); }};
+
     if (false == filter_tip_.has_value()) {
         log_(OT_PRETTY_CLASS())(parent_.name_)(
             " scanning not possible until a filter tip value is received ")
@@ -187,7 +191,7 @@ auto Scan::Imp::work() noexcept -> bool
 
     const auto height = current().first;
     const auto rescan = parent_.rescan_progress_.load();
-    static constexpr auto threshold = block::Height{1000};
+    const auto& threshold = parent_.scan_threshold_;
 
     if (parent_.scan_dirty_ && ((height - rescan) > threshold)) {
         log_(OT_PRETTY_CLASS())(parent_.name_)(

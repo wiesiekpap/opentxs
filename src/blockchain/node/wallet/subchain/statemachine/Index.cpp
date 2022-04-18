@@ -145,6 +145,8 @@ auto Index::Imp::work() noexcept -> bool
 
     if (need.has_value()) { process(last_indexed_, need.value()); }
 
+    Job::work();
+
     return false;
 }
 }  // namespace opentxs::blockchain::node::wallet

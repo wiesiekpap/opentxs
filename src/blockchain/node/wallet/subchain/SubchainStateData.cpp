@@ -75,6 +75,29 @@
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
 
+namespace opentxs
+{
+// https://baptiste-wicht.com/posts/2014/07/compile-integer-square-roots-at-compile-time-in-cpp.html
+static constexpr std::size_t isqrt(std::size_t x, std::size_t r, std::size_t i)
+{
+    return i == 0 ? r
+                  : isqrt(
+                        x >= r + i ? x - (r + i) : x,
+                        x >= r + i ? (r + 2 * i) >> 1 : r >> 1,
+                        i >> 2);
+}
+
+static constexpr std::size_t isqrt_i(std::size_t x, std::size_t i)
+{
+    return i <= x ? i : isqrt_i(x, i >> 2);
+}
+
+static constexpr std::size_t isqrt(std::size_t x)
+{
+    return isqrt(x, 0, isqrt_i(x, 1ull << ((sizeof(x) * 8) - 2)));
+}
+}  // namespace opentxs
+
 namespace opentxs::blockchain::node::wallet
 {
 auto print(SubchainJobs job) noexcept -> std::string_view
@@ -452,6 +475,7 @@ SubchainStateData::SubchainStateData(
           network::zeromq::MakeArbitraryInproc(alloc.resource()))
     , to_progress_endpoint_(std::move(toProgress))
     , shutdown_endpoint_(parent, alloc)
+    , scan_threshold_(1000)
     , element_cache_(
           db_.GetPatterns(db_key_, alloc.resource()),
           db_.GetUnspentOutputs(id_, subchain_, alloc.resource()),
@@ -561,27 +585,39 @@ auto SubchainStateData::ChangeState(
 auto SubchainStateData::choose_thread_count(std::size_t elements) const noexcept
     -> std::size_t
 {
-    const auto max = [=]() {
-        if (1000 > elements) {
+    // NOTE the target thread count is the square root of the number of elements
+    // divided by 512. The minimum value is one and the maximum value is one
+    // less than the number of hardware threads.
+    static constexpr auto calc = [](auto elements, auto hardware) {
+        const auto limit = std::max<std::size_t>(
+            static_cast<std::size_t>(isqrt(elements >> 9u)), 1u);
 
-            return 1u;
-        } else if (10000 > elements) {
+        return std::min<std::size_t>(
+            limit, std::max<std::size_t>(hardware, 2u) - 1u);
+    };
 
-            return 2u;
-        } else if (100000 > elements) {
+    static_assert(isqrt(0) == 0);
+    static_assert(isqrt(1) == 1);
+    static_assert(isqrt(3) == 1);
+    static_assert(isqrt(4) == 2);
+    static_assert(isqrt(5) == 2);
+    static_assert(isqrt(8) == 2);
+    static_assert(isqrt(9) == 3);
+    static_assert(calc(0, 100) == 1);
+    static_assert(calc(2047, 100) == 1);
+    static_assert(calc(2048, 100) == 2);
+    static_assert(calc(4608, 100) == 3);
+    static_assert(calc(8192, 100) == 4);
+    static_assert(calc(8192, 5) == 4);
+    static_assert(calc(8192, 4) == 3);
+    static_assert(calc(8192, 3) == 2);
+    static_assert(calc(8192, 2) == 1);
+    static_assert(calc(8192, 1) == 1);
+    static_assert(calc(8192, 0) == 1);
+    static_assert(calc(50000, 100) == 9);
+    static_assert(calc(51200, 100) == 10);
 
-            return 4u;
-        } else if (1000000 > elements) {
-
-            return 8u;
-        } else {
-
-            return 16u;
-        }
-    }();
-
-    return std::min(
-        max, std::max(std::thread::hardware_concurrency(), 2u) - 1u);
+    return calc(elements, std::thread::hardware_concurrency());
 }
 
 auto SubchainStateData::clear_children() noexcept -> void
