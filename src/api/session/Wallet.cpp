@@ -1189,13 +1189,18 @@ auto Wallet::Nym(const proto::Nym& serialized) const -> Nym_p
                 .Flush();
             candidate.WriteCredentials();
             SaveCredentialIDs(candidate);
-            auto mapLock = Lock{nym_map_lock_};
-            auto& mapNym = nym_map_[nymID].second;
-            // TODO update existing nym rather than destroying it
-            mapNym.reset(pCandidate.release());
+            auto mapNym = [&] {
+                auto mapLock = Lock{nym_map_lock_};
+                auto& out = nym_map_[nymID].second;
+                // TODO update existing nym rather than destroying it
+                out.reset(pCandidate.release());
+
+                return out;
+            }();
+
             notify_new(nymID);
 
-            return mapNym;
+            return std::move(mapNym);
         } else {
             LogError()(OT_PRETTY_CLASS())("Incoming nym is not valid.").Flush();
         }

@@ -19,6 +19,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/Account.hpp"
@@ -38,6 +39,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -230,22 +232,27 @@ auto Accounts::Imp::process_nym(const identifier::Nym& nym) noexcept -> bool
 {
     const auto endpoint =
         network::zeromq::MakeArbitraryInproc(get_allocator().resource());
-    auto [it, added] = accounts_.try_emplace(
-        nym,
-        api_,
-        api_.Crypto().Blockchain().Account(nym, chain_),
-        node_,
-        db_,
-        mempool_,
-        chain_,
-        filter_type_,
-        shutdown_endpoint_);
 
-    if (added) {
+    if (auto i = accounts_.find(nym); accounts_.end() == i) {
         LogConsole()("Initializing ")(name_)(" wallet for ")(nym).Flush();
-    }
+        const auto& account = api_.Crypto().Blockchain().Account(nym, chain_);
+        account.Internal().Startup();
+        auto [it, added] = accounts_.try_emplace(
+            nym,
+            api_,
+            account,
+            node_,
+            db_,
+            mempool_,
+            chain_,
+            filter_type_,
+            shutdown_endpoint_);
 
-    return added;
+        return added;
+    } else {
+
+        return false;
+    }
 }
 
 auto Accounts::Imp::process_nym(Message&& in) noexcept -> bool

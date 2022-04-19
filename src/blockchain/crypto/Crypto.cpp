@@ -27,6 +27,23 @@
 
 namespace opentxs::blockchain::crypto
 {
+auto is_notification(Subchain in) noexcept -> bool
+{
+    switch (in) {
+        case Subchain::NotificationV1:
+        case Subchain::NotificationV2:
+        case Subchain::NotificationV3:
+        case Subchain::NotificationV4: {
+
+            return true;
+        }
+        default: {
+
+            return false;
+        }
+    }
+}
+
 auto print(HDProtocol value) noexcept -> std::string_view
 {
     using namespace std::literals;
@@ -81,7 +98,10 @@ auto print(Subchain value) noexcept -> std::string_view
             {Type::External, "external"sv},
             {Type::Incoming, "incoming"sv},
             {Type::Outgoing, "outgoing"sv},
-            {Type::Notification, "notification"sv},
+            {Type::NotificationV3, "version 3"sv},
+            {Type::NotificationV1, "version 1"sv},
+            {Type::NotificationV2, "version 2"sv},
+            {Type::NotificationV4, "version 4"sv},
             {Type::None, "none"sv},
         };
 

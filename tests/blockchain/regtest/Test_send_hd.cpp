@@ -31,6 +31,9 @@
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/Notification.hpp"
+#include "opentxs/blockchain/crypto/HDProtocol.hpp"
+#include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
@@ -56,8 +59,13 @@ namespace ottest
 {
 using namespace std::literals::chrono_literals;
 
+using Protocol = ot::blockchain::crypto::HDProtocol;
+using Subaccount = ot::blockchain::crypto::SubaccountType;
+using Subchain = ot::blockchain::crypto::Subchain;
+
 Counter account_list_{};
 Counter account_activity_{};
+Counter account_status_{};
 
 TEST_F(Regtest_fixture_hd, init_opentxs) {}
 
@@ -69,9 +77,11 @@ TEST_F(Regtest_fixture_hd, init_ui_models)
 {
     account_activity_.expected_ += 0;
     account_list_.expected_ += 1;
+    account_status_.expected_ += 4;
     init_account_activity(
         alice_, SendHD().Parent().AccountID(), account_activity_);
     init_account_list(alice_, account_list_);
+    init_blockchain_account_status(alice_, test_chain_, account_status_);
 }
 
 TEST_F(Regtest_fixture_hd, account_activity_initial)
@@ -149,6 +159,33 @@ TEST_F(Regtest_fixture_hd, account_list_initial)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
+TEST_F(Regtest_fixture_hd, account_status_initial)
+{
+    const auto expected = BlockchainAccountStatusData{
+        alice_.nym_id_->str(),
+        test_chain_,
+        {
+            {"Unnamed seed: BIP-39 (default)",
+             alice_.seed_id_,
+             Subaccount::HD,
+             {
+                 {"BIP-44: m / 44' / 1' / 0'",
+                  SendHD().ID().str(),
+                  {
+                      {"external subchain: 0 of 1 (0.000000 %)",
+                       Subchain::External},
+                      {"internal subchain: 0 of 1 (0.000000 %)",
+                       Subchain::Internal},
+                  }},
+             }},
+        }};
+
+    ASSERT_TRUE(wait_for_counter(account_status_));
+    EXPECT_TRUE(check_blockchain_account_status(alice_, test_chain_, expected));
+    EXPECT_TRUE(
+        check_blockchain_account_status_qt(alice_, test_chain_, expected));
+}
+
 TEST_F(Regtest_fixture_hd, txodb_initial) { EXPECT_TRUE(CheckTXODB()); }
 
 TEST_F(Regtest_fixture_hd, generate)
@@ -161,6 +198,7 @@ TEST_F(Regtest_fixture_hd, generate)
     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
     account_list_.expected_ += 0;
     account_activity_.expected_ += (count + 1);
+    account_status_.expected_ += (2u * count) + 3u;
 
     EXPECT_EQ(start, 0);
     EXPECT_EQ(end, 1);
@@ -265,9 +303,51 @@ TEST_F(Regtest_fixture_hd, account_list_immature)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
+TEST_F(Regtest_fixture_hd, account_status_immature)
+{
+    const auto expected = BlockchainAccountStatusData{
+        alice_.nym_id_->str(),
+        test_chain_,
+        {
+            {"Unnamed seed: BIP-39 (default)",
+             alice_.seed_id_,
+             Subaccount::HD,
+             {
+                 {"BIP-44: m / 44' / 1' / 0'",
+                  SendHD().ID().str(),
+                  {
+                      {"external subchain: 1 of 1 (100.000000 %)",
+                       Subchain::External},
+                      {"internal subchain: 1 of 1 (100.000000 %)",
+                       Subchain::Internal},
+                  }},
+             }},
+            {alice_.payment_code_ + " (local)",
+             alice_.nym_id_->str(),
+             Subaccount::PaymentCode,
+             {
+                 {"Notification transactions",
+                  Account(alice_, test_chain_)
+                      .GetNotification()
+                      .at(0)
+                      .ID()
+                      .str(),
+                  {
+                      {"version 3 subchain: 1 of 1 (100.000000 %)",
+                       Subchain::NotificationV3},
+                  }},
+             }},
+        }};
+
+    ASSERT_TRUE(wait_for_counter(account_status_));
+    EXPECT_TRUE(check_blockchain_account_status(alice_, test_chain_, expected));
+    EXPECT_TRUE(
+        check_blockchain_account_status_qt(alice_, test_chain_, expected));
+}
+
 TEST_F(Regtest_fixture_hd, txodb_immature) { EXPECT_TRUE(CheckTXODB()); }
 
-TEST_F(Regtest_fixture_hd, advance_chain_one_block_before_maturation)
+TEST_F(Regtest_fixture_hd, advance_test_chain_one_block_before_maturation)
 {
     constexpr auto orphan{0};
     const auto count = static_cast<int>(MaturationInterval() - 1);
@@ -277,6 +357,7 @@ TEST_F(Regtest_fixture_hd, advance_chain_one_block_before_maturation)
     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
     account_list_.expected_ += 0;
     account_activity_.expected_ += (2u * count);
+    account_status_.expected_ += (5u * count);
 
     EXPECT_EQ(start, 1);
     EXPECT_EQ(end, 10);
@@ -353,6 +434,48 @@ TEST_F(Regtest_fixture_hd, account_list_one_block_before_maturation)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
+TEST_F(Regtest_fixture_hd, account_status_one_block_before_maturation)
+{
+    const auto expected = BlockchainAccountStatusData{
+        alice_.nym_id_->str(),
+        test_chain_,
+        {
+            {"Unnamed seed: BIP-39 (default)",
+             alice_.seed_id_,
+             Subaccount::HD,
+             {
+                 {"BIP-44: m / 44' / 1' / 0'",
+                  SendHD().ID().str(),
+                  {
+                      {"external subchain: 10 of 10 (100.000000 %)",
+                       Subchain::External},
+                      {"internal subchain: 10 of 10 (100.000000 %)",
+                       Subchain::Internal},
+                  }},
+             }},
+            {alice_.payment_code_ + " (local)",
+             alice_.nym_id_->str(),
+             Subaccount::PaymentCode,
+             {
+                 {"Notification transactions",
+                  Account(alice_, test_chain_)
+                      .GetNotification()
+                      .at(0)
+                      .ID()
+                      .str(),
+                  {
+                      {"version 3 subchain: 10 of 10 (100.000000 %)",
+                       Subchain::NotificationV3},
+                  }},
+             }},
+        }};
+
+    ASSERT_TRUE(wait_for_counter(account_status_));
+    EXPECT_TRUE(check_blockchain_account_status(alice_, test_chain_, expected));
+    EXPECT_TRUE(
+        check_blockchain_account_status_qt(alice_, test_chain_, expected));
+}
+
 TEST_F(Regtest_fixture_hd, txodb_one_block_before_maturation)
 {
     EXPECT_TRUE(CheckTXODB());
@@ -368,6 +491,7 @@ TEST_F(Regtest_fixture_hd, mature)
     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
     account_list_.expected_ += 1;
     account_activity_.expected_ += ((2 * count) + 1);
+    account_status_.expected_ += (5u * count);
 
     EXPECT_EQ(start, 10);
     EXPECT_EQ(end, 11);
@@ -476,6 +600,48 @@ TEST_F(Regtest_fixture_hd, account_list_mature)
     EXPECT_TRUE(check_account_list(alice_, expected));
     EXPECT_TRUE(check_account_list_qt(alice_, expected));
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
+}
+
+TEST_F(Regtest_fixture_hd, account_status_mature)
+{
+    const auto expected = BlockchainAccountStatusData{
+        alice_.nym_id_->str(),
+        test_chain_,
+        {
+            {"Unnamed seed: BIP-39 (default)",
+             alice_.seed_id_,
+             Subaccount::HD,
+             {
+                 {"BIP-44: m / 44' / 1' / 0'",
+                  SendHD().ID().str(),
+                  {
+                      {"external subchain: 11 of 11 (100.000000 %)",
+                       Subchain::External},
+                      {"internal subchain: 11 of 11 (100.000000 %)",
+                       Subchain::Internal},
+                  }},
+             }},
+            {alice_.payment_code_ + " (local)",
+             alice_.nym_id_->str(),
+             Subaccount::PaymentCode,
+             {
+                 {"Notification transactions",
+                  Account(alice_, test_chain_)
+                      .GetNotification()
+                      .at(0)
+                      .ID()
+                      .str(),
+                  {
+                      {"version 3 subchain: 11 of 11 (100.000000 %)",
+                       Subchain::NotificationV3},
+                  }},
+             }},
+        }};
+
+    ASSERT_TRUE(wait_for_counter(account_status_));
+    EXPECT_TRUE(check_blockchain_account_status(alice_, test_chain_, expected));
+    EXPECT_TRUE(
+        check_blockchain_account_status_qt(alice_, test_chain_, expected));
 }
 
 TEST_F(Regtest_fixture_hd, txodb_inital_mature) { EXPECT_TRUE(CheckTXODB()); }
@@ -702,6 +868,7 @@ TEST_F(Regtest_fixture_hd, confirm)
     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
     account_list_.expected_ += 2;
     account_activity_.expected_ += ((3 * count) + 3);
+    account_status_.expected_ += (5u * count);
     const auto& txid = transactions_.at(1).get();
     const auto extra = [&] {
         auto output = ot::UnallocatedVector<Transaction>{};
@@ -832,6 +999,48 @@ TEST_F(Regtest_fixture_hd, account_list_confirmed_spend)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
+TEST_F(Regtest_fixture_hd, account_status_confirmed_spend)
+{
+    const auto expected = BlockchainAccountStatusData{
+        alice_.nym_id_->str(),
+        test_chain_,
+        {
+            {"Unnamed seed: BIP-39 (default)",
+             alice_.seed_id_,
+             Subaccount::HD,
+             {
+                 {"BIP-44: m / 44' / 1' / 0'",
+                  SendHD().ID().str(),
+                  {
+                      {"external subchain: 12 of 12 (100.000000 %)",
+                       Subchain::External},
+                      {"internal subchain: 12 of 12 (100.000000 %)",
+                       Subchain::Internal},
+                  }},
+             }},
+            {alice_.payment_code_ + " (local)",
+             alice_.nym_id_->str(),
+             Subaccount::PaymentCode,
+             {
+                 {"Notification transactions",
+                  Account(alice_, test_chain_)
+                      .GetNotification()
+                      .at(0)
+                      .ID()
+                      .str(),
+                  {
+                      {"version 3 subchain: 12 of 12 (100.000000 %)",
+                       Subchain::NotificationV3},
+                  }},
+             }},
+        }};
+
+    ASSERT_TRUE(wait_for_counter(account_status_));
+    EXPECT_TRUE(check_blockchain_account_status(alice_, test_chain_, expected));
+    EXPECT_TRUE(
+        check_blockchain_account_status_qt(alice_, test_chain_, expected));
+}
+
 TEST_F(Regtest_fixture_hd, txodb_confirmed_spend) { EXPECT_TRUE(CheckTXODB()); }
 
 // TEST_F(Regtest_fixture_hd, reorg_matured_coins)
@@ -862,6 +1071,7 @@ TEST_F(Regtest_fixture_hd, shutdown)
 {
     EXPECT_EQ(account_list_.expected_, account_list_.updated_);
     EXPECT_EQ(account_activity_.expected_, account_activity_.updated_);
+    EXPECT_EQ(account_status_.expected_, account_status_.updated_);
 
     Shutdown();
 }

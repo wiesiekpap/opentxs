@@ -15,7 +15,6 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/UI.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
@@ -147,12 +146,9 @@ TEST_F(BlockchainSelector, initial_conditions)
     counter_alice_.expected_ += 14;
     counter_bob_.expected_ += 7;
     counter_chris_.expected_ += 4;
-    alice_.api_->UI().BlockchainAccountStatus(
-        alice_.nym_id_, chain_, make_cb(counter_alice_, u8"counter_alice"));
-    bob_.api_->UI().BlockchainAccountStatus(
-        bob_.nym_id_, chain_, make_cb(counter_bob_, u8"counter_bob"));
-    chris_.api_->UI().BlockchainAccountStatus(
-        chris_.nym_id_, chain_, make_cb(counter_chris_, u8"counter_chris"));
+    init_blockchain_account_status(alice_, chain_, counter_alice_);
+    init_blockchain_account_status(bob_, chain_, counter_bob_);
+    init_blockchain_account_status(chris_, chain_, counter_chris_);
 }
 
 TEST_F(BlockchainSelector, alice_initial)

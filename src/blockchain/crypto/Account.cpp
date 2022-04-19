@@ -25,6 +25,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
@@ -35,6 +36,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
@@ -94,6 +96,7 @@ Account::Account(
     }())
     , hd_(api_, SubaccountType::HD, *this)
     , imported_(api_, SubaccountType::Imported, *this)
+    , notification_(api_, SubaccountType::Notification, *this)
     , payment_code_(api_, SubaccountType::PaymentCode, *this)
     , node_index_()
     , lock_()
@@ -135,6 +138,17 @@ auto Account::NodeIndex::Find(const UnallocatedCString& id) const noexcept
 
         return nullptr;
     }
+}
+
+auto Account::AddHDNode(
+    const proto::HDPath& path,
+    const crypto::HDProtocol standard,
+    const PasswordPrompt& reason,
+    Identifier& id) noexcept -> bool
+{
+    init_notification();
+
+    return hd_.Construct(id, path, standard, reason);
 }
 
 auto Account::AssociateTransaction(
@@ -304,7 +318,10 @@ auto Account::GetDepositAddress(
 
 auto Account::init_hd(const Accounts& accounts) noexcept -> void
 {
+    auto count{0};
+
     for (const auto& accountID : accounts) {
+        ++count;
         auto account = proto::HDAccount{};
         const auto loaded =
             api_.Storage().Load(nym_id_->str(), accountID->str(), account);
@@ -313,6 +330,23 @@ auto Account::init_hd(const Accounts& accounts) noexcept -> void
 
         auto notUsed = Identifier::Factory();
         hd_.Construct(notUsed, account);
+    }
+
+    if (0 < count) { init_notification(); }
+}
+
+auto Account::init_notification() noexcept -> void
+{
+    if (0u == hd_.size()) { return; }
+
+    const auto nym = api_.Wallet().Nym(nym_id_);
+
+    OT_ASSERT(nym);
+
+    if (auto code = api_.Factory().PaymentCode(nym->PaymentCode());
+        0 < code.Version()) {
+        auto notUsed = Identifier::Factory();
+        notification_.Construct(notUsed, code, *nym);
     }
 }
 

@@ -6,39 +6,13 @@
 #include "rpc/Helpers.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <chrono>
-#include <future>
-#include <iterator>
-#include <mutex>
 #include <utility>
 
 #include "integration/Helpers.hpp"
-#include "internal/otx/common/Message.hpp"
-#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Notary.hpp"
-#include "opentxs/api/session/OTX.hpp"
-#include "opentxs/api/session/Session.hpp"
-#include "opentxs/api/session/UI.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Secret.hpp"
-#include "opentxs/core/String.hpp"
-#include "opentxs/core/contract/ServerContract.hpp"
-#include "opentxs/core/contract/Unit.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/crypto/Language.hpp"
-#include "opentxs/crypto/SeedStyle.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/interface/rpc/AccountData.hpp"
 #include "opentxs/interface/rpc/AccountEvent.hpp"
 #include "opentxs/interface/rpc/ResponseCode.hpp"
@@ -49,17 +23,7 @@
 #include "opentxs/interface/rpc/response/GetAccountActivity.hpp"
 #include "opentxs/interface/rpc/response/GetAccountBalance.hpp"
 #include "opentxs/interface/rpc/response/ListAccounts.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/ZeroMQ.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/otx/LastReplyStatus.hpp"
-#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/SharedPimpl.hpp"
-#include "opentxs/util/Time.hpp"
 #include "ui/Helpers.hpp"
 
 namespace ottest

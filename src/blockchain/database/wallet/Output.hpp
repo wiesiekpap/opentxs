@@ -91,7 +91,6 @@ using AccountID = Identifier;
 using SubchainID = Identifier;
 using Parent = node::internal::WalletDatabase;
 using NodeID = Parent::NodeID;
-using Subchain = Parent::Subchain;
 using BatchedMatches = Parent::BatchedMatches;
 using UTXO = Parent::UTXO;
 using TXOs = Parent::TXOs;

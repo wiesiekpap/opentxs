@@ -58,6 +58,7 @@ namespace crypto
 class Account;
 class Deterministic;
 class HD;
+class Notification;
 class PaymentCode;
 }  // namespace crypto
 
@@ -65,6 +66,7 @@ namespace node
 {
 namespace internal
 {
+struct Mempool;
 struct Network;
 struct WalletDatabase;
 }  // namespace internal
@@ -132,7 +134,6 @@ private:
     friend Actor<Imp, AccountJobs>;
 
     using Subchains = Map<OTIdentifier, boost::shared_ptr<SubchainStateData>>;
-    using Subtype = node::internal::WalletDatabase::Subchain;
     using HandledReorgs = Set<StateSequence>;
 
     const api::Session& api_;
@@ -154,6 +155,9 @@ private:
 
     auto check_hd(const Identifier& subaccount) noexcept -> void;
     auto check_hd(const crypto::HD& subaccount) noexcept -> void;
+    auto check_notification(const Identifier& subaccount) noexcept -> void;
+    auto check_notification(const crypto::Notification& subaccount) noexcept
+        -> void;
     auto check_pc(const Identifier& subaccount) noexcept -> void;
     auto check_pc(const crypto::PaymentCode& subaccount) noexcept -> void;
     auto clear_children() noexcept -> void;
@@ -170,12 +174,12 @@ private:
     }
     auto get(
         const crypto::Deterministic& subaccount,
-        const Subtype subchain,
+        const crypto::Subchain subchain,
         Subchains& map) noexcept -> Subchain&;
     auto index_nym(const identifier::Nym& id) noexcept -> void;
     auto instantiate(
         const crypto::Deterministic& subaccount,
-        const Subtype subchain,
+        const crypto::Subchain subchain,
         Subchains& map) noexcept -> Subchain&;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
     auto process_key(Message&& in) noexcept -> void;

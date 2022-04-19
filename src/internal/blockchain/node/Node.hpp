@@ -579,8 +579,7 @@ struct WalletDatabase {
     using pNodeID = OTIdentifier;
     using SubchainIndex = Identifier;
     using pSubchainIndex = OTIdentifier;
-    using Subchain = blockchain::crypto::Subchain;
-    using SubchainID = std::pair<Subchain, pNodeID>;
+    using SubchainID = std::pair<crypto::Subchain, pNodeID>;
     using ElementID = std::pair<Bip32Index, SubchainID>;
     using ElementMap = Map<Bip32Index, Vector<Vector<std::byte>>>;
     using Pattern = std::pair<ElementID, Vector<std::byte>>;
@@ -634,8 +633,9 @@ struct WalletDatabase {
         alloc::Resource* alloc = alloc::System()) const noexcept
         -> Patterns = 0;
     virtual auto GetPosition() const noexcept -> block::Position = 0;
-    virtual auto GetSubchainID(const NodeID& account, const Subchain subchain)
-        const noexcept -> pSubchainIndex = 0;
+    virtual auto GetSubchainID(
+        const NodeID& account,
+        const crypto::Subchain subchain) const noexcept -> pSubchainIndex = 0;
     virtual auto GetTransactions() const noexcept
         -> UnallocatedVector<block::pTxid> = 0;
     virtual auto GetTransactions(const identifier::Nym& account) const noexcept
@@ -646,7 +646,7 @@ struct WalletDatabase {
         const noexcept -> Vector<UTXO> = 0;
     virtual auto GetUnspentOutputs(
         const NodeID& account,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         alloc::Resource* alloc = alloc::System()) const noexcept
         -> Vector<UTXO> = 0;
     virtual auto GetWalletHeight() const noexcept -> block::Height = 0;
@@ -682,7 +682,7 @@ struct WalletDatabase {
         TXOs& txoConsumed) noexcept -> bool = 0;
     virtual auto AddMempoolTransaction(
         const NodeID& account,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         const Vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction,
         TXOs& txoCreated) noexcept -> bool = 0;
@@ -705,7 +705,7 @@ struct WalletDatabase {
         storage::lmdb::LMDB::Transaction& tx,
         const node::HeaderOracle& headers,
         const NodeID& account,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         const SubchainIndex& index,
         const UnallocatedVector<block::Position>& reorg) noexcept -> bool = 0;
     virtual auto ReserveUTXO(

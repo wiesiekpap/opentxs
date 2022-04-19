@@ -144,7 +144,7 @@ auto SubchainCache::DecodeIndex(const SubchainIndex& key) noexcept(false)
 
 auto SubchainCache::GetIndex(
     const NodeID& subaccount,
-    const Subchain subchain,
+    const crypto::Subchain subchain,
     const cfilter::Type type,
     const VersionNumber version,
     MDB_txn* tx) noexcept -> pSubchainIndex
@@ -428,7 +428,7 @@ auto SubchainCache::SetLastScanned(
 
 auto SubchainCache::subchain_index(
     const NodeID& subaccount,
-    const Subchain subchain,
+    const crypto::Subchain subchain,
     const cfilter::Type type,
     const VersionNumber version) const noexcept -> pSubchainIndex
 {

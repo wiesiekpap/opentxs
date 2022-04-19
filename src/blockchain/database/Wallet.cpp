@@ -69,7 +69,7 @@ auto Wallet::AddConfirmedTransactions(
 
 auto Wallet::AddMempoolTransaction(
     const NodeID& balanceNode,
-    const Subchain subchain,
+    const crypto::Subchain subchain,
     const Vector<std::uint32_t> outputIndices,
     const block::bitcoin::Transaction& original,
     TXOs& txoCreated) const noexcept -> bool
@@ -192,8 +192,9 @@ auto Wallet::GetPosition() const noexcept -> block::Position
     return outputs_.GetPosition();
 }
 
-auto Wallet::GetSubchainID(const NodeID& balanceNode, const Subchain subchain)
-    const noexcept -> pSubchainIndex
+auto Wallet::GetSubchainID(
+    const NodeID& balanceNode,
+    const crypto::Subchain subchain) const noexcept -> pSubchainIndex
 {
     return subchains_.GetSubchainID(balanceNode, subchain, nullptr);
 }
@@ -223,7 +224,7 @@ auto Wallet::GetUnspentOutputs(alloc::Resource* alloc) const noexcept
 
 auto Wallet::GetUnspentOutputs(
     const NodeID& balanceNode,
-    const Subchain subchain,
+    const crypto::Subchain subchain,
     alloc::Resource* alloc) const noexcept -> Vector<UTXO>
 {
     const auto id = subchains_.GetSubchainID(balanceNode, subchain, nullptr);
@@ -264,7 +265,7 @@ auto Wallet::ReorgTo(
     storage::lmdb::LMDB::Transaction& tx,
     const node::HeaderOracle& headers,
     const NodeID& balanceNode,
-    const Subchain subchain,
+    const crypto::Subchain subchain,
     const SubchainIndex& index,
     const UnallocatedVector<block::Position>& reorg) const noexcept -> bool
 {

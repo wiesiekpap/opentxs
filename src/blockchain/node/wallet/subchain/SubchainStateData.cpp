@@ -32,6 +32,7 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/BlockOracle.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -419,7 +420,7 @@ SubchainStateData::SubchainStateData(
     const node::internal::Mempool& mempool,
     const crypto::Subaccount& subaccount,
     const cfilter::Type filter,
-    const Subchain subchain,
+    const crypto::Subchain subchain,
     const network::zeromq::BatchID batch,
     const std::string_view parent,
     CString&& fromChildren,
@@ -456,9 +457,10 @@ SubchainStateData::SubchainStateData(
     , node_(node)
     , db_(db)
     , mempool_oracle_(mempool)
-    , owner_(subaccount.Parent().NymID())
-    , account_type_(subaccount.Type())
-    , id_(subaccount.ID())
+    , subaccount_(subaccount)
+    , owner_(subaccount_.Parent().NymID())
+    , account_type_(subaccount_.Type())
+    , id_(subaccount_.ID())
     , subchain_(subchain)
     , chain_(node_.Chain())
     , filter_type_(filter)
@@ -518,7 +520,7 @@ SubchainStateData::SubchainStateData(
     const node::internal::Mempool& mempool,
     const crypto::Subaccount& subaccount,
     const cfilter::Type filter,
-    const Subchain subchain,
+    const crypto::Subchain subchain,
     const network::zeromq::BatchID batch,
     const std::string_view parent,
     allocator_type alloc) noexcept
@@ -654,7 +656,7 @@ auto SubchainStateData::clear_children() noexcept -> void
 
 auto SubchainStateData::describe(
     const crypto::Subaccount& account,
-    const Subchain subchain,
+    const crypto::Subchain subchain,
     allocator_type alloc) noexcept -> CString
 {
     // TODO c++20 use allocator
@@ -1032,6 +1034,8 @@ auto SubchainStateData::ProcessReorg(
 auto SubchainStateData::ReportScan(const block::Position& pos) const noexcept
     -> void
 {
+    log_(OT_PRETTY_CLASS())(name_)(" progress updated to ")(print(pos)).Flush();
+    subaccount_.Internal().SetScanProgress(pos, subchain_);
     api_.Crypto().Blockchain().Internal().ReportScan(
         chain_, owner_, account_type_, id_, subchain_, pos);
 }
@@ -1818,7 +1822,8 @@ auto SubchainStateData::translate(const TXOs& utxos, Patterns& outpoints)
             outpoints.emplace_back(
                 WalletDatabase::ElementID{
                     static_cast<Bip32Index>(index),
-                    {static_cast<Subchain>(subchain), std::move(account)}},
+                    {static_cast<crypto::Subchain>(subchain),
+                     std::move(account)}},
                 space(outpoint.Bytes(), outpoints.get_allocator().resource()));
         }
     }

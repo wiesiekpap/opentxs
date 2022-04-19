@@ -106,6 +106,7 @@ public:
     auto RootNode(const PasswordPrompt& reason) const noexcept
         -> blockchain::crypto::HDKey override;
     auto ScanProgress(Subchain type) const noexcept -> block::Position final;
+
     auto SetScanProgress(
         const block::Position& progress,
         Subchain type) noexcept -> void final;

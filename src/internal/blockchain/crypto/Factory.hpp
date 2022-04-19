@@ -38,6 +38,7 @@ namespace crypto
 class Account;
 class AccountIndex;
 class HD;
+class Notification;
 class PaymentCode;
 class Wallet;
 }  // namespace crypto
@@ -47,6 +48,11 @@ namespace identifier
 {
 class Nym;
 }  // namespace identifier
+
+namespace identity
+{
+class Nym;
+}  // namespace identity
 
 namespace proto
 {
@@ -87,6 +93,13 @@ auto BlockchainHDSubaccount(
     const blockchain::crypto::Account& parent,
     const proto::HDAccount& serialized,
     Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>;
+auto BlockchainNotificationSubaccount(
+    const api::Session& api,
+    const blockchain::crypto::Account& parent,
+    const opentxs::PaymentCode& code,
+    const identity::Nym& nym,
+    Identifier& id) noexcept
+    -> std::unique_ptr<blockchain::crypto::Notification>;
 auto BlockchainPCSubaccount(
     const api::Session& api,
     const api::session::Contacts& contacts,

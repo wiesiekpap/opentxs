@@ -337,6 +337,10 @@ auto init_account_activity(
     Counter& counter) noexcept -> void;
 auto init_account_list(const User& user, Counter& counter) noexcept -> void;
 auto init_account_tree(const User& user, Counter& counter) noexcept -> void;
+auto init_blockchain_account_status(
+    const User& user,
+    const ot::blockchain::Type chain,
+    Counter& counter) noexcept -> void;
 auto init_activity_thread(
     const User& user,
     const User& contact,

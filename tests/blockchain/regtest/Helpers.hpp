@@ -97,6 +97,7 @@ class Outpoint;
 
 namespace crypto
 {
+class Account;
 class HD;
 class PaymentCode;
 class Subaccount;
@@ -462,6 +463,8 @@ protected:
     WalletListener& wallet_1_;
     WalletListener& wallet_2_;
 
+    auto Account(const User& user, ot::blockchain::Type chain) noexcept
+        -> const bca::Account&;
     virtual auto Connect() noexcept -> bool;
     auto Connect(const b::p2p::Address& address) noexcept -> bool;
     auto Mine(const Height ancestor, const std::size_t count) noexcept -> bool;

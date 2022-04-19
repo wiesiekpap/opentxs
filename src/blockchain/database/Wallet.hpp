@@ -118,7 +118,6 @@ public:
     using pNodeID = Parent::pNodeID;
     using SubchainIndex = Parent::SubchainIndex;
     using pSubchainIndex = Parent::pSubchainIndex;
-    using Subchain = Parent::Subchain;
     using ElementID = Parent::ElementID;
     using ElementMap = Parent::ElementMap;
     using Pattern = Parent::Pattern;
@@ -145,7 +144,7 @@ public:
         TXOs& txoConsumed) noexcept -> bool;
     auto AddMempoolTransaction(
         const NodeID& balanceNode,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         const Vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction,
         TXOs& txoCreated) const noexcept -> bool;
@@ -189,8 +188,9 @@ public:
     auto GetPatterns(const SubchainIndex& index, alloc::Resource* alloc)
         const noexcept -> Patterns;
     auto GetPosition() const noexcept -> block::Position;
-    auto GetSubchainID(const NodeID& balanceNode, const Subchain subchain)
-        const noexcept -> pSubchainIndex;
+    auto GetSubchainID(
+        const NodeID& balanceNode,
+        const crypto::Subchain subchain) const noexcept -> pSubchainIndex;
     auto GetTransactions() const noexcept -> UnallocatedVector<block::pTxid>;
     auto GetTransactions(const identifier::Nym& account) const noexcept
         -> UnallocatedVector<block::pTxid>;
@@ -200,7 +200,7 @@ public:
         -> Vector<UTXO>;
     auto GetUnspentOutputs(
         const NodeID& balanceNode,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         alloc::Resource* alloc) const noexcept -> Vector<UTXO>;
     auto GetWalletHeight() const noexcept -> block::Height;
     auto LoadProposal(const Identifier& id) const noexcept
@@ -215,7 +215,7 @@ public:
         storage::lmdb::LMDB::Transaction& tx,
         const node::HeaderOracle& headers,
         const NodeID& balanceNode,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         const SubchainIndex& index,
         const UnallocatedVector<block::Position>& reorg) const noexcept -> bool;
     auto ReserveUTXO(

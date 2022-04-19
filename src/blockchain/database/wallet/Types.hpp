@@ -15,7 +15,6 @@ using SubchainIndex = Parent::SubchainIndex;
 using pSubchainIndex = Parent::pSubchainIndex;
 using NodeID = Parent::NodeID;
 using pNodeID = Parent::pNodeID;
-using Subchain = Parent::Subchain;
 using Patterns = Parent::Patterns;
 using ElementMap = Parent::ElementMap;
 using MatchingIndices = Parent::MatchingIndices;

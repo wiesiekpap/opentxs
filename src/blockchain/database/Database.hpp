@@ -160,7 +160,7 @@ public:
     }
     auto AddMempoolTransaction(
         const NodeID& account,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         const Vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction,
         TXOs& txoCreated) noexcept -> bool final
@@ -331,7 +331,7 @@ public:
     {
         return wallet_.GetPosition();
     }
-    auto GetSubchainID(const NodeID& account, const Subchain subchain)
+    auto GetSubchainID(const NodeID& account, const crypto::Subchain subchain)
         const noexcept -> pSubchainIndex final
     {
         return wallet_.GetSubchainID(account, subchain);
@@ -358,7 +358,7 @@ public:
     }
     auto GetUnspentOutputs(
         const NodeID& account,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         alloc::Resource* alloc) const noexcept -> Vector<UTXO> final
     {
         return wallet_.GetUnspentOutputs(account, subchain, alloc);
@@ -465,7 +465,7 @@ public:
         storage::lmdb::LMDB::Transaction& tx,
         const node::HeaderOracle& headers,
         const NodeID& account,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         const SubchainIndex& index,
         const UnallocatedVector<block::Position>& reorg) noexcept -> bool final
     {

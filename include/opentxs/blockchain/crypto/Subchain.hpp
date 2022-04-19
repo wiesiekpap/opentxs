@@ -16,7 +16,10 @@ enum class Subchain : std::uint8_t {
     External = 2,
     Incoming = 3,
     Outgoing = 4,
-    Notification = 5,
+    NotificationV3 = 5,
+    NotificationV1 = 6,
+    NotificationV2 = 7,
+    NotificationV4 = 8,
     None = 255,
 };
 }  // namespace opentxs::blockchain::crypto
