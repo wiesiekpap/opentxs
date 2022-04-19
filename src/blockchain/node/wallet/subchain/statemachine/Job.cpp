@@ -456,5 +456,12 @@ auto Job::transition_state_shutdown() noexcept -> bool
     return true;
 }
 
+auto Job::work() noexcept -> bool
+{
+    process_watchdog();
+
+    return false;
+}
+
 Job::~Job() { watchdog_.Cancel(); }
 }  // namespace opentxs::blockchain::node::wallet::statemachine

@@ -169,6 +169,7 @@ public:
     const CString to_process_endpoint_;
     const CString to_progress_endpoint_;
     const CString shutdown_endpoint_;
+    const block::Height scan_threshold_;
     mutable ElementCache element_cache_;
     mutable MatchCache match_cache_;
     mutable std::atomic_bool scan_dirty_;

@@ -79,6 +79,8 @@ public:
 protected:
     const SubchainStateData& parent_;
 
+    virtual auto work() noexcept -> bool;
+
     Job(const Log& logger,
         const boost::shared_ptr<const SubchainStateData>& parent,
         const network::zeromq::BatchID batch,
@@ -124,6 +126,5 @@ private:
     virtual auto process_reprocess(Message&& msg) noexcept -> void;
     virtual auto process_startup(Message&& in) noexcept -> void;
     virtual auto process_update(Message&& msg) noexcept -> void;
-    virtual auto work() noexcept -> bool = 0;
 };
 }  // namespace opentxs::blockchain::node::wallet::statemachine

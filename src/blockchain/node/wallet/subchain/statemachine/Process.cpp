@@ -391,6 +391,7 @@ auto Process::Imp::work() noexcept -> bool
 {
     check_cache();
     queue_downloads();
+    Job::work();
 
     return queue_process();
 }

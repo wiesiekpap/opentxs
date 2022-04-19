@@ -76,6 +76,7 @@ private:
     network::zeromq::socket::Raw& to_progress_;
     std::optional<block::Position> last_scanned_;
     std::optional<block::Position> filter_tip_;
+    block::Position highest_dirty_;
     Set<block::Position> dirty_;
 
     auto before(const block::Position& position) const noexcept
@@ -85,6 +86,7 @@ private:
     auto current() const noexcept -> const block::Position&;
     auto highest_clean(const Set<block::Position>& clean) const noexcept
         -> std::optional<block::Position>;
+    auto rescan_finished() const noexcept -> bool;
     auto stop() const noexcept -> block::Height;
 
     auto adjust_last_scanned(

@@ -79,6 +79,7 @@ Rescan::Imp::Imp(
     , to_progress_(pipeline_.Internal().ExtraSocket(3))
     , last_scanned_(std::nullopt)
     , filter_tip_(std::nullopt)
+    , highest_dirty_(parent_.null_position_)
     , dirty_(alloc)
 {
 }
@@ -245,6 +246,7 @@ auto Rescan::Imp::process_dirty(const Set<block::Position>& dirty) noexcept
 
     if (0u < dirty_.size()) {
         const auto& lowestDirty = *dirty_.cbegin();
+        const auto& highestDirty = *dirty_.crbegin();
         const auto limit = before(lowestDirty);
         const auto current = this->current();
 
@@ -255,6 +257,8 @@ auto Rescan::Imp::process_dirty(const Set<block::Position>& dirty) noexcept
                 .Flush();
             set_last_scanned(limit);
         }
+
+        highest_dirty_ = std::max(highest_dirty_, highestDirty);
     }
 }
 
@@ -315,6 +319,30 @@ auto Rescan::Imp::prune() noexcept -> void
             break;
         }
     }
+}
+
+auto Rescan::Imp::rescan_finished() const noexcept -> bool
+{
+    OT_ASSERT(last_scanned_.has_value());
+
+    if (caught_up()) { return true; }
+
+    if (0u < dirty_.size()) { return false; }
+
+    const auto& clean = last_scanned_.value().first;
+    const auto& dirty = highest_dirty_.first;
+
+    if (dirty > clean) { return false; }
+
+    if (auto interval = clean - dirty; interval > parent_.scan_threshold_) {
+        log_(OT_PRETTY_CLASS())(name_)(" rescan has progressed ")(
+            interval)(" blocks after highest dirty position")
+            .Flush();
+
+        return true;
+    }
+
+    return false;
 }
 
 auto Rescan::Imp::set_last_scanned(const block::Position& value) noexcept
@@ -382,6 +410,8 @@ auto Rescan::Imp::work() noexcept -> bool
                 return out;
             }());
         }
+
+        Job::work();
     }};
 
     if (false == parent_.scan_dirty_) {
@@ -390,7 +420,7 @@ auto Rescan::Imp::work() noexcept -> bool
         return false;
     }
 
-    if (caught_up()) {
+    if (rescan_finished()) {
         parent_.scan_dirty_ = false;
         log_(OT_PRETTY_CLASS())(name_)(
             " rescan has caught up to current filter tip")
