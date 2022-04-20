@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
+
 #pragma once
 
 #include <cs_shared_guarded.h>
@@ -16,7 +18,6 @@
 #include <shared_mutex>
 #include <string_view>
 
-#include "blockchain/crypto/Notification.hpp"
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/Block.hpp"
@@ -31,6 +32,7 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
@@ -78,6 +80,7 @@ class Notification;
 }  // namespace implementation
 
 class Account;
+class Notification;
 }  // namespace crypto
 
 namespace node
@@ -125,22 +128,17 @@ namespace opentxs::blockchain::node::wallet
 class NotificationStateData final : public SubchainStateData
 {
 public:
-    static auto calculate_id(
-        const api::Session& api,
-        const Type chain,
-        const opentxs::PaymentCode& code) noexcept -> OTIdentifier;
-
     NotificationStateData(
         const api::Session& api,
         const node::internal::Network& node,
-        const crypto::Account& parent,
         node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
         const cfilter::Type filter,
+        const crypto::Subchain subchain,
         const network::zeromq::BatchID batch,
-        const std::string_view endpoint,
-        opentxs::PaymentCode&& code,
-        proto::HDPath&& path,
+        const std::string_view parent,
+        const opentxs::PaymentCode& code,
+        const crypto::Notification& subaccount,
         allocator_type alloc) noexcept;
 
     ~NotificationStateData() final = default;
@@ -175,19 +173,6 @@ private:
 
     auto init_contacts() noexcept -> void;
     auto work() noexcept -> bool final;
-
-    NotificationStateData(
-        const api::Session& api,
-        const node::internal::Network& node,
-        node::internal::WalletDatabase& db,
-        const node::internal::Mempool& mempool,
-        const cfilter::Type filter,
-        const network::zeromq::BatchID batch,
-        const std::string_view parent,
-        crypto::implementation::Notification&& subaccount,
-        opentxs::PaymentCode&& code,
-        proto::HDPath&& path,
-        allocator_type alloc) noexcept;
 
     NotificationStateData() = delete;
     NotificationStateData(const NotificationStateData&) = delete;

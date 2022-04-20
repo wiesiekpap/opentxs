@@ -32,6 +32,7 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/BlockOracle.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -67,6 +68,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -419,7 +421,7 @@ SubchainStateData::SubchainStateData(
     const node::internal::Mempool& mempool,
     const crypto::Subaccount& subaccount,
     const cfilter::Type filter,
-    const Subchain subchain,
+    const crypto::Subchain subchain,
     const network::zeromq::BatchID batch,
     const std::string_view parent,
     CString&& fromChildren,
@@ -456,9 +458,10 @@ SubchainStateData::SubchainStateData(
     , node_(node)
     , db_(db)
     , mempool_oracle_(mempool)
-    , owner_(subaccount.Parent().NymID())
-    , account_type_(subaccount.Type())
-    , id_(subaccount.ID())
+    , subaccount_(subaccount)
+    , owner_(subaccount_.Parent().NymID())
+    , account_type_(subaccount_.Type())
+    , id_(subaccount_.ID())
     , subchain_(subchain)
     , chain_(node_.Chain())
     , filter_type_(filter)
@@ -518,7 +521,7 @@ SubchainStateData::SubchainStateData(
     const node::internal::Mempool& mempool,
     const crypto::Subaccount& subaccount,
     const cfilter::Type filter,
-    const Subchain subchain,
+    const crypto::Subchain subchain,
     const network::zeromq::BatchID batch,
     const std::string_view parent,
     allocator_type alloc) noexcept
@@ -585,39 +588,44 @@ auto SubchainStateData::ChangeState(
 auto SubchainStateData::choose_thread_count(std::size_t elements) const noexcept
     -> std::size_t
 {
-    // NOTE the target thread count is the square root of the number of elements
-    // divided by 512. The minimum value is one and the maximum value is one
-    // less than the number of hardware threads.
-    static constexpr auto calc = [](auto elements, auto hardware) {
-        const auto limit = std::max<std::size_t>(
-            static_cast<std::size_t>(isqrt(elements >> 9u)), 1u);
+    if (api_.GetOptions().Experimental()) {
+        // NOTE the target thread count is the square root of the number of
+        // elements divided by 512. The minimum value is one and the maximum
+        // value is one less than the number of hardware threads.
+        static constexpr auto calc = [](auto elements, auto hardware) {
+            const auto limit = std::max<std::size_t>(
+                static_cast<std::size_t>(isqrt(elements >> 9u)), 1u);
 
-        return std::min<std::size_t>(
-            limit, std::max<std::size_t>(hardware, 2u) - 1u);
-    };
+            return std::min<std::size_t>(
+                limit, std::max<std::size_t>(hardware, 2u) - 1u);
+        };
 
-    static_assert(isqrt(0) == 0);
-    static_assert(isqrt(1) == 1);
-    static_assert(isqrt(3) == 1);
-    static_assert(isqrt(4) == 2);
-    static_assert(isqrt(5) == 2);
-    static_assert(isqrt(8) == 2);
-    static_assert(isqrt(9) == 3);
-    static_assert(calc(0, 100) == 1);
-    static_assert(calc(2047, 100) == 1);
-    static_assert(calc(2048, 100) == 2);
-    static_assert(calc(4608, 100) == 3);
-    static_assert(calc(8192, 100) == 4);
-    static_assert(calc(8192, 5) == 4);
-    static_assert(calc(8192, 4) == 3);
-    static_assert(calc(8192, 3) == 2);
-    static_assert(calc(8192, 2) == 1);
-    static_assert(calc(8192, 1) == 1);
-    static_assert(calc(8192, 0) == 1);
-    static_assert(calc(50000, 100) == 9);
-    static_assert(calc(51200, 100) == 10);
+        static_assert(isqrt(0) == 0);
+        static_assert(isqrt(1) == 1);
+        static_assert(isqrt(3) == 1);
+        static_assert(isqrt(4) == 2);
+        static_assert(isqrt(5) == 2);
+        static_assert(isqrt(8) == 2);
+        static_assert(isqrt(9) == 3);
+        static_assert(calc(0, 100) == 1);
+        static_assert(calc(2047, 100) == 1);
+        static_assert(calc(2048, 100) == 2);
+        static_assert(calc(4608, 100) == 3);
+        static_assert(calc(8192, 100) == 4);
+        static_assert(calc(8192, 5) == 4);
+        static_assert(calc(8192, 4) == 3);
+        static_assert(calc(8192, 3) == 2);
+        static_assert(calc(8192, 2) == 1);
+        static_assert(calc(8192, 1) == 1);
+        static_assert(calc(8192, 0) == 1);
+        static_assert(calc(50000, 100) == 9);
+        static_assert(calc(51200, 100) == 10);
 
-    return calc(elements, std::thread::hardware_concurrency());
+        return calc(elements, std::thread::hardware_concurrency());
+    } else {
+
+        return 1u;
+    }
 }
 
 auto SubchainStateData::clear_children() noexcept -> void
@@ -654,7 +662,7 @@ auto SubchainStateData::clear_children() noexcept -> void
 
 auto SubchainStateData::describe(
     const crypto::Subaccount& account,
-    const Subchain subchain,
+    const crypto::Subchain subchain,
     allocator_type alloc) noexcept -> CString
 {
     // TODO c++20 use allocator
@@ -1032,6 +1040,8 @@ auto SubchainStateData::ProcessReorg(
 auto SubchainStateData::ReportScan(const block::Position& pos) const noexcept
     -> void
 {
+    log_(OT_PRETTY_CLASS())(name_)(" progress updated to ")(print(pos)).Flush();
+    subaccount_.Internal().SetScanProgress(pos, subchain_);
     api_.Crypto().Blockchain().Internal().ReportScan(
         chain_, owner_, account_type_, id_, subchain_, pos);
 }
@@ -1818,7 +1828,8 @@ auto SubchainStateData::translate(const TXOs& utxos, Patterns& outpoints)
             outpoints.emplace_back(
                 WalletDatabase::ElementID{
                     static_cast<Bip32Index>(index),
-                    {static_cast<Subchain>(subchain), std::move(account)}},
+                    {static_cast<crypto::Subchain>(subchain),
+                     std::move(account)}},
                 space(outpoint.Bytes(), outpoints.get_allocator().resource()));
         }
     }

@@ -577,6 +577,13 @@ Regtest_fixture_base::Regtest_fixture_base(
 {
 }
 
+auto Regtest_fixture_base::Account(
+    const User& user,
+    ot::blockchain::Type chain) noexcept -> const bca::Account&
+{
+    return user.api_->Crypto().Blockchain().Account(user.nym_id_, chain);
+}
+
 auto Regtest_fixture_base::compare_outpoints(
     const ot::blockchain::node::Wallet& wallet,
     const TXOState::Data& data) const noexcept -> bool

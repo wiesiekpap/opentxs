@@ -368,12 +368,12 @@ auto Notary::GetPublicMint(const identifier::UnitDefinition& unitID)
 
 auto Notary::GetUserName() const -> UnallocatedCString
 {
-    return args_.NotaryName();
+    return UnallocatedCString{args_.NotaryName()};
 }
 
 auto Notary::GetUserTerms() const -> UnallocatedCString
 {
-    return args_.NotaryTerms();
+    return UnallocatedCString{args_.NotaryTerms()};
 }
 
 auto Notary::ID() const -> const identifier::Notary&

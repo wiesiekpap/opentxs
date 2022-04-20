@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "internal/blockchain/crypto/Crypto.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -25,6 +26,7 @@
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/Imported.hpp"
+#include "opentxs/blockchain/crypto/Notification.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
@@ -112,6 +114,10 @@ public:
     {
         return imported_;
     }
+    auto GetNotification() const noexcept -> const NotificationAccounts& final
+    {
+        return notification_;
+    }
     auto GetNextChangeKey(const PasswordPrompt& reason) const noexcept(false)
         -> const Element& final;
     auto GetNextDepositKey(const PasswordPrompt& reason) const noexcept(false)
@@ -141,10 +147,7 @@ public:
         const proto::HDPath& path,
         const crypto::HDProtocol standard,
         const PasswordPrompt& reason,
-        Identifier& id) noexcept -> bool final
-    {
-        return hd_.Construct(id, path, standard, reason);
-    }
+        Identifier& id) noexcept -> bool final;
     auto AddUpdatePaymentCode(
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
@@ -166,6 +169,7 @@ public:
         return payment_code_.Construct(
             out, contacts_, local, remote, path, txid, reason);
     }
+    auto Startup() noexcept -> void final { init_notification(); }
 
     Account(
         const api::Session& api,
@@ -287,10 +291,14 @@ private:
             if (false == bool(node)) { return false; }
 
             if (0 < index_.count(id)) {
-                LogError()("Blockchain account ")(id)(" already exists")
+                LogError()(OT_PRETTY_CLASS())("subaccount ")(
+                    id)(" already exists")
                     .Flush();
 
                 return false;
+            } else {
+                LogTrace()(OT_PRETTY_CLASS())("subaccount ")(id)(" created")
+                    .Flush();
             }
 
             return add(lock, id, std::move(node));
@@ -327,6 +335,8 @@ private:
 
     using HDNodes = NodeGroup<HDAccounts, crypto::HD>;
     using ImportedNodes = NodeGroup<ImportedAccounts, crypto::Imported>;
+    using NotificationNodes =
+        NodeGroup<NotificationAccounts, crypto::Notification>;
     using PaymentCodeNodes =
         NodeGroup<PaymentCodeAccounts, crypto::PaymentCode>;
 
@@ -339,6 +349,7 @@ private:
     const OTIdentifier account_id_;
     HDNodes hd_;
     ImportedNodes imported_;
+    NotificationNodes notification_;
     PaymentCodeNodes payment_code_;
     mutable NodeIndex node_index_;
     mutable std::mutex lock_;
@@ -346,8 +357,9 @@ private:
     mutable internal::ActivityMap spent_;
     OTZMQPushSocket find_nym_;
 
-    void init_hd(const Accounts& HDAccounts) noexcept;
-    void init_payment_code(const Accounts& HDAccounts) noexcept;
+    auto init_hd(const Accounts& HDAccounts) noexcept -> void;
+    auto init_notification() noexcept -> void;
+    auto init_payment_code(const Accounts& HDAccounts) noexcept -> void;
 
     auto find_next_element(
         Subchain subchain,

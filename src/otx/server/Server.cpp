@@ -246,8 +246,7 @@ void Server::CreateMainFile(bool& mainFileExists)
     if (1 > userTerms.size()) { terms = defaultTerms; }
 
     const auto& args = manager_.GetOptions();
-    const UnallocatedCString& userBindIP = args.NotaryBindIP();
-    UnallocatedCString bindIP = userBindIP;
+    auto bindIP = UnallocatedCString{args.NotaryBindIP()};
 
     if (5 > bindIP.size()) { bindIP = DEFAULT_BIND_IP; }
 

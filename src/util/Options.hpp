@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <string_view>
 
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -19,31 +20,32 @@ class QObject;
 namespace opentxs
 {
 struct Options::Imp final {
-    UnallocatedSet<blockchain::Type> blockchain_disabled_chains_;
-    UnallocatedSet<UnallocatedCString> blockchain_ipv4_bind_;
-    UnallocatedSet<UnallocatedCString> blockchain_ipv6_bind_;
+    Set<blockchain::Type> blockchain_disabled_chains_;
+    Set<CString> blockchain_ipv4_bind_;
+    Set<CString> blockchain_ipv6_bind_;
     std::optional<int> blockchain_storage_level_;
     std::optional<bool> blockchain_sync_server_enabled_;
-    UnallocatedSet<UnallocatedCString> blockchain_sync_servers_;
+    Set<CString> blockchain_sync_servers_;
     std::optional<bool> blockchain_wallet_enabled_;
     std::optional<std::size_t> default_mint_key_bytes_;
-    std::optional<UnallocatedCString> home_;
-    std::optional<UnallocatedCString> log_endpoint_;
+    std::optional<bool> experimental_;
+    std::optional<CString> home_;
+    std::optional<CString> log_endpoint_;
     std::optional<ConnectionMode> ipv4_connection_mode_;
     std::optional<ConnectionMode> ipv6_connection_mode_;
     std::optional<int> log_level_;
     std::optional<bool> notary_bind_inproc_;
-    std::optional<UnallocatedCString> notary_bind_ip_;
+    std::optional<CString> notary_bind_ip_;
     std::optional<std::uint16_t> notary_bind_port_;
-    std::optional<UnallocatedCString> notary_name_;
-    UnallocatedSet<UnallocatedCString> notary_public_eep_;
-    UnallocatedSet<UnallocatedCString> notary_public_ipv4_;
-    UnallocatedSet<UnallocatedCString> notary_public_ipv6_;
-    UnallocatedSet<UnallocatedCString> notary_public_onion_;
+    std::optional<CString> notary_name_;
+    Set<CString> notary_public_eep_;
+    Set<CString> notary_public_ipv4_;
+    Set<CString> notary_public_ipv6_;
+    Set<CString> notary_public_onion_;
     std::optional<std::uint16_t> notary_public_port_;
-    std::optional<UnallocatedCString> notary_terms_;
+    std::optional<CString> notary_terms_;
     std::optional<QObject*> qt_root_object_;
-    std::optional<UnallocatedCString> storage_primary_plugin_;
+    std::optional<CString> storage_primary_plugin_;
     std::optional<bool> test_mode_;
 
     template <typename T>
@@ -52,13 +54,14 @@ struct Options::Imp final {
     {
         return data.value_or(defaultValue);
     }
-    static auto get(const std::optional<UnallocatedCString>& data) noexcept
-        -> const char*;
-    static auto to_bool(const char* value) noexcept -> bool;
+    static auto get(const std::optional<CString>& data) noexcept
+        -> std::string_view;
+    static auto to_bool(std::string_view value) noexcept -> bool;
 
-    auto help() const noexcept -> const UnallocatedCString&;
+    auto help() const noexcept -> std::string_view;
 
-    auto import_value(const char* key, const char* value) noexcept -> void;
+    auto import_value(std::string_view key, std::string_view value) noexcept
+        -> void;
     auto parse(int argc, char** argv) noexcept(false) -> void;
 
     Imp() noexcept;
@@ -69,10 +72,9 @@ struct Options::Imp final {
 private:
     struct Parser;
 
-    static auto lower(const UnallocatedCString& in) noexcept
-        -> UnallocatedCString;
+    static auto lower(std::string_view in) noexcept -> CString;
 
-    auto convert(const UnallocatedCString& value) const noexcept(false)
+    auto convert(std::string_view value) const noexcept(false)
         -> blockchain::Type;
 
     Imp(Imp&&) = delete;

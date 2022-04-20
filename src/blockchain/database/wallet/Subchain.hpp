@@ -18,6 +18,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
@@ -65,7 +66,7 @@ class SubchainData
 public:
     auto GetSubchainID(
         const NodeID& subaccount,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         MDB_txn* tx) const noexcept -> pSubchainIndex;
     auto GetPatterns(const SubchainIndex& subchain, alloc::Resource* alloc)
         const noexcept -> Patterns;

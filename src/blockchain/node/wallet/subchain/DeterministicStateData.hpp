@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
+
 #pragma once
 
 #include <cs_ordered_guarded.h>
@@ -31,6 +33,7 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
@@ -111,7 +114,7 @@ namespace opentxs::blockchain::node::wallet
 class DeterministicStateData final : public SubchainStateData
 {
 public:
-    const crypto::Deterministic& subaccount_;
+    const crypto::Deterministic& deterministic_;
 
     DeterministicStateData(
         const api::Session& api,
@@ -120,7 +123,7 @@ public:
         const node::internal::Mempool& mempool,
         const crypto::Deterministic& subaccount,
         const cfilter::Type filter,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         const network::zeromq::BatchID batch,
         const std::string_view parent,
         allocator_type alloc) noexcept;
@@ -153,7 +156,6 @@ private:
         const block::Match match,
         const block::bitcoin::Transaction& tx,
         WalletDatabase::MatchedTransaction& output) const noexcept -> void;
-    auto ReportScan(const block::Position& pos) const noexcept -> void final;
 
     DeterministicStateData() = delete;
     DeterministicStateData(const DeterministicStateData&) = delete;

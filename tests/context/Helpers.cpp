@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <string_view>
 
 #include "opentxs/util/Options.hpp"
 
@@ -23,6 +24,7 @@ auto check_options(
     output &=
         test.BlockchainWalletEnabled() == expect.blockchain_wallet_enabled_;
     output &= test.DisabledBlockchains() == expect.blockchain_disabled_chains_;
+    output &= test.Experimental() == expect.experimental_;
     output &= test.Home() == expect.home_;
     output &= test.Ipv4ConnectionMode() == expect.ipv4_connection_mode_;
     output &= test.Ipv6ConnectionMode() == expect.ipv6_connection_mode_;
@@ -50,6 +52,7 @@ auto check_options(
     EXPECT_EQ(
         test.BlockchainWalletEnabled(), expect.blockchain_wallet_enabled_);
     EXPECT_EQ(test.DisabledBlockchains(), expect.blockchain_disabled_chains_);
+    EXPECT_EQ(test.Experimental(), expect.experimental_);
     EXPECT_EQ(test.Home(), expect.home_);
     EXPECT_EQ(test.Ipv4ConnectionMode(), expect.ipv4_connection_mode_);
     EXPECT_EQ(test.Ipv6ConnectionMode(), expect.ipv6_connection_mode_);

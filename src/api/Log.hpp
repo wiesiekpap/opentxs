@@ -35,7 +35,7 @@ class Log final : virtual public api::internal::Log
 {
 public:
     Log(const opentxs::network::zeromq::Context& zmq,
-        const UnallocatedCString& endpoint);
+        const UnallocatedCString endpoint);
 
     ~Log() final = default;
 

@@ -12,7 +12,6 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <chrono>
 #include <exception>
-#include <memory>
 #include <string_view>
 #include <utility>
 
@@ -23,7 +22,6 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/subchain/Subchain.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
-#include "internal/identity/Nym.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -38,12 +36,12 @@
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/Notification.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
@@ -56,7 +54,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -212,8 +209,47 @@ auto Account::Imp::check_hd(const Identifier& id) noexcept -> void
 
 auto Account::Imp::check_hd(const crypto::HD& subaccount) noexcept -> void
 {
-    get(subaccount, Subtype::Internal, internal_);
-    get(subaccount, Subtype::External, external_);
+    get(subaccount, crypto::Subchain::Internal, internal_);
+    get(subaccount, crypto::Subchain::External, external_);
+}
+
+auto Account::Imp::check_notification(const Identifier& id) noexcept -> void
+{
+    check_notification(account_.GetNotification().at(id));
+}
+
+auto Account::Imp::check_notification(
+    const crypto::Notification& subaccount) noexcept -> void
+{
+    auto& map = notification_;
+
+    if (0u < map.count(subaccount.ID())) { return; }
+
+    const auto& code = subaccount.LocalPaymentCode();
+    log_("Initializing payment code ")(code.asBase58())(" on ")(name_).Flush();
+    const auto& asio = api_.Network().ZeroMQ().Internal();
+    const auto batchID = asio.PreallocateBatch();
+    auto [it, added] = map.try_emplace(
+        subaccount.ID(),
+        boost::allocate_shared<NotificationStateData>(
+            alloc::PMR<NotificationStateData>{asio.Alloc(batchID)},
+            api_,
+            node_,
+            db_,
+            mempool_,
+            filter_type_,
+            crypto::Subchain::NotificationV3,
+            batchID,
+            shutdown_endpoint_,
+            code,
+            subaccount));
+    auto& ptr = it->second;
+
+    OT_ASSERT(ptr);
+
+    auto& subchain = *ptr;
+
+    if (added) { subchain.Init(ptr); }
 }
 
 auto Account::Imp::check_pc(const Identifier& id) noexcept -> void
@@ -224,8 +260,8 @@ auto Account::Imp::check_pc(const Identifier& id) noexcept -> void
 auto Account::Imp::check_pc(const crypto::PaymentCode& subaccount) noexcept
     -> void
 {
-    get(subaccount, Subtype::Outgoing, outgoing_);
-    get(subaccount, Subtype::Incoming, incoming_);
+    get(subaccount, crypto::Subchain::Outgoing, outgoing_);
+    get(subaccount, crypto::Subchain::Incoming, incoming_);
 }
 
 auto Account::Imp::clear_children() noexcept -> void
@@ -254,7 +290,7 @@ auto Account::Imp::do_startup() noexcept -> void
 
 auto Account::Imp::get(
     const crypto::Deterministic& subaccount,
-    const Subtype subchain,
+    const crypto::Subchain subchain,
     Subchains& map) noexcept -> Subchain&
 {
     auto it = map.find(subaccount.ID());
@@ -266,49 +302,9 @@ auto Account::Imp::get(
 
 auto Account::Imp::index_nym(const identifier::Nym& id) noexcept -> void
 {
-    const auto pNym = api_.Wallet().Nym(id);
-
-    OT_ASSERT(pNym);
-
-    const auto& nym = *pNym;
-    auto code = api_.Factory().PaymentCode(nym.PaymentCode());
-
-    if (3 > code.Version()) { return; }
-
-    log_("Initializing payment code ")(code.asBase58())(" on ")(name_).Flush();
-    auto accountID = NotificationStateData::calculate_id(api_, chain_, code);
-    const auto& asio = api_.Network().ZeroMQ().Internal();
-    const auto batchID = asio.PreallocateBatch();
-    auto& map = notification_;
-
-    if (auto i = map.find(accountID); map.end() != i) { return; }
-
-    auto [it, added] = map.try_emplace(
-        std::move(accountID),
-        boost::allocate_shared<NotificationStateData>(
-            alloc::PMR<NotificationStateData>{asio.Alloc(batchID)},
-            api_,
-            node_,
-            account_,
-            db_,
-            mempool_,
-            filter_type_,
-            batchID,
-            shutdown_endpoint_,
-            std::move(code),
-            [&] {
-                auto out = proto::HDPath{};
-                nym.Internal().PaymentCodePath(out);
-
-                return out;
-            }()));
-    auto& ptr = it->second;
-
-    OT_ASSERT(ptr);
-
-    auto& subchain = *ptr;
-
-    if (added) { subchain.Init(ptr); }
+    for (const auto& subaccount : account_.GetNotification()) {
+        check_notification(subaccount);
+    }
 }
 
 auto Account::Imp::Init(boost::shared_ptr<Imp> me) noexcept -> void
@@ -318,7 +314,7 @@ auto Account::Imp::Init(boost::shared_ptr<Imp> me) noexcept -> void
 
 auto Account::Imp::instantiate(
     const crypto::Deterministic& subaccount,
-    const Subtype subchain,
+    const crypto::Subchain subchain,
     Subchains& map) noexcept -> Subchain&
 {
     log_("Instantiating ")(name_)(" subaccount ")(subaccount.ID())(" ")(
@@ -328,7 +324,6 @@ auto Account::Imp::instantiate(
     const auto batchID = asio.PreallocateBatch();
     auto [it, added] = map.try_emplace(
         subaccount.ID(),
-
         boost::allocate_shared<DeterministicStateData>(
             alloc::PMR<DeterministicStateData>{asio.Alloc(batchID)},
             api_,

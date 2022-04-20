@@ -23,6 +23,7 @@
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
@@ -97,7 +98,7 @@ public:
         -> const db::SubchainID&;
     auto GetIndex(
         const NodeID& subaccount,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         const cfilter::Type type,
         const VersionNumber version,
         MDB_txn* tx) noexcept -> pSubchainIndex;
@@ -154,7 +155,7 @@ private:
 
     auto subchain_index(
         const NodeID& subaccount,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         const cfilter::Type type,
         const VersionNumber version) const noexcept -> pSubchainIndex;
 

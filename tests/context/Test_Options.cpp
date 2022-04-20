@@ -22,6 +22,8 @@ constexpr auto blockchain_sync_enabled_1_{true};
 constexpr auto blockchain_sync_enabled_2_{false};
 constexpr auto blockchain_wallet_enabled_1_{false};
 constexpr auto blockchain_wallet_enabled_2_{true};
+constexpr auto experimental_1_{true};
+constexpr auto experimental_2_{false};
 constexpr auto home_1_{"/home/user1/.opentxs"};
 constexpr auto home_2_{"/home/user2/.opentxs"};
 constexpr auto ipv4_connection_mode_1_{opentxs::Options::ConnectionMode::off};
@@ -75,6 +77,7 @@ TEST(Options, default_values)
         false,
         {},
         true,
+        false,
         "",
         opentxs::Options::ConnectionMode::automatic,
         opentxs::Options::ConnectionMode::automatic,
@@ -113,6 +116,7 @@ TEST(Options, setters)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_1_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_1_)
             .SetDefaultMintKeyBytes(mint_key_bytes_1_)
+            .SetExperimental(experimental_1_)
             .SetHome(home_1_)
             .SetIpv4ConnectionMode(ipv4_connection_mode_1_)
             .SetIpv6ConnectionMode(ipv6_connection_mode_1_)
@@ -141,6 +145,7 @@ TEST(Options, setters)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_2_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_2_)
             .SetDefaultMintKeyBytes(mint_key_bytes_2_)
+            .SetExperimental(experimental_2_)
             .SetHome(home_2_)
             .SetIpv4ConnectionMode(ipv4_connection_mode_2_)
             .SetIpv6ConnectionMode(ipv6_connection_mode_2_)
@@ -163,6 +168,7 @@ TEST(Options, setters)
         blockchain_sync_enabled_1_,
         {sync_server_1_},
         blockchain_wallet_enabled_1_,
+        experimental_1_,
         home_1_,
         ipv4_connection_mode_1_,
         ipv6_connection_mode_1_,
@@ -189,6 +195,7 @@ TEST(Options, setters)
         blockchain_sync_enabled_2_,
         {sync_server_1_, sync_server_2_},
         blockchain_wallet_enabled_2_,
+        experimental_2_,
         home_2_,
         ipv4_connection_mode_2_,
         ipv6_connection_mode_2_,
@@ -228,6 +235,7 @@ TEST(Options, merge)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_1_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_1_)
             .SetDefaultMintKeyBytes(mint_key_bytes_1_)
+            .SetExperimental(experimental_1_)
             .SetHome(home_1_)
             .SetIpv4ConnectionMode(ipv4_connection_mode_1_)
             .SetIpv6ConnectionMode(ipv6_connection_mode_1_)
@@ -255,6 +263,7 @@ TEST(Options, merge)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_2_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_2_)
             .SetDefaultMintKeyBytes(mint_key_bytes_2_)
+            .SetExperimental(experimental_2_)
             .SetHome(home_2_)
             .SetIpv4ConnectionMode(ipv4_connection_mode_2_)
             .SetIpv6ConnectionMode(ipv6_connection_mode_2_)
@@ -278,6 +287,7 @@ TEST(Options, merge)
         blockchain_sync_enabled_1_,
         {},
         blockchain_wallet_enabled_1_,
+        experimental_1_,
         home_1_,
         ipv4_connection_mode_1_,
         ipv6_connection_mode_1_,
@@ -304,6 +314,7 @@ TEST(Options, merge)
         blockchain_sync_enabled_2_,
         {sync_server_2_},
         blockchain_wallet_enabled_2_,
+        experimental_2_,
         home_2_,
         ipv4_connection_mode_2_,
         ipv6_connection_mode_2_,
@@ -330,6 +341,7 @@ TEST(Options, merge)
         blockchain_sync_enabled_2_,
         {sync_server_2_},
         blockchain_wallet_enabled_2_,
+        experimental_2_,
         home_2_,
         ipv4_connection_mode_2_,
         ipv6_connection_mode_2_,

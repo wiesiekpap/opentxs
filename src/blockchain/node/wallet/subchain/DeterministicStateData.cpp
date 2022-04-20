@@ -20,7 +20,6 @@
 
 #include "blockchain/node/wallet/subchain/statemachine/ElementCache.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -61,7 +60,7 @@ DeterministicStateData::DeterministicStateData(
     const node::internal::Mempool& mempool,
     const crypto::Deterministic& subaccount,
     const cfilter::Type filter,
-    const Subchain subchain,
+    const crypto::Subchain subchain,
     const network::zeromq::BatchID batch,
     const std::string_view parent,
     allocator_type alloc) noexcept
@@ -76,7 +75,7 @@ DeterministicStateData::DeterministicStateData(
           batch,
           parent,
           std::move(alloc))
-    , subaccount_(subaccount)
+    , deterministic_(subaccount)
     , cache_(Clock::now(), get_allocator())
 {
 }
@@ -260,12 +259,12 @@ auto DeterministicStateData::process(
     const auto& [txid, elementID] = match;
     const auto& [index, subchainID] = elementID;
     const auto& [subchain, accountID] = subchainID;
-    const auto& element = subaccount_.BalanceElement(subchain, index);
+    const auto& element = deterministic_.BalanceElement(subchain, index);
     set_key_data(const_cast<block::bitcoin::Transaction&>(transaction));
     auto i = Bip32Index{0};
 
     for (const auto& output : transaction.Outputs()) {
-        if (Subchain::Outgoing == subchain_) { break; }
+        if (crypto::Subchain::Outgoing == subchain_) { break; }
 
         auto post = ScopeGuard{[&] { ++i; }};
         const auto& script = output.Script();
@@ -374,12 +373,5 @@ auto DeterministicStateData::process(
             }
         };
     }
-}
-
-auto DeterministicStateData::ReportScan(
-    const block::Position& pos) const noexcept -> void
-{
-    subaccount_.Internal().SetScanProgress(pos, subchain_);
-    SubchainStateData::ReportScan(pos);
 }
 }  // namespace opentxs::blockchain::node::wallet

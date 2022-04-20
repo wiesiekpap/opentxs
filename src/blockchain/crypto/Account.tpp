@@ -55,6 +55,23 @@ struct Account::Factory<crypto::HD, proto::HDAccount> {
         return factory::BlockchainHDSubaccount(api, parent, data, id);
     }
 };
+
+template <>
+struct Account::
+    Factory<crypto::Notification, opentxs::PaymentCode, identity::Nym> {
+    static auto get(
+        const api::Session& api,
+        const crypto::Account& parent,
+        Identifier& id,
+        const opentxs::PaymentCode& code,
+        const identity::Nym& nym) noexcept
+        -> std::unique_ptr<crypto::Notification>
+    {
+        return factory::BlockchainNotificationSubaccount(
+            api, parent, code, nym, id);
+    }
+};
+
 template <>
 struct Account::Factory<
     crypto::PaymentCode,

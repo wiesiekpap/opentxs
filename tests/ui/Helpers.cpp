@@ -1001,6 +1001,22 @@ auto init_activity_thread(
     wait_for_counter(counter);
 }
 
+auto init_blockchain_account_status(
+    const User& user,
+    const ot::blockchain::Type chain,
+    Counter& counter) noexcept -> void
+{
+    user.api_->UI().BlockchainAccountStatus(
+        user.nym_id_, chain, make_cb(counter, [&] {
+            auto out = std::stringstream{};
+            out << u8"blockchain_account_status_";
+            out << user.name_lower_;
+
+            return out.str();
+        }()));
+    wait_for_counter(counter);
+}
+
 auto init_contact_list(const User& user, Counter& counter) noexcept -> void
 {
     user.api_->UI().ContactList(user.nym_id_, make_cb(counter, [&] {

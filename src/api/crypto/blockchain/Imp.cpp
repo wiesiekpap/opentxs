@@ -43,6 +43,7 @@
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/UnitType.hpp"
@@ -1197,7 +1198,7 @@ auto Blockchain::Imp::RecipientContact(const Key& key) const noexcept
     const auto& [account, subchain, index] = key;
     using Subchain = opentxs::blockchain::crypto::Subchain;
 
-    if (Subchain::Notification == subchain) { return blank; }
+    if (is_notification(subchain)) { return blank; }
 
     const auto accountID = api_.Factory().Identifier(account);
     const auto& owner = Owner(accountID);
@@ -1262,7 +1263,7 @@ auto Blockchain::Imp::SenderContact(const Key& key) const noexcept
     const auto& [account, subchain, index] = key;
     using Subchain = opentxs::blockchain::crypto::Subchain;
 
-    if (Subchain::Notification == subchain) { return blank; }
+    if (is_notification(subchain)) { return blank; }
 
     const auto accountID = api_.Factory().Identifier(account);
     const auto& owner = Owner(accountID);

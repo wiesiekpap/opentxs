@@ -34,6 +34,7 @@ struct Account;
 class Element;
 class HD;
 class Imported;
+class Notification;
 class PaymentCode;
 class Wallet;
 }  // namespace crypto
@@ -98,6 +99,27 @@ public:
 
         OPENTXS_NO_EXPORT virtual ~ImportedAccounts() = default;
     };
+    struct OPENTXS_EXPORT NotificationAccounts {
+        using value_type = Notification;
+        using const_iterator = opentxs::iterator::
+            Bidirectional<const NotificationAccounts, const value_type>;
+
+        virtual auto all() const noexcept -> UnallocatedSet<OTIdentifier> = 0;
+        /// Throws std::out_of_range for invalid position
+        virtual auto at(const std::size_t position) const noexcept(false)
+            -> const value_type& = 0;
+        /// Throws std::out_of_range for invalid id
+        virtual auto at(const Identifier& id) const noexcept(false)
+            -> const value_type& = 0;
+        virtual auto begin() const noexcept -> const_iterator = 0;
+        virtual auto cbegin() const noexcept -> const_iterator = 0;
+        virtual auto cend() const noexcept -> const_iterator = 0;
+        virtual auto end() const noexcept -> const_iterator = 0;
+        virtual auto size() const noexcept -> std::size_t = 0;
+        virtual auto Type() const noexcept -> SubaccountType = 0;
+
+        OPENTXS_NO_EXPORT virtual ~NotificationAccounts() = default;
+    };
     struct OPENTXS_EXPORT PaymentCodeAccounts {
         using value_type = PaymentCode;
         using const_iterator = opentxs::iterator::
@@ -141,6 +163,8 @@ public:
         const UnallocatedCString& memo = "") const noexcept
         -> UnallocatedCString = 0;
     virtual auto GetImported() const noexcept -> const ImportedAccounts& = 0;
+    virtual auto GetNotification() const noexcept
+        -> const NotificationAccounts& = 0;
     virtual auto GetPaymentCode() const noexcept
         -> const PaymentCodeAccounts& = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept

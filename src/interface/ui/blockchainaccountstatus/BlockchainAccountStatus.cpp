@@ -32,6 +32,7 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/Notification.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
@@ -213,9 +214,10 @@ auto BlockchainAccountStatus::populate(
     ChildMap& out) const noexcept -> void
 {
     const auto& api = Widget::api_;
+    using Type = blockchain::crypto::SubaccountType;
 
     switch (type) {
-        case blockchain::crypto::SubaccountType::HD: {
+        case Type::HD: {
             const auto& hd = account.GetHD();
             const auto& subaccount = hd.at(subaccountID);
             const auto path = subaccount.Path();
@@ -227,7 +229,7 @@ auto BlockchainAccountStatus::populate(
                 subchain,
                 out[type]);
         } break;
-        case blockchain::crypto::SubaccountType::PaymentCode: {
+        case Type::PaymentCode: {
             const auto& pc = account.GetPaymentCode();
             const auto& subaccount = pc.at(subaccountID);
             populate(
@@ -238,11 +240,20 @@ auto BlockchainAccountStatus::populate(
                 subchain,
                 out[type]);
         } break;
-        case blockchain::crypto::SubaccountType::Imported: {
+        case Type::Imported: {
             // TODO
         } break;
-        case blockchain::crypto::SubaccountType::Notification: {
-            // TODO
+        case Type::Notification: {
+            const auto& notif = account.GetNotification();
+            const auto& subaccount = notif.at(subaccountID);
+            const auto& pc = subaccount.LocalPaymentCode();
+            populate(
+                subaccount,
+                pc.ID(),
+                pc.asBase58() + " (local)",
+                "Notification transactions",
+                subchain,
+                out[Type::PaymentCode]);
         } break;
         default: {
 

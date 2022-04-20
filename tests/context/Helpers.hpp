@@ -30,30 +30,31 @@ namespace ot = opentxs;
 namespace ottest
 {
 struct OptionsData {
-    ot::UnallocatedSet<ot::UnallocatedCString> blockchain_bind_ipv4_;
-    ot::UnallocatedSet<ot::UnallocatedCString> blockchain_bind_ipv6_;
-    ot::UnallocatedSet<opentxs::blockchain::Type> blockchain_disabled_chains_;
+    ot::Set<ot::CString> blockchain_bind_ipv4_;
+    ot::Set<ot::CString> blockchain_bind_ipv6_;
+    ot::Set<opentxs::blockchain::Type> blockchain_disabled_chains_;
     int blockchain_storage_level_;
     bool blockchain_sync_server_enabled_;
-    ot::UnallocatedSet<ot::UnallocatedCString> blockchain_sync_servers_;
+    ot::Set<ot::CString> blockchain_sync_servers_;
     bool blockchain_wallet_enabled_;
-    ot::UnallocatedCString home_;
+    bool experimental_;
+    ot::CString home_;
     opentxs::Options::ConnectionMode ipv4_connection_mode_;
     opentxs::Options::ConnectionMode ipv6_connection_mode_;
-    ot::UnallocatedCString log_endpoint_;
+    ot::CString log_endpoint_;
     int log_level_;
     std::size_t mint_key_bytes_;
     bool notary_bind_inproc_;
-    ot::UnallocatedCString notary_bind_ip_;
+    ot::CString notary_bind_ip_;
     std::uint16_t notary_bind_port_;
-    ot::UnallocatedCString notary_name_;
-    ot::UnallocatedSet<ot::UnallocatedCString> notary_public_eep_;
-    ot::UnallocatedSet<ot::UnallocatedCString> notary_public_ipv4_;
-    ot::UnallocatedSet<ot::UnallocatedCString> notary_public_ipv6_;
-    ot::UnallocatedSet<ot::UnallocatedCString> notary_public_onion_;
+    ot::CString notary_name_;
+    ot::Set<ot::CString> notary_public_eep_;
+    ot::Set<ot::CString> notary_public_ipv4_;
+    ot::Set<ot::CString> notary_public_ipv6_;
+    ot::Set<ot::CString> notary_public_onion_;
     std::uint16_t notary_public_port_;
-    ot::UnallocatedCString notary_terms_;
-    ot::UnallocatedCString storage_primary_plugin_;
+    ot::CString notary_terms_;
+    ot::CString storage_primary_plugin_;
     bool test_mode_;
 };
 

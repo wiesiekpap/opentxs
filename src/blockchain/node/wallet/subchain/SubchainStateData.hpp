@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
+
 #pragma once
 
 #include <boost/enable_shared_from_this.hpp>
@@ -139,7 +141,6 @@ class SubchainStateData
 {
 public:
     using WalletDatabase = node::internal::WalletDatabase;
-    using Subchain = WalletDatabase::Subchain;
     using SubchainIndex = WalletDatabase::pSubchainIndex;
     using ElementCache =
         libguarded::shared_guarded<wallet::ElementCache, std::shared_mutex>;
@@ -152,10 +153,11 @@ public:
     const node::internal::Network& node_;
     node::internal::WalletDatabase& db_;
     const node::internal::Mempool& mempool_oracle_;
+    const crypto::Subaccount& subaccount_;
     const OTNymID owner_;
     const crypto::SubaccountType account_type_;
     const OTIdentifier id_;
-    const Subchain subchain_;
+    const crypto::Subchain subchain_;
     const Type chain_;
     const cfilter::Type filter_type_;
     const SubchainIndex db_key_;
@@ -192,7 +194,7 @@ public:
         const block::bitcoin::Block& block) const noexcept -> bool;
     auto ProcessTransaction(
         const block::bitcoin::Transaction& tx) const noexcept -> void;
-    virtual auto ReportScan(const block::Position& pos) const noexcept -> void;
+    auto ReportScan(const block::Position& pos) const noexcept -> void;
     auto Rescan(
         const block::Position best,
         const block::Height stop,
@@ -229,7 +231,7 @@ protected:
         const node::internal::Mempool& mempool,
         const crypto::Subaccount& subaccount,
         const cfilter::Type filter,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         const network::zeromq::BatchID batch,
         const std::string_view parent,
         allocator_type alloc) noexcept;
@@ -287,7 +289,7 @@ private:
 
     static auto describe(
         const crypto::Subaccount& account,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         allocator_type alloc) noexcept -> CString;
     static auto highest_clean(
         const AsyncResults& results,
@@ -370,7 +372,7 @@ private:
         const node::internal::Mempool& mempool,
         const crypto::Subaccount& subaccount,
         const cfilter::Type filter,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         const network::zeromq::BatchID batch,
         const std::string_view parent,
         CString&& fromChildren,

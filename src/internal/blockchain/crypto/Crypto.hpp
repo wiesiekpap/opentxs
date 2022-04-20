@@ -30,6 +30,7 @@
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/Imported.hpp"
+#include "opentxs/blockchain/crypto/Notification.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -99,6 +100,7 @@ class Account;
 class Deterministic;
 class HD;
 class Imported;
+class Notification;
 class PaymentCode;
 class Subaccount;
 class Wallet;
@@ -181,6 +183,7 @@ struct Account : virtual public crypto::Account {
         const opentxs::blockchain::block::Txid& notification,
         const PasswordPrompt& reason,
         Identifier& id) noexcept -> bool = 0;
+    virtual auto Startup() noexcept -> void = 0;
 
     ~Account() override = default;
 };
@@ -267,6 +270,21 @@ struct HD : virtual public crypto::HD, virtual public Deterministic {
 };
 
 struct Imported : virtual public crypto::Imported, virtual public Subaccount {
+};
+
+struct Notification : virtual public crypto::Notification,
+                      virtual public Subaccount {
+    auto InternalNotification() const noexcept
+        -> const internal::Notification& final
+    {
+        return *this;
+    }
+    virtual auto Path() const noexcept -> proto::HDPath = 0;
+
+    auto InternalNotification() noexcept -> internal::Notification& final
+    {
+        return *this;
+    }
 };
 
 struct PaymentCode : virtual public crypto::PaymentCode,

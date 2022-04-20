@@ -7,30 +7,100 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "blockchain/crypto/Notification.hpp"  // IWYU pragma: associated
 
+#include <memory>
 #include <utility>
 
+#include "internal/blockchain/crypto/Factory.hpp"
+#include "internal/identity/Nym.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/HDPath.pb.h"
+
+namespace opentxs::factory
+{
+auto BlockchainNotificationSubaccount(
+    const api::Session& api,
+    const blockchain::crypto::Account& parent,
+    const opentxs::PaymentCode& code,
+    const identity::Nym& nym,
+    Identifier& id) noexcept
+    -> std::unique_ptr<blockchain::crypto::Notification>
+{
+    using ReturnType = blockchain::crypto::implementation::Notification;
+
+    return std::make_unique<ReturnType>(
+        api,
+        parent,
+        code,
+        [&] {
+            auto out = proto::HDPath{};
+            nym.Internal().PaymentCodePath(out);
+
+            return out;
+        }(),
+        id);
+}
+}  // namespace opentxs::factory
 
 namespace opentxs::blockchain::crypto::implementation
 {
 Notification::Notification(
     const api::Session& api,
     const crypto::Account& parent,
-    OTIdentifier&& id,
-    OTIdentifier out) noexcept
-    : Subaccount(api, parent, SubaccountType::Notification, std::move(id), out)
+    const opentxs::PaymentCode& code,
+    proto::HDPath&& path,
+    Identifier& out) noexcept
+    : Subaccount(
+          api,
+          parent,
+          SubaccountType::Notification,
+          calculate_id(api, parent.Chain(), code),
+          out)
+    , code_(code)
+    , path_(std::move(path))
+    , progress_()
 {
     init();
 }
 
-Notification::Notification(
+auto Notification::calculate_id(
     const api::Session& api,
-    const crypto::Account& parent,
-    OTIdentifier&& id) noexcept
-    : Notification(api, parent, std::move(id), api.Factory().Identifier())
+    const blockchain::Type chain,
+    const opentxs::PaymentCode& code) noexcept -> OTIdentifier
 {
+    auto preimage = api.Factory().DataFromBytes(code.ID().Bytes());
+    preimage->Concatenate(&chain, sizeof(chain));
+    auto output = api.Factory().Identifier();
+    output->CalculateDigest(preimage->Bytes());
+
+    return output;
+}
+
+auto Notification::ScanProgress(Subchain type) const noexcept -> block::Position
+{
+    try {
+
+        return progress_.lock_shared()->at(type);
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return Subaccount::ScanProgress(type);
+    }
+}
+
+auto Notification::SetScanProgress(
+    const block::Position& progress,
+    Subchain type) noexcept -> void
+{
+    progress_.lock()->operator[](type) = progress;
 }
 }  // namespace opentxs::blockchain::crypto::implementation

@@ -43,7 +43,7 @@ namespace opentxs::blockchain::database::wallet
 struct SubchainData::Imp {
     auto GetSubchainID(
         const NodeID& subaccount,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         MDB_txn* tx) const noexcept -> pSubchainIndex
     {
         auto lock = sLock{lock_};
@@ -287,7 +287,7 @@ private:
     }
     auto subchain_index(
         const NodeID& subaccount,
-        const Subchain subchain,
+        const crypto::Subchain subchain,
         const cfilter::Type type,
         const VersionNumber version) const noexcept -> pSubchainIndex
     {
@@ -329,7 +329,7 @@ SubchainData::SubchainData(
 
 auto SubchainData::GetSubchainID(
     const NodeID& subaccount,
-    const Subchain subchain,
+    const crypto::Subchain subchain,
     MDB_txn* tx) const noexcept -> pSubchainIndex
 {
     return imp_->GetSubchainID(subaccount, subchain, tx);

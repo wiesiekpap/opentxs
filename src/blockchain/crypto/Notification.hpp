@@ -6,12 +6,14 @@
 #pragma once
 
 #include <boost/container/flat_map.hpp>
+#include <cs_shared_guarded.h>
 #include <atomic>
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
 #include <mutex>
 #include <optional>
+#include <shared_mutex>
 #include <stdexcept>
 #include <utility>
 
@@ -20,10 +22,13 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
@@ -48,8 +53,14 @@ namespace blockchain
 namespace crypto
 {
 class Account;
+class Notification;
 }  // namespace crypto
 }  // namespace blockchain
+
+namespace proto
+{
+class HDPath;
+}  // namespace proto
 
 class Identifier;
 class PasswordPrompt;
@@ -59,7 +70,8 @@ class PasswordPrompt;
 
 namespace opentxs::blockchain::crypto::implementation
 {
-class Notification final : virtual public Subaccount
+class Notification final : public internal::Notification,
+                           virtual public Subaccount
 {
 public:
     auto AllowedSubchains() const noexcept -> UnallocatedSet<Subchain> final
@@ -72,15 +84,40 @@ public:
         throw std::out_of_range{
             "no balance elements present in notification subaccounts"};
     }
+    auto LocalPaymentCode() const noexcept -> const opentxs::PaymentCode& final
+    {
+        return code_;
+    }
+    auto Path() const noexcept -> proto::HDPath final { return path_; }
+    auto ScanProgress(Subchain type) const noexcept -> block::Position final;
+
+    auto SetScanProgress(
+        const block::Position& progress,
+        Subchain type) noexcept -> void final;
 
     Notification(
         const api::Session& api,
         const crypto::Account& parent,
-        OTIdentifier&& id) noexcept;
+        const opentxs::PaymentCode& code,
+        proto::HDPath&& path,
+        Identifier& out) noexcept;
 
     ~Notification() final = default;
 
 private:
+    using ProgressMap = Map<Subchain, block::Position>;
+    using GuardedProgressMap =
+        libguarded::shared_guarded<ProgressMap, std::shared_mutex>;
+
+    const opentxs::PaymentCode code_;
+    const proto::HDPath path_;
+    GuardedProgressMap progress_;
+
+    static auto calculate_id(
+        const api::Session& api,
+        const blockchain::Type chain,
+        const opentxs::PaymentCode& code) noexcept -> OTIdentifier;
+
     auto account_already_exists(const rLock&) const noexcept -> bool final
     {
         return false;
@@ -103,12 +140,6 @@ private:
         throw std::out_of_range{
             "no balance elements present in notification subaccounts"};
     }
-
-    Notification(
-        const api::Session& api,
-        const crypto::Account& parent,
-        OTIdentifier&& id,
-        OTIdentifier out) noexcept;
 
     Notification(const Notification&) = delete;
     Notification(Notification&&) = delete;

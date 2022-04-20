@@ -60,7 +60,7 @@ DeterministicIndex::DeterministicIndex(
     const network::zeromq::BatchID batch,
     allocator_type alloc) noexcept
     : Imp(parent, batch, alloc)
-    , subaccount_(deterministic.subaccount_)
+    , subaccount_(deterministic.deterministic_)
 {
 }
 
