@@ -119,8 +119,10 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::api::network
 {
 struct BlockchainImp final : public Blockchain::Imp {
+    using Imp::AddSyncServer;
     auto AddSyncServer(const UnallocatedCString& endpoint) const noexcept
         -> bool final;
+    auto AddSyncServer(std::string_view endpoint) const noexcept -> bool;
     auto BlockAvailableEndpoint() const noexcept -> std::string_view final
     {
         return block_available_endpoint_;

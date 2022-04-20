@@ -6,6 +6,7 @@
 #pragma once
 
 #include <memory>
+#include <string_view>
 
 #include "opentxs/api/Context.hpp"
 
@@ -59,8 +60,7 @@ auto Legacy(const UnallocatedCString& home) noexcept
     -> std::unique_ptr<api::Legacy>;
 auto Log(
     const network::zeromq::Context& zmq,
-    const UnallocatedCString& endpoint) noexcept
-    -> std::unique_ptr<api::internal::Log>;
+    std::string_view endpoint) noexcept -> std::unique_ptr<api::internal::Log>;
 auto FactoryAPI(const api::Crypto& crypto) noexcept
     -> std::unique_ptr<api::Factory>;
 auto Settings(const api::Legacy& legacy, const String& path) noexcept

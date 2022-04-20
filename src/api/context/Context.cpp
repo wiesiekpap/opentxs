@@ -17,6 +17,7 @@
 #include <memory>
 #include <mutex>
 #include <stdexcept>
+#include <string_view>
 #include <utility>
 
 #include "2_Factory.hpp"

@@ -12,7 +12,6 @@
 #include <boost/program_options.hpp>
 #include <algorithm>
 #include <cctype>
-#include <cstring>
 #include <iterator>
 #include <memory>
 #include <sstream>
@@ -43,6 +42,7 @@ struct Options::Imp::Parser {
     static constexpr auto blockchain_sync_connect_{"blockchain_sync_server"};
     static constexpr auto blockchain_wallet_enable_{"blockchain_wallet"};
     static constexpr auto default_mint_key_bytes_{"mint_key_default_bytes"};
+    static constexpr auto experimental_{"ot_experimental"};
     static constexpr auto home_{"ot_home"};
     static constexpr auto ipv4_connection_mode_{"ipv4_connection_mode"};
     static constexpr auto ipv6_connection_mode_{"ipv6_connection_mode"};
@@ -175,6 +175,10 @@ struct Options::Imp::Parser {
                 storage_plugin_,
                 po::value<UnallocatedCString>(),
                 "primary opentxs storage plugin");
+            out.add_options()(
+                experimental_,
+                po::value<bool>()->implicit_value(false),
+                "Enable experimental opentxs features");
 
             return out;
         }();
@@ -183,6 +187,7 @@ struct Options::Imp::Parser {
     }
     auto Help() const noexcept -> UnallocatedCString
     {
+        // TODO c++20 return allocated
         auto out = std::stringstream{};
         out << Args();
 
@@ -204,6 +209,7 @@ Options::Imp::Imp() noexcept
     , blockchain_sync_servers_()
     , blockchain_wallet_enabled_(std::nullopt)
     , default_mint_key_bytes_(std::nullopt)
+    , experimental_(std::nullopt)
     , home_(std::nullopt)
     , log_endpoint_(std::nullopt)
     , ipv4_connection_mode_(std::nullopt)
@@ -234,6 +240,7 @@ Options::Imp::Imp(const Imp& rhs) noexcept
     , blockchain_sync_servers_(rhs.blockchain_sync_servers_)
     , blockchain_wallet_enabled_(rhs.blockchain_wallet_enabled_)
     , default_mint_key_bytes_(rhs.default_mint_key_bytes_)
+    , experimental_(rhs.experimental_)
     , home_(rhs.home_)
     , log_endpoint_(rhs.log_endpoint_)
     , ipv4_connection_mode_(rhs.ipv4_connection_mode_)
@@ -255,15 +262,16 @@ Options::Imp::Imp(const Imp& rhs) noexcept
 {
 }
 
-auto Options::Imp::convert(const UnallocatedCString& value) const
-    noexcept(false) -> blockchain::Type
+auto Options::Imp::convert(std::string_view value) const noexcept(false)
+    -> blockchain::Type
 {
     static const auto& chains = blockchain::DefinedChains();
     static const auto names = [] {
-        auto out = UnallocatedMap<UnallocatedCString, blockchain::Type>{};
+        auto out = Map<CString, blockchain::Type>{};
 
         for (const auto& chain : chains) {
-            out.emplace(lower(TickerSymbol(chain)), chain);
+            // TODO add allocated or string_view version of TickerSymbol
+            out.emplace(lower(TickerSymbol(chain).c_str()), chain);
         }
 
         return out;
@@ -276,7 +284,8 @@ auto Options::Imp::convert(const UnallocatedCString& value) const
     }
 
     try {
-        const auto candidate = static_cast<blockchain::Type>(std::stoi(value));
+        auto temp = UnallocatedCString{value};  // TODO
+        const auto candidate = static_cast<blockchain::Type>(std::stoi(temp));
 
         if (0 < chains.count(candidate)) { return candidate; }
     } catch (...) {
@@ -285,10 +294,10 @@ auto Options::Imp::convert(const UnallocatedCString& value) const
     throw std::out_of_range{"not a blockchain"};
 }
 
-auto Options::Imp::get(const std::optional<UnallocatedCString>& data) noexcept
-    -> const char*
+auto Options::Imp::get(const std::optional<CString>& data) noexcept
+    -> std::string_view
 {
-    static const auto null = UnallocatedCString{};
+    static const auto null = CString{};
 
     if (const auto& v = data; v.has_value()) {
 
@@ -299,7 +308,7 @@ auto Options::Imp::get(const std::optional<UnallocatedCString>& data) noexcept
     }
 }
 
-auto Options::Imp::help() const noexcept -> const UnallocatedCString&
+auto Options::Imp::help() const noexcept -> std::string_view
 {
     static const auto text = [&] {
         auto parser = Parser{};
@@ -310,73 +319,77 @@ auto Options::Imp::help() const noexcept -> const UnallocatedCString&
     return text;
 }
 
-auto Options::Imp::import_value(const char* key, const char* value) noexcept
-    -> void
+auto Options::Imp::import_value(
+    std::string_view key,
+    std::string_view value) noexcept -> void
 {
+    const auto sValue = UnallocatedCString{value};
+
     try {
-        if (0 == std::strcmp(key, Parser::blockchain_disable_)) {
+        if (0 == key.compare(Parser::blockchain_disable_)) {
             blockchain_disabled_chains_.emplace(convert(value));
-        } else if (0 == std::strcmp(key, Parser::blockchain_ipv4_bind_)) {
+        } else if (0 == key.compare(Parser::blockchain_ipv4_bind_)) {
             blockchain_ipv4_bind_.emplace(value);
-        } else if (0 == std::strcmp(key, Parser::blockchain_ipv6_bind_)) {
+        } else if (0 == key.compare(Parser::blockchain_ipv6_bind_)) {
             blockchain_ipv6_bind_.emplace(value);
-        } else if (0 == std::strcmp(key, Parser::blockchain_storage_)) {
-            blockchain_storage_level_ = std::stoi(value);
-        } else if (0 == std::strcmp(key, Parser::blockchain_sync_provide_)) {
+        } else if (0 == key.compare(Parser::blockchain_storage_)) {
+            blockchain_storage_level_ = std::stoi(sValue);
+        } else if (0 == key.compare(Parser::blockchain_sync_provide_)) {
             blockchain_sync_server_enabled_ = to_bool(value);
 
             if (blockchain_sync_server_enabled_) {
                 blockchain_wallet_enabled_ = false;
             }
-        } else if (0 == std::strcmp(key, Parser::blockchain_sync_connect_)) {
+        } else if (0 == key.compare(Parser::blockchain_sync_connect_)) {
             blockchain_sync_servers_.emplace(value);
-        } else if (0 == std::strcmp(key, Parser::blockchain_wallet_enable_)) {
+        } else if (0 == key.compare(Parser::blockchain_wallet_enable_)) {
             blockchain_wallet_enabled_ = to_bool(value);
-        } else if (0 == std::strcmp(key, Parser::default_mint_key_bytes_)) {
-            default_mint_key_bytes_ = std::stoull(value);
-        } else if (0 == std::strcmp(key, Parser::home_)) {
+        } else if (0 == key.compare(Parser::default_mint_key_bytes_)) {
+            default_mint_key_bytes_ = std::stoull(sValue);
+        } else if (0 == key.compare(Parser::experimental_)) {
+            experimental_ = to_bool(value);
+        } else if (0 == key.compare(Parser::home_)) {
             home_ = value;
-        } else if (0 == std::strcmp(key, Parser::ipv4_connection_mode_)) {
+        } else if (0 == key.compare(Parser::ipv4_connection_mode_)) {
             ipv4_connection_mode_ =
-                static_cast<ConnectionMode>(std::stoi(value));
-        } else if (0 == std::strcmp(key, Parser::ipv6_connection_mode_)) {
+                static_cast<ConnectionMode>(std::stoi(sValue));
+        } else if (0 == key.compare(Parser::ipv6_connection_mode_)) {
             ipv6_connection_mode_ =
-                static_cast<ConnectionMode>(std::stoi(value));
-        } else if (0 == std::strcmp(key, Parser::log_endpoint_)) {
+                static_cast<ConnectionMode>(std::stoi(sValue));
+        } else if (0 == key.compare(Parser::log_endpoint_)) {
             log_endpoint_ = value;
-        } else if (0 == std::strcmp(key, Parser::log_level_)) {
-            log_level_ = std::stoi(value);
-        } else if (0 == std::strcmp(key, Parser::notary_inproc_)) {
+        } else if (0 == key.compare(Parser::log_level_)) {
+            log_level_ = std::stoi(sValue);
+        } else if (0 == key.compare(Parser::notary_inproc_)) {
             notary_bind_inproc_ = to_bool(value);
-        } else if (0 == std::strcmp(key, Parser::notary_bind_ip_)) {
+        } else if (0 == key.compare(Parser::notary_bind_ip_)) {
             notary_bind_ip_ = value;
-        } else if (0 == std::strcmp(key, Parser::notary_bind_port_)) {
-            notary_bind_port_ = std::stoi(value);
-        } else if (0 == std::strcmp(key, Parser::notary_name_)) {
+        } else if (0 == key.compare(Parser::notary_bind_port_)) {
+            notary_bind_port_ = std::stoi(sValue);
+        } else if (0 == key.compare(Parser::notary_name_)) {
             notary_name_ = value;
-        } else if (0 == std::strcmp(key, Parser::notary_public_eep_)) {
+        } else if (0 == key.compare(Parser::notary_public_eep_)) {
             notary_public_eep_.emplace(value);
-        } else if (0 == std::strcmp(key, Parser::notary_public_ipv4_)) {
+        } else if (0 == key.compare(Parser::notary_public_ipv4_)) {
             notary_public_ipv4_.emplace(value);
-        } else if (0 == std::strcmp(key, Parser::notary_public_ipv6_)) {
+        } else if (0 == key.compare(Parser::notary_public_ipv6_)) {
             notary_public_ipv6_.emplace(value);
-        } else if (0 == std::strcmp(key, Parser::notary_public_onion_)) {
+        } else if (0 == key.compare(Parser::notary_public_onion_)) {
             notary_public_onion_.emplace(value);
-        } else if (0 == std::strcmp(key, Parser::notary_public_port_)) {
-            notary_public_port_ = std::stoi(value);
-        } else if (0 == std::strcmp(key, Parser::notary_terms_)) {
+        } else if (0 == key.compare(Parser::notary_public_port_)) {
+            notary_public_port_ = std::stoi(sValue);
+        } else if (0 == key.compare(Parser::notary_terms_)) {
             notary_terms_ = value;
-        } else if (0 == std::strcmp(key, Parser::storage_plugin_)) {
+        } else if (0 == key.compare(Parser::storage_plugin_)) {
             storage_primary_plugin_ = value;
         }
     } catch (...) {
     }
 }
 
-auto Options::Imp::lower(const UnallocatedCString& in) noexcept
-    -> UnallocatedCString
+auto Options::Imp::lower(std::string_view in) noexcept -> CString
 {
-    auto out = UnallocatedCString{};
+    auto out = CString{};
     std::transform(in.begin(), in.end(), std::back_inserter(out), [](auto c) {
         return std::tolower(c);
     });
@@ -417,20 +430,20 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
             try {
                 const auto& servers = value.as<Parser::Multistring>();
                 auto& dest = blockchain_ipv4_bind_;
-                std::copy(
-                    servers.begin(),
-                    servers.end(),
-                    std::inserter(dest, dest.end()));
+
+                for (const auto& server : servers) {
+                    dest.emplace(server.c_str());
+                }
             } catch (...) {
             }
         } else if (name == Parser::blockchain_ipv6_bind_) {
             try {
                 const auto& servers = value.as<Parser::Multistring>();
                 auto& dest = blockchain_ipv6_bind_;
-                std::copy(
-                    servers.begin(),
-                    servers.end(),
-                    std::inserter(dest, dest.end()));
+
+                for (const auto& server : servers) {
+                    dest.emplace(server.c_str());
+                }
             } catch (...) {
             }
         } else if (name == Parser::blockchain_storage_) {
@@ -451,10 +464,10 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
             try {
                 const auto& servers = value.as<Parser::Multistring>();
                 auto& dest = blockchain_sync_servers_;
-                std::copy(
-                    servers.begin(),
-                    servers.end(),
-                    std::inserter(dest, dest.end()));
+
+                for (const auto& server : servers) {
+                    dest.emplace(server.c_str());
+                }
             } catch (...) {
             }
         } else if (name == Parser::blockchain_wallet_enable_) {
@@ -469,7 +482,7 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
             }
         } else if (name == Parser::home_) {
             try {
-                home_ = value.as<UnallocatedCString>();
+                home_ = value.as<UnallocatedCString>().c_str();
             } catch (...) {
             }
         } else if (name == Parser::ipv4_connection_mode_) {
@@ -486,7 +499,7 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
             }
         } else if (name == Parser::log_endpoint_) {
             try {
-                log_endpoint_ = value.as<UnallocatedCString>();
+                log_endpoint_ = value.as<UnallocatedCString>().c_str();
             } catch (...) {
             }
         } else if (name == Parser::log_level_) {
@@ -496,7 +509,7 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
             }
         } else if (name == Parser::notary_bind_ip_) {
             try {
-                notary_bind_ip_ = value.as<UnallocatedCString>();
+                notary_bind_ip_ = value.as<UnallocatedCString>().c_str();
             } catch (...) {
             }
         } else if (name == Parser::notary_bind_port_) {
@@ -506,52 +519,52 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
             }
         } else if (name == Parser::notary_name_) {
             try {
-                notary_name_ = value.as<UnallocatedCString>();
+                notary_name_ = value.as<UnallocatedCString>().c_str();
             } catch (...) {
             }
         } else if (name == Parser::notary_terms_) {
             try {
-                notary_terms_ = value.as<UnallocatedCString>();
+                notary_terms_ = value.as<UnallocatedCString>().c_str();
             } catch (...) {
             }
         } else if (name == Parser::notary_public_eep_) {
             try {
                 const auto& servers = value.as<Parser::Multistring>();
                 auto& dest = notary_public_eep_;
-                std::copy(
-                    servers.begin(),
-                    servers.end(),
-                    std::inserter(dest, dest.end()));
+
+                for (const auto& server : servers) {
+                    dest.emplace(server.c_str());
+                }
             } catch (...) {
             }
         } else if (name == Parser::notary_public_ipv4_) {
             try {
                 const auto& servers = value.as<Parser::Multistring>();
                 auto& dest = notary_public_ipv4_;
-                std::copy(
-                    servers.begin(),
-                    servers.end(),
-                    std::inserter(dest, dest.end()));
+
+                for (const auto& server : servers) {
+                    dest.emplace(server.c_str());
+                }
             } catch (...) {
             }
         } else if (name == Parser::notary_public_ipv6_) {
             try {
                 const auto& servers = value.as<Parser::Multistring>();
                 auto& dest = notary_public_ipv6_;
-                std::copy(
-                    servers.begin(),
-                    servers.end(),
-                    std::inserter(dest, dest.end()));
+
+                for (const auto& server : servers) {
+                    dest.emplace(server.c_str());
+                }
             } catch (...) {
             }
         } else if (name == Parser::notary_public_onion_) {
             try {
                 const auto& servers = value.as<Parser::Multistring>();
                 auto& dest = notary_public_onion_;
-                std::copy(
-                    servers.begin(),
-                    servers.end(),
-                    std::inserter(dest, dest.end()));
+
+                for (const auto& server : servers) {
+                    dest.emplace(server.c_str());
+                }
             } catch (...) {
             }
         } else if (name == Parser::notary_public_port_) {
@@ -561,18 +574,20 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
             }
         } else if (name == Parser::storage_plugin_) {
             try {
-                storage_primary_plugin_ = value.as<UnallocatedCString>();
+                storage_primary_plugin_ =
+                    value.as<UnallocatedCString>().c_str();
             } catch (...) {
             }
         }
     }
 }
 
-auto Options::Imp::to_bool(const char* value) noexcept -> bool
+auto Options::Imp::to_bool(std::string_view value) noexcept -> bool
 {
     try {
+        const auto sValue = UnallocatedCString{value};
 
-        return 0 != std::stoi(value);
+        return 0 != std::stoi(sValue);
     } catch (...) {
     }
 
@@ -638,6 +653,10 @@ auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options
 
     if (const auto& v = r.default_mint_key_bytes_; v.has_value()) {
         l.default_mint_key_bytes_ = v.value();
+    }
+
+    if (const auto& v = r.experimental_; v.has_value()) {
+        l.experimental_ = v.value();
     }
 
     if (const auto& v = r.home_; v.has_value()) { l.home_ = v.value(); }
@@ -740,63 +759,64 @@ Options::Options(Options&& rhs) noexcept
     OT_ASSERT(nullptr != imp_);
 }
 
-auto Options::AddBlockchainIpv4Bind(const char* endpoint) noexcept -> Options&
+auto Options::AddBlockchainIpv4Bind(std::string_view endpoint) noexcept
+    -> Options&
 {
     imp_->blockchain_ipv4_bind_.emplace(endpoint);
 
     return *this;
 }
 
-auto Options::AddBlockchainIpv6Bind(const char* endpoint) noexcept -> Options&
+auto Options::AddBlockchainIpv6Bind(std::string_view endpoint) noexcept
+    -> Options&
 {
     imp_->blockchain_ipv6_bind_.emplace(endpoint);
 
     return *this;
 }
 
-auto Options::AddBlockchainSyncServer(const char* endpoint) noexcept -> Options&
+auto Options::AddBlockchainSyncServer(std::string_view endpoint) noexcept
+    -> Options&
 {
     imp_->blockchain_sync_servers_.emplace(endpoint);
 
     return *this;
 }
 
-auto Options::AddNotaryPublicEEP(const char* value) noexcept -> Options&
+auto Options::AddNotaryPublicEEP(std::string_view value) noexcept -> Options&
 {
     imp_->notary_public_eep_.emplace(value);
 
     return *this;
 }
 
-auto Options::AddNotaryPublicIPv4(const char* value) noexcept -> Options&
+auto Options::AddNotaryPublicIPv4(std::string_view value) noexcept -> Options&
 {
     imp_->notary_public_ipv4_.emplace(value);
 
     return *this;
 }
 
-auto Options::AddNotaryPublicIPv6(const char* value) noexcept -> Options&
+auto Options::AddNotaryPublicIPv6(std::string_view value) noexcept -> Options&
 {
     imp_->notary_public_ipv6_.emplace(value);
 
     return *this;
 }
 
-auto Options::AddNotaryPublicOnion(const char* value) noexcept -> Options&
+auto Options::AddNotaryPublicOnion(std::string_view value) noexcept -> Options&
 {
     imp_->notary_public_onion_.emplace(value);
 
     return *this;
 }
 
-auto Options::BlockchainBindIpv4() const noexcept
-    -> const UnallocatedSet<UnallocatedCString>&
+auto Options::BlockchainBindIpv4() const noexcept -> const Set<CString>&
 {
     return imp_->blockchain_ipv4_bind_;
 }
 
-auto Options::BlockchainBindIpv6() const noexcept
-    -> const UnallocatedSet<UnallocatedCString>&
+auto Options::BlockchainBindIpv6() const noexcept -> const Set<CString>&
 {
     return imp_->blockchain_ipv6_bind_;
 }
@@ -826,23 +846,29 @@ auto Options::DisableBlockchain(blockchain::Type chain) noexcept -> Options&
 }
 
 auto Options::DisabledBlockchains() const noexcept
-    -> UnallocatedSet<blockchain::Type>
+    -> const Set<blockchain::Type>&
 {
     return imp_->blockchain_disabled_chains_;
 }
 
-auto Options::HelpText() const noexcept -> const UnallocatedCString&
+auto Options::Experimental() const noexcept -> bool
+{
+    return Imp::get(imp_->experimental_, false);
+}
+
+auto Options::HelpText() const noexcept -> std::string_view
 {
     return imp_->help();
 }
 
-auto Options::Home() const noexcept -> const char*
+auto Options::Home() const noexcept -> std::string_view
 {
     return Imp::get(imp_->home_);
 }
 
-auto Options::ImportOption(const char* key, const char* value) noexcept
-    -> Options&
+auto Options::ImportOption(
+    std::string_view key,
+    std::string_view value) noexcept -> Options&
 {
     imp_->import_value(key, value);
 
@@ -864,7 +890,7 @@ auto Options::LogLevel() const noexcept -> int
     return Imp::get(imp_->log_level_);
 }
 
-auto Options::NotaryBindIP() const noexcept -> const char*
+auto Options::NotaryBindIP() const noexcept -> std::string_view
 {
     return Imp::get(imp_->notary_bind_ip_);
 }
@@ -879,31 +905,27 @@ auto Options::NotaryInproc() const noexcept -> bool
     return Imp::get(imp_->notary_bind_inproc_);
 }
 
-auto Options::NotaryName() const noexcept -> const char*
+auto Options::NotaryName() const noexcept -> std::string_view
 {
     return Imp::get(imp_->notary_name_);
 }
 
-auto Options::NotaryPublicEEP() const noexcept
-    -> const UnallocatedSet<UnallocatedCString>&
+auto Options::NotaryPublicEEP() const noexcept -> const Set<CString>&
 {
     return imp_->notary_public_eep_;
 }
 
-auto Options::NotaryPublicIPv4() const noexcept
-    -> const UnallocatedSet<UnallocatedCString>&
+auto Options::NotaryPublicIPv4() const noexcept -> const Set<CString>&
 {
     return imp_->notary_public_ipv4_;
 }
 
-auto Options::NotaryPublicIPv6() const noexcept
-    -> const UnallocatedSet<UnallocatedCString>&
+auto Options::NotaryPublicIPv6() const noexcept -> const Set<CString>&
 {
     return imp_->notary_public_ipv6_;
 }
 
-auto Options::NotaryPublicOnion() const noexcept
-    -> const UnallocatedSet<UnallocatedCString>&
+auto Options::NotaryPublicOnion() const noexcept -> const Set<CString>&
 {
     return imp_->notary_public_onion_;
 }
@@ -913,7 +935,7 @@ auto Options::NotaryPublicPort() const noexcept -> std::uint16_t
     return Imp::get(imp_->notary_public_port_);
 }
 
-auto Options::NotaryTerms() const noexcept -> const char*
+auto Options::NotaryTerms() const noexcept -> std::string_view
 {
     return Imp::get(imp_->notary_terms_);
 }
@@ -940,12 +962,12 @@ auto Options::QtRootObject() const noexcept -> QObject*
 }
 
 auto Options::RemoteBlockchainSyncServers() const noexcept
-    -> const UnallocatedSet<UnallocatedCString>&
+    -> const Set<CString>&
 {
     return imp_->blockchain_sync_servers_;
 }
 
-auto Options::RemoteLogEndpoint() const noexcept -> const char*
+auto Options::RemoteLogEndpoint() const noexcept -> std::string_view
 {
     return Imp::get(imp_->log_endpoint_);
 }
@@ -979,7 +1001,14 @@ auto Options::SetDefaultMintKeyBytes(std::size_t bytes) noexcept -> Options&
     return *this;
 }
 
-auto Options::SetHome(const char* path) noexcept -> Options&
+auto Options::SetExperimental(bool enabled) noexcept -> Options&
+{
+    imp_->experimental_ = enabled;
+
+    return *this;
+}
+
+auto Options::SetHome(std::string_view path) noexcept -> Options&
 {
     imp_->home_ = path;
 
@@ -1000,7 +1029,7 @@ auto Options::SetIpv6ConnectionMode(ConnectionMode mode) noexcept -> Options&
     return *this;
 }
 
-auto Options::SetLogEndpoint(const char* endpoint) noexcept -> Options&
+auto Options::SetLogEndpoint(std::string_view endpoint) noexcept -> Options&
 {
     imp_->log_endpoint_ = endpoint;
 
@@ -1014,7 +1043,7 @@ auto Options::SetLogLevel(int level) noexcept -> Options&
     return *this;
 }
 
-auto Options::SetNotaryBindIP(const char* value) noexcept -> Options&
+auto Options::SetNotaryBindIP(std::string_view value) noexcept -> Options&
 {
     imp_->notary_bind_ip_ = value;
 
@@ -1035,7 +1064,7 @@ auto Options::SetNotaryInproc(bool inproc) noexcept -> Options&
     return *this;
 }
 
-auto Options::SetNotaryName(const char* value) noexcept -> Options&
+auto Options::SetNotaryName(std::string_view value) noexcept -> Options&
 {
     imp_->notary_name_ = value;
 
@@ -1049,7 +1078,7 @@ auto Options::SetNotaryPublicPort(std::uint16_t port) noexcept -> Options&
     return *this;
 }
 
-auto Options::SetNotaryTerms(const char* value) noexcept -> Options&
+auto Options::SetNotaryTerms(std::string_view value) noexcept -> Options&
 {
     imp_->notary_terms_ = value;
 
@@ -1063,7 +1092,7 @@ auto Options::SetQtRootObject(QObject* ptr) noexcept -> Options&
     return *this;
 }
 
-auto Options::SetStoragePlugin(const char* name) noexcept -> Options&
+auto Options::SetStoragePlugin(std::string_view name) noexcept -> Options&
 {
     imp_->storage_primary_plugin_ = name;
 
@@ -1077,7 +1106,7 @@ auto Options::SetTestMode(bool test) noexcept -> Options&
     return *this;
 }
 
-auto Options::StoragePrimaryPlugin() const noexcept -> const char*
+auto Options::StoragePrimaryPlugin() const noexcept -> std::string_view
 {
     return Imp::get(imp_->storage_primary_plugin_);
 }

@@ -193,6 +193,12 @@ auto BlockchainImp::AddSyncServer(
     return db_->AddSyncServer(endpoint);
 }
 
+auto BlockchainImp::AddSyncServer(std::string_view endpoint) const noexcept
+    -> bool
+{
+    return AddSyncServer(UnallocatedCString{endpoint});
+}
+
 auto BlockchainImp::ConnectedSyncServers() const noexcept -> Endpoints
 {
     return {};  // TODO
@@ -368,14 +374,17 @@ auto BlockchainImp::Init(
 
     init_promise_.set_value();
 
-    static const auto defaultServers = UnallocatedVector<UnallocatedCString>{
+    static const auto defaultServers = Vector<CString>{
         "tcp://metier1.opentransactions.org:8814",
         "tcp://metier2.opentransactions.org:8814",
     };
     const auto existing = [&] {
-        auto out = Set<UnallocatedCString>{};
-        auto v = GetSyncServers();
-        std::move(v.begin(), v.end(), std::inserter(out, out.end()));
+        auto out = Set<CString>{};
+
+        for (const auto& server : GetSyncServers()) {
+            // TODO GetSyncServers should return pmr strings
+            out.emplace(server.c_str());
+        }
 
         for (const auto& server : defaultServers) {
             if (0 == out.count(server)) {

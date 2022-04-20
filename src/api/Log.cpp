@@ -17,6 +17,7 @@ extern "C" {
 #include <future>
 #include <iostream>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "internal/api/Factory.hpp"
@@ -35,19 +36,19 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::factory
 {
-auto Log(const zmq::Context& zmq, const UnallocatedCString& endpoint) noexcept
+auto Log(const zmq::Context& zmq, std::string_view endpoint) noexcept
     -> std::unique_ptr<api::internal::Log>
 {
     using ReturnType = api::imp::Log;
     internal::Log::Start();
 
-    return std::make_unique<ReturnType>(zmq, endpoint);
+    return std::make_unique<ReturnType>(zmq, UnallocatedCString{endpoint});
 }
 }  // namespace opentxs::factory
 
 namespace opentxs::api::imp
 {
-Log::Log(const zmq::Context& zmq, const UnallocatedCString& endpoint)
+Log::Log(const zmq::Context& zmq, const UnallocatedCString endpoint)
     : callback_(opentxs::network::zeromq::ListenCallback::Factory(
           [&](auto&& msg) -> void { callback(std::move(msg)); }))
     , socket_(zmq.PullSocket(callback_, zmq::socket::Direction::Bind))
