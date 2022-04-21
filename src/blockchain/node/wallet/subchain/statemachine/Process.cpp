@@ -49,6 +49,7 @@
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
+#include "opentxs/util/Options.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
@@ -128,13 +129,34 @@ auto Process::Imp::check_cache() noexcept -> void
     parent_.CheckCache(queue, cb);
 }
 
+auto Process::Imp::check_process() noexcept -> bool
+{
+    if (parent_.api_.GetOptions().Experimental()) {
+
+        return queue_process();
+    } else if (have_items()) {
+        auto i = ready_.cbegin();
+        do_process(*i);
+        ready_.erase(i);
+
+        return true;
+    } else {
+
+        return false;
+    }
+}
+
+auto Process::Imp::do_process(const Ready::value_type& data) noexcept -> void
+{
+    const auto& [position, block] = data;
+    do_process_common(position, block);
+}
+
 auto Process::Imp::do_process(
     const block::Position position,
     const std::shared_ptr<const block::bitcoin::Block> block) noexcept -> void
 {
-    OT_ASSERT(block);
-
-    if (false == parent_.ProcessBlock(position, *block)) { OT_FAIL; }
+    do_process_common(position, block);
 
     pipeline_.Push([&] {
         auto out = MakeWork(Work::process);
@@ -143,6 +165,15 @@ auto Process::Imp::do_process(
 
         return out;
     }());
+}
+
+auto Process::Imp::do_process_common(
+    const block::Position position,
+    const std::shared_ptr<const block::bitcoin::Block>& block) noexcept -> void
+{
+    OT_ASSERT(block);
+
+    if (false == parent_.ProcessBlock(position, *block)) { OT_FAIL; }
 }
 
 auto Process::Imp::do_startup() noexcept -> void
@@ -171,6 +202,11 @@ auto Process::Imp::download(block::Position&& position) noexcept -> void
 {
     auto future = parent_.node_.BlockOracle().LoadBitcoin(position.second);
     download(std::move(position), std::move(future));
+}
+
+auto Process::Imp::have_items() const noexcept -> bool
+{
+    return 0u < ready_.size();
 }
 
 auto Process::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
@@ -363,9 +399,8 @@ auto Process::Imp::queue_process() noexcept -> bool
         return (counter <= limit) && (processing_.size() < download_limit_) &&
                (false == running_.is_limited());
     };
-    const auto HaveItems = [this] { return 0u < ready_.size(); };
 
-    while (HaveItems() && CanProcess()) {
+    while (have_items() && CanProcess()) {
         const auto i = processing_.insert(
             processing_.begin(), ready_.extract(ready_.begin()));
 
@@ -384,7 +419,7 @@ auto Process::Imp::queue_process() noexcept -> bool
              ptr{i->second}] { do_process(pos, ptr); });
     }
 
-    return HaveItems();
+    return have_items();
 }
 
 auto Process::Imp::work() noexcept -> bool
@@ -393,7 +428,7 @@ auto Process::Imp::work() noexcept -> bool
     queue_downloads();
     Job::work();
 
-    return queue_process();
+    return check_process();
 }
 }  // namespace opentxs::blockchain::node::wallet
 

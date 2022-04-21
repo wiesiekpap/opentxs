@@ -45,6 +45,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/Types.hpp"
@@ -91,8 +92,9 @@ auto DeterministicStateData::CheckCache(
         static constexpr auto maxBlocks = std::size_t{1000};
         const auto blocks = blockMap.size();
         const auto interval = Clock::now() - time;
-        const auto flush =
-            (0u == outstanding) || (interval > maxTime) || (maxBlocks < blocks);
+        const auto flush = (0u == outstanding) || (interval > maxTime) ||
+                           (maxBlocks < blocks) ||
+                           (false == api_.GetOptions().Experimental());
 
         if (flush) {
             flush_cache(blockMap, cb);
