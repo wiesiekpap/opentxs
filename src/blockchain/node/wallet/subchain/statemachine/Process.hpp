@@ -104,11 +104,18 @@ private:
     Outstanding running_;
 
     auto active() const noexcept -> std::size_t;
+    auto have_items() const noexcept -> bool;
 
     auto check_cache() noexcept -> void;
+    auto check_process() noexcept -> bool;
+    auto do_process(const Ready::value_type& data) noexcept -> void;
     auto do_process(
         const block::Position position,
         const std::shared_ptr<const block::bitcoin::Block> block) noexcept
+        -> void;
+    auto do_process_common(
+        const block::Position position,
+        const std::shared_ptr<const block::bitcoin::Block>& block) noexcept
         -> void;
     auto do_startup() noexcept -> void final;
     auto download(block::Position&& position) noexcept -> void;

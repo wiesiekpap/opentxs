@@ -5,31 +5,24 @@
 
 target_sources(opentxs-test-helpers PRIVATE "Helpers.hpp" "Helpers.cpp")
 
+add_opentx_test(unittests-opentxs-blockchain-regtest-basic Basic.cpp)
 add_opentx_test(
-  unittests-opentxs-blockchain-regtest-block-propagation
-  Test_block_propagation.cpp
+  unittests-opentxs-blockchain-regtest-block-propagation BlockPropagation.cpp
 )
+add_opentx_test(unittests-opentxs-blockchain-regtest-connection Connection.cpp)
 add_opentx_test(
-  unittests-opentxs-blockchain-regtest-connection Test_connection.cpp
+  unittests-opentxs-blockchain-regtest-connection-tcp ConnectionTCP.cpp
 )
+add_opentx_test(unittests-opentxs-blockchain-regtest-generate-block Mine.cpp)
 add_opentx_test(
-  unittests-opentxs-blockchain-regtest-connection-tcp Test_tcp_connection.cpp
+  unittests-opentxs-blockchain-regtest-payment-code PaymentCode.cpp
 )
-add_opentx_test(
-  unittests-opentxs-blockchain-regtest-generate-block Test_mine_block.cpp
-)
-add_opentx_test(
-  unittests-opentxs-blockchain-regtest-payment-code Test_payment_code.cpp
-)
-add_opentx_test(unittests-opentxs-blockchain-regtest-reorg Test_reorg.cpp)
-add_opentx_test(
-  unittests-opentxs-blockchain-regtest-send-receive-hd Test_send_hd.cpp
-)
-add_opentx_test(unittests-opentxs-blockchain-regtest-stress Test_hd_stress.cpp)
+add_opentx_test(unittests-opentxs-blockchain-regtest-reorg Reorg.cpp)
+add_opentx_test(unittests-opentxs-blockchain-regtest-stress Stress.cpp)
 
 if(NOT WIN32)
   add_opentx_test(
-    unittests-opentxs-blockchain-regtest-sync-server Test_sync_server.cpp
+    unittests-opentxs-blockchain-regtest-sync-server SyncServer.cpp
   )
 endif()
 
