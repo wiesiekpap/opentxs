@@ -3,35 +3,19 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "rpc/Helpers.hpp"  // IWYU pragma: associated
+#include "ottest/fixtures/rpc/Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <future>
 
-#include "integration/Helpers.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/client/Pair.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/util/Shared.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Contacts.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Notary.hpp"
-#include "opentxs/api/session/OTX.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/interface/rpc/CommandType.hpp"
-#include "opentxs/interface/rpc/PaymentType.hpp"
-#include "opentxs/interface/rpc/ResponseCode.hpp"
-#include "opentxs/interface/rpc/request/Base.hpp"
-#include "opentxs/interface/rpc/request/SendPayment.hpp"
-#include "opentxs/interface/rpc/response/Base.hpp"
-#include "opentxs/interface/rpc/response/SendPayment.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "paymentcode/VectorsV3.hpp"
+#include "ottest/fixtures/integration/Helpers.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 namespace ot = opentxs;
 namespace rpc = opentxs::rpc;

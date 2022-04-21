@@ -4,30 +4,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <memory>
 #include <optional>
 
-#include "Helpers.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
-#include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/api/session/Activity.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Contacts.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Storage.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/blockchain/crypto/HD.hpp"
-#include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/core/Contact.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/crypto/Types.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
+#include "ottest/fixtures/blockchain/Activity.hpp"
 
 using Subchain = ot::blockchain::crypto::Subchain;
 

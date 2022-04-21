@@ -5,7 +5,12 @@
 
 // IWYU pragma: no_include "opentxs/core/Amount.hpp"
 // IWYU pragma: no_include "opentxs/core/UnitType.hpp"
+// IWYU pragma: no_include "opentxs/opentxs.hpp"
 // IWYU pragma: no_include "opentxs/util/Log.hpp"
+// IWYU pragma: no_include <opentxs/core/Amount.hpp>
+// IWYU pragma: no_include <opentxs/core/UnitType.hpp>
+// IWYU pragma: no_include <opentxs/opentxs.hpp>
+// IWYU pragma: no_include <opentxs/util/Log.hpp>
 
 #pragma once
 

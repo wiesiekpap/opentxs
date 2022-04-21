@@ -4,23 +4,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <memory>
 
-#include "Basic.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/otx/common/Message.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Secret.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/PasswordCallback.hpp"
-#include "opentxs/util/PasswordCaller.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "ottest/Basic.hpp"
 
 namespace ottest
 {

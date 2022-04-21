@@ -7,6 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/util/Iterator.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -34,6 +35,11 @@ struct Wallet;
 class Account;
 }  // namespace crypto
 }  // namespace blockchain
+
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)

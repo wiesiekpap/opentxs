@@ -3,32 +3,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "rpc/Helpers.hpp"  // IWYU pragma: associated
+#include "ottest/fixtures/rpc/Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <atomic>
 #include <iosfwd>
 #include <iostream>
 
-#include "integration/Helpers.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Contacts.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Notary.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/crypto/Account.hpp"
-#include "opentxs/blockchain/crypto/HDProtocol.hpp"
-#include "opentxs/core/AccountType.hpp"
-#include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "paymentcode/VectorsV3.hpp"
-#include "ui/Helpers.hpp"
+#include "ottest/fixtures/integration/Helpers.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
+#include "ottest/fixtures/ui/Helpers.hpp"
 
 namespace ot = opentxs;
 

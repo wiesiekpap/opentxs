@@ -4,11 +4,9 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 
-#include "Helpers.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Options.hpp"
+#include "ottest/fixtures/common/Options.hpp"
 
 constexpr auto bind_ipv4_1_{"127.0.0.1"};
 constexpr auto bind_ipv4_2_{"0.0.0.0"};

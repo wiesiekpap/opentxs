@@ -4,33 +4,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <memory>
 
-#include "VectorsV3.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/api/crypto/Seed.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/crypto/Element.hpp"
-#include "opentxs/blockchain/crypto/PaymentCode.hpp"
-#include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/core/PaymentCode.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/crypto/Language.hpp"
-#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
-#include "opentxs/crypto/SeedStyle.hpp"
-#include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 namespace ot = opentxs;
 

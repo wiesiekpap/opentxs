@@ -3,55 +3,22 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "Helpers.hpp"  // IWYU pragma: associated
-
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <future>
 #include <iostream>
+#include <memory>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/api/crypto/Seed.hpp"
-#include "opentxs/api/network/Blockchain.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/UI.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/blockchain/Types.hpp"
-#include "opentxs/blockchain/block/Block.hpp"           // IWYU pragma: keep
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"   // IWYU pragma: keep
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/blockchain/crypto/Account.hpp"
-#include "opentxs/blockchain/crypto/AddressStyle.hpp"
-#include "opentxs/blockchain/crypto/Element.hpp"
-#include "opentxs/blockchain/crypto/HD.hpp"
-#include "opentxs/blockchain/crypto/HDProtocol.hpp"
-#include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/blockchain/node/TxoState.hpp"
-#include "opentxs/core/AccountType.hpp"
-#include "opentxs/core/UnitType.hpp"
-#include "opentxs/crypto/Language.hpp"
-#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
-#include "opentxs/crypto/SeedStyle.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/Types.hpp"
-#include "opentxs/interface/ui/AccountActivity.hpp"
-#include "opentxs/interface/ui/BalanceItem.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/SharedPimpl.hpp"
-#include "opentxs/util/Time.hpp"
-#include "paymentcode/VectorsV3.hpp"
-#include "ui/Helpers.hpp"
+#include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
+#include "ottest/fixtures/ui/Helpers.hpp"
 
 namespace ottest
 {

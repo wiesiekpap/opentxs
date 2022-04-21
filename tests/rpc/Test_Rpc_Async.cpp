@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
@@ -14,43 +15,10 @@
 #include <memory>
 #include <utility>
 
-#include "Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/RPCPush.hpp"
 #include "internal/serialization/protobuf/verify/RPCResponse.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Contacts.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Notary.hpp"
-#include "opentxs/api/session/OTX.hpp"
-#include "opentxs/api/session/Session.hpp"
-#include "opentxs/api/session/Storage.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/api/session/Workflow.hpp"
-#include "opentxs/core/Contact.hpp"
-#include "opentxs/core/PaymentCode.hpp"
-#include "opentxs/core/contract/ServerContract.hpp"
-#include "opentxs/core/contract/Unit.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
-#include "opentxs/network/zeromq/message/FrameSection.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/otx/client/PaymentWorkflowState.hpp"
-#include "opentxs/otx/client/PaymentWorkflowType.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/SharedPimpl.hpp"
+#include "ottest/Basic.hpp"
 #include "serialization/protobuf/APIArgument.pb.h"
 #include "serialization/protobuf/AcceptPendingPayment.pb.h"
 #include "serialization/protobuf/AccountEvent.pb.h"

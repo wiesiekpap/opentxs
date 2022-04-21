@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -17,38 +18,7 @@
 #include "internal/identity/Nym.hpp"
 #include "internal/identity/Types.hpp"
 #include "internal/otx/common/crypto/Signature.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Seed.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/core/Secret.hpp"
-#include "opentxs/core/identifier/Algorithm.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Type.hpp"
-#include "opentxs/crypto/ParameterType.hpp"
-#include "opentxs/crypto/Parameters.hpp"
-#include "opentxs/crypto/SignatureRole.hpp"
-#include "opentxs/crypto/Types.hpp"
-#include "opentxs/crypto/key/Asymmetric.hpp"
-#include "opentxs/crypto/key/Keypair.hpp"
-#include "opentxs/crypto/key/Symmetric.hpp"
-#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
-#include "opentxs/crypto/key/asymmetric/Role.hpp"
-#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
-#include "opentxs/identity/CredentialType.hpp"
-#include "opentxs/identity/IdentityType.hpp"
-#include "opentxs/identity/Source.hpp"
-#include "opentxs/identity/SourceType.hpp"
-#include "opentxs/identity/Types.hpp"
-#include "opentxs/identity/credential/Key.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "paymentcode/VectorsV3.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 #include "serialization/protobuf/Authority.pb.h"
 #include "serialization/protobuf/ContactData.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
@@ -56,14 +26,6 @@
 #include "serialization/protobuf/Signature.pb.h"
 #include "serialization/protobuf/Verification.pb.h"
 #include "serialization/protobuf/VerificationSet.pb.h"
-
-namespace opentxs
-{
-namespace identity
-{
-class Nym;
-}  // namespace identity
-}  // namespace opentxs
 
 namespace ottest
 {

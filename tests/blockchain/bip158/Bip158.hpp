@@ -5,13 +5,11 @@
 
 #pragma once
 
+#include <opentxs/opentxs.hpp>
 #include <array>
 #include <cstdint>
 
-#include "Basic.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Data.hpp"
+#include "ottest/Basic.hpp"
 
 namespace
 {

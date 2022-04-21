@@ -4,10 +4,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <memory>
 
-#include "Basic.hpp"
-#include "opentxs/OT.hpp"
+#include "ottest/Basic.hpp"
 
 namespace ottest
 {

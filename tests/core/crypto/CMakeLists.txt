@@ -3,4 +3,4 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_opentx_test(unittests-opentxs-core-crypto Test_PaymentCode.cpp)
+add_opentx_test(ottest-core-crypto Test_PaymentCode.cpp)

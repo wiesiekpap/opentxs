@@ -5,15 +5,13 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <functional>
 #include <memory>
 #include <stdexcept>
 
-#include "Basic.hpp"
-#include "common/mocks/util/PasswordCallbackMock.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/PasswordCaller.hpp"
+#include "ottest/Basic.hpp"
+#include "ottest/mocks/util/PasswordCallback.hpp"
 #include "util/license/License.hpp"
 
 namespace ottest

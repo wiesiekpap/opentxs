@@ -3,44 +3,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "Helpers.hpp"  // IWYU pragma: associated
-
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
+#include <atomic>
+#include <memory>
+#include <optional>
 #include <utility>
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
-#include "integration/Helpers.hpp"
 #include "internal/network/p2p/Factory.hpp"
-#include "opentxs/api/network/Blockchain.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/core/AddressType.hpp"
-#include "opentxs/core/contract/ContractType.hpp"
-#include "opentxs/core/contract/ProtocolVersion.hpp"
-#include "opentxs/core/identifier/Type.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/Types.hpp"
-#include "opentxs/network/p2p/Acknowledgement.hpp"
-#include "opentxs/network/p2p/Base.hpp"
-#include "opentxs/network/p2p/Data.hpp"
-#include "opentxs/network/p2p/MessageType.hpp"
-#include "opentxs/network/p2p/PublishContract.hpp"
-#include "opentxs/network/p2p/PublishContractReply.hpp"
-#include "opentxs/network/p2p/PushTransaction.hpp"
-#include "opentxs/network/p2p/PushTransactionReply.hpp"
-#include "opentxs/network/p2p/Query.hpp"
-#include "opentxs/network/p2p/QueryContract.hpp"
-#include "opentxs/network/p2p/QueryContractReply.hpp"
-#include "opentxs/network/zeromq/message/FrameSection.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/SharedPimpl.hpp"
+#include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/integration/Helpers.hpp"
 
 namespace ottest
 {

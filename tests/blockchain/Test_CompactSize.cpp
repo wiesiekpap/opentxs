@@ -4,15 +4,9 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <cstdint>
 #include <utility>
-
-#include "opentxs/Version.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Iterator.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 

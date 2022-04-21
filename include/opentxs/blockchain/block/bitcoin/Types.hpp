@@ -8,6 +8,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <optional>
 #include <utility>
 
 #include "opentxs/util/Bytes.hpp"

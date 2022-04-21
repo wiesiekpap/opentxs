@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 if(BIP32_EXPORT)
-  add_opentx_test(unittests-opentxs-client-createnym Test_CreateNymHD.cpp)
+  add_opentx_test(ottest-client-createnym Test_CreateNymHD.cpp)
 endif()
 
-add_opentx_test(unittests-opentxs-client-editnym Test_NymData.cpp)
+add_opentx_test(ottest-client-editnym Test_NymData.cpp)

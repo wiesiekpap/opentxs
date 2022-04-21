@@ -10,6 +10,7 @@
 #include <cstdint>
 
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/util/Iterator.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -27,6 +28,8 @@ namespace internal
 {
 struct Outputs;
 }  // namespace internal
+
+class Output;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain

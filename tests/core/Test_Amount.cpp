@@ -6,6 +6,7 @@
 #include <boost/exception/exception.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <limits>
 #include <memory>
 #include <stdexcept>
@@ -13,10 +14,6 @@
 
 #include "internal/core/Amount.hpp"
 #include "internal/core/Factory.hpp"
-#include "opentxs/Version.hpp"
-#include "opentxs/core/Amount.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 namespace bmp = boost::multiprecision;

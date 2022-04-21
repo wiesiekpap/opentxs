@@ -3,57 +3,29 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
+#include <cstdint>
 #include <memory>
+#include <stdexcept>
+#include <tuple>
 
-#include "../tests/mocks/identity/credential/PrimaryMock.hpp"
 #include "2_Factory.hpp"
-#include "identity/credential/Primary.hpp"
 #include "internal/api/crypto/Seed.hpp"
-#include "internal/api/session/Client.hpp"
-#include "internal/core/PaymentCode.hpp"
 #include "internal/identity/Authority.hpp"
 #include "internal/identity/Nym.hpp"
-#include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/api/crypto/Config.hpp"
-#include "opentxs/api/crypto/Seed.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Contacts.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Storage.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/blockchain/crypto/Account.hpp"
-#include "opentxs/blockchain/crypto/Element.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/crypto/HD.hpp"
-#include "opentxs/blockchain/crypto/HDProtocol.hpp"
-#include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/core/PaymentCode.hpp"
-#include "opentxs/crypto/Bip32.hpp"
-#include "opentxs/crypto/Bip32Child.hpp"
-#include "opentxs/crypto/Bip43Purpose.hpp"
-#include "opentxs/crypto/Bip44Type.hpp"
-#include "opentxs/crypto/Language.hpp"
-#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
-#include "opentxs/crypto/SeedStyle.hpp"
-#include "opentxs/crypto/key/EllipticCurve.hpp"  // IWYU pragma: keep
-#include "opentxs/crypto/key/HD.hpp"             // IWYU pragma: keep
-#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
-#include "opentxs/identity/CredentialType.hpp"
-#include "opentxs/identity/IdentityType.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/Source.hpp"
-#include "opentxs/identity/SourceType.hpp"
-#include "opentxs/util/NymEditor.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "paymentcode/VectorsV3.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
+#include "ottest/mocks/identity/credential/Primary.hpp"
+#include "serialization/protobuf/AsymmetricKey.pb.h"
+#include "serialization/protobuf/ChildCredentialParameters.pb.h"
 #include "serialization/protobuf/Credential.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/Nym.pb.h"
+#include "serialization/protobuf/KeyCredential.pb.h"
+#include "serialization/protobuf/MasterCredentialParameters.pb.h"
 #include "serialization/protobuf/NymIDSource.pb.h"  // IWYU pragma: keep
+#include "serialization/protobuf/PaymentCode.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
 #include "serialization/protobuf/SourceProof.pb.h"
 #include "util/HDIndex.hpp"
 

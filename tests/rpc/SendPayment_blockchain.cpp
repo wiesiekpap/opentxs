@@ -3,42 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "rpc/Helpers.hpp"  // IWYU pragma: associated
+#include "ottest/fixtures/rpc/Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <algorithm>
 #include <optional>
 
-#include "blockchain/regtest/Helpers.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/api/network/Blockchain.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/blockchain/crypto/Account.hpp"
-#include "opentxs/blockchain/crypto/Element.hpp"
-#include "opentxs/blockchain/crypto/HD.hpp"
-#include "opentxs/blockchain/crypto/HDProtocol.hpp"
-#include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/interface/rpc/CommandType.hpp"
-#include "opentxs/interface/rpc/ResponseCode.hpp"
-#include "opentxs/interface/rpc/request/Base.hpp"
-#include "opentxs/interface/rpc/request/SendPayment.hpp"
-#include "opentxs/interface/rpc/response/Base.hpp"
-#include "opentxs/interface/rpc/response/SendPayment.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "ottest/fixtures/blockchain/Regtest.hpp"
 
 namespace ottest
 {

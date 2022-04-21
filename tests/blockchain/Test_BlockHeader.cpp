@@ -4,24 +4,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <memory>
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
-#include "Helpers.hpp"
 #include "internal/blockchain/block/Block.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/bitcoin/NumericHash.hpp"
-#include "opentxs/blockchain/block/Hash.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "ottest/fixtures/blockchain/Basic.hpp"
 
 namespace b = ot::blockchain;
 namespace bb = b::block;

@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -14,14 +15,8 @@
 #include <utility>
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
-#include "Basic.hpp"       // IWYU pragma: keep
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/block/bitcoin/Opcodes.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/blockchain/block/bitcoin/Types.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
+#include "ottest/Basic.hpp"  // IWYU pragma: keep
 
 namespace b = ot::blockchain::block::bitcoin;
 

@@ -1002,7 +1002,7 @@ private:
             std::begin(inputs_),
             std::end(inputs_),
             std::back_inserter(inputCopy),
-            [](const auto& input) -> auto {
+            [](const auto& input) -> auto{
                 return input.first->SignatureVersion();
             });
         auto inputs = factory::BitcoinTransactionInputs(std::move(inputCopy));
@@ -1018,7 +1018,7 @@ private:
             std::begin(outputs_),
             std::end(outputs_),
             std::back_inserter(outputCopy),
-            [](const auto& output) -> auto { return output->clone(); });
+            [](const auto& output) -> auto{ return output->clone(); });
         auto outputs =
             factory::BitcoinTransactionOutputs(std::move(outputCopy));
 

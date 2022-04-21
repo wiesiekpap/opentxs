@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "opentxs/core/contract/ContractType.hpp"
+// IWYU pragma: no_include <opentxs/core/contract/ContractType.hpp>
 
 #pragma once
 

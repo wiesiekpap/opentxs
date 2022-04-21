@@ -11,32 +11,23 @@ if(OT_BLOCKCHAIN_EXPORT)
   add_subdirectory(startstop)
 endif()
 
-target_sources(opentxs-test-helpers PRIVATE "Helpers.hpp" "Helpers.cpp")
-
-add_opentx_test(unittests-opentxs-blockchain-address Test_Address.cpp)
+add_opentx_test(ottest-blockchain-address Test_Address.cpp)
 
 if(BIP32_EXPORT)
-  add_opentx_test(unittests-opentxs-blockchain-api Test_BlockchainAPI.cpp)
+  add_opentx_test(ottest-blockchain-api Test_BlockchainAPI.cpp)
 endif()
 
 if(OT_BLOCKCHAIN_EXPORT)
-  add_opentx_test(unittests-opentxs-blockchain-bip44 Test_BIP44.cpp)
-  add_opentx_test(unittests-opentxs-blockchain-blockheader Test_BlockHeader.cpp)
+  add_opentx_test(ottest-blockchain-bip44 Test_BIP44.cpp)
+  add_opentx_test(ottest-blockchain-blockheader Test_BlockHeader.cpp)
+  add_opentx_test(ottest-blockchain-blocks-bitcoin Test_BitcoinBlocks.cpp)
+  add_opentx_test(ottest-blockchain-compactsize Test_CompactSize.cpp)
+  add_opentx_test(ottest-blockchain-filters Test_Filters.cpp)
+  add_opentx_test(ottest-blockchain-hash Test_NumericHash.cpp)
+  add_opentx_test(ottest-blockchain-message Test_Message.cpp)
+  add_opentx_test(ottest-blockchain-script-bitcoin Test_BitcoinScript.cpp)
+  add_opentx_test(ottest-blockchain-api-sync-server Test_SyncServerDB.cpp)
   add_opentx_test(
-    unittests-opentxs-blockchain-blocks-bitcoin Test_BitcoinBlocks.cpp
-  )
-  add_opentx_test(unittests-opentxs-blockchain-compactsize Test_CompactSize.cpp)
-  add_opentx_test(unittests-opentxs-blockchain-filters Test_Filters.cpp)
-  add_opentx_test(unittests-opentxs-blockchain-hash Test_NumericHash.cpp)
-  add_opentx_test(unittests-opentxs-blockchain-message Test_Message.cpp)
-  add_opentx_test(
-    unittests-opentxs-blockchain-script-bitcoin Test_BitcoinScript.cpp
-  )
-  add_opentx_test(
-    unittests-opentxs-blockchain-api-sync-server Test_SyncServerDB.cpp
-  )
-  add_opentx_test(
-    unittests-opentxs-blockchain-transaction-bitcoin
-    Test_BitcoinTransaction.cpp
+    ottest-blockchain-transaction-bitcoin Test_BitcoinTransaction.cpp
   )
 endif()

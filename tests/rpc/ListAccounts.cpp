@@ -3,28 +3,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "rpc/Helpers.hpp"  // IWYU pragma: associated
+#include "ottest/fixtures/rpc/Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <algorithm>
 #include <iterator>
 
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Notary.hpp"
-#include "opentxs/api/session/Storage.hpp"
-#include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/interface/rpc/CommandType.hpp"
-#include "opentxs/interface/rpc/ResponseCode.hpp"
-#include "opentxs/interface/rpc/request/Base.hpp"
-#include "opentxs/interface/rpc/request/ListAccounts.hpp"
-#include "opentxs/interface/rpc/response/Base.hpp"
-#include "opentxs/interface/rpc/response/ListAccounts.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "paymentcode/VectorsV3.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 namespace ot = opentxs;
 namespace rpc = opentxs::rpc;

@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <chrono>
 #include <cstddef>
 #include <memory>
@@ -19,29 +20,6 @@
 #include "internal/otx/blind/Token.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "internal/util/Editor.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/Types.hpp"
-#include "opentxs/otx/blind/CashType.hpp"
-#include "opentxs/otx/blind/Mint.hpp"
-#include "opentxs/otx/blind/Purse.hpp"
-#include "opentxs/otx/blind/PurseType.hpp"
-#include "opentxs/otx/blind/Token.hpp"
-#include "opentxs/otx/blind/TokenState.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Iterator.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/Time.hpp"
 
 #define MINT_EXPIRE_MONTHS 6
 #define MINT_VALID_MONTHS 12

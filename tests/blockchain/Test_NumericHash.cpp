@@ -5,30 +5,11 @@
 
 #include <boost/endian/buffers.hpp>
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <cstdint>
 #include <memory>
 
 #include "internal/blockchain/Blockchain.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/bitcoin/NumericHash.hpp"
-#include "opentxs/blockchain/bitcoin/Work.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
-
-namespace opentxs
-{
-namespace api
-{
-namespace session
-{
-class Client;
-}  // namespace session
-}  // namespace api
-}  // namespace opentxs
 
 namespace be = boost::endian;
 namespace ot = opentxs;

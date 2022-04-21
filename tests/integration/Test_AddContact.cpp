@@ -4,25 +4,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <atomic>
 #include <future>
 #include <utility>
 
-#include "integration/Helpers.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Config.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Notary.hpp"  // IWYU pragma: keep
-#include "opentxs/api/session/OTX.hpp"
-#include "opentxs/api/session/UI.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
-#include "opentxs/interface/ui/ContactList.hpp"
-#include "opentxs/otx/LastReplyStatus.hpp"
-#include "opentxs/util/Container.hpp"
-#include "ui/Helpers.hpp"
+#include "ottest/fixtures/integration/Helpers.hpp"
+#include "ottest/fixtures/ui/Helpers.hpp"
 
 namespace ottest
 {

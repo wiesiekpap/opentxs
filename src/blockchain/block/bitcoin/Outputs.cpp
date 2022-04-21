@@ -229,7 +229,7 @@ auto Outputs::NetBalanceChange(const identifier::Nym& nym) const noexcept
         std::begin(outputs_),
         std::end(outputs_),
         opentxs::Amount{0},
-        [&](const auto prev, const auto& output) -> auto {
+        [&](const auto prev, const auto& output) -> auto{
             return prev + output->NetBalanceChange(nym);
         });
 }

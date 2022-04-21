@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_opentx_test(unittests-opentxs-otx Test_Basic.cpp)
-add_opentx_test(unittests-opentxs-otx-messages Test_Messages.cpp)
+add_opentx_test(ottest-otx Test_Basic.cpp)
+add_opentx_test(ottest-otx-messages Test_Messages.cpp)
 
-set_tests_properties(unittests-opentxs-otx PROPERTIES DISABLED TRUE)
+set_tests_properties(ottest-otx PROPERTIES DISABLED TRUE)

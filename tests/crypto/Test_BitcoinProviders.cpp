@@ -4,40 +4,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <cstdint>
 #include <memory>
 #include <tuple>
 #include <type_traits>
 #include <utility>
-
-#include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Asymmetric.hpp"
-#include "opentxs/api/crypto/Config.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
-#include "opentxs/api/crypto/Encode.hpp"
-#include "opentxs/api/crypto/Hash.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/core/Secret.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/crypto/Bip32.hpp"
-#include "opentxs/crypto/Bip32Child.hpp"
-#include "opentxs/crypto/Bip39.hpp"
-#include "opentxs/crypto/HashType.hpp"
-#include "opentxs/crypto/Language.hpp"
-#include "opentxs/crypto/SeedStyle.hpp"
-#include "opentxs/crypto/Types.hpp"
-#include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/crypto/key/HD.hpp"
-#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
-#include "opentxs/crypto/key/asymmetric/Role.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 

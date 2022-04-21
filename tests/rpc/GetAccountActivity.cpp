@@ -3,29 +3,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "rpc/Helpers.hpp"  // IWYU pragma: associated
+#include "ottest/fixtures/rpc/Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <algorithm>
 #include <atomic>
 #include <iterator>
 
-#include "integration/Helpers.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Contacts.hpp"
-#include "opentxs/api/session/Notary.hpp"
-#include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/interface/rpc/CommandType.hpp"
-#include "opentxs/interface/rpc/ResponseCode.hpp"
-#include "opentxs/interface/rpc/request/Base.hpp"
-#include "opentxs/interface/rpc/request/GetAccountActivity.hpp"
-#include "opentxs/interface/rpc/response/Base.hpp"
-#include "opentxs/interface/rpc/response/GetAccountActivity.hpp"
-#include "paymentcode/VectorsV3.hpp"
-#include "ui/Helpers.hpp"
+#include "ottest/fixtures/integration/Helpers.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
+#include "ottest/fixtures/ui/Helpers.hpp"
 
 namespace ot = opentxs;
 namespace rpc = opentxs::rpc;

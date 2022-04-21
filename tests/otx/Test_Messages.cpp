@@ -4,36 +4,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <memory>
 
 #include "internal/api/session/Client.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "internal/util/Mutex.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Notary.hpp"
-#include "opentxs/api/session/OTX.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/contract/ServerContract.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/Types.hpp"
-#include "opentxs/otx/OTXPushType.hpp"
-#include "opentxs/otx/Reply.hpp"
-#include "opentxs/otx/Request.hpp"
-#include "opentxs/otx/ServerReplyType.hpp"
-#include "opentxs/otx/ServerRequestType.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/SharedPimpl.hpp"
 
 namespace ot = opentxs;
 

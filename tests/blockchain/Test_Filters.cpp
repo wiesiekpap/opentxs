@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -12,31 +13,8 @@
 #include <string_view>
 #include <utility>
 
-#include "1_Internal.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/cfilter/GCS.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Hash.hpp"
-#include "opentxs/api/crypto/Util.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/bitcoin/bloom/BloomFilter.hpp"
-#include "opentxs/blockchain/bitcoin/bloom/BloomUpdateFlag.hpp"
-#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
-#include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
-#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
-#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
-#include "opentxs/blockchain/block/Hash.hpp"
-#include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/crypto/HashType.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 

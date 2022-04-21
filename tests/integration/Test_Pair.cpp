@@ -6,12 +6,12 @@
 // IWYU pragma: no_forward_declare opentxs::api::session::Notary
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <atomic>
 #include <future>
 #include <memory>
 #include <utility>
 
-#include "integration/Helpers.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
@@ -19,50 +19,8 @@
 #include "internal/otx/client/Pair.hpp"
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Config.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Endpoints.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/OTX.hpp"
-#include "opentxs/api/session/UI.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/String.hpp"
-#include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/contract/Unit.hpp"
-#include "opentxs/core/contract/UnitType.hpp"
-#include "opentxs/core/contract/peer/BailmentRequest.hpp"
-#include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
-#include "opentxs/core/contract/peer/PeerRequest.hpp"
-#include "opentxs/core/contract/peer/PeerRequestType.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/wot/claim/ClaimType.hpp"
-#include "opentxs/identity/wot/claim/Data.hpp"
-#include "opentxs/identity/wot/claim/Group.hpp"
-#include "opentxs/identity/wot/claim/Item.hpp"
-#include "opentxs/identity/wot/claim/Section.hpp"
-#include "opentxs/identity/wot/claim/SectionType.hpp"
-#include "opentxs/interface/ui/AccountSummary.hpp"
-#include "opentxs/interface/ui/AccountSummaryItem.hpp"
-#include "opentxs/interface/ui/IssuerItem.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
-#include "opentxs/network/zeromq/message/FrameSection.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/otx/LastReplyStatus.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/NymEditor.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "opentxs/util/SharedPimpl.hpp"
-#include "ui/Helpers.hpp"
+#include "ottest/fixtures/integration/Helpers.hpp"
+#include "ottest/fixtures/ui/Helpers.hpp"
 
 #define UNIT_DEFINITION_CONTRACT_VERSION 2
 #define UNIT_DEFINITION_CONTRACT_NAME "Mt Gox USD"

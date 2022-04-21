@@ -4,13 +4,9 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 
-#include "Basic.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/session/Notary.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/util/Container.hpp"
+#include "ottest/Basic.hpp"
 
 namespace ottest
 {

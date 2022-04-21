@@ -4,23 +4,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <cstdint>
 #include <ctime>
 
 #include "1_Internal.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/identity/credential/Contact.hpp"
-#include "opentxs/identity/wot/claim/Attribute.hpp"
-#include "opentxs/identity/wot/claim/ClaimType.hpp"
-#include "opentxs/identity/wot/claim/Item.hpp"
-#include "opentxs/identity/wot/claim/SectionType.hpp"
-#include "opentxs/identity/wot/claim/Types.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 

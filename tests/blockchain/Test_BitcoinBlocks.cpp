@@ -6,6 +6,7 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/container/vector.hpp>
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -15,35 +16,13 @@
 #include <utility>
 
 #include "1_Internal.hpp"
-#include "Helpers.hpp"
 #include "bip158/Bip158.hpp"
 #include "bip158/bch_filter_1307544.hpp"
 #include "bip158/bch_filter_1307723.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/network/Blockchain.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
-#include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
-#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
-#include "opentxs/blockchain/block/Block.hpp"
-#include "opentxs/blockchain/block/Hash.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/blockchain/node/FilterOracle.hpp"
-#include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Options.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "ottest/fixtures/blockchain/Basic.hpp"
 
 namespace ottest
 {
@@ -58,7 +37,7 @@ struct Test_BitcoinBlock : public ::testing::Test {
         auto difference = ot::Vector<ot::UnallocatedCString>{};
         std::transform(
             std::begin(input), std::end(input), std::back_inserter(inputHex), [
-            ](const auto& in) -> auto { return in->asHex(); });
+            ](const auto& in) -> auto{ return in->asHex(); });
 
         EXPECT_EQ(expected.size(), inputHex.size());
 

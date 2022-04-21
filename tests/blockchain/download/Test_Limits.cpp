@@ -4,11 +4,11 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <memory>
 
-#include "Helpers.hpp"
 #include "blockchain/DownloadTask.hpp"
-#include "opentxs/util/Container.hpp"
+#include "ottest/fixtures/blockchain/Download.hpp"
 
 namespace ottest
 {

@@ -17,6 +17,16 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
+namespace identity
+{
+class Nym;
+}  // namespace identity
+
 namespace proto
 {
 class VerificationIdentity;
