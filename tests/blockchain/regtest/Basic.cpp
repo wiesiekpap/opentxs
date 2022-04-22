@@ -42,7 +42,7 @@ TEST_F(Regtest_fixture_hd, init_ui_models)
 {
     account_activity_.expected_ += 0;
     account_list_.expected_ += 1;
-    account_status_.expected_ += 4;
+    account_status_.expected_ += 7;
     init_account_activity(
         alice_, SendHD().Parent().AccountID(), account_activity_);
     init_account_list(alice_, account_list_);
@@ -143,6 +143,21 @@ TEST_F(Regtest_fixture_hd, account_status_initial)
                        Subchain::Internal},
                   }},
              }},
+            {alice_.payment_code_ + " (local)",
+             alice_.nym_id_->str(),
+             Subaccount::PaymentCode,
+             {
+                 {"Notification transactions",
+                  Account(alice_, test_chain_)
+                      .GetNotification()
+                      .at(0)
+                      .ID()
+                      .str(),
+                  {
+                      {"version 3 subchain: 0 of 1 (0.000000 %)",
+                       Subchain::NotificationV3},
+                  }},
+             }},
         }};
 
     ASSERT_TRUE(wait_for_counter(account_status_));
@@ -163,7 +178,7 @@ TEST_F(Regtest_fixture_hd, generate)
     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
     account_list_.expected_ += 0;
     account_activity_.expected_ += (count + 1);
-    account_status_.expected_ += (2u * count) + 3u;
+    account_status_.expected_ += (3u * count);
 
     EXPECT_EQ(start, 0);
     EXPECT_EQ(end, 1);
@@ -322,7 +337,7 @@ TEST_F(Regtest_fixture_hd, advance_test_chain_one_block_before_maturation)
     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
     account_list_.expected_ += 0;
     account_activity_.expected_ += (2u * count);
-    account_status_.expected_ += (5u * count);
+    account_status_.expected_ += (6u * count);
 
     EXPECT_EQ(start, 1);
     EXPECT_EQ(end, 10);
@@ -456,7 +471,7 @@ TEST_F(Regtest_fixture_hd, mature)
     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
     account_list_.expected_ += 1;
     account_activity_.expected_ += ((2 * count) + 1);
-    account_status_.expected_ += (5u * count);
+    account_status_.expected_ += (6u * count);
 
     EXPECT_EQ(start, 10);
     EXPECT_EQ(end, 11);

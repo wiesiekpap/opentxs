@@ -291,7 +291,7 @@ private:
             if (false == bool(node)) { return false; }
 
             if (0 < index_.count(id)) {
-                LogError()(OT_PRETTY_CLASS())("subaccount ")(
+                LogTrace()(OT_PRETTY_CLASS())("subaccount ")(
                     id)(" already exists")
                     .Flush();
 

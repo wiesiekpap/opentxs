@@ -140,6 +140,15 @@ auto BlockchainAccountStatus::load() noexcept -> void
                     out);
             }
 
+            for (const auto& subaccountID : account.GetNotification().all()) {
+                populate(
+                    account,
+                    subaccountID,
+                    blockchain::crypto::SubaccountType::Notification,
+                    blockchain::crypto::Subchain::Error,  // NOTE: all subchains
+                    out);
+            }
+
             return out;
         }();
         add_children(std::move(map));

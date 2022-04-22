@@ -7,8 +7,10 @@
 
 #pragma once
 
+#include <cs_ordered_guarded.h>
 #include <cs_shared_guarded.h>
 #include <atomic>
+#include <cstddef>
 #include <functional>
 #include <iosfwd>
 #include <memory>
@@ -146,11 +148,16 @@ public:
 private:
     using PaymentCode =
         libguarded::shared_guarded<opentxs::PaymentCode, std::shared_mutex>;
+    using Cache =
+        libguarded::ordered_guarded<Vector<block::Position>, std::shared_mutex>;
 
     const proto::HDPath path_;
     const CString pc_display_;
     mutable PaymentCode code_;
+    mutable Cache cache_;
 
+    auto CheckCache(const std::size_t outstanding, FinishedCallback cb)
+        const noexcept -> void final;
     auto do_startup() noexcept -> void final;
     auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
         const noexcept -> Index final;

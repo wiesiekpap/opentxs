@@ -318,10 +318,8 @@ auto Account::GetDepositAddress(
 
 auto Account::init_hd(const Accounts& accounts) noexcept -> void
 {
-    auto count{0};
-
     for (const auto& accountID : accounts) {
-        ++count;
+        init_notification();
         auto account = proto::HDAccount{};
         const auto loaded =
             api_.Storage().Load(nym_id_->str(), accountID->str(), account);
@@ -331,14 +329,10 @@ auto Account::init_hd(const Accounts& accounts) noexcept -> void
         auto notUsed = Identifier::Factory();
         hd_.Construct(notUsed, account);
     }
-
-    if (0 < count) { init_notification(); }
 }
 
 auto Account::init_notification() noexcept -> void
 {
-    if (0u == hd_.size()) { return; }
-
     const auto nym = api_.Wallet().Nym(nym_id_);
 
     OT_ASSERT(nym);

@@ -17,6 +17,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -70,6 +71,14 @@ Notification::Notification(
     , progress_()
 {
     init();
+}
+
+auto Notification::AllowedSubchains() const noexcept -> UnallocatedSet<Subchain>
+{
+    static const auto subchains =
+        UnallocatedSet<Subchain>{Subchain::NotificationV3};
+
+    return subchains;
 }
 
 auto Notification::calculate_id(

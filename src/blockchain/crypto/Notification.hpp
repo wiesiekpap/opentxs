@@ -74,10 +74,7 @@ class Notification final : public internal::Notification,
                            virtual public Subaccount
 {
 public:
-    auto AllowedSubchains() const noexcept -> UnallocatedSet<Subchain> final
-    {
-        return {};
-    }
+    auto AllowedSubchains() const noexcept -> UnallocatedSet<Subchain> final;
     auto BalanceElement(const Subchain, const Bip32Index) const noexcept(false)
         -> const crypto::Element& final
     {
