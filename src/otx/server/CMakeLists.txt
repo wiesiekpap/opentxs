@@ -6,6 +6,8 @@
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/otx/server/MessageProcessor.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/otx/server/Types.hpp"
     "ConfigLoader.cpp"
     "ConfigLoader.hpp"
     "Macros.hpp"

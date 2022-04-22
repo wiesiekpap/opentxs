@@ -29,6 +29,7 @@
 #include "internal/network/zeromq/message/Message.hpp"  // IWYU pragma: keep
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/otx/common/Message.hpp"
+#include "internal/otx/server/Types.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/ServerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -65,7 +66,30 @@
 
 namespace opentxs::server
 {
-MessageProcessor::MessageProcessor(
+auto print(Jobs job) noexcept -> std::string_view
+{
+    try {
+        using Job = Jobs;
+        static const auto map = Map<Job, CString>{
+            {Job::shutdown, "shutdown"},
+            {Job::init, "init"},
+            {Job::statemachine, "statemachine"},
+        };
+
+        return map.at(job);
+    } catch (...) {
+        LogError()(__FUNCTION__)("invalid Jobs: ")(
+            static_cast<OTZMQWorkType>(job))
+            .Flush();
+
+        OT_FAIL;
+    }
+}
+}  // namespace opentxs::server
+
+namespace opentxs::server
+{
+MessageProcessor::Imp::Imp(
     Server& server,
     const PasswordPrompt& reason) noexcept
     : api_(server.API())
@@ -96,7 +120,7 @@ MessageProcessor::MessageProcessor(
     , connection_map_lock_()
 {
     zmq_batch_.listen_callbacks_.emplace_back(zmq::ListenCallback::Factory(
-        [this](auto&& m) { pipeline(std::move(m)); }));
+        [this](auto&& m) { old_pipeline(std::move(m)); }));
     auto rc = notification_.Bind(
         api_.Endpoints().Internal().PushNotification().data());
 
@@ -126,7 +150,7 @@ MessageProcessor::MessageProcessor(
     LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(zmq_batch_.id_).Flush();
 }
 
-auto MessageProcessor::associate_connection(
+auto MessageProcessor::Imp::associate_connection(
     const bool oldFormat,
     const identifier::Nym& nym,
     const Data& connection) noexcept -> void
@@ -166,31 +190,31 @@ auto MessageProcessor::associate_connection(
     }
 }
 
-auto MessageProcessor::cleanup() noexcept -> void
+auto MessageProcessor::Imp::cleanup() noexcept -> void
 {
     running_ = false;
     zmq_handle_.Release();
 }
 
-auto MessageProcessor::DropIncoming(const int count) const noexcept -> void
+auto MessageProcessor::Imp::DropIncoming(const int count) const noexcept -> void
 {
     Lock lock(counter_lock_);
     drop_incoming_ = count;
 }
 
-auto MessageProcessor::DropOutgoing(const int count) const noexcept -> void
+auto MessageProcessor::Imp::DropOutgoing(const int count) const noexcept -> void
 {
     Lock lock(counter_lock_);
     drop_outgoing_ = count;
 }
 
-auto MessageProcessor::extract_proto(const zmq::Frame& incoming) const noexcept
-    -> proto::ServerRequest
+auto MessageProcessor::Imp::extract_proto(
+    const zmq::Frame& incoming) const noexcept -> proto::ServerRequest
 {
     return proto::Factory<proto::ServerRequest>(incoming);
 }
 
-auto MessageProcessor::get_connection(
+auto MessageProcessor::Imp::get_connection(
     const network::zeromq::Message& incoming) noexcept -> OTData
 {
     auto output = Data::Factory();
@@ -204,7 +228,7 @@ auto MessageProcessor::get_connection(
     return output;
 }
 
-auto MessageProcessor::init(
+auto MessageProcessor::Imp::init(
     const bool inproc,
     const int port,
     const Secret& privkey) noexcept(false) -> void
@@ -244,7 +268,8 @@ auto MessageProcessor::init(
     OT_ASSERT(queued);
 }
 
-auto MessageProcessor::pipeline(zmq::Message&& message) noexcept -> void
+auto MessageProcessor::Imp::old_pipeline(zmq::Message&& message) noexcept
+    -> void
 {
     const auto isFrontend = [&] {
         const auto header = message.Header();
@@ -264,7 +289,7 @@ auto MessageProcessor::pipeline(zmq::Message&& message) noexcept -> void
     }
 }
 
-auto MessageProcessor::process_backend(
+auto MessageProcessor::Imp::process_backend(
     const bool tagged,
     zmq::Message&& incoming) noexcept -> network::zeromq::Message
 {
@@ -295,7 +320,7 @@ auto MessageProcessor::process_backend(
     return output;
 }
 
-auto MessageProcessor::process_command(
+auto MessageProcessor::Imp::process_command(
     const proto::ServerRequest& serialized,
     identifier::Nym& nymID) noexcept -> bool
 {
@@ -323,7 +348,8 @@ auto MessageProcessor::process_command(
     return true;
 }
 
-auto MessageProcessor::process_frontend(zmq::Message&& message) noexcept -> void
+auto MessageProcessor::Imp::process_frontend(zmq::Message&& message) noexcept
+    -> void
 {
     const auto drop = [&] {
         auto lock = Lock{counter_lock_};
@@ -385,7 +411,8 @@ auto MessageProcessor::process_frontend(zmq::Message&& message) noexcept -> void
     }
 }
 
-auto MessageProcessor::process_internal(zmq::Message&& message) noexcept -> void
+auto MessageProcessor::Imp::process_internal(zmq::Message&& message) noexcept
+    -> void
 {
     const auto drop = [&] {
         auto lock = Lock{counter_lock_};
@@ -414,7 +441,7 @@ auto MessageProcessor::process_internal(zmq::Message&& message) noexcept -> void
     }
 }
 
-auto MessageProcessor::process_legacy(
+auto MessageProcessor::Imp::process_legacy(
     const Data& id,
     const bool tagged,
     network::zeromq::Message&& incoming) noexcept -> void
@@ -424,7 +451,7 @@ auto MessageProcessor::process_legacy(
     process_internal(process_backend(tagged, std::move(incoming)));
 }
 
-auto MessageProcessor::process_message(
+auto MessageProcessor::Imp::process_message(
     const UnallocatedCString& messageString,
     UnallocatedCString& reply) noexcept -> bool
 {
@@ -493,8 +520,8 @@ auto MessageProcessor::process_message(
     return false;
 }
 
-auto MessageProcessor::process_notification(zmq::Message&& incoming) noexcept
-    -> void
+auto MessageProcessor::Imp::process_notification(
+    zmq::Message&& incoming) noexcept -> void
 {
     if (2 != incoming.Body().size()) {
         LogError()(OT_PRETTY_CLASS())("Invalid message.").Flush();
@@ -570,7 +597,7 @@ auto MessageProcessor::process_notification(zmq::Message&& incoming) noexcept
     }
 }
 
-auto MessageProcessor::process_proto(
+auto MessageProcessor::Imp::process_proto(
     const Data& id,
     const bool oldFormat,
     network::zeromq::Message&& incoming) noexcept -> void
@@ -605,7 +632,7 @@ auto MessageProcessor::process_proto(
     }
 }
 
-auto MessageProcessor::query_connection(const identifier::Nym& id) noexcept
+auto MessageProcessor::Imp::query_connection(const identifier::Nym& id) noexcept
     -> const ConnectionData&
 {
     auto lock = sLock{connection_map_lock_};
@@ -620,7 +647,7 @@ auto MessageProcessor::query_connection(const identifier::Nym& id) noexcept
     }
 }
 
-auto MessageProcessor::run() noexcept -> void
+auto MessageProcessor::Imp::run() noexcept -> void
 {
     while (running_.load()) {
         // timeout is the time left until the next cron should execute.
@@ -636,15 +663,56 @@ auto MessageProcessor::run() noexcept -> void
     }
 }
 
-auto MessageProcessor::Start() noexcept -> void
+auto MessageProcessor::Imp::Start() noexcept -> void
 {
-    thread_ = std::thread(&MessageProcessor::run, this);
+    thread_ = std::thread(&Imp::run, this);
 }
 
-MessageProcessor::~MessageProcessor()
+MessageProcessor::Imp::~Imp()
 {
     cleanup();
 
     if (thread_.joinable()) { thread_.join(); }
+}
+}  // namespace opentxs::server
+
+namespace opentxs::server
+{
+MessageProcessor::MessageProcessor(
+    Server& server,
+    const PasswordPrompt& reason) noexcept
+    : imp_(std::make_unique<Imp>(server, reason).release())
+{
+    OT_ASSERT(imp_);
+}
+
+auto MessageProcessor::cleanup() noexcept -> void { imp_->cleanup(); }
+
+auto MessageProcessor::DropIncoming(const int count) const noexcept -> void
+{
+    imp_->DropIncoming(count);
+}
+
+auto MessageProcessor::DropOutgoing(const int count) const noexcept -> void
+{
+    imp_->DropOutgoing(count);
+}
+
+auto MessageProcessor::init(
+    const bool inproc,
+    const int port,
+    const Secret& privkey) noexcept(false) -> void
+{
+    imp_->init(inproc, port, privkey);
+}
+
+auto MessageProcessor::Start() noexcept -> void { imp_->Start(); }
+
+MessageProcessor::~MessageProcessor()
+{
+    if (nullptr != imp_) {
+        delete imp_;
+        imp_ = nullptr;
+    }
 }
 }  // namespace opentxs::server

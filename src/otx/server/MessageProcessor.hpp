@@ -15,6 +15,8 @@
 
 #include "Proto.hpp"
 #include "internal/network/zeromq/Handle.hpp"
+#include "internal/otx/server/MessageProcessor.hpp"
+#include "internal/otx/server/Types.hpp"
 #include "internal/util/Lockable.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
@@ -85,7 +87,7 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::server
 {
-class MessageProcessor final : Lockable
+class MessageProcessor::Imp final : Lockable
 {
 public:
     auto DropIncoming(const int count) const noexcept -> void;
@@ -98,9 +100,14 @@ public:
         const Secret& privkey) noexcept(false) -> void;
     auto Start() noexcept -> void;
 
-    MessageProcessor(Server& server, const PasswordPrompt& reason) noexcept;
+    Imp(Server& server, const PasswordPrompt& reason) noexcept;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
-    ~MessageProcessor() final;
+    ~Imp() final;
 
 private:
     // connection identifier, old format
@@ -135,7 +142,7 @@ private:
         const bool oldFormat,
         const identifier::Nym& nymID,
         const Data& connection) noexcept -> void;
-    auto pipeline(zmq::Message&& message) noexcept -> void;
+    auto old_pipeline(zmq::Message&& message) noexcept -> void;
     auto process_backend(
         const bool tagged,
         network::zeromq::Message&& incoming) noexcept
@@ -161,11 +168,5 @@ private:
     auto query_connection(const identifier::Nym& nymID) noexcept
         -> const ConnectionData&;
     auto run() noexcept -> void;
-
-    MessageProcessor() = delete;
-    MessageProcessor(const MessageProcessor&) = delete;
-    MessageProcessor(MessageProcessor&&) = delete;
-    auto operator=(const MessageProcessor&) -> MessageProcessor& = delete;
-    auto operator=(MessageProcessor&&) -> MessageProcessor& = delete;
 };
 }  // namespace opentxs::server

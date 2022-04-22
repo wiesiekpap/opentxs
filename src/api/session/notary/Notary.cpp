@@ -24,6 +24,7 @@
 #include "internal/api/network/Factory.hpp"
 #include "internal/api/session/Factory.hpp"
 #include "internal/otx/blind/Mint.hpp"
+#include "internal/otx/server/MessageProcessor.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Context.hpp"
@@ -50,7 +51,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "otx/common/OTStorage.hpp"
-#include "otx/server/MessageProcessor.hpp"
 #include "otx/server/Server.hpp"
 #include "otx/server/ServerSettings.hpp"
 
