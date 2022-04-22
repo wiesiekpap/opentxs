@@ -59,6 +59,7 @@ class Data;
 }  // namespace wot
 
 class Authority;
+class Nym;
 class Source;
 }  // namespace identity
 

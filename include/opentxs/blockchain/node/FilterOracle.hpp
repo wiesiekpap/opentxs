@@ -8,6 +8,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
@@ -19,6 +20,11 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
+namespace block
+{
+class Hash;
+}  // namespace block
+
 namespace cfilter
 {
 class Header;

@@ -5,9 +5,8 @@
 
 #pragma once
 
+#include <opentxs/opentxs.hpp>
 #include <cstdint>
-
-#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 

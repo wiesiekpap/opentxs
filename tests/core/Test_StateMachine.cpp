@@ -4,15 +4,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <atomic>
 #include <chrono>
 #include <functional>
 #include <future>
 
 #include "core/StateMachine.hpp"
-#include "internal/util/Mutex.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Time.hpp"
 
 namespace ot = opentxs;
 

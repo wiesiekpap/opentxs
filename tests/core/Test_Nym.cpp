@@ -4,30 +4,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <memory>
 #include <optional>
 
 #include "internal/api/session/Client.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
-#include "internal/util/Mutex.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Symmetric.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Secret.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
-#include "opentxs/crypto/key/Symmetric.hpp"
-#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/Types.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 #define TEST_MASTER_PASSWORD "test password"
 #define TEST_PLAINTEXT "The quick brown fox jumped over the lazy dog."

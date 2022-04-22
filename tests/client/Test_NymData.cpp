@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <algorithm>
 #include <cstdint>
 #include <iterator>
@@ -13,28 +14,6 @@
 #include "1_Internal.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/serialization/protobuf/Contact.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/Types.hpp"
-#include "opentxs/identity/credential/Contact.hpp"
-#include "opentxs/identity/wot/claim/Attribute.hpp"
-#include "opentxs/identity/wot/claim/ClaimType.hpp"
-#include "opentxs/identity/wot/claim/Data.hpp"
-#include "opentxs/identity/wot/claim/Item.hpp"
-#include "opentxs/identity/wot/claim/SectionType.hpp"
-#include "opentxs/identity/wot/claim/Types.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/NymEditor.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 

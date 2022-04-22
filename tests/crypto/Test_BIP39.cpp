@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <cctype>
 #include <cstddef>
 #include <memory>
@@ -12,33 +13,6 @@
 #include <utility>
 
 #include "crypto/Bip39.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/api/crypto/Seed.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/crypto/Element.hpp"
-#include "opentxs/blockchain/crypto/HD.hpp"
-#include "opentxs/blockchain/crypto/HDProtocol.hpp"
-#include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/core/Secret.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/crypto/Language.hpp"
-#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
-#include "opentxs/crypto/SeedStrength.hpp"
-#include "opentxs/crypto/SeedStyle.hpp"
-#include "opentxs/crypto/Types.hpp"
-#include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 

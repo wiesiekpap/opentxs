@@ -4,30 +4,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <tuple>
 #include <type_traits>
 #include <utility>
-
-#include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
-#include "opentxs/api/crypto/Hash.hpp"
-#include "opentxs/api/crypto/Symmetric.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/core/Secret.hpp"
-#include "opentxs/crypto/HashType.hpp"
-#include "opentxs/crypto/key/Symmetric.hpp"
-#include "opentxs/crypto/key/symmetric/Source.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 

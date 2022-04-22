@@ -4,40 +4,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <memory>
 #include <utility>
 
 #include "2_Factory.hpp"
 #include "internal/identity/Nym.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Config.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Storage.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/crypto/ParameterType.hpp"
-#include "opentxs/crypto/Parameters.hpp"
-#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
-#include "opentxs/identity/CredentialType.hpp"
-#include "opentxs/identity/IdentityType.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/Source.hpp"
-#include "opentxs/identity/SourceType.hpp"
-#include "opentxs/identity/Types.hpp"
-#include "opentxs/identity/wot/claim/ClaimType.hpp"
-#include "opentxs/identity/wot/claim/Data.hpp"
-#include "opentxs/identity/wot/claim/Group.hpp"
-#include "opentxs/identity/wot/claim/Item.hpp"
-#include "opentxs/identity/wot/claim/Section.hpp"
-#include "opentxs/identity/wot/claim/SectionType.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Options.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 

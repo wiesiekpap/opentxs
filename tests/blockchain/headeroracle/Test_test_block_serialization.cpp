@@ -4,14 +4,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <memory>
 
-#include "Helpers.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/blockchain/block/Hash.hpp"
-#include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/util/Bytes.hpp"
+#include "ottest/fixtures/blockchain/HeaderOracle.hpp"
 
 namespace ottest
 {

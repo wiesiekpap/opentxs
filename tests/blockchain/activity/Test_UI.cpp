@@ -3,8 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "opentxs/Version.hpp"  // IWYU pragma: associated
-
 #if OT_QT
 #include <QDateTime>
 #include <QList>
@@ -14,55 +12,14 @@
 #include <QVariant>
 #endif  // OT_QT
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <atomic>
 #include <memory>
 #include <optional>
 
-#include "Helpers.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
-#include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Contacts.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/UI.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/Types.hpp"
-#include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/blockchain/crypto/HD.hpp"
-#include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/core/AccountType.hpp"
-#include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Contact.hpp"
-#include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/interface/ui/AccountActivity.hpp"
-#include "opentxs/interface/ui/AccountList.hpp"
-#include "opentxs/interface/ui/AccountListItem.hpp"
-#include "opentxs/interface/ui/ActivitySummary.hpp"
-#include "opentxs/interface/ui/ActivitySummaryItem.hpp"
-#include "opentxs/interface/ui/ActivityThread.hpp"
-#include "opentxs/interface/ui/ActivityThreadItem.hpp"
-#include "opentxs/interface/ui/BalanceItem.hpp"
-#include "opentxs/interface/ui/BlockchainSelection.hpp"
-#include "opentxs/interface/ui/BlockchainSelectionItem.hpp"
-#include "opentxs/interface/ui/Blockchains.hpp"
-#if OT_QT
-#include "opentxs/interface/qt/AccountActivity.hpp"
-#include "opentxs/interface/qt/AccountList.hpp"
-#if OT_BLOCKCHAIN
-#include "opentxs/interface/qt/BlockchainSelection.hpp"
-#endif  // OT_BLOCKCHAIN
-#endif  // OT_QT
-#include "opentxs/crypto/Types.hpp"
-#include "opentxs/otx/client/Types.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "opentxs/util/SharedPimpl.hpp"
-#include "opentxs/util/Time.hpp"
-#include "ui/Helpers.hpp"
+#include "ottest/fixtures/blockchain/Activity.hpp"
+#include "ottest/fixtures/ui/Helpers.hpp"
 
 using Subchain = ot::blockchain::crypto::Subchain;
 

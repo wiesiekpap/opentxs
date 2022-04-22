@@ -4,17 +4,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <iterator>
 #include <limits>
 #include <optional>
 #include <stdexcept>
 #include <utility>
-
-#include "opentxs/Version.hpp"
-#include "opentxs/core/Amount.hpp"
-#include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/display/Definition.hpp"
-#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 

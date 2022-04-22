@@ -11,6 +11,7 @@
 #include <optional>
 #include <tuple>
 
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Types.hpp"
 #include "opentxs/util/Bytes.hpp"

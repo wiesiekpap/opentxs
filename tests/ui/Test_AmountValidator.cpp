@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <QString>
 #include <QValidator>
 #include <future>
@@ -11,25 +12,12 @@
 #include <type_traits>
 #include <utility>
 
-#include "common/Client.hpp"
-#include "common/Notary.hpp"
-#include "integration/Helpers.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/otx/client/Pair.hpp"
-#include "opentxs/Version.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/OTX.hpp"
-#include "opentxs/api/session/UI.hpp"
-#include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/display/Definition.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/interface/qt/AccountActivity.hpp"
-#include "opentxs/interface/qt/AmountValidator.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "paymentcode/VectorsV3.hpp"
+#include "ottest/fixtures/common/Client.hpp"
+#include "ottest/fixtures/common/Notary.hpp"
+#include "ottest/fixtures/integration/Helpers.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 namespace ot = opentxs;
 

@@ -4,31 +4,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <cstddef>
 #include <iterator>
 #include <memory>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Config.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
-#include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/String.hpp"
-#include "opentxs/crypto/Envelope.hpp"
-#include "opentxs/crypto/ParameterType.hpp"
-#include "opentxs/crypto/Parameters.hpp"
-#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/Types.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 

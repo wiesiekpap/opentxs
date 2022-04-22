@@ -4,24 +4,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <cstdint>
 #include <memory>
 
-#include "Helpers.hpp"
-#include "VectorsV1.hpp"
-#include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/crypto/AddressStyle.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/core/PaymentCode.hpp"
-#include "opentxs/crypto/Types.hpp"
-#include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "ottest/fixtures/paymentcode/Helpers.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV1.hpp"
 
 namespace ottest
 {

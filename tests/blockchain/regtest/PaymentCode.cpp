@@ -3,65 +3,24 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "Helpers.hpp"  // IWYU pragma: associated
-
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <algorithm>
+#include <atomic>
+#include <cstddef>
+#include <future>
+#include <memory>
 #include <optional>
+#include <tuple>
 #include <utility>
 
-#include "integration/Helpers.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/api/network/Blockchain.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Contacts.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/OTX.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/Types.hpp"
-#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
-#include "opentxs/blockchain/block/Hash.hpp"
-#include "opentxs/blockchain/block/Outpoint.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
-#include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
-#include "opentxs/blockchain/block/bitcoin/Opcodes.hpp"
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"
-#include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/blockchain/block/bitcoin/Types.hpp"
-#include "opentxs/blockchain/crypto/Account.hpp"
-#include "opentxs/blockchain/crypto/Element.hpp"
-#include "opentxs/blockchain/crypto/HD.hpp"
-#include "opentxs/blockchain/crypto/PaymentCode.hpp"
-#include "opentxs/blockchain/crypto/SubaccountType.hpp"
-#include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/blockchain/node/BlockOracle.hpp"
-#include "opentxs/blockchain/node/FilterOracle.hpp"
-#include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/blockchain/node/TxoTag.hpp"
-#include "opentxs/core/AccountType.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/otx/LastReplyStatus.hpp"
-#include "opentxs/otx/client/Types.hpp"
-#include "opentxs/util/Allocator.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/Time.hpp"
-#include "paymentcode/VectorsV3.hpp"
-#include "rpc/Helpers.hpp"
-#include "ui/Helpers.hpp"
+#include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/integration/Helpers.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
+#include "ottest/fixtures/rpc/Helpers.hpp"
+#include "ottest/fixtures/ui/Helpers.hpp"
 
 namespace ottest
 {

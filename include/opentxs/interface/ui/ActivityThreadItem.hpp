@@ -11,6 +11,7 @@
 #include <cstdint>
 
 #include "ListRow.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 

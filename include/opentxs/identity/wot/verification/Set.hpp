@@ -7,16 +7,40 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include "opentxs/identity/wot/verification/Item.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
+namespace identity
+{
+namespace wot
+{
+namespace verification
+{
+class Group;
+class Item;
+}  // namespace verification
+}  // namespace wot
+
+class Nym;
+}  // namespace identity
+
 namespace proto
 {
 class VerificationSet;
 }  // namespace proto
 
+class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs

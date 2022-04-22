@@ -4,16 +4,8 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <utility>
-
-#include "opentxs/Version.hpp"
-#include "opentxs/network/zeromq/ReplyCallback.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
-#include "opentxs/network/zeromq/message/FrameIterator.hpp"
-#include "opentxs/network/zeromq/message/FrameSection.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 

@@ -4,13 +4,9 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
+#include <cstddef>
 #include <string_view>
-
-#include "opentxs/Version.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/core/FixedByteArray.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 

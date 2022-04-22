@@ -1,0 +1,58 @@
+// Copyright (c) 2010-2022 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#pragma once
+
+#include <opentxs/opentxs.hpp>
+#include <cstddef>
+#include <cstdint>
+
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+// inline namespace v1
+// {
+class Options;
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
+
+namespace ot = opentxs;
+
+namespace ottest
+{
+struct OptionsData {
+    ot::Set<ot::CString> blockchain_bind_ipv4_;
+    ot::Set<ot::CString> blockchain_bind_ipv6_;
+    ot::Set<opentxs::blockchain::Type> blockchain_disabled_chains_;
+    int blockchain_storage_level_;
+    bool blockchain_sync_server_enabled_;
+    ot::Set<ot::CString> blockchain_sync_servers_;
+    bool blockchain_wallet_enabled_;
+    bool experimental_;
+    ot::CString home_;
+    opentxs::Options::ConnectionMode ipv4_connection_mode_;
+    opentxs::Options::ConnectionMode ipv6_connection_mode_;
+    ot::CString log_endpoint_;
+    int log_level_;
+    std::size_t mint_key_bytes_;
+    bool notary_bind_inproc_;
+    ot::CString notary_bind_ip_;
+    std::uint16_t notary_bind_port_;
+    ot::CString notary_name_;
+    ot::Set<ot::CString> notary_public_eep_;
+    ot::Set<ot::CString> notary_public_ipv4_;
+    ot::Set<ot::CString> notary_public_ipv6_;
+    ot::Set<ot::CString> notary_public_onion_;
+    std::uint16_t notary_public_port_;
+    ot::CString notary_terms_;
+    ot::CString storage_primary_plugin_;
+    bool test_mode_;
+};
+
+auto check_options(
+    const opentxs::Options& options,
+    const OptionsData& expected) noexcept -> bool;
+}  // namespace ottest

@@ -9,6 +9,7 @@
 
 #include <cstdint>
 
+#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"

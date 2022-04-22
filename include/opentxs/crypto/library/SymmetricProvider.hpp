@@ -10,6 +10,7 @@
 #include <cstdint>
 
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/crypto/key/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

@@ -19,6 +19,7 @@ namespace opentxs  // NOLINT
 // {
 namespace ui
 {
+class ContactItem;
 class ContactSubsection;
 }  // namespace ui
 

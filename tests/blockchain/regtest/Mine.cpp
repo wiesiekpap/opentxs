@@ -3,29 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "Helpers.hpp"  // IWYU pragma: associated
-
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <chrono>
+#include <memory>
 
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/api/network/Blockchain.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/blockchain/block/bitcoin/Header.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
-#include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/Time.hpp"
+#include "ottest/fixtures/blockchain/Regtest.hpp"
 
 namespace ottest
 {

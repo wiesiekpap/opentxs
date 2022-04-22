@@ -29,6 +29,7 @@ extern "C" {
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
+#include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"

@@ -4,20 +4,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <algorithm>
 #include <memory>
 #include <random>
 #include <utility>
 
-#include "Helpers.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/blockchain/bitcoin/Work.hpp"
-#include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "ottest/fixtures/blockchain/HeaderOracle.hpp"
 
 ot::UnallocatedVector<std::unique_ptr<bb::Header>> headers_{};
 

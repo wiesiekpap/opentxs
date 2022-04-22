@@ -14,6 +14,7 @@
 
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -32,10 +33,10 @@ class Contacts;
 }  // namespace session
 }  // namespace api
 
-namespace identity
+namespace identifier
 {
 class Nym;
-}  // namespace identity
+}  // namespace identifier
 
 class Contact;
 class Identifier;

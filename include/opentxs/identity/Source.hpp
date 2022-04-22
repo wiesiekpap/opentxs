@@ -9,6 +9,8 @@
 
 #include <memory>
 
+#include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -28,7 +30,10 @@ namespace proto
 {
 class Credential;
 class NymIDSource;
+class Signature;
 }  // namespace proto
+
+class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)

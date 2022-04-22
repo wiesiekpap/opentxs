@@ -7,6 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -26,6 +27,7 @@ namespace proto
 class Envelope;
 }  // namespace proto
 
+class Armored;
 class PasswordPrompt;
 
 using OTEnvelope = Pimpl<crypto::Envelope>;

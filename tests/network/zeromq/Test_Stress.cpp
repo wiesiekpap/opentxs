@@ -4,20 +4,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <atomic>
 #include <cstddef>
 #include <memory>
-
-#include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/network/zeromq/socket/Publish.hpp"
-#include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;

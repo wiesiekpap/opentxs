@@ -19,6 +19,7 @@ namespace opentxs  // NOLINT
 // {
 namespace ui
 {
+class ProfileItem;
 class ProfileSubsection;
 }  // namespace ui
 

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "Helpers.hpp"
+#include "ottest/fixtures/blockchain/HeaderOracle.hpp"
 
 namespace ottest
 {

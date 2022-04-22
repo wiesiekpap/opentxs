@@ -3,16 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "Helpers.hpp"  // IWYU pragma: associated
-
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <chrono>
+#include <cstddef>
 
-#include "opentxs/api/network/Blockchain.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/util/Time.hpp"
+#include "ottest/fixtures/blockchain/Regtest.hpp"
 
 namespace ottest
 {

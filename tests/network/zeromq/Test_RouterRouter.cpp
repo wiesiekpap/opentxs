@@ -5,6 +5,7 @@
 
 #include <errno.h>
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
 #include <zmq.h>
 #include <array>
 #include <atomic>
@@ -14,18 +15,8 @@
 #include <memory>
 #include <thread>
 
-#include "Helpers.hpp"
 #include "internal/util/Signals.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
-#include "opentxs/network/zeromq/message/FrameIterator.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Time.hpp"
+#include "ottest/fixtures/zeromq/Helpers.hpp"
 
 namespace zmq = ot::network::zeromq;
 
