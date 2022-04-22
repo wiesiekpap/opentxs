@@ -181,9 +181,7 @@ public:
     auto ChangeState(const State state, StateSequence reorg) noexcept
         -> bool final;
     virtual auto CheckCache(const std::size_t outstanding, FinishedCallback cb)
-        const noexcept -> void
-    {
-    }
+        const noexcept -> void = 0;
     auto IndexElement(
         const cfilter::Type type,
         const blockchain::crypto::Element& input,

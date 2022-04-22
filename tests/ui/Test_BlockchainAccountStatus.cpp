@@ -44,6 +44,12 @@ public:
     const User& bob_;
     const User& chris_;
 
+    auto Account(const User& user, ot::blockchain::Type chain) const noexcept
+        -> const ot::blockchain::crypto::Account&
+    {
+        return user.api_->Crypto().Blockchain().Account(user.nym_id_, chain);
+    }
+
     auto make_hd_account(const User& user, const Protocol type) noexcept -> void
     {
         hd_acct_[user.nym_id_].emplace(
@@ -124,9 +130,9 @@ TEST_F(BlockchainSelector, initial_conditions)
     make_hd_account(chris_, Protocol::BIP_44);
     make_pc_account(alice_, bob_);
     make_pc_account(alice_, chris_);
-    counter_alice_.expected_ += 14;
-    counter_bob_.expected_ += 7;
-    counter_chris_.expected_ += 4;
+    counter_alice_.expected_ += 16;
+    counter_bob_.expected_ += 10;
+    counter_chris_.expected_ += 7;
     init_blockchain_account_status(alice_, chain_, counter_alice_);
     init_blockchain_account_status(bob_, chain_, counter_bob_);
     init_blockchain_account_status(chris_, chain_, counter_chris_);
@@ -159,6 +165,12 @@ TEST_F(BlockchainSelector, alice_initial)
              alice_.nym_id_->str(),
              Subaccount::PaymentCode,
              {
+                 {"Notification transactions",
+                  Account(alice_, chain_).GetNotification().at(0).ID().str(),
+                  {
+                      {"version 3 subchain: 0 of ? (? %)",
+                       Subchain::NotificationV3},
+                  }},
                  {bob_.payment_code_ + " (remote)",
                   pc_acct_.at(alice_.payment_code_)
                       .at(bob_.payment_code_)
@@ -206,6 +218,17 @@ TEST_F(BlockchainSelector, bob_initial)
                       {"internal subchain: 0 of ? (? %)", Subchain::Internal},
                   }},
              }},
+            {bob_.payment_code_ + " (local)",
+             bob_.nym_id_->str(),
+             Subaccount::PaymentCode,
+             {
+                 {"Notification transactions",
+                  Account(bob_, chain_).GetNotification().at(0).ID().str(),
+                  {
+                      {"version 3 subchain: 0 of ? (? %)",
+                       Subchain::NotificationV3},
+                  }},
+             }},
         }};
 
     ASSERT_TRUE(wait_for_counter(counter_bob_));
@@ -230,6 +253,17 @@ TEST_F(BlockchainSelector, chris_initial)
                       {"internal subchain: 0 of ? (? %)", Subchain::Internal},
                   }},
              }},
+            {chris_.payment_code_ + " (local)",
+             chris_.nym_id_->str(),
+             Subaccount::PaymentCode,
+             {
+                 {"Notification transactions",
+                  Account(chris_, chain_).GetNotification().at(0).ID().str(),
+                  {
+                      {"version 3 subchain: 0 of ? (? %)",
+                       Subchain::NotificationV3},
+                  }},
+             }},
         }};
 
     ASSERT_TRUE(wait_for_counter(counter_chris_));
@@ -239,7 +273,7 @@ TEST_F(BlockchainSelector, chris_initial)
 
 TEST_F(BlockchainSelector, new_accounts)
 {
-    counter_chris_.expected_ += 7;
+    counter_chris_.expected_ += 6;
     make_pc_account(chris_, alice_);
     make_pc_account(chris_, bob_);
 }
@@ -265,6 +299,12 @@ TEST_F(BlockchainSelector, chris_final)
              chris_.nym_id_->str(),
              Subaccount::PaymentCode,
              {
+                 {"Notification transactions",
+                  Account(chris_, chain_).GetNotification().at(0).ID().str(),
+                  {
+                      {"version 3 subchain: 0 of ? (? %)",
+                       Subchain::NotificationV3},
+                  }},
                  {bob_.payment_code_ + " (remote)",
                   pc_acct_.at(chris_.payment_code_)
                       .at(bob_.payment_code_)

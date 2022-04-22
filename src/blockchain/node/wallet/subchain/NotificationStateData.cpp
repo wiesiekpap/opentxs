@@ -85,7 +85,19 @@ NotificationStateData::NotificationStateData(
     , path_(subaccount.InternalNotification().Path())
     , pc_display_(code.asBase58(), get_allocator())
     , code_(code)
+    , cache_(get_allocator())
 {
+}
+
+auto NotificationStateData::CheckCache(const std::size_t, FinishedCallback cb)
+    const noexcept -> void
+{
+    if (cb) {
+        cache_.modify([&](auto& data) {
+            cb(data);
+            data.clear();
+        });
+    }
 }
 
 auto NotificationStateData::do_startup() noexcept -> void
@@ -137,6 +149,8 @@ auto NotificationStateData::handle_confirmed_matches(
 
         process(match, *tx, reason);
     }
+
+    cache_.modify([&](auto& vector) { vector.emplace_back(position); });
 }
 
 auto NotificationStateData::handle_mempool_matches(
