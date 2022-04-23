@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                         // IWYU pragma: associated
 #include "blockchain/node/blockoracle/MemDB.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <future>
 #include <memory>
 

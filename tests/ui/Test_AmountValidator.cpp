@@ -16,7 +16,7 @@
 #include "internal/otx/client/Pair.hpp"
 #include "ottest/fixtures/common/Client.hpp"
 #include "ottest/fixtures/common/Notary.hpp"
-#include "ottest/fixtures/integration/Helpers.hpp"
+#include "ottest/fixtures/common/User.hpp"
 #include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 namespace ot = opentxs;

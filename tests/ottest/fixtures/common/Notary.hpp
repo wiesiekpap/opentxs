@@ -42,7 +42,7 @@ class Nym;
 
 namespace ottest
 {
-struct User;
+class User;
 }  // namespace ottest
 // NOLINTEND(modernize-concat-nested-namespaces)
 

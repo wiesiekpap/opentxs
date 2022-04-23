@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "internal/otx/common/recurring/OTAgreement.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <cstring>

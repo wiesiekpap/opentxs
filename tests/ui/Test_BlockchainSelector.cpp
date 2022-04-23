@@ -12,7 +12,10 @@
 #include <opentxs/opentxs.hpp>
 #include <atomic>
 
-#include "ottest/fixtures/ui/Helpers.hpp"
+#include "ottest/fixtures/common/Counter.hpp"
+#include "ottest/fixtures/ui/BlockchainSelection.hpp"
+
+namespace ot = opentxs;
 
 namespace ottest
 {

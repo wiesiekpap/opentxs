@@ -11,9 +11,9 @@
 #include <atomic>
 #include <iterator>
 
-#include "ottest/fixtures/integration/Helpers.hpp"
+#include "ottest/fixtures/common/Counter.hpp"
+#include "ottest/fixtures/common/User.hpp"
 #include "ottest/fixtures/paymentcode/VectorsV3.hpp"
-#include "ottest/fixtures/ui/Helpers.hpp"
 
 namespace ot = opentxs;
 namespace rpc = opentxs::rpc;

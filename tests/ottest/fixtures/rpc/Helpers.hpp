@@ -59,10 +59,10 @@ class Identifier;
 
 namespace ottest
 {
+class User;
 struct AccountActivityData;
 struct AccountListData;
 struct Counter;
-struct User;
 }  // namespace ottest
 
 namespace ot = opentxs;

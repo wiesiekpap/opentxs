@@ -10,8 +10,12 @@ target_sources(
     "Base.hpp"
     "Client.cpp"
     "Client.hpp"
+    "Counter.cpp"
+    "Counter.hpp"
     "Notary.cpp"
     "Notary.hpp"
     "Options.cpp"
     "Options.hpp"
+    "User.cpp"
+    "User.hpp"
 )

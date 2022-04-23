@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "network/zeromq/zap/Reply.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <memory>
 #include <sstream>
 #include <string_view>

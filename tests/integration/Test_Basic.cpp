@@ -17,8 +17,9 @@
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/Shared.hpp"
+#include "ottest/fixtures/common/Counter.hpp"
+#include "ottest/fixtures/common/User.hpp"
 #include "ottest/fixtures/integration/Helpers.hpp"
-#include "ottest/fixtures/ui/Helpers.hpp"
 
 #define UNIT_DEFINITION_CONTRACT_VERSION 2
 #define UNIT_DEFINITION_CONTRACT_NAME "Mt Gox USD"

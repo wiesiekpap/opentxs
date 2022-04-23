@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <functional>
 #include <future>
 #include <memory>
 
@@ -27,6 +28,20 @@ struct OT_DownloadNymboxType {
 };
 struct OT_GetTransactionNumbersType {
 };
+
+static auto operator<(
+    const OT_DownloadNymboxType&,
+    const OT_DownloadNymboxType&) noexcept -> bool
+{
+    return false;
+}
+
+static auto operator<(
+    const OT_GetTransactionNumbersType&,
+    const OT_GetTransactionNumbersType&) noexcept -> bool
+{
+    return false;
+}
 }  // namespace opentxs
 
 namespace std
@@ -34,19 +49,19 @@ namespace std
 template <>
 struct less<opentxs::OT_DownloadNymboxType> {
     auto operator()(
-        const opentxs::OT_DownloadNymboxType&,
-        const opentxs::OT_DownloadNymboxType&) const -> bool
+        const opentxs::OT_DownloadNymboxType& lhs,
+        const opentxs::OT_DownloadNymboxType& rhs) const -> bool
     {
-        return false;
+        return lhs < rhs;
     }
 };
 template <>
 struct less<opentxs::OT_GetTransactionNumbersType> {
     auto operator()(
-        const opentxs::OT_GetTransactionNumbersType&,
-        const opentxs::OT_GetTransactionNumbersType&) const -> bool
+        const opentxs::OT_GetTransactionNumbersType& lhs,
+        const opentxs::OT_GetTransactionNumbersType& rhs) const -> bool
     {
-        return false;
+        return lhs < rhs;
     }
 };
 }  // namespace std

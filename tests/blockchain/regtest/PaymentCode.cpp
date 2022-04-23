@@ -17,10 +17,16 @@
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/common/Counter.hpp"
+#include "ottest/fixtures/common/User.hpp"
 #include "ottest/fixtures/integration/Helpers.hpp"
 #include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 #include "ottest/fixtures/rpc/Helpers.hpp"
-#include "ottest/fixtures/ui/Helpers.hpp"
+#include "ottest/fixtures/ui/AccountActivity.hpp"
+#include "ottest/fixtures/ui/AccountList.hpp"
+#include "ottest/fixtures/ui/AccountTree.hpp"
+#include "ottest/fixtures/ui/ActivityThread.hpp"
+#include "ottest/fixtures/ui/ContactList.hpp"
 
 namespace ottest
 {

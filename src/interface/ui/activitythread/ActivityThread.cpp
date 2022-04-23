@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "interface/ui/activitythread/ActivityThread.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cstdint>

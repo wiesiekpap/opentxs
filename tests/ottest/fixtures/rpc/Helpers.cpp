@@ -16,8 +16,8 @@
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
-#include "ottest/fixtures/integration/Helpers.hpp"
-#include "ottest/fixtures/ui/Helpers.hpp"
+#include "ottest/fixtures/common/Counter.hpp"
+#include "ottest/fixtures/common/User.hpp"
 
 namespace ottest
 {

@@ -42,6 +42,15 @@ auto PeerRequest(const api::Session& api) noexcept
 }
 }  // namespace opentxs::factory
 
+namespace opentxs::contract::peer
+{
+auto operator<(const OTPeerRequest& lhs, const OTPeerRequest& rhs) noexcept
+    -> bool
+{
+    return lhs->ID() > rhs->ID();
+}
+}  // namespace opentxs::contract::peer
+
 namespace opentxs::contract::peer::implementation
 {
 Request::Request(

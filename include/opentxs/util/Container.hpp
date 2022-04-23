@@ -8,8 +8,9 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
-#include <deque>          // IWYU pragma: export
-#include <forward_list>   // IWYU pragma: export
+#include <deque>         // IWYU pragma: export
+#include <forward_list>  // IWYU pragma: export
+#include <functional>
 #include <list>           // IWYU pragma: export
 #include <map>            // IWYU pragma: export
 #include <set>            // IWYU pragma: export
@@ -45,13 +46,13 @@ using ForwardList = std::pmr::forward_list<T>;
 template <typename T>
 using List = std::pmr::list<T>;
 template <typename K, typename V>
-using Map = std::pmr::map<K, V>;
+using Map = std::pmr::map<K, V, std::less<>>;
 template <typename T>
-using Multiset = std::pmr::multiset<T>;
+using Multiset = std::pmr::multiset<T, std::less<>>;
 template <typename K, typename V>
-using Multimap = std::pmr::multimap<K, V>;
+using Multimap = std::pmr::multimap<K, V, std::less<>>;
 template <typename T>
-using Set = std::pmr::set<T>;
+using Set = std::pmr::set<T, std::less<>>;
 template <typename K, typename V>
 using UnorderedMap = std::pmr::unordered_map<K, V>;
 template <typename K, typename V>
@@ -97,13 +98,13 @@ using UnallocatedForwardList = std::forward_list<T>;
 template <typename T>
 using UnallocatedList = std::list<T>;
 template <typename K, typename V>
-using UnallocatedMap = std::map<K, V>;
+using UnallocatedMap = std::map<K, V, std::less<>>;
 template <typename T>
-using UnallocatedMultiset = std::multiset<T>;
+using UnallocatedMultiset = std::multiset<T, std::less<>>;
 template <typename K, typename V>
-using UnallocatedMultimap = std::multimap<K, V>;
+using UnallocatedMultimap = std::multimap<K, V, std::less<>>;
 template <typename T>
-using UnallocatedSet = std::set<T>;
+using UnallocatedSet = std::set<T, std::less<>>;
 template <typename K, typename V>
 using UnallocatedUnorderedMap = std::unordered_map<K, V>;
 template <typename K, typename V>

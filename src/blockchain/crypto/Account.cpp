@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "blockchain/crypto/Account.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <optional>
 #include <stdexcept>
 #include <string_view>

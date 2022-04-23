@@ -17,8 +17,8 @@
 
 #include "internal/util/LogMacros.hpp"
 #include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/common/Counter.hpp"
 #include "ottest/fixtures/paymentcode/VectorsV3.hpp"
-#include "ottest/fixtures/ui/Helpers.hpp"
 
 namespace ottest
 {

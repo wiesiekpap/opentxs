@@ -12,8 +12,10 @@
 #include <utility>
 
 #include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/common/Counter.hpp"
 #include "ottest/fixtures/rpc/Helpers.hpp"
-#include "ottest/fixtures/ui/Helpers.hpp"
+#include "ottest/fixtures/ui/AccountActivity.hpp"
+#include "ottest/fixtures/ui/AccountList.hpp"
 
 namespace ottest
 {

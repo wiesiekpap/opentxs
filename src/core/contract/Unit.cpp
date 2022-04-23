@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "core/contract/Unit.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <cmath>  // IWYU pragma: keep
 #include <cstdio>
 #include <memory>

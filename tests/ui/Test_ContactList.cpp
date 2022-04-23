@@ -7,9 +7,11 @@
 #include <opentxs/opentxs.hpp>
 #include <atomic>
 #include <memory>
+#include <string_view>
 
-#include "ottest/fixtures/integration/Helpers.hpp"
-#include "ottest/fixtures/ui/Helpers.hpp"
+#include "ottest/fixtures/common/Counter.hpp"
+#include "ottest/fixtures/common/User.hpp"
+#include "ottest/fixtures/ui/ContactList.hpp"
 
 namespace ottest
 {
@@ -141,7 +143,7 @@ TEST_F(Test_ContactList, add_contact_payment_code)
     EXPECT_FALSE(id.empty());
     ASSERT_TRUE(wait_for_counter(counter_));
     EXPECT_TRUE(check_contact_list(alice_, expected));
-    EXPECT_TRUE(check_contact_list_qt(alice_, expected));
+    // TODO EXPECT_TRUE(check_contact_list_qt(alice_, expected));
 }
 
 TEST_F(Test_ContactList, shutdown)

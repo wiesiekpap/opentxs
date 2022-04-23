@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "interface/ui/accountactivity/BalanceItem.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <chrono>
 #include <memory>
 

@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                            // IWYU pragma: associated
 #include "blockchain/block/bitcoin/BlockParser.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <iterator>
 #include <limits>
 #include <stdexcept>
