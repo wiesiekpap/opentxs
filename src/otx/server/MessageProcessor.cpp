@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "otx/server/MessageProcessor.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <limits>

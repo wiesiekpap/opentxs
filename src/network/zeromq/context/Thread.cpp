@@ -30,6 +30,9 @@
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Time.hpp"
+#include "opentxs/util/Types.hpp"
+#include "util/ScopeGuard.hpp"
 
 namespace opentxs::network::zeromq::context
 {
@@ -41,6 +44,7 @@ Thread::Thread(zeromq::internal::Pool& parent) noexcept
     , gate_()
     , thread_()
     , data_(&alloc_)
+    , idle_(true)
 {
 }
 
@@ -116,6 +120,8 @@ auto Thread::Modify(SocketID socket, ModifyCallback cb) noexcept -> AsyncResult
 
 auto Thread::poll(Items& data) noexcept -> void
 {
+    auto post = ScopeGuard{[this] { idle_.store(true); }};
+
     if ((0u == data.items_.size()) || shutdown_) {
         thread_.running_ = false;
 
@@ -255,7 +261,12 @@ auto Thread::run() noexcept -> void
     Signals::Block();
 
     while (thread_.running_) {
-        data_.modify_detach([this](auto& data) { poll(data); });
+        if (auto idle = idle_.exchange(false); idle) {
+            data_.modify_detach([this](auto& data) { poll(data); });
+        } else {
+            using namespace std::literals;
+            Sleep(10us);
+        }
     }
 }
 

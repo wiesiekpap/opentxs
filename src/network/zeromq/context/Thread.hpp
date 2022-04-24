@@ -81,7 +81,7 @@ private:
         std::thread handle_{};
     };
     struct Items {
-        using ItemVector = Vector<zmq_pollitem_t>;
+        using ItemVector = Vector<::zmq_pollitem_t>;
         using DataVector = Vector<ReceiveCallback>;
 
         ItemVector items_;
@@ -105,6 +105,7 @@ private:
     Gatekeeper gate_;
     Background thread_;
     Data data_;
+    std::atomic<bool> idle_;
 
     auto join() noexcept -> void;
     auto poll(Items& data) noexcept -> void;

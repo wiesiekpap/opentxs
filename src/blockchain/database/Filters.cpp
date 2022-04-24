@@ -9,7 +9,6 @@
 
 #include <boost/container/flat_map.hpp>
 #include <boost/container/vector.hpp>
-#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <type_traits>

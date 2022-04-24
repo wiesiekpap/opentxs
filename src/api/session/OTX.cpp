@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"       // IWYU pragma: associated
 #include "api/session/OTX.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <ctime>

@@ -19,7 +19,7 @@
 
 #include "internal/api/crypto/Blockchain.hpp"
 #include "ottest/fixtures/blockchain/Activity.hpp"
-#include "ottest/fixtures/ui/Helpers.hpp"
+#include "ottest/fixtures/common/Counter.hpp"
 
 using Subchain = ot::blockchain::crypto::Subchain;
 

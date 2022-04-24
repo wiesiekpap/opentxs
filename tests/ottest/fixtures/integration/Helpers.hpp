@@ -17,6 +17,7 @@
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "internal/util/Mutex.hpp"
 #include "ottest/Basic.hpp"
+#include "ottest/fixtures/common/User.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -41,6 +42,11 @@ class Message;
 }  // namespace network
 // }  // namespace v1
 }  // namespace opentxs
+
+namespace ottest
+{
+class User;
+}  // namespace ottest
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace ottest
@@ -85,91 +91,6 @@ struct Server {
     auto Reason() const noexcept -> ot::OTPasswordPrompt;
 
     auto init(const ot::api::session::Notary& api) noexcept -> void;
-};
-
-struct User {
-    const ot::UnallocatedCString words_;
-    const ot::UnallocatedCString passphrase_;
-    const ot::UnallocatedCString name_;
-    const ot::UnallocatedCString name_lower_;
-    const ot::api::session::Client* api_;
-    bool init_;
-    ot::UnallocatedCString seed_id_;
-    std::uint32_t index_;
-    ot::Nym_p nym_;
-    ot::OTNymID nym_id_;
-    ot::UnallocatedCString payment_code_;
-
-    auto Account(const ot::UnallocatedCString& type) const noexcept
-        -> const ot::Identifier&;
-    auto Contact(const ot::UnallocatedCString& contact) const noexcept
-        -> const ot::Identifier&;
-    auto PaymentCode() const -> ot::PaymentCode;
-    auto Reason() const noexcept -> ot::OTPasswordPrompt;
-    auto SetAccount(
-        const ot::UnallocatedCString& type,
-        const ot::UnallocatedCString& id) const noexcept -> bool;
-    auto SetAccount(
-        const ot::UnallocatedCString& type,
-        const ot::Identifier& id) const noexcept -> bool;
-    auto SetContact(
-        const ot::UnallocatedCString& contact,
-        const ot::UnallocatedCString& id) const noexcept -> bool;
-    auto SetContact(
-        const ot::UnallocatedCString& contact,
-        const ot::Identifier& id) const noexcept -> bool;
-
-    auto init(
-        const ot::api::session::Client& api,
-        const ot::identity::Type type = ot::identity::Type::individual,
-        const std::uint32_t index = 0,
-        const ot::crypto::SeedStyle seed =
-            ot::crypto::SeedStyle::BIP39) noexcept -> bool;
-    auto init(
-        const ot::api::session::Client& api,
-        const Server& server,
-        const ot::identity::Type type = ot::identity::Type::individual,
-        const std::uint32_t index = 0,
-        const ot::crypto::SeedStyle seed =
-            ot::crypto::SeedStyle::BIP39) noexcept -> bool;
-    auto init_custom(
-        const ot::api::session::Client& api,
-        const Server& server,
-        const std::function<void(User&)> custom,
-        const ot::identity::Type type = ot::identity::Type::individual,
-        const std::uint32_t index = 0,
-        const ot::crypto::SeedStyle seed =
-            ot::crypto::SeedStyle::BIP39) noexcept -> void;
-    auto init_custom(
-        const ot::api::session::Client& api,
-        const std::function<void(User&)> custom,
-        const ot::identity::Type type = ot::identity::Type::individual,
-        const std::uint32_t index = 0,
-        const ot::crypto::SeedStyle seed =
-            ot::crypto::SeedStyle::BIP39) noexcept -> void;
-
-    User(
-        const ot::UnallocatedCString words,
-        const ot::UnallocatedCString name,
-        const ot::UnallocatedCString passphrase = "") noexcept;
-
-private:
-    mutable std::mutex lock_;
-    mutable ot::UnallocatedMap<ot::UnallocatedCString, ot::OTIdentifier>
-        contacts_;
-    mutable ot::UnallocatedMap<ot::UnallocatedCString, ot::OTIdentifier>
-        accounts_;
-
-    auto init_basic(
-        const ot::api::session::Client& api,
-        const ot::identity::Type type,
-        const std::uint32_t index,
-        const ot::crypto::SeedStyle seed) noexcept -> bool;
-
-    User(const User&) = delete;
-    User(User&&) = delete;
-    User& operator=(const User&) = delete;
-    User& operator=(User&&) = delete;
 };
 
 struct Callbacks {

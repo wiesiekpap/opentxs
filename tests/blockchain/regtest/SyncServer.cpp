@@ -13,7 +13,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: keep
 #include "internal/network/p2p/Factory.hpp"
 #include "ottest/fixtures/blockchain/Regtest.hpp"
-#include "ottest/fixtures/integration/Helpers.hpp"
+#include "ottest/fixtures/common/User.hpp"
 
 namespace ottest
 {

@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"       // IWYU pragma: associated
 #include "api/crypto/Seed.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <iosfwd>
 #include <memory>
 #include <sstream>

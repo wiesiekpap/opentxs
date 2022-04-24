@@ -8,7 +8,6 @@
 #include "blockchain/node/Mempool.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
-#include <algorithm>
 #include <chrono>
 #include <queue>
 #include <shared_mutex>

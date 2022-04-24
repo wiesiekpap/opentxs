@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "opentxs/identity/wot/claim/Item.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <memory>
 #include <tuple>
 #include <utility>

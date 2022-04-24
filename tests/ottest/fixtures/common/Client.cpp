@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
-#include "ottest/fixtures/integration/Helpers.hpp"
+#include "ottest/fixtures/common/User.hpp"
 
 namespace ottest
 {

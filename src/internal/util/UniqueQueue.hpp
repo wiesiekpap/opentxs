@@ -28,12 +28,7 @@ public:
         if (0 == set_.count(in)) { return; }
 
         for (auto i = queue_.cbegin(); i < queue_.cend(); ++i) {
-            /* TODO: these lines will cause a segfault in the clang-5 ast
-             *  parser.
-            const auto & [ key, value ] = *i;
-            [[maybe_unused]] const auto& notUsed = key;
-            */
-            const auto& value = std::get<1>(*i);
+            const auto& [key, value] = *i;
 
             if (value == in) {
                 set_.erase(value);
@@ -50,11 +45,7 @@ public:
         Lock lock(lock_);
 
         for (auto i = queue_.cbegin(); i < queue_.cend(); ++i) {
-            /* TODO: this line will cause a segfault in the clang-5 ast parser.
-            const auto & [ key, value ] = *i;
-            */
-            const auto& key = std::get<0>(*i);
-            const auto& value = std::get<1>(*i);
+            const auto& [key, value] = *i;
 
             if (key == in) {
                 set_.erase(value);
@@ -71,14 +62,7 @@ public:
         UnallocatedMap<T, Key> output{};
         Lock lock(lock_);
 
-        /* TODO: this line will cause a segfault in the clang-5 ast parser.
-        for (const auto & [ key, value ] : queue_) {
-        */
-        for (const auto& it : queue_) {
-            const auto& key = it.first;
-            const auto& value = it.second;
-            output.emplace(value, key);
-        }
+        for (const auto& [key, value] : queue_) { output.emplace(value, key); }
 
         return output;
     }
@@ -114,11 +98,7 @@ public:
 
         if (0 == queue_.size()) { return false; }
 
-        /* TODO: this line will cause a segfault in the clang-5 ast parser.
-        const auto & [ outKey, outValue ] = queue_.back();
-        */
-        const auto& outKey = queue_.back().first;
-        const auto& outValue = queue_.back().second;
+        const auto& [outKey, outValue] = queue_.back();
         set_.erase(outValue);
         out = outValue;
         key = outKey;

@@ -28,6 +28,7 @@
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
+#include "ottest/fixtures/common/User.hpp"
 #include "ottest/fixtures/integration/Helpers.hpp"
 #include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 #include "util/Work.hpp"

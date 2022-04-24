@@ -46,6 +46,14 @@ auto PeerReply(const api::Session& api) noexcept
 }
 }  // namespace opentxs::factory
 
+namespace opentxs::contract::peer
+{
+auto operator<(const OTPeerReply& lhs, const OTPeerReply& rhs) noexcept -> bool
+{
+    return lhs->ID() > rhs->ID();
+}
+}  // namespace opentxs::contract::peer
+
 namespace opentxs::contract::peer::implementation
 {
 Reply::Reply(

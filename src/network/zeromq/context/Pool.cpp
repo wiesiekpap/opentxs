@@ -8,7 +8,6 @@
 #include "network/zeromq/context/Pool.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>  // IWYU pragma: keep
-#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <memory>

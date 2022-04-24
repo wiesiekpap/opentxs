@@ -11,7 +11,6 @@
 
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/system/error_code.hpp>
-#include <algorithm>
 #include <chrono>
 #include <memory>
 #include <queue>

@@ -9,8 +9,9 @@
 #include <algorithm>
 #include <utility>
 
-#include "ottest/fixtures/integration/Helpers.hpp"
-#include "ottest/fixtures/ui/Helpers.hpp"
+#include "ottest/fixtures/common/User.hpp"
+#include "ottest/fixtures/ui/AccountActivity.hpp"
+#include "ottest/fixtures/ui/AccountList.hpp"
 
 namespace ottest
 {

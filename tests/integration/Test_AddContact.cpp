@@ -9,8 +9,10 @@
 #include <future>
 #include <utility>
 
+#include "ottest/fixtures/common/Counter.hpp"
+#include "ottest/fixtures/common/User.hpp"
 #include "ottest/fixtures/integration/Helpers.hpp"
-#include "ottest/fixtures/ui/Helpers.hpp"
+#include "ottest/fixtures/ui/ContactList.hpp"
 
 namespace ottest
 {

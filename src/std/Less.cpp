@@ -11,6 +11,8 @@
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
+#include "opentxs/core/contract/peer/PeerReply.hpp"
+#include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -74,6 +76,20 @@ auto less<opentxs::OTNymID>::operator()(
     const opentxs::OTNymID& rhs) const -> bool
 {
     return lhs.get() < rhs.get();
+}
+
+auto less<opentxs::OTPeerReply>::operator()(
+    const opentxs::OTPeerReply& lhs,
+    const opentxs::OTPeerReply& rhs) const -> bool
+{
+    return lhs < rhs;
+}
+
+auto less<opentxs::OTPeerRequest>::operator()(
+    const opentxs::OTPeerRequest& lhs,
+    const opentxs::OTPeerRequest& rhs) const -> bool
+{
+    return lhs < rhs;
 }
 
 auto less<opentxs::OTUnitID>::operator()(

@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "otx/common/OTStorage.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <cstdio>
 #include <fstream>
 #include <sstream>  // IWYU pragma: keep

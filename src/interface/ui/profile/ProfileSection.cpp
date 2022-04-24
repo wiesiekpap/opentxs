@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "interface/ui/profile/ProfileSection.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <memory>
 #include <stdexcept>
 #include <string_view>

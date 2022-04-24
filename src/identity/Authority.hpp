@@ -209,14 +209,17 @@ private:
     using ContactCredentialMap = UnallocatedMap<
         OTIdentifier,
         std::unique_ptr<credential::internal::Contact>>;
-    using KeyCredentialMap = std::
-        map<OTIdentifier, std::unique_ptr<credential::internal::Secondary>>;
+    using KeyCredentialMap = UnallocatedMap<
+        OTIdentifier,
+        std::unique_ptr<credential::internal::Secondary>>;
     using KeyCredentialItem = std::
         pair<OTIdentifier, std::unique_ptr<credential::internal::Secondary>>;
-    using VerificationCredentialMap = std::
-        map<OTIdentifier, std::unique_ptr<credential::internal::Verification>>;
-    using mapOfCredentials = std::
-        map<UnallocatedCString, std::unique_ptr<credential::internal::Base>>;
+    using VerificationCredentialMap = UnallocatedMap<
+        OTIdentifier,
+        std::unique_ptr<credential::internal::Verification>>;
+    using mapOfCredentials = UnallocatedMap<
+        UnallocatedCString,
+        std::unique_ptr<credential::internal::Base>>;
 
     static const VersionConversionMap authority_to_contact_;
     static const VersionConversionMap authority_to_primary_;

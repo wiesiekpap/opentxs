@@ -7,6 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <functional>
+
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/util/Container.hpp"
@@ -47,6 +49,22 @@ using OTPeerReply = SharedPimpl<contract::peer::Reply>;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
+
+namespace std
+{
+template <>
+struct OPENTXS_EXPORT less<opentxs::OTPeerReply> {
+    auto operator()(
+        const opentxs::OTPeerReply& lhs,
+        const opentxs::OTPeerReply& rhs) const -> bool;
+};
+}  // namespace std
+
+namespace opentxs::contract::peer
+{
+OPENTXS_EXPORT auto operator<(const OTPeerReply&, const OTPeerReply&) noexcept
+    -> bool;
+}  // namespace opentxs::contract::peer
 
 namespace opentxs::contract::peer
 {

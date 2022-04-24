@@ -8,7 +8,6 @@
 #include "blockchain/bitcoin/NumericHash.hpp"  // IWYU pragma: associated
 
 #include <boost/endian/buffers.hpp>
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <iterator>

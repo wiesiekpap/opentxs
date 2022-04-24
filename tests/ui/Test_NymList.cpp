@@ -9,7 +9,8 @@
 #include <memory>
 #include <utility>
 
-#include "ottest/fixtures/ui/Helpers.hpp"
+#include "ottest/fixtures/common/Counter.hpp"
+#include "ottest/fixtures/ui/NymList.hpp"
 
 namespace ottest
 {

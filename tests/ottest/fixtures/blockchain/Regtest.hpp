@@ -26,7 +26,6 @@
 
 #include "ottest/Basic.hpp"
 #include "ottest/fixtures/integration/Helpers.hpp"
-#include "ottest/fixtures/ui/Helpers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -121,8 +120,8 @@ constexpr auto sync_server_update_public_{
 constexpr auto coinbase_fun_{"The Industrial Revolution and its consequences "
                              "have been a disaster for the human race."};
 
+class User;
 struct Server;
-struct User;
 
 class BlockchainStartup
 {
