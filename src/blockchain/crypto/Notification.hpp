@@ -127,6 +127,7 @@ private:
     {
         return false;
     }
+    auto init() noexcept -> void final;
     auto save(const rLock&) const noexcept -> bool final { return false; }
 
     auto mutable_element(

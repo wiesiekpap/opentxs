@@ -14,6 +14,7 @@ if(OT_BLOCKCHAIN_EXPORT)
   add_subdirectory(wallet)
 endif()
 
+target_sources(opentxs-common PRIVATE "Genesis.cpp")
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/SendResult.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/Types.hpp"

@@ -45,42 +45,6 @@ auto HeaderOracle(
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::blockchain::node
-{
-auto HeaderOracle::GenesisBlockHash(const blockchain::Type type)
-    -> const block::Hash&
-{
-    static std::mutex lock_{};
-    static auto cache = UnallocatedMap<blockchain::Type, block::Hash>{};
-
-    try {
-        auto lock = Lock{lock_};
-        {
-            auto it = cache.find(type);
-
-            if (cache.end() != it) { return it->second; }
-        }
-
-        const auto& data = params::Chains().at(type);
-        const auto [it, added] = cache.emplace(type, [&] {
-            auto out = block::Hash();
-            const auto rc = out.DecodeHex(data.genesis_hash_hex_);
-
-            OT_ASSERT(rc);
-
-            return out;
-        }());
-
-        return it->second;
-    } catch (...) {
-        LogError()("opentxs::factory::")(__func__)(": Genesis hash not found")
-            .Flush();
-
-        throw;
-    }
-}
-}  // namespace opentxs::blockchain::node
-
 namespace opentxs::blockchain::node::implementation
 {
 HeaderOracle::HeaderOracle(
