@@ -8,6 +8,7 @@
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <atomic>
 #include <exception>
+#include <optional>
 
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
@@ -79,6 +80,8 @@ public:
 protected:
     const SubchainStateData& parent_;
 
+    auto last_reorg() const noexcept -> std::optional<StateSequence>;
+
     virtual auto work() noexcept -> bool;
 
     Job(const Log& logger,
@@ -120,7 +123,8 @@ private:
     virtual auto do_startup() noexcept -> void = 0;
     virtual auto process_block(block::Hash&& block) noexcept -> void;
     virtual auto process_key(Message&& in) noexcept -> void;
-    virtual auto process_filter(block::Position&& tip) noexcept -> void;
+    virtual auto process_filter(Message&& in, block::Position&& tip) noexcept
+        -> void;
     virtual auto process_mempool(Message&& in) noexcept -> void;
     virtual auto process_process(block::Position&& position) noexcept -> void;
     virtual auto process_reprocess(Message&& msg) noexcept -> void;

@@ -27,12 +27,14 @@
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
@@ -52,10 +54,7 @@ Rescan::Imp::Imp(
           batch,
           JobType::rescan,
           alloc,
-          {
-              {CString{parent->api_.Endpoints().BlockchainNewFilter()},
-               Direction::Connect},
-          },
+          {},
           {
               {parent->to_rescan_endpoint_, Direction::Bind},
           },
@@ -262,8 +261,31 @@ auto Rescan::Imp::process_dirty(const Set<block::Position>& dirty) noexcept
     }
 }
 
-auto Rescan::Imp::process_filter(block::Position&& tip) noexcept -> void
+auto Rescan::Imp::process_filter(Message&& in, block::Position&& tip) noexcept
+    -> void
 {
+    if (const auto last = last_reorg(); last.has_value()) {
+        const auto body = in.Body();
+
+        if (5u >= body.size()) {
+            log_(OT_PRETTY_CLASS())(name_)(" ignoring stale filter tip ")(
+                opentxs::print(tip))
+                .Flush();
+
+            return;
+        }
+
+        const auto incoming = body.at(5).as<StateSequence>();
+
+        if (incoming < last.value()) {
+            log_(OT_PRETTY_CLASS())(name_)(" ignoring stale filter tip ")(
+                opentxs::print(tip))
+                .Flush();
+
+            return;
+        }
+    }
+
     log_(OT_PRETTY_CLASS())(name_)(" filter tip updated to ")(
         opentxs::print(tip))
         .Flush();

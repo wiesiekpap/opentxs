@@ -95,6 +95,12 @@ auto Index::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
     // NOTE no action required
 }
 
+auto Index::Imp::process_filter(Message&& in, block::Position&&) noexcept
+    -> void
+{
+    to_rescan_.Send(std::move(in));
+}
+
 auto Index::Imp::process_key(Message&& in) noexcept -> void
 {
     const auto body = in.Body();

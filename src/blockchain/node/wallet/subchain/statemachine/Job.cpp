@@ -184,6 +184,17 @@ auto Job::ChangeState(const State state, StateSequence reorg) noexcept -> bool
 
 auto Job::do_shutdown() noexcept -> void {}
 
+auto Job::last_reorg() const noexcept -> std::optional<StateSequence>
+{
+    if (0u == reorgs_.size()) {
+
+        return std::nullopt;
+    } else {
+
+        return *reorgs_.crbegin();
+    }
+}
+
 auto Job::pipeline(const Work work, Message&& msg) noexcept -> void
 {
     switch (state_) {
@@ -238,11 +249,12 @@ auto Job::process_filter(Message&& in) noexcept -> void
 
     if (type != parent_.node_.FilterOracleInternal().DefaultType()) { return; }
 
-    process_filter(
-        block::Position{body.at(3).as<block::Height>(), body.at(4).Bytes()});
+    auto position =
+        block::Position{body.at(3).as<block::Height>(), body.at(4).Bytes()};
+    process_filter(std::move(in), std::move(position));
 }
 
-auto Job::process_filter(block::Position&& tip) noexcept -> void
+auto Job::process_filter(Message&&, block::Position&&) noexcept -> void
 {
     LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type").Flush();
 
