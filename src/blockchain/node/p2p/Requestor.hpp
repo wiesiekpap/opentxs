@@ -91,6 +91,7 @@ private:
     enum class State { init, sync, run };
 
     static constexpr std::size_t limit_{32_MiB};
+    static constexpr auto init_timeout_{5s};
     static constexpr auto request_timeout_{45s};
     static constexpr auto remote_position_timeout_{2 * 60s};
     static constexpr auto heartbeat_timeout_{5 * 60s};
@@ -99,6 +100,7 @@ private:
     const Type chain_;
     network::zeromq::socket::Raw& to_parent_;
     State state_;
+    Timer init_timer_;
     Timer request_timer_;
     Timer heartbeat_timer_;
     Time last_remote_position_;
@@ -125,7 +127,7 @@ private:
     auto do_common() noexcept -> void;
     auto do_init() noexcept -> void;
     auto do_shutdown() noexcept -> void;
-    auto do_startup() noexcept -> void { do_work(); }
+    auto do_startup() noexcept -> void;
     auto do_run() noexcept -> void;
     auto do_sync() noexcept -> void;
     auto have_pending_request() noexcept -> bool;
@@ -139,6 +141,7 @@ private:
     auto register_chain() noexcept -> void;
     auto request(const block::Position& position) noexcept -> void;
     auto reset_heartbeat_timer(std::chrono::seconds interval) noexcept -> void;
+    auto reset_init_timer(std::chrono::seconds interval) noexcept -> void;
     auto reset_request_timer(std::chrono::seconds interval) noexcept -> void;
     auto reset_timer(
         const std::chrono::seconds& interval,

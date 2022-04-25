@@ -94,6 +94,7 @@ Requestor::Imp::Imp(
     , chain_(chain)
     , to_parent_(pipeline_.Internal().ExtraSocket(0))
     , state_(State::init)
+    , init_timer_(api_.Network().Asio().Internal().GetTimer())
     , request_timer_(api_.Network().Asio().Internal().GetTimer())
     , heartbeat_timer_(api_.Network().Asio().Internal().GetTimer())
     , last_remote_position_()
@@ -191,8 +192,15 @@ auto Requestor::Imp::do_run() noexcept -> void
 
 auto Requestor::Imp::do_shutdown() noexcept -> void
 {
+    init_timer_.Cancel();
     request_timer_.Cancel();
     heartbeat_timer_.Cancel();
+}
+
+auto Requestor::Imp::do_startup() noexcept -> void
+{
+    do_work();
+    reset_init_timer(init_timeout_);
 }
 
 auto Requestor::Imp::do_sync() noexcept -> void
@@ -385,6 +393,12 @@ auto Requestor::Imp::reset_heartbeat_timer(
     reset_timer(interval, heartbeat_timer_);
 }
 
+auto Requestor::Imp::reset_init_timer(std::chrono::seconds interval) noexcept
+    -> void
+{
+    reset_timer(interval, init_timer_);
+}
+
 auto Requestor::Imp::reset_request_timer(std::chrono::seconds interval) noexcept
     -> void
 {
@@ -427,6 +441,7 @@ auto Requestor::Imp::state_init(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::StateMachine: {
             do_work();
+            reset_init_timer(init_timeout_);
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())(print(chain_))(
@@ -543,6 +558,7 @@ auto Requestor::Imp::transition_state_run() noexcept -> void
 
 auto Requestor::Imp::transition_state_sync() noexcept -> void
 {
+    init_timer_.Cancel();
     request_timer_.Cancel();
     begin_sync_ = Clock::now();
     state_ = State::sync;
