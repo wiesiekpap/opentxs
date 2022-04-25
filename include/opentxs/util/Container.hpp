@@ -72,13 +72,13 @@ using ForwardList = std::experimental::pmr::forward_list<T>;
 template <typename T>
 using List = std::experimental::pmr::list<T>;
 template <typename K, typename V>
-using Map = std::experimental::pmr::map<K, V>;
+using Map = std::experimental::pmr::map<K, V, std::less<>>;
 template <typename T>
-using Multiset = std::experimental::pmr::multiset<T>;
+using Multiset = std::experimental::pmr::multiset<T, std::less<>>;
 template <typename K, typename V>
-using Multimap = std::experimental::pmr::multimap<K, V>;
+using Multimap = std::experimental::pmr::multimap<K, V, std::less<>>;
 template <typename T>
-using Set = std::experimental::pmr::set<T>;
+using Set = std::experimental::pmr::set<T, std::less<>>;
 template <typename K, typename V>
 using UnorderedMap = std::experimental::pmr::unordered_map<K, V>;
 template <typename K, typename V>
