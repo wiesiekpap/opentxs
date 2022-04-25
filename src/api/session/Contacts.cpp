@@ -89,7 +89,13 @@ Contacts::Contacts(const api::session::Client& api)
     }())
     , publisher_(api_.Network().ZeroMQ().PublishSocket())
     , pipeline_(api_.Network().ZeroMQ().Internal().Pipeline(
-          [this](auto&& in) { pipeline(std::move(in)); }))
+          [this](auto&& in) { pipeline(std::move(in)); },
+          {{CString{api_.Endpoints().NymCreated()},
+            opentxs::network::zeromq::socket::Direction::Connect},
+           {CString{api_.Endpoints().NymDownload()},
+            opentxs::network::zeromq::socket::Direction::Connect},
+           {CString{api_.Endpoints().Shutdown()},
+            opentxs::network::zeromq::socket::Direction::Connect}}))
     , timer_(api_.Network().Asio().Internal().GetTimer())
 {
     // WARNING: do not access api_.Wallet() during construction
@@ -101,9 +107,6 @@ Contacts::Contacts(const api::session::Client& api)
 
     LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(pipeline_.BatchID())
         .Flush();
-    pipeline_.SubscribeTo(api_.Endpoints().NymCreated());
-    pipeline_.SubscribeTo(api_.Endpoints().NymDownload());
-    pipeline_.SubscribeTo(api_.Endpoints().Shutdown());
 }
 
 auto Contacts::add_contact(const rLock& lock, opentxs::Contact* contact) const
