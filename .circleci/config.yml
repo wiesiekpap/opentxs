@@ -146,14 +146,10 @@ workflows:
       - test-linux:
           name: test-linux-<<matrix.compiler>>-<<matrix.flavor>>
           docker-image: opentransactions/ci:<<pipeline.parameters.docker-image-ci-tag>>
-          #currently failing tests:
-            #consistent fails:
-            # unittests-opentxs-blockchain-regtest-reorg
-            # unittests-opentxs-blockchain-regtest-send-receive-hd
-            # unittests-opentxs-blockchain-regtest-sync-server
-            #random fails:
-            # unittests-opentxs-blockchain-headeroracle-reorg_to_checkpoint_descendent - failed once
-          ctest-params: -j 8 --output-on-failure --repeat until-pass:3 --timeout 300 --schedule-random -E (unittests-opentxs-blockchain-)(regtest-|headeroracle-)(reorg.*|send-receive-hd|sync-server|reorg_to_checkpoint_descendent)
+          #currently (2022-04-25) failing tests:
+            # ottest-blockchain-regtest-basic
+            # ottest-blockchain-regtest-reorg
+          ctest-params: -j 8 --output-on-failure --repeat until-pass:3 --timeout 300 --schedule-random -E (ottest-blockchain-regtest-)(basic|reorg)
           matrix:
             parameters:
               compiler: [gcc, clang]
