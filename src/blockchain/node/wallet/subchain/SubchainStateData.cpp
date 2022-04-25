@@ -140,7 +140,7 @@ class SubchainStateData::PrehashData
 public:
     const std::size_t job_count_;
 
-    auto operator()(std::size_t job) noexcept -> void
+    auto operator()(const std::size_t job) noexcept -> void
     {
         const auto end = targets_.size();
 
@@ -154,8 +154,7 @@ public:
         const Log& log,
         const Vector<GCS>& cfilters,
         std::atomic_bool& atLeastOnce,
-        std::size_t i,
-        block::Height height,
+        const std::size_t job,
         wallet::MatchCache::Results& results,
         MatchResults& data) noexcept -> void
     {
@@ -164,12 +163,13 @@ public:
         auto cache = std::make_shared<AsyncResults>(std::make_tuple(
             Positions{alloc}, Positions{alloc}, FilterMap{alloc}));
 
-        for (; i < end; i += job_count_, ++height) {
+        for (auto i = job; i < end; i += job_count_) {
             atLeastOnce.store(true);
             const auto& cfilter = cfilters.at(i);
             const auto& selected = targets_.at(i);
             const auto& data = data_.at(i);
-            const auto position = block::Position{height, selected.first};
+            const auto position =
+                block::Position{std::get<0>(data), selected.first};
             auto& result = results.at(position);
             match(
                 procedure,
@@ -203,6 +203,8 @@ public:
         const api::Session& api,
         const BlockTargets& targets,
         const std::string_view name,
+        wallet::MatchCache::Results& results,
+        block::Height start,
         std::size_t jobs,
         allocator_type alloc) noexcept
         : job_count_(jobs)
@@ -217,7 +219,7 @@ public:
 
         for (const auto& [block, elements] : targets) {
             const auto& [e20, e32, e33, e64, e65, eTxo] = elements;
-            auto& [data20, data32, data33, data64, data65, dataTxo] =
+            auto& [height, data20, data32, data33, data64, data65, dataTxo] =
                 data_.emplace_back();
             data20.first.reserve(e20.first.size());
             data32.first.reserve(e32.first.size());
@@ -225,6 +227,8 @@ public:
             data64.first.reserve(e64.first.size());
             data65.first.reserve(e65.first.size());
             dataTxo.first.reserve(eTxo.first.size());
+            height = start++;
+            results[block::Position{height, block}];
         }
 
         OT_ASSERT(targets_.size() == data_.size());
@@ -238,6 +242,7 @@ private:
     using ElementData = std::pair<Hashes, ElementHashMap>;
     using TxoData = std::pair<Hashes, TxoHashMap>;
     using BlockData = std::tuple<
+        block::Height,
         ElementData,  // 20 byte
         ElementData,  // 32 byte
         ElementData,  // 33 byte
@@ -255,7 +260,7 @@ private:
     {
         const auto& [block, elements] = target;
         const auto& [e20, e32, e33, e64, e65, eTxo] = elements;
-        auto& [data20, data32, data33, data64, data65, dataTxo] = row;
+        auto& [height, data20, data32, data33, data64, data65, dataTxo] = row;
         hash(block, e20, data20);
         hash(block, e32, data32);
         hash(block, e33, data33);
@@ -349,7 +354,7 @@ private:
             output.second += selected.first.size();
         };
         const auto& selected = targets.second;
-        const auto& [p20, p32, p33, p64, p65, pTxo] = prehashed;
+        const auto& [height, p20, p32, p33, p64, p65, pTxo] = prehashed;
         const auto& [s20, s32, s33, s64, s65, sTxo] = selected;
         auto output = std::pair<std::size_t, std::size_t>{};
         GetResults(
@@ -1139,7 +1144,7 @@ auto SubchainStateData::scan(
             // limiting the batch size to a reasonable value based on the
             // average cfilter element count (estimated) and match set for this
             // subchain (known).
-            const auto threads = choose_thread_count(rescan);
+            const auto threads = choose_thread_count(elementCount);
             const auto scanBatch =
                 GetBatchSize(elementsPerFilter, elementCount) * threads;
             log(OT_PRETTY_CLASS())(name)(" filter size: ")(
@@ -1178,10 +1183,13 @@ auto SubchainStateData::scan(
 
             auto selected = BlockTargets{get_allocator()};
             select_targets(*handle, blocks, elements, startHeight, selected);
+            auto results = wallet::MatchCache::Results{get_allocator()};
             auto prehash = PrehashData{
                 api_,
                 selected,
                 name_,
+                results,
+                startHeight,
                 std::min(threads, selected.size()),
                 get_allocator()};
 
@@ -1192,7 +1200,7 @@ auto SubchainStateData::scan(
                     tp = api_.Network().Asio().Internal().Post(
                         ThreadPool::General,
                         [post = std::make_shared<ScopeGuard>(
-                             [&] { ++count; }, [&] { --count; }),
+                             [&count] { ++count; }, [&] { --count; }),
                          n,
                          &prehash] { prehash(n); });
 
@@ -1229,19 +1237,10 @@ auto SubchainStateData::scan(
 
             OT_ASSERT(cfilterCount <= blocks.size());
 
-            auto blankFilterSizes = Deque<std::size_t>{get_allocator()};
-            auto results = wallet::MatchCache::Results{get_allocator()};
             auto data = MatchResults{std::make_tuple(
                 Positions{get_allocator()},
                 Positions{get_allocator()},
                 FilterMap{get_allocator()})};
-            {
-                auto height{startHeight};
-
-                for (const auto& [hash, data] : selected) {
-                    results[block::Position{height++, hash}];
-                }
-            }
 
             OT_ASSERT(0u < selected.size());
 
@@ -1252,15 +1251,15 @@ auto SubchainStateData::scan(
                     tp = api_.Network().Asio().Internal().Post(
                         ThreadPool::General,
                         [&,
+                         n,
                          post = std::make_shared<ScopeGuard>(
-                             [&] { ++count; }, [&] { --count; })] {
+                             [&count] { ++count; }, [&] { --count; })] {
                             prehash(
                                 procedure,
                                 log,
                                 cfilters,
                                 atLeastOnce,
                                 n,
-                                startHeight,
                                 results,
                                 data);
                         });
@@ -1269,14 +1268,7 @@ auto SubchainStateData::scan(
                 }
             } else {
                 prehash(
-                    procedure,
-                    log,
-                    cfilters,
-                    atLeastOnce,
-                    0u,
-                    startHeight,
-                    results,
-                    data);
+                    procedure, log, cfilters, atLeastOnce, 0u, results, data);
             }
 
             {

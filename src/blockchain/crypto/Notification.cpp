@@ -18,6 +18,7 @@
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -94,16 +95,28 @@ auto Notification::calculate_id(
     return output;
 }
 
+auto Notification::init() noexcept -> void
+{
+    Subaccount::init();
+    auto handle = progress_.lock();
+    const auto& hash = node::HeaderOracle::GenesisBlockHash(chain_);
+
+    for (const auto& subchain : AllowedSubchains()) {
+        handle->emplace(subchain, block::Position{0, hash});
+    }
+}
+
 auto Notification::ScanProgress(Subchain type) const noexcept -> block::Position
 {
-    try {
+    static const auto allowed = AllowedSubchains();
 
-        return progress_.lock_shared()->at(type);
-    } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+    if (0u == allowed.count(type)) {
+        LogError()(OT_PRETTY_CLASS())("Invalid subchain ")(print(type)).Flush();
 
         return Subaccount::ScanProgress(type);
     }
+
+    return progress_.lock_shared()->at(type);
 }
 
 auto Notification::SetScanProgress(
