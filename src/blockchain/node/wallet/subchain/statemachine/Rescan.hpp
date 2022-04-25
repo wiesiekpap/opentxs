@@ -94,7 +94,8 @@ private:
     auto do_startup() noexcept -> void final;
     auto process_clean(const Set<ScanStatus>& clean) noexcept -> void;
     auto process_dirty(const Set<block::Position>& dirty) noexcept -> void;
-    auto process_filter(block::Position&& tip) noexcept -> void final;
+    auto process_filter(Message&& in, block::Position&& tip) noexcept
+        -> void final;
     auto process_update(Message&& msg) noexcept -> void final;
     auto prune() noexcept -> void;
     auto set_last_scanned(const block::Position& value) noexcept -> void;

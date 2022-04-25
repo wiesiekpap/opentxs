@@ -20,6 +20,7 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/Actor.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -77,9 +78,11 @@ private:
 
     auto caught_up() const noexcept -> bool;
     auto current() const noexcept -> const block::Position&;
+    auto tip() const noexcept -> const block::Position&;
 
     auto do_startup() noexcept -> void final;
-    auto process_filter(block::Position&& tip) noexcept -> void final;
+    auto process_filter(Message&& in, block::Position&& tip) noexcept
+        -> void final;
     auto scan(Vector<ScanStatus>& out) noexcept -> void;
     auto work() noexcept -> bool final;
 };

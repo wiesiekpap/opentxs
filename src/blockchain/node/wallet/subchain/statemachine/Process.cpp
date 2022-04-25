@@ -285,6 +285,12 @@ auto Process::Imp::process_block(block::Hash&& hash) noexcept -> void
     do_work();
 }
 
+auto Process::Imp::process_filter(Message&& in, block::Position&&) noexcept
+    -> void
+{
+    to_index_.Send(std::move(in));
+}
+
 auto Process::Imp::process_mempool(Message&& in) noexcept -> void
 {
     const auto body = in.Body();

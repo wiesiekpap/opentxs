@@ -30,10 +30,12 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
@@ -144,13 +146,39 @@ auto Scan::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
     }
 }
 
-auto Scan::Imp::process_filter(block::Position&& tip) noexcept -> void
+auto Scan::Imp::process_filter(Message&& in, block::Position&& tip) noexcept
+    -> void
 {
+    if (tip < this->tip()) {
+        log_(OT_PRETTY_CLASS())(name_)(" ignoring stale filter tip ")(
+            opentxs::print(tip))
+            .Flush();
+
+        return;
+    }
+
     log_(OT_PRETTY_CLASS())(parent_.name_)(" filter tip updated to ")(
         opentxs::print(tip))
         .Flush();
     filter_tip_ = std::move(tip);
+
+    if (auto last = last_reorg(); last.has_value()) {
+        in.AddFrame(last.value());
+    }
+
+    to_process_.Send(std::move(in));
     do_work();
+}
+
+auto Scan::Imp::tip() const noexcept -> const block::Position&
+{
+    if (filter_tip_.has_value()) {
+
+        return filter_tip_.value();
+    } else {
+
+        return parent_.null_position_;
+    }
 }
 
 auto Scan::Imp::work() noexcept -> bool
