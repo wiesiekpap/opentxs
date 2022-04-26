@@ -471,6 +471,10 @@ auto Requestor::Imp::state_run(const Work work, Message&& msg) noexcept -> void
         case Work::PushTransaction: {
             process_push_tx(std::move(msg));
         } break;
+        case Work::Register: {
+            // NOTE duplicate Register messages are possible so they should be
+            // ignored
+        } break;
         case Work::Processed: {
             process_sync_processed(std::move(msg));
         } break;
@@ -508,6 +512,10 @@ auto Requestor::Imp::state_sync(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::PushTransaction: {
             process_push_tx(std::move(msg));
+        } break;
+        case Work::Register: {
+            // NOTE duplicate Register messages are possible so they should be
+            // ignored
         } break;
         case Work::Processed: {
             process_sync_processed(std::move(msg));
