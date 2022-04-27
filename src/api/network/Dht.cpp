@@ -42,6 +42,7 @@
 #include "serialization/protobuf/Nym.pb.h"
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
+#include "util/Thread.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -149,7 +150,8 @@ Dht::Dht(
           })}
     , request_nym_socket_{zeromq.ReplySocket(
           request_nym_callback_,
-          zmq::socket::Direction::Bind)}
+          zmq::socket::Direction::Bind,
+          dhtNymThreadName)}
     , request_server_callback_{zmq::ReplyCallback::Factory(
           [=](const zmq::Message& incoming)
               -> opentxs::network::zeromq::Message {
@@ -157,7 +159,8 @@ Dht::Dht(
           })}
     , request_server_socket_{zeromq.ReplySocket(
           request_server_callback_,
-          zmq::socket::Direction::Bind)}
+          zmq::socket::Direction::Bind,
+          dhtServerThreadName)}
     , request_unit_callback_{zmq::ReplyCallback::Factory(
           [=](const zmq::Message& incoming)
               -> opentxs::network::zeromq::Message {
@@ -165,7 +168,8 @@ Dht::Dht(
           })}
     , request_unit_socket_{zeromq.ReplySocket(
           request_unit_callback_,
-          zmq::socket::Direction::Bind)}
+          zmq::socket::Direction::Bind,
+          dhtUnitThreadName)}
 {
     request_nym_socket_->Start(endpoints.DhtRequestNym().data());
     request_server_socket_->Start(endpoints.DhtRequestServer().data());

@@ -19,6 +19,9 @@ namespace ottest
 {
 using namespace std::literals::chrono_literals;
 
+constexpr std::string_view testPairSocketThreadName{"Test_PairSocket"};
+static_assert(testPairSocketThreadName.size() <= 16, "name is too long");
+
 class Test_PairSocket : public ::testing::Test
 {
 public:
@@ -123,7 +126,9 @@ TEST_F(Test_PairSocket, PairSocket_Factory2)
 TEST_F(Test_PairSocket, PairSocket_Factory3)
 {
     auto pairSocket = context_.PairSocket(
-        ot::network::zeromq::ListenCallback::Factory(), TEST_ENDPOINT);
+        ot::network::zeromq::ListenCallback::Factory(),
+        TEST_ENDPOINT,
+        testPairSocketThreadName);
 
     ASSERT_NE(nullptr, &pairSocket.get());
     ASSERT_EQ(zmq::socket::Type::Pair, pairSocket->Type());

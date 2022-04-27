@@ -41,6 +41,7 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/ScopeGuard.hpp"
+#include "util/Thread.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -405,7 +406,8 @@ auto Process::Imp::queue_process() noexcept -> bool
              post = std::make_shared<ScopeGuard>(
                  [this] { ++running_; }, [this] { --running_; }),
              pos{i->first},
-             ptr{i->second}] { do_process(pos, ptr); });
+             ptr{i->second}] { do_process(pos, ptr); },
+            processBlockThreadName);
     }
 
     return have_items();

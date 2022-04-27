@@ -31,7 +31,8 @@ namespace opentxs::factory
 auto ReplySocket(
     const network::zeromq::Context& context,
     const bool direction,
-    const network::zeromq::ReplyCallback& callback)
+    const network::zeromq::ReplyCallback& callback,
+    const std::string_view threadName)
     -> std::unique_ptr<network::zeromq::socket::Reply>
 {
     using ReturnType = network::zeromq::socket::implementation::Reply;
@@ -39,7 +40,8 @@ auto ReplySocket(
     return std::make_unique<ReturnType>(
         context,
         static_cast<network::zeromq::socket::Direction>(direction),
-        callback);
+        callback,
+        threadName);
 }
 }  // namespace opentxs::factory
 
@@ -48,8 +50,14 @@ namespace opentxs::network::zeromq::socket::implementation
 Reply::Reply(
     const zeromq::Context& context,
     const Direction direction,
-    const ReplyCallback& callback) noexcept
-    : Receiver(context, socket::Type::Reply, direction, true)
+    const ReplyCallback& callback,
+    const std::string_view threadName) noexcept
+    : Receiver(
+          context,
+          socket::Type::Reply,
+          direction,
+          true,
+          threadName.empty() ? "Reply" : adjustThreadName(threadName, "Reply"))
     , Server(this->get())
     , callback_(callback)
 {

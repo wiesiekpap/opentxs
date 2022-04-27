@@ -15,6 +15,7 @@
 #include "internal/util/Flag.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/Thread.hpp"
 
 namespace opentxs::api::imp
 {
@@ -68,6 +69,8 @@ void Periodic::Shutdown()
 
 void Periodic::thread()
 {
+    SetThisThreadsName(periodicThreadName);
+
     while (running_) {
         const auto now = Clock::now();
         Lock lock(periodic_lock_);

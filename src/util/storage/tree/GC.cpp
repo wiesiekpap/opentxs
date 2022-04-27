@@ -17,6 +17,7 @@
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/StorageRoot.pb.h"
 #include "util/ScopeGuard.hpp"
+#include "util/Thread.hpp"
 #include "util/storage/tree/Node.hpp"
 #include "util/storage/tree/Tree.hpp"
 
@@ -135,9 +136,10 @@ auto Root::GC::Run(
     const Driver& to,
     SimpleCallback cb) noexcept -> bool
 {
-    asio_.Internal().Post(ThreadPool::General, [=, driver = &to] {
-        collect_garbage(from, driver, std::move(cb));
-    });
+    asio_.Internal().Post(
+        ThreadPool::General,
+        [=, driver = &to] { collect_garbage(from, driver, std::move(cb)); },
+        storageGcThreadName);
 
     return true;
 }

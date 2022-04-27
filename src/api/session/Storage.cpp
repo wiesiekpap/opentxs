@@ -52,6 +52,7 @@
 #include "serialization/protobuf/StorageThread.pb.h"
 #include "serialization/protobuf/StorageThreadItem.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
+#include "util/Thread.hpp"
 #include "util/storage/Config.hpp"
 #include "util/storage/tree/Accounts.hpp"
 #include "util/storage/tree/Bip47Channels.hpp"
@@ -896,21 +897,28 @@ auto Storage::LocalNyms() const -> const UnallocatedSet<UnallocatedCString>
 // Applies a lambda to all public nyms in the database in a detached thread.
 void Storage::MapPublicNyms(NymLambda& cb) const
 {
-    asio_.Internal().Post(ThreadPool::General, [=] { RunMapPublicNyms(cb); });
+    asio_.Internal().Post(
+        ThreadPool::General,
+        [=] { RunMapPublicNyms(cb); },
+        storageNymsThreadName);
 }
 
 // Applies a lambda to all server contracts in the database in a detached
 // thread.
 void Storage::MapServers(ServerLambda& cb) const
 {
-    asio_.Internal().Post(ThreadPool::General, [=] { RunMapServers(cb); });
+    asio_.Internal().Post(
+        ThreadPool::General,
+        [=] { RunMapServers(cb); },
+        storageServersThreadName);
 }
 
 // Applies a lambda to all unit definitions in the database in a detached
 // thread.
 void Storage::MapUnitDefinitions(UnitLambda& cb) const
 {
-    asio_.Internal().Post(ThreadPool::General, [=] { RunMapUnits(cb); });
+    asio_.Internal().Post(
+        ThreadPool::General, [=] { RunMapUnits(cb); }, storageUnitsThreadName);
 }
 
 auto Storage::MarkTokenSpent(

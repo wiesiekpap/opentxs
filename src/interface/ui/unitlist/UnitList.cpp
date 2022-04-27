@@ -37,6 +37,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/Thread.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -65,7 +66,8 @@ UnitList::UnitList(
           [this](const auto& in) { process_blockchain_balance(in); }))
     , blockchain_balance_(api_.Network().ZeroMQ().DealerSocket(
           blockchain_balance_cb_,
-          zmq::socket::Direction::Connect))
+          zmq::socket::Direction::Connect,
+          unitListThreadName))
     , listeners_{
           {api_.Endpoints().AccountUpdate().data(),
            new MessageProcessor<UnitList>(&UnitList::process_account)}}

@@ -34,6 +34,7 @@
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/Types.hpp"
 #include "util/ScopeGuard.hpp"
+#include "util/Thread.hpp"
 
 namespace opentxs::network::zeromq::context
 {
@@ -46,10 +47,14 @@ Thread::Thread(zeromq::internal::Pool& parent) noexcept
     , thread_()
     , data_(&alloc_)
     , idle_(true)
+    , thread_name_()
 {
 }
 
-auto Thread::Add(BatchID id, StartArgs&& args) noexcept -> bool
+auto Thread::Add(
+    BatchID id,
+    StartArgs&& args,
+    const std::string_view threadName) noexcept -> bool
 {
     const auto ticket = gate_.get();
 
@@ -79,6 +84,7 @@ auto Thread::Add(BatchID id, StartArgs&& args) noexcept -> bool
             assert(guarded.items_.size() == guarded.data_.size());
         }
     });
+    thread_name_ = threadName;
     start();
 
     return true;
@@ -260,6 +266,8 @@ auto Thread::Remove(BatchID id, UnallocatedVector<socket::Raw*>&& data) noexcept
 auto Thread::run() noexcept -> void
 {
     Signals::Block();
+
+    if (!thread_name_.empty()) { SetThisThreadsName(thread_name_); }
 
     while (thread_.running_) {
         if (auto idle = idle_.exchange(false); idle) {

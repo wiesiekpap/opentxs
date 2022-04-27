@@ -23,6 +23,7 @@
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/Thread.hpp"
 
 namespace opentxs::api::network::blockchain
 {
@@ -71,7 +72,8 @@ StartupPublisher::StartupPublisher(
               {pull_.ID(),
                &pull_,
                [&cb = cb_](auto&& m) { cb.Process(std::move(m)); }},
-          }))
+          },
+          startupPublisherThreadName))
 {
     OT_ASSERT(nullptr != thread_);
 

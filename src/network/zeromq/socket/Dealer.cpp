@@ -32,7 +32,8 @@ namespace opentxs::factory
 auto DealerSocket(
     const network::zeromq::Context& context,
     const bool direction,
-    const network::zeromq::ListenCallback& callback)
+    const network::zeromq::ListenCallback& callback,
+    const std::string_view threadName)
     -> std::unique_ptr<network::zeromq::socket::Dealer>
 {
     using ReturnType = network::zeromq::socket::implementation::Dealer;
@@ -40,7 +41,8 @@ auto DealerSocket(
     return std::make_unique<ReturnType>(
         context,
         static_cast<network::zeromq::socket::Direction>(direction),
-        callback);
+        callback,
+        threadName);
 }
 }  // namespace opentxs::factory
 
@@ -49,9 +51,15 @@ namespace opentxs::network::zeromq::socket::implementation
 Dealer::Dealer(
     const zeromq::Context& context,
     const Direction direction,
-    const zeromq::ListenCallback& callback) noexcept
-    : Receiver(context, socket::Type::Dealer, direction, false)
-    , Bidirectional(context, true)
+    const zeromq::ListenCallback& callback,
+    const std::string_view threadName) noexcept
+    : Receiver(
+          context,
+          socket::Type::Dealer,
+          direction,
+          false,
+          adjustThreadName(threadName, "Dealer"))
+    , Bidirectional(context, true, adjustThreadName(threadName, "Dealer"))
     , Client(this->get())
     , callback_(callback)
 {

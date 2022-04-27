@@ -9,6 +9,8 @@
 
 #include <robin_hood.h>
 
+#include "util/Log.hpp"
+
 namespace opentxs
 {
 auto print(ThreadPriority priority) noexcept -> const char*
@@ -31,5 +33,28 @@ auto print(ThreadPriority priority) noexcept -> const char*
 
         return "error";
     }
+}
+
+auto adjustThreadName(
+    std::string_view threadName,
+    std::string&& appender) noexcept -> std::string
+{
+    if (auto found = appender.find_first_of(' '); found != std::string::npos) {
+        LogError()("Thread name appender contains illegal space: " + appender)
+            .Flush();
+    }
+
+    int diff = static_cast<int>(threadName.size() + appender.size()) -
+               MAX_THREAD_NAME_SIZE;
+    std::string name{threadName};
+    if (diff <= 0) {
+        name.append(appender);
+        return name;
+    }
+
+    if (diff >= static_cast<int>(appender.size())) return name;
+
+    name.append(appender.substr(0, appender.size() - diff));
+    return name;
 }
 }  // namespace opentxs

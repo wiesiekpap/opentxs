@@ -64,6 +64,7 @@
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/P2PBlockchainChainState.pb.h"
+#include "util/Thread.hpp"
 #include "util/Work.hpp"
 
 namespace bc = opentxs::blockchain;
@@ -89,6 +90,7 @@ Client::Imp::Imp(
             [this](auto&& in) { process_monitor(std::move(in)); }));
         out.listen_callbacks_.emplace_back(Callback::Factory(
             [this](auto&& in) { process_wallet(std::move(in)); }));
+        out.thread_name_ = P2PClientThreadName;
 
         return out;
     }())
@@ -258,7 +260,8 @@ Client::Imp::Imp(
                [id = wallet_.ID(), &cb = wallet_cb_](auto&& m) {
                    cb.Process(std::move(m));
                }},
-          }))
+          },
+          batch_.thread_name_))
 {
     OT_ASSERT(nullptr != thread_);
 

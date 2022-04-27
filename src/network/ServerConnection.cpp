@@ -63,6 +63,7 @@
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/ServerReply.pb.h"
 #include "serialization/protobuf/ServerRequest.pb.h"
+#include "util/Thread.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -145,7 +146,8 @@ ServerConnection::Imp::Imp(
           [=](const auto& in) { process_incoming(in); }))
     , registration_socket_(zmq.Context().DealerSocket(
           callback_,
-          zmq::socket::Direction::Connect))
+          zmq::socket::Direction::Connect,
+          serverConnectionRegistrationThreadName))
     , socket_(zmq.Context().RequestSocket())
     , notification_socket_(
           zmq.Context().PushSocket(zmq::socket::Direction::Connect))
@@ -197,8 +199,10 @@ auto ServerConnection::Imp::activity_timer() -> void
 auto ServerConnection::Imp::async_socket(const Lock& lock) const
     -> OTZMQDealerSocket
 {
-    auto output =
-        zmq_.Context().DealerSocket(callback_, zmq::socket::Direction::Connect);
+    auto output = zmq_.Context().DealerSocket(
+        callback_,
+        zmq::socket::Direction::Connect,
+        serverConnectionAsyncThreadName);
     set_proxy(lock, output);
     set_timeouts(lock, output);
     set_curve(lock, output);

@@ -40,7 +40,8 @@ class OPENTXS_EXPORT Handler : virtual public zeromq::socket::Reply
 public:
     static auto Factory(
         const zeromq::Context& context,
-        const Callback& callback) -> OTZMQZAPHandler;
+        const Callback& callback,
+        const std::string_view threadName = {}) -> OTZMQZAPHandler;
 
     Handler(const Handler&) = delete;
     Handler(Handler&&) = delete;

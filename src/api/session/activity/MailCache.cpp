@@ -44,6 +44,7 @@
 #include "util/ByteLiterals.hpp"
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
+#include "util/Thread.hpp"
 #include "util/Work.hpp"
 
 namespace zmq = opentxs::network::zeromq;
@@ -243,7 +244,8 @@ struct MailCache::Imp {
         fifo_.push(std::move(key));
         const auto sent = api_.Network().Asio().Internal().Post(
             ThreadPool::General,
-            [this, pTask = &task] { ProcessThreadPool(pTask); });
+            [this, pTask = &task] { ProcessThreadPool(pTask); },
+            mailCacheThreadName);
 
         OT_ASSERT(sent);
 

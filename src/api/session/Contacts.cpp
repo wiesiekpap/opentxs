@@ -60,6 +60,7 @@
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/Contact.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/Nym.pb.h"      // IWYU pragma: keep
+#include "util/Thread.hpp"
 
 namespace opentxs::factory
 {
@@ -91,6 +92,7 @@ Contacts::Contacts(const api::session::Client& api)
     , publisher_(api_.Network().ZeroMQ().PublishSocket())
     , pipeline_(api_.Network().ZeroMQ().Internal().Pipeline(
           [this](auto&& in) { pipeline(std::move(in)); },
+          contactsThreadName,
           {{CString{api_.Endpoints().NymCreated()},
             opentxs::network::zeromq::socket::Direction::Connect},
            {CString{api_.Endpoints().NymDownload()},

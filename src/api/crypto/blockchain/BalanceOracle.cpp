@@ -48,6 +48,7 @@
 #include "opentxs/util/Types.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/ScopeGuard.hpp"
+#include "util/Thread.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs::api::crypto::blockchain
@@ -86,7 +87,7 @@ BalanceOracle::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          CString{"balance oracle", alloc},
+          CString{balanceOracleThreadName, alloc},
           0ms,
           batch,
           alloc,

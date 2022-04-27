@@ -14,6 +14,7 @@
 #include "opentxs/network/zeromq/zap/Handler.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/Thread.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -74,6 +75,7 @@ private:
 
     Handler(
         const zeromq::Context& context,
-        const zap::Callback& callback) noexcept;
+        const zap::Callback& callback,
+        const std::string_view threadName = handlerThreadName) noexcept;
 };
 }  // namespace opentxs::network::zeromq::zap::implementation

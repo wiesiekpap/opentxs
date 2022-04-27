@@ -31,32 +31,40 @@ namespace opentxs::factory
 auto PairSocket(
     const network::zeromq::Context& context,
     const network::zeromq::ListenCallback& callback,
-    const bool startThread) -> std::unique_ptr<network::zeromq::socket::Pair>
+    const bool startThread,
+    const std::string_view threadName)
+    -> std::unique_ptr<network::zeromq::socket::Pair>
 {
     using ReturnType = network::zeromq::socket::implementation::Pair;
 
-    return std::make_unique<ReturnType>(context, callback, startThread);
+    return std::make_unique<ReturnType>(
+        context, callback, startThread, threadName);
 }
 
 auto PairSocket(
     const network::zeromq::ListenCallback& callback,
     const network::zeromq::socket::Pair& peer,
-    const bool startThread) -> std::unique_ptr<network::zeromq::socket::Pair>
+    const bool startThread,
+    const std::string_view threadName)
+    -> std::unique_ptr<network::zeromq::socket::Pair>
 {
     using ReturnType = network::zeromq::socket::implementation::Pair;
 
-    return std::make_unique<ReturnType>(callback, peer, startThread);
+    return std::make_unique<ReturnType>(
+        callback, peer, startThread, threadName);
 }
 
 auto PairSocket(
     const network::zeromq::Context& context,
     const network::zeromq::ListenCallback& callback,
-    const std::string_view endpoint)
+    const std::string_view endpoint,
+    const std::string_view threadName)
     -> std::unique_ptr<network::zeromq::socket::Pair>
 {
     using ReturnType = network::zeromq::socket::implementation::Pair;
 
-    return std::make_unique<ReturnType>(context, callback, endpoint);
+    return std::make_unique<ReturnType>(
+        context, callback, endpoint, threadName);
 }
 }  // namespace opentxs::factory
 
@@ -67,9 +75,15 @@ Pair::Pair(
     const zeromq::ListenCallback& callback,
     const std::string_view endpoint,
     const Direction direction,
-    const bool startThread) noexcept
-    : Receiver(context, socket::Type::Pair, direction, startThread)
-    , Bidirectional(context, true)
+    const bool startThread,
+    const std::string_view threadName) noexcept
+    : Receiver(
+          context,
+          socket::Type::Pair,
+          direction,
+          startThread,
+          adjustThreadName(threadName, "Pair"))
+    , Bidirectional(context, true, adjustThreadName(threadName, "Pair"))
     , callback_(callback)
     , endpoint_(endpoint)
 {
@@ -79,34 +93,39 @@ Pair::Pair(
 Pair::Pair(
     const zeromq::Context& context,
     const zeromq::ListenCallback& callback,
-    const bool startThread) noexcept
+    const bool startThread,
+    const std::string_view threadName) noexcept
     : Pair(
           context,
           callback,
           MakeArbitraryInproc(),
           Direction::Bind,
-          startThread)
+          startThread,
+          threadName)
 {
 }
 
 Pair::Pair(
     const zeromq::ListenCallback& callback,
     const zeromq::socket::Pair& peer,
-    const bool startThread) noexcept
+    const bool startThread,
+    const std::string_view threadName) noexcept
     : Pair(
           peer.Context(),
           callback,
           peer.Endpoint(),
           Direction::Connect,
-          startThread)
+          startThread,
+          threadName)
 {
 }
 
 Pair::Pair(
     const zeromq::Context& context,
     const zeromq::ListenCallback& callback,
-    const std::string_view endpoint) noexcept
-    : Pair(context, callback, endpoint, Direction::Connect, true)
+    const std::string_view endpoint,
+    const std::string_view threadName) noexcept
+    : Pair(context, callback, endpoint, Direction::Connect, true, threadName)
 {
 }
 

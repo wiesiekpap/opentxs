@@ -59,7 +59,10 @@ namespace opentxs::network::zeromq::context
 class Thread final : public zeromq::internal::Thread
 {
 public:
-    auto Add(BatchID id, StartArgs&& args) noexcept -> bool;
+    auto Add(
+        BatchID id,
+        StartArgs&& args,
+        const std::string_view threadName) noexcept -> bool;
     auto Alloc() noexcept -> alloc::Resource* final { return &alloc_; }
     auto ID() const noexcept -> std::thread::id final
     {
@@ -111,6 +114,7 @@ private:
     Background thread_;
     Data data_;
     std::atomic<bool> idle_;
+    CString thread_name_;
 
     auto join() noexcept -> void;
     auto poll(Items& data) noexcept -> void;

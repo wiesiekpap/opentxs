@@ -16,6 +16,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
 #include "internal/util/Signals.hpp"
+#include "util/Thread.hpp"
 
 namespace opentxs::api::network::asio
 {
@@ -78,6 +79,7 @@ private:
 
     auto run(ThreadPriority priority) noexcept -> void
     {
+        SetThisThreadsName(asioThreadStartThreadName);
         SetThisThreadsPriority(priority);
         Signals::Block();
         context_.run();

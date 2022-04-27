@@ -92,7 +92,8 @@ public:
         -> bool final;
     auto DealerSocket(
         const ListenCallback& callback,
-        const socket::Direction direction) const noexcept
+        const socket::Direction direction,
+        const std::string_view threadName = {}) const noexcept
         -> OTZMQDealerSocket final;
     auto MakeBatch(Vector<socket::Type>&& types) const noexcept
         -> internal::Handle final;
@@ -102,18 +103,26 @@ public:
         -> AsyncResult final;
     auto PairEventListener(
         const PairEventCallback& callback,
-        const int instance) const noexcept -> OTZMQSubscribeSocket final;
-    auto PairSocket(const zeromq::ListenCallback& callback) const noexcept
+        const int instance,
+        const std::string_view threadName = {}) const noexcept
+        -> OTZMQSubscribeSocket final;
+    auto PairSocket(
+        const zeromq::ListenCallback& callback,
+        const std::string_view threadName = {}) const noexcept
         -> OTZMQPairSocket final;
     auto PairSocket(
         const zeromq::ListenCallback& callback,
-        const socket::Pair& peer) const noexcept -> OTZMQPairSocket final;
+        const socket::Pair& peer,
+        const std::string_view threadName = {}) const noexcept
+        -> OTZMQPairSocket final;
     auto PairSocket(
         const zeromq::ListenCallback& callback,
-        const std::string_view endpoint) const noexcept
+        const std::string_view endpoint,
+        const std::string_view threadName = {}) const noexcept
         -> OTZMQPairSocket final;
     auto Pipeline(
         std::function<void(zeromq::Message&&)>&& callback,
+        const std::string_view threadName,
         const EndpointArgs& subscribe,
         const EndpointArgs& pull,
         const EndpointArgs& dealer,
@@ -121,31 +130,44 @@ public:
         const std::optional<BatchID>& preallocated,
         alloc::Resource* pmr) const noexcept -> zeromq::Pipeline final;
     auto PreallocateBatch() const noexcept -> BatchID final;
-    auto Proxy(socket::Socket& frontend, socket::Socket& backend) const noexcept
+    auto Proxy(
+        socket::Socket& frontend,
+        socket::Socket& backend,
+        const std::string_view threadName = {}) const noexcept
         -> OTZMQProxy final;
     auto PublishSocket() const noexcept -> OTZMQPublishSocket final;
-    auto PullSocket(const socket::Direction direction) const noexcept
+    auto PullSocket(
+        const socket::Direction direction,
+        const std::string_view threadName = {}) const noexcept
         -> OTZMQPullSocket final;
     auto PullSocket(
         const ListenCallback& callback,
-        const socket::Direction direction) const noexcept
+        const socket::Direction direction,
+        const std::string_view threadName = {}) const noexcept
         -> OTZMQPullSocket final;
     auto PushSocket(const socket::Direction direction) const noexcept
         -> OTZMQPushSocket final;
     auto RawSocket(socket::Type type) const noexcept -> socket::Raw final;
     auto ReplySocket(
         const ReplyCallback& callback,
-        const socket::Direction direction) const noexcept
+        const socket::Direction direction,
+        const std::string_view threadName = {}) const noexcept
         -> OTZMQReplySocket final;
     auto RequestSocket() const noexcept -> OTZMQRequestSocket final;
     auto RouterSocket(
         const ListenCallback& callback,
-        const socket::Direction direction) const noexcept
+        const socket::Direction direction,
+        const std::string_view threadName = {}) const noexcept
         -> OTZMQRouterSocket final;
-    auto Start(BatchID id, StartArgs&& sockets) const noexcept
+    auto Start(
+        BatchID id,
+        StartArgs&& sockets,
+        const std::string_view threadName) const noexcept
         -> internal::Thread* final;
     auto Stop(BatchID id) const noexcept -> std::future<bool> final;
-    auto SubscribeSocket(const ListenCallback& callback) const noexcept
+    auto SubscribeSocket(
+        const ListenCallback& callback,
+        const std::string_view threadName = {}) const noexcept
         -> OTZMQSubscribeSocket final;
     auto Thread(BatchID id) const noexcept -> internal::Thread* final;
     auto ThreadID(BatchID id) const noexcept -> std::thread::id final;

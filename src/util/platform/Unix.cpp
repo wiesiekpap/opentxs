@@ -14,6 +14,7 @@ extern "C" {
 #include <unistd.h>
 }
 
+#include <pthread.h>
 #include <robin_hood.h>
 #include <array>
 #include <cerrno>

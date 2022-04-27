@@ -27,19 +27,10 @@ template class opentxs::Pimpl<opentxs::network::zeromq::socket::Pull>;
 
 namespace opentxs::factory
 {
-auto PullSocket(const network::zeromq::Context& context, const bool direction)
-    -> std::unique_ptr<network::zeromq::socket::Pull>
-{
-    using ReturnType = network::zeromq::socket::implementation::Pull;
-
-    return std::make_unique<ReturnType>(
-        context, static_cast<network::zeromq::socket::Direction>(direction));
-}
-
 auto PullSocket(
     const network::zeromq::Context& context,
     const bool direction,
-    const network::zeromq::ListenCallback& callback)
+    const std::string_view threadName)
     -> std::unique_ptr<network::zeromq::socket::Pull>
 {
     using ReturnType = network::zeromq::socket::implementation::Pull;
@@ -47,7 +38,23 @@ auto PullSocket(
     return std::make_unique<ReturnType>(
         context,
         static_cast<network::zeromq::socket::Direction>(direction),
-        callback);
+        threadName);
+}
+
+auto PullSocket(
+    const network::zeromq::Context& context,
+    const bool direction,
+    const network::zeromq::ListenCallback& callback,
+    const std::string_view threadName)
+    -> std::unique_ptr<network::zeromq::socket::Pull>
+{
+    using ReturnType = network::zeromq::socket::implementation::Pull;
+
+    return std::make_unique<ReturnType>(
+        context,
+        static_cast<network::zeromq::socket::Direction>(direction),
+        callback,
+        threadName);
 }
 }  // namespace opentxs::factory
 
@@ -57,8 +64,9 @@ Pull::Pull(
     const zeromq::Context& context,
     const Direction direction,
     const zeromq::ListenCallback& callback,
-    const bool startThread) noexcept
-    : Receiver(context, socket::Type::Pull, direction, startThread)
+    const bool startThread,
+    const std::string_view threadName) noexcept
+    : Receiver(context, socket::Type::Pull, direction, startThread, threadName)
     , Server(this->get())
     , callback_(callback)
 {
@@ -68,13 +76,17 @@ Pull::Pull(
 Pull::Pull(
     const zeromq::Context& context,
     const Direction direction,
-    const zeromq::ListenCallback& callback) noexcept
-    : Pull(context, direction, callback, true)
+    const zeromq::ListenCallback& callback,
+    const std::string_view threadName) noexcept
+    : Pull(context, direction, callback, true, threadName)
 {
 }
 
-Pull::Pull(const zeromq::Context& context, const Direction direction) noexcept
-    : Pull(context, direction, ListenCallback::Factory(), false)
+Pull::Pull(
+    const zeromq::Context& context,
+    const Direction direction,
+    const std::string_view threadName) noexcept
+    : Pull(context, direction, ListenCallback::Factory(), false, threadName)
 {
 }
 

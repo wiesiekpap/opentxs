@@ -13,6 +13,7 @@
 #include <boost/json.hpp>
 #include <boost/json/src.hpp>  // IWYU pragma: keep
 #include <boost/system/error_code.hpp>
+#include <robin_hood.h>
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -31,6 +32,7 @@
 #include "api/network/asio/Acceptors.hpp"
 #include "api/network/asio/Context.hpp"
 #include "core/StateMachine.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/network/asio/HTTP.hpp"
 #include "internal/network/asio/HTTPS.hpp"
 #include "internal/network/zeromq/socket/Factory.hpp"
@@ -61,6 +63,29 @@
 #include "util/Thread.hpp"
 #include "util/Work.hpp"
 
+namespace opentxs
+{
+auto print(ThreadPool value) noexcept -> std::string_view
+{
+    using namespace std::literals;
+    using Type = opentxs::ThreadPool;
+    static const auto map =
+        robin_hood::unordered_flat_map<Type, std::string_view>{
+            {Type::General, generalThreadName},
+            {Type::Network, networkThreadName},
+            {Type::Storage, storageThreadName},
+            {Type::Blockchain, blockchainThreadName},
+        };
+
+    if (auto it = map.find(value); map.end() != it) { return it->second; }
+
+    LogError()("Unknown thread pool type: ")(static_cast<int>(value)).Flush();
+
+    return unknownThreadPoolTypeThreadName;
+}
+
+}  // namespace opentxs
+
 namespace opentxs::api::network
 {
 Asio::Imp::Imp(const zmq::Context& zmq) noexcept
@@ -72,7 +97,10 @@ Asio::Imp::Imp(const zmq::Context& zmq) noexcept
           1))
     , data_cb_(zmq::ListenCallback::Factory(
           [this](auto&& in) { data_callback(std::move(in)); }))
-    , data_socket_(zmq_.RouterSocket(data_cb_, zmq::socket::Direction::Bind))
+    , data_socket_(zmq_.RouterSocket(
+          data_cb_,
+          zmq::socket::Direction::Bind,
+          asioDataThreadName))
     , buffers_()
     , lock_()
     , io_context_(std::make_shared<asio::Context>())
@@ -244,15 +272,30 @@ auto Asio::Imp::NotificationEndpoint() const noexcept -> const char*
     return notification_endpoint_.c_str();
 }
 
-auto Asio::Imp::Post(ThreadPool type, Asio::Callback cb) noexcept -> bool
+auto Asio::Imp::Post(
+    ThreadPool type,
+    Asio::Callback cb,
+    std::string_view threadName) noexcept -> bool
 {
+    if (false == cb.operator bool()) { return false; }
+
     auto lock = sLock{lock_};
 
     if (shutdown()) { return false; }
 
     auto& pool =
         ThreadPool::Network == type ? *io_context_ : thread_pools_.at(type);
-    boost::asio::post(pool.get(), std::move(cb));
+    boost::asio::post(
+        pool.get(),
+        [action = std::move(cb),
+         name = adjust_thread_pool_thread_name(threadName, type),
+         type] {
+            SetThisThreadsName(name);
+            action();
+            SetThisThreadsName(UnallocatedCString{"asio"}
+                                   .append(print(type).substr(0, 1))
+                                   .append("_idle"));
+        });
 
     return true;
 }
@@ -657,4 +700,23 @@ auto Asio::Imp::state_machine() noexcept -> bool
 }
 
 Asio::Imp::~Imp() { Shutdown(); }
+
+auto Asio::Imp::adjust_thread_pool_thread_name(
+    std::string_view threadName,
+    ThreadPool type) noexcept -> std::string
+{
+    std::string name =
+        UnallocatedCString{"asio"}.append(print(type).substr(0, 1)).append("_");
+
+    int diff = static_cast<int>(threadName.size() + name.size()) -
+               MAX_THREAD_NAME_SIZE;
+
+    if (diff <= 0) {
+        name.append(threadName);
+        return name;
+    }
+    name.append(threadName.substr(0, diff));
+    return name;
+}
+
 }  // namespace opentxs::api::network
