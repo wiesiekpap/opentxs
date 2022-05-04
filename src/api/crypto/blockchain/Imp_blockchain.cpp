@@ -11,7 +11,6 @@
 #include <cstddef>
 #include <iosfwd>
 #include <iterator>
-#include <mutex>
 #include <sstream>
 #include <string_view>
 
@@ -397,7 +396,7 @@ auto BlockchainImp::ProcessTransaction(
     const auto txid = id.Bytes();
 
     if (auto tx = db.LoadTransaction(txid); tx) {
-        tx->Internal().MergeMetadata(chain, in.Internal());
+        tx->Internal().MergeMetadata(chain, in.Internal(), LogTrace());
 
         if (false == db.StoreTransaction(*tx)) {
             LogError()(OT_PRETTY_CLASS())(

@@ -35,6 +35,14 @@ class error_code;
 
 namespace opentxs
 {
+namespace blockchain
+{
+namespace block
+{
+class Outpoint;
+}  // namespace block
+}  // namespace blockchain
+
 namespace display
 {
 class Scale;
@@ -53,6 +61,7 @@ class Log;
 }  // namespace internal
 
 class Amount;
+class Data;
 class StringXML;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -94,11 +103,14 @@ public:
     auto operator()(const Time in) const noexcept -> const Log&;
     auto operator()(const boost::system::error_code& error) const noexcept
         -> const Log&;
+    auto operator()(const blockchain::block::Outpoint& outpoint) const noexcept
+        -> const Log&;
     template <typename T>
     auto operator()(const T& in) const noexcept -> const Log&
     {
         return this->operator()(std::to_string(in));
     }
+    auto asHex(const Data& in) const noexcept -> const Log&;
     OPENTXS_NO_EXPORT auto Internal() const noexcept -> const internal::Log&;
 
     [[noreturn]] auto Assert(

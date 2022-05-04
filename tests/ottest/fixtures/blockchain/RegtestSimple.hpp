@@ -5,11 +5,60 @@
 
 #pragma once
 
+#include <opentxs/opentxs.hpp>
+#include <chrono>
+#include <cstddef>
+#include <memory>
+#include <utility>
+
 #include "Regtest.hpp"
-#include "opentxs/blockchain/block/bitcoin/Header.hpp"
+
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs
+{
+namespace api
+{
+namespace session
+{
+class Client;
+}  // namespace session
+
+class Session;
+}  // namespace api
+
+namespace blockchain
+{
+namespace block
+{
+namespace bitcoin
+{
+class Header;
+}  // namespace bitcoin
+}  // namespace block
+
+namespace crypto
+{
+class HD;
+}  // namespace crypto
+
+namespace p2p
+{
+class Address;
+}  // namespace p2p
+}  // namespace blockchain
+
+class Options;
+}  // namespace opentxs
 
 namespace ottest
 {
+class User;
+}  // namespace ottest
+// NOLINTEND(modernize-concat-nested-namespaces)
+
+namespace ottest
+{
+class User;
 
 struct RegtestListener {
     RegtestListener(const ot::api::session::Client& client);
@@ -93,5 +142,4 @@ protected:
 
     auto GetHDAccount(const User& user) const noexcept -> const bca::HD&;
 };
-
 }  // namespace ottest

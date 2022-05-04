@@ -13,6 +13,7 @@
 #include <memory>
 #include <stdexcept>
 #include <thread>
+#include <tuple>
 
 #include "internal/network/zeromq/Handle.hpp"
 #include "internal/util/BoostPMR.hpp"

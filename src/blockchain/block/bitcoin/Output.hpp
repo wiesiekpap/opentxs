@@ -58,6 +58,8 @@ class Blockchain;
 
 class Session;
 }  // namespace api
+
+class Log;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -79,9 +81,10 @@ public:
     auto ExtractElements(const cfilter::Type style) const noexcept
         -> Vector<Vector<std::byte>> final;
     auto FindMatches(
-        const ReadView txid,
+        const Txid& txid,
         const cfilter::Type type,
-        const ParsedPatterns& patterns) const noexcept -> Matches final;
+        const ParsedPatterns& patterns,
+        const Log& log) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> UnallocatedVector<PatternID> final;
     auto Internal() const noexcept -> const internal::Output& final
     {
@@ -95,8 +98,8 @@ public:
     {
         return cache_.position();
     }
-    auto NetBalanceChange(const identifier::Nym& nym) const noexcept
-        -> opentxs::Amount final;
+    auto NetBalanceChange(const identifier::Nym& nym, const Log& log)
+        const noexcept -> opentxs::Amount final;
     auto Note() const noexcept -> UnallocatedCString final;
     auto Payee() const noexcept -> ContactID final { return cache_.payee(); }
     auto Payer() const noexcept -> ContactID final { return cache_.payer(); }
@@ -129,7 +132,8 @@ public:
         cache_.add(crypto::Key{key});
     }
     auto Internal() noexcept -> internal::Output& final { return *this; }
-    auto MergeMetadata(const internal::Output& rhs) noexcept -> bool final;
+    auto MergeMetadata(const internal::Output& rhs, const Log& log) noexcept
+        -> bool final;
     auto SetIndex(const std::uint32_t index) noexcept -> void final
     {
         const_cast<std::uint32_t&>(index_) = index;
@@ -211,7 +215,10 @@ private:
 
         auto add(crypto::Key&& key) noexcept -> void;
         auto add(node::TxoTag tag) noexcept -> void;
-        auto merge(const internal::Output& rhs) noexcept -> bool;
+        auto merge(
+            const internal::Output& rhs,
+            const std::size_t index,
+            const Log& log) noexcept -> bool;
         auto reset_size() noexcept -> void;
         auto set(const KeyData& data) noexcept -> void;
         auto set_payee(const Identifier& contact) noexcept -> void;

@@ -369,15 +369,13 @@ auto Output::ExtractElements(const cfilter::Type style) const noexcept
 }
 
 auto Output::FindMatches(
-    const ReadView txid,
+    const Txid& tx,
     const cfilter::Type type,
-    const ParsedPatterns& patterns) const noexcept -> Matches
+    const ParsedPatterns& patterns,
+    const Log& log) const noexcept -> Matches
 {
     const auto output = block::internal::SetIntersection(
-        api_, txid, patterns, ExtractElements(type));
-    LogTrace()(OT_PRETTY_CLASS())("Verified ")(output.second.size())(
-        " pattern matches")
-        .Flush();
+        api_, tx.Bytes(), patterns, ExtractElements(type));
     const auto& api = api_.Crypto().Blockchain();
     std::for_each(
         std::begin(output.second),
@@ -387,6 +385,9 @@ auto Output::FindMatches(
             const auto& [index, subchainID] = element;
             const auto& [subchain, account] = subchainID;
             auto keyid = crypto::Key{account->str(), subchain, index};
+            log(OT_PRETTY_CLASS())("output ")(index_)(" of transaction ")
+                .asHex(tx)(" matches ")(print(keyid))
+                .Flush();
 
             if (crypto::Subchain::Outgoing == subchain) {
                 auto sender = api.SenderContact(keyid);
@@ -430,13 +431,14 @@ auto Output::index_elements() noexcept -> void
     }
 }
 
-auto Output::MergeMetadata(const internal::Output& rhs) noexcept -> bool
+auto Output::MergeMetadata(const internal::Output& rhs, const Log& log) noexcept
+    -> bool
 {
-    return cache_.merge(rhs);
+    return cache_.merge(rhs, index_, log);
 }
 
-auto Output::NetBalanceChange(const identifier::Nym& nym) const noexcept
-    -> opentxs::Amount
+auto Output::NetBalanceChange(const identifier::Nym& nym, const Log& log)
+    const noexcept -> opentxs::Amount
 {
     auto done{false};
     auto output = opentxs::Amount{0};
@@ -448,6 +450,13 @@ auto Output::NetBalanceChange(const identifier::Nym& nym) const noexcept
             output = value_;
         }
     });
+
+    if (done) {
+        log(OT_PRETTY_CLASS())("output ")(index_)(" contributes ")(value_)
+            .Flush();
+    } else {
+        log(OT_PRETTY_CLASS())("output ")(index_)(" contributes 0").Flush();
+    }
 
     return output;
 }

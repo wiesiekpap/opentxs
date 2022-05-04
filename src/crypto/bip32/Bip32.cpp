@@ -9,6 +9,7 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "opentxs/crypto/Bip32.hpp"  // IWYU pragma: associated
 
+#include <cstdint>
 #include <memory>
 #include <sstream>
 #include <utility>

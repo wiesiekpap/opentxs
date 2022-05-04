@@ -16,6 +16,7 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -36,6 +37,8 @@ namespace proto
 class BlockchainTransaction;
 class BlockchainTransactionOutput;
 }  // namespace proto
+
+class Log;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -75,18 +78,19 @@ public:
     auto ExtractElements(const cfilter::Type style) const noexcept
         -> Vector<Vector<std::byte>> final;
     auto FindMatches(
-        const ReadView txid,
+        const Txid& txid,
         const cfilter::Type type,
         const Patterns& txos,
-        const ParsedPatterns& elements) const noexcept -> Matches final;
+        const ParsedPatterns& elements,
+        const Log& log) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> UnallocatedVector<PatternID> final;
     auto Internal() const noexcept -> const internal::Inputs& final
     {
         return *this;
     }
     auto Keys() const noexcept -> UnallocatedVector<crypto::Key> final;
-    auto NetBalanceChange(const identifier::Nym& nym) const noexcept
-        -> opentxs::Amount final;
+    auto NetBalanceChange(const identifier::Nym& nym, const Log& log)
+        const noexcept -> opentxs::Amount final;
     auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> final;
     auto Serialize(proto::BlockchainTransaction& destination) const noexcept
@@ -104,7 +108,8 @@ public:
     {
         return *inputs_.at(position);
     }
-    auto MergeMetadata(const internal::Inputs& rhs) noexcept -> bool final;
+    auto MergeMetadata(const internal::Inputs& rhs, const Log& log) noexcept
+        -> bool final;
     auto ReplaceScript(const std::size_t index) noexcept -> bool final;
     auto SetKeyData(const KeyData& data) noexcept -> void final;
 

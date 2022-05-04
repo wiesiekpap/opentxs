@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"    // IWYU pragma: associated
 #include "util/Options.hpp"  // IWYU pragma: associated
 
-#include <boost/cstdint.hpp>
 #include <boost/lexical_cast/bad_lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <algorithm>

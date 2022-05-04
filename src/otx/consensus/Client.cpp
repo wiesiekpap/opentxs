@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "otx/consensus/Client.hpp"  // IWYU pragma: associated
 
+#include <cstdint>
 #include <memory>
 #include <utility>
 

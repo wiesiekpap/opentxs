@@ -56,6 +56,8 @@ class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain
+
+class Log;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -111,7 +113,8 @@ public:
     auto FindMatches(
         const cfilter::Type type,
         const Patterns& outpoints,
-        const Patterns& scripts) const noexcept -> Matches final;
+        const Patterns& scripts,
+        const Log& log) const noexcept -> Matches final;
     auto Print() const noexcept -> UnallocatedCString override;
     auto Serialize(AllocateOutput bytes) const noexcept -> bool final;
     auto size() const noexcept -> std::size_t final { return index_.size(); }

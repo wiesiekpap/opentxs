@@ -125,10 +125,11 @@ auto NotificationStateData::get_index(
 auto NotificationStateData::handle_confirmed_matches(
     const block::bitcoin::Block& block,
     const block::Position& position,
-    const block::Matches& confirmed) const noexcept -> void
+    const block::Matches& confirmed,
+    const Log& log) const noexcept -> void
 {
     const auto& [utxo, general] = confirmed;
-    log_(OT_PRETTY_CLASS())(general.size())(" confirmed matches for ")(
+    log(OT_PRETTY_CLASS())(general.size())(" confirmed matches for ")(
         pc_display_)(" on ")(print(node_.Chain()))
         .Flush();
 
@@ -139,9 +140,9 @@ auto NotificationStateData::handle_confirmed_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        log_(OT_PRETTY_CLASS())(print(node_.Chain()))(" transaction ")(
-            txid->asHex())(" contains a version ")(
-            version)(" notification for ")(pc_display_)
+        log(OT_PRETTY_CLASS())(print(node_.Chain()))(" transaction ")
+            .asHex(txid)(" contains a version ")(version)(" notification for ")(
+                pc_display_)
             .Flush();
         const auto tx = block.at(txid->Bytes());
 

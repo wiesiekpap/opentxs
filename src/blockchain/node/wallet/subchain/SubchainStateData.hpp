@@ -191,7 +191,8 @@ public:
         const block::Position& position,
         const block::bitcoin::Block& block) const noexcept -> bool;
     auto ProcessTransaction(
-        const block::bitcoin::Transaction& tx) const noexcept -> void;
+        const block::bitcoin::Transaction& tx,
+        const Log& log) const noexcept -> void;
     auto ReportScan(const block::Position& pos) const noexcept -> void;
     auto Rescan(
         const block::Position best,
@@ -308,7 +309,8 @@ private:
     virtual auto handle_confirmed_matches(
         const block::bitcoin::Block& block,
         const block::Position& position,
-        const block::Matches& confirmed) const noexcept -> void = 0;
+        const block::Matches& confirmed,
+        const Log& log) const noexcept -> void = 0;
     virtual auto handle_mempool_matches(
         const block::Matches& matches,
         std::unique_ptr<const block::bitcoin::Transaction> tx) const noexcept

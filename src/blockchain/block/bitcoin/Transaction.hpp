@@ -74,6 +74,8 @@ namespace proto
 {
 class BlockchainTransactionOutput;
 }  // namespace proto
+
+class Log;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -116,7 +118,8 @@ public:
     auto FindMatches(
         const cfilter::Type type,
         const Patterns& txos,
-        const ParsedPatterns& elements) const noexcept -> Matches final;
+        const ParsedPatterns& elements,
+        const Log& log) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> UnallocatedVector<PatternID> final;
     auto GetPreimageBTC(
         const std::size_t index,
@@ -170,7 +173,8 @@ public:
     auto Internal() noexcept -> internal::Transaction& final { return *this; }
     auto MergeMetadata(
         const blockchain::Type chain,
-        const internal::Transaction& rhs) noexcept -> void final;
+        const internal::Transaction& rhs,
+        const Log& log) noexcept -> void final;
     auto Print() const noexcept -> UnallocatedCString final;
     auto SetKeyData(const KeyData& data) noexcept -> void final;
     auto SetMemo(const UnallocatedCString& memo) noexcept -> void final
@@ -216,7 +220,8 @@ private:
         auto position() const noexcept -> const block::Position&;
 
         auto add(blockchain::Type chain) noexcept -> void;
-        auto merge(const internal::Transaction& rhs) noexcept -> void;
+        auto merge(const internal::Transaction& rhs, const Log& log) noexcept
+            -> void;
         template <typename F>
         auto normalized(F cb) noexcept -> const Identifier&
         {

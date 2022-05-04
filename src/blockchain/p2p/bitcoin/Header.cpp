@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "blockchain/p2p/bitcoin/Header.hpp"  // IWYU pragma: associated
 
-#include <boost/container/flat_map.hpp>
 #include <boost/container/vector.hpp>
 #include <cstdint>
 #include <cstring>

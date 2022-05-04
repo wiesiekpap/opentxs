@@ -929,6 +929,7 @@ auto SubchainStateData::ProcessBlock(
     auto haveFilter = Time{};
     auto keyMatches = std::size_t{};
     auto txoMatches = std::size_t{};
+    const auto& log = LogTrace();
     const auto confirmed = [&] {
         const auto handle = element_cache_.lock_shared();
         const auto matches = match_cache_.lock_shared()->GetMatches(position);
@@ -954,7 +955,7 @@ auto SubchainStateData::ProcessBlock(
         keyMatches = key.size();
         txoMatches = outpoint.size();
 
-        return block.Internal().FindMatches(type, outpoint, key);
+        return block.Internal().FindMatches(type, outpoint, key, log);
     }();
     const auto haveMatches = Clock::now();
     const auto& [utxo, general] = confirmed;
@@ -968,9 +969,8 @@ auto SubchainStateData::ProcessBlock(
     OT_ASSERT(position == header.Position());
 
     const auto haveHeader = Clock::now();
-    handle_confirmed_matches(block, position, confirmed);
+    handle_confirmed_matches(block, position, confirmed, log);
     const auto handledMatches = Clock::now();
-    const auto& log = log_;
     LogConsole()(name)(" processed block ")(print(position))(" in ")(
         std::chrono::nanoseconds{Clock::now() - start})
         .Flush();
@@ -1000,7 +1000,8 @@ auto SubchainStateData::ProcessBlock(
 }
 
 auto SubchainStateData::ProcessTransaction(
-    const block::bitcoin::Transaction& tx) const noexcept -> void
+    const block::bitcoin::Transaction& tx,
+    const Log& log) const noexcept -> void
 {
     auto buf = std::array<std::byte, 4_KiB>{};
     auto upstream = alloc::StandardToBoost{get_allocator().resource()};
@@ -1022,7 +1023,8 @@ auto SubchainStateData::ProcessTransaction(
             return out;
         }();
 
-        return copy->Internal().FindMatches(filter_type_, outpoints, parsed);
+        return copy->Internal().FindMatches(
+            filter_type_, outpoints, parsed, log);
     }();
     handle_mempool_matches(matches, std::move(copy));
 }

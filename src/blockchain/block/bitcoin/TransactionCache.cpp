@@ -12,7 +12,9 @@
 #include <utility>
 
 #include "internal/blockchain/block/Block.hpp"  // IWYU pragma: keep
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 
 namespace opentxs::blockchain::block::bitcoin::implementation
@@ -80,13 +82,15 @@ auto Transaction::Cache::memo() const noexcept -> UnallocatedCString
     return memo_;
 }
 
-auto Transaction::Cache::merge(const internal::Transaction& rhs) noexcept
-    -> void
+auto Transaction::Cache::merge(
+    const internal::Transaction& rhs,
+    const Log& log) noexcept -> void
 {
     auto lock = rLock{lock_};
 
     if (auto memo = rhs.Memo(); memo_.empty() || (false == memo.empty())) {
         memo_.swap(memo);
+        log(OT_PRETTY_CLASS())("memo set to: \"")(memo_)("\"").Flush();
     }
 
     for (auto chain : rhs.Chains()) {

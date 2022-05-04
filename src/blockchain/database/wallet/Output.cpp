@@ -316,7 +316,7 @@ public:
                     "Failed to commit database transaction"};
             }
 
-            // NOTE uncomment this for detailed debugging: cache.Print(lock);
+            // NOTE uncomment this for detailed debugging: cache.Print();
             publish_balance(cache);
 
             return true;
@@ -1404,8 +1404,7 @@ private:
 
                 if (!copy.AssociatePreviousOutput(inputIndex, existing)) {
                     LogError()(OT_PRETTY_CLASS())(
-                        "Error associating pBlockMatchesrevious output to "
-                        "input")
+                        "Error associating previous output to input")
                         .Flush();
                     cache.Clear();
 
@@ -1414,8 +1413,8 @@ private:
 
                 if (change_state(
                         cache, tx, outpoint, existing, consumed, block)) {
-                    log(OT_PRETTY_CLASS())("output ")(outpoint.str())(
-                        " marked as ")(print(consumed))
+                    log(OT_PRETTY_CLASS())("previous output ")(
+                        outpoint)(" marked as ")(print(consumed))
                         .Flush();
 
                     if (node::TxoState::ConfirmedSpend == consumed) {
@@ -1433,8 +1432,9 @@ private:
                 }
             } else {
                 const auto& outpoint = input.PreviousOutput();
-                log(OT_PRETTY_CLASS())("outpoint ")(outpoint.str())(
-                    " does not belong to this subchain")
+                log(OT_PRETTY_CLASS())("previous output ")(
+                    outpoint)(" does not belong to this subchain so its spent "
+                              "status will not be saved")
                     .Flush();
             }
 
@@ -1465,9 +1465,12 @@ private:
             if (cache.Exists(outpoint)) {
                 auto& existing = cache.GetOutput(outpoint);
 
-                if (false ==
-                    change_state(
+                if (change_state(
                         cache, tx, outpoint, existing, created, block)) {
+                    log(OT_PRETTY_CLASS())("output ")(outpoint)(" marked as ")(
+                        print(created))
+                        .Flush();
+                } else {
                     LogError()(OT_PRETTY_CLASS())(
                         "Error updating created output state")
                         .Flush();
@@ -1476,14 +1479,18 @@ private:
                     return false;
                 }
             } else {
-                if (false == create_state(
-                                 cache,
-                                 tx,
-                                 isGeneration,
-                                 outpoint,
-                                 created,
-                                 block,
-                                 output)) {
+                if (create_state(
+                        cache,
+                        tx,
+                        isGeneration,
+                        outpoint,
+                        created,
+                        block,
+                        output)) {
+                    log(OT_PRETTY_CLASS())("output ")(
+                        outpoint)(" created in state ")(print(created))
+                        .Flush();
+                } else {
                     LogError()(OT_PRETTY_CLASS())(
                         "Error created new output state")
                         .Flush();

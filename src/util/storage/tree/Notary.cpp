@@ -8,6 +8,7 @@
 #include "util/storage/tree/Notary.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"

@@ -11,6 +11,7 @@
 #include <cstring>
 #include <iterator>
 #include <memory>
+#include <type_traits>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"        // IWYU pragma: keep

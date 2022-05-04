@@ -26,8 +26,10 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/display/Definition.hpp"
@@ -250,6 +252,13 @@ Log::Log(const int logLevel) noexcept
 {
 }
 
+auto Log::asHex(const Data& in) const noexcept -> const Log&
+{
+    if (false == imp_->active()) { return *this; }
+
+    return (*imp_)(in.asHex());
+}
+
 auto Log::operator()() const noexcept -> const Log& { return *this; }
 
 auto Log::operator()(char* in) const noexcept -> const Log&
@@ -437,6 +446,14 @@ auto Log::operator()(const boost::system::error_code& error) const noexcept
     -> const Log&
 {
     return imp_->operator()(error);
+}
+
+auto Log::operator()(const blockchain::block::Outpoint& outpoint) const noexcept
+    -> const Log&
+{
+    if (false == imp_->active()) { return *this; }
+
+    return imp_->operator()(outpoint.str());
 }
 
 auto Log::Assert(const char* file, const std::size_t line) const noexcept

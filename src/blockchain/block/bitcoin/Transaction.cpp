@@ -558,19 +558,13 @@ auto Transaction::ExtractElements(const cfilter::Type style) const noexcept
 auto Transaction::FindMatches(
     const cfilter::Type style,
     const Patterns& txos,
-    const ParsedPatterns& elements) const noexcept -> Matches
+    const ParsedPatterns& elements,
+    const Log& log) const noexcept -> Matches
 {
-    LogTrace()(OT_PRETTY_CLASS())("Verifying ")(
-        elements.data_.size() + txos.size())(" potential matches in ")(
-        inputs_->size())(" inputs for transaction ")(txid_->asHex())
-        .Flush();
-    auto output = inputs_->FindMatches(txid_->Bytes(), style, txos, elements);
+    log(OT_PRETTY_CLASS())("processing transaction ").asHex(ID()).Flush();
+    auto output = inputs_->FindMatches(txid_, style, txos, elements, log);
     auto& [inputs, outputs] = output;
-    LogTrace()(OT_PRETTY_CLASS())("Verifying ")(
-        elements.data_.size() + txos.size())(" potential matches in ")(
-        inputs_->size())(" output for transaction ")(txid_->asHex())
-        .Flush();
-    auto temp = outputs_->FindMatches(txid_->Bytes(), style, elements);
+    auto temp = outputs_->FindMatches(txid_, style, elements, log);
     inputs.insert(
         inputs.end(),
         std::make_move_iterator(temp.first.begin()),
@@ -653,33 +647,47 @@ auto Transaction::Memo() const noexcept -> UnallocatedCString
 
 auto Transaction::MergeMetadata(
     const blockchain::Type chain,
-    const internal::Transaction& rhs) noexcept -> void
+    const internal::Transaction& rhs,
+    const Log& log) noexcept -> void
 {
+    log(OT_PRETTY_CLASS())("merging transaction ").asHex(ID()).Flush();
+
     if (txid_ != rhs.ID()) {
         LogError()(OT_PRETTY_CLASS())("Wrong transaction").Flush();
 
         return;
     }
 
-    if (false == inputs_->MergeMetadata(rhs.Inputs().Internal())) {
+    if (false == inputs_->MergeMetadata(rhs.Inputs().Internal(), log)) {
         LogError()(OT_PRETTY_CLASS())("Failed to merge inputs").Flush();
 
         return;
     }
 
-    if (false == outputs_->MergeMetadata(rhs.Outputs().Internal())) {
+    if (false == outputs_->MergeMetadata(rhs.Outputs().Internal(), log)) {
         LogError()(OT_PRETTY_CLASS())("Failed to merge outputs").Flush();
 
         return;
     }
 
-    cache_.merge(rhs);
+    cache_.merge(rhs, log);
 }
 
 auto Transaction::NetBalanceChange(const identifier::Nym& nym) const noexcept
     -> opentxs::Amount
 {
-    return inputs_->NetBalanceChange(nym) + outputs_->NetBalanceChange(nym);
+    const auto& log = LogTrace();
+    log(OT_PRETTY_CLASS())("parsing transaction ").asHex(ID()).Flush();
+    const auto spent = inputs_->NetBalanceChange(nym, log);
+    const auto created = outputs_->NetBalanceChange(nym, log);
+    const auto total = spent + created;
+    log(OT_PRETTY_CLASS())
+        .asHex(ID())(" total input contribution is ")(
+            spent)(" and total output contribution is ")(
+            created)(" for a net balance change of ")(total)
+        .Flush();
+
+    return total;
 }
 
 auto Transaction::Print() const noexcept -> UnallocatedCString

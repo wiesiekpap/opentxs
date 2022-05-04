@@ -114,6 +114,7 @@ class BlockchainTransactionOutput;
 }  // namespace proto
 
 class Identifier;
+class Log;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -143,16 +144,20 @@ struct Input : virtual public bitcoin::Input {
     virtual auto ExtractElements(const cfilter::Type style) const noexcept
         -> Vector<Vector<std::byte>> = 0;
     virtual auto FindMatches(
-        const ReadView txid,
+        const Txid& txid,
         const cfilter::Type type,
         const Patterns& txos,
-        const ParsedPatterns& elements) const noexcept -> Matches = 0;
+        const ParsedPatterns& elements,
+        const std::size_t position,
+        const Log& log) const noexcept -> Matches = 0;
     virtual auto GetBytes(std::size_t& base, std::size_t& witness)
         const noexcept -> void = 0;
     virtual auto GetPatterns() const noexcept
         -> UnallocatedVector<PatternID> = 0;
-    virtual auto NetBalanceChange(const identifier::Nym& nym) const noexcept
-        -> opentxs::Amount = 0;
+    virtual auto NetBalanceChange(
+        const identifier::Nym& nym,
+        const std::size_t index,
+        const Log& log) const noexcept -> opentxs::Amount = 0;
     virtual auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> = 0;
     virtual auto Serialize(
@@ -172,7 +177,10 @@ struct Input : virtual public bitcoin::Input {
         -> bool = 0;
     virtual auto AssociatePreviousOutput(const Output& output) noexcept
         -> bool = 0;
-    virtual auto MergeMetadata(const Input& rhs) noexcept -> bool = 0;
+    virtual auto MergeMetadata(
+        const Input& rhs,
+        const std::size_t index,
+        const Log& log) noexcept -> bool = 0;
     virtual auto ReplaceScript() noexcept -> bool = 0;
     virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
 
@@ -189,14 +197,15 @@ struct Inputs : virtual public bitcoin::Inputs {
     virtual auto ExtractElements(const cfilter::Type style) const noexcept
         -> Vector<Vector<std::byte>> = 0;
     virtual auto FindMatches(
-        const ReadView txid,
+        const Txid& txid,
         const cfilter::Type type,
         const Patterns& txos,
-        const ParsedPatterns& elements) const noexcept -> Matches = 0;
+        const ParsedPatterns& elements,
+        const Log& log) const noexcept -> Matches = 0;
     virtual auto GetPatterns() const noexcept
         -> UnallocatedVector<PatternID> = 0;
-    virtual auto NetBalanceChange(const identifier::Nym& nym) const noexcept
-        -> opentxs::Amount = 0;
+    virtual auto NetBalanceChange(const identifier::Nym& nym, const Log& log)
+        const noexcept -> opentxs::Amount = 0;
     virtual auto Serialize(
         proto::BlockchainTransaction& destination) const noexcept -> bool = 0;
     virtual auto Serialize(const AllocateOutput destination) const noexcept
@@ -211,7 +220,8 @@ struct Inputs : virtual public bitcoin::Inputs {
     using bitcoin::Inputs::at;
     virtual auto at(const std::size_t position) noexcept(false)
         -> value_type& = 0;
-    virtual auto MergeMetadata(const Inputs& rhs) noexcept -> bool = 0;
+    virtual auto MergeMetadata(const Inputs& rhs, const Log& log) noexcept
+        -> bool = 0;
     virtual auto ReplaceScript(const std::size_t index) noexcept -> bool = 0;
     virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
 
@@ -229,16 +239,17 @@ struct Output : virtual public bitcoin::Output {
     virtual auto ExtractElements(const cfilter::Type style) const noexcept
         -> Vector<Vector<std::byte>> = 0;
     virtual auto FindMatches(
-        const ReadView txid,
+        const Txid& txid,
         const cfilter::Type type,
-        const ParsedPatterns& elements) const noexcept -> Matches = 0;
+        const ParsedPatterns& elements,
+        const Log& log) const noexcept -> Matches = 0;
     virtual auto GetPatterns() const noexcept
         -> UnallocatedVector<PatternID> = 0;
     // WARNING do not call this function if another thread has a non-const
     // reference to this object
     virtual auto MinedPosition() const noexcept -> const block::Position& = 0;
-    virtual auto NetBalanceChange(const identifier::Nym& nym) const noexcept
-        -> opentxs::Amount = 0;
+    virtual auto NetBalanceChange(const identifier::Nym& nym, const Log& log)
+        const noexcept -> opentxs::Amount = 0;
     virtual auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> = 0;
     virtual auto Serialize(SerializeType& destination) const noexcept
@@ -252,7 +263,8 @@ struct Output : virtual public bitcoin::Output {
     virtual auto AddTag(node::TxoTag tag) noexcept -> void = 0;
     virtual auto ForTestingOnlyAddKey(const crypto::Key& key) noexcept
         -> void = 0;
-    virtual auto MergeMetadata(const Output& rhs) noexcept -> bool = 0;
+    virtual auto MergeMetadata(const Output& rhs, const Log& log) noexcept
+        -> bool = 0;
     virtual auto SetIndex(const std::uint32_t index) noexcept -> void = 0;
     virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
     virtual auto SetMinedPosition(const block::Position& pos) noexcept
@@ -274,13 +286,14 @@ struct Outputs : virtual public bitcoin::Outputs {
     virtual auto ExtractElements(const cfilter::Type style) const noexcept
         -> Vector<Vector<std::byte>> = 0;
     virtual auto FindMatches(
-        const ReadView txid,
+        const Txid& txid,
         const cfilter::Type type,
-        const ParsedPatterns& elements) const noexcept -> Matches = 0;
+        const ParsedPatterns& elements,
+        const Log& log) const noexcept -> Matches = 0;
     virtual auto GetPatterns() const noexcept
         -> UnallocatedVector<PatternID> = 0;
-    virtual auto NetBalanceChange(const identifier::Nym& nym) const noexcept
-        -> opentxs::Amount = 0;
+    virtual auto NetBalanceChange(const identifier::Nym& nym, const Log& log)
+        const noexcept -> opentxs::Amount = 0;
     virtual auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> = 0;
     virtual auto Serialize(
@@ -292,7 +305,8 @@ struct Outputs : virtual public bitcoin::Outputs {
     virtual auto ForTestingOnlyAddKey(
         const std::size_t index,
         const blockchain::crypto::Key& key) noexcept -> bool = 0;
-    virtual auto MergeMetadata(const Outputs& rhs) noexcept -> bool = 0;
+    virtual auto MergeMetadata(const Outputs& rhs, const Log& log) noexcept
+        -> bool = 0;
     virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
 
     ~Outputs() override = default;
@@ -334,7 +348,8 @@ struct Transaction : virtual public bitcoin::Transaction {
     virtual auto FindMatches(
         const cfilter::Type type,
         const Patterns& txos,
-        const ParsedPatterns& elements) const noexcept -> Matches = 0;
+        const ParsedPatterns& elements,
+        const Log& log) const noexcept -> Matches = 0;
     virtual auto GetPatterns() const noexcept
         -> UnallocatedVector<PatternID> = 0;
     virtual auto ForTestingOnlyAddKey(
@@ -343,7 +358,8 @@ struct Transaction : virtual public bitcoin::Transaction {
     virtual auto IDNormalized() const noexcept -> const Identifier& = 0;
     virtual auto MergeMetadata(
         const blockchain::Type chain,
-        const Transaction& rhs) noexcept -> void = 0;
+        const Transaction& rhs,
+        const Log& log) noexcept -> void = 0;
     virtual auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> = 0;
     virtual auto Serialize() const noexcept -> std::optional<SerializeType> = 0;

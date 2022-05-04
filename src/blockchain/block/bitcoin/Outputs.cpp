@@ -136,18 +136,15 @@ auto Outputs::ExtractElements(const cfilter::Type style) const noexcept
 }
 
 auto Outputs::FindMatches(
-    const ReadView txid,
+    const Txid& txid,
     const cfilter::Type type,
-    const ParsedPatterns& patterns) const noexcept -> Matches
+    const ParsedPatterns& patterns,
+    const Log& log) const noexcept -> Matches
 {
     auto output = Matches{};
-    auto index{-1};
 
     for (const auto& txout : *this) {
-        auto temp = txout.Internal().FindMatches(txid, type, patterns);
-        LogTrace()(OT_PRETTY_CLASS())("Verified ")(temp.second.size())(
-            " matches in output ")(++index)
-            .Flush();
+        auto temp = txout.Internal().FindMatches(txid, type, patterns, log);
         output.second.insert(
             output.second.end(),
             std::make_move_iterator(temp.second.begin()),
@@ -198,7 +195,9 @@ auto Outputs::Keys() const noexcept -> UnallocatedVector<crypto::Key>
     return out;
 }
 
-auto Outputs::MergeMetadata(const internal::Outputs& rhs) noexcept -> bool
+auto Outputs::MergeMetadata(
+    const internal::Outputs& rhs,
+    const Log& log) noexcept -> bool
 {
     const auto count = size();
 
@@ -212,7 +211,7 @@ auto Outputs::MergeMetadata(const internal::Outputs& rhs) noexcept -> bool
         auto& l = *outputs_.at(i);
         auto& r = rhs.at(i).Internal();
 
-        if (false == l.MergeMetadata(r)) {
+        if (false == l.MergeMetadata(r, log)) {
             LogError()(OT_PRETTY_CLASS())("Failed to merge output ")(i).Flush();
 
             return false;
@@ -222,15 +221,15 @@ auto Outputs::MergeMetadata(const internal::Outputs& rhs) noexcept -> bool
     return true;
 }
 
-auto Outputs::NetBalanceChange(const identifier::Nym& nym) const noexcept
-    -> opentxs::Amount
+auto Outputs::NetBalanceChange(const identifier::Nym& nym, const Log& log)
+    const noexcept -> opentxs::Amount
 {
     return std::accumulate(
         std::begin(outputs_),
         std::end(outputs_),
         opentxs::Amount{0},
         [&](const auto prev, const auto& output) -> auto{
-            return prev + output->NetBalanceChange(nym);
+            return prev + output->NetBalanceChange(nym, log);
         });
 }
 

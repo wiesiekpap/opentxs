@@ -19,6 +19,7 @@
 #include <memory>
 #include <new>
 #include <numeric>  // IWYU pragma: keep
+#include <ratio>
 
 #include "blockchain/node/wallet/feeoracle/FeeOracle.hpp"
 #include "internal/api/network/Asio.hpp"

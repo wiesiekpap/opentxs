@@ -423,20 +423,22 @@ auto Block::ExtractElements(const cfilter::Type style) const noexcept
 auto Block::FindMatches(
     const cfilter::Type style,
     const Patterns& outpoints,
-    const Patterns& patterns) const noexcept -> Matches
+    const Patterns& patterns,
+    const Log& log) const noexcept -> Matches
 {
     if (0 == (outpoints.size() + patterns.size())) { return {}; }
 
-    LogTrace()(OT_PRETTY_CLASS())("Verifying ")(
-        patterns.size() + outpoints.size())(" potential matches in ")(
-        transactions_.size())(" transactions")
+    log(OT_PRETTY_CLASS())("Verifying ")(patterns.size() + outpoints.size())(
+        " potential matches in ")(transactions_.size())(
+        " transactions of block ")
+        .asHex(ID())
         .Flush();
     auto output = Matches{};
     auto& [inputs, outputs] = output;
     const auto parsed = block::ParsedPatterns{patterns};
 
     for (const auto& [txid, tx] : transactions_) {
-        auto temp = tx->Internal().FindMatches(style, outpoints, parsed);
+        auto temp = tx->Internal().FindMatches(style, outpoints, parsed, log);
         inputs.insert(
             inputs.end(),
             std::make_move_iterator(temp.first.begin()),

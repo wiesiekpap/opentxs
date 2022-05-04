@@ -31,6 +31,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -65,6 +66,8 @@ namespace proto
 class BlockchainTransactionInput;
 class BlockchainTransactionOutput;
 }  // namespace proto
+
+class Log;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -90,10 +93,12 @@ public:
     auto ExtractElements(const cfilter::Type style) const noexcept
         -> Vector<Vector<std::byte>> final;
     auto FindMatches(
-        const ReadView txid,
+        const Txid& txid,
         const cfilter::Type type,
         const Patterns& txos,
-        const ParsedPatterns& elements) const noexcept -> Matches final;
+        const ParsedPatterns& elements,
+        const std::size_t position,
+        const Log& log) const noexcept -> Matches final;
     auto GetBytes(std::size_t& base, std::size_t& witness) const noexcept
         -> void final;
     auto GetPatterns() const noexcept -> UnallocatedVector<PatternID> final;
@@ -105,11 +110,10 @@ public:
     {
         return cache_.keys();
     }
-    auto NetBalanceChange(const identifier::Nym& nym) const noexcept
-        -> opentxs::Amount final
-    {
-        return cache_.net_balance_change(nym);
-    }
+    auto NetBalanceChange(
+        const identifier::Nym& nym,
+        const std::size_t index,
+        const Log& log) const noexcept -> opentxs::Amount final;
     auto Payer() const noexcept -> OTIdentifier { return cache_.payer(); }
     auto PreviousOutput() const noexcept -> const Outpoint& final
     {
@@ -150,7 +154,10 @@ public:
     auto AssociatePreviousOutput(const internal::Output& output) noexcept
         -> bool final;
     auto Internal() noexcept -> internal::Input& final { return *this; }
-    auto MergeMetadata(const internal::Input& rhs) noexcept -> bool final;
+    auto MergeMetadata(
+        const internal::Input& rhs,
+        const std::size_t index,
+        const Log& log) noexcept -> bool final;
     auto ReplaceScript() noexcept -> bool final;
 
     Input(
@@ -170,7 +177,7 @@ public:
         UnallocatedVector<Space>&& witness,
         std::unique_ptr<const internal::Script> script,
         const VersionNumber version,
-        std::unique_ptr<const internal::Output> output,
+        std::unique_ptr<internal::Output> output,
         boost::container::flat_set<crypto::Key>&& keys) noexcept(false);
     Input(
         const api::Session& api,
@@ -180,7 +187,7 @@ public:
         UnallocatedVector<Space>&& witness,
         const ReadView coinbase,
         const VersionNumber version,
-        std::unique_ptr<const internal::Output> output,
+        std::unique_ptr<internal::Output> output,
         std::optional<std::size_t> size = {}) noexcept(false);
     Input(
         const api::Session& api,
@@ -196,7 +203,7 @@ public:
         boost::container::flat_set<PatternID>&& pubkeyHashes,
         std::optional<PatternID>&& scriptHash,
         const bool indexed,
-        std::unique_ptr<const internal::Output> output) noexcept(false);
+        std::unique_ptr<internal::Output> output) noexcept(false);
     Input(const Input&) noexcept;
     Input(
         const Input& rhs,
@@ -215,14 +222,19 @@ private:
             std::for_each(std::begin(keys_), std::end(keys_), cb);
         }
         auto keys() const noexcept -> UnallocatedVector<crypto::Key>;
-        auto net_balance_change(const identifier::Nym& nym) const noexcept
-            -> opentxs::Amount;
+        auto net_balance_change(
+            const identifier::Nym& nym,
+            const std::size_t index,
+            const Log& log) const noexcept -> opentxs::Amount;
         auto payer() const noexcept -> OTIdentifier;
         auto spends() const noexcept(false) -> const internal::Output&;
 
         auto add(crypto::Key&& key) noexcept -> void;
         auto associate(const internal::Output& in) noexcept -> bool;
-        auto merge(const internal::Input& rhs) noexcept -> bool;
+        auto merge(
+            const internal::Input& rhs,
+            const std::size_t index,
+            const Log& log) noexcept -> bool;
         auto reset_size() noexcept -> void;
         auto set(const KeyData& data) noexcept -> void;
         template <typename F>
@@ -238,46 +250,15 @@ private:
 
         Cache(
             const api::Session& api,
-            std::unique_ptr<const internal::Output>&& output,
+            std::unique_ptr<internal::Output>&& output,
             std::optional<std::size_t>&& size,
-            boost::container::flat_set<crypto::Key>&& keys) noexcept
-            : api_(api)
-            , lock_()
-            , previous_output_(std::move(output))
-            , size_(std::move(size))
-            , normalized_size_()
-            , keys_(std::move(keys))
-            , payer_(api_.Factory().Identifier())
-        {
-        }
-        Cache(const Cache& rhs) noexcept
-            : api_(rhs.api_)
-            , lock_()
-            , previous_output_()
-            , size_()
-            , normalized_size_()
-            , keys_()
-            , payer_([&] {
-                auto lock = rLock{rhs.lock_};
-
-                return rhs.payer_;
-            }())
-        {
-            auto lock = rLock{rhs.lock_};
-
-            if (rhs.previous_output_) {
-                previous_output_ = rhs.previous_output_->clone();
-            }
-
-            size_ = rhs.size_;
-            normalized_size_ = rhs.normalized_size_;
-            keys_ = rhs.keys_;
-        }
+            boost::container::flat_set<crypto::Key>&& keys) noexcept;
+        Cache(const Cache& rhs) noexcept;
 
     private:
         const api::Session& api_;
         mutable std::recursive_mutex lock_;
-        std::unique_ptr<const internal::Output> previous_output_;
+        std::unique_ptr<internal::Output> previous_output_;
         std::optional<std::size_t> size_;
         std::optional<std::size_t> normalized_size_;
         boost::container::flat_set<crypto::Key> keys_;
