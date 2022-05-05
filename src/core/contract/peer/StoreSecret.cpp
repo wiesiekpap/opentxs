@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <utility>
 
-#include "2_Factory.hpp"
+#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
 #include "internal/core/contract/peer/Peer.hpp"

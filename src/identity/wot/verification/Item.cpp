@@ -9,7 +9,7 @@
 
 #include <stdexcept>
 
-#include "2_Factory.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/identity/Nym.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"

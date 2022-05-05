@@ -12,7 +12,7 @@
 #include <string_view>
 #include <utility>
 
-#include "2_Factory.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/Settings.hpp"

@@ -10,7 +10,7 @@
 #include <memory>
 #include <stdexcept>
 
-#include "2_Factory.hpp"
+#include "internal/core/Factory.hpp"
 #include "identity/credential/Key.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/identity/CredentialRole.hpp"

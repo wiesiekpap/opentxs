@@ -10,7 +10,7 @@
 #include <memory>
 #include <stdexcept>
 
-#include "2_Factory.hpp"
+#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "identity/credential/Base.hpp"
 #include "internal/api/session/FactoryAPI.hpp"

@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "2_Factory.hpp"
+#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"

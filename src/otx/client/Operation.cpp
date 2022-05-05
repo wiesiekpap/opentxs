@@ -19,7 +19,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "2_Factory.hpp"
+#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/StateMachine.hpp"

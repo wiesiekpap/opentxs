@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <utility>
 
-#include "2_Factory.hpp"
+#include "internal/core/Factory.hpp"
 #include "Proto.tpp"
 #include "internal/api/Crypto.hpp"
 #include "internal/api/FactoryAPI.hpp"

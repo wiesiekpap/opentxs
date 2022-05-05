@@ -18,7 +18,7 @@
 #include <sstream>  // IWYU pragma: keep
 #include <stdexcept>
 
-#include "2_Factory.hpp"
+#include "internal/core/Factory.hpp"
 #include "core/String.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"

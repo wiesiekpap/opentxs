@@ -153,7 +153,6 @@ target_sources(
     "${opentxs_BINARY_DIR}/src/Version.cpp"
     "0_stdafx.hpp"
     "1_Internal.hpp"
-    "2_Factory.hpp"
     "OT.cpp"
     "Proto.cpp"
     "Proto.hpp"
