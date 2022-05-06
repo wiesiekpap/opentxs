@@ -20,6 +20,7 @@
 #include <iterator>
 #include <memory>
 #include <thread>
+#include <type_traits>
 #include <utility>
 
 #include "internal/network/zeromq/Pool.hpp"

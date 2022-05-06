@@ -8,9 +8,10 @@ if(OT_BLOCKCHAIN_EXPORT)
   add_subdirectory(pkt)
 endif()
 
-target_sources(opentxs-common PRIVATE "Hash.cpp")
+target_sources(opentxs-common PRIVATE "Hash.cpp" "Outpoint.cpp")
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Hash.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Outpoint.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Position.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Types.hpp"
 )
@@ -26,7 +27,6 @@ if(OT_BLOCKCHAIN_EXPORT)
       "Hash.cpp"
       "Header.cpp"
       "Header.hpp"
-      "Outpoint.cpp"
   )
   list(
     APPEND
@@ -34,7 +34,6 @@ if(OT_BLOCKCHAIN_EXPORT)
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Block.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Hash.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Header.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Outpoint.hpp"
   )
 endif()
 

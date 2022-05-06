@@ -105,6 +105,7 @@ class Push;
 }  // namespace network
 
 class Identifier;
+class Log;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -147,7 +148,8 @@ private:
     auto handle_confirmed_matches(
         const block::bitcoin::Block& block,
         const block::Position& position,
-        const block::Matches& confirmed) const noexcept -> void final;
+        const block::Matches& confirmed,
+        const Log& log) const noexcept -> void final;
     auto handle_mempool_matches(
         const block::Matches& matches,
         std::unique_ptr<const block::bitcoin::Transaction> tx) const noexcept

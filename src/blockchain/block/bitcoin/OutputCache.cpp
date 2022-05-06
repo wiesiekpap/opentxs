@@ -104,7 +104,10 @@ auto Output::Cache::payee() const noexcept -> OTIdentifier
     return payee_;
 }
 
-auto Output::Cache::merge(const internal::Output& rhs) noexcept -> bool
+auto Output::Cache::merge(
+    const internal::Output& rhs,
+    const std::size_t index,
+    const Log& log) noexcept -> bool
 {
     for (auto& key : rhs.Keys()) {
         const auto& [account, subchain, index] = key;
@@ -118,10 +121,16 @@ auto Output::Cache::merge(const internal::Output& rhs) noexcept -> bool
 
     if (auto p = rhs.Payer(); payer_->empty() || false == p->empty()) {
         set_payer(std::move(p));
+        log(OT_PRETTY_CLASS())("setting payer for output ")(index)(" to ")(
+            payer_)
+            .Flush();
     }
 
     if (auto p = rhs.Payee(); payee_->empty() || false == p->empty()) {
         set_payee(std::move(p));
+        log(OT_PRETTY_CLASS())("setting payee for output ")(index)(" to ")(
+            payee_)
+            .Flush();
     }
 
     mined_position_ = rhs.MinedPosition();

@@ -182,7 +182,7 @@ auto Process::Imp::do_startup() noexcept -> void
 
     for (const auto& txid : oracle.Dump()) {
         if (auto tx = oracle.Query(txid); tx) {
-            parent_.ProcessTransaction(*tx);
+            parent_.ProcessTransaction(*tx, log_);
         }
     }
 
@@ -312,7 +312,7 @@ auto Process::Imp::process_mempool(Message&& in) noexcept -> void
     }
 
     if (auto tx = parent_.mempool_oracle_.Query(txid->Bytes()); tx) {
-        parent_.ProcessTransaction(*tx);
+        parent_.ProcessTransaction(*tx, log_);
     }
 }
 

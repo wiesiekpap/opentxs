@@ -151,9 +151,9 @@ auto DeterministicStateData::get_index(
 auto DeterministicStateData::handle_confirmed_matches(
     const block::bitcoin::Block& block,
     const block::Position& position,
-    const block::Matches& confirmed) const noexcept -> void
+    const block::Matches& confirmed,
+    const Log& log) const noexcept -> void
 {
-    const auto& log = log_;
     const auto start = Clock::now();
     const auto& [utxo, general] = confirmed;
     auto transactions = WalletDatabase::BlockMatches{get_allocator()};
@@ -182,9 +182,9 @@ auto DeterministicStateData::handle_confirmed_matches(
 
     const auto buildTransactionMap = Clock::now();
     log(OT_PRETTY_CLASS())(name_)(" adding ")(transactions.size())(
-        " confirmed transaction to cache")
+        " confirmed transaction(s) to cache")
         .Flush();
-    cache_.modify([this, position, matches = std::move(transactions)](
+    cache_.modify([this, &log, position, matches = std::move(transactions)](
                       auto& data) {
         auto& [time, blockMap] = data;
 
@@ -195,8 +195,14 @@ auto DeterministicStateData::handle_confirmed_matches(
 
             for (auto& [txid, newMatchData] : matches) {
                 if (auto e = existing.find(txid); existing.end() == e) {
+                    log(OT_PRETTY_CLASS())(name_)(" adding transaction ")
+                        .asHex(txid)(" to cache")
+                        .Flush();
                     existing.emplace(std::move(txid), std::move(newMatchData));
                 } else {
+                    log(OT_PRETTY_CLASS())(name_)(" updating transaction ")
+                        .asHex(txid)(" metadata")
+                        .Flush();
                     auto& [eIndices, eTX] = e->second;
                     const auto& [nIndices, nTX] = newMatchData;
                     eIndices.insert(
@@ -206,7 +212,7 @@ auto DeterministicStateData::handle_confirmed_matches(
                     OT_ASSERT(nTX);
                     OT_ASSERT(eTX);
 
-                    eTX->Internal().MergeMetadata(chain_, nTX->Internal());
+                    eTX->Internal().MergeMetadata(chain_, nTX->Internal(), log);
                 }
             }
         }

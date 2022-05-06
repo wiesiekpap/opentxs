@@ -32,7 +32,6 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Contact.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/Unit.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
@@ -112,7 +111,7 @@ auto Activity::add_blockchain_transaction(
 {
     const auto incoming = transaction.AssociatedRemoteContacts(contact_, nym);
     LogTrace()(OT_PRETTY_CLASS())("transaction ")(transaction.ID().asHex())(
-        " is associated  with ")(incoming.size())(" contacts")
+        " is associated with ")(incoming.size())(" contacts")
         .Flush();
     const auto existing =
         api_.Storage().BlockchainThreadMap(nym, transaction.ID());

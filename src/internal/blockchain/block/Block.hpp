@@ -40,6 +40,8 @@ class Header;
 class Outpoint;
 }  // namespace block
 }  // namespace blockchain
+
+class Log;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -77,7 +79,8 @@ struct Block : virtual public block::Block {
     virtual auto FindMatches(
         const cfilter::Type type,
         const Patterns& txos,
-        const Patterns& elements) const noexcept -> Matches = 0;
+        const Patterns& elements,
+        const Log& log) const noexcept -> Matches = 0;
 
     ~Block() override = default;
 };

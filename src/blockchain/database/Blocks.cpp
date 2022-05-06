@@ -9,7 +9,6 @@
 
 #include <cstddef>
 #include <memory>
-#include <utility>
 
 #include "blockchain/database/common/Database.hpp"
 #include "internal/blockchain/Blockchain.hpp"

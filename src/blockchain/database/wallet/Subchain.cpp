@@ -12,6 +12,7 @@
 #include <future>
 #include <shared_mutex>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "blockchain/database/wallet/SubchainCache.hpp"

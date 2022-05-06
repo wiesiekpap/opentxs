@@ -3,35 +3,23 @@
 // // License, v. 2.0. If a copy of the MPL was not distributed with this
 // // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "RegtestSimple.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/network/Blockchain.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/blockchain/crypto/Account.hpp"
-#include "opentxs/blockchain/crypto/Element.hpp"
-#include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/blockchain/crypto/HD.hpp"
-#include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/api/crypto/Seed.hpp"
-#include "opentxs/api/session/UI.hpp"
-#include "opentxs/blockchain/crypto/AddressStyle.hpp"
-#include "opentxs/api/session/Endpoints.hpp"
-#include "opentxs/crypto/Language.hpp"
-#include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/interface/ui/AccountActivity.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/blockchain/crypto/HDProtocol.hpp"
-#include "opentxs/util/Log.hpp"
+#include "ottest/fixtures/blockchain/RegtestSimple.hpp"  // IWYU pragma: associated
+
+#include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
+#include <atomic>
+#include <future>
+#include <optional>
+#include <ostream>
+#include <stdexcept>
+#include <string_view>
+#include <tuple>
+
+#include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/common/User.hpp"
 
 namespace ottest
 {
-
 RegtestListener::RegtestListener(const ot::api::session::Client& client)
     : block_listener(std::make_unique<BlockListener>(client))
     , wallet_listener(std::make_unique<WalletListener>(client))
@@ -416,5 +404,4 @@ auto Regtest_fixture_simple::WaitForSynchro(
         ot::Sleep(std::chrono::seconds(5));
     }
 }
-
 }  // namespace ottest

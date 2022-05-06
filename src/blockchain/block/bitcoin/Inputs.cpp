@@ -165,21 +165,19 @@ auto Inputs::ExtractElements(const cfilter::Type style) const noexcept
 }
 
 auto Inputs::FindMatches(
-    const ReadView txid,
+    const Txid& txid,
     const cfilter::Type type,
     const Patterns& txos,
-    const ParsedPatterns& patterns) const noexcept -> Matches
+    const ParsedPatterns& patterns,
+    const Log& log) const noexcept -> Matches
 {
     auto output = Matches{};
     auto& [inputs, outputs] = output;
-    auto index{-1};
+    auto index = std::size_t{0};
 
     for (const auto& txin : *this) {
-        auto temp = txin.Internal().FindMatches(txid, type, txos, patterns);
-        LogTrace()(OT_PRETTY_CLASS())("Verified ")(
-            temp.second.size() +
-            temp.first.size())(" matches in input ")(++index)
-            .Flush();
+        auto temp =
+            txin.Internal().FindMatches(txid, type, txos, patterns, index, log);
         inputs.insert(
             inputs.end(),
             std::make_move_iterator(temp.first.begin()),
@@ -188,6 +186,7 @@ auto Inputs::FindMatches(
             outputs.end(),
             std::make_move_iterator(temp.second.begin()),
             std::make_move_iterator(temp.second.end()));
+        ++index;
     }
 
     return output;
@@ -220,7 +219,8 @@ auto Inputs::Keys() const noexcept -> UnallocatedVector<crypto::Key>
     return out;
 }
 
-auto Inputs::MergeMetadata(const internal::Inputs& rhs) noexcept -> bool
+auto Inputs::MergeMetadata(const internal::Inputs& rhs, const Log& log) noexcept
+    -> bool
 {
     const auto count = size();
 
@@ -234,7 +234,7 @@ auto Inputs::MergeMetadata(const internal::Inputs& rhs) noexcept -> bool
         auto& l = *inputs_.at(i);
         auto& r = rhs.at(i).Internal();
 
-        if (false == l.MergeMetadata(r)) {
+        if (false == l.MergeMetadata(r, i, log)) {
             LogError()(OT_PRETTY_CLASS())("Failed to merge input ")(i).Flush();
 
             return false;
@@ -244,15 +244,17 @@ auto Inputs::MergeMetadata(const internal::Inputs& rhs) noexcept -> bool
     return true;
 }
 
-auto Inputs::NetBalanceChange(const identifier::Nym& nym) const noexcept
-    -> opentxs::Amount
+auto Inputs::NetBalanceChange(const identifier::Nym& nym, const Log& log)
+    const noexcept -> opentxs::Amount
 {
+    auto index = std::size_t{0};
+
     return std::accumulate(
         std::begin(inputs_),
         std::end(inputs_),
         opentxs::Amount{0},
         [&](const auto prev, const auto& input) -> auto{
-            return prev + input->NetBalanceChange(nym);
+            return prev + input->NetBalanceChange(nym, index++, log);
         });
 }
 

@@ -29,6 +29,8 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
@@ -299,7 +301,7 @@ Input::Input(
     boost::container::flat_set<PatternID>&& pubkeyHashes,
     std::optional<PatternID>&& scriptHash,
     const bool indexed,
-    std::unique_ptr<const internal::Output> output) noexcept(false)
+    std::unique_ptr<internal::Output> output) noexcept(false)
     : api_(api)
     , chain_(chain)
     , serialize_version_(version)
@@ -358,7 +360,7 @@ Input::Input(
     UnallocatedVector<Space>&& witness,
     std::unique_ptr<const internal::Script> script,
     const VersionNumber version,
-    std::unique_ptr<const internal::Output> output,
+    std::unique_ptr<internal::Output> output,
     boost::container::flat_set<crypto::Key>&& keys) noexcept(false)
     : Input(
           api,
@@ -386,7 +388,7 @@ Input::Input(
     UnallocatedVector<Space>&& witness,
     const ReadView coinbase,
     const VersionNumber version,
-    std::unique_ptr<const internal::Output> output,
+    std::unique_ptr<internal::Output> output,
     std::optional<std::size_t> size) noexcept(false)
     : Input(
           api,
@@ -655,7 +657,6 @@ auto Input::ExtractElements(const cfilter::Type style) const noexcept
 
     switch (style) {
         case cfilter::Type::ES: {
-
             LogTrace()(OT_PRETTY_CLASS())("processing input script").Flush();
             output = script_->ExtractElements(style);
 
@@ -717,10 +718,12 @@ auto Input::ExtractElements(const cfilter::Type style) const noexcept
 }
 
 auto Input::FindMatches(
-    const ReadView txid,
+    const Txid& txid,
     const cfilter::Type type,
     const Patterns& txos,
-    const ParsedPatterns&) const noexcept -> Matches
+    const ParsedPatterns& patterns,
+    const std::size_t position,
+    const Log& log) const noexcept -> Matches
 {
     auto matches = Matches{};
     auto& [inputs, outputs] = matches;
@@ -728,16 +731,22 @@ auto Input::FindMatches(
     for (const auto& [element, outpoint] : txos) {
         if (reader(outpoint) != previous_.Bytes()) { continue; }
 
-        inputs.emplace_back(
-            api_.Factory().DataFromBytes(txid), previous_.Bytes(), element);
+        inputs.emplace_back(txid, previous_.Bytes(), element);
         const auto& [index, subchainID] = element;
         const auto& [subchain, account] = subchainID;
         cache_.add({account->str(), subchain, index});
+        log(OT_PRETTY_CLASS())("input ")(position)(" of transaction ")
+            .asHex(txid)(" spends ")(
+                blockchain::block::Outpoint{reader(outpoint)})
+            .Flush();
     }
 
-    LogTrace()(OT_PRETTY_CLASS())("Verified ")(inputs.size())(
-        " outpoint matches")
-        .Flush();
+    const auto keyMatches = block::internal::SetIntersection(
+        api_, txid.Bytes(), patterns, ExtractElements(type));
+
+    for (const auto& [t, element] : keyMatches.second) {
+        inputs.emplace_back(txid, previous_.Bytes(), element);
+    }
 
     return matches;
 }
@@ -794,9 +803,20 @@ auto Input::index_elements() noexcept -> void
     }
 }
 
-auto Input::MergeMetadata(const internal::Input& rhs) noexcept -> bool
+auto Input::MergeMetadata(
+    const internal::Input& rhs,
+    const std::size_t index,
+    const Log& log) noexcept -> bool
 {
-    return cache_.merge(rhs);
+    return cache_.merge(rhs, index, log);
+}
+
+auto Input::NetBalanceChange(
+    const identifier::Nym& nym,
+    const std::size_t index,
+    const Log& log) const noexcept -> opentxs::Amount
+{
+    return cache_.net_balance_change(nym, index, log);
 }
 
 auto Input::payload_bytes() const noexcept -> std::size_t
@@ -957,6 +977,7 @@ auto Input::Serialize(const std::uint32_t index, SerializeType& out)
         auto& spends = *out.mutable_spends();
         cache_.spends().Serialize(spends);
     } catch (...) {
+        out.clear_spends();
     }
 
     return true;

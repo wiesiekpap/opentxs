@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"        // IWYU pragma: associated
 #include "crypto/bip32/Imp.hpp"  // IWYU pragma: associated
 
+#include <cstdint>
 #include <cstring>
 #include <iterator>
 #include <stdexcept>

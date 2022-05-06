@@ -16,6 +16,7 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -35,6 +36,8 @@ namespace proto
 {
 class BlockchainTransaction;
 }  // namespace proto
+
+class Log;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -73,17 +76,18 @@ public:
     auto ExtractElements(const cfilter::Type style) const noexcept
         -> Vector<Vector<std::byte>> final;
     auto FindMatches(
-        const ReadView txid,
+        const Txid& txid,
         const cfilter::Type type,
-        const ParsedPatterns& elements) const noexcept -> Matches final;
+        const ParsedPatterns& elements,
+        const Log& log) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> UnallocatedVector<PatternID> final;
     auto Keys() const noexcept -> UnallocatedVector<crypto::Key> final;
     auto Internal() const noexcept -> const internal::Outputs& final
     {
         return *this;
     }
-    auto NetBalanceChange(const identifier::Nym& nym) const noexcept
-        -> opentxs::Amount final;
+    auto NetBalanceChange(const identifier::Nym& nym, const Log& log)
+        const noexcept -> opentxs::Amount final;
     auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> final;
     auto Serialize(proto::BlockchainTransaction& destination) const noexcept
@@ -99,7 +103,8 @@ public:
         const std::size_t index,
         const blockchain::crypto::Key& key) noexcept -> bool final;
     auto Internal() noexcept -> internal::Outputs& final { return *this; }
-    auto MergeMetadata(const internal::Outputs& rhs) noexcept -> bool final;
+    auto MergeMetadata(const internal::Outputs& rhs, const Log& log) noexcept
+        -> bool final;
 
     Outputs(
         OutputList&& outputs,

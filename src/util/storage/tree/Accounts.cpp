@@ -8,6 +8,7 @@
 #include "util/storage/tree/Accounts.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
