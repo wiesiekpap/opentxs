@@ -172,6 +172,7 @@ public:
     const CString to_progress_endpoint_;
     const CString shutdown_endpoint_;
     const block::Height scan_threshold_;
+    const std::size_t maximum_scan_;
     mutable ElementCache element_cache_;
     mutable MatchCache match_cache_;
     mutable std::atomic_bool scan_dirty_;
@@ -182,6 +183,10 @@ public:
         -> bool final;
     virtual auto CheckCache(const std::size_t outstanding, FinishedCallback cb)
         const noexcept -> void = 0;
+    auto FinishRescan() const noexcept -> block::Height
+    {
+        return scan_threshold_ + maximum_scan_;
+    }
     auto IndexElement(
         const cfilter::Type type,
         const blockchain::crypto::Element& input,
@@ -193,6 +198,9 @@ public:
     auto ProcessTransaction(
         const block::bitcoin::Transaction& tx,
         const Log& log) const noexcept -> void;
+    auto ReorgTarget(
+        const Lock& headerOracleLock,
+        const block::Position& parent) const noexcept -> block::Position;
     auto ReportScan(const block::Position& pos) const noexcept -> void;
     auto Rescan(
         const block::Position best,

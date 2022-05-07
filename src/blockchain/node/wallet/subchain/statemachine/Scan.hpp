@@ -15,6 +15,7 @@
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -57,7 +58,9 @@ namespace opentxs::blockchain::node::wallet
 class Scan::Imp final : public statemachine::Job
 {
 public:
-    auto ProcessReorg(const block::Position& parent) noexcept -> void final;
+    auto ProcessReorg(
+        const Lock& headerOracleLock,
+        const block::Position& parent) noexcept -> void final;
 
     Imp(const boost::shared_ptr<const SubchainStateData>& parent,
         const network::zeromq::BatchID batch,

@@ -117,6 +117,7 @@ auto Process::Imp::check_cache() noexcept -> void
         if (0u < status.size()) {
             const auto sent = to_index_.SendDeferred([&] {
                 auto out = MakeWork(Work::update);
+                add_last_reorg(out);
                 encode(status, out);
 
                 return out;
@@ -176,6 +177,20 @@ auto Process::Imp::do_process_common(
     if (false == parent_.ProcessBlock(position, *block)) { OT_FAIL; }
 }
 
+auto Process::Imp::do_process_update(Message&& msg) noexcept -> void
+{
+    auto dirty = Vector<ScanStatus>{get_allocator()};
+    extract_dirty(parent_.api_, msg, dirty);
+    parent_.process_queue_ += dirty.size();
+
+    for (auto& [type, position] : dirty) {
+        waiting_.emplace_back(std::move(position));
+    }
+
+    to_index_.SendDeferred(std::move(msg));
+    do_work();
+}
+
 auto Process::Imp::do_startup() noexcept -> void
 {
     const auto& oracle = parent_.mempool_oracle_;
@@ -209,7 +224,9 @@ auto Process::Imp::have_items() const noexcept -> bool
     return 0u < ready_.size();
 }
 
-auto Process::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
+auto Process::Imp::ProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
 {
     txid_cache_.clear();
     waiting_.erase(
@@ -369,20 +386,6 @@ auto Process::Imp::process_reprocess(Message&& msg) noexcept -> void
     do_work();
 }
 
-auto Process::Imp::process_update(Message&& msg) noexcept -> void
-{
-    auto dirty = Vector<ScanStatus>{get_allocator()};
-    extract_dirty(parent_.api_, msg, dirty);
-    parent_.process_queue_ += dirty.size();
-
-    for (auto& [type, position] : dirty) {
-        waiting_.emplace_back(std::move(position));
-    }
-
-    to_index_.SendDeferred(std::move(msg));
-    do_work();
-}
-
 auto Process::Imp::queue_downloads() noexcept -> void
 {
     while ((downloading_.size() < download_limit_) && (0u < waiting_.size())) {
@@ -462,9 +465,11 @@ auto Process::ChangeState(const State state, StateSequence reorg) noexcept
     return imp_->ChangeState(state, reorg);
 }
 
-auto Process::ProcessReorg(const block::Position& parent) noexcept -> void
+auto Process::ProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
 {
-    imp_->ProcessReorg(parent);
+    imp_->ProcessReorg(headerOracleLock, parent);
 }
 
 Process::~Process()

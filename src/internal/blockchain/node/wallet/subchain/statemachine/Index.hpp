@@ -49,7 +49,9 @@ public:
 
     auto ChangeState(const State state, StateSequence reorg) noexcept
         -> bool final;
-    auto ProcessReorg(const block::Position& parent) noexcept -> void final;
+    auto ProcessReorg(
+        const Lock& headerOracleLock,
+        const block::Position& parent) noexcept -> void final;
 
     Index() = delete;
     Index(const Index&) = delete;
