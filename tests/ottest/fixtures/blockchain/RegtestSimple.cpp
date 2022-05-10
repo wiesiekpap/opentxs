@@ -310,7 +310,7 @@ auto Regtest_fixture_simple::CloseClient(const ot::UnallocatedCString& name)
     user_listeners_.erase(name);
 }
 
-auto Regtest_fixture_simple::GetBalance(const User& user) -> const Amount
+auto Regtest_fixture_simple::GetBalance(const User& user) const -> const Amount
 {
     auto& account = GetHDAccount(user);
     auto& id = account.Parent().AccountID();
@@ -318,7 +318,7 @@ auto Regtest_fixture_simple::GetBalance(const User& user) -> const Amount
     return widget.Balance();
 }
 
-auto Regtest_fixture_simple::GetDisplayBalance(const User& user)
+auto Regtest_fixture_simple::GetDisplayBalance(const User& user) const
     -> const ot::UnallocatedCString
 {
     auto& account = GetHDAccount(user);
@@ -327,7 +327,7 @@ auto Regtest_fixture_simple::GetDisplayBalance(const User& user)
     return widget.DisplayBalance();
 }
 
-auto Regtest_fixture_simple::GetSyncProgress(const User& user)
+auto Regtest_fixture_simple::GetSyncProgress(const User& user) const
     -> const std::pair<int, int>
 {
     auto& account = GetHDAccount(user);
@@ -336,7 +336,7 @@ auto Regtest_fixture_simple::GetSyncProgress(const User& user)
     return widget.SyncProgress();
 }
 
-auto Regtest_fixture_simple::GetSyncPercentage(const User& user) -> double
+auto Regtest_fixture_simple::GetSyncPercentage(const User& user) const -> double
 {
     auto& account = GetHDAccount(user);
     auto& id = account.Parent().AccountID();

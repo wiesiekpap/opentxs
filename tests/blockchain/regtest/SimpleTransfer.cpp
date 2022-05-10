@@ -26,7 +26,7 @@ TEST_F(Regtest_fixture_simple, DISABLED_send_to_client)
     const std::string name_alice = "Alice";
     const std::string name_bob = "Bob";
 
-    Height target_height = 0, begin = 0;
+    Height begin = 0;
     const auto blocks_number = 2;
     const auto coin_to_send = 100000;
 

@@ -88,6 +88,7 @@ protected:
     const unsigned amount_in_transaction_ = 10000000;
     const unsigned transaction_in_block_ = 50;
     static constexpr auto coins_to_send_ = 100000;
+    Height target_height = 0;
 
     auto CreateNym(
         const ot::api::session::Client& api,
@@ -138,10 +139,11 @@ protected:
         const Height target,
         const Amount expected_balance) -> void;
 
-    auto GetBalance(const User& user) -> const Amount;
-    auto GetDisplayBalance(const User& user) -> const ot::UnallocatedCString;
-    auto GetSyncProgress(const User& user) -> const std::pair<int, int>;
-    auto GetSyncPercentage(const User& user) -> double;
+    auto GetBalance(const User& user) const -> const Amount;
+    auto GetDisplayBalance(const User& user) const
+        -> const ot::UnallocatedCString;
+    auto GetSyncProgress(const User& user) const -> const std::pair<int, int>;
+    auto GetSyncPercentage(const User& user) const -> double;
 
     auto GetNextBlockchainAddress(const User& user)
         -> const ot::UnallocatedCString;

@@ -149,7 +149,7 @@ workflows:
           #currently (2022-04-25) failing tests:
             # ottest-blockchain-regtest-basic
             # ottest-blockchain-regtest-reorg
-          ctest-params: -j 8 --output-on-failure --repeat until-pass:3 --timeout 300 --schedule-random -E (ottest-blockchain-regtest-)(basic|reorg|sync-client|restart|restart-end|restart-inloop|simple-transfer)
+          ctest-params: -j 8 --output-on-failure --repeat until-pass:3 --timeout 300 --schedule-random -E (ottest-blockchain-regtest-)(basic|reorg|sync-client|restart|restart-end|restart-inloop|simple-transfer|round-robin-distribution-transactions)
           matrix:
             parameters:
               compiler: [gcc, clang]
