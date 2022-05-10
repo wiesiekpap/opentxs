@@ -24,7 +24,7 @@ TEST_F(Regtest_fixture_simple, start_stop_client)
     const std::string name = "Alice";
     const auto blocks_mine_for_alice = 2;
     bool mine_only_in_first_test = true;
-    Height targetHeight = 0, begin = 0;
+    Height begin = 0;
     auto expected_balance = 0;
 
     for (int number_of_test = 0; number_of_test < numbers_of_test;
@@ -41,16 +41,16 @@ TEST_F(Regtest_fixture_simple, start_stop_client)
             address_);
         EXPECT_TRUE(success);
 
-        WaitForSynchro(user, targetHeight, expected_balance);
+        WaitForSynchro(user, target_height, expected_balance);
         if (!mine_only_in_first_test || number_of_test == 0) {
-            targetHeight += static_cast<Height>(blocks_mine_for_alice);
+            target_height += static_cast<Height>(blocks_mine_for_alice);
 
             auto scan_listener = std::make_unique<ScanListener>(*user.api_);
 
             auto scan_listener_external_f = scan_listener->get_future(
-                GetHDAccount(user), bca::Subchain::External, targetHeight);
+                GetHDAccount(user), bca::Subchain::External, target_height);
             auto scan_listener_internal_f = scan_listener->get_future(
-                GetHDAccount(user), bca::Subchain::Internal, targetHeight);
+                GetHDAccount(user), bca::Subchain::Internal, target_height);
 
             // mine coin for Alice
             auto mined_header = MineBlocks(
@@ -65,12 +65,12 @@ TEST_F(Regtest_fixture_simple, start_stop_client)
 
             begin += blocks_mine_for_alice;
             auto count = static_cast<int>(MaturationInterval());
-            targetHeight += count;
+            target_height += count;
 
             scan_listener_external_f = scan_listener->get_future(
-                GetHDAccount(user), bca::Subchain::External, targetHeight);
+                GetHDAccount(user), bca::Subchain::External, target_height);
             scan_listener_internal_f = scan_listener->get_future(
-                GetHDAccount(user), bca::Subchain::Internal, targetHeight);
+                GetHDAccount(user), bca::Subchain::Internal, target_height);
 
             // mine MaturationInterval number block with
             MineBlocks(begin, count);
@@ -81,7 +81,7 @@ TEST_F(Regtest_fixture_simple, start_stop_client)
 
             expected_balance += amount_in_transaction_ * blocks_mine_for_alice *
                                 transaction_in_block_;
-            WaitForSynchro(user, targetHeight, expected_balance);
+            WaitForSynchro(user, target_height, expected_balance);
         }
 
         EXPECT_EQ(GetBalance(user), expected_balance);

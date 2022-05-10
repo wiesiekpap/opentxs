@@ -34,6 +34,7 @@ public:
     ot::Nym_p nym_;
     ot::OTNymID nym_id_;
     ot::UnallocatedCString payment_code_;
+    ot::Amount expected_balance_ = 0;
 
     auto Account(std::string_view type) const noexcept -> const ot::Identifier&;
     auto Contact(std::string_view contact) const noexcept
