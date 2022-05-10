@@ -38,3 +38,7 @@ add_opentx_test(
   ottest-blockchain-regtest-round-robin-distribution-transactions
   RoundRobinDistributionTransactions.cpp
 )
+add_opentx_test(
+  ottest-blockchain-regtest-round-robin-recapture-transactions
+  RoundRobinRecaptureTransactions.cpp
+)

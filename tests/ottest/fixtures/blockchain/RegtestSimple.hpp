@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "Regtest.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
@@ -76,6 +77,24 @@ protected:
     using OutputsSet = std::set<UTXO>;
     Regtest_fixture_simple();
 
+    struct WalletDescription {
+        WalletDescription()
+            : name_()
+            , words_()
+        {
+        }
+        WalletDescription(
+            const ot::UnallocatedCString& name,
+            const ot::UnallocatedCString& words)
+            : name_(name)
+            , words_(words)
+        {
+        }
+
+        ot::UnallocatedCString name_;
+        ot::UnallocatedCString words_;
+    };
+
     using UserIndex = ot::UnallocatedMap<ot::UnallocatedCString, User>;
     using UserListeners =
         ot::UnallocatedMap<ot::UnallocatedCString, RegtestListener>;
@@ -89,6 +108,11 @@ protected:
     const unsigned transaction_in_block_ = 50;
     static constexpr auto coins_to_send_ = 100000;
     Height target_height = 0;
+
+    WalletDescription core_wallet_;
+    std::map<std::string, WalletDescription> auxiliary_wallets_;
+
+    virtual void SetUp();
 
     auto CreateNym(
         const ot::api::session::Client& api,
@@ -215,4 +239,12 @@ private:
         std::vector<Transaction>& transactions,
         const size_t output_size) -> void;
 };
+
+class Regtest_fixture_round_robin : public Regtest_fixture_simple
+{
+public:
+    int instance_ = 2;
+    virtual void SetUp();
+};
+
 }  // namespace ottest

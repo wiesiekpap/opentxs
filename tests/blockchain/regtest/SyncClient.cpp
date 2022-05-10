@@ -21,7 +21,6 @@ TEST_F(Regtest_fixture_simple, start_stop_client)
     EXPECT_TRUE(Connect());
 
     const int numbers_of_test = 2;
-    const std::string name = "Alice";
     const auto blocks_mine_for_alice = 2;
     bool mine_only_in_first_test = true;
     Height begin = 0;
@@ -36,7 +35,7 @@ TEST_F(Regtest_fixture_simple, start_stop_client)
         auto [user, success] = CreateClient(
             opentxs::Options{},
             number_of_test + 3,
-            name,
+            core_wallet_.name_,
             GetVectors3().alice_.words_,
             address_);
         EXPECT_TRUE(success);
@@ -86,7 +85,7 @@ TEST_F(Regtest_fixture_simple, start_stop_client)
 
         EXPECT_EQ(GetBalance(user), expected_balance);
 
-        CloseClient(name);
+        CloseClient(core_wallet_.name_);
     }
 
     Shutdown();

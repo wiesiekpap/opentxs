@@ -33,7 +33,23 @@ Regtest_fixture_simple::Regtest_fixture_simple()
     , send_transactions_()
     , users_()
     , user_listeners_()
+    , core_wallet_()
+    , auxiliary_wallets_()
 {
+}
+
+void Regtest_fixture_simple::SetUp()
+{
+    const std::string name_bob = "Bob";
+    const std::string name_chris = "Chris";
+    auto chris_words =
+        "eight upper indicate swift arch wrestle injury crystal super reward";
+
+    core_wallet_ = {"Alice", GetVectors3().alice_.words_};
+    auxiliary_wallets_.emplace(
+        name_bob, WalletDescription{name_bob, GetVectors3().bob_.words_});
+    auxiliary_wallets_.emplace(
+        name_chris, WalletDescription{name_chris, chris_words});
 }
 
 auto Regtest_fixture_simple::CreateNym(
@@ -96,7 +112,7 @@ auto Regtest_fixture_simple::TransactionGenerator(
 
     for (auto i = Index{0}; i < Index{count}; ++i) {
         const auto index = account.Reserve(
-            Subchain::External, client_1_.Factory().PasswordPrompt(""));
+            Subchain::External, user.api_->Factory().PasswordPrompt(""));
         const auto& element =
             account.BalanceElement(Subchain::External, index.value_or(0));
         const auto key = element.Key();
@@ -482,7 +498,6 @@ void Regtest_fixture_simple::SendCoins(
             .size();
     auto future = network.SendToAddress(
         sender.nym_id_, address, coins_to_send, memo_outgoing);
-
     // We need to confirm send transaction, so it is available after restore
     MineTransaction(sender, future.get().second, current_height);
     WaitForOutputs(receiver, send_transactions_, output_size);
@@ -720,4 +735,30 @@ void Regtest_fixture_simple::advance_blockchain(
     target_height += static_cast<int>(MaturationInterval());
 }
 
+void Regtest_fixture_round_robin::SetUp()
+{
+    Regtest_fixture_simple::SetUp();
+
+    EXPECT_TRUE(Start());
+    EXPECT_TRUE(Connect());
+
+    auto [user_core, success_core] = CreateClient(
+        opentxs::Options{},
+        instance_++,
+        core_wallet_.name_,
+        core_wallet_.words_,
+        address_);
+    EXPECT_TRUE(success_core);
+
+    for (auto& entry : auxiliary_wallets_) {
+        auto& user_to_create = entry.second;
+        auto [user, success] = CreateClient(
+            opentxs::Options{},
+            instance_++,
+            user_to_create.name_,
+            user_to_create.words_,
+            address_);
+        EXPECT_TRUE(success);
+    }
+}
 }  // namespace ottest
