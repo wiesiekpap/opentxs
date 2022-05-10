@@ -58,6 +58,9 @@ class User;
 
 namespace ottest
 {
+using ot::blockchain::node::TxoState;
+using namespace opentxs;
+
 class User;
 
 struct RegtestListener {
@@ -70,18 +73,21 @@ struct RegtestListener {
 class Regtest_fixture_simple : public Regtest_fixture_normal
 {
 protected:
+    using OutputsSet = std::set<UTXO>;
     Regtest_fixture_simple();
 
     using UserIndex = ot::UnallocatedMap<ot::UnallocatedCString, User>;
     using UserListeners =
         ot::UnallocatedMap<ot::UnallocatedCString, RegtestListener>;
 
+    std::vector<Transaction> send_transactions_;
     UserIndex users_;
     UserListeners user_listeners_;
     bool wait_for_handshake_ = true;
-    static constexpr auto wait_time_limit_ = std::chrono::minutes(5);
+    static constexpr auto wait_time_limit_ = std::chrono::minutes(1);
     const unsigned amount_in_transaction_ = 10000000;
     const unsigned transaction_in_block_ = 50;
+    static constexpr auto coins_to_send_ = 100000;
 
     auto CreateNym(
         const ot::api::session::Client& api,
@@ -141,5 +147,63 @@ protected:
         -> const ot::UnallocatedCString;
 
     auto GetHDAccount(const User& user) const noexcept -> const bca::HD&;
+
+    auto GetDisplayBalance(opentxs::Amount value) const noexcept -> std::string;
+    auto GetWalletAddress(const User& user) const noexcept -> std::string;
+    auto GetWalletName(const User& user) const noexcept -> std::string;
+    auto GetTransactions(const User& user) const noexcept
+        -> opentxs::UnallocatedVector<opentxs::blockchain::block::pTxid>;
+
+    void MineTransaction(
+        const User& user,
+        const opentxs::blockchain::block::pTxid& transactions_to_confirm,
+        Height& current_height);
+
+    void SendCoins(
+        const User& receiver,
+        const User& sender,
+        Height& current_height,
+        const int coins_to_send = coins_to_send_);
+
+    std::vector<
+        std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>>
+    CollectTransactionsForFeeCalculations(
+        const User& user,
+        const std::vector<Transaction>& send_transactions,
+        const Transactions& all_transactions) const;
+
+    Amount CalculateFee(
+        const std::vector<Transaction>& send_transactions,
+        std::vector<std::unique_ptr<
+            const opentxs::blockchain::block::bitcoin::Transaction>>&
+            loaded_transactions) const;
+
+    void CollectOutputs(
+        const User& user,
+        OutputsSet& all_outputs,
+        std::map<TxoState, std::size_t>& number_of_outputs_per_type) const;
+
+    // Check if all output data is valid.
+    // outputs_to_compare  and number_of_outputs_per_type_to_compare
+    // should be taken from CollectOutputs call.
+    // user is different user that you want to compare outputs with.
+    void ValidateOutputs(
+        const User& user,
+        const std::set<UTXO>& outputs_to_compare,
+        const std::map<TxoState, std::size_t>&
+            number_of_outputs_per_type_to_compare) const;
+
+    void MineBlocksForUsers(
+        std::vector<std::reference_wrapper<const User>>& users,
+        Height& target_height,
+        const int& number_of_blocks_to_mine);
+
+private:
+    void compare_outputs(
+        const std::set<UTXO>& pre_reboot_outputs,
+        const std::set<UTXO>& post_reboot_outputs) const;
+    void advance_blockchain(
+        std::vector<std::reference_wrapper<const User>>& users,
+        Height& target_height);
 };
 }  // namespace ottest
