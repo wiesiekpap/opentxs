@@ -15,7 +15,7 @@
 #include <tuple>
 #include <utility>
 
-#include "2_Factory.hpp"
+#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
