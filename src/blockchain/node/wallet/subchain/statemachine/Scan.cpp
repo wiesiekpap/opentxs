@@ -151,6 +151,13 @@ auto Scan::Imp::ProcessReorg(
     }
 }
 
+auto Scan::Imp::process_do_rescan(Message&& in) noexcept -> void
+{
+    last_scanned_.reset();
+    parent_.match_cache_.lock()->Reset();
+    to_process_.Send(std::move(in));
+}
+
 auto Scan::Imp::process_filter(Message&& in, block::Position&& tip) noexcept
     -> void
 {

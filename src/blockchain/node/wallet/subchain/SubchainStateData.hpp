@@ -170,7 +170,7 @@ public:
     const CString to_rescan_endpoint_;
     const CString to_process_endpoint_;
     const CString to_progress_endpoint_;
-    const CString shutdown_endpoint_;
+    const CString from_parent_;
     const block::Height scan_threshold_;
     const std::size_t maximum_scan_;
     mutable ElementCache element_cache_;
@@ -279,6 +279,7 @@ private:
 
     network::zeromq::socket::Raw& to_block_oracle_;
     network::zeromq::socket::Raw& to_children_;
+    network::zeromq::socket::Raw& to_scan_;
     std::atomic<State> pending_state_;
     std::atomic<State> state_;
     mutable Deque<std::size_t> filter_sizes_;
@@ -366,6 +367,7 @@ private:
     auto do_shutdown() noexcept -> void;
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
     auto process_prepare_reorg(Message&& in) noexcept -> void;
+    auto process_rescan(Message&& in) noexcept -> void;
     auto process_watchdog_ack(Message&& in) noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto state_reorg(const Work work, Message&& msg) noexcept -> void;

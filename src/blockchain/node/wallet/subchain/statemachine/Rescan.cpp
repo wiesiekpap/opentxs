@@ -295,6 +295,15 @@ auto Rescan::Imp::process_dirty(const Set<block::Position>& dirty) noexcept
     }
 }
 
+auto Rescan::Imp::process_do_rescan(Message&& in) noexcept -> void
+{
+    last_scanned_.reset();
+    highest_dirty_ = parent_.null_position_;
+    dirty_.clear();
+    update_progress();
+    to_progress_.Send(std::move(in));
+}
+
 auto Rescan::Imp::process_filter(Message&& in, block::Position&& tip) noexcept
     -> void
 {

@@ -78,5 +78,6 @@ private:
 
     auto do_process_update(Message&& msg) noexcept -> void final;
     auto do_startup() noexcept -> void final {}
+    auto process_do_rescan(Message&& in) noexcept -> void final;
 };
 }  // namespace opentxs::blockchain::node::wallet

@@ -97,6 +97,7 @@ public:
     virtual auto GetTags(const block::Outpoint& output) const noexcept
         -> UnallocatedSet<TxoTag> = 0;
     virtual auto Height() const noexcept -> block::Height = 0;
+    virtual auto StartRescan() const noexcept -> bool = 0;
 
     virtual ~Wallet() = default;
 

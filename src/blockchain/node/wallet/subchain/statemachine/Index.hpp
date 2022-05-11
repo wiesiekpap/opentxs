@@ -88,6 +88,7 @@ private:
     virtual auto process(
         const std::optional<Bip32Index>& current,
         Bip32Index target) noexcept -> void = 0;
+    auto process_do_rescan(Message&& in) noexcept -> void final;
     auto process_filter(Message&& in, block::Position&& tip) noexcept
         -> void final;
     auto process_key(Message&& in) noexcept -> void final;

@@ -125,7 +125,7 @@ public:
         const network::zeromq::BatchID batch,
         const Type chain,
         const cfilter::Type filter,
-        const std::string_view shutdown,
+        const std::string_view fromParent,
         allocator_type alloc) noexcept;
 
     ~Imp() final { signal_shutdown(); }
@@ -143,7 +143,7 @@ private:
     const node::internal::Mempool& mempool_;
     const Type chain_;
     const cfilter::Type filter_type_;
-    const CString shutdown_endpoint_;
+    const CString from_parent_;
     std::atomic<State> pending_state_;
     std::atomic<State> state_;
     HandledReorgs reorgs_;
@@ -184,6 +184,7 @@ private:
     auto pipeline(const Work work, Message&& msg) noexcept -> void;
     auto process_key(Message&& in) noexcept -> void;
     auto process_prepare_reorg(Message&& in) noexcept -> void;
+    auto process_rescan(Message&& in) noexcept -> void;
     auto process_subaccount(Message&& in) noexcept -> void;
     auto process_subaccount(
         const Identifier& id,
@@ -204,7 +205,7 @@ private:
         const network::zeromq::BatchID batch,
         const Type chain,
         const cfilter::Type filter,
-        CString&& shutdown,
+        CString&& fromParent,
         allocator_type alloc) noexcept;
 };
 }  // namespace opentxs::blockchain::node::wallet

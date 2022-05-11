@@ -264,6 +264,13 @@ auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
     }
 }
 
+auto Wallet::StartRescan() const noexcept -> bool
+{
+    accounts_.Rescan();
+
+    return true;
+}
+
 auto Wallet::state_machine() noexcept -> bool
 {
     if (false == running_.load()) { return false; }

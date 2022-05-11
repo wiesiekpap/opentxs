@@ -104,6 +104,14 @@ auto Progress::Imp::ProcessReorg(
         notify(target);
     }
 }
+
+auto Progress::Imp::process_do_rescan(Message&& in) noexcept -> void
+{
+    last_reported_.reset();
+    const auto& best = parent_.null_position_;
+    parent_.db_.SubchainSetLastScanned(parent_.db_key_, best);
+    notify(best);
+}
 }  // namespace opentxs::blockchain::node::wallet
 
 namespace opentxs::blockchain::node::wallet

@@ -69,6 +69,7 @@ auto print(AccountsJobs job) noexcept -> std::string_view
             {Job::nym, "nym"},
             {Job::header, "header"},
             {Job::reorg, "reorg"},
+            {Job::rescan, "rescan"},
             {Job::init, "init"},
             {Job::statemachine, "statemachine"},
         };
@@ -127,8 +128,8 @@ Accounts::Imp::Imp(
     , mempool_(mempool)
     , chain_(chain)
     , filter_type_(node_.FilterOracleInternal().DefaultType())
-    , shutdown_endpoint_(std::move(shutdown))
-    , shutdown_socket_(pipeline_.Internal().ExtraSocket(0))
+    , to_children_endpoint_(std::move(shutdown))
+    , to_children_(pipeline_.Internal().ExtraSocket(0))
     , state_(State::normal)
     , reorg_counter_(0)
     , accounts_(alloc)
@@ -246,7 +247,7 @@ auto Accounts::Imp::process_nym(const identifier::Nym& nym) noexcept -> bool
             mempool_,
             chain_,
             filter_type_,
-            shutdown_endpoint_);
+            to_children_endpoint_);
 
         return added;
     } else {
@@ -348,6 +349,16 @@ auto Accounts::Imp::process_reorg(
     LogConsole()(name_)(": reorg to ")(print(tip))(" finished").Flush();
 }
 
+auto Accounts::Imp::process_rescan(Message&& in) noexcept -> void
+{
+    to_children_.Send(MakeWork(AccountJobs::rescan));
+}
+
+auto Accounts::Imp::Rescan() const noexcept -> void
+{
+    pipeline_.Push(MakeWork(Work::rescan));
+}
+
 auto Accounts::Imp::Shutdown() noexcept -> void
 {
     // WARNING this function must never be called from with this class's
@@ -372,6 +383,9 @@ auto Accounts::Imp::state_normal(const Work work, Message&& msg) noexcept
         } break;
         case Work::reorg: {
             process_reorg(std::move(msg));
+        } break;
+        case Work::rescan: {
+            process_rescan(std::move(msg));
         } break;
         case Work::init: {
             do_init();
@@ -403,7 +417,7 @@ auto Accounts::Imp::transition_state_reorg() noexcept -> bool
     log_(OT_PRETTY_CLASS())(name_)(": processing reorg ")(id).Flush();
 
     if (false == startup_reorg_.has_value()) {
-        shutdown_socket_.SendDeferred([=] {
+        to_children_.SendDeferred([=] {
             auto out = MakeWork(AccountJobs::prepare_reorg);
             out.AddFrame(id);
 
@@ -424,7 +438,7 @@ auto Accounts::Imp::transition_state_reorg() noexcept -> bool
 
 auto Accounts::Imp::transition_state_shutdown() noexcept -> void
 {
-    shutdown_socket_.SendDeferred(MakeWork(AccountJobs::prepare_shutdown));
+    to_children_.SendDeferred(MakeWork(AccountJobs::prepare_shutdown));
     for_each([](auto& a) {
         auto rc = a.second.ChangeState(Account::State::shutdown);
 
@@ -469,6 +483,8 @@ Accounts::Accounts(
 }
 
 auto Accounts::Init() noexcept -> void { imp_->Init(imp_); }
+
+auto Accounts::Rescan() const noexcept -> void { imp_->Rescan(); }
 
 auto Accounts::Shutdown() noexcept -> void { imp_->Shutdown(); }
 
