@@ -16,7 +16,6 @@
 #include <memory>
 #include <mutex>
 #include <queue>
-#include <random>
 #include <string_view>
 
 #include "internal/api/network/Asio.hpp"
@@ -197,8 +196,6 @@ protected:
         , last_executed_(Clock::now())
         , cache_(alloc)
         , state_machine_queued_(false)
-        , rng_(std::random_device{}())
-        , delay_(50, 150)
         , retry_(api.Network().Asio().Internal().GetTimer())
     {
         log_(name_)(" ")(__FUNCTION__)(": using ZMQ batch ")(
@@ -217,8 +214,6 @@ private:
     Time last_executed_;
     std::queue<Message, Deque<Message>> cache_;
     mutable std::atomic<bool> state_machine_queued_;
-    std::mt19937 rng_;
-    std::uniform_int_distribution<int> delay_;
     Timer retry_;
 
     auto rate_limit_state_machine() const noexcept
@@ -357,19 +352,6 @@ private:
 
         last_executed_ = Clock::now();
     }
-    auto try_lock() noexcept
-    {
-        auto limit = std::chrono::milliseconds{delay_(rng_)};
-        auto lock = std::unique_lock<std::timed_mutex>{reorg_lock_, limit};
-        auto attempts{-1};
-
-        while ((false == lock.owns_lock()) && (++attempts < 3)) {
-            limit = std::chrono::milliseconds{delay_(rng_)};
-            lock.try_lock_for(limit);
-        }
-
-        return lock;
-    }
     auto worker(network::zeromq::Message&& in) noexcept -> void
     {
         log_(name_)(" ")(__FUNCTION__)(": Message received").Flush();
@@ -377,7 +359,7 @@ private:
         try {
             const auto [work, type, isInit, canDrop, initFinished] =
                 decode_message_type(in);
-            auto lock = try_lock();
+            auto lock = std::unique_lock<std::timed_mutex>{reorg_lock_, 1s};
 
             if (false == lock.owns_lock()) {
                 auto log{type};

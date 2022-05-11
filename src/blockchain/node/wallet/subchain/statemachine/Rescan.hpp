@@ -15,6 +15,7 @@
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -57,7 +58,9 @@ namespace opentxs::blockchain::node::wallet
 class Rescan::Imp final : public statemachine::Job
 {
 public:
-    auto ProcessReorg(const block::Position& parent) noexcept -> void final;
+    auto ProcessReorg(
+        const Lock& headerOracleLock,
+        const block::Position& parent) noexcept -> void final;
 
     Imp(const boost::shared_ptr<const SubchainStateData>& parent,
         const network::zeromq::BatchID batch,
@@ -91,12 +94,12 @@ private:
 
     auto adjust_last_scanned(
         const std::optional<block::Position>& highestClean) noexcept -> void;
+    auto do_process_update(Message&& msg) noexcept -> void final;
     auto do_startup() noexcept -> void final;
     auto process_clean(const Set<ScanStatus>& clean) noexcept -> void;
     auto process_dirty(const Set<block::Position>& dirty) noexcept -> void;
     auto process_filter(Message&& in, block::Position&& tip) noexcept
         -> void final;
-    auto process_update(Message&& msg) noexcept -> void final;
     auto prune() noexcept -> void;
     auto set_last_scanned(const block::Position& value) noexcept -> void;
     auto set_last_scanned(const std::optional<block::Position>& value) noexcept

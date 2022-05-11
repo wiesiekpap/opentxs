@@ -31,9 +31,9 @@ auto decode(
 {
     const auto body = in.Body();
 
-    OT_ASSERT(1 < body.size());
+    OT_ASSERT(2 < body.size());
 
-    for (auto f = std::next(body.begin()), end = body.end(); f != end; ++f) {
+    for (auto f = std::next(body.begin(), 2), end = body.end(); f != end; ++f) {
         const auto bytes = f->size();
         static constexpr auto fixed =
             std::size_t{sizeof(ScanState) + sizeof(block::Height)};
@@ -105,9 +105,9 @@ auto extract_dirty(
 {
     const auto body = in.Body();
 
-    OT_ASSERT(1 < body.size());
+    OT_ASSERT(2 < body.size());
 
-    for (auto f = std::next(body.begin()), end = body.end(); f != end; ++f) {
+    for (auto f = std::next(body.begin(), 2), end = body.end(); f != end; ++f) {
         const auto bytes = f->size();
         static constexpr auto fixed =
             std::size_t{sizeof(ScanState) + sizeof(block::Height)};

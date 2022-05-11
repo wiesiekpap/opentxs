@@ -483,6 +483,7 @@ SubchainStateData::SubchainStateData(
     , to_progress_endpoint_(std::move(toProgress))
     , shutdown_endpoint_(parent, alloc)
     , scan_threshold_(1000)
+    , maximum_scan_(2000)
     , element_cache_(
           db_.GetPatterns(db_key_, alloc.resource()),
           db_.GetUnspentOutputs(id_, subchain_, alloc.resource()),
@@ -710,11 +711,11 @@ auto SubchainStateData::do_reorg(
                 subchain_,
                 db_key_,
                 reorg)) {
-            scan_->ProcessReorg(ancestor);
-            process_->ProcessReorg(ancestor);
-            index_->ProcessReorg(ancestor);
-            rescan_->ProcessReorg(ancestor);
-            progress_->ProcessReorg(ancestor);
+            scan_->ProcessReorg(headerOracleLock, ancestor);
+            process_->ProcessReorg(headerOracleLock, ancestor);
+            index_->ProcessReorg(headerOracleLock, ancestor);
+            rescan_->ProcessReorg(headerOracleLock, ancestor);
+            progress_->ProcessReorg(headerOracleLock, ancestor);
         } else {
 
             ++errors;
@@ -1052,6 +1053,17 @@ auto SubchainStateData::reorg_children() const noexcept -> std::size_t
     return 1u;
 }
 
+auto SubchainStateData::ReorgTarget(
+    const Lock& headerOracleLock,
+    const block::Position& parent) const noexcept -> block::Position
+{
+    const auto height =
+        std::max<block::Height>(maximum_scan_, parent.first) - maximum_scan_;
+
+    return node_.HeaderOracle().Internal().GetPosition(
+        headerOracleLock, height);
+}
+
 auto SubchainStateData::Rescan(
     const block::Position best,
     const block::Height stop,
@@ -1147,8 +1159,9 @@ auto SubchainStateData::scan(
             // average cfilter element count (estimated) and match set for this
             // subchain (known).
             const auto threads = choose_thread_count(elementCount);
-            const auto scanBatch =
-                GetBatchSize(elementsPerFilter, elementCount) * threads;
+            const auto scanBatch = std::min(
+                maximum_scan_,
+                GetBatchSize(elementsPerFilter, elementCount) * threads);
             log(OT_PRETTY_CLASS())(name)(" filter size: ")(
                 elementsPerFilter)(" wallet size: ")(
                 elementCount)(" batch size: ")(scanBatch)

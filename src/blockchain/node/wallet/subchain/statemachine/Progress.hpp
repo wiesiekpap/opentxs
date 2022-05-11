@@ -14,6 +14,7 @@
 #include "blockchain/node/wallet/subchain/statemachine/Job.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -55,7 +56,9 @@ namespace opentxs::blockchain::node::wallet
 class Progress::Imp final : public statemachine::Job
 {
 public:
-    auto ProcessReorg(const block::Position& parent) noexcept -> void final;
+    auto ProcessReorg(
+        const Lock& headerOracleLock,
+        const block::Position& parent) noexcept -> void final;
 
     Imp(const boost::shared_ptr<const SubchainStateData>& parent,
         const network::zeromq::BatchID batch,
@@ -73,7 +76,7 @@ private:
 
     auto notify(const block::Position& pos) const noexcept -> void;
 
+    auto do_process_update(Message&& msg) noexcept -> void final;
     auto do_startup() noexcept -> void final {}
-    auto process_update(Message&& msg) noexcept -> void final;
 };
 }  // namespace opentxs::blockchain::node::wallet
