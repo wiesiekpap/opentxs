@@ -142,6 +142,7 @@ public:
 
     auto Add(Results&& results) noexcept -> void;
     auto Forget(const block::Position& last) noexcept -> void;
+    auto Reset() noexcept -> void;
 
     MatchCache(allocator_type alloc) noexcept;
 

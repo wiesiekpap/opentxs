@@ -302,6 +302,18 @@ auto Process::Imp::process_block(block::Hash&& hash) noexcept -> void
     do_work();
 }
 
+auto Process::Imp::process_do_rescan(Message&& in) noexcept -> void
+{
+    waiting_.clear();
+    downloading_.clear();
+    downloading_index_.clear();
+    ready_.clear();
+    processing_.clear();
+    txid_cache_.clear();
+    parent_.process_queue_.store(0);
+    to_index_.Send(std::move(in));
+}
+
 auto Process::Imp::process_filter(Message&& in, block::Position&&) noexcept
     -> void
 {

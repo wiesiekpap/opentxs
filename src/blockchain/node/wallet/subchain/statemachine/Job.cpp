@@ -115,7 +115,7 @@ Job::Job(
           alloc,
           [&] {
               auto out{subscribe};
-              out.emplace_back(parent->shutdown_endpoint_, Direction::Connect);
+              out.emplace_back(parent->from_parent_, Direction::Connect);
               out.emplace_back(parent->from_ssd_endpoint_, Direction::Connect);
 
               return out;
@@ -408,6 +408,12 @@ auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::process: {
             process_process(std::move(msg));
         } break;
+        case Work::rescan: {
+            // NOTE do nothing
+        } break;
+        case Work::do_rescan: {
+            process_do_rescan(std::move(msg));
+        } break;
         case Work::watchdog: {
             process_watchdog();
         } break;
@@ -450,6 +456,8 @@ auto Job::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::prepare_reorg:
         case Work::process:
         case Work::reprocess:
+        case Work::rescan:
+        case Work::do_rescan:
         case Work::key:
         case Work::statemachine: {
             log_(OT_PRETTY_CLASS())(name_)(" deferring ")(print(work))(

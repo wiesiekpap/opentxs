@@ -65,6 +65,7 @@ auto print(AccountJobs job) noexcept -> std::string_view
             {Job::shutdown, "shutdown"},
             {Job::subaccount, "subaccount"},
             {Job::prepare_reorg, "prepare_reorg"},
+            {Job::rescan, "rescan"},
             {Job::init, "init"},
             {Job::key, "key"},
             {Job::prepare_shutdown, "prepare_shutdown"},
@@ -93,7 +94,7 @@ Account::Imp::Imp(
     const network::zeromq::BatchID batch,
     const Type chain,
     const cfilter::Type filter,
-    CString&& shutdown,
+    CString&& fromParent,
     allocator_type alloc) noexcept
     : Actor(
           api,
@@ -110,7 +111,7 @@ Account::Imp::Imp(
           batch,
           alloc,
           {
-              {shutdown, Direction::Connect},
+              {fromParent, Direction::Connect},
               {CString{
                    api.Crypto().Blockchain().Internal().KeyEndpoint(),
                    alloc},
@@ -125,7 +126,7 @@ Account::Imp::Imp(
     , mempool_(mempool)
     , chain_(chain)
     , filter_type_(node_.FilterOracleInternal().DefaultType())
-    , shutdown_endpoint_(std::move(shutdown))
+    , from_parent_(std::move(fromParent))
     , pending_state_(State::normal)
     , state_(State::normal)
     , reorgs_(alloc)
@@ -146,7 +147,7 @@ Account::Imp::Imp(
     const network::zeromq::BatchID batch,
     const Type chain,
     const cfilter::Type filter,
-    const std::string_view shutdown,
+    const std::string_view fromParent,
     allocator_type alloc) noexcept
     : Imp(api,
           account,
@@ -156,7 +157,7 @@ Account::Imp::Imp(
           batch,
           chain,
           filter,
-          CString{shutdown, alloc},
+          CString{fromParent, alloc},
           alloc)
 {
 }
@@ -240,7 +241,7 @@ auto Account::Imp::check_notification(
             filter_type_,
             crypto::Subchain::NotificationV3,
             batchID,
-            shutdown_endpoint_,
+            from_parent_,
             code,
             subaccount));
     auto& ptr = it->second;
@@ -334,7 +335,7 @@ auto Account::Imp::instantiate(
             filter_type_,
             subchain,
             batchID,
-            shutdown_endpoint_));
+            from_parent_));
     auto& ptr = it->second;
 
     OT_ASSERT(ptr);
@@ -390,6 +391,11 @@ auto Account::Imp::process_prepare_reorg(Message&& in) noexcept -> void
     OT_ASSERT(1u < body.size());
 
     transition_state_reorg(body.at(1).as<StateSequence>());
+}
+
+auto Account::Imp::process_rescan(Message&& in) noexcept -> void
+{
+    // NOTE no action necessary
 }
 
 auto Account::Imp::process_subaccount(Message&& in) noexcept -> void
@@ -461,6 +467,9 @@ auto Account::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::prepare_reorg: {
             process_prepare_reorg(std::move(msg));
         } break;
+        case Work::rescan: {
+            process_rescan(std::move(msg));
+        } break;
         case Work::init: {
             do_init();
         } break;
@@ -488,6 +497,7 @@ auto Account::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
     switch (work) {
         case Work::subaccount:
         case Work::prepare_reorg:
+        case Work::rescan:
         case Work::key:
         case Work::statemachine: {
             defer(std::move(msg));

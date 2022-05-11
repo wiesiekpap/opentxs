@@ -84,6 +84,7 @@ private:
     auto tip() const noexcept -> const block::Position&;
 
     auto do_startup() noexcept -> void final;
+    auto process_do_rescan(Message&& in) noexcept -> void final;
     auto process_filter(Message&& in, block::Position&& tip) noexcept
         -> void final;
     auto scan(Vector<ScanStatus>& out) noexcept -> void;

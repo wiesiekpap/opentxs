@@ -172,6 +172,8 @@ struct NullWallet final : public node::internal::Wallet {
         return {};
     }
     auto Height() const noexcept -> block::Height final { return {}; }
+    auto StartRescan() const noexcept -> bool final { return {}; }
+
     auto Init() noexcept -> void final {}
     auto Shutdown() noexcept -> std::shared_future<void> final
     {

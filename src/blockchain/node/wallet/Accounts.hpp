@@ -91,6 +91,8 @@ namespace opentxs::blockchain::node::wallet
 class Accounts::Imp final : public Actor<Imp, AccountsJobs>
 {
 public:
+    auto Rescan() const noexcept -> void;
+
     auto Init(boost::shared_ptr<Imp> me) noexcept -> void
     {
         signal_startup(me);
@@ -123,8 +125,8 @@ private:
     const node::internal::Mempool& mempool_;
     const Type chain_;
     const cfilter::Type filter_type_;
-    const CString shutdown_endpoint_;
-    network::zeromq::socket::Raw& shutdown_socket_;
+    const CString to_children_endpoint_;
+    network::zeromq::socket::Raw& to_children_;
     State state_;
     StateSequence reorg_counter_;
     AccountMap accounts_;
@@ -147,6 +149,7 @@ private:
         Message&& in,
         const block::Position& ancestor,
         const block::Position& tip) noexcept -> void;
+    auto process_rescan(Message&& in) noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto transition_state_shutdown() noexcept -> void;
     auto transition_state_reorg() noexcept -> bool;

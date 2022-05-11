@@ -125,6 +125,7 @@ private:
     virtual auto do_startup() noexcept -> void = 0;
     virtual auto do_process_update(Message&& msg) noexcept -> void;
     virtual auto process_block(block::Hash&& block) noexcept -> void;
+    virtual auto process_do_rescan(Message&& in) noexcept -> void = 0;
     virtual auto process_key(Message&& in) noexcept -> void;
     virtual auto process_filter(Message&& in, block::Position&& tip) noexcept
         -> void;

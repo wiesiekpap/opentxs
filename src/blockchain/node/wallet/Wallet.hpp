@@ -159,6 +159,7 @@ public:
     auto GetTags(const block::Outpoint& output) const noexcept
         -> UnallocatedSet<TxoTag> final;
     auto Height() const noexcept -> block::Height final;
+    auto StartRescan() const noexcept -> bool final;
 
     auto Init() noexcept -> void final;
     auto Shutdown() noexcept -> std::shared_future<void> final

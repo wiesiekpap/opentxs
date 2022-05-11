@@ -127,6 +127,7 @@ private:
         block::Position&& position,
         BitcoinBlockResult&& future) noexcept -> void;
     auto process_block(block::Hash&& block) noexcept -> void final;
+    auto process_do_rescan(Message&& in) noexcept -> void final;
     auto process_filter(Message&& in, block::Position&& tip) noexcept
         -> void final;
     auto process_mempool(Message&& in) noexcept -> void final;
