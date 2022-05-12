@@ -200,7 +200,8 @@ public:
         const Log& log) const noexcept -> void;
     auto ReorgTarget(
         const Lock& headerOracleLock,
-        const block::Position& parent) const noexcept -> block::Position;
+        const block::Position& reorg,
+        const block::Position& current) const noexcept -> block::Position;
     auto ReportScan(const block::Position& pos) const noexcept -> void;
     auto Rescan(
         const block::Position best,

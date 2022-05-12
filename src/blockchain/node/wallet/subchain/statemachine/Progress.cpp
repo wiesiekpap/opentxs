@@ -98,8 +98,8 @@ auto Progress::Imp::ProcessReorg(
     const block::Position& parent) noexcept -> void
 {
     if (last_reported_.has_value()) {
-        const auto target =
-            parent_.ReorgTarget(headerOracleLock, last_reported_.value());
+        const auto target = parent_.ReorgTarget(
+            headerOracleLock, parent, last_reported_.value());
         last_reported_ = target;
         notify(target);
     }
