@@ -125,9 +125,35 @@ auto OutputCache::AddOutput(
         outputs_.try_emplace(id, std::move(pOutput));
 
         return true;
-    }
+    } else {
+        LogError()(OT_PRETTY_CLASS())("failed to write output").Flush();
 
-    return false;
+        return false;
+    }
+}
+
+auto OutputCache::AddOutput(
+    const block::Outpoint& id,
+    const node::TxoState state,
+    const block::Position& position,
+    const AccountID& account,
+    const SubchainID& subchain,
+    MDB_txn* tx,
+    std::unique_ptr<block::bitcoin::Output> output) noexcept -> bool
+{
+    OT_ASSERT(false == account.empty());
+    OT_ASSERT(false == subchain.empty());
+
+    auto rc = AddOutput(id, tx, std::move(output));
+
+    if (false == rc) { return false; }
+
+    rc &= AddToState(state, id, tx);
+    rc &= AddToPosition(position, id, tx);
+    rc &= AddToAccount(account, id, tx);
+    rc &= AddToSubchain(subchain, id, tx);
+
+    return rc;
 }
 
 auto OutputCache::AddToAccount(
@@ -135,6 +161,8 @@ auto OutputCache::AddToAccount(
     const block::Outpoint& output,
     MDB_txn* tx) noexcept -> bool
 {
+    OT_ASSERT(0 < outputs_.count(output));
+
     try {
         auto& set = load_output_index(id, accounts_);
         auto rc = lmdb_.Store(wallet::accounts_, id.Bytes(), output.Bytes(), tx)
@@ -159,6 +187,8 @@ auto OutputCache::AddToKey(
     const block::Outpoint& output,
     MDB_txn* tx) noexcept -> bool
 {
+    OT_ASSERT(0 < outputs_.count(output));
+
     const auto key = serialize(id);
 
     try {
@@ -185,6 +215,7 @@ auto OutputCache::AddToNym(
     const block::Outpoint& output,
     MDB_txn* tx) noexcept -> bool
 {
+    OT_ASSERT(0 < outputs_.count(output));
     OT_ASSERT(false == id.empty());
 
     try {
@@ -213,6 +244,8 @@ auto OutputCache::AddToPosition(
     const block::Outpoint& output,
     MDB_txn* tx) noexcept -> bool
 {
+    OT_ASSERT(0 < outputs_.count(output));
+
     const auto key = db::Position{id};
 
     try {
@@ -242,6 +275,8 @@ auto OutputCache::AddToState(
     const block::Outpoint& output,
     MDB_txn* tx) noexcept -> bool
 {
+    OT_ASSERT(0 < outputs_.count(output));
+
     try {
         auto& set = load_output_index(id, states_);
         auto rc = lmdb_
@@ -271,6 +306,8 @@ auto OutputCache::AddToSubchain(
     const block::Outpoint& output,
     MDB_txn* tx) noexcept -> bool
 {
+    OT_ASSERT(0 < outputs_.count(output));
+
     try {
         auto& set = load_output_index(id, subchains_);
         auto rc =

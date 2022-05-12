@@ -127,19 +127,10 @@ public:
     using UTXO = Parent::UTXO;
     using TXOs = Parent::TXOs;
 
-    auto AddConfirmedTransaction(
-        const NodeID& accountID,
-        const SubchainIndex& index,
-        const block::Position& block,
-        const std::size_t blockIndex,
-        const Vector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction,
-        TXOs& txoCreated,
-        TXOs& txoConsumed) const noexcept -> bool;
     auto AddConfirmedTransactions(
         const NodeID& account,
         const SubchainIndex& index,
-        const BatchedMatches& transactions,
+        BatchedMatches&& transactions,
         TXOs& txoCreated,
         TXOs& txoConsumed) noexcept -> bool;
     auto AddMempoolTransaction(

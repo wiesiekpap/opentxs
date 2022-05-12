@@ -50,7 +50,6 @@
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
@@ -130,22 +129,7 @@ auto Process::Imp::check_cache() noexcept -> void
     parent_.CheckCache(queue, cb);
 }
 
-auto Process::Imp::check_process() noexcept -> bool
-{
-    if (parent_.api_.GetOptions().Experimental()) {
-
-        return queue_process();
-    } else if (have_items()) {
-        auto i = ready_.cbegin();
-        do_process(*i);
-        ready_.erase(i);
-
-        return true;
-    } else {
-
-        return false;
-    }
-}
+auto Process::Imp::check_process() noexcept -> bool { return queue_process(); }
 
 auto Process::Imp::do_process(const Ready::value_type& data) noexcept -> void
 {
