@@ -10,14 +10,15 @@
 #include <cs_shared_guarded.h>
 #include <robin_hood.h>
 #include <algorithm>
+#include <cstddef>
 #include <cstring>
-#include <iosfwd>
 #include <iterator>
 #include <numeric>
 #include <optional>
 #include <shared_mutex>
 #include <stdexcept>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -227,61 +228,12 @@ public:
         publish_balance(*lock_shared());
     }
 
-    auto AddTransaction(
-        const AccountID& account,
-        const SubchainID& subchain,
-        const block::Position& block,
-        const Vector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& original,
-        const node::TxoState consumed,
-        const node::TxoState created,
-        TXOs& txoCreated,
-        TXOs& txoConsumed) noexcept -> bool
-    {
-        auto handle = lock();
-        auto& cache = *handle;
-
-        try {
-            auto tx = lmdb_.TransactionRW();
-            const auto added = add_transaction(
-                LogTrace(),
-                account,
-                subchain,
-                block,
-                outputIndices,
-                original,
-                consumed,
-                created,
-                txoCreated,
-                txoConsumed,
-                cache,
-                tx);
-
-            if (false == added) {
-                throw std::runtime_error{"failed to add transaction"};
-            }
-
-            if (false == tx.Finalize(true)) {
-                throw std::runtime_error{
-                    "Failed to commit database transaction"};
-            }
-
-            publish_balance(cache);
-
-            return true;
-        } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
-            cache.Clear();
-
-            return false;
-        }
-    }
     auto AddTransactions(
         const AccountID& account,
         const SubchainID& subchain,
-        const BatchedMatches& transactions,
         const node::TxoState consumed,
         const node::TxoState created,
+        BatchedMatches&& transactions,
         TXOs& txoCreated,
         TXOs& txoConsumed) noexcept -> bool
     {
@@ -290,12 +242,14 @@ public:
         auto& cache = *handle;
 
         try {
+            auto processed = Set<std::shared_ptr<block::bitcoin::Transaction>>{
+                transactions.get_allocator()};
             auto tx = lmdb_.TransactionRW();
 
             for (const auto& [block, blockMatches] : transactions) {
                 log(OT_PRETTY_CLASS())("processing block ")(print(block))
                     .Flush();
-                const auto added = add_transactions(
+                add_transactions(
                     log,
                     account,
                     subchain,
@@ -303,12 +257,11 @@ public:
                     blockMatches,
                     consumed,
                     created,
+                    processed,
                     txoCreated,
                     txoConsumed,
                     cache,
                     tx);
-
-                if (false == added) { return false; }
             }
 
             if (false == tx.Finalize(true)) {
@@ -316,8 +269,23 @@ public:
                     "Failed to commit database transaction"};
             }
 
+            const auto reason = api_.Factory().PasswordPrompt(
+                "Save a received blockchain transaction(s)");
+            for (const auto& pTx : processed) {
+                // TODO add a batching version of this call
+                const auto added =
+                    api_.Crypto().Blockchain().Internal().ProcessTransaction(
+                        chain_, *pTx, reason);
+
+                if (false == added) {
+                    throw std::runtime_error{
+                        "Error adding transaction to activity database"};
+                }
+            }
+
             // NOTE uncomment this for detailed debugging: cache.Print();
             publish_balance(cache);
+            transactions.clear();
 
             return true;
         } catch (const std::exception& e) {
@@ -327,60 +295,47 @@ public:
             return false;
         }
     }
-    auto AddConfirmedTransaction(
-        const AccountID& account,
-        const SubchainID& subchain,
-        const block::Position& block,
-        const Vector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& original,
-        TXOs& txoCreated,
-        TXOs& txoConsumed) noexcept -> bool
-    {
-        return AddTransaction(
-            account,
-            subchain,
-            block,
-            outputIndices,
-            original,
-            node::TxoState::ConfirmedSpend,
-            node::TxoState::ConfirmedNew,
-            txoCreated,
-            txoConsumed);
-    }
     auto AddConfirmedTransactions(
         const NodeID& account,
         const SubchainIndex& subchain,
-        const BatchedMatches& transactions,
+        BatchedMatches&& transactions,
         TXOs& txoCreated,
         TXOs& txoConsumed) noexcept -> bool
     {
         return AddTransactions(
             account,
             subchain,
-            std::move(transactions),
             node::TxoState::ConfirmedSpend,
             node::TxoState::ConfirmedNew,
+            std::move(transactions),
             txoCreated,
             txoConsumed);
     }
     auto AddMempoolTransaction(
         const AccountID& account,
         const SubchainID& subchain,
-        const Vector<std::uint32_t> outputIndices,
+        const Vector<std::uint32_t>& outputIndices,
         const block::bitcoin::Transaction& original,
         TXOs& txoCreated) noexcept -> bool
     {
         static const auto block = make_blank<block::Position>::value(api_);
         auto txoConsumed = TXOs{};
 
-        return AddTransaction(
+        return AddTransactions(
             account,
             subchain,
-            block,
-            outputIndices,
-            original,
             node::TxoState::UnconfirmedSpend,
             node::TxoState::UnconfirmedNew,
+            [&] {
+                auto out = BatchedMatches{txoCreated.get_allocator()};
+                auto& matches = out[block];
+                matches.emplace(
+                    std::piecewise_construct,
+                    std::forward_as_tuple(original.ID()),
+                    std::forward_as_tuple(outputIndices, original.clone()));
+
+                return out;
+            }(),
             txoCreated,
             txoConsumed);
     }
@@ -442,8 +397,6 @@ public:
                         .Flush();
                 }
 
-                OT_ASSERT(1 == keys.size());
-
                 const auto& outpoint = pending.emplace_back(
                     transaction.ID().Bytes(),
                     static_cast<std::uint32_t>(index));
@@ -466,6 +419,19 @@ public:
                         return false;
                     }
                 } else {
+                    const auto [accountID, subchainID] = [&] {
+                        OT_ASSERT(1 == keys.size());
+
+                        const auto& key = keys.at(0);
+                        const auto& [nodeID, subchain, index] = key;
+                        auto accountID = api_.Factory().Identifier(nodeID);
+                        auto subchainID =
+                            subchain_.GetSubchainID(accountID, subchain, tx);
+
+                        return std::make_pair(
+                            std::move(accountID), std::move(subchainID));
+                    }();
+
                     if (false == create_state(
                                      cache,
                                      tx,
@@ -473,6 +439,8 @@ public:
                                      outpoint,
                                      node::TxoState::UnconfirmedNew,
                                      blank_,
+                                     accountID,
+                                     subchainID,
                                      output)) {
                         LogError()(OT_PRETTY_CLASS())(
                             "Error creating new output state")
@@ -483,19 +451,7 @@ public:
                     }
                 }
 
-                for (const auto& key : keys) {
-                    const auto& owner = api.Owner(key);
-
-                    if (false == associate(cache, tx, outpoint, key)) {
-                        throw std::runtime_error{
-                            "Error associating output to subchain"};
-                    }
-
-                    if (false == cache.AddToNym(owner, outpoint, tx)) {
-                        throw std::runtime_error{
-                            "Error associating output to nym"};
-                    }
-                }
+                associate_output(outpoint, output, cache, tx);
             }
 
             for (const auto& outpoint : pending) {
@@ -958,7 +914,6 @@ public:
             const auto outpoints = [&] {
                 auto out = UnallocatedSet<block::Outpoint>{};
                 const auto sPosition = db::Position{position};
-                // FIXME
                 lmdb_.Load(
                     positions_,
                     reader(sPosition.data_),
@@ -1325,266 +1280,121 @@ private:
         return out;
     }
 
-    [[nodiscard]] auto add_transactions(
+    auto add_transactions(
         const Log& log,
         const AccountID& account,
         const SubchainID& subchain,
         const block::Position& block,
         const Parent::BlockMatches& blockMatches,
-        const node::TxoState consumed,
-        const node::TxoState created,
+        const node::TxoState consumeState,
+        const node::TxoState createState,
+        Set<std::shared_ptr<block::bitcoin::Transaction>>& processed,
         TXOs& txoCreated,
         TXOs& txoConsumed,
         OutputCache& cache,
-        storage::lmdb::LMDB::Transaction& tx) noexcept(false) -> bool
+        storage::lmdb::LMDB::Transaction& tx) noexcept(false) -> void
     {
-        for (const auto& [txid, transaction] : blockMatches) {
-            const auto& [indices, pTx] = transaction;
-            log(OT_PRETTY_CLASS())("adding transaction ")(txid->asHex())
+        auto consumed = Set<block::Outpoint>{txoCreated.get_allocator()};
+        auto created = TXOs{txoCreated.get_allocator()};
+        auto spent = TXOs{txoCreated.get_allocator()};
+        auto generation = Set<block::Outpoint>{txoCreated.get_allocator()};
+
+        for (auto& [txid, transaction] : blockMatches) {
+            auto& [indices, pTx] = transaction;
+            log(OT_PRETTY_CLASS())("parsing transaction ")(txid->asHex())
                 .Flush();
 
             OT_ASSERT(pTx);
 
-            const auto added = add_transaction(
-                log,
-                account,
-                subchain,
-                block,
-                indices,
-                *pTx,
-                consumed,
-                created,
-                txoCreated,
-                txoConsumed,
-                cache,
-                tx);
-
-            if (false == added) { return false; }
+            processed.emplace(pTx);
+            auto& modified = pTx->Internal();
+            modified.SetMinedPosition(block);
+            parse_inputs(block, modified, consumed, cache, tx);
+            parse_outputs(indices, modified, created, generation);
         }
 
-        return true;
+        // NOTE iterate over the transaction list twice to ensure that all
+        // outputs created in this block are known prior to associating inputs
+        // to previous outputs.
+
+        for (auto& [txid, transaction] : blockMatches) {
+            auto& [indices, pTx] = transaction;
+            auto& modified = pTx->Internal();
+            process_inputs(subchain, created, spent, modified, cache);
+        }
+
+        write(
+            log,
+            account,
+            subchain,
+            block,
+            createState,
+            generation,
+            created,
+            txoCreated,
+            cache,
+            tx);
+        write(
+            log,
+            account,
+            subchain,
+            block,
+            consumeState,
+            generation,
+            spent,
+            txoConsumed,
+            cache,
+            tx);
     }
-    [[nodiscard]] auto add_transaction(
-        const Log& log,
-        const AccountID& account,
-        const SubchainID& subchain,
-        const block::Position& block,
-        const Vector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& original,
-        const node::TxoState consumed,
-        const node::TxoState created,
-        TXOs& txoCreated,
-        TXOs& txoConsumed,
+    auto associate_input(
+        const std::size_t index,
+        const block::bitcoin::internal::Output& output,
+        block::bitcoin::internal::Transaction& tx) noexcept(false) -> void
+    {
+        if (false == tx.AssociatePreviousOutput(index, output)) {
+            throw std::runtime_error{
+                "error associating previous output to input"};
+        }
+    }
+    auto associate_output(
+        const block::Outpoint& outpoint,
+        const block::bitcoin::Output& output,
         OutputCache& cache,
-        storage::lmdb::LMDB::Transaction& tx) noexcept(false) -> bool
+        storage::lmdb::LMDB::Transaction& tx) noexcept(false) -> void
     {
         const auto& api = api_.Crypto().Blockchain();
-        const auto isGeneration = original.IsGeneration();
-        auto pCopy = original.clone();
+        const auto keys = output.Keys();
 
-        OT_ASSERT(pCopy);
+        OT_ASSERT(0 < keys.size());
+        // NOTE until multisig is supported there is never a reason for
+        // an output to be associated with more than one key.
+        OT_ASSERT(1 == keys.size());
 
-        auto& copy = pCopy->Internal();
-        copy.SetMinedPosition(block);
-        auto inputIndex = std::ptrdiff_t{-1};
-        auto proposals = UnallocatedSet<OTIdentifier>{};
+        for (const auto& key : keys) {
+            const auto& [subaccount, subchain, bip32] = key;
 
-        for (const auto& input : copy.Inputs()) {
-            const auto& outpoint = input.PreviousOutput();
-            ++inputIndex;
+            if (crypto::Subchain::Outgoing == subchain) {
+                // TODO make sure this output is associated with the
+                // correct contact
 
-            if (false ==
-                check_proposals(
-                    cache, tx, outpoint, block, copy.ID(), proposals)) {
-                throw std::runtime_error{"Error updating proposals"};
+                continue;
             }
 
-            if (cache.Exists(subchain, outpoint)) {
-                auto& existing = cache.GetOutput(subchain, outpoint);
+            const auto& owner = api.Owner(key);
 
-                if (!copy.AssociatePreviousOutput(inputIndex, existing)) {
-                    LogError()(OT_PRETTY_CLASS())(
-                        "Error associating previous output to input")
-                        .Flush();
-                    cache.Clear();
+            if (owner.empty()) {
+                const auto error =
+                    CString{"no owner found for key "}.append(print(key));
 
-                    return false;
-                }
-
-                if (change_state(
-                        cache, tx, outpoint, existing, consumed, block)) {
-                    log(OT_PRETTY_CLASS())("previous output ")(
-                        outpoint)(" marked as ")(print(consumed))
-                        .Flush();
-
-                    if (node::TxoState::ConfirmedSpend == consumed) {
-                        // NOTE the output will not be used so there is no
-                        // reason to copy it
-                        txoConsumed.emplace(outpoint, nullptr);
-                    }
-                } else {
-                    LogError()(OT_PRETTY_CLASS())(
-                        "Error updating consumed output state")
-                        .Flush();
-                    cache.Clear();
-
-                    return false;
-                }
-            } else {
-                const auto& outpoint = input.PreviousOutput();
-                log(OT_PRETTY_CLASS())("previous output ")(
-                    outpoint)(" does not belong to this subchain so its spent "
-                              "status will not be saved")
-                    .Flush();
+                throw std::runtime_error{error.c_str()};
             }
 
-            // NOTE consider the case of parallel chain scanning where one
-            // transaction spends inputs that belong to two different
-            // subchains. The first subchain to find the transaction will
-            // recognize the inputs belonging to itself but might miss the
-            // inputs belonging to the other subchain if the other
-            // subchain's scanning process has not yet discovered those
-            // outputs. This is fine. The other scanning process will parse
-            // this transaction again and at that point all inputs will be
-            // recognized. The only impact is that net balance change of the
-            // transaction will underestimated temporarily until scanning is
-            // complete for all subchains.
+            // TODO AddToKey?
+
+            if (false == cache.AddToNym(owner, outpoint, tx)) {
+                throw std::runtime_error{"Error associating outpoint to nym"};
+            }
         }
-
-        for (const auto& index : outputIndices) {
-            const auto outpoint = block::Outpoint{copy.ID().Bytes(), index};
-            const auto& output = copy.Outputs().at(index);
-            const auto keys = output.Keys();
-
-            OT_ASSERT(0 < keys.size());
-            // NOTE until multisig is supported there is never a reason for
-            // an output to be associated with more than one key.
-            OT_ASSERT(1 == keys.size());
-            OT_ASSERT(outpoint.Index() == index);
-
-            if (cache.Exists(outpoint)) {
-                auto& existing = cache.GetOutput(outpoint);
-
-                if (change_state(
-                        cache, tx, outpoint, existing, created, block)) {
-                    log(OT_PRETTY_CLASS())("output ")(outpoint)(" marked as ")(
-                        print(created))
-                        .Flush();
-                } else {
-                    LogError()(OT_PRETTY_CLASS())(
-                        "Error updating created output state")
-                        .Flush();
-                    cache.Clear();
-
-                    return false;
-                }
-            } else {
-                if (create_state(
-                        cache,
-                        tx,
-                        isGeneration,
-                        outpoint,
-                        created,
-                        block,
-                        output)) {
-                    log(OT_PRETTY_CLASS())("output ")(
-                        outpoint)(" created in state ")(print(created))
-                        .Flush();
-                } else {
-                    LogError()(OT_PRETTY_CLASS())(
-                        "Error created new output state")
-                        .Flush();
-                    cache.Clear();
-
-                    return false;
-                }
-            }
-
-            if (false == associate(cache, tx, outpoint, account, subchain)) {
-                throw std::runtime_error{
-                    "Error associating outpoint to subchain"};
-            }
-
-            for (const auto& key : keys) {
-                const auto& [subaccount, subchain, bip32] = key;
-
-                if (crypto::Subchain::Outgoing == subchain) {
-                    // TODO make sure this output is associated with the
-                    // correct contact
-
-                    continue;
-                }
-
-                const auto& owner = api.Owner(key);
-
-                if (owner.empty()) {
-                    LogError()(OT_PRETTY_CLASS())("No owner found for key ")(
-                        print(key))
-                        .Flush();
-
-                    OT_FAIL;
-                }
-
-                if (false == cache.AddToNym(owner, outpoint, tx)) {
-                    throw std::runtime_error{
-                        "Error associating outpoint to nym"};
-                }
-            }
-
-            txoCreated.emplace(outpoint, output.Internal().clone());
-        }
-
-        const auto reason = api_.Factory().PasswordPrompt(
-            "Save a received blockchain transaction");
-
-        if (!api.Internal().ProcessTransaction(chain_, copy, reason)) {
-            throw std::runtime_error{"Error adding transaction to database"};
-        }
-
-        return true;
-    }
-    [[nodiscard]] auto associate(
-        OutputCache& cache,
-        storage::lmdb::LMDB::Transaction& tx,
-        const block::Outpoint& outpoint,
-        const crypto::Key& key) noexcept -> bool
-    {
-        const auto& [nodeID, subchain, index] = key;
-        const auto accountID = api_.Factory().Identifier(nodeID);
-        const auto subchainID =
-            subchain_.GetSubchainID(accountID, subchain, tx);
-
-        return associate(cache, tx, outpoint, accountID, subchainID);
-    }
-    [[nodiscard]] auto associate(
-        OutputCache& cache,
-        storage::lmdb::LMDB::Transaction& tx,
-        const block::Outpoint& outpoint,
-        const AccountID& accountID,
-        const SubchainID& subchainID) noexcept -> bool
-    {
-        OT_ASSERT(false == accountID.empty());
-        OT_ASSERT(false == subchainID.empty());
-
-        try {
-            auto rc = cache.AddToAccount(accountID, outpoint, tx);
-
-            if (false == rc) {
-                throw std::runtime_error{"Failed to update account index"};
-            }
-
-            rc = cache.AddToSubchain(subchainID, outpoint, tx);
-
-            if (false == rc) {
-                throw std::runtime_error{"Failed to update subchain index"};
-            }
-        } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
-
-            return false;
-        }
-
-        return true;
     }
     // Only used by CancelProposal
     [[nodiscard]] auto change_state(
@@ -1837,6 +1647,8 @@ private:
         const block::Outpoint& id,
         const node::TxoState state,
         const block::Position position,
+        const AccountID& accountID,
+        const SubchainID& subchainID,
         const block::bitcoin::Output& output) noexcept -> bool
     {
         if (cache.Exists(id)) {
@@ -1894,31 +1706,28 @@ private:
                     }
                 }
 
-                if (!cache.AddOutput(id, tx, std::move(pOutput))) {
+                const auto rc = cache.AddOutput(
+                    id,
+                    effState,
+                    pos,
+                    accountID,
+                    subchainID,
+                    tx,
+                    std::move(pOutput));
+
+                if (false == rc) {
                     throw std::runtime_error{"failed to write output"};
                 }
             }
 
-            auto rc = cache.AddToState(effState, id, tx);
-
-            if (false == rc) {
-                throw std::runtime_error{"failed to update state index"};
-            }
-
-            rc = cache.AddToPosition(pos, id, tx);
-
-            if (false == rc) {
-                throw std::runtime_error{"failed to update position index"};
-            }
-
             if (isGeneration) {
-                rc = lmdb_
-                         .Store(
-                             generation_,
-                             static_cast<std::size_t>(pos.first),
-                             id.Bytes(),
-                             tx)
-                         .first;
+                const auto rc = lmdb_
+                                    .Store(
+                                        generation_,
+                                        static_cast<std::size_t>(pos.first),
+                                        id.Bytes(),
+                                        tx)
+                                    .first;
 
                 if (false == rc) {
                     throw std::runtime_error{
@@ -1932,6 +1741,131 @@ private:
         }
 
         return true;
+    }
+    auto parse_inputs(
+        const block::Position& block,
+        block::bitcoin::internal::Transaction& inputTx,
+        Set<block::Outpoint>& out,
+        OutputCache& cache,
+        storage::lmdb::LMDB::Transaction& tx) noexcept(false) -> void
+    {
+        auto proposals = UnallocatedSet<OTIdentifier>{};
+
+        for (auto& input : inputTx.Inputs()) {
+            const auto& outpoint = input.PreviousOutput();
+
+            if (false ==
+                check_proposals(
+                    cache, tx, outpoint, block, inputTx.ID(), proposals)) {
+                throw std::runtime_error{"Error updating proposals"};
+            }
+
+            out.emplace(outpoint);
+        }
+    }
+    auto parse_outputs(
+        const Vector<std::uint32_t>& indices,
+        block::bitcoin::internal::Transaction& inputTx,
+        TXOs& out,
+        Set<block::Outpoint>& generation) noexcept(false) -> void
+    {
+        for (const auto& index : indices) {
+            const auto outpoint = block::Outpoint{inputTx.ID().Bytes(), index};
+            const auto& output = inputTx.Outputs().at(index);
+
+            OT_ASSERT(outpoint.Index() == index);
+
+            if (inputTx.IsGeneration()) { generation.emplace(outpoint); }
+
+            out.emplace(outpoint, output.Internal().clone());
+        }
+    }
+    auto process_inputs(
+        const SubchainID& subchain,
+        TXOs& created,
+        TXOs& spent,
+        block::bitcoin::internal::Transaction& tx,
+        OutputCache& cache) noexcept(false) -> void
+    {
+        auto index = std::size_t{0};
+
+        for (auto& input : tx.Inputs()) {
+            const auto& outpoint = input.PreviousOutput();
+
+            if (cache.Exists(subchain, outpoint)) {
+                associate_input(index, cache.GetOutput(subchain, outpoint), tx);
+                spent.emplace(outpoint, nullptr);
+            } else if (auto i = created.find(outpoint); created.end() != i) {
+                const auto& pOutput = i->second;
+
+                OT_ASSERT(pOutput);
+
+                associate_input(index, pOutput->Internal(), tx);
+                spent.insert(created.extract(i));
+            } else {
+                // NOTE this input does not spend an output which is owned by
+                // the current subchain
+            }
+
+            ++index;
+        }
+    }
+    auto write(
+        const Log& log,
+        const AccountID& account,
+        const SubchainID& subchain,
+        const block::Position& block,
+        const node::TxoState state,
+        const Set<block::Outpoint>& generation,
+        TXOs& in,
+        TXOs& out,
+        OutputCache& cache,
+        storage::lmdb::LMDB::Transaction& tx) noexcept(false) -> void
+    {
+        auto stop = in.end();
+
+        for (auto i = in.begin(); i != stop; ++i) {
+            const auto& [outpoint, pOutput] = *i;
+
+            if (cache.Exists(outpoint)) {
+                auto& existing = cache.GetOutput(outpoint);
+
+                if (change_state(cache, tx, outpoint, existing, state, block)) {
+                    log(OT_PRETTY_CLASS())("output ")(outpoint)(" marked as ")(
+                        print(state))
+                        .Flush();
+                } else {
+                    throw std::runtime_error{
+                        "error updating created output state"};
+                }
+            } else {
+                OT_ASSERT(pOutput);
+
+                const auto& output = *pOutput;
+                const auto isGeneration = 0u < generation.count(outpoint);
+
+                if (create_state(
+                        cache,
+                        tx,
+                        isGeneration,
+                        outpoint,
+                        state,
+                        block,
+                        account,
+                        subchain,
+                        output)) {
+                    log(OT_PRETTY_CLASS())("output ")(
+                        outpoint)(" created in state ")(print(state))
+                        .Flush();
+                } else {
+                    throw std::runtime_error{"error creating new output state"};
+                }
+
+                associate_output(outpoint, output, cache, tx);
+            }
+        }
+
+        out.merge(in);
     }
 
     Imp() = delete;
@@ -1951,30 +1885,10 @@ Output::Output(
     OT_ASSERT(imp_);
 }
 
-auto Output::AddConfirmedTransaction(
-    const AccountID& account,
-    const SubchainID& subchain,
-    const block::Position& block,
-    const std::size_t blockIndex,
-    const Vector<std::uint32_t> outputIndices,
-    const block::bitcoin::Transaction& transaction,
-    TXOs& txoCreated,
-    TXOs& txoConsumed) noexcept -> bool
-{
-    return imp_->AddConfirmedTransaction(
-        account,
-        subchain,
-        block,
-        outputIndices,
-        transaction,
-        txoCreated,
-        txoConsumed);
-}
-
 auto Output::AddConfirmedTransactions(
     const AccountID& account,
     const SubchainID& subchain,
-    const BatchedMatches& transactions,
+    BatchedMatches&& transactions,
     TXOs& txoCreated,
     TXOs& txoConsumed) noexcept -> bool
 {
