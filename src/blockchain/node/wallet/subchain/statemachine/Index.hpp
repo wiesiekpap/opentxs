@@ -15,6 +15,7 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -56,7 +57,9 @@ namespace opentxs::blockchain::node::wallet
 class Index::Imp : public statemachine::Job
 {
 public:
-    auto ProcessReorg(const block::Position& parent) noexcept -> void final;
+    auto ProcessReorg(
+        const Lock& headerOracleLock,
+        const block::Position& parent) noexcept -> void final;
 
     Imp(const boost::shared_ptr<const SubchainStateData>& parent,
         const network::zeromq::BatchID batch,
@@ -80,14 +83,15 @@ private:
     virtual auto need_index(const std::optional<Bip32Index>& current)
         const noexcept -> std::optional<Bip32Index> = 0;
 
+    auto do_process_update(Message&& msg) noexcept -> void final;
     auto do_startup() noexcept -> void final;
     virtual auto process(
         const std::optional<Bip32Index>& current,
         Bip32Index target) noexcept -> void = 0;
+    auto process_do_rescan(Message&& in) noexcept -> void final;
     auto process_filter(Message&& in, block::Position&& tip) noexcept
         -> void final;
     auto process_key(Message&& in) noexcept -> void final;
-    auto process_update(Message&& msg) noexcept -> void final;
     auto work() noexcept -> bool final;
 };
 }  // namespace opentxs::blockchain::node::wallet

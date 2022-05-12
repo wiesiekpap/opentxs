@@ -116,6 +116,8 @@ auto print(SubchainJobs job) noexcept -> std::string_view
             {Job::watchdog, "watchdog"},
             {Job::watchdog_ack, "watchdog_ack"},
             {Job::reprocess, "reprocess"},
+            {Job::rescan, "rescan"},
+            {Job::do_rescan, "do_rescan"},
             {Job::init, "init"},
             {Job::key, "key"},
             {Job::prepare_shutdown, "prepare_shutdown"},
@@ -457,6 +459,10 @@ SubchainStateData::SubchainStateData(
                {
                    {toChildren, Direction::Bind},
                }},
+              {SocketType::Push,
+               {
+                   {toScan, Direction::Connect},
+               }},
           })
     , api_(api)
     , node_(node)
@@ -481,8 +487,9 @@ SubchainStateData::SubchainStateData(
     , to_process_endpoint_(
           network::zeromq::MakeArbitraryInproc(alloc.resource()))
     , to_progress_endpoint_(std::move(toProgress))
-    , shutdown_endpoint_(parent, alloc)
+    , from_parent_(parent, alloc)
     , scan_threshold_(1000)
+    , maximum_scan_(2000)
     , element_cache_(
           db_.GetPatterns(db_key_, alloc.resource()),
           db_.GetUnspentOutputs(id_, subchain_, alloc.resource()),
@@ -493,6 +500,7 @@ SubchainStateData::SubchainStateData(
     , rescan_progress_(-1)
     , to_block_oracle_(pipeline_.Internal().ExtraSocket(0))
     , to_children_(pipeline_.Internal().ExtraSocket(1))
+    , to_scan_(pipeline_.Internal().ExtraSocket(2))
     , pending_state_(State::normal)
     , state_(State::normal)
     , filter_sizes_(alloc)
@@ -710,11 +718,11 @@ auto SubchainStateData::do_reorg(
                 subchain_,
                 db_key_,
                 reorg)) {
-            scan_->ProcessReorg(ancestor);
-            process_->ProcessReorg(ancestor);
-            index_->ProcessReorg(ancestor);
-            rescan_->ProcessReorg(ancestor);
-            progress_->ProcessReorg(ancestor);
+            scan_->ProcessReorg(headerOracleLock, ancestor);
+            process_->ProcessReorg(headerOracleLock, ancestor);
+            index_->ProcessReorg(headerOracleLock, ancestor);
+            rescan_->ProcessReorg(headerOracleLock, ancestor);
+            progress_->ProcessReorg(headerOracleLock, ancestor);
         } else {
 
             ++errors;
@@ -903,6 +911,11 @@ auto SubchainStateData::process_prepare_reorg(Message&& in) noexcept -> void
     transition_state_reorg(body.at(1).as<StateSequence>());
 }
 
+auto SubchainStateData::process_rescan(Message&& in) noexcept -> void
+{
+    to_scan_.Send(MakeWork(Work::do_rescan));
+}
+
 auto SubchainStateData::process_watchdog_ack(Message&& in) noexcept -> void
 {
     const auto body = in.Body();
@@ -1052,6 +1065,14 @@ auto SubchainStateData::reorg_children() const noexcept -> std::size_t
     return 1u;
 }
 
+auto SubchainStateData::ReorgTarget(
+    const Lock& headerOracleLock,
+    const block::Position& reorg,
+    const block::Position& current) const noexcept -> block::Position
+{
+    return std::min(current, reorg);
+}
+
 auto SubchainStateData::Rescan(
     const block::Position best,
     const block::Height stop,
@@ -1147,8 +1168,9 @@ auto SubchainStateData::scan(
             // average cfilter element count (estimated) and match set for this
             // subchain (known).
             const auto threads = choose_thread_count(elementCount);
-            const auto scanBatch =
-                GetBatchSize(elementsPerFilter, elementCount) * threads;
+            const auto scanBatch = std::min(
+                maximum_scan_,
+                GetBatchSize(elementsPerFilter, elementCount) * threads);
             log(OT_PRETTY_CLASS())(name)(" filter size: ")(
                 elementsPerFilter)(" wallet size: ")(
                 elementCount)(" batch size: ")(scanBatch)
@@ -1618,6 +1640,9 @@ auto SubchainStateData::state_normal(const Work work, Message&& msg) noexcept
         case Work::watchdog_ack: {
             process_watchdog_ack(std::move(msg));
         } break;
+        case Work::rescan: {
+            process_rescan(std::move(msg));
+        } break;
         case Work::init: {
             do_init();
         } break;
@@ -1633,6 +1658,7 @@ auto SubchainStateData::state_normal(const Work work, Message&& msg) noexcept
         case Work::update:
         case Work::watchdog:
         case Work::reprocess:
+        case Work::do_rescan:
         case Work::key:
         default: {
             LogError()(OT_PRETTY_CLASS())("unhandled message type ")(
@@ -1658,6 +1684,7 @@ auto SubchainStateData::state_reorg(const Work work, Message&& msg) noexcept
             OT_FAIL;
         }
         case Work::prepare_reorg:
+        case Work::rescan:
         case Work::statemachine: {
             defer(std::move(msg));
         } break;
@@ -1670,6 +1697,7 @@ auto SubchainStateData::state_reorg(const Work work, Message&& msg) noexcept
         case Work::update:
         case Work::watchdog:
         case Work::reprocess:
+        case Work::do_rescan:
         case Work::key:
         default: {
             LogError()(OT_PRETTY_CLASS())("unhandled message type ")(

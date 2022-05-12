@@ -12,7 +12,6 @@
 #include <future>
 #include <memory>
 #include <mutex>
-#include <random>
 #include <utility>
 
 #include "core/Worker.hpp"
@@ -54,19 +53,15 @@ auto lock_for_reorg(
     const std::string_view name,
     std::timed_mutex& mutex) noexcept -> std::unique_lock<std::timed_mutex>
 {
-    static thread_local auto rng = std::mt19937{std::random_device{}()};
-    static thread_local auto dist =
-        std::uniform_int_distribution<int>{500, 1500};
     auto lock = std::unique_lock<std::timed_mutex>{mutex, std::defer_lock};
     auto failures{-1};
 
     while (false == lock.owns_lock()) {
         if (++failures < 300) {
-            const auto delay = std::chrono::milliseconds{dist(rng)};
-            lock.try_lock_for(delay);
+            lock.try_lock_for(997ms);
         } else {
             LogError()(name)(" state machine is not responding").Flush();
-            lock.try_lock_for(1s);
+            lock.try_lock_for(997ms);
         }
     }
 
@@ -267,6 +262,13 @@ auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
         fee_oracle_.Shutdown();
         promise.set_value();
     }
+}
+
+auto Wallet::StartRescan() const noexcept -> bool
+{
+    accounts_.Rescan();
+
+    return true;
 }
 
 auto Wallet::state_machine() noexcept -> bool

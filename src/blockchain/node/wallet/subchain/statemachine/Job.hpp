@@ -80,6 +80,7 @@ public:
 protected:
     const SubchainStateData& parent_;
 
+    auto add_last_reorg(Message& out) const noexcept -> void;
     auto last_reorg() const noexcept -> std::optional<StateSequence>;
 
     virtual auto work() noexcept -> bool;
@@ -119,9 +120,12 @@ private:
     auto transition_state_normal() noexcept -> bool;
     auto transition_state_reorg(StateSequence id) noexcept -> bool;
     auto transition_state_shutdown() noexcept -> bool;
+    auto process_update(Message&& msg) noexcept -> void;
 
     virtual auto do_startup() noexcept -> void = 0;
+    virtual auto do_process_update(Message&& msg) noexcept -> void;
     virtual auto process_block(block::Hash&& block) noexcept -> void;
+    virtual auto process_do_rescan(Message&& in) noexcept -> void = 0;
     virtual auto process_key(Message&& in) noexcept -> void;
     virtual auto process_filter(Message&& in, block::Position&& tip) noexcept
         -> void;
@@ -129,6 +133,5 @@ private:
     virtual auto process_process(block::Position&& position) noexcept -> void;
     virtual auto process_reprocess(Message&& msg) noexcept -> void;
     virtual auto process_startup(Message&& in) noexcept -> void;
-    virtual auto process_update(Message&& msg) noexcept -> void;
 };
 }  // namespace opentxs::blockchain::node::wallet::statemachine

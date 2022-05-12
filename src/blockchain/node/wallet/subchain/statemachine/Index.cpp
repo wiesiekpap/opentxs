@@ -72,6 +72,25 @@ Index::Imp::Imp(
 {
 }
 
+auto Index::Imp::do_process_update(Message&& msg) noexcept -> void
+{
+    auto clean = Set<ScanStatus>{get_allocator()};
+    auto dirty = Set<block::Position>{get_allocator()};
+    decode(parent_.api_, msg, clean, dirty);
+
+    for (const auto& [type, position] : clean) {
+        if (ScanState::processed == type) {
+            log_(OT_PRETTY_CLASS())(parent_.name_)(" re-indexing ")(
+                parent_.name_)(" due to processed block ")(
+                opentxs::print(position))
+                .Flush();
+        }
+    }
+
+    do_work();
+    to_rescan_.SendDeferred(std::move(msg));
+}
+
 auto Index::Imp::do_startup() noexcept -> void
 {
     last_indexed_ = parent_.db_.SubchainLastIndexed(parent_.db_key_);
@@ -90,9 +109,16 @@ auto Index::Imp::done(
     parent_.element_cache_.lock()->Add(std::move(elements));
 }
 
-auto Index::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
+auto Index::Imp::ProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
 {
     // NOTE no action required
+}
+
+auto Index::Imp::process_do_rescan(Message&& in) noexcept -> void
+{
+    to_rescan_.Send(std::move(in));
 }
 
 auto Index::Imp::process_filter(Message&& in, block::Position&&) noexcept
@@ -126,25 +152,6 @@ auto Index::Imp::process_key(Message&& in) noexcept -> void
     do_work();
 }
 
-auto Index::Imp::process_update(Message&& msg) noexcept -> void
-{
-    auto clean = Set<ScanStatus>{get_allocator()};
-    auto dirty = Set<block::Position>{get_allocator()};
-    decode(parent_.api_, msg, clean, dirty);
-
-    for (const auto& [type, position] : clean) {
-        if (ScanState::processed == type) {
-            log_(OT_PRETTY_CLASS())(parent_.name_)(" re-indexing ")(
-                parent_.name_)(" due to processed block ")(
-                opentxs::print(position))
-                .Flush();
-        }
-    }
-
-    do_work();
-    to_rescan_.SendDeferred(std::move(msg));
-}
-
 auto Index::Imp::work() noexcept -> bool
 {
     const auto need = need_index(last_indexed_);
@@ -175,9 +182,11 @@ auto Index::ChangeState(const State state, StateSequence reorg) noexcept -> bool
     return imp_->ChangeState(state, reorg);
 }
 
-auto Index::ProcessReorg(const block::Position& parent) noexcept -> void
+auto Index::ProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
 {
-    imp_->ProcessReorg(parent);
+    imp_->ProcessReorg(headerOracleLock, parent);
 }
 
 Index::~Index()

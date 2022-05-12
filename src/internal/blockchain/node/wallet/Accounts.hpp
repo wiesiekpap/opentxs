@@ -43,6 +43,8 @@ namespace opentxs::blockchain::node::wallet
 class Accounts
 {
 public:
+    auto Rescan() const noexcept -> void;
+
     auto Init() noexcept -> void;
     auto Shutdown() noexcept -> void;
 

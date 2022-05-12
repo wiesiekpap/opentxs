@@ -15,9 +15,11 @@
 #include <atomic>
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
+#include "blockchain/node/wallet/subchain/statemachine/ElementCache.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
@@ -121,6 +123,7 @@ auto Scan::Imp::do_startup() noexcept -> void
 
     to_process_.SendDeferred([&] {
         auto out = MakeWork(Work::update);
+        add_last_reorg(out);
         auto clean = Vector<ScanStatus>{get_allocator()};
         clean.emplace_back(ScanState::scan_clean, last_scanned_.value());
         encode(clean, out);
@@ -129,13 +132,17 @@ auto Scan::Imp::do_startup() noexcept -> void
     }());
 }
 
-auto Scan::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
+auto Scan::Imp::ProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
 {
-    if (last_scanned_.has_value() && (last_scanned_.value() > parent)) {
+    if (last_scanned_.has_value()) {
+        const auto target = parent_.ReorgTarget(
+            headerOracleLock, parent, last_scanned_.value());
         log_(OT_PRETTY_CLASS())(parent_.name_)(" last scanned reset to ")(
-            opentxs::print(parent))
+            opentxs::print(target))
             .Flush();
-        last_scanned_ = parent;
+        last_scanned_ = target;
     }
 
     if (filter_tip_.has_value() && (filter_tip_.value() > parent)) {
@@ -144,6 +151,13 @@ auto Scan::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
             .Flush();
         filter_tip_ = parent;
     }
+}
+
+auto Scan::Imp::process_do_rescan(Message&& in) noexcept -> void
+{
+    last_scanned_.reset();
+    parent_.match_cache_.lock()->Reset();
+    to_process_.Send(std::move(in));
 }
 
 auto Scan::Imp::process_filter(Message&& in, block::Position&& tip) noexcept
@@ -251,6 +265,7 @@ auto Scan::Imp::work() noexcept -> bool
             .Flush();
         to_process_.SendDeferred([&] {
             auto out = MakeWork(Work::update);
+            add_last_reorg(out);
             encode(dirty, out);
 
             return out;
@@ -261,6 +276,7 @@ auto Scan::Imp::work() noexcept -> bool
         clean.emplace_back(ScanState::scan_clean, highestClean.value());
         to_process_.SendDeferred([&] {
             auto out = MakeWork(Work::update);
+            add_last_reorg(out);
             encode(clean, out);
 
             return out;
@@ -293,9 +309,11 @@ auto Scan::ChangeState(const State state, StateSequence reorg) noexcept -> bool
     return imp_->ChangeState(state, reorg);
 }
 
-auto Scan::ProcessReorg(const block::Position& parent) noexcept -> void
+auto Scan::ProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
 {
-    imp_->ProcessReorg(parent);
+    imp_->ProcessReorg(headerOracleLock, parent);
 }
 
 Scan::~Scan()

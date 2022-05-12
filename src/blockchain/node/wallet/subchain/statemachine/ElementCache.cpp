@@ -266,6 +266,8 @@ auto MatchCache::GetMatches(const block::Position& block) const noexcept
         return i->second;
     }
 }
+
+auto MatchCache::Reset() noexcept -> void { results_.clear(); }
 }  // namespace opentxs::blockchain::node::wallet
 
 namespace opentxs::blockchain::node::wallet

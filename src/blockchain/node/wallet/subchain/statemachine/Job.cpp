@@ -115,7 +115,7 @@ Job::Job(
           alloc,
           [&] {
               auto out{subscribe};
-              out.emplace_back(parent->shutdown_endpoint_, Direction::Connect);
+              out.emplace_back(parent->from_parent_, Direction::Connect);
               out.emplace_back(parent->from_ssd_endpoint_, Direction::Connect);
 
               return out;
@@ -141,6 +141,15 @@ Job::Job(
     , watchdog_(parent_.api_.Network().Asio().Internal().GetTimer())
 {
     OT_ASSERT(parent_p_);
+}
+
+auto Job::add_last_reorg(Message& out) const noexcept -> void
+{
+    if (const auto epoc = last_reorg(); epoc.has_value()) {
+        out.AddFrame(epoc.value());
+    } else {
+        out.AddFrame();
+    }
 }
 
 auto Job::ChangeState(const State state, StateSequence reorg) noexcept -> bool
@@ -180,6 +189,13 @@ auto Job::ChangeState(const State state, StateSequence reorg) noexcept -> bool
     }
 
     return output;
+}
+
+auto Job::do_process_update(Message&& msg) noexcept -> void
+{
+    LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type").Flush();
+
+    OT_FAIL;
 }
 
 auto Job::do_shutdown() noexcept -> void {}
@@ -319,9 +335,37 @@ auto Job::process_mempool(Message&& in) noexcept -> void
 
 auto Job::process_update(Message&& msg) noexcept -> void
 {
-    LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type").Flush();
+    const auto body = msg.Body();
 
-    OT_FAIL;
+    OT_ASSERT(1 < body.size());
+
+    const auto& epoc = body.at(1);
+    const auto expected = last_reorg();
+
+    if (0u == epoc.size()) {
+        if (expected.has_value()) {
+            log_(OT_PRETTY_CLASS())(name_)(" ignoring stale update").Flush();
+
+            return;
+        }
+    } else {
+        if (expected.has_value()) {
+            const auto reorg = epoc.as<StateSequence>();
+
+            if (reorg != expected.value()) {
+                log_(OT_PRETTY_CLASS())(name_)(" ignoring stale update")
+                    .Flush();
+
+                return;
+            }
+        } else {
+            log_(OT_PRETTY_CLASS())(name_)(" ignoring stale update").Flush();
+
+            return;
+        }
+    }
+
+    do_process_update(std::move(msg));
 }
 
 auto Job::process_watchdog() noexcept -> void
@@ -364,6 +408,12 @@ auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
         case Work::process: {
             process_process(std::move(msg));
         } break;
+        case Work::rescan: {
+            // NOTE do nothing
+        } break;
+        case Work::do_rescan: {
+            process_do_rescan(std::move(msg));
+        } break;
         case Work::watchdog: {
             process_watchdog();
         } break;
@@ -397,12 +447,17 @@ auto Job::state_reorg(const Work work, Message&& msg) noexcept -> void
 {
     switch (work) {
         case Work::filter:
+        case Work::update: {
+
+            return;
+        }
         case Work::mempool:
         case Work::block:
         case Work::prepare_reorg:
-        case Work::update:
         case Work::process:
         case Work::reprocess:
+        case Work::rescan:
+        case Work::do_rescan:
         case Work::key:
         case Work::statemachine: {
             log_(OT_PRETTY_CLASS())(name_)(" deferring ")(print(work))(

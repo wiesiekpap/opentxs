@@ -54,20 +54,7 @@ Progress::Imp::Imp(
 {
 }
 
-auto Progress::Imp::notify(const block::Position& pos) const noexcept -> void
-{
-    parent_.ReportScan(pos);
-}
-
-auto Progress::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
-{
-    if (last_reported_.has_value() && last_reported_.value() > parent) {
-        last_reported_ = parent;
-        notify(parent);
-    }
-}
-
-auto Progress::Imp::process_update(Message&& msg) noexcept -> void
+auto Progress::Imp::do_process_update(Message&& msg) noexcept -> void
 {
     const auto start = Clock::now();
     auto clean = Set<ScanStatus>{get_allocator()};
@@ -100,6 +87,31 @@ auto Progress::Imp::process_update(Message&& msg) noexcept -> void
         std::chrono::nanoseconds{cache - database})
         .Flush();
 }
+
+auto Progress::Imp::notify(const block::Position& pos) const noexcept -> void
+{
+    parent_.ReportScan(pos);
+}
+
+auto Progress::Imp::ProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
+{
+    if (last_reported_.has_value()) {
+        const auto target = parent_.ReorgTarget(
+            headerOracleLock, parent, last_reported_.value());
+        last_reported_ = target;
+        notify(target);
+    }
+}
+
+auto Progress::Imp::process_do_rescan(Message&& in) noexcept -> void
+{
+    last_reported_.reset();
+    const auto& best = parent_.null_position_;
+    parent_.db_.SubchainSetLastScanned(parent_.db_key_, best);
+    notify(best);
+}
 }  // namespace opentxs::blockchain::node::wallet
 
 namespace opentxs::blockchain::node::wallet
@@ -126,9 +138,11 @@ auto Progress::ChangeState(const State state, StateSequence reorg) noexcept
     return imp_->ChangeState(state, reorg);
 }
 
-auto Progress::ProcessReorg(const block::Position& parent) noexcept -> void
+auto Progress::ProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
 {
-    imp_->ProcessReorg(parent);
+    imp_->ProcessReorg(headerOracleLock, parent);
 }
 
 Progress::~Progress()

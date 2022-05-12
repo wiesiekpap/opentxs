@@ -153,6 +153,36 @@ auto Rescan::Imp::current() const noexcept -> const block::Position&
     }
 }
 
+auto Rescan::Imp::do_process_update(Message&& msg) noexcept -> void
+{
+    auto clean = Set<ScanStatus>{get_allocator()};
+    auto dirty = Set<block::Position>{get_allocator()};
+    decode(parent_.api_, msg, clean, dirty);
+    const auto highestClean = highest_clean([&] {
+        auto out = Set<block::Position>{};
+        std::transform(
+            clean.begin(),
+            clean.end(),
+            std::inserter(out, out.end()),
+            [&](const auto& in) {
+                auto& [type, pos] = in;
+
+                return pos;
+            });
+
+        return out;
+    }());
+    adjust_last_scanned(highestClean);
+    process_dirty(dirty);
+    process_clean(clean);
+
+    if (parent_.scan_dirty_) {
+        do_work();
+    } else if (0u < clean.size()) {
+        to_progress_.SendDeferred(std::move(msg));
+    }
+}
+
 auto Rescan::Imp::do_startup() noexcept -> void
 {
     const auto& node = parent_.node_;
@@ -194,13 +224,17 @@ auto Rescan::Imp::highest_clean(const Set<block::Position>& clean)
     }
 }
 
-auto Rescan::Imp::ProcessReorg(const block::Position& parent) noexcept -> void
+auto Rescan::Imp::ProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
 {
-    if (last_scanned_.has_value() && (last_scanned_.value() > parent)) {
+    if (last_scanned_.has_value()) {
+        const auto target = parent_.ReorgTarget(
+            headerOracleLock, parent, last_scanned_.value());
         log_(OT_PRETTY_CLASS())(name_)(" last scanned reset to ")(
-            opentxs::print(parent))
+            opentxs::print(target))
             .Flush();
-        set_last_scanned(parent);
+        set_last_scanned(target);
     }
 
     if (filter_tip_.has_value() && (filter_tip_.value() > parent)) {
@@ -261,6 +295,15 @@ auto Rescan::Imp::process_dirty(const Set<block::Position>& dirty) noexcept
     }
 }
 
+auto Rescan::Imp::process_do_rescan(Message&& in) noexcept -> void
+{
+    last_scanned_.reset();
+    highest_dirty_ = parent_.null_position_;
+    dirty_.clear();
+    update_progress();
+    to_progress_.Send(std::move(in));
+}
+
 auto Rescan::Imp::process_filter(Message&& in, block::Position&& tip) noexcept
     -> void
 {
@@ -291,36 +334,6 @@ auto Rescan::Imp::process_filter(Message&& in, block::Position&& tip) noexcept
         .Flush();
     filter_tip_ = std::move(tip);
     do_work();
-}
-
-auto Rescan::Imp::process_update(Message&& msg) noexcept -> void
-{
-    auto clean = Set<ScanStatus>{get_allocator()};
-    auto dirty = Set<block::Position>{get_allocator()};
-    decode(parent_.api_, msg, clean, dirty);
-    const auto highestClean = highest_clean([&] {
-        auto out = Set<block::Position>{};
-        std::transform(
-            clean.begin(),
-            clean.end(),
-            std::inserter(out, out.end()),
-            [&](const auto& in) {
-                auto& [type, pos] = in;
-
-                return pos;
-            });
-
-        return out;
-    }());
-    adjust_last_scanned(highestClean);
-    process_dirty(dirty);
-    process_clean(clean);
-
-    if (parent_.scan_dirty_) {
-        do_work();
-    } else if (0u < clean.size()) {
-        to_progress_.SendDeferred(std::move(msg));
-    }
 }
 
 auto Rescan::Imp::prune() noexcept -> void
@@ -356,7 +369,7 @@ auto Rescan::Imp::rescan_finished() const noexcept -> bool
 
     if (dirty > clean) { return false; }
 
-    if (auto interval = clean - dirty; interval > parent_.scan_threshold_) {
+    if (auto interval = clean - dirty; interval > parent_.FinishRescan()) {
         log_(OT_PRETTY_CLASS())(name_)(" rescan has progressed ")(
             interval)(" blocks after highest dirty position")
             .Flush();
@@ -427,6 +440,7 @@ auto Rescan::Imp::work() noexcept -> bool
                 clean.emplace_back(
                     ScanState::rescan_clean, last_scanned_.value());
                 auto out = MakeWork(Work::update);
+                add_last_reorg(out);
                 encode(clean, out);
 
                 return out;
@@ -486,6 +500,7 @@ auto Rescan::Imp::work() noexcept -> bool
         log_(OT_PRETTY_CLASS())(name_)(" re-processing ")(count)(" items:")
             .Flush();
         auto work = MakeWork(Work::reprocess);
+        add_last_reorg(work);
 
         for (auto& status : dirty) {
             auto& [type, position] = status;
@@ -528,9 +543,11 @@ auto Rescan::ChangeState(const State state, StateSequence reorg) noexcept
     return imp_->ChangeState(state, reorg);
 }
 
-auto Rescan::ProcessReorg(const block::Position& parent) noexcept -> void
+auto Rescan::ProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
 {
-    imp_->ProcessReorg(parent);
+    imp_->ProcessReorg(headerOracleLock, parent);
 }
 
 Rescan::~Rescan()
