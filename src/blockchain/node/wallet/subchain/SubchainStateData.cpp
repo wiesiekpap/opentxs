@@ -1067,13 +1067,10 @@ auto SubchainStateData::reorg_children() const noexcept -> std::size_t
 
 auto SubchainStateData::ReorgTarget(
     const Lock& headerOracleLock,
-    const block::Position& parent) const noexcept -> block::Position
+    const block::Position& reorg,
+    const block::Position& current) const noexcept -> block::Position
 {
-    const auto height =
-        std::max<block::Height>(maximum_scan_, parent.first) - maximum_scan_;
-
-    return node_.HeaderOracle().Internal().GetPosition(
-        headerOracleLock, height);
+    return std::min(current, reorg);
 }
 
 auto SubchainStateData::Rescan(

@@ -229,8 +229,8 @@ auto Rescan::Imp::ProcessReorg(
     const block::Position& parent) noexcept -> void
 {
     if (last_scanned_.has_value()) {
-        const auto target =
-            parent_.ReorgTarget(headerOracleLock, last_scanned_.value());
+        const auto target = parent_.ReorgTarget(
+            headerOracleLock, parent, last_scanned_.value());
         log_(OT_PRETTY_CLASS())(name_)(" last scanned reset to ")(
             opentxs::print(target))
             .Flush();
