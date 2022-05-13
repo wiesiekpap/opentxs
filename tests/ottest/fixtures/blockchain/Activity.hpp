@@ -28,13 +28,13 @@ class Client;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Transaction;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
 namespace crypto
 {
@@ -62,7 +62,7 @@ namespace ottest
 {
 struct Test_BlockchainActivity : public ::testing::Test {
     using Element = ot::blockchain::crypto::Element;
-    using Transaction = ot::blockchain::block::bitcoin::Transaction;
+    using Transaction = ot::blockchain::bitcoin::block::Transaction;
 
     static const ot::UnallocatedCString test_transaction_hex_;
     static const ot::UnallocatedCString btc_account_id_;

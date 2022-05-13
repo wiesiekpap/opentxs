@@ -25,15 +25,13 @@
 #include "blockchain/node/wallet/subchain/DeterministicStateData.hpp"
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "core/Worker.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/Account.hpp"
 #include "internal/blockchain/node/wallet/Accounts.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Input.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -62,12 +60,16 @@ class Session;
 
 namespace blockchain
 {
+namespace database
+{
+class Wallet;
+}  // namespace database
+
 namespace node
 {
 namespace internal
 {
-struct Network;
-struct WalletDatabase;
+class Manager;
 }  // namespace internal
 }  // namespace node
 }  // namespace blockchain
@@ -89,8 +91,8 @@ public:
 
     Proposals(
         const api::Session& api,
-        const node::internal::Network& node,
-        node::internal::WalletDatabase& db,
+        const node::internal::Manager& node,
+        database::Wallet& db,
         const Type chain) noexcept;
     ~Proposals();
 

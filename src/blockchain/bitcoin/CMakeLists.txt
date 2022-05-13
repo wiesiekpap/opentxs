@@ -3,8 +3,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+add_subdirectory(block)
+
 if(OT_BLOCKCHAIN_EXPORT)
   add_subdirectory(bloom)
+  add_subdirectory(node)
+  add_subdirectory(p2p)
 endif()
 
 add_subdirectory(cfilter)

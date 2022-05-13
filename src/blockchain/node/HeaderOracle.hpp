@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "internal/blockchain/node/HeaderOracle.hpp"
-#include "internal/blockchain/node/Node.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -40,15 +39,23 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
-class Header;
-}  // namespace bitcoin
-
+namespace block
+{
 class Header;
 }  // namespace block
+}  // namespace bitcoin
+
+namespace block
+{
+class Header;
+}  // namespace block
+
+namespace database
+{
+class Header;
+}  // namespace database
 
 namespace node
 {
@@ -129,13 +136,10 @@ public:
     auto IsInBestChain(const block::Position& position) const noexcept
         -> bool final;
     auto LoadBitcoinHeader(const block::Hash& hash) const noexcept
-        -> std::unique_ptr<block::bitcoin::Header> final;
+        -> std::unique_ptr<bitcoin::block::Header> final;
     auto LoadHeader(const block::Hash& hash) const noexcept
         -> std::unique_ptr<block::Header> final;
-    auto RecentHashes(alloc::Resource* alloc) const noexcept -> Hashes final
-    {
-        return database_.RecentHashes(alloc);
-    }
+    auto RecentHashes(alloc::Resource* alloc) const noexcept -> Hashes final;
     auto Siblings() const noexcept -> UnallocatedSet<block::Hash> final;
 
     auto AddCheckpoint(
@@ -155,7 +159,7 @@ public:
 
     HeaderOracle(
         const api::Session& api,
-        internal::HeaderDatabase& database,
+        database::Header& database,
         const blockchain::Type type) noexcept;
 
     ~HeaderOracle() final = default;
@@ -169,7 +173,7 @@ private:
     using Candidates = UnallocatedVector<Candidate>;
 
     const api::Session& api_;
-    internal::HeaderDatabase& database_;
+    database::Header& database_;
     const blockchain::Type chain_;
     mutable std::mutex lock_;
 

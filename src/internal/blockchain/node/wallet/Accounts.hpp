@@ -24,13 +24,17 @@ class Session;
 
 namespace blockchain
 {
+namespace database
+{
+class Wallet;
+}  // namespace database
+
 namespace node
 {
 namespace internal
 {
-struct Mempool;
-struct Network;
-struct WalletDatabase;
+class Mempool;
+class Manager;
 }  // namespace internal
 }  // namespace node
 }  // namespace blockchain
@@ -50,8 +54,8 @@ public:
 
     Accounts(
         const api::Session& api,
-        const node::internal::Network& node,
-        node::internal::WalletDatabase& db,
+        const node::internal::Manager& node,
+        database::Wallet& db,
         const node::internal::Mempool& mempool,
         const Type chain) noexcept;
 

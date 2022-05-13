@@ -14,13 +14,13 @@
 #include <stdexcept>
 #include <utility>
 
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "network/p2p/Base.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -37,7 +37,7 @@ auto BlockchainSyncPushTransaction() noexcept -> network::p2p::PushTransaction
 
 auto BlockchainSyncPushTransaction(
     const opentxs::blockchain::Type chain,
-    const opentxs::blockchain::block::bitcoin::Transaction& payload) noexcept
+    const opentxs::blockchain::bitcoin::block::Transaction& payload) noexcept
     -> network::p2p::PushTransaction
 {
     using ReturnType = network::p2p::PushTransaction;

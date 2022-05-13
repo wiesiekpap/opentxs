@@ -17,7 +17,6 @@
 #include <utility>
 
 #include "Proto.hpp"
-#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/bloom/Types.hpp"
@@ -146,18 +145,6 @@ struct SerializedBloomFilter {
         const std::size_t functionCount) noexcept;
     SerializedBloomFilter() noexcept;
 };
-
-#if OT_BLOCKCHAIN
-struct Database : virtual public node::internal::BlockDatabase,
-                  virtual public node::internal::FilterDatabase,
-                  virtual public node::internal::HeaderDatabase,
-                  virtual public node::internal::PeerDatabase,
-                  virtual public node::internal::WalletDatabase,
-                  virtual public node::internal::SyncDatabase {
-
-    ~Database() override = default;
-};
-#endif  // OT_BLOCKCHAIN
 
 using FilterParams = std::pair<std::uint8_t, std::uint32_t>;
 

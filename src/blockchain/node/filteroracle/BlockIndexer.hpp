@@ -21,10 +21,11 @@
 #include "blockchain/node/filteroracle/FilterOracle.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/Blockchain.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Cfilter.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Block.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
@@ -32,7 +33,6 @@
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
@@ -50,13 +50,18 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Block;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
+
+namespace database
+{
+class Cfilter;
+}  // namespace database
 
 namespace internal
 {
@@ -73,6 +78,7 @@ class FilterOracle;
 namespace internal
 {
 class BlockOracle;
+class Manager;
 }  // namespace internal
 
 class HeaderOracle;
@@ -99,7 +105,7 @@ namespace opentxs::blockchain::node::implementation
 {
 using BlockDMFilter = download::Manager<
     FilterOracle::BlockIndexer,
-    std::shared_ptr<const block::bitcoin::Block>,
+    std::shared_ptr<const bitcoin::block::Block>,
     cfilter::Header,
     cfilter::Type>;
 using BlockWorkerFilter = Worker<api::Session>;
@@ -112,10 +118,10 @@ public:
 
     BlockIndexer(
         const api::Session& api,
-        internal::FilterDatabase& db,
+        database::Cfilter& db,
         const HeaderOracle& header,
         const internal::BlockOracle& block,
-        const internal::Network& node,
+        const internal::Manager& node,
         FilterOracle& parent,
         const blockchain::Type chain,
         const cfilter::Type type,
@@ -134,10 +140,10 @@ private:
 private:
     friend BlockDMFilter;
 
-    internal::FilterDatabase& db_;
+    database::Cfilter& db_;
     const HeaderOracle& header_;
     const internal::BlockOracle& block_;
-    const internal::Network& node_;
+    const internal::Manager& node_;
     FilterOracle& parent_;
     const blockchain::Type chain_;
     const cfilter::Type type_;
@@ -166,16 +172,16 @@ struct FilterOracle::BlockIndexerData {
     const Task& incoming_data_;
     const cfilter::Type type_;
     cfilter::Hash filter_hash_;
-    internal::FilterDatabase::CFilterParams& filter_data_;
-    internal::FilterDatabase::CFHeaderParams& header_data_;
+    database::Cfilter::CFilterParams& filter_data_;
+    database::Cfilter::CFHeaderParams& header_data_;
     Outstanding& job_counter_;
 
     BlockIndexerData(
         cfilter::Hash blank,
         const Task& data,
         const cfilter::Type type,
-        internal::FilterDatabase::CFilterParams& filter,
-        internal::FilterDatabase::CFHeaderParams& header,
+        database::Cfilter::CFilterParams& filter,
+        database::Cfilter::CFHeaderParams& header,
         Outstanding& jobCounter) noexcept
         : incoming_data_(data)
         , type_(type)

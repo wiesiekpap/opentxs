@@ -17,7 +17,7 @@
 #include "blockchain/database/wallet/Pattern.hpp"
 #include "blockchain/database/wallet/Position.hpp"
 #include "blockchain/database/wallet/SubchainID.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/api/session/Factory.hpp"

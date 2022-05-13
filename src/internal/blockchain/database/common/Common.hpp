@@ -13,7 +13,7 @@
 #include <tuple>
 #include <utility>
 
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Cfilter.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -44,13 +44,12 @@ namespace opentxs::blockchain::database::common
 using Chain = Type;
 using Address = p2p::internal::Address;
 using Address_p = std::unique_ptr<Address>;
-using CFilterParams = node::internal::FilterDatabase::CFilterParams;
-using CFHeaderParams = node::internal::FilterDatabase::CFHeaderParams;
+using CFilterParams = database::Cfilter::CFilterParams;
+using CFHeaderParams = database::Cfilter::CFHeaderParams;
 using Position = block::Position;
 using Protocol = p2p::Protocol;
 using Service = p2p::Service;
 using Type = p2p::Network;
-using UpdatedHeader = node::UpdatedHeader;
 using SyncTableData = std::pair<int, UnallocatedCString>;
 
 enum Table {

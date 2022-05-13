@@ -18,14 +18,15 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "blockchain/database/common/Bulk.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/bitcoin/block/Factory.hpp"
+#include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Contact.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -115,10 +116,45 @@ auto Wallet::AssociateTransaction(
 }
 
 auto Wallet::LoadTransaction(const ReadView txid) const noexcept
-    -> std::unique_ptr<block::bitcoin::Transaction>
+    -> std::unique_ptr<bitcoin::block::Transaction>
 {
     try {
         const auto proto = [&] {
+            const auto index = [&] {
+                auto out = util::IndexData{};
+                auto cb = [&out](const ReadView in) {
+                    if (sizeof(out) != in.size()) { return; }
+
+                    std::memcpy(static_cast<void*>(&out), in.data(), in.size());
+                };
+                lmdb_.Load(transaction_table_, txid, cb);
+
+                if (0 == out.size_) {
+                    throw std::out_of_range("Transaction not found");
+                }
+
+                return out;
+            }();
+
+            return proto::Factory<proto::BlockchainTransaction>(
+                bulk_.ReadView(index));
+        }();
+
+        return factory::BitcoinTransaction(api_, proto);
+    } catch (const std::exception& e) {
+        LogTrace()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return {};
+    }
+}
+
+auto Wallet::LoadTransaction(  // TODO : MT-83 Add unit test
+    const ReadView txid,
+    proto::BlockchainTransaction& proto) const noexcept
+    -> std::unique_ptr<bitcoin::block::Transaction>
+{
+    try {
+        proto = [&] {
             const auto index = [&] {
                 auto out = util::IndexData{};
                 auto cb = [&out](const ReadView in) {
@@ -172,11 +208,20 @@ auto Wallet::LookupTransactions(const PatternID pattern) const noexcept
     return output;
 }
 
+auto Wallet::StoreTransaction(  // TODO : MT-83 Add unit test
+    const bitcoin::block::Transaction& in) const noexcept -> bool
+{
+    auto out = proto::BlockchainTransaction{};
+
+    return StoreTransaction(in, out);
+}
+
 auto Wallet::StoreTransaction(
-    const block::bitcoin::Transaction& in) const noexcept -> bool
+    const bitcoin::block::Transaction& in,
+    proto::BlockchainTransaction& proto) const noexcept -> bool
 {
     try {
-        const auto proto = [&] {
+        proto = [&] {
             auto out = in.Internal().Serialize();
 
             if (false == out.has_value()) {

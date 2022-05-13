@@ -17,8 +17,9 @@
 #include "blockchain/database/common/Database.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/block/Block.hpp"
-#include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/block/Factory.hpp"
+#include "internal/blockchain/database/Types.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -137,8 +138,7 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
         }
 
         if (needFilter) {
-            auto filters =
-                Vector<node::internal::FilterDatabase::CFilterParams>{};
+            auto filters = Vector<database::Cfilter::CFilterParams>{};
             filters.emplace_back(blockHash, std::move(gcs));
             success = common_.StoreFilters(style, filters);
 

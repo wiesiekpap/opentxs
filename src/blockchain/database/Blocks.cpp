@@ -14,8 +14,8 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/Block.hpp"
-#include "internal/blockchain/database/Database.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Types.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -56,7 +56,7 @@ Blocks::Blocks(
 }
 
 auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
-    -> std::shared_ptr<const block::bitcoin::Block>
+    -> std::shared_ptr<const bitcoin::block::Block>
 {
     if (block == genesis_) {
         const auto& hex = params::Chains().at(chain_).genesis_block_hex_;

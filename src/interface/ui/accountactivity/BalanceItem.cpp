@@ -18,7 +18,7 @@
 #include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #if OT_BLOCKCHAIN
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/contract/Unit.hpp"
@@ -51,7 +51,7 @@ auto BalanceItem(
 {
 #if OT_BLOCKCHAIN
     if (2 < custom.size()) {
-        using Transaction = opentxs::blockchain::block::bitcoin::Transaction;
+        using Transaction = opentxs::blockchain::bitcoin::block::Transaction;
 
         auto pTx =
             ui::implementation::extract_custom_ptr<Transaction>(custom, 2);

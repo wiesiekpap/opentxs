@@ -629,10 +629,10 @@ TEST_F(Test_BlockchainActivity, receive_assigned)
     txid_1_ = tx1->ID().asHex();
     txid_2_ = tx2->ID().asHex();
 
-    ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
-        ot::blockchain::Type::Bitcoin, *tx1, reason_));
-    ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
-        ot::blockchain::Type::Bitcoin, *tx2, reason_));
+    // ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
+    //     ot::blockchain::Type::Bitcoin, *tx1, reason_));
+    // ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
+    //     ot::blockchain::Type::Bitcoin, *tx2, reason_));
 }
 
 TEST_F(Test_BlockchainActivity, receive_assigned_account_list)
@@ -1312,8 +1312,8 @@ TEST_F(Test_BlockchainActivity, receive_unassigned)
 
     txid_4_ = tx->ID().asHex();
 
-    ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
-        ot::blockchain::Type::Bitcoin, *tx, reason_));
+    // ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
+    //     ot::blockchain::Type::Bitcoin, *tx, reason_));
 }
 
 TEST_F(Test_BlockchainActivity, receive_unassigned_account_activity)

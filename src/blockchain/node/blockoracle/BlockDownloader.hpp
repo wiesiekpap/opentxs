@@ -35,13 +35,18 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Block;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
+
+namespace database
+{
+class Block;
+}  // namespace database
 
 namespace node
 {
@@ -52,8 +57,7 @@ class BlockDownloader;
 
 namespace internal
 {
-struct BlockDatabase;
-struct Network;
+class Manager;
 }  // namespace internal
 
 class HeaderOracle;
@@ -74,7 +78,7 @@ class Message;
 namespace opentxs::blockchain::node::blockoracle
 {
 using BlockDMBlock = download::
-    Manager<BlockDownloader, std::shared_ptr<const block::bitcoin::Block>, int>;
+    Manager<BlockDownloader, std::shared_ptr<const bitcoin::block::Block>, int>;
 using BlockWorkerBlock = Worker<api::Session>;
 
 class BlockDownloader final : public BlockDMBlock, public BlockWorkerBlock
@@ -93,9 +97,9 @@ public:
 
     BlockDownloader(
         const api::Session& api,
-        internal::BlockDatabase& db,
+        database::Block& db,
         const node::HeaderOracle& header,
-        const internal::Network& node,
+        const internal::Manager& node,
         const blockchain::Type chain,
         const std::string_view shutdown) noexcept;
 
@@ -111,9 +115,9 @@ private:
 private:
     friend BlockDMBlock;
 
-    internal::BlockDatabase& db_;
+    database::Block& db_;
     const node::HeaderOracle& header_;
-    const internal::Network& node_;
+    const internal::Manager& node_;
     const blockchain::Type chain_;
     OTZMQPublishSocket socket_;
 

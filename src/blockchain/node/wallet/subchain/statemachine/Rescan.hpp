@@ -74,7 +74,6 @@ public:
     ~Imp() final = default;
 
 private:
-    network::zeromq::socket::Raw& to_scan_;
     network::zeromq::socket::Raw& to_process_;
     network::zeromq::socket::Raw& to_progress_;
     std::optional<block::Position> last_scanned_;
@@ -107,7 +106,6 @@ private:
         -> void;
     auto set_last_scanned(std::optional<block::Position>&& value) noexcept
         -> void;
-    auto update_progress() noexcept -> void;
     auto work() noexcept -> bool final;
 };
 }  // namespace opentxs::blockchain::node::wallet

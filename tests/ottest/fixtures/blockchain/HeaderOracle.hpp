@@ -14,6 +14,7 @@
 #include <tuple>
 #include <utility>
 
+#include "internal/blockchain/block/Header.hpp"
 #include "ottest/Basic.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -69,7 +70,7 @@ public:
     using Position = std::pair<bb::Height, ot::UnallocatedCString>;
     using BestChainVector = ot::UnallocatedVector<ot::UnallocatedCString>;
     using Test = std::tuple<ot::UnallocatedCString, Position, BestChainVector>;
-    using Status = bb::Header::Status;
+    using Status = bb::internal::Header::Status;
     using HeaderData = std::tuple<
         ot::UnallocatedCString,
         ot::UnallocatedCString,

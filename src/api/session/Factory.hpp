@@ -36,8 +36,8 @@
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/Types.hpp"
 #if OT_BLOCKCHAIN
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/bitcoin/block/Script.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #endif  // OT_BLOCKCHAIN
@@ -109,15 +109,18 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
+{
+namespace block
 {
 class Block;
 class Script;
 class Transaction;
+}  // namespace block
 }  // namespace bitcoin
 
+namespace block
+{
 class Block;
 class Header;
 }  // namespace block
@@ -296,7 +299,7 @@ public:
         const opentxs::blockchain::Type chain,
         const ReadView bytes) const noexcept
         -> std::shared_ptr<
-            const opentxs::blockchain::block::bitcoin::Block> override
+            const opentxs::blockchain::bitcoin::block::Block> override
     {
         return {};
     }
@@ -309,7 +312,7 @@ public:
         [[maybe_unused]] const std::int32_t version,
         [[maybe_unused]] const AbortFunction abort) const noexcept
         -> std::shared_ptr<
-            const opentxs::blockchain::block::bitcoin::Block> override
+            const opentxs::blockchain::bitcoin::block::Block> override
     {
         return {};
     }
@@ -327,7 +330,7 @@ public:
         const opentxs::blockchain::Type chain,
         const UnallocatedVector<ReadView>& data) const noexcept
         -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Script> final;
+            const opentxs::blockchain::bitcoin::block::Script> final;
     auto BitcoinScriptP2MS(
         const opentxs::blockchain::Type chain,
         const std::uint8_t M,
@@ -335,39 +338,39 @@ public:
         const UnallocatedVector<const opentxs::crypto::key::EllipticCurve*>&
             publicKeys) const noexcept
         -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Script> final;
+            const opentxs::blockchain::bitcoin::block::Script> final;
     auto BitcoinScriptP2PK(
         const opentxs::blockchain::Type chain,
         const opentxs::crypto::key::EllipticCurve& publicKey) const noexcept
         -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Script> final;
+            const opentxs::blockchain::bitcoin::block::Script> final;
     auto BitcoinScriptP2PKH(
         const opentxs::blockchain::Type chain,
         const opentxs::crypto::key::EllipticCurve& publicKey) const noexcept
         -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Script> final;
+            const opentxs::blockchain::bitcoin::block::Script> final;
     auto BitcoinScriptP2SH(
         const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::block::bitcoin::Script& script)
+        const opentxs::blockchain::bitcoin::block::Script& script)
         const noexcept -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Script> final;
+            const opentxs::blockchain::bitcoin::block::Script> final;
     auto BitcoinScriptP2WPKH(
         const opentxs::blockchain::Type chain,
         const opentxs::crypto::key::EllipticCurve& publicKey) const noexcept
         -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Script> final;
+            const opentxs::blockchain::bitcoin::block::Script> final;
     auto BitcoinScriptP2WSH(
         const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::block::bitcoin::Script& script)
+        const opentxs::blockchain::bitcoin::block::Script& script)
         const noexcept -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Script> final;
+            const opentxs::blockchain::bitcoin::block::Script> final;
     auto BitcoinTransaction(
         const opentxs::blockchain::Type chain,
         const ReadView bytes,
         const bool isGeneration,
         const Time& time) const noexcept
         -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Transaction> override
+            const opentxs::blockchain::bitcoin::block::Transaction> override
     {
         return {};
     }

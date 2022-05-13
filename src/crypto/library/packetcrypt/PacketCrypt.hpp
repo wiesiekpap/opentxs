@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/block/Validator.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -17,18 +17,18 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Block;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
-namespace client
+namespace node
 {
 class HeaderOracle;
-}  // namespace client
+}  // namespace node
 }  // namespace blockchain
 // }  // namespace v1
 }  // namespace opentxs
@@ -36,14 +36,13 @@ class HeaderOracle;
 
 namespace opentxs::crypto::implementation
 {
-class PacketCrypt final : public blockchain::node::internal::BlockValidator
+class PacketCrypt final : public blockchain::block::Validator
 {
 public:
-    using HeaderOracle = blockchain::node::HeaderOracle;
+    auto Validate(const blockchain::bitcoin::block::Block& block) const noexcept
+        -> bool final;
 
-    auto Validate(const BitcoinBlock& block) const noexcept -> bool final;
-
-    PacketCrypt(const HeaderOracle& oracle) noexcept;
+    PacketCrypt(const blockchain::node::HeaderOracle& oracle) noexcept;
 
     ~PacketCrypt() final;
 

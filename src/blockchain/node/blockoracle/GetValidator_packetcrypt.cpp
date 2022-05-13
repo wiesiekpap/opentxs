@@ -14,12 +14,9 @@ namespace opentxs::blockchain::node::internal
 auto BlockOracle::Imp::get_validator(
     const blockchain::Type chain,
     const node::HeaderOracle& headers) noexcept
-    -> std::unique_ptr<const internal::BlockValidator>
+    -> std::unique_ptr<const block::Validator>
 {
-    if (Type::PKT != chain) {
-
-        return std::make_unique<internal::BlockValidator>();
-    }
+    if (Type::PKT != chain) { return std::make_unique<block::Validator>(); }
 
     return std::make_unique<opentxs::crypto::implementation::PacketCrypt>(
         headers);

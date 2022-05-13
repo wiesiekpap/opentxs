@@ -19,21 +19,21 @@
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/statemachine/ElementCache.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/bitcoin/block/Transaction.hpp"
+#include "internal/blockchain/node/Manager.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Block.hpp"
+#include "opentxs/blockchain/bitcoin/block/Output.hpp"
+#include "opentxs/blockchain/bitcoin/block/Outputs.hpp"
+#include "opentxs/blockchain/bitcoin/block/Script.hpp"
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"
-#include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
@@ -55,8 +55,8 @@ namespace opentxs::blockchain::node::wallet
 {
 DeterministicStateData::DeterministicStateData(
     const api::Session& api,
-    const node::internal::Network& node,
-    node::internal::WalletDatabase& db,
+    const node::internal::Manager& node,
+    database::Wallet& db,
     const node::internal::Mempool& mempool,
     const crypto::Deterministic& subaccount,
     const cfilter::Type filter,
@@ -99,7 +99,7 @@ auto DeterministicStateData::CheckCache(
 }
 
 auto DeterministicStateData::flush_cache(
-    WalletDatabase::BatchedMatches& matches,
+    database::Wallet::BatchedMatches& matches,
     FinishedCallback cb) const noexcept -> void
 {
     const auto start = Clock::now();
@@ -142,14 +142,14 @@ auto DeterministicStateData::get_index(
 }
 
 auto DeterministicStateData::handle_confirmed_matches(
-    const block::bitcoin::Block& block,
+    const bitcoin::block::Block& block,
     const block::Position& position,
     const block::Matches& confirmed,
     const Log& log) const noexcept -> void
 {
     const auto start = Clock::now();
     const auto& [utxo, general] = confirmed;
-    auto transactions = WalletDatabase::BlockMatches{get_allocator()};
+    auto transactions = database::Wallet::BlockMatches{get_allocator()};
 
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
@@ -224,14 +224,14 @@ auto DeterministicStateData::handle_confirmed_matches(
 
 auto DeterministicStateData::handle_mempool_matches(
     const block::Matches& matches,
-    std::unique_ptr<const block::bitcoin::Transaction> in) const noexcept
+    std::unique_ptr<const bitcoin::block::Transaction> in) const noexcept
     -> void
 {
     const auto& [utxo, general] = matches;
 
     if (0u == general.size()) { return; }
 
-    auto data = WalletDatabase::MatchedTransaction{};
+    auto data = database::Wallet::MatchedTransaction{};
     auto& [outputs, pTX] = data;
 
     for (const auto& match : general) { process(match, *in, data); }
@@ -253,15 +253,15 @@ auto DeterministicStateData::handle_mempool_matches(
 
 auto DeterministicStateData::process(
     const block::Match match,
-    const block::bitcoin::Transaction& transaction,
-    WalletDatabase::MatchedTransaction& output) const noexcept -> void
+    const bitcoin::block::Transaction& transaction,
+    database::Wallet::MatchedTransaction& output) const noexcept -> void
 {
     auto& [outputs, pTX] = output;
     const auto& [txid, elementID] = match;
     const auto& [index, subchainID] = elementID;
     const auto& [subchain, accountID] = subchainID;
     const auto& element = deterministic_.BalanceElement(subchain, index);
-    set_key_data(const_cast<block::bitcoin::Transaction&>(transaction));
+    set_key_data(const_cast<bitcoin::block::Transaction&>(transaction));
     auto i = Bip32Index{0};
 
     for (const auto& output : transaction.Outputs()) {
@@ -271,7 +271,7 @@ auto DeterministicStateData::process(
         const auto& script = output.Script();
 
         switch (script.Type()) {
-            case block::bitcoin::Script::Pattern::PayToPubkey: {
+            case bitcoin::block::Script::Pattern::PayToPubkey: {
                 const auto pKey = element.Key();
 
                 OT_ASSERT(pKey);
@@ -294,7 +294,7 @@ auto DeterministicStateData::process(
                     if (!pTX) { pTX = transaction.Internal().clone(); }
                 }
             } break;
-            case block::bitcoin::Script::Pattern::PayToPubkeyHash: {
+            case bitcoin::block::Script::Pattern::PayToPubkeyHash: {
                 const auto hash = element.PubkeyHash();
 
                 OT_ASSERT(script.PubkeyHash().has_value());
@@ -314,7 +314,7 @@ auto DeterministicStateData::process(
                     if (!pTX) { pTX = pTX = transaction.Internal().clone(); }
                 }
             } break;
-            case block::bitcoin::Script::Pattern::PayToWitnessPubkeyHash: {
+            case bitcoin::block::Script::Pattern::PayToWitnessPubkeyHash: {
                 const auto hash = element.PubkeyHash();
 
                 OT_ASSERT(script.PubkeyHash().has_value());
@@ -334,7 +334,7 @@ auto DeterministicStateData::process(
                     if (!pTX) { pTX = pTX = transaction.Internal().clone(); }
                 }
             } break;
-            case block::bitcoin::Script::Pattern::PayToMultisig: {
+            case bitcoin::block::Script::Pattern::PayToMultisig: {
                 const auto m = script.M();
                 const auto n = script.N();
 
@@ -369,7 +369,7 @@ auto DeterministicStateData::process(
                     if (!pTX) { pTX = pTX = transaction.Internal().clone(); }
                 }
             } break;
-            case block::bitcoin::Script::Pattern::PayToScriptHash:
+            case bitcoin::block::Script::Pattern::PayToScriptHash:
             default: {
             }
         };

@@ -47,17 +47,14 @@ namespace blockchain
 {
 namespace bitcoin
 {
-class Inventory;
-}  // namespace bitcoin
-
 namespace block
-{
-namespace bitcoin
 {
 class Header;
 class Transaction;
-}  // namespace bitcoin
 }  // namespace block
+
+class Inventory;
+}  // namespace bitcoin
 
 namespace p2p
 {
@@ -302,7 +299,7 @@ struct Getheaders : virtual public bitcoin::Message {
     ~Getheaders() override = default;
 };
 struct Headers : virtual public bitcoin::Message {
-    using value_type = block::bitcoin::Header;
+    using value_type = blockchain::bitcoin::block::Header;
     using const_iterator =
         iterator::Bidirectional<const Headers, const value_type>;
 
@@ -359,7 +356,7 @@ struct Sendheaders : virtual public bitcoin::Message {
 };
 struct Tx : virtual public bitcoin::Message {
     virtual auto Transaction() const noexcept
-        -> std::unique_ptr<const block::bitcoin::Transaction> = 0;
+        -> std::unique_ptr<const blockchain::bitcoin::block::Transaction> = 0;
 
     ~Tx() override = default;
 };
@@ -629,7 +626,7 @@ auto BitcoinP2PHeaders(
 auto BitcoinP2PHeaders(
     const api::Session& api,
     const blockchain::Type network,
-    UnallocatedVector<std::unique_ptr<blockchain::block::bitcoin::Header>>&&
+    UnallocatedVector<std::unique_ptr<blockchain::bitcoin::block::Header>>&&
         headers) -> blockchain::p2p::bitcoin::message::internal::Headers*;
 auto BitcoinP2PInv(
     const api::Session& api,

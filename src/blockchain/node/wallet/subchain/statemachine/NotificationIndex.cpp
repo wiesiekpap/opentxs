@@ -17,7 +17,7 @@
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Wallet.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -94,7 +94,7 @@ auto NotificationIndex::process(
     constexpr auto allocBytes = 1_KiB;
     auto buf = std::array<std::byte, allocBytes>{};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
-    auto elements = internal::WalletDatabase::ElementMap{&alloc};
+    auto elements = database::Wallet::ElementMap{&alloc};
     auto postcondition = ScopeGuard{[&] { done(std::move(elements)); }};
 
     for (auto i{code_.Version()}; i > 0; --i) {

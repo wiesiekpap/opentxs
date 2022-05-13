@@ -9,6 +9,7 @@
 
 #include "Proto.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
+#include "internal/blockchain/database/Types.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"

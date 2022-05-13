@@ -7,8 +7,6 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <cstdint>
-
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/NumericHash.hpp"
 #include "opentxs/blockchain/bitcoin/Work.hpp"
@@ -24,19 +22,24 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Header;
+}  // namespace block
 }  // namespace bitcoin
+
+namespace block
+{
+namespace internal
+{
+class Header;
+}  // namespace internal
+
+class Hash;
 }  // namespace block
 }  // namespace blockchain
-
-namespace proto
-{
-class BlockchainBlockHeader;
-}  // namespace proto
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -46,63 +49,43 @@ namespace opentxs::blockchain::block
 class OPENTXS_EXPORT Header
 {
 public:
-    using SerializedType = proto::BlockchainBlockHeader;
-
-    enum class Status : std::uint32_t {
-        Error,
-        Normal,
-        Disconnected,
-        CheckpointBanned,
-        Checkpoint
-    };
+    class Imp;
 
     virtual auto as_Bitcoin() const noexcept
-        -> std::unique_ptr<bitcoin::Header> = 0;
-    virtual auto clone() const noexcept -> std::unique_ptr<Header> = 0;
-    virtual auto Difficulty() const noexcept -> OTWork = 0;
-    virtual auto EffectiveState() const noexcept -> Status = 0;
-    virtual auto Hash() const noexcept -> const block::Hash& = 0;
-    virtual auto Height() const noexcept -> block::Height = 0;
-    virtual auto IncrementalWork() const noexcept -> OTWork = 0;
-    virtual auto InheritedState() const noexcept -> Status = 0;
-    virtual auto IsBlacklisted() const noexcept -> bool = 0;
-    virtual auto IsDisconnected() const noexcept -> bool = 0;
-    virtual auto LocalState() const noexcept -> Status = 0;
-    virtual auto NumericHash() const noexcept -> OTNumericHash = 0;
-    virtual auto ParentHash() const noexcept -> const block::Hash& = 0;
-    virtual auto ParentWork() const noexcept -> OTWork = 0;
-    virtual auto Position() const noexcept -> block::Position = 0;
-    virtual auto Print() const noexcept -> UnallocatedCString = 0;
-    OPENTXS_NO_EXPORT virtual auto Serialize(SerializedType& out) const noexcept
-        -> bool = 0;
-    virtual auto Serialize(
+        -> const blockchain::bitcoin::block::Header&;
+    auto clone() const noexcept -> std::unique_ptr<Header>;
+    auto Difficulty() const noexcept -> OTWork;
+    auto Hash() const noexcept -> const block::Hash&;
+    auto Height() const noexcept -> block::Height;
+    auto IncrementalWork() const noexcept -> OTWork;
+    auto Internal() const noexcept -> const internal::Header&;
+    auto NumericHash() const noexcept -> OTNumericHash;
+    auto ParentHash() const noexcept -> const block::Hash&;
+    auto ParentWork() const noexcept -> OTWork;
+    auto Position() const noexcept -> block::Position;
+    auto Print() const noexcept -> UnallocatedCString;
+    auto Serialize(
         const AllocateOutput destination,
-        const bool bitcoinformat = true) const noexcept -> bool = 0;
-    virtual auto Target() const noexcept -> OTNumericHash = 0;
-    virtual auto Type() const noexcept -> blockchain::Type = 0;
-    virtual auto Valid() const noexcept -> bool = 0;
-    virtual auto Work() const noexcept -> OTWork = 0;
+        const bool bitcoinformat = true) const noexcept -> bool;
+    auto Target() const noexcept -> OTNumericHash;
+    auto Type() const noexcept -> blockchain::Type;
+    auto Valid() const noexcept -> bool;
+    auto Work() const noexcept -> OTWork;
 
-    virtual void CompareToCheckpoint(
-        const block::Position& checkpoint) noexcept = 0;
-    /// Throws std::runtime_error if parent hash incorrect
-    virtual void InheritHeight(const Header& parent) = 0;
-    /// Throws std::runtime_error if parent hash incorrect
-    virtual void InheritState(const Header& parent) = 0;
-    virtual void InheritWork(const blockchain::Work& parent) noexcept = 0;
-    virtual void RemoveBlacklistState() noexcept = 0;
-    virtual void RemoveCheckpointState() noexcept = 0;
-    virtual void SetDisconnectedState() noexcept = 0;
+    auto Internal() noexcept -> internal::Header&;
 
-    virtual ~Header() = default;
-
-protected:
-    Header() noexcept = default;
-
-private:
-    Header(const Header&) = delete;
+    Header() noexcept;
+    OPENTXS_NO_EXPORT Header(Imp*) noexcept;
+    Header(const Header&) noexcept;
     Header(Header&&) = delete;
     auto operator=(const Header&) -> Header& = delete;
     auto operator=(Header&&) -> Header& = delete;
+
+    virtual ~Header();
+
+protected:
+    Imp* imp_;
+
+    auto swap_header(Header& rhs) noexcept -> void;
 };
 }  // namespace opentxs::blockchain::block

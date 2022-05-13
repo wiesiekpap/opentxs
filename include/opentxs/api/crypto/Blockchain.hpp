@@ -41,13 +41,13 @@ class Blockchain;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Transaction;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
 namespace crypto
 {
@@ -113,7 +113,7 @@ public:
     virtual auto ActivityDescription(
         const identifier::Nym& nym,
         const Chain chain,
-        const opentxs::blockchain::block::bitcoin::Transaction& transaction)
+        const opentxs::blockchain::bitcoin::block::Transaction& transaction)
         const noexcept -> UnallocatedCString = 0;
     virtual auto AssignContact(
         const identifier::Nym& nymID,
@@ -157,10 +157,10 @@ public:
         -> const crypto::internal::Blockchain& = 0;
     virtual auto LoadTransactionBitcoin(const Txid& id) const noexcept
         -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Transaction> = 0;
+            const opentxs::blockchain::bitcoin::block::Transaction> = 0;
     virtual auto LoadTransactionBitcoin(const TxidHex& id) const noexcept
         -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Transaction> = 0;
+            const opentxs::blockchain::bitcoin::block::Transaction> = 0;
     virtual auto LookupAccount(const Identifier& id) const noexcept
         -> AccountData = 0;
     virtual auto LookupContacts(

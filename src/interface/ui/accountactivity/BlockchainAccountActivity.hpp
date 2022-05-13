@@ -8,6 +8,7 @@
 #pragma once
 
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <string_view>
@@ -59,6 +60,17 @@ namespace session
 class Client;
 }  // namespace session
 }  // namespace api
+
+namespace blockchain
+{
+namespace bitcoin
+{
+namespace block
+{
+class Transaction;
+}  // namespace block
+}  // namespace bitcoin
+}  // namespace blockchain
 
 namespace identifier
 {
@@ -246,6 +258,10 @@ private:
     auto process_txid(const Message& in) noexcept -> void;
     auto process_txid(const Data& txid) noexcept
         -> std::optional<AccountActivityRowID>;
+    auto process_txid(
+        const Data& txid,
+        std::unique_ptr<const blockchain::bitcoin::block::Transaction>
+            tx) noexcept -> std::optional<AccountActivityRowID>;
     auto startup() noexcept -> void final;
 
     BlockchainAccountActivity() = delete;

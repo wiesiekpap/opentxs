@@ -14,9 +14,8 @@
 
 #include "core/Worker.hpp"
 #include "internal/api/network/Blockchain.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/node/Factory.hpp"
-#include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
@@ -24,9 +23,9 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -42,11 +41,11 @@ auto BlockchainPeerManager(
     const api::Session& api,
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Mempool& mempool,
-    const blockchain::node::internal::Network& node,
+    const blockchain::node::internal::Manager& node,
     const blockchain::node::HeaderOracle& headers,
     const blockchain::node::internal::FilterOracle& filter,
     const blockchain::node::internal::BlockOracle& block,
-    blockchain::node::internal::PeerDatabase& database,
+    blockchain::database::Peer& database,
     const blockchain::Type type,
     const blockchain::database::BlockStorage policy,
     const UnallocatedCString& seednode,
@@ -77,11 +76,11 @@ PeerManager::PeerManager(
     const api::Session& api,
     const internal::Config& config,
     const node::internal::Mempool& mempool,
-    const internal::Network& node,
+    const internal::Manager& node,
     const HeaderOracle& headers,
     const internal::FilterOracle& filter,
     const internal::BlockOracle& block,
-    internal::PeerDatabase& database,
+    database::Peer& database,
     const Type chain,
     const database::BlockStorage policy,
     const UnallocatedCString& seednode,
@@ -161,7 +160,7 @@ auto PeerManager::BroadcastBlock(const block::Block& block) const noexcept
 
     jobs_.Dispatch([&] {
         const auto& id = block.ID();
-        auto work = jobs_.Work(Task::BroadcastBlock);
+        auto work = jobs_.Work(PeerManagerJobs::BroadcastBlock);
         work.AddFrame(id);
 
         return work;
@@ -171,7 +170,7 @@ auto PeerManager::BroadcastBlock(const block::Block& block) const noexcept
 }
 
 auto PeerManager::BroadcastTransaction(
-    const block::bitcoin::Transaction& tx) const noexcept -> bool
+    const bitcoin::block::Transaction& tx) const noexcept -> bool
 {
     if (false == running_.load()) { return false; }
 
@@ -184,7 +183,7 @@ auto PeerManager::BroadcastTransaction(
     }
 
     const auto view = reader(bytes);
-    auto work = jobs_.Work(Task::BroadcastTransaction);
+    auto work = jobs_.Work(PeerManagerJobs::BroadcastTransaction);
     work.AddFrame(view.data(), view.size());
     jobs_.Dispatch(std::move(work));
 
@@ -220,17 +219,17 @@ auto PeerManager::init() noexcept -> void
     trigger();
 }
 
-auto PeerManager::JobReady(const Task type) const noexcept -> void
+auto PeerManager::JobReady(const PeerManagerJobs type) const noexcept -> void
 {
     switch (type) {
-        case Task::JobAvailableCfheaders: {
-            jobs_.Dispatch(jobs_.Work(Task::JobAvailableCfheaders));
+        case PeerManagerJobs::JobAvailableCfheaders: {
+            jobs_.Dispatch(jobs_.Work(PeerManagerJobs::JobAvailableCfheaders));
         } break;
-        case Task::JobAvailableCfilters: {
-            jobs_.Dispatch(jobs_.Work(Task::JobAvailableCfilters));
+        case PeerManagerJobs::JobAvailableCfilters: {
+            jobs_.Dispatch(jobs_.Work(PeerManagerJobs::JobAvailableCfilters));
         } break;
-        case Task::JobAvailableBlock: {
-            jobs_.Dispatch(jobs_.Work(Task::JobAvailableBlock));
+        case PeerManagerJobs::JobAvailableBlock: {
+            jobs_.Dispatch(jobs_.Work(PeerManagerJobs::JobAvailableBlock));
         } break;
         default: {
         }
@@ -407,7 +406,7 @@ auto PeerManager::RequestBlocks(
 
     if (0 == hashes.size()) { return false; }
 
-    auto work = jobs_.Work(Task::Getblock);
+    auto work = jobs_.Work(PeerManagerJobs::Getblock);
     static constexpr auto limit =
         std::size_t{1u};  // TODO peers don't respond well to larger values
 
@@ -416,7 +415,7 @@ auto PeerManager::RequestBlocks(
 
         if (work.Body().size() > limit) {
             jobs_.Dispatch(std::move(work));
-            work = jobs_.Work(Task::Getblock);
+            work = jobs_.Work(PeerManagerJobs::Getblock);
         }
     }
 
@@ -431,7 +430,7 @@ auto PeerManager::RequestHeaders() const noexcept -> bool
 
     if (0 == peers_.Count()) { return false; }
 
-    jobs_.Dispatch(Task::Getheaders);
+    jobs_.Dispatch(PeerManagerJobs::Getheaders);
 
     return true;
 }

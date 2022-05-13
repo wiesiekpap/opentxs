@@ -118,12 +118,20 @@ namespace blockchain
 {
 namespace bitcoin
 {
+namespace block
+{
+namespace implementation
+{
+}  // namespace implementation
+
+namespace internal
+{
+}  // namespace internal
+}  // namespace block
 }  // namespace bitcoin
 
 namespace block
 {
-namespace bitcoin
-{
 namespace implementation
 {
 }  // namespace implementation
@@ -131,19 +139,6 @@ namespace implementation
 namespace internal
 {
 }  // namespace internal
-}  // namespace bitcoin
-
-namespace implementation
-{
-}  // namespace implementation
-
-namespace internal
-{
-}  // namespace internal
-
-namespace pkt
-{
-}  // namespace pkt
 }  // namespace block
 
 namespace crypto
@@ -242,6 +237,13 @@ namespace peer
 namespace params
 {
 }  // namespace params
+
+namespace pkt
+{
+namespace block
+{
+}  // namespace block
+}  // namespace pkt
 
 namespace script
 {
@@ -470,7 +472,6 @@ namespace purse
 namespace token
 {
 }  // namespace token
-
 }  // namespace blind
 
 namespace client

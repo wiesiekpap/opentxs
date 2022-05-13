@@ -53,7 +53,7 @@ class OPENTXS_EXPORT Wallet
 {
 public:
     using UTXO =
-        std::pair<block::Outpoint, std::unique_ptr<block::bitcoin::Output>>;
+        std::pair<block::Outpoint, std::unique_ptr<bitcoin::block::Output>>;
     virtual auto GetTransactions() const noexcept
         -> UnallocatedVector<block::pTxid> = 0;
 

@@ -33,7 +33,7 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
@@ -248,7 +248,7 @@ auto Blockchain::Imp::ActivityDescription(
 auto Blockchain::Imp::ActivityDescription(
     const identifier::Nym&,
     const opentxs::blockchain::Type,
-    const opentxs::blockchain::block::bitcoin::Transaction&) const noexcept
+    const opentxs::blockchain::bitcoin::block::Transaction&) const noexcept
     -> UnallocatedCString
 {
     return {};
@@ -803,13 +803,13 @@ auto Blockchain::Imp::KeyGenerated(
 }
 
 auto Blockchain::Imp::LoadTransactionBitcoin(const TxidHex&) const noexcept
-    -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>
+    -> std::unique_ptr<const opentxs::blockchain::bitcoin::block::Transaction>
 {
     return {};
 }
 
 auto Blockchain::Imp::LoadTransactionBitcoin(const Txid&) const noexcept
-    -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>
+    -> std::unique_ptr<const opentxs::blockchain::bitcoin::block::Transaction>
 {
     return {};
 }
@@ -1161,9 +1161,9 @@ auto Blockchain::Imp::ProcessMergedContact(const Contact&, const Contact&)
     return false;
 }
 
-auto Blockchain::Imp::ProcessTransaction(
+auto Blockchain::Imp::ProcessTransactions(
     const opentxs::blockchain::Type,
-    const opentxs::blockchain::block::bitcoin::Transaction&,
+    Set<std::shared_ptr<opentxs::blockchain::bitcoin::block::Transaction>>&&,
     const PasswordPrompt&) const noexcept -> bool
 {
     return false;

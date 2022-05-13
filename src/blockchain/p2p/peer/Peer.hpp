@@ -25,7 +25,7 @@
 #include "blockchain/p2p/peer/ConnectionManager.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/node/BlockBatch.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/util/Flag.hpp"
@@ -71,6 +71,24 @@ class Session;
 
 namespace blockchain
 {
+namespace database
+{
+class Peer;
+}  // namespace database
+
+namespace node
+{
+namespace internal
+{
+class BlockOracle;
+class FilterOracle;
+class Manager;
+class Mempool;
+class PeerManager;
+struct Config;
+}  // namespace internal
+}  // namespace node
+
 namespace p2p
 {
 namespace peer
@@ -78,15 +96,6 @@ namespace peer
 class ConnectionManager;
 }  // namespace peer
 }  // namespace p2p
-
-namespace node
-{
-namespace internal
-{
-class BlockOracle;
-struct Mempool;
-}  // namespace internal
-}  // namespace node
 }  // namespace blockchain
 
 namespace network
@@ -116,7 +125,7 @@ class Peer : virtual public internal::Peer, public Worker<api::Session>
 {
 public:
     using SendStatus = std::future<bool>;
-    using Task = node::internal::PeerManager::Task;
+    using Task = node::PeerManagerJobs;
 
     auto AddressID() const noexcept -> OTIdentifier final
     {
@@ -260,11 +269,11 @@ protected:
         }
     };
 
-    const node::internal::Network& network_;
+    const node::internal::Manager& network_;
     const node::internal::FilterOracle& filter_;
     const node::internal::BlockOracle& block_;
     const node::internal::PeerManager& manager_;
-    node::internal::PeerDatabase& database_;
+    database::Peer& database_;
     const node::internal::Mempool& mempool_;
     const Log& log_;
     const blockchain::Type chain_;
@@ -317,11 +326,11 @@ protected:
         const api::Session& api,
         const node::internal::Config& config,
         const node::internal::Mempool& mempool,
-        const node::internal::Network& network,
+        const node::internal::Manager& network,
         const node::internal::FilterOracle& filter,
         const node::internal::BlockOracle& block,
         const node::internal::PeerManager& manager,
-        node::internal::PeerDatabase& database,
+        database::Peer& database,
         const int id,
         const UnallocatedCString& shutdown,
         const std::size_t headerSize,

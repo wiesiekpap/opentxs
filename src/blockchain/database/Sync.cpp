@@ -13,15 +13,15 @@
 #include "blockchain/database/common/Database.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/database/Database.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Types.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
 
-namespace opentxs::blockchain::database
+namespace opentxs::blockchain::database::implementation
 {
 Sync::Sync(
     const api::Session& api,
@@ -108,4 +108,4 @@ auto Sync::Tip() const noexcept -> block::Position
 
     return output;
 }
-}  // namespace opentxs::blockchain::database
+}  // namespace opentxs::blockchain::database::implementation

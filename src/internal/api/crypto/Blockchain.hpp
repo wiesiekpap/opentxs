@@ -10,6 +10,7 @@
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -78,9 +79,10 @@ public:
     virtual auto ProcessMergedContact(
         const Contact& parent,
         const Contact& child) const noexcept -> bool = 0;
-    virtual auto ProcessTransaction(
+    virtual auto ProcessTransactions(
         const Chain chain,
-        const opentxs::blockchain::block::bitcoin::Transaction& transaction,
+        Set<std::shared_ptr<opentxs::blockchain::bitcoin::block::Transaction>>&&
+            transactions,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
     /// Throws std::runtime_error if type is invalid
     virtual auto PubkeyHash(

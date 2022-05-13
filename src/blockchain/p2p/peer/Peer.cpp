@@ -13,7 +13,11 @@
 
 #include "blockchain/DownloadTask.hpp"
 #include "blockchain/p2p/peer/ConnectionManager.hpp"
+#include "internal/blockchain/database/Peer.hpp"
 #include "internal/blockchain/node/BlockOracle.hpp"
+#include "internal/blockchain/node/Config.hpp"
+#include "internal/blockchain/node/FilterOracle.hpp"
+#include "internal/blockchain/node/PeerManager.hpp"
 #include "internal/util/Future.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -37,11 +41,11 @@ Peer::Peer(
     const api::Session& api,
     const node::internal::Config& config,
     const node::internal::Mempool& mempool,
-    const node::internal::Network& network,
+    const node::internal::Manager& network,
     const node::internal::FilterOracle& filter,
     const node::internal::BlockOracle& block,
     const node::internal::PeerManager& manager,
-    node::internal::PeerDatabase& database,
+    database::Peer& database,
     const int id,
     const UnallocatedCString& shutdown,
     const std::size_t headerSize,

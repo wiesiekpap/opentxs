@@ -10,7 +10,7 @@
 #include <boost/system/error_code.hpp>
 
 #include "internal/api/network/Asio.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/network/Asio.hpp"
@@ -62,7 +62,7 @@ auto Activity::reset_disconnect() noexcept -> void
                 LogError()(OT_PRETTY_CLASS())(error).Flush();
             }
         } else {
-            using Task = node::internal::PeerManager::Task;
+            using Task = node::PeerManagerJobs;
             pipeline_.Push(MakeWork(Task::ActivityTimeout));
         }
     });
@@ -77,7 +77,7 @@ auto Activity::reset_ping() noexcept -> void
                 LogError()(OT_PRETTY_CLASS())(error).Flush();
             }
         } else {
-            using Task = node::internal::PeerManager::Task;
+            using Task = node::PeerManagerJobs;
             pipeline_.Push(MakeWork(Task::NeedPing));
             reset_ping();
         }

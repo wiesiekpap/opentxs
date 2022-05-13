@@ -19,7 +19,7 @@
 #include "blockchain/database/wallet/SubchainID.hpp"
 #include "blockchain/database/wallet/Types.hpp"
 #include "internal/api/network/Asio.hpp"
-#include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/database/Types.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"

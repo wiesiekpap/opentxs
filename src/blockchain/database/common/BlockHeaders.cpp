@@ -15,6 +15,8 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "blockchain/database/common/Bulk.hpp"
+#include "internal/blockchain/block/Header.hpp"
+#include "internal/blockchain/database/common/Common.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
@@ -108,9 +110,9 @@ auto BlockHeader::store(
 
     try {
         const auto proto = [&] {
-            auto out = opentxs::blockchain::block::Header::SerializedType{};
+            auto out = block::internal::Header::SerializedType{};
 
-            if (false == header.Serialize(out)) {
+            if (false == header.Internal().Serialize(out)) {
                 throw std::runtime_error{"Failed to serialized header"};
             }
 

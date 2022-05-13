@@ -16,7 +16,7 @@
 #include "blockchain/database/wallet/Position.hpp"
 #include "blockchain/database/wallet/SubchainID.hpp"
 #include "blockchain/database/wallet/Types.hpp"
-#include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/database/Types.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"

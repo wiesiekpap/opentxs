@@ -8,7 +8,7 @@
 #include <memory>
 #include <optional>
 
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Types.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -29,6 +29,11 @@ namespace block
 {
 class Header;
 }  // namespace block
+
+namespace database
+{
+class Header;
+}  // namespace database
 }  // namespace blockchain
 
 class Factory;
@@ -41,14 +46,18 @@ namespace opentxs::blockchain::node
 class UpdateTransaction
 {
 public:
-    auto BestChain() const -> const BestHashes& { return best_; }
+    auto BestChain() const -> const database::BestHashes& { return best_; }
     auto Checkpoint() const -> block::Position;
-    auto Connected() const -> const Segments& { return connect_; }
-    auto Disconnected() const -> const Segments& { return disconnected_; }
+    auto Connected() const -> const database::Segments& { return connect_; }
+    auto Disconnected() const -> const database::Segments&
+    {
+        return disconnected_;
+    }
     auto EffectiveBestBlock(const block::Height height) const noexcept(false)
         -> block::Hash;
     auto EffectiveCheckpoint() const noexcept -> bool;
-    auto EffectiveDisconnectedHashes() const noexcept -> const DisconnectedList&
+    auto EffectiveDisconnectedHashes() const noexcept
+        -> const database::DisconnectedList&
     {
         return disconnected();
     }
@@ -59,21 +68,27 @@ public:
     {
         return 0 < siblings().count(hash);
     }
-    auto EffectiveSiblingHashes() const noexcept -> const Hashes&
+    auto EffectiveSiblingHashes() const noexcept -> const database::Hashes&
     {
         return siblings();
     }
     auto HaveCheckpoint() const -> bool { return have_checkpoint_; }
     auto HaveReorg() const -> bool { return have_reorg_; }
     auto ReorgParent() const -> const block::Position& { return reorg_from_; }
-    auto SiblingsToAdd() const -> const Hashes& { return add_sib_; }
-    auto SiblingsToDelete() const -> const Hashes& { return delete_sib_; }
-    auto UpdatedHeaders() const -> const UpdatedHeader& { return headers_; }
+    auto SiblingsToAdd() const -> const database::Hashes& { return add_sib_; }
+    auto SiblingsToDelete() const -> const database::Hashes&
+    {
+        return delete_sib_;
+    }
+    auto UpdatedHeaders() const -> const database::UpdatedHeader&
+    {
+        return headers_;
+    }
 
     void AddSibling(const block::Position& position);
     void AddToBestChain(const block::Position& position);
     void ClearCheckpoint();
-    void ConnectBlock(ChainSegment&& segment);
+    void ConnectBlock(database::ChainSegment&& segment);
     void DisconnectBlock(const block::Header& header);
     // throws std::out_of_range if header does not exist
     auto Header(const block::Hash& hash) noexcept(false) -> block::Header&;
@@ -90,30 +105,28 @@ public:
     // Stages an existing header for possible metadata update
     auto Stage(const block::Height& height) noexcept(false) -> block::Header&;
 
-    UpdateTransaction(
-        const api::Session& api,
-        const internal::HeaderDatabase& db);
+    UpdateTransaction(const api::Session& api, const database::Header& db);
 
 private:
     friend opentxs::Factory;
 
     const api::Session& api_;
-    const internal::HeaderDatabase& db_;
+    const database::Header& db_;
     bool have_reorg_;
     bool have_checkpoint_;
     block::Position reorg_from_;
     block::Position checkpoint_;
-    UpdatedHeader headers_;
-    BestHashes best_;
-    Hashes add_sib_;
-    Hashes delete_sib_;
-    Segments connect_;
-    Segments disconnected_;
-    mutable std::optional<DisconnectedList> cached_disconnected_;
-    mutable std::optional<Hashes> cached_siblings_;
+    database::UpdatedHeader headers_;
+    database::BestHashes best_;
+    database::Hashes add_sib_;
+    database::Hashes delete_sib_;
+    database::Segments connect_;
+    database::Segments disconnected_;
+    mutable std::optional<database::DisconnectedList> cached_disconnected_;
+    mutable std::optional<database::Hashes> cached_siblings_;
 
-    auto disconnected() const noexcept -> DisconnectedList&;
-    auto siblings() const noexcept -> Hashes&;
+    auto disconnected() const noexcept -> database::DisconnectedList&;
+    auto siblings() const noexcept -> database::Hashes&;
     auto stage(
         const bool newHeader,
         std::unique_ptr<block::Header> header) noexcept -> block::Header&;

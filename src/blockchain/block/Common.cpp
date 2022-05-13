@@ -5,7 +5,7 @@
 
 #include "0_stdafx.hpp"                         // IWYU pragma: associated
 #include "1_Internal.hpp"                       // IWYU pragma: associated
-#include "internal/blockchain/block/Block.hpp"  // IWYU pragma: associated
+#include "internal/blockchain/block/Types.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
 #include <iterator>
@@ -13,6 +13,7 @@
 #include "internal/util/BoostPMR.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"  // IWYU pragma: keep
 
 namespace opentxs::blockchain::block
 {

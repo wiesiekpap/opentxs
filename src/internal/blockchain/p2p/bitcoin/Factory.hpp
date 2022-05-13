@@ -8,8 +8,7 @@
 #include <memory>
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/database/Database.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Types.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
@@ -27,18 +26,10 @@ class Session;
 
 namespace blockchain
 {
-namespace client
+namespace database
 {
-namespace internal
-{
-class BlockOracle;
-struct Config;
-struct FilterOracle;
-class HeaderOracle;
-struct Network;
-struct PeerManager;
-}  // namespace internal
-}  // namespace client
+class Peer;
+}  // namespace database
 
 namespace node
 {
@@ -46,12 +37,14 @@ namespace internal
 {
 class BlockOracle;
 struct Config;
-struct FilterOracle;
+class FilterOracle;
 class HeaderOracle;
-struct Mempool;
-struct Network;
-struct PeerManager;
+class Mempool;
+class Manager;
+class PeerManager;
 }  // namespace internal
+
+class HeaderOracle;
 }  // namespace node
 
 namespace p2p
@@ -96,12 +89,12 @@ auto BitcoinP2PPeerLegacy(
     const api::Session& api,
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Mempool& mempool,
-    const blockchain::node::internal::Network& network,
+    const blockchain::node::internal::Manager& network,
     const blockchain::node::HeaderOracle& header,
     const blockchain::node::internal::FilterOracle& filter,
     const blockchain::node::internal::BlockOracle& block,
     const blockchain::node::internal::PeerManager& manager,
-    blockchain::node::internal::PeerDatabase& db,
+    blockchain::database::Peer& db,
     const blockchain::database::BlockStorage policy,
     const int id,
     std::unique_ptr<blockchain::p2p::internal::Address> address,

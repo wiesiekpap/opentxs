@@ -16,14 +16,17 @@
 
 #include "blockchain/node/UpdateTransaction.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/bitcoin/block/Factory.hpp"
+#include "internal/blockchain/block/Header.hpp"
+#include "internal/blockchain/database/Header.hpp"
 #include "internal/blockchain/node/Factory.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/Work.hpp"
+#include "opentxs/blockchain/bitcoin/block/Header.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/block/bitcoin/Header.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/p2p/Block.hpp"
@@ -36,7 +39,7 @@ namespace opentxs::factory
 {
 auto HeaderOracle(
     const api::Session& api,
-    blockchain::node::internal::HeaderDatabase& database,
+    blockchain::database::Header& database,
     const blockchain::Type type) noexcept
     -> std::unique_ptr<blockchain::node::HeaderOracle>
 {
@@ -50,7 +53,7 @@ namespace opentxs::blockchain::node::implementation
 {
 HeaderOracle::HeaderOracle(
     const api::Session& api,
-    internal::HeaderDatabase& database,
+    database::Header& database,
     const blockchain::Type type) noexcept
     : internal::HeaderOracle()
     , api_(api)
@@ -219,7 +222,7 @@ auto HeaderOracle::add_header(
 
     if (nullptr == pParent) {
         LogVerbose()(OT_PRETTY_CLASS())("Adding disconnected header").Flush();
-        header.SetDisconnectedState();
+        header.Internal().SetDisconnectedState();
         update.DisconnectBlock(header);
 
         return true;
@@ -692,12 +695,12 @@ auto HeaderOracle::connect_to_parent(
     const block::Header& parent,
     block::Header& child) noexcept -> bool
 {
-    child.InheritWork(parent.Work());
-    child.InheritState(parent);
-    child.InheritHeight(parent);
-    child.CompareToCheckpoint(update.Checkpoint());
+    child.Internal().InheritWork(parent.Work());
+    child.Internal().InheritState(parent);
+    child.Internal().InheritHeight(parent);
+    child.Internal().CompareToCheckpoint(update.Checkpoint());
 
-    return child.IsBlacklisted();
+    return child.Internal().IsBlacklisted();
 }
 
 auto HeaderOracle::DeleteCheckpoint() noexcept -> bool
@@ -891,7 +894,7 @@ auto HeaderOracle::is_disconnected(
     try {
         const auto& header = update.Stage(parent);
 
-        if (header.IsDisconnected()) {
+        if (header.Internal().IsDisconnected()) {
 
             return nullptr;
         } else {
@@ -938,7 +941,7 @@ auto HeaderOracle::is_in_best_chain(
 }
 
 auto HeaderOracle::LoadBitcoinHeader(const block::Hash& hash) const noexcept
-    -> std::unique_ptr<block::bitcoin::Header>
+    -> std::unique_ptr<bitcoin::block::Header>
 {
     return database_.TryLoadBitcoinHeader(hash);
 }
@@ -1019,6 +1022,11 @@ auto HeaderOracle::ProcessSyncData(
 
         return 0;
     }
+}
+
+auto HeaderOracle::RecentHashes(alloc::Resource* alloc) const noexcept -> Hashes
+{
+    return database_.RecentHashes(alloc);
 }
 
 auto HeaderOracle::stage_candidate(

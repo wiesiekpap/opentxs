@@ -23,15 +23,16 @@
 #include "blockchain/database/wallet/Position.hpp"
 #include "blockchain/database/wallet/Subchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/bitcoin/block/Factory.hpp"
+#include "internal/blockchain/bitcoin/block/Output.hpp"
+#include "internal/blockchain/database/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/bitcoin/block/Output.hpp"
+#include "opentxs/blockchain/bitcoin/block/Script.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -119,7 +120,7 @@ OutputCache::OutputCache(
 auto OutputCache::AddOutput(
     const block::Outpoint& id,
     MDB_txn* tx,
-    std::unique_ptr<block::bitcoin::Output> pOutput) noexcept -> bool
+    std::unique_ptr<bitcoin::block::Output> pOutput) noexcept -> bool
 {
     if (write_output(id, *pOutput, tx)) {
         outputs_.try_emplace(id, std::move(pOutput));
@@ -139,7 +140,7 @@ auto OutputCache::AddOutput(
     const AccountID& account,
     const SubchainID& subchain,
     MDB_txn* tx,
-    std::unique_ptr<block::bitcoin::Output> output) noexcept -> bool
+    std::unique_ptr<bitcoin::block::Output> output) noexcept -> bool
 {
     OT_ASSERT(false == account.empty());
     OT_ASSERT(false == subchain.empty());
@@ -497,13 +498,13 @@ auto OutputCache::GetNym(const identifier::Nym& id) const noexcept
 auto OutputCache::GetNyms() const noexcept -> const Nyms& { return nym_list_; }
 
 auto OutputCache::GetOutput(const block::Outpoint& id) const noexcept(false)
-    -> const block::bitcoin::internal::Output&
+    -> const bitcoin::block::internal::Output&
 {
     return load_output(id);
 }
 
 auto OutputCache::GetOutput(const block::Outpoint& id) noexcept(false)
-    -> block::bitcoin::internal::Output&
+    -> bitcoin::block::internal::Output&
 {
     return load_output(id);
 }
@@ -511,7 +512,7 @@ auto OutputCache::GetOutput(const block::Outpoint& id) noexcept(false)
 auto OutputCache::GetOutput(
     const SubchainID& subchain,
     const block::Outpoint& id) noexcept(false)
-    -> block::bitcoin::internal::Output&
+    -> bitcoin::block::internal::Output&
 {
     const auto& relevant = GetSubchain(subchain);
 
@@ -558,7 +559,7 @@ auto OutputCache::GetSubchain(const SubchainID& id) const noexcept
 }
 
 auto OutputCache::load_output(const block::Outpoint& id) noexcept(false)
-    -> block::bitcoin::internal::Output&
+    -> bitcoin::block::internal::Output&
 {
     auto it = outputs_.find(id);
 
@@ -576,7 +577,7 @@ auto OutputCache::load_output(const block::Outpoint& id) noexcept(false)
 }
 
 auto OutputCache::load_output(const block::Outpoint& id) const noexcept(false)
-    -> const block::bitcoin::internal::Output&
+    -> const bitcoin::block::internal::Output&
 {
     return const_cast<OutputCache*>(this)->load_output(id);
 }
@@ -734,7 +735,7 @@ auto OutputCache::Print() const noexcept -> void
         out.total_ += item.Value();
         const auto& script = item.Script();
         out.text_ << ", type: ";
-        using Pattern = block::bitcoin::Script::Pattern;
+        using Pattern = bitcoin::block::Script::Pattern;
 
         switch (script.Type()) {
             case Pattern::PayToMultisig: {
@@ -881,7 +882,7 @@ auto OutputCache::Print() const noexcept -> void
 
 auto OutputCache::UpdateOutput(
     const block::Outpoint& id,
-    const block::bitcoin::Output& output,
+    const bitcoin::block::Output& output,
     MDB_txn* tx) noexcept -> bool
 {
     return write_output(id, output, tx);
@@ -917,7 +918,7 @@ auto OutputCache::UpdatePosition(
 
 auto OutputCache::write_output(
     const block::Outpoint& id,
-    const block::bitcoin::Output& output,
+    const bitcoin::block::Output& output,
     MDB_txn* tx) noexcept -> bool
 {
     try {
@@ -947,7 +948,7 @@ auto OutputCache::write_output(
         const auto serialized = [&] {
             auto out = Space{};
             const auto data = [&] {
-                auto proto = block::bitcoin::internal::Output::SerializeType{};
+                auto proto = bitcoin::block::internal::Output::SerializeType{};
                 const auto rc = output.Internal().Serialize(proto);
 
                 if (false == rc) {

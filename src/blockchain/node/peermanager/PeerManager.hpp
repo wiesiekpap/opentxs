@@ -19,8 +19,9 @@
 
 #include "1_Internal.hpp"
 #include "core/Worker.hpp"
-#include "internal/blockchain/database/Database.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Types.hpp"
+#include "internal/blockchain/node/PeerManager.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -58,22 +59,33 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Transaction;
+}  // namespace block
 }  // namespace bitcoin
 
+namespace block
+{
 class Block;
 }  // namespace block
+
+namespace database
+{
+class Peer;
+}  // namespace database
 
 namespace node
 {
 namespace internal
 {
 class BlockOracle;
-struct Mempool;
+class FilterOracle;
+class Manager;
+class Mempool;
+struct Config;
 }  // namespace internal
 
 class HeaderOracle;
@@ -153,11 +165,11 @@ public:
             const api::Session& api,
             const node::internal::Config& config,
             const node::internal::Mempool& mempool,
-            const node::internal::Network& node,
+            const node::internal::Manager& node,
             const node::HeaderOracle& headers,
             const node::internal::FilterOracle& filter,
             const node::internal::BlockOracle& block,
-            node::internal::PeerDatabase& database,
+            database::Peer& database,
             const node::internal::PeerManager& parent,
             const database::BlockStorage policy,
             const UnallocatedCString& shutdown,
@@ -175,11 +187,11 @@ public:
         const api::Session& api_;
         const node::internal::Config& config_;
         const node::internal::Mempool& mempool_;
-        const node::internal::Network& node_;
+        const node::internal::Manager& node_;
         const node::HeaderOracle& headers_;
         const node::internal::FilterOracle& filter_;
         const node::internal::BlockOracle& block_;
-        node::internal::PeerDatabase& database_;
+        database::Peer& database_;
         const node::internal::PeerManager& parent_;
         const network::zeromq::socket::Publish& connected_peers_;
         const database::BlockStorage policy_;
@@ -243,10 +255,11 @@ public:
         -> bool final;
     auto BroadcastBlock(const block::Block& block) const noexcept -> bool final;
     auto BroadcastTransaction(
-        const block::bitcoin::Transaction& tx) const noexcept -> bool final;
+        const bitcoin::block::Transaction& tx) const noexcept -> bool final;
     auto Connect() noexcept -> bool final;
     auto Disconnect(const int id) const noexcept -> void final;
-    auto Endpoint(const Task type) const noexcept -> UnallocatedCString final
+    auto Endpoint(const PeerManagerJobs type) const noexcept
+        -> UnallocatedCString final
     {
         return jobs_.Endpoint(type);
     }
@@ -257,9 +270,9 @@ public:
     auto GetVerifiedPeerCount() const noexcept -> std::size_t final;
     auto Heartbeat() const noexcept -> void final
     {
-        jobs_.Dispatch(Task::Heartbeat);
+        jobs_.Dispatch(PeerManagerJobs::Heartbeat);
     }
-    auto JobReady(const Task type) const noexcept -> void final;
+    auto JobReady(const PeerManagerJobs type) const noexcept -> void final;
     auto Listen(const blockchain::p2p::Address& address) const noexcept
         -> bool final;
     auto LookupIncomingSocket(const int id) const noexcept(false)
@@ -286,11 +299,11 @@ public:
         const api::Session& api,
         const node::internal::Config& config,
         const node::internal::Mempool& mempool,
-        const node::internal::Network& node,
+        const node::internal::Manager& node,
         const node::HeaderOracle& headers,
         const node::internal::FilterOracle& filter,
         const node::internal::BlockOracle& block,
-        node::internal::PeerDatabase& database,
+        database::Peer& database,
         const Type chain,
         const database::BlockStorage policy,
         const UnallocatedCString& seednode,
@@ -307,18 +320,20 @@ private:
 
 private:
     struct Jobs {
-        auto Endpoint(const Task type) const noexcept -> UnallocatedCString;
-        auto Work(const Task task) const noexcept -> network::zeromq::Message;
+        auto Endpoint(const PeerManagerJobs type) const noexcept
+            -> UnallocatedCString;
+        auto Work(const PeerManagerJobs task) const noexcept
+            -> network::zeromq::Message;
 
-        auto Dispatch(const Task type) noexcept -> void;
+        auto Dispatch(const PeerManagerJobs type) noexcept -> void;
         auto Dispatch(zmq::Message&& work) noexcept -> void;
         auto Shutdown() noexcept -> void;
 
         Jobs(const api::Session& api) noexcept;
 
     private:
-        using EndpointMap = UnallocatedMap<Task, UnallocatedCString>;
-        using SocketMap = UnallocatedMap<Task, zmq::socket::Sender*>;
+        using EndpointMap = UnallocatedMap<PeerManagerJobs, UnallocatedCString>;
+        using SocketMap = UnallocatedMap<PeerManagerJobs, zmq::socket::Sender*>;
 
         const zmq::Context& zmq_;
         OTZMQPushSocket getheaders_;
@@ -334,14 +349,14 @@ private:
 
         static auto listen(
             EndpointMap& map,
-            const Task type,
+            const PeerManagerJobs type,
             const zmq::socket::Sender& socket) noexcept -> void;
 
         Jobs() = delete;
     };
 
-    const node::internal::Network& node_;
-    node::internal::PeerDatabase& database_;
+    const node::internal::Manager& node_;
+    database::Peer& database_;
     const Type chain_;
     const std::size_t peer_target_;
     mutable Jobs jobs_;

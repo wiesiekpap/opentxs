@@ -5,12 +5,13 @@
 
 #pragma once
 
-#include "internal/blockchain/database/Database.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Types.hpp"
+
+#include "internal/blockchain/database/Wallet.hpp"
 
 namespace opentxs::blockchain::database::wallet
 {
-using Parent = node::internal::WalletDatabase;
+using Parent = database::Wallet;
 using SubchainIndex = Parent::SubchainIndex;
 using pSubchainIndex = Parent::pSubchainIndex;
 using NodeID = Parent::NodeID;

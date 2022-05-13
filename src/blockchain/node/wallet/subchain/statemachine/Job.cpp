@@ -18,7 +18,8 @@
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "internal/api/network/Asio.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/FilterOracle.hpp"
+#include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"

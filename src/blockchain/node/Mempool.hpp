@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Mempool.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -29,26 +29,23 @@ class Blockchain;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
+{
+namespace block
 {
 namespace internal
 {
-struct Transaction;
+class Transaction;
 }  // namespace internal
 
 class Transaction;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
-namespace node
+namespace database
 {
-namespace internal
-{
-struct WalletDatabase;
-}  // namespace internal
-}  // namespace node
+class Wallet;
+}  // namespace database
 }  // namespace blockchain
 
 namespace network
@@ -72,18 +69,18 @@ class Mempool final : public internal::Mempool
 public:
     auto Dump() const noexcept -> UnallocatedSet<UnallocatedCString> final;
     auto Query(ReadView txid) const noexcept
-        -> std::shared_ptr<const block::bitcoin::Transaction> final;
+        -> std::shared_ptr<const bitcoin::block::Transaction> final;
     auto Submit(ReadView txid) const noexcept -> bool final;
     auto Submit(const UnallocatedVector<ReadView>& txids) const noexcept
         -> UnallocatedVector<bool> final;
-    auto Submit(std::unique_ptr<const block::bitcoin::Transaction> tx)
+    auto Submit(std::unique_ptr<const bitcoin::block::Transaction> tx)
         const noexcept -> void final;
 
     auto Heartbeat() noexcept -> void final;
 
     Mempool(
         const api::crypto::Blockchain& crypto,
-        internal::WalletDatabase& db,
+        database::Wallet& db,
         const network::zeromq::socket::Publish& socket,
         const Type chain) noexcept;
 

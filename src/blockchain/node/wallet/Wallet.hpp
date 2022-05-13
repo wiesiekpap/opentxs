@@ -30,19 +30,18 @@
 #include "blockchain/node/wallet/subchain/DeterministicStateData.hpp"
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "core/Worker.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/blockchain/node/wallet/Account.hpp"
 #include "internal/blockchain/node/wallet/Accounts.hpp"
 #include "internal/blockchain/node/wallet/FeeOracle.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Input.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
@@ -74,8 +73,19 @@ class Session;
 
 namespace blockchain
 {
+namespace database
+{
+class Wallet;
+}  // namespace database
+
 namespace node
 {
+namespace internal
+{
+class Manager;
+class Mempool;
+}  // namespace internal
+
 class Mempool;
 }  // namespace node
 }  // namespace blockchain
@@ -110,8 +120,7 @@ class Identifier;
 
 namespace opentxs::blockchain::node::implementation
 {
-class Wallet final : virtual public node::internal::Wallet,
-                     public Worker<api::Session>
+class Wallet final : virtual public node::internal::Wallet, Worker<api::Session>
 {
 public:
     auto ConstructTransaction(
@@ -172,8 +181,8 @@ public:
 
     Wallet(
         const api::Session& api,
-        const node::internal::Network& parent,
-        node::internal::WalletDatabase& db,
+        const node::internal::Manager& parent,
+        database::Wallet& db,
         const node::internal::Mempool& mempool,
         const Type chain,
         const std::string_view shutdown) noexcept;
@@ -181,17 +190,16 @@ public:
     ~Wallet() final;
 
 protected:
-    auto pipeline(zmq::Message&& in) noexcept -> void final;
+    auto pipeline(network::zeromq::Message&& in) noexcept -> void final;
     auto state_machine() noexcept -> bool final;
 
 private:
     auto shut_down() noexcept -> void;
 
-private:
     using Work = wallet::WalletJobs;
 
-    const node::internal::Network& parent_;
-    node::internal::WalletDatabase& db_;
+    const node::internal::Manager& parent_;
+    database::Wallet& db_;
     const Type chain_;
     wallet::FeeOracle fee_oracle_;
     wallet::Accounts accounts_;

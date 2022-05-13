@@ -8,7 +8,6 @@
 #include <memory>
 #include <optional>
 
-#include "internal/api/crypto/Blockchain.hpp"
 #include "ottest/fixtures/blockchain/Activity.hpp"
 
 using Subchain = ot::blockchain::crypto::Subchain;
@@ -130,10 +129,10 @@ TEST_F(Test_BlockchainActivity, setup)
     txid_1_ = tx1->ID().asHex();
     txid_2_ = tx2->ID().asHex();
 
-    ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
-        ot::blockchain::Type::Bitcoin, *tx1, reason_));
-    ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
-        ot::blockchain::Type::Bitcoin, *tx2, reason_));
+    // ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
+    //     ot::blockchain::Type::Bitcoin, *tx1, reason_));
+    // ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
+    //     ot::blockchain::Type::Bitcoin, *tx2, reason_));
 
     auto bytes = ot::Space{};
     auto thread1 =

@@ -11,7 +11,7 @@
 #include <sstream>
 
 #include "internal/api/session/Client.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "internal/util/LogMacros.hpp"
 
@@ -153,8 +153,8 @@ auto Test_BlockchainActivity::get_test_transaction(
 
     if (output) {
         auto& tx = dynamic_cast<
-            ot::blockchain::block::bitcoin::internal::Transaction&>(
-            const_cast<ot::blockchain::block::bitcoin::Transaction&>(*output));
+            ot::blockchain::bitcoin::block::internal::Transaction&>(
+            const_cast<ot::blockchain::bitcoin::block::Transaction&>(*output));
         auto added = tx.ForTestingOnlyAddKey(0, first.KeyID());
 
         OT_ASSERT(added);

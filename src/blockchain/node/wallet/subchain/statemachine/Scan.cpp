@@ -20,7 +20,9 @@
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "blockchain/node/wallet/subchain/statemachine/ElementCache.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Wallet.hpp"
+#include "internal/blockchain/node/FilterOracle.hpp"
+#include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
@@ -32,9 +34,9 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/bitcoin/block/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -232,7 +234,17 @@ auto Scan::Imp::work() noexcept -> bool
     }
 
     const auto height = current().first;
-    const auto rescan = parent_.rescan_progress_.load();
+    const auto rescan = [&]() -> block::Height {
+        auto handle = parent_.progress_position_.lock();
+
+        if (handle->has_value()) {
+
+            return handle->value().first;
+        } else {
+
+            return -1;
+        }
+    }();
     const auto& threshold = parent_.scan_threshold_;
 
     if (parent_.scan_dirty_ && ((height - rescan) > threshold)) {

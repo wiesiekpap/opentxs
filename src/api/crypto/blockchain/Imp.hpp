@@ -65,13 +65,13 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Transaction;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
 namespace crypto
 {
@@ -153,7 +153,7 @@ struct Blockchain::Imp {
     virtual auto ActivityDescription(
         const identifier::Nym& nym,
         const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::block::bitcoin::Transaction& transaction)
+        const opentxs::blockchain::bitcoin::block::Transaction& transaction)
         const noexcept -> UnallocatedCString;
     auto address_prefix(
         const Style style,
@@ -208,10 +208,10 @@ struct Blockchain::Imp {
         -> void;
     virtual auto LoadTransactionBitcoin(const TxidHex& txid) const noexcept
         -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Transaction>;
+            const opentxs::blockchain::bitcoin::block::Transaction>;
     virtual auto LoadTransactionBitcoin(const Txid& txid) const noexcept
         -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Transaction>;
+            const opentxs::blockchain::bitcoin::block::Transaction>;
     auto LookupAccount(const Identifier& id) const noexcept -> AccountData;
     virtual auto LookupContacts(const Data& pubkeyHash) const noexcept
         -> ContactList;
@@ -251,9 +251,10 @@ struct Blockchain::Imp {
     virtual auto ProcessMergedContact(
         const Contact& parent,
         const Contact& child) const noexcept -> bool;
-    virtual auto ProcessTransaction(
+    virtual auto ProcessTransactions(
         const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::block::bitcoin::Transaction& in,
+        Set<std::shared_ptr<opentxs::blockchain::bitcoin::block::Transaction>>&&
+            transactions,
         const PasswordPrompt& reason) const noexcept -> bool;
     auto PubkeyHash(const opentxs::blockchain::Type chain, const Data& pubkey)
         const noexcept(false) -> OTData;

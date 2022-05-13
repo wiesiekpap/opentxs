@@ -81,14 +81,23 @@ class Client;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
+namespace internal
+{
+class Input;
+class Output;
+}  // namespace internal
+
 class Block;
 class Transaction;
+}  // namespace block
 }  // namespace bitcoin
 
+namespace block
+{
 class Block;
 class Hash;
 class Header;
@@ -127,7 +136,7 @@ public:
         const opentxs::blockchain::Type chain,
         const ReadView bytes) const noexcept
         -> std::shared_ptr<
-            const opentxs::blockchain::block::bitcoin::Block> final;
+            const opentxs::blockchain::bitcoin::block::Block> final;
     auto BitcoinBlock(
         const opentxs::blockchain::block::Header& previous,
         const Transaction_p generationTransaction,
@@ -136,7 +145,7 @@ public:
         const std::int32_t version,
         const AbortFunction abort) const noexcept
         -> std::shared_ptr<
-            const opentxs::blockchain::block::bitcoin::Block> final;
+            const opentxs::blockchain::bitcoin::block::Block> final;
     auto BitcoinGenerationTransaction(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::block::Height height,
@@ -149,7 +158,7 @@ public:
         const bool isGeneration,
         const Time& time) const noexcept
         -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Transaction> final;
+            const opentxs::blockchain::bitcoin::block::Transaction> final;
     auto BlockHeader(const proto::BlockchainBlockHeader& serialized) const
         -> BlockHeaderP final;
     auto BlockHeader(const ReadView protobuf) const -> BlockHeaderP final;

@@ -19,7 +19,7 @@
 
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/api/session/Endpoints.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Manager.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/network/p2p/Types.hpp"
 #include "internal/network/zeromq/Batch.hpp"
@@ -37,7 +37,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/network/p2p/Acknowledgement.hpp"
 #include "opentxs/network/p2p/Base.hpp"

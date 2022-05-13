@@ -24,17 +24,17 @@
 #include "blockchain/database/wallet/Subchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "internal/blockchain/database/Database.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Types.hpp"
+#include "internal/blockchain/database/Wallet.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Input.hpp"
+#include "opentxs/blockchain/bitcoin/block/Output.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
@@ -61,14 +61,14 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
+{
+namespace block
 {
 class Output;
 class Transaction;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
 namespace database
 {
@@ -80,6 +80,11 @@ class Database;
 
 namespace node
 {
+namespace internal
+{
+struct SpendPolicy;
+}  // namespace internal
+
 class HeaderOracle;
 }  // namespace node
 }  // namespace blockchain
@@ -108,12 +113,12 @@ class Identifier;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::database
+namespace opentxs::blockchain::database::implemenation
 {
 class Wallet
 {
 public:
-    using Parent = node::internal::WalletDatabase;
+    using Parent = database::Wallet;
     using NodeID = Parent::NodeID;
     using pNodeID = Parent::pNodeID;
     using SubchainIndex = Parent::SubchainIndex;
@@ -137,12 +142,12 @@ public:
         const NodeID& balanceNode,
         const crypto::Subchain subchain,
         const Vector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction,
+        const bitcoin::block::Transaction& transaction,
         TXOs& txoCreated) const noexcept -> bool;
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
-        const block::bitcoin::Transaction& transaction) const noexcept -> bool;
+        const bitcoin::block::Transaction& transaction) const noexcept -> bool;
     auto AddProposal(
         const Identifier& id,
         const proto::BlockchainTransactionProposal& tx) const noexcept -> bool;
@@ -245,4 +250,4 @@ private:
     auto operator=(const Wallet&) -> Wallet& = delete;
     auto operator=(Wallet&&) -> Wallet& = delete;
 };
-}  // namespace opentxs::blockchain::database
+}  // namespace opentxs::blockchain::database::implemenation

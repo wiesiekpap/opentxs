@@ -18,7 +18,7 @@
 #include "internal/blockchain/Params.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
@@ -120,7 +120,7 @@ auto Blockchain::ActivityDescription(
 auto Blockchain::ActivityDescription(
     const identifier::Nym& nym,
     const Chain chain,
-    const opentxs::blockchain::block::bitcoin::Transaction& transaction)
+    const opentxs::blockchain::bitcoin::block::Transaction& transaction)
     const noexcept -> UnallocatedCString
 {
     return imp_->ActivityDescription(nym, chain, transaction);
@@ -224,13 +224,13 @@ auto Blockchain::KeyGenerated(
 }
 
 auto Blockchain::LoadTransactionBitcoin(const TxidHex& txid) const noexcept
-    -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>
+    -> std::unique_ptr<const opentxs::blockchain::bitcoin::block::Transaction>
 {
     return imp_->LoadTransactionBitcoin(txid);
 }
 
 auto Blockchain::LoadTransactionBitcoin(const Txid& txid) const noexcept
-    -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>
+    -> std::unique_ptr<const opentxs::blockchain::bitcoin::block::Transaction>
 {
     return imp_->LoadTransactionBitcoin(txid);
 }
@@ -350,12 +350,12 @@ auto Blockchain::ProcessMergedContact(
     return imp_->ProcessMergedContact(parent, child);
 }
 
-auto Blockchain::ProcessTransaction(
+auto Blockchain::ProcessTransactions(
     const Chain chain,
-    const opentxs::blockchain::block::bitcoin::Transaction& in,
+    Set<std::shared_ptr<opentxs::blockchain::bitcoin::block::Transaction>>&& in,
     const PasswordPrompt& reason) const noexcept -> bool
 {
-    return imp_->ProcessTransaction(chain, in, reason);
+    return imp_->ProcessTransactions(chain, std::move(in), reason);
 }
 
 auto Blockchain::PubkeyHash(

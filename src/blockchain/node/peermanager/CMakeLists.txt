@@ -6,6 +6,7 @@
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/PeerManager.hpp"
     "IncomingConnectionManager.hpp"
     "Jobs.cpp"
     "PeerManager.cpp"

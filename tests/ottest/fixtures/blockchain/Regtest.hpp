@@ -46,13 +46,16 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Transaction;
+}  // namespace block
 }  // namespace bitcoin
 
+namespace block
+{
 class Outpoint;
 }  // namespace block
 
@@ -111,7 +114,7 @@ namespace ottest
 {
 using Position = ot::blockchain::block::Position;
 using State = otsync::State;
-using Pattern = ot::blockchain::block::bitcoin::Script::Pattern;
+using Pattern = ot::blockchain::bitcoin::block::Script::Pattern;
 using FilterType = ot::blockchain::cfilter::Type;
 
 constexpr auto test_chain_{b::Type::UnitTest};
@@ -334,16 +337,16 @@ struct TXOState {
 
 struct TXOs {
     auto AddConfirmed(
-        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const ot::blockchain::bitcoin::block::Transaction& tx,
         const std::size_t index,
         const ot::blockchain::crypto::Subaccount& owner) noexcept -> bool;
     auto AddGenerated(
-        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const ot::blockchain::bitcoin::block::Transaction& tx,
         const std::size_t index,
         const ot::blockchain::crypto::Subaccount& owner,
         const ot::blockchain::block::Height position) noexcept -> bool;
     auto AddUnconfirmed(
-        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const ot::blockchain::bitcoin::block::Transaction& tx,
         const std::size_t index,
         const ot::blockchain::crypto::Subaccount& owner) noexcept -> bool;
     auto Confirm(const ot::blockchain::block::Txid& transaction) noexcept
@@ -387,7 +390,7 @@ protected:
     using Transactions = ot::UnallocatedDeque<ot::blockchain::block::pTxid>;
     using Generator = std::function<Transaction(Height)>;
     using Outpoint = ot::blockchain::block::Outpoint;
-    using Script = ot::blockchain::block::bitcoin::Script;
+    using Script = ot::blockchain::bitcoin::block::Script;
     using UTXO = ot::blockchain::node::Wallet::UTXO;
     using Key = ot::OTData;
     using Amount = ot::Amount;

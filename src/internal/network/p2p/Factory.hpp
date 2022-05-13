@@ -30,13 +30,13 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Transaction;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 }  // namespace blockchain
 
 namespace contract
@@ -130,7 +130,7 @@ auto BlockchainSyncPublishContractReply_p(
 auto BlockchainSyncPushTransaction() noexcept -> network::p2p::PushTransaction;
 auto BlockchainSyncPushTransaction(
     const opentxs::blockchain::Type chain,
-    const opentxs::blockchain::block::bitcoin::Transaction& payload) noexcept
+    const opentxs::blockchain::bitcoin::block::Transaction& payload) noexcept
     -> network::p2p::PushTransaction;
 auto BlockchainSyncPushTransaction_p(
     const api::Session& api,

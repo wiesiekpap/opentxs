@@ -16,14 +16,16 @@
 #include <string_view>
 #include <type_traits>
 
+#include "Proto.tpp"
 #include "interface/ui/base/List.hpp"
 #include "interface/ui/base/Widget.hpp"
 #include "internal/api/crypto/blockchain/Types.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/bitcoin/block/Factory.hpp"
+#include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Manager.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -33,8 +35,8 @@
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
@@ -55,6 +57,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/BlockchainTransaction.pb.h"
 #include "serialization/protobuf/PaymentEvent.pb.h"
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
@@ -90,11 +93,11 @@ BlockchainAccountActivity::BlockchainAccountActivity(
     : AccountActivity(api, nymID, accountID, AccountType::Blockchain, cb)
     , chain_(chain)
     , confirmed_(0)
-    , balance_cb_(zmq::ListenCallback::Factory(
+    , balance_cb_(network::zeromq::ListenCallback::Factory(
           [this](auto&& in) { pipeline_.Push(std::move(in)); }))
     , balance_socket_(Widget::api_.Network().ZeroMQ().DealerSocket(
           balance_cb_,
-          zmq::socket::Direction::Connect))
+          network::zeromq::socket::Direction::Connect))
     , progress_()
     , height_(0)
 {
@@ -433,23 +436,34 @@ auto BlockchainAccountActivity::process_txid(const Message& in) noexcept -> void
     wait_for_startup();
     const auto body = in.Body();
 
-    OT_ASSERT(2 < body.size());
+    OT_ASSERT(3 < body.size());
 
-    const auto txid = Widget::api_.Factory().Data(body.at(1));
+    const auto& api = Widget::api_;
+    const auto txid = api.Factory().Data(body.at(1));
     const auto chain = body.at(2).as<blockchain::Type>();
 
     if (chain != chain_) { return; }
 
-    process_txid(txid);
+    const auto proto = proto::Factory<proto::BlockchainTransaction>(body.at(3));
+    process_txid(txid, factory::BitcoinTransaction(api, proto));
 }
 
 auto BlockchainAccountActivity::process_txid(const Data& txid) noexcept
     -> std::optional<AccountActivityRowID>
 {
+    return process_txid(
+        txid, Widget::api_.Crypto().Blockchain().LoadTransactionBitcoin(txid));
+}
+
+auto BlockchainAccountActivity::process_txid(
+    const Data& txid,
+    std::unique_ptr<const blockchain::bitcoin::block::Transaction>
+        pTX) noexcept  // TODO : MT-83
+    -> std::optional<AccountActivityRowID>
+{
     const auto rowID = AccountActivityRowID{
         blockchain_thread_item_id(Widget::api_.Crypto(), chain_, txid),
         proto::PAYMENTEVENTTYPE_COMPLETE};
-    auto pTX = Widget::api_.Crypto().Blockchain().LoadTransactionBitcoin(txid);
 
     if (false == bool(pTX)) { return std::nullopt; }
 

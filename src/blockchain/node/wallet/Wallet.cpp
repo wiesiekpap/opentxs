@@ -12,11 +12,13 @@
 #include <utility>
 
 #include "core/Worker.hpp"
+#include "internal/blockchain/database/Wallet.hpp"
 #include "internal/blockchain/node/Factory.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/blockchain/node/wallet/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/bitcoin/block/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
@@ -29,8 +31,8 @@ namespace opentxs::factory
 {
 auto BlockchainWallet(
     const api::Session& api,
-    const blockchain::node::internal::Network& parent,
-    blockchain::node::internal::WalletDatabase& db,
+    const blockchain::node::internal::Manager& parent,
+    blockchain::database::Wallet& db,
     const blockchain::node::internal::Mempool& mempool,
     const blockchain::Type chain,
     const std::string_view shutdown)
@@ -89,8 +91,8 @@ namespace opentxs::blockchain::node::implementation
 {
 Wallet::Wallet(
     const api::Session& api,
-    const node::internal::Network& parent,
-    node::internal::WalletDatabase& db,
+    const node::internal::Manager& parent,
+    database::Wallet& db,
     const node::internal::Mempool& mempool,
     const Type chain,
     const std::string_view shutdown) noexcept
@@ -204,7 +206,7 @@ auto Wallet::Init() noexcept -> void
     trigger();
 }
 
-auto Wallet::pipeline(zmq::Message&& in) noexcept -> void
+auto Wallet::pipeline(network::zeromq::Message&& in) noexcept -> void
 {
     if (false == running_.load()) { return; }
 

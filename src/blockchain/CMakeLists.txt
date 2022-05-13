@@ -11,6 +11,7 @@ add_subdirectory(node)
 if(OT_BLOCKCHAIN_EXPORT)
   add_subdirectory(database)
   add_subdirectory(p2p)
+  add_subdirectory(pkt)
 endif()
 
 target_sources(

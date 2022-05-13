@@ -15,7 +15,6 @@
 #include <utility>
 
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
@@ -50,7 +49,7 @@ class ZMQIncomingConnectionManager final
     : public PeerManager::IncomingConnectionManager
 {
 public:
-    using Task = node::internal::PeerManager::Task;
+    using Task = PeerManagerJobs;
 
     auto Disconnect(const int id) const noexcept -> void final
     {

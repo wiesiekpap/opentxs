@@ -13,7 +13,6 @@
 #include <tuple>
 #include <utility>
 
-#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
@@ -28,13 +27,16 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Block;
+}  // namespace block
 }  // namespace bitcoin
 
+namespace block
+{
 class Hash;
 }  // namespace block
 }  // namespace blockchain

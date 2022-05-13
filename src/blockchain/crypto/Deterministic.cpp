@@ -30,6 +30,7 @@
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
+#include "opentxs/core/Amount.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/util/Log.hpp"

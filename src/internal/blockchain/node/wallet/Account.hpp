@@ -12,7 +12,6 @@
 #include <string_view>
 
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
@@ -35,13 +34,17 @@ namespace crypto
 class Account;
 }  // namespace crypto
 
+namespace database
+{
+class Wallet;
+}  // namespace database
+
 namespace node
 {
 namespace internal
 {
-struct Mempool;
-struct Network;
-struct WalletDatabase;
+class Mempool;
+class Manager;
 }  // namespace internal
 }  // namespace node
 }  // namespace blockchain
@@ -70,8 +73,8 @@ public:
     Account(
         const api::Session& api,
         const crypto::Account& account,
-        const node::internal::Network& node,
-        node::internal::WalletDatabase& db,
+        const node::internal::Manager& node,
+        database::Wallet& db,
         const node::internal::Mempool& mempool,
         const Type chain,
         const cfilter::Type filter,

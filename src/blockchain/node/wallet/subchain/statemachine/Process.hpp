@@ -35,13 +35,16 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Block;
+}  // namespace block
 }  // namespace bitcoin
 
+namespace block
+{
 class Hash;
 }  // namespace block
 
@@ -93,7 +96,7 @@ private:
     using Downloading = Map<block::Position, BitcoinBlockResult>;
     using DownloadIndex = Map<block::Hash, Downloading::iterator>;
     using Ready =
-        Map<block::Position, std::shared_ptr<const block::bitcoin::Block>>;
+        Map<block::Position, std::shared_ptr<const bitcoin::block::Block>>;
 
     const std::size_t download_limit_;
     network::zeromq::socket::Raw& to_index_;
@@ -114,11 +117,11 @@ private:
     auto do_process(const Ready::value_type& data) noexcept -> void;
     auto do_process(
         const block::Position position,
-        const std::shared_ptr<const block::bitcoin::Block> block) noexcept
+        const std::shared_ptr<const bitcoin::block::Block> block) noexcept
         -> void;
     auto do_process_common(
         const block::Position position,
-        const std::shared_ptr<const block::bitcoin::Block>& block) noexcept
+        const std::shared_ptr<const bitcoin::block::Block>& block) noexcept
         -> void;
     auto do_process_update(Message&& msg) noexcept -> void final;
     auto do_startup() noexcept -> void final;

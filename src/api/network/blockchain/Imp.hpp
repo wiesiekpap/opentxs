@@ -20,7 +20,7 @@
 #include "api/network/blockchain/StartupPublisher.hpp"
 #include "blockchain/database/common/Database.hpp"
 #include "internal/api/network/Blockchain.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Manager.hpp"
 #include "internal/network/p2p/Client.hpp"
 #include "internal/network/p2p/Server.hpp"
 #include "internal/network/zeromq/Handle.hpp"
@@ -78,8 +78,8 @@ namespace node
 {
 namespace internal
 {
+class Manager;
 struct Config;
-struct Network;
 }  // namespace internal
 }  // namespace node
 }  // namespace blockchain
@@ -203,7 +203,7 @@ struct BlockchainImp final : public Blockchain::Imp {
 
 private:
     using Config = opentxs::blockchain::node::internal::Config;
-    using pNode = std::unique_ptr<opentxs::blockchain::node::internal::Network>;
+    using pNode = std::unique_ptr<opentxs::blockchain::node::internal::Manager>;
     using Chains = UnallocatedVector<Chain>;
 
     const api::Session& api_;

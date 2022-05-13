@@ -24,7 +24,8 @@
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Manager.hpp"
+#include "internal/blockchain/node/Mempool.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
@@ -139,7 +140,7 @@ auto Process::Imp::do_process(const Ready::value_type& data) noexcept -> void
 
 auto Process::Imp::do_process(
     const block::Position position,
-    const std::shared_ptr<const block::bitcoin::Block> block) noexcept -> void
+    const std::shared_ptr<const bitcoin::block::Block> block) noexcept -> void
 {
     do_process_common(position, block);
 
@@ -154,7 +155,7 @@ auto Process::Imp::do_process(
 
 auto Process::Imp::do_process_common(
     const block::Position position,
-    const std::shared_ptr<const block::bitcoin::Block>& block) noexcept -> void
+    const std::shared_ptr<const bitcoin::block::Block>& block) noexcept -> void
 {
     OT_ASSERT(block);
 

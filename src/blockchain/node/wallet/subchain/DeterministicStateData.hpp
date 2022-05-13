@@ -23,7 +23,8 @@
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/Block.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/block/Types.hpp"
+#include "internal/blockchain/database/Wallet.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Index.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -60,27 +61,31 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
+{
+namespace block
 {
 class Block;
 class Transaction;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
 namespace crypto
 {
 class Deterministic;
 }  // namespace crypto
 
+namespace database
+{
+class Wallet;
+}  // namespace database
+
 namespace node
 {
 namespace internal
 {
-struct Mempool;
-struct Network;
-struct WalletDatabase;
+class Manager;
+class Mempool;
 }  // namespace internal
 
 namespace wallet
@@ -119,8 +124,8 @@ public:
 
     DeterministicStateData(
         const api::Session& api,
-        const node::internal::Network& node,
-        node::internal::WalletDatabase& db,
+        const node::internal::Manager& node,
+        database::Wallet& db,
         const node::internal::Mempool& mempool,
         const crypto::Deterministic& subaccount,
         const cfilter::Type filter,
@@ -132,7 +137,7 @@ public:
     ~DeterministicStateData() final = default;
 
 private:
-    using CacheData = std::pair<Time, WalletDatabase::BatchedMatches>;
+    using CacheData = std::pair<Time, database::Wallet::BatchedMatches>;
     using Cache = libguarded::ordered_guarded<CacheData, std::shared_mutex>;
 
     mutable Cache cache_;
@@ -140,24 +145,24 @@ private:
     auto CheckCache(const std::size_t outstanding, FinishedCallback cb)
         const noexcept -> void final;
     auto flush_cache(
-        WalletDatabase::BatchedMatches& matches,
+        database::Wallet::BatchedMatches& matches,
         FinishedCallback cb) const noexcept -> void;
 
     auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
         const noexcept -> Index final;
     auto handle_confirmed_matches(
-        const block::bitcoin::Block& block,
+        const bitcoin::block::Block& block,
         const block::Position& position,
         const block::Matches& confirmed,
         const Log& log) const noexcept -> void final;
     auto handle_mempool_matches(
         const block::Matches& matches,
-        std::unique_ptr<const block::bitcoin::Transaction> tx) const noexcept
+        std::unique_ptr<const bitcoin::block::Transaction> tx) const noexcept
         -> void final;
     auto process(
         const block::Match match,
-        const block::bitcoin::Transaction& tx,
-        WalletDatabase::MatchedTransaction& output) const noexcept -> void;
+        const bitcoin::block::Transaction& tx,
+        database::Wallet::MatchedTransaction& output) const noexcept -> void;
 
     DeterministicStateData() = delete;
     DeterministicStateData(const DeterministicStateData&) = delete;

@@ -10,7 +10,6 @@
 
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
-#include "internal/blockchain/node/Node.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"

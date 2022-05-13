@@ -17,8 +17,9 @@
 #include <utility>
 
 #include "internal/api/network/Blockchain.hpp"
-#include "internal/blockchain/database/Database.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Block.hpp"
+#include "internal/blockchain/database/Types.hpp"
+#include "internal/blockchain/node/Manager.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
@@ -26,8 +27,8 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Block.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -49,8 +50,8 @@ const std::chrono::seconds Cache::download_timeout_{60};
 
 Cache::Cache(
     const api::Session& api,
-    const internal::Network& node,
-    internal::BlockDatabase& db,
+    const internal::Manager& node,
+    database::Block& db,
     const blockchain::Type chain,
     allocator_type alloc) noexcept
     : api_(api)
@@ -198,7 +199,7 @@ auto Cache::next_batch_id() noexcept -> BatchID
     return ++counter;
 }
 
-auto Cache::ProcessBlockRequests(zmq::Message&& in) noexcept -> void
+auto Cache::ProcessBlockRequests(network::zeromq::Message&& in) noexcept -> void
 {
     if (false == running_) { return; }
 
@@ -258,7 +259,7 @@ auto Cache::queue_hash(const block::Hash& hash) noexcept -> void
     queue_.emplace_back(hash);
 }
 
-auto Cache::ReceiveBlock(const zmq::Frame& in) noexcept -> void
+auto Cache::ReceiveBlock(const network::zeromq::Frame& in) noexcept -> void
 {
     ReceiveBlock(in.Bytes());
 }
@@ -269,7 +270,7 @@ auto Cache::ReceiveBlock(const std::string_view in) noexcept -> void
 }
 
 auto Cache::ReceiveBlock(
-    std::shared_ptr<const block::bitcoin::Block> in) noexcept -> void
+    std::shared_ptr<const bitcoin::block::Block> in) noexcept -> void
 {
     if (false == bool(in)) {
         LogError()(OT_PRETTY_CLASS())("Invalid block").Flush();

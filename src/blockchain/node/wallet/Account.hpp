@@ -18,7 +18,6 @@
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/DeterministicStateData.hpp"  // IWYU pragma: keep
-#include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/node/wallet/Account.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/Subchain.hpp"
@@ -62,13 +61,17 @@ class Notification;
 class PaymentCode;
 }  // namespace crypto
 
+namespace database
+{
+class Wallet;
+}  // namespace database
+
 namespace node
 {
 namespace internal
 {
-struct Mempool;
-struct Network;
-struct WalletDatabase;
+class Manager;
+class Mempool;
 }  // namespace internal
 
 namespace wallet
@@ -119,8 +122,8 @@ public:
 
     Imp(const api::Session& api,
         const crypto::Account& account,
-        const node::internal::Network& node,
-        node::internal::WalletDatabase& db,
+        const node::internal::Manager& node,
+        database::Wallet& db,
         const node::internal::Mempool& mempool,
         const network::zeromq::BatchID batch,
         const Type chain,
@@ -142,8 +145,8 @@ private:
 
     const api::Session& api_;
     const crypto::Account& account_;
-    const node::internal::Network& node_;
-    node::internal::WalletDatabase& db_;
+    const node::internal::Manager& node_;
+    database::Wallet& db_;
     const node::internal::Mempool& mempool_;
     const Type chain_;
     const cfilter::Type filter_type_;
@@ -199,8 +202,8 @@ private:
 
     Imp(const api::Session& api,
         const crypto::Account& account,
-        const node::internal::Network& node,
-        node::internal::WalletDatabase& db,
+        const node::internal::Manager& node,
+        database::Wallet& db,
         const node::internal::Mempool& mempool,
         const network::zeromq::BatchID batch,
         const Type chain,

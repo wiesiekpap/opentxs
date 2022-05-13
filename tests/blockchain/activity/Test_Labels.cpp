@@ -21,6 +21,9 @@ constexpr auto label_2_{"label two"};
 
 namespace ottest
 {
+using TxSet =
+    ot::Set<std::shared_ptr<ot::blockchain::bitcoin::block::Transaction>>;
+
 TEST_F(Test_BlockchainActivity, init)
 {
     EXPECT_FALSE(nym_1_id().empty());
@@ -81,14 +84,15 @@ TEST_F(Test_BlockchainActivity, unlabled)
         account.BalanceElement(Subchain::External, first_index_);
     const auto& keyTwo =
         account.BalanceElement(Subchain::External, second_index_);
-    const auto incoming = get_test_transaction(keyOne, keyTwo);
+
+    auto incoming = get_test_transaction(keyOne, keyTwo);
 
     ASSERT_TRUE(incoming);
 
     txid_ = incoming->ID().asHex();
 
-    ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
-        ot::blockchain::Type::Bitcoin, *incoming, reason_));
+    ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransactions(
+        ot::blockchain::Type::Bitcoin, TxSet{incoming->clone()}, reason_));
 
     auto transaction = api_.Crypto().Blockchain().LoadTransactionBitcoin(txid_);
 

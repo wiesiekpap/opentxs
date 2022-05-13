@@ -35,8 +35,8 @@ extern "C" {
 #include "internal/api/Legacy.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -542,9 +542,17 @@ auto Database::LoadFilterHeader(
 }
 
 auto Database::LoadTransaction(const ReadView txid) const noexcept
-    -> std::unique_ptr<block::bitcoin::Transaction>
+    -> std::unique_ptr<bitcoin::block::Transaction>
 {
     return imp_.wallet_.LoadTransaction(txid);
+}
+
+auto Database::LoadTransaction(
+    const ReadView txid,
+    proto::BlockchainTransaction& out) const noexcept
+    -> std::unique_ptr<bitcoin::block::Transaction>
+{
+    return imp_.wallet_.LoadTransaction(txid, out);
 }
 
 auto Database::LookupContact(const Data& pubkeyHash) const noexcept
@@ -647,9 +655,16 @@ auto Database::StoreSync(const Chain chain, const SyncItems& items)
 }
 
 auto Database::StoreTransaction(
-    const block::bitcoin::Transaction& tx) const noexcept -> bool
+    const bitcoin::block::Transaction& tx) const noexcept -> bool
 {
     return imp_.wallet_.StoreTransaction(tx);
+}
+
+auto Database::StoreTransaction(
+    const bitcoin::block::Transaction& tx,
+    proto::BlockchainTransaction& out) const noexcept -> bool
+{
+    return imp_.wallet_.StoreTransaction(tx, out);
 }
 
 auto Database::SyncTip(const Chain chain) const noexcept -> Height

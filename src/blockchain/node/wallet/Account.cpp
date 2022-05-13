@@ -19,7 +19,8 @@
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/session/Wallet.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/FilterOracle.hpp"
+#include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/wallet/subchain/Subchain.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Context.hpp"
@@ -88,8 +89,8 @@ namespace opentxs::blockchain::node::wallet
 Account::Imp::Imp(
     const api::Session& api,
     const crypto::Account& account,
-    const node::internal::Network& node,
-    node::internal::WalletDatabase& db,
+    const node::internal::Manager& node,
+    database::Wallet& db,
     const node::internal::Mempool& mempool,
     const network::zeromq::BatchID batch,
     const Type chain,
@@ -141,8 +142,8 @@ Account::Imp::Imp(
 Account::Imp::Imp(
     const api::Session& api,
     const crypto::Account& account,
-    const node::internal::Network& node,
-    node::internal::WalletDatabase& db,
+    const node::internal::Manager& node,
+    database::Wallet& db,
     const node::internal::Mempool& mempool,
     const network::zeromq::BatchID batch,
     const Type chain,
@@ -586,8 +587,8 @@ namespace opentxs::blockchain::node::wallet
 Account::Account(
     const api::Session& api,
     const crypto::Account& account,
-    const node::internal::Network& node,
-    node::internal::WalletDatabase& db,
+    const node::internal::Manager& node,
+    database::Wallet& db,
     const node::internal::Mempool& mempool,
     const Type chain,
     const cfilter::Type filter,

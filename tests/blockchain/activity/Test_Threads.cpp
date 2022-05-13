@@ -8,7 +8,6 @@
 #include <memory>
 #include <optional>
 
-#include "internal/api/crypto/Blockchain.hpp"
 #include "ottest/fixtures/blockchain/Activity.hpp"
 
 using Subchain = ot::blockchain::crypto::Subchain;
@@ -103,8 +102,8 @@ TEST_F(Test_BlockchainActivity, inputs)
     auto list = api_.Storage().BlockchainThreadMap(nym_1_id(), incoming->ID());
 
     EXPECT_EQ(list.size(), 0);
-    ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
-        ot::blockchain::Type::Bitcoin, *incoming, reason_));
+    // ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
+    //     ot::blockchain::Type::Bitcoin, *incoming, reason_));
 
     auto bytes = ot::Space{};
     auto thread1 =
