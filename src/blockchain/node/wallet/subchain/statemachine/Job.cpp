@@ -199,6 +199,7 @@ auto Job::do_process_update(Message&& msg) noexcept -> void
 }
 
 auto Job::do_shutdown() noexcept -> void {}
+auto Job::do_startup() noexcept -> void {}
 
 auto Job::last_reorg() const noexcept -> std::optional<StateSequence>
 {

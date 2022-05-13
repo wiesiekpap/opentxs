@@ -73,6 +73,7 @@ public:
     ~Imp() override = default;
 
 protected:
+    auto do_startup() noexcept -> void final;
     auto done(node::internal::WalletDatabase::ElementMap&& elements) noexcept
         -> void;
 
@@ -84,7 +85,6 @@ private:
         const noexcept -> std::optional<Bip32Index> = 0;
 
     auto do_process_update(Message&& msg) noexcept -> void final;
-    auto do_startup() noexcept -> void final;
     virtual auto process(
         const std::optional<Bip32Index>& current,
         Bip32Index target) noexcept -> void = 0;

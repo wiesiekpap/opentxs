@@ -88,7 +88,7 @@ class Identifier;
 
 namespace opentxs::blockchain::node::wallet
 {
-class Accounts::Imp final : public Actor<Imp, AccountsJobs>
+class Accounts::Imp final : public Actor<AccountsJobs>
 {
 public:
     auto Rescan() const noexcept -> void;
@@ -109,9 +109,13 @@ public:
 
     ~Imp() final;
 
-private:
-    friend Actor<Imp, AccountsJobs>;
+protected:
+    auto do_startup() noexcept -> void override;
+    auto do_shutdown() noexcept -> void override;
+    auto pipeline(const Work work, Message&& msg) noexcept -> void override;
+    auto work() noexcept -> bool override;
 
+private:
     enum class State {
         normal,
         shutdown,
@@ -133,14 +137,11 @@ private:
     std::optional<StateSequence> startup_reorg_;
 
     auto do_reorg() noexcept -> void;
-    auto do_shutdown() noexcept -> void;
-    auto do_startup() noexcept -> void;
     template <typename Callback>
     auto for_each(const Callback& cb) noexcept -> void
     {
         std::for_each(accounts_.begin(), accounts_.end(), cb);
     }
-    auto pipeline(const Work work, Message&& msg) noexcept -> void;
     auto process_block_header(Message&& in) noexcept -> void;
     auto process_nym(Message&& in) noexcept -> bool;
     auto process_nym(const identifier::Nym& nym) noexcept -> bool;
@@ -153,7 +154,6 @@ private:
     auto state_normal(const Work work, Message&& msg) noexcept -> void;
     auto transition_state_shutdown() noexcept -> void;
     auto transition_state_reorg() noexcept -> bool;
-    auto work() noexcept -> bool;
 
     Imp(const api::Session& api,
         const node::internal::Network& node,
