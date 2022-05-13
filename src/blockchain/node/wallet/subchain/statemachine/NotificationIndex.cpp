@@ -28,6 +28,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Numbers.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Types.hpp"
 #include "util/ByteLiterals.hpp"
 #include "util/ScopeGuard.hpp"

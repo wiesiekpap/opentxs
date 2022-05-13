@@ -35,31 +35,10 @@ Wallet::Wallet(
 {
 }
 
-auto Wallet::AddConfirmedTransaction(
-    const NodeID& accountID,
-    const SubchainIndex& index,
-    const block::Position& block,
-    const std::size_t blockIndex,
-    const Vector<std::uint32_t> outputIndices,
-    const block::bitcoin::Transaction& original,
-    TXOs& txoCreated,
-    TXOs& txoConsumed) const noexcept -> bool
-{
-    return outputs_.AddConfirmedTransaction(
-        accountID,
-        index,
-        block,
-        blockIndex,
-        outputIndices,
-        original,
-        txoCreated,
-        txoConsumed);
-}
-
 auto Wallet::AddConfirmedTransactions(
     const NodeID& account,
     const SubchainIndex& index,
-    const BatchedMatches& transactions,
+    BatchedMatches&& transactions,
     TXOs& txoCreated,
     TXOs& txoConsumed) noexcept -> bool
 {

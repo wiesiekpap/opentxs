@@ -116,7 +116,7 @@ auto DeterministicStateData::flush_cache(
             std::back_inserter(positions),
             [](const auto& data) { return data.first; });
         auto updated = db_.AddConfirmedTransactions(
-            id_, db_key_, matches, txoCreated, txoConsumed);
+            id_, db_key_, std::move(matches), txoCreated, txoConsumed);
 
         OT_ASSERT(updated);  // TODO handle database errors
 
@@ -124,8 +124,6 @@ auto DeterministicStateData::flush_cache(
             std::move(txoCreated), std::move(txoConsumed));
 
         if (cb) { cb(positions); }
-
-        matches.clear();
     } else {
         log(OT_PRETTY_CLASS())(name_)(" no cached transactions").Flush();
     }

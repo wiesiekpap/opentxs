@@ -127,31 +127,10 @@ namespace opentxs::blockchain::implementation
 class Database final : public internal::Database
 {
 public:
-    auto AddConfirmedTransaction(
-        const NodeID& accountID,
-        const SubchainIndex& index,
-        const block::Position& block,
-        const std::size_t blockIndex,
-        const Vector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction,
-        TXOs& txoCreated,
-        TXOs& txoConsumed) noexcept -> bool final
-    {
-        return wallet_.AddConfirmedTransaction(
-            accountID,
-            index,
-            block,
-            blockIndex,
-            outputIndices,
-            transaction,
-            txoCreated,
-            txoConsumed);
-    }
-
     auto AddConfirmedTransactions(
         const NodeID& account,
         const SubchainIndex& index,
-        const BatchedMatches& transactions,
+        BatchedMatches&& transactions,
         TXOs& txoCreated,
         TXOs& txoConsumed) noexcept -> bool final
     {

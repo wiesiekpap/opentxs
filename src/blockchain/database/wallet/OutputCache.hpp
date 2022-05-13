@@ -117,6 +117,14 @@ public:
         const block::Outpoint& id,
         MDB_txn* tx,
         std::unique_ptr<block::bitcoin::Output> output) noexcept -> bool;
+    auto AddOutput(
+        const block::Outpoint& id,
+        const node::TxoState state,
+        const block::Position& position,
+        const AccountID& account,
+        const SubchainID& subchain,
+        MDB_txn* tx,
+        std::unique_ptr<block::bitcoin::Output> output) noexcept -> bool;
     auto AddToAccount(
         const AccountID& id,
         const block::Outpoint& output,

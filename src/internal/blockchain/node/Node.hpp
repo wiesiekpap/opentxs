@@ -665,19 +665,10 @@ struct WalletDatabase {
         const SubchainIndex& index,
         const block::Position& position) const noexcept -> bool = 0;
 
-    virtual auto AddConfirmedTransaction(
-        const NodeID& account,
-        const SubchainIndex& index,
-        const block::Position& block,
-        const std::size_t blockIndex,
-        const Vector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction,
-        TXOs& txoCreated,
-        TXOs& txoConsumed) noexcept -> bool = 0;
     virtual auto AddConfirmedTransactions(
         const NodeID& account,
         const SubchainIndex& index,
-        const BatchedMatches& transactions,
+        BatchedMatches&& transactions,
         TXOs& txoCreated,
         TXOs& txoConsumed) noexcept -> bool = 0;
     virtual auto AddMempoolTransaction(
