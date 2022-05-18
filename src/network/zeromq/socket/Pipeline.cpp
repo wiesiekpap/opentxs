@@ -398,11 +398,7 @@ auto Pipeline::Imp::Push(zeromq::Message&& msg) const noexcept -> bool
 
     if (done) { return false; }
 
-    to_internal_.modify_detach([data = std::move(msg)](auto& socket) mutable {
-        socket.Send(std::move(data));
-    });
-
-    return true;
+    return to_internal_.lock()->Send(std::move(msg));
 }
 
 auto Pipeline::Imp::Send(zeromq::Message&& msg) const noexcept -> bool
@@ -411,11 +407,7 @@ auto Pipeline::Imp::Send(zeromq::Message&& msg) const noexcept -> bool
 
     if (done) { return false; }
 
-    to_dealer_.modify_detach([data = std::move(msg)](auto& socket) mutable {
-        socket.Send(std::move(data));
-    });
-
-    return true;
+    return to_dealer_.lock()->Send(std::move(msg));
 }
 
 auto Pipeline::Imp::SendFromThread(zeromq::Message&& msg) noexcept -> bool

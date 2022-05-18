@@ -5,9 +5,8 @@
 
 #pragma once
 
-#include <cs_deferred_guarded.h>
-#include <zmq.h>
 #include <atomic>
+#include <cs_plain_guarded.h>
 #include <cstddef>
 #include <functional>
 #include <future>
@@ -17,6 +16,7 @@
 #include <stdexcept>
 #include <string_view>
 #include <utility>
+#include <zmq.h>
 
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Handle.hpp"
@@ -121,8 +121,7 @@ public:
     ~Imp() final;
 
 private:
-    using GuardedSocket =
-        libguarded::deferred_guarded<socket::Raw, std::shared_mutex>;
+    using GuardedSocket = libguarded::plain_guarded<socket::Raw>;
 
     static constexpr auto fixed_sockets_ = std::size_t{5};
 

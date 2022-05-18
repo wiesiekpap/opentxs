@@ -911,9 +911,7 @@ auto Client::Imp::reset_timer() noexcept -> void
                 LogError()(OT_PRETTY_CLASS())(error).Flush();
             }
         } else {
-            to_loopback_.modify_detach([&](auto& socket) {
-                socket.Send(MakeWork(Job::StateMachine));
-            });
+            to_loopback_.lock()->Send(MakeWork(Job::StateMachine));
             reset_timer();
         }
     });
@@ -958,17 +956,12 @@ auto Client::Imp::shutdown() noexcept -> void
 auto Client::Imp::startup(const api::network::Blockchain& parent) noexcept
     -> void
 {
-    to_loopback_.modify_detach([&](auto& socket) {
-        for (const auto& ep : parent.GetSyncServers()) {
-            socket.Send([&] {
-                auto out = MakeWork(Job::SyncServerUpdated);
-                out.AddFrame(ep);
-                out.AddFrame(true);
-
-                return out;
-            }());
-        }
-    });
+    for (const auto& ep : parent.GetSyncServers()) {
+        auto out = MakeWork(Job::SyncServerUpdated);
+        out.AddFrame(ep);
+        out.AddFrame(true);
+        to_loopback_.lock()->Send(std::move(out));
+    }
 }
 
 auto Client::Imp::state_machine() noexcept -> void
