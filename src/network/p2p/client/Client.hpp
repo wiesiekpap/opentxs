@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <cs_deferred_guarded.h>
 #include <atomic>
+#include <cs_plain_guarded.h>
 #include <cstddef>
 #include <random>
 #include <shared_mutex>
@@ -91,8 +91,7 @@ private:
     using Height = opentxs::blockchain::block::Height;
     using HeightMap = Map<Chain, Height>;
     using Message = zeromq::Message;
-    using GuardedSocket =
-        libguarded::deferred_guarded<zeromq::socket::Raw, std::shared_mutex>;
+    using GuardedSocket = libguarded::plain_guarded<zeromq::socket::Raw>;
     using QueuedMessages = Deque<Message>;
     using QueuedChainMessages = Map<Chain, QueuedMessages>;
 
