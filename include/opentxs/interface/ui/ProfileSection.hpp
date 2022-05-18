@@ -31,6 +31,10 @@ using OTUIProfileSection = SharedPimpl<ui::ProfileSection>;
 
 namespace opentxs::ui
 {
+/**
+  This model represents a section of meta-data for the wallet user.
+  Each row is a ProfileSubsection containing metadata about the wallet user from his identity credentials.
+*/
 class OPENTXS_EXPORT ProfileSection : virtual public List,
                                       virtual public ListRow
 {
@@ -39,37 +43,48 @@ public:
         std::pair<identity::wot::claim::ClaimType, UnallocatedCString>;
     using ItemTypeList = UnallocatedVector<ItemType>;
 
+    /// Returns a list of allowed item types for a given ProfileSection and language.
     static auto AllowedItems(
         const identity::wot::claim::SectionType section,
         const UnallocatedCString& lang) noexcept -> ItemTypeList;
 
+    /// Used for adding a claim to this section of the user's credentials.
     virtual auto AddClaim(
         const identity::wot::claim::ClaimType type,
         const UnallocatedCString& value,
         const bool primary,
         const bool active) const noexcept -> bool = 0;
+    /// Used for deleting a claim from this section of the user's credentials.
     virtual auto Delete(const int type, const UnallocatedCString& claimID)
         const noexcept -> bool = 0;
+    /// Returns a list of item types for a given language from this section of the user's credentials.
     virtual auto Items(const UnallocatedCString& lang) const noexcept
         -> ItemTypeList = 0;
+    /// Returns the display name for this section of the user's credentials.
     virtual auto Name(const UnallocatedCString& lang) const noexcept
         -> UnallocatedCString = 0;
+    /// Returns the first ProfileSubsection for this section of the user's credentials.
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ProfileSubsection> = 0;
+    /// Returns the next ProfileSubsection for this section of the user's credentials.
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ProfileSubsection> = 0;
+    /// Sets a given claim as 'active' or 'inactive' in this section of the user's credentials.
     virtual auto SetActive(
         const int type,
         const UnallocatedCString& claimID,
         const bool active) const noexcept -> bool = 0;
+    /// Sets a given claim as 'primary' or 'not primary' in this section of the user's credentials.
     virtual auto SetPrimary(
         const int type,
         const UnallocatedCString& claimID,
         const bool primary) const noexcept -> bool = 0;
+    /// Sets the contents for a given claim in this section of the user's credentials.
     virtual auto SetValue(
         const int type,
         const UnallocatedCString& claimID,
         const UnallocatedCString& value) const noexcept -> bool = 0;
+    /// Returns the SectionType for this ProfileSection.
     virtual auto Type() const noexcept -> identity::wot::claim::SectionType = 0;
 
     ~ProfileSection() override = default;

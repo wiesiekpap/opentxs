@@ -39,16 +39,22 @@ class Bip39;
 
 namespace opentxs::api
 {
+/**
+ The api::crypto API is used for accessing high-level crypto-specific functionality like Encode or Hash.
+ It's also used for accessing lower-level APIs such as Config or Util.
+ */
 class OPENTXS_EXPORT Crypto
 {
 public:
     virtual auto BIP32() const noexcept -> const opentxs::crypto::Bip32& = 0;
     virtual auto BIP39() const noexcept -> const opentxs::crypto::Bip39& = 0;
+    /// Returns a handle to the Config API from api::Crypto
     virtual auto Config() const noexcept -> const crypto::Config& = 0;
     virtual auto Encode() const noexcept -> const crypto::Encode& = 0;
     virtual auto Hash() const noexcept -> const crypto::Hash& = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Crypto& = 0;
+    /// Returns a handle to the Util API from api::Crypto
     virtual auto Util() const noexcept -> const crypto::Util& = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Crypto& = 0;

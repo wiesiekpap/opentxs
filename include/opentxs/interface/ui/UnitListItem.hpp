@@ -28,10 +28,15 @@ using OTUIUnitListItem = SharedPimpl<ui::UnitListItem>;
 
 namespace opentxs::ui
 {
+/**
+ This model describes a single unit type from the UnitList. (Bitcoin, Ethereum, etc).
+ */
 class OPENTXS_EXPORT UnitListItem : virtual public ListRow
 {
 public:
+    /// The display name of this unit type.
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
+    /// The appropriate UnitType enum value for this unit type.
     virtual auto Unit() const noexcept -> UnitType = 0;
 
     ~UnitListItem() override = default;

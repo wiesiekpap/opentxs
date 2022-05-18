@@ -31,18 +31,30 @@ using OTUIBlockchainStatisticsItem = SharedPimpl<ui::BlockchainStatisticsItem>;
 
 namespace opentxs::ui
 {
+/**
+  This model represents the statistics for a single blockchain in the wallet.
+  There is a model like this for each row in the BlockchainStatistics model.
+*/
 class OPENTXS_EXPORT BlockchainStatisticsItem : virtual public ListRow
 {
 public:
     using Position = blockchain::block::Height;
 
+    /// Returns the number of active peers for this blockchain.
     virtual auto ActivePeers() const noexcept -> std::size_t = 0;
+    /// Returns the current balance for this blockchain.
     virtual auto Balance() const noexcept -> UnallocatedCString = 0;
+    /// Returns the number of blocks currently in the block download queue.
     virtual auto BlockDownloadQueue() const noexcept -> std::size_t = 0;
+    /// Returns the blockchain type (Bitcoin, Ethereum, etc).
     virtual auto Chain() const noexcept -> blockchain::Type = 0;
+    /// Returns the number of connected peers for this blockchain.
     virtual auto ConnectedPeers() const noexcept -> std::size_t = 0;
+    /// Returns the number of filters downloaded so far for this blockchain.
     virtual auto Filters() const noexcept -> Position = 0;
+    /// Returns the number of block headers downloaded so far for this blockchain.
     virtual auto Headers() const noexcept -> Position = 0;
+    /// Returns the display name for this blockchain.
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
 
     ~BlockchainStatisticsItem() override = default;

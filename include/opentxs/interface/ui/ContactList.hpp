@@ -26,16 +26,23 @@ class ContactListItem;
 
 namespace opentxs::ui
 {
+/**
+  This model manages a set of rows containing the Contacts in the wallet.
+  It also contains a method for adding new contacts.
+*/
 class OPENTXS_EXPORT ContactList : virtual public List
 {
 public:
+    /// Adds a Contact to the wallet.
     virtual auto AddContact(
         const UnallocatedCString& label,
         const UnallocatedCString& paymentCode = "",
         const UnallocatedCString& nymID = "") const noexcept
         -> UnallocatedCString = 0;
+    /// returns the first row, containing a valid ContactListItem or an empty smart pointer (if list is empty).
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ContactListItem> = 0;
+    /// returns the next row, containing a valid ContactListItem or an empty smart pointer (if at end of list).
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ContactListItem> = 0;
 

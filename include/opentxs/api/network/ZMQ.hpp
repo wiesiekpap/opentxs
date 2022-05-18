@@ -36,6 +36,9 @@ class Flag;
 
 namespace opentxs::api::network
 {
+/**
+ api::network::ZMQ API used for accessing ZMQ-specific network functionality.
+ */
 class OPENTXS_EXPORT ZMQ
 {
 public:

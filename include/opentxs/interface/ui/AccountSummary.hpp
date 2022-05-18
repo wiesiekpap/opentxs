@@ -26,11 +26,17 @@ class IssuerItem;
 
 namespace opentxs::ui
 {
+/**
+  This model manages the AccountSummary, containing connection and trusted status for various issuers.
+  NOTE: this model is being updated to manage a list of AccountSummaryItem instead of IssuerItem.
+*/
 class OPENTXS_EXPORT AccountSummary : virtual public List
 {
 public:
+    /// returns the first row, containing a valid IssuerItem or an empty smart pointer (if list is empty).
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::IssuerItem> = 0;
+    /// returns the next row, containing a valid IssuerItem or an empty smart pointer (if at end of list).
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::IssuerItem> = 0;
 

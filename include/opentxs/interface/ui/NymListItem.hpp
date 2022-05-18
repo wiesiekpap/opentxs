@@ -26,10 +26,15 @@ class NymListItem;
 
 namespace opentxs::ui
 {
+/**
+ This model describes a single Nym from the NymList.
+ */
 class OPENTXS_EXPORT NymListItem : virtual public ListRow
 {
 public:
+    /// Returns the display name for this Nym.
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
+    /// Returns the NymID for this Nym.
     virtual auto NymID() const noexcept -> UnallocatedCString = 0;
 
     ~NymListItem() override = default;

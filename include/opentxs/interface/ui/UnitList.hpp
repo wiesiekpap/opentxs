@@ -26,11 +26,16 @@ class UnitListItem;
 
 namespace opentxs::ui
 {
+/**
+ This model contains a row for each of the different unit types available in this wallet.
+ */
 class OPENTXS_EXPORT UnitList : virtual public List
 {
 public:
+    /// Returns the first unit type available in this wallet as a UnitListItem.
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::UnitListItem> = 0;
+    /// Returns the next unit type available in this wallet as a UnitListItem.
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::UnitListItem> = 0;
 

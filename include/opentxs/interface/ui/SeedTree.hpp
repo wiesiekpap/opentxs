@@ -33,14 +33,22 @@ class SeedTreeItem;
 
 namespace opentxs::ui
 {
+/**
+ This model represents the list of seeds available in this wallet.
+ */
 class OPENTXS_EXPORT SeedTree : virtual public List
 {
 public:
+    /// Returns debug information about the seeds in the wallet.
     virtual auto Debug() const noexcept -> UnallocatedCString = 0;
+    /// Returns the ID for the wallet's default Nym.
     virtual auto DefaultNym() const noexcept -> OTNymID = 0;
+    /// Returns the ID for the wallet's default Seed.
     virtual auto DefaultSeed() const noexcept -> OTIdentifier = 0;
+    /// Returns the first SeedTreeItem row.
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<SeedTreeItem> = 0;
+    /// Returns the next SeedTreeItem row.
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<SeedTreeItem> = 0;
 

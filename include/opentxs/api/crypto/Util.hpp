@@ -30,6 +30,9 @@ class Util;
 
 namespace opentxs::api::crypto
 {
+/**
+ the api::crypto::Util API contains utility functions specific to crypto.
+ */
 class Util
 {
 public:

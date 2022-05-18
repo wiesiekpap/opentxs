@@ -24,26 +24,45 @@ class String;
 
 namespace opentxs::api
 {
+/**
+ The Settings API, used for working with the config files.
+ 
+ */
 class OPENTXS_EXPORT Settings
 {
 public:
     virtual void SetConfigFilePath(const String& strConfigFilePath) const = 0;
     virtual auto HasConfigFilePath() const -> bool = 0;
 
-    // Core (Public Load and Save)
+    /**
+       @name Load and Save.
+     
+       Core (Public Load and Save)
+
+       @return Success or failure.
+    */
+    ///@{
     virtual auto Load() const -> bool = 0;
     virtual auto Save() const -> bool = 0;
+    ///@}
 
+    /// Indicates whether or not the config file has been loaded.
     virtual auto IsLoaded() const -> const Flag& = 0;
 
     // Configuration Helpers
     //
 
-    // Core (Reset Config, and Check if Config is empty)
+    /// Core (Reset Config, and Check if Config is empty)
     virtual auto IsEmpty() const -> bool = 0;
 
-    // Check Only (get value of key from configuration, if the key exists, then
-    // out_bKeyExist will be true.)
+    /**
+       @name Check
+     
+       Check Only (get value of key from configuration, if the key exists, then out_bKeyExist will be true.)
+
+       @return Success or failure.
+    */
+    ///@{
     virtual auto Check_str(
         const String& strSection,
         const String& strKey,
@@ -59,9 +78,16 @@ public:
         const String& strKey,
         bool& out_bResult,
         bool& out_bKeyExist) const -> bool = 0;
+    ///@}
 
-    // Set Only (set new or update value, out_bNewOrUpdate will be true if the
-    // value changes.)
+    /**
+       @name Set only
+     
+       Set new or update value, out_bNewOrUpdate will be true if the value changes.
+
+       @return Success or failure.
+    */
+    ///@{
     virtual auto Set_str(
         const String& strSection,
         const String& strKey,
@@ -95,16 +121,18 @@ public:
         const bool& bValue,
         bool& out_bNewOrUpdate,
         const String& strComment) const -> bool = 0;
+    ///@}
 
-    // Check for a Section, if the section dosn't exist, it will be made and
-    // out_bIsNewSection will be true.)
+    /// Check for a Section, if the section dosn't exist, it will be made and
+    /// out_bIsNewSection will be true.)
     virtual auto CheckSetSection(
         const String& strSection,
         const String& strComment,
         bool& out_bIsNewSection) const -> bool = 0;
 
-    // Check for Key, and returns if the key exists, otherwise will set the
-    // default key. If the default key is set, then out_bIsNew will be true.)
+    /// Check for Key, and returns if the key exists, otherwise will set the
+    /// default key. If the default key is set, then out_bIsNew will be true.)
+    ///@{
     virtual auto CheckSet_str(
         const String& strSection,
         const String& strKey,
@@ -157,8 +185,9 @@ public:
         bool& out_bResult,
         bool& out_bIsNew,
         const String& strComment) const -> bool = 0;
+    ///@}
 
-    // Set Option helper function for setting bool's
+    /// Set Option helper function for setting bools
     virtual auto SetOption_bool(
         const String& strSection,
         const String& strKey,

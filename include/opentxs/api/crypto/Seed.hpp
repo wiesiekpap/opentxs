@@ -57,6 +57,9 @@ class Secret;
 
 namespace opentxs::api::crypto
 {
+/**
+ The api::crypto::Seed API contains various seed-related crypto functions.
+ */
 class OPENTXS_EXPORT Seed
 {
 public:

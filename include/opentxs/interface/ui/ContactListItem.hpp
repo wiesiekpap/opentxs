@@ -28,12 +28,19 @@ using OTUIContactListItem = SharedPimpl<ui::ContactListItem>;
 
 namespace opentxs::ui
 {
+/**
+  This model represents a single ContactListItem from a row in the ContactList model.
+*/
 class OPENTXS_EXPORT ContactListItem : virtual public ListRow
 {
 public:
+    /// Returns this contact's Contact ID.
     virtual auto ContactID() const noexcept -> UnallocatedCString = 0;
+    /// Returns the display name for this Contact.
     virtual auto DisplayName() const noexcept -> UnallocatedCString = 0;
+    /// Returns the image URI for this contact.
     virtual auto ImageURI() const noexcept -> UnallocatedCString = 0;
+    /// Returns the section for this contact.
     virtual auto Section() const noexcept -> UnallocatedCString = 0;
 
     ~ContactListItem() override = default;

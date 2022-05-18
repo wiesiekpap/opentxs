@@ -26,11 +26,18 @@ class ActivitySummaryItem;
 
 namespace opentxs::ui
 {
+/**
+  This model manages the ActivitySummary. Each row is a different activity thread. For example, my chat
+  session with Bob, and my chat session with Alice, constitute 2 rows in the ActivitySummary. Similar to
+  a smart phone's list of past SMS conversations, each ActivitySummaryItem represents a different thread.
+ */
 class OPENTXS_EXPORT ActivitySummary : virtual public List
 {
 public:
+    /// returns the first row, containing a valid ActivitySummaryItem or an empty smart pointer (if list is empty).
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ActivitySummaryItem> = 0;
+    /// returns the next row, containing a valid ActivitySummaryItem or an empty smart pointer (if at end of list).
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ActivitySummaryItem> = 0;
 
