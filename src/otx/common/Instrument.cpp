@@ -54,10 +54,11 @@ auto Instrument::IsExpired() -> bool
     // AND the valid_to is a nonzero number (0 means "doesn't expire")
     // THEN return true (it's expired.)
     //
-    if ((CURRENT_TIME >= m_VALID_TO) && (m_VALID_TO > Time{}))
+    if ((CURRENT_TIME >= m_VALID_TO) && (m_VALID_TO > Time{})) {
         return true;
-    else
+    } else {
         return false;
+    }
 }
 
 // Verify whether the CURRENT date is WITHIN the VALID FROM / TO dates.
@@ -66,10 +67,11 @@ auto Instrument::VerifyCurrentDate() -> bool
     const auto CURRENT_TIME = Clock::now();
 
     if ((CURRENT_TIME >= m_VALID_FROM) &&
-        ((CURRENT_TIME <= m_VALID_TO) || (Time{} == m_VALID_TO)))
+        ((CURRENT_TIME <= m_VALID_TO) || (Time{} == m_VALID_TO))) {
         return true;
-    else
+    } else {
         return false;
+    }
 }
 
 void Instrument::InitInstrument() { m_strContractType->Set("INSTRUMENT"); }

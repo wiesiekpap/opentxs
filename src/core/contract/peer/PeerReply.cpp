@@ -74,6 +74,7 @@ Reply::Reply(
 {
 }
 
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
 Reply::Reply(
     const api::Session& api,
     const Nym_p& nym,
@@ -97,6 +98,7 @@ Reply::Reply(
     , type_(translate(serialized.type()))
 {
 }
+// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
 Reply::Reply(const Reply& rhs) noexcept
     : Signable(rhs)

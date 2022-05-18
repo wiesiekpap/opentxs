@@ -194,6 +194,7 @@ Request::Imp::Imp(
     first_time_init(lock);
 }
 
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
 Request::Imp::Imp(
     const api::Session& api,
     const proto::ServerRequest serialized)
@@ -217,6 +218,7 @@ Request::Imp::Imp(
     Lock lock(lock_);
     init_serialized(lock);
 }
+// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
 Request::Imp::Imp(const Imp& rhs) noexcept
     : Signable(rhs)

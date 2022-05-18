@@ -497,7 +497,7 @@ auto Object::Validate() const noexcept -> bool
     }
 
     auto output = proto::PeerObject{};
-    if (false == Serialize(output)) return false;
+    if (false == Serialize(output)) { return false; }
 
     const bool validProto = proto::Validate(output, VERBOSE);
 

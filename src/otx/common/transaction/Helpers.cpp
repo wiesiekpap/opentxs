@@ -173,10 +173,11 @@ auto LoadAbbreviatedRecord(
     lInRefTo = strInRefTo->ToLong();
     lInRefDisplay = strInRefDisplay->ToLong();
 
-    if (strOriginNum->Exists()) lNumberOfOrigin = strOriginNum->ToLong();
-    if (strOriginType->Exists())
+    if (strOriginNum->Exists()) { lNumberOfOrigin = strOriginNum->ToLong(); }
+    if (strOriginType->Exists()) {
         theOriginType =
             OTTransactionType::GetOriginTypeFromString(strOriginType);
+    }
 
     the_DATE_SIGNED = parseTimestamp(strDateSigned->Get());
 
@@ -226,13 +227,15 @@ auto LoadAbbreviatedRecord(
 
     const auto strAbbrevAdjustment =
         String::Factory(xml->getAttributeValue("adjustment"));
-    if (strAbbrevAdjustment->Exists())
+    if (strAbbrevAdjustment->Exists()) {
         lAdjustment = factory::Amount(strAbbrevAdjustment->Get());
+    }
     // -------------------------------------
     const auto strAbbrevDisplayValue =
         String::Factory(xml->getAttributeValue("displayValue"));
-    if (strAbbrevDisplayValue->Exists())
+    if (strAbbrevDisplayValue->Exists()) {
         lDisplayValue = factory::Amount(strAbbrevDisplayValue->Get());
+    }
 
     if (transactionType::replyNotice == theType) {
         const auto strRequestNum =
@@ -284,7 +287,7 @@ auto LoadAbbreviatedRecord(
             String::Factory(xml->getAttributeValue("totalListOfNumbers"));
         pNumList->Release();
 
-        if (strNumbers->Exists()) pNumList->Add(strNumbers);
+        if (strNumbers->Exists()) { pNumList->Add(strNumbers); }
     }  // if blank or successNotice (expecting totalListOfNumbers.. no more
        // multiple blanks in the same ledger! They all go in a single
        // transaction.)
@@ -326,8 +329,9 @@ auto VerifyBoxReceiptExists(
             strFolder1name,
             strFolder2name,
             strFolder3name,
-            strFilename))
+            strFilename)) {
         return false;  // This already logs -- no need to log twice, here.
+    }
     // --------------------------------------------------------------------
     // See if the box receipt exists before trying to save over it...
     //
@@ -393,8 +397,9 @@ auto LoadBoxReceipt(
             strFolder1name,
             strFolder2name,
             strFolder3name,
-            strFilename))
+            strFilename)) {
         return nullptr;  // This already logs -- no need to log twice, here.
+    }
 
     // See if the box receipt exists before trying to load it...
     //
@@ -487,12 +492,13 @@ auto LoadBoxReceipt(
             .Flush();
 
         return nullptr;
-    } else
+    } else {
         LogVerbose()(__func__)("Successfully loaded Box Receipt in: ")(
             strFolder1name)(api::Legacy::PathSeparator())(
             strFolder2name)(api::Legacy::PathSeparator())(
             strFolder3name)(api::Legacy::PathSeparator())(strFilename)
             .Flush();
+    }
 
     // Todo: security analysis. By this point we've verified the hash of the
     // transaction against the stored

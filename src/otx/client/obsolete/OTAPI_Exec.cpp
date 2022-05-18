@@ -147,8 +147,9 @@ auto OTAPI_Exec::ProposePaymentPlan(
 
     OTIdentifier angelSenderAcctId = api_.Factory().Identifier();
 
-    if (!SENDER_ACCT_ID.empty())
+    if (!SENDER_ACCT_ID.empty()) {
         angelSenderAcctId = api_.Factory().Identifier(SENDER_ACCT_ID);
+    }
 
     std::unique_ptr<OTPaymentPlan> pPlan(ot_api_.ProposePaymentPlan(
         api_.Factory().ServerID(NOTARY_ID),
@@ -247,13 +248,13 @@ auto OTAPI_Exec::EasyProposePlan(
         // VALID_FROM
         if (theList.Count() > 0) {
             std::int64_t lVal = 0;
-            if (theList.Peek(lVal)) VALID_FROM = Clock::from_time_t(lVal);
+            if (theList.Peek(lVal)) { VALID_FROM = Clock::from_time_t(lVal); }
             theList.Pop();
         }
         // VALID_TO
         if (theList.Count() > 0) {
             std::int64_t lVal = 0;
-            if (theList.Peek(lVal)) VALID_TO = Clock::from_time_t(lVal);
+            if (theList.Peek(lVal)) { VALID_TO = Clock::from_time_t(lVal); }
             theList.Pop();
         }
     }
@@ -264,14 +265,15 @@ auto OTAPI_Exec::EasyProposePlan(
         // INITIAL_PAYMENT_AMOUNT
         if (theList.Count() > 0) {
             std::int64_t lVal = 0;
-            if (theList.Peek(lVal)) INITIAL_PAYMENT_AMOUNT = lVal;
+            if (theList.Peek(lVal)) { INITIAL_PAYMENT_AMOUNT = lVal; }
             theList.Pop();
         }
         // INITIAL_PAYMENT_DELAY
         if (theList.Count() > 0) {
             std::int64_t lVal = 0;
-            if (theList.Peek(lVal))
+            if (theList.Peek(lVal)) {
                 INITIAL_PAYMENT_DELAY = std::chrono::seconds{lVal};
+            }
             theList.Pop();
         }
     }
@@ -282,21 +284,23 @@ auto OTAPI_Exec::EasyProposePlan(
         // PAYMENT_PLAN_AMOUNT
         if (theList.Count() > 0) {
             std::int64_t lVal = 0;
-            if (theList.Peek(lVal)) PAYMENT_PLAN_AMOUNT = lVal;
+            if (theList.Peek(lVal)) { PAYMENT_PLAN_AMOUNT = lVal; }
             theList.Pop();
         }
         // PAYMENT_PLAN_DELAY
         if (theList.Count() > 0) {
             std::int64_t lVal = 0;
-            if (theList.Peek(lVal))
+            if (theList.Peek(lVal)) {
                 PAYMENT_PLAN_DELAY = std::chrono::seconds{lVal};
+            }
             theList.Pop();
         }
         // PAYMENT_PLAN_PERIOD
         if (theList.Count() > 0) {
             std::int64_t lVal = 0;
-            if (theList.Peek(lVal))
+            if (theList.Peek(lVal)) {
                 PAYMENT_PLAN_PERIOD = std::chrono::seconds{lVal};
+            }
             theList.Pop();
         }
     }
@@ -307,15 +311,17 @@ auto OTAPI_Exec::EasyProposePlan(
         // PAYMENT_PLAN_LENGTH
         if (theList.Count() > 0) {
             std::int64_t lVal = 0;
-            if (theList.Peek(lVal))
+            if (theList.Peek(lVal)) {
                 PAYMENT_PLAN_LENGTH = std::chrono::seconds{lVal};
+            }
             theList.Pop();
         }
         // PAYMENT_PLAN_MAX_PAYMENTS
         if (theList.Count() > 0) {
             std::int64_t lVal = 0;
-            if (theList.Peek(lVal))
+            if (theList.Peek(lVal)) {
                 PAYMENT_PLAN_MAX_PAYMENTS = static_cast<std::int32_t>(lVal);
+            }
             theList.Pop();
         }
     }
@@ -431,7 +437,7 @@ auto OTAPI_Exec::Create_SmartContract(
         SPECIFY_PARTIES,  // This means Nym IDs must be provided for every
                           // party.
         strOutput);
-    if (!bCreated || !strOutput->Exists()) return {};
+    if (!bCreated || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -494,7 +500,7 @@ auto OTAPI_Exec::SmartContract_SetDates(
         VALID_TO,        // Default (0 or "") == no expiry / cancel
                          // anytime
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -535,7 +541,7 @@ auto OTAPI_Exec::SmartContract_AddBylaw(
         strBylawName,  // The Bylaw's NAME as referenced in the smart contract.
                        // (And the scripts...)
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -570,7 +576,7 @@ auto OTAPI_Exec::SmartContract_RemoveBylaw(
         strBylawName,  // The Bylaw's NAME as referenced in the smart contract.
                        // (And the scripts...)
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -616,7 +622,7 @@ auto OTAPI_Exec::SmartContract_AddClause(
                          // (And the scripts...)
         strSourceCode,   // The actual source code for the clause.
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -663,7 +669,7 @@ auto OTAPI_Exec::SmartContract_UpdateClause(
                          // (And the scripts...)
         strSourceCode,   // The actual source code for the clause.
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -702,7 +708,7 @@ auto OTAPI_Exec::SmartContract_RemoveClause(
                          // contract.
                          // (And the scripts...)
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -765,7 +771,7 @@ auto OTAPI_Exec::SmartContract_AddVariable(
         // bool, the strings "true" or "false" are expected here in
         // order to convert to a bool.
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -807,7 +813,7 @@ auto OTAPI_Exec::SmartContract_RemoveVariable(
         strVarName,  // The Variable's name as referenced in the smart contract.
                      // (And the scripts...)
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -856,7 +862,7 @@ auto OTAPI_Exec::SmartContract_AddCallback(
         strClauseName,    // The actual clause that will be triggered by the
                           // callback. (Must exist.)
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -898,7 +904,7 @@ auto OTAPI_Exec::SmartContract_RemoveCallback(
         strCallbackName,  // The Callback's name as referenced in the smart
                           // contract. (And the scripts...)
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -949,7 +955,7 @@ auto OTAPI_Exec::SmartContract_AddHook(
                         // (You can call this multiple times, and have multiple
                         // clauses trigger on the same hook.)
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -1000,7 +1006,7 @@ auto OTAPI_Exec::SmartContract_RemoveHook(
                         // (You can call this multiple times, and have multiple
                         // clauses trigger on the same hook.)
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -1052,7 +1058,7 @@ auto OTAPI_Exec::SmartContract_AddParty(
         strAgentName,  // An AGENT will be added by default for this party. Need
                        // Agent NAME.
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -1087,7 +1093,7 @@ auto OTAPI_Exec::SmartContract_RemoveParty(
         strPartyName,  // The Party's NAME as referenced in the smart contract.
                        // (And the scripts...)
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -1135,7 +1141,7 @@ auto OTAPI_Exec::SmartContract_AddAccount(
         strAcctName,   // The Account's name as referenced in the smart contract
         strInstrumentDefinitionID,  // Instrument Definition ID for the Account.
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -1175,7 +1181,7 @@ auto OTAPI_Exec::SmartContract_RemoveAccount(
                        // (And the scripts...)
         strAcctName,   // The Account's name as referenced in the smart contract
         strOutput);
-    if (!bAdded || !strOutput->Exists()) return {};
+    if (!bAdded || !strOutput->Exists()) { return {}; }
     // Success!
     //
     return strOutput->Get();
@@ -1251,7 +1257,7 @@ auto OTAPI_Exec::SmartContract_ConfirmAccount(
         strAgentName,
         strAccountID,
         strOutput);
-    if (!bConfirmed || !strOutput->Exists()) return {};
+    if (!bConfirmed || !strOutput->Exists()) { return {}; }
     // Success!
     return strOutput->Get();
 }
@@ -1288,7 +1294,7 @@ auto OTAPI_Exec::SmartContract_ConfirmParty(
         theNymID,      // Nym ID for the party, the actual owner,
         api_.Factory().ServerID(NOTARY_ID),
         strOutput);
-    if (!bConfirmed || !strOutput->Exists()) return {};
+    if (!bConfirmed || !strOutput->Exists()) { return {}; }
     // Success!
     return strOutput->Get();
 }
@@ -1543,7 +1549,7 @@ auto OTAPI_Exec::Bylaw_GetLanguage(
         return {};
     }
     // We found the bylaw...
-    if (nullptr == pBylaw->GetLanguage()) return "error_no_language";
+    if (nullptr == pBylaw->GetLanguage()) { return "error_no_language"; }
     return pBylaw->GetLanguage();
 }
 
@@ -1831,9 +1837,9 @@ auto OTAPI_Exec::Variable_GetType(
         return {};
     }
 
-    if (pVar->IsInteger()) return "integer";
-    if (pVar->IsBool()) return "boolean";
-    if (pVar->IsString()) return "string";
+    if (pVar->IsInteger()) { return "integer"; }
+    if (pVar->IsBool()) { return "boolean"; }
+    if (pVar->IsString()) { return "string"; }
     return "error_type";
 }
 
@@ -1876,9 +1882,9 @@ auto OTAPI_Exec::Variable_GetAccess(
         return {};
     }
 
-    if (pVar->IsConstant()) return "constant";
-    if (pVar->IsImportant()) return "important";
-    if (pVar->IsPersistent()) return "persistent";
+    if (pVar->IsConstant()) { return "constant"; }
+    if (pVar->IsImportant()) { return "important"; }
+    if (pVar->IsPersistent()) { return "persistent"; }
     return "error_access";
 }
 
@@ -1999,7 +2005,7 @@ auto OTAPI_Exec::Hook_GetClauseCount(
 
     mapOfClauses theResults;
     // Look up all clauses matching a specific hook.
-    if (!pBylaw->GetHooks(HOOK_NAME, theResults)) return OT_ERROR;
+    if (!pBylaw->GetHooks(HOOK_NAME, theResults)) { return OT_ERROR; }
 
     return static_cast<std::int32_t>(theResults.size());
 }
@@ -2041,11 +2047,12 @@ auto OTAPI_Exec::Hook_GetClauseAtIndex(
     mapOfClauses theResults;
 
     // Look up all clauses matching a specific hook.
-    if (!pBylaw->GetHooks(HOOK_NAME, theResults)) return {};
+    if (!pBylaw->GetHooks(HOOK_NAME, theResults)) { return {}; }
 
     if ((nIndex < 0) ||
-        (nIndex >= static_cast<std::int64_t>(theResults.size())))
+        (nIndex >= static_cast<std::int64_t>(theResults.size()))) {
         return {};
+    }
 
     std::int32_t nLoopIndex = -1;
     for (auto& it : theResults) {
@@ -2053,7 +2060,7 @@ auto OTAPI_Exec::Hook_GetClauseAtIndex(
         OT_ASSERT(nullptr != pClause);
         ++nLoopIndex;  // on first iteration, this is now 0.
 
-        if (nLoopIndex == nIndex) return pClause->GetName().Get();
+        if (nLoopIndex == nIndex) { return pClause->GetName().Get(); }
     }
     return {};
 }
@@ -2517,10 +2524,11 @@ auto OTAPI_Exec::IsBasketCurrency(
     const auto theInstrumentDefinitionID =
         api_.Factory().UnitID(INSTRUMENT_DEFINITION_ID);
 
-    if (ot_api_.IsBasketCurrency(theInstrumentDefinitionID))
+    if (ot_api_.IsBasketCurrency(theInstrumentDefinitionID)) {
         return true;
-    else
+    } else {
         return false;
+    }
 }
 
 // Get Basket Count (of backing instrument definitions.)
@@ -2557,7 +2565,7 @@ auto OTAPI_Exec::Basket_GetMemberType(
 
     bool bGotType = ot_api_.GetBasketMemberType(
         theInstrumentDefinitionID, nIndex, theOutputMemberType);
-    if (!bGotType) return {};
+    if (!bGotType) { return {}; }
 
     return theOutputMemberType->str();
 }
@@ -2748,7 +2756,7 @@ auto OTAPI_Exec::GenerateBasketExchange(
         api_.Factory().Identifier(BASKET_ASSET_ACCT_ID);
     std::int32_t nTransferMultiple = 1;  // Just a default value.
 
-    if (TRANSFER_MULTIPLE > 0) nTransferMultiple = TRANSFER_MULTIPLE;
+    if (TRANSFER_MULTIPLE > 0) { nTransferMultiple = TRANSFER_MULTIPLE; }
     std::unique_ptr<Basket> pBasket(ot_api_.GenerateBasketExchange(
         theNotaryID,
         theNymID,
@@ -2758,7 +2766,7 @@ auto OTAPI_Exec::GenerateBasketExchange(
     // 1            2            3
     // 5=2,3,4  OR  10=4,6,8  OR 15=6,9,12
 
-    if (nullptr == pBasket) return {};
+    if (nullptr == pBasket) { return {}; }
 
     // At this point, I know pBasket is good (and will be cleaned up
     // automatically.)
@@ -2813,7 +2821,7 @@ auto OTAPI_Exec::AddBasketExchangeItem(
             theAssetAcctID);
     }
 
-    if (!bAdded) return {};
+    if (!bAdded) { return {}; }
 
     auto strOutput = String::Factory(*theBasket);  // Extract the updated basket
                                                    // to string form.

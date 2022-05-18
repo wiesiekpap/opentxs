@@ -720,7 +720,9 @@ auto Operation::construct_deposit_cheque() -> std::shared_ptr<Message>
         cancellingCheque =
             ((cheque.GetSenderAcctID() == account_id_) &&
              (cheque.GetSenderNymID() == nymID));
-        if (cancellingCheque) cancellingCheque = cheque.VerifySignature(nym);
+        if (cancellingCheque) {
+            cancellingCheque = cheque.VerifySignature(nym);
+        }
     }
 
     if (cancellingCheque) {

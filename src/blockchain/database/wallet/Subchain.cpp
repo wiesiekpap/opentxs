@@ -90,12 +90,6 @@ struct SubchainData::Imp {
             target = lastGoodHeight;
         } else {
             target = std::max<block::Height>(lastGoodHeight - 1, 0);
-
-            return cache_.SetLastScanned(
-                subchain,
-                headers.Internal().GetPosition(
-                    headerOracleLock, lastGoodHeight - 1),
-                tx);
         }
 
         const auto position =

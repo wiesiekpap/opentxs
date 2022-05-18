@@ -118,6 +118,9 @@ auto Purse(
     auto* imp = output.get();
     auto& internal = *imp;
     locked = internal.AddNym(serverNym, reason);
+
+    if (false == locked) { return {}; }
+
     locked = internal.AddNym(nym, reason);
 
     if (false == locked) { return {}; }

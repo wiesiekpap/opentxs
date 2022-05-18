@@ -18,23 +18,24 @@ auto TranslateAccountTypeStringToEnum(const String& acctTypeString) noexcept
 {
     Account::AccountType acctType = Account::err_acct;
 
-    if (acctTypeString.Compare("user"))
+    if (acctTypeString.Compare("user")) {
         acctType = Account::user;
-    else if (acctTypeString.Compare("issuer"))
+    } else if (acctTypeString.Compare("issuer")) {
         acctType = Account::issuer;
-    else if (acctTypeString.Compare("basket"))
+    } else if (acctTypeString.Compare("basket")) {
         acctType = Account::basket;
-    else if (acctTypeString.Compare("basketsub"))
+    } else if (acctTypeString.Compare("basketsub")) {
         acctType = Account::basketsub;
-    else if (acctTypeString.Compare("mint"))
+    } else if (acctTypeString.Compare("mint")) {
         acctType = Account::mint;
-    else if (acctTypeString.Compare("voucher"))
+    } else if (acctTypeString.Compare("voucher")) {
         acctType = Account::voucher;
-    else if (acctTypeString.Compare("stash"))
+    } else if (acctTypeString.Compare("stash")) {
         acctType = Account::stash;
-    else
+    } else {
         LogError()(": Error: Unknown account type: ")(acctTypeString)(".")
             .Flush();
+    }
 
     return acctType;
 }

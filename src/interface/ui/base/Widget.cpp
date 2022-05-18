@@ -85,5 +85,5 @@ auto Widget::UpdateNotify() const noexcept -> void
     ui_.Internal().ActivateUICallback(WidgetID());
 }
 
-Widget::~Widget() { ClearCallbacks(); }
+Widget::~Widget() { Widget::ClearCallbacks(); }
 }  // namespace opentxs::ui::implementation

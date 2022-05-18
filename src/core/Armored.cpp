@@ -80,8 +80,9 @@ auto Armored::LoadFromString(
 
             return false;
         }
-    } else
+    } else {
         ascArmor.Set(strInput.Get());
+    }
 
     return true;
 }
@@ -190,8 +191,9 @@ auto Armored::compress_string(
     z_stream zs;  // z_stream is zlib's control structure
     memset(&zs, 0, sizeof(zs));
 
-    if (deflateInit(&zs, compressionlevel) != Z_OK)
+    if (deflateInit(&zs, compressionlevel) != Z_OK) {
         throw(std::runtime_error("deflateInit failed while compressing."));
+    }
 
     zs.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(str.data()));
     zs.avail_in = static_cast<uInt>(str.size());  // set the z_stream's input
@@ -231,8 +233,9 @@ auto Armored::decompress_string(const UnallocatedCString& str) const
     z_stream zs;  // z_stream is zlib's control structure
     memset(&zs, 0, sizeof(zs));
 
-    if (inflateInit(&zs) != Z_OK)
+    if (inflateInit(&zs) != Z_OK) {
         throw(std::runtime_error("inflateInit failed while decompressing."));
+    }
 
     zs.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(str.data()));
     zs.avail_in = static_cast<uInt>(str.size());
@@ -271,7 +274,7 @@ auto Armored::GetData(opentxs::Data& theData, bool bLineBreaks) const -> bool
 {
     theData.clear();
 
-    if (GetLength() < 1) return true;
+    if (GetLength() < 1) { return true; }
 
     auto decoded = Context().Crypto().Encode().DataDecode(
         UnallocatedCString(Get(), GetLength()));
@@ -469,8 +472,9 @@ auto Armored::LoadFromString(
             "content, in: ")(theStr)(".")
             .Flush();
         return false;
-    } else
+    } else {
         return true;
+    }
 }
 
 // Base64-encode
@@ -478,7 +482,7 @@ auto Armored::SetData(const opentxs::Data& theData, bool) -> bool
 {
     Release();
 
-    if (theData.size() < 1) return true;
+    if (theData.size() < 1) { return true; }
 
     auto string = Context().Crypto().Encode().DataEncode(theData);
 
@@ -538,7 +542,7 @@ auto Armored::SetString(
 {
     Release();
 
-    if (strData.GetLength() < 1) return true;
+    if (strData.GetLength() < 1) { return true; }
 
     UnallocatedCString str_compressed = compress_string(strData.Get());
 

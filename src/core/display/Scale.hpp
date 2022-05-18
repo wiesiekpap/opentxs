@@ -159,6 +159,7 @@ public:
         , incoming_(calculate_incoming_ratio(ratios_))
         , outgoing_(calculate_outgoing_ratio(ratios_))
         , locale_()
+        // NOLINTNEXTLINE(clang-analyzer-core.StackAddressEscape)
         , absolute_max_(20 + bmp::log10(incoming_))
     {
         OT_ASSERT(default_max_.value_or(0) >= default_min_.value_or(0));

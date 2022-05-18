@@ -121,8 +121,8 @@ OTVariable::OTVariable(
     , m_Access(theAccess)
     , m_pScript(nullptr)
 {
-    if (m_str_Value.empty()) m_str_Value = "";
-    if (m_str_ValueBackup.empty()) m_str_ValueBackup = "";
+    if (m_str_Value.empty()) { m_str_Value = ""; }
+    if (m_str_ValueBackup.empty()) { m_str_ValueBackup = ""; }
 }
 
 // INT
@@ -212,8 +212,8 @@ auto OTVariable::SetValue(const UnallocatedCString& str_Value) -> bool
 
     m_str_Value = m_str_ValueBackup = str_Value;
 
-    if (m_str_Value.empty()) m_str_Value = "";
-    if (m_str_ValueBackup.empty()) m_str_ValueBackup = "";
+    if (m_str_Value.empty()) { m_str_Value = ""; }
+    if (m_str_ValueBackup.empty()) { m_str_ValueBackup = ""; }
 
     return true;
 }
@@ -228,20 +228,24 @@ auto OTVariable::IsDirty() const -> bool
 
     switch (m_Type) {
         case OTVariable::Var_String:
-            if (0 != m_str_Value.compare(m_str_ValueBackup))  // If they do NOT
+            if (0 != m_str_Value.compare(m_str_ValueBackup)) {  // If they do
+                                                                // NOT
                 // match, then it's
                 // dirty.
                 bReturnVal = true;
+            }
             break;
         case OTVariable::Var_Integer:
-            if (m_nValue != m_nValueBackup)  // If they do NOT match, then it's
-                                             // dirty.
+            if (m_nValue != m_nValueBackup) {  // If they do NOT match, then
+                                               // it's dirty.
                 bReturnVal = true;
+            }
             break;
         case OTVariable::Var_Bool:
-            if (m_bValue != m_bValueBackup)  // If they do NOT match, then it's
-                                             // dirty.
+            if (m_bValue != m_bValueBackup) {  // If they do NOT match, then
+                                               // it's dirty.
                 bReturnVal = true;
+            }
             break;
         default:
             LogError()(OT_PRETTY_CLASS())("Error: Unknown type for variable: ")(

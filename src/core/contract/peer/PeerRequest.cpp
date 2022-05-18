@@ -70,6 +70,7 @@ Request::Request(
 {
 }
 
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
 Request::Request(
     const api::Session& api,
     const Nym_p& nym,
@@ -93,6 +94,7 @@ Request::Request(
     , type_(translate(serialized.type()))
 {
 }
+// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
 Request::Request(const Request& rhs) noexcept
     : Signable(rhs)

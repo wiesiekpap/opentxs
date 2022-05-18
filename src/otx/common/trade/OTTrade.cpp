@@ -152,10 +152,11 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         auto activated =
             String::Factory(xml->getAttributeValue("hasActivated"));
 
-        if (activated->Compare("true"))
+        if (activated->Compare("true")) {
             hasTradeActivated_ = true;
-        else
+        } else {
             hasTradeActivated_ = false;
+        }
 
         const auto notaryID =
                        String::Factory(xml->getAttributeValue("notaryID")),
@@ -212,11 +213,11 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                 "(Zero means: NOT a stop order).")
                 .Flush();
             return (-1);
-        } else if (sign->Compare("<"))
+        } else if (sign->Compare("<")) {
             stopSign_ = '<';
-        else if (sign->Compare(">"))
+        } else if (sign->Compare(">")) {
             stopSign_ = '>';
-        else {
+        } else {
             stopSign_ = 0;
             LogError()(OT_PRETTY_CLASS())(
                 "Unexpected or nonexistent value in stop order sign: ")(
@@ -232,10 +233,11 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         auto activated =
             String::Factory(xml->getAttributeValue("hasActivated"));
 
-        if (activated->Compare("true"))
+        if (activated->Compare("true")) {
             stopActivated_ = true;
-        else
+        } else {
             stopActivated_ = false;
+        }
 
         const auto unittype = api_.Wallet().CurrencyTypeBasedOnUnitType(
             GetInstrumentDefinitionID());
@@ -415,13 +417,14 @@ auto OTTrade::GetOffer(
             // So I pass it back to him here, if he wants. That way he doesn't
             // have to do this work again
             // to look it up.
-            if (false != bool(pMarket))
+            if (false != bool(pMarket)) {
                 *market = pMarket.get();  // <=================
-            else
+            } else {
                 LogError()(OT_PRETTY_CLASS())(
                     "Offer_ already exists, yet unable to find the "
                     "market it's supposed to be on.")
                     .Flush();
+            }
         }
 
         offerMarketId.Assign(OFFER_MARKET_ID);
@@ -597,11 +600,13 @@ auto OTTrade::GetOffer(
 
         // If the stop order is trying to sell something, then it cares about
         // the highest bidder.
-        if (offer->IsAsk())
+        if (offer->IsAsk()) {
             relevantPrice = pMarket->GetHighestBidPrice();
-        else  // But if the stop order is trying to buy something, then it cares
-              // about the lowest ask price.
+        } else {  // But if the stop order is trying to buy something, then it
+                  // cares
+                  // about the lowest ask price.
             relevantPrice = pMarket->GetLowestAskPrice();
+        }
 
         // It's a stop order that hasn't activated yet. SHOULD IT ACTIVATE NOW?
         if ((IsGreaterThan() && (relevantPrice > GetStopPrice())) ||
@@ -749,10 +754,11 @@ void OTTrade::onRemovalFromCron(const PasswordPrompt& reason)
 
 auto OTTrade::GetClosingNumber(const Identifier& acctId) const -> std::int64_t
 {
-    if (acctId == GetSenderAcctID())
+    if (acctId == GetSenderAcctID()) {
         return GetAssetAcctClosingNum();
-    else if (acctId == GetCurrencyAcctID())
+    } else if (acctId == GetCurrencyAcctID()) {
         return GetCurrencyAcctClosingNum();
+    }
     return 0;
 }
 
@@ -1047,9 +1053,10 @@ auto OTTrade::ProcessCron(const PasswordPrompt& reason) -> bool
     // PAST END DATE?
     // First call the parent's version (which this overrides) so it has
     // a chance to check its stuff. Currently it checks IsExpired().
-    if (!ot_super::ProcessCron(reason))
+    if (!ot_super::ProcessCron(reason)) {
         return false;  // It's expired or flagged for removal--remove it from
-                       // Cron.
+    }
+    // Cron.
 
     // You might ask, why not check here if this trade is flagged for removal?
     // Supposedly the answer is, because it's only below that I have the market
@@ -1062,10 +1069,11 @@ auto OTTrade::ProcessCron(const PasswordPrompt& reason) -> bool
 
     // REACHED START DATE?
     // Okay, so it's not expired. But might not have reached START DATE yet...
-    if (!VerifyCurrentDate())
+    if (!VerifyCurrentDate()) {
         return true;  // The Trade is not yet valid, so we return. BUT, we
-                      // return
-                      //  true, so it will stay on Cron until it BECOMES valid.
+    }
+    // return
+    //  true, so it will stay on Cron until it BECOMES valid.
 
     // TRADE-specific stuff below.
 
@@ -1107,12 +1115,12 @@ auto OTTrade::ProcessCron(const PasswordPrompt& reason) -> bool
             // market.
     {
         // Make sure it hasn't already been flagged by someone else...
-        if (IsFlaggedForRemoval())  // This is checked above in
-                                    // OTCronItem::ProcessCron().
-            bStayOnMarket = false;  // I'm leaving the check here in case the
-                                    // flag was set since then.
+        if (IsFlaggedForRemoval()) {  // This is checked above in
+                                      // OTCronItem::ProcessCron().
+            bStayOnMarket = false;    // I'm leaving the check here in case the
+                                      // flag was set since then.
 
-        else  // Process it!  <===================
+        } else  // Process it!  <===================
         {
             LogVerbose()("Processing trade: ")(GetTransactionNum()).Flush();
 
@@ -1153,9 +1161,9 @@ auto OTTrade::IssueTrade(OTOffer& offer, char stopSign, const Amount& stopPrice)
     -> bool
 {
     // Make sure the Stop Sign is within parameters (0, '<', or '>')
-    if ((stopSign == 0) || (stopSign == '<') || (stopSign == '>'))
+    if ((stopSign == 0) || (stopSign == '<') || (stopSign == '>')) {
         stopSign_ = stopSign;
-    else {
+    } else {
         LogError()(OT_PRETTY_CLASS())(
             "Bad data in Stop Sign while issuing trade: ")(stopSign)(".")
             .Flush();

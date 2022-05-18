@@ -124,7 +124,7 @@ void Server::ActivateCron()
 ///
 void Server::ProcessCron()
 {
-    if (!m_Cron->IsActivated()) return;
+    if (!m_Cron->IsActivated()) { return; }
 
     bool bAddedNumbers = false;
 
@@ -138,8 +138,9 @@ void Server::ProcessCron()
         if (bSuccess) {
             m_Cron->AddTransactionNumber(lTransNum);
             bAddedNumbers = true;
-        } else
+        } else {
             break;
+        }
     }
 
     if (bAddedNumbers) { m_Cron->SaveCron(); }
@@ -715,9 +716,9 @@ auto Server::DropMessageToNymbox(
         theMsgAngel.reset(
             manager_.Factory().InternalSession().Message().release());
 
-        if (nullptr != szCommand)
+        if (nullptr != szCommand) {
             theMsgAngel->m_strCommand = String::Factory(szCommand);
-        else {
+        } else {
             switch (theType) {
                 case transactionType::message:
                     theMsgAngel->m_strCommand =

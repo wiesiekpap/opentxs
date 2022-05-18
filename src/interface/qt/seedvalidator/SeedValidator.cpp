@@ -64,7 +64,7 @@ struct SeedValidator::Imp {
             return State::Invalid;
         } else if (1 == matches.size()) {
             input = matches.begin()->c_str();
-            pos = input.size();
+            pos = static_cast<int>(input.size());
 
             return State::Acceptable;
         } else {

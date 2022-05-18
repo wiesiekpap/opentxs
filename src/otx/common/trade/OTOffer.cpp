@@ -76,13 +76,13 @@ OTOffer::OTOffer(
 
 auto OTOffer::isPowerOfTen(const std::int64_t& x) -> bool
 {
-    if (1 == x) return true;
+    if (1 == x) { return true; }
 
     const std::int64_t lBase = 10;
     std::int64_t lIt = lBase;
 
     for (std::int32_t i = 1; i < 23; i++) {
-        if (x == lIt) return true;
+        if (x == lIt) { return true; }
         lIt *= lBase;
     }
 
@@ -185,10 +185,11 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         auto strIsSelling = String::Factory();
         strIsSelling = String::Factory(xml->getAttributeValue("isSelling"));
-        if (strIsSelling->Compare("true"))
+        if (strIsSelling->Compare("true")) {
             m_bSelling = true;
-        else
+        } else {
             m_bSelling = false;
+        }
 
         m_strContractType->Set((m_bSelling ? "ASK" : "BID"));
 
@@ -222,8 +223,9 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                 "1, or a power of 10. Instead I got: ")(lScale)(".")
                 .Flush();
             return (-1);
-        } else
+        } else {
             SetScale(lScale);
+        }
 
         const auto strPriceLimit =
             String::Factory(xml->getAttributeValue("priceLimit"));
@@ -241,8 +243,9 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                             "provided(")(lPriceLimit)(").")
                 .Flush();
             return (-1);
-        } else
+        } else {
             SetPriceLimit(lPriceLimit);
+        }
 
         const auto strTotal =
             String::Factory(xml->getAttributeValue("totalAssetsOnOffer"));
@@ -257,8 +260,9 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                 "*must* be larger than 0. Instead I got: ")(lTotal)(".")
                 .Flush();
             return (-1);
-        } else
+        } else {
             SetTotalAssetsOnOffer(lTotal);
+        }
 
         const auto strFinished =
             String::Factory(xml->getAttributeValue("finishedSoFar"));
@@ -272,8 +276,9 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                 "be 0 or larger. Instead I got: ")(lFinished)(".")
                 .Flush();
             return (-1);
-        } else
+        } else {
             SetFinishedSoFar(lFinished);
+        }
 
         const auto strMinInc =
             String::Factory(xml->getAttributeValue("minimumIncrement"));
@@ -292,8 +297,9 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                 "Instead I got: ")(lMinInc)(".")
                 .Flush();
             return (-1);
-        } else
+        } else {
             SetMinimumIncrement(lMinInc);
+        }
 
         const auto strTransNum =
             String::Factory(xml->getAttributeValue("transactionNum"));
@@ -427,12 +433,13 @@ auto OTOffer::MakeOffer(
     // (If you pass them into this function as the same value, it's functionally
     // a "FILL OR KILL" order.)
     Amount lRealMinInc = lMinimumIncrement;
-    if (lMinimumIncrement > lTotalAssetsOffer)  // Once the total, minus finish
-                                                // so far, is smaller than the
-                                                // minimum increment,
+    if (lMinimumIncrement > lTotalAssetsOffer) {  // Once the total, minus
+                                                  // finish so far, is smaller
+                                                  // than the minimum increment,
         lRealMinInc = lTotalAssetsOffer;  // then the OTTrade object I am linked
-                                          // to will expire and remove me from
-                                          // the market.
+    }
+    // to will expire and remove me from
+    // the market.
     // OR it could set the minimum increment to the remainder. But then need to
     // calc price.
 

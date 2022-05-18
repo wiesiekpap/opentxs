@@ -145,11 +145,12 @@ auto NymFile::deserialize_nymfile(
                     auto strCredits =
                         String::Factory(xml->getAttributeValue("usageCredits"));
 
-                    if (strCredits->GetLength() > 0)
+                    if (strCredits->GetLength() > 0) {
                         m_lUsageCredits = strCredits->ToLong();
-                    else
+                    } else {
                         m_lUsageCredits = 0;  // This is the default anyway, but
-                                              // just being safe...
+                    }
+                    // just being safe...
 
                     if (UserNymID->GetLength()) {
                         LogDebug()(OT_PRETTY_CLASS())(
@@ -229,11 +230,12 @@ auto NymFile::deserialize_nymfile(
                             "This nym has an asset account with the ID: ")(
                             strID)
                             .Flush();
-                    } else
+                    } else {
                         LogDebug()(OT_PRETTY_CLASS())(
                             "This nym MISSING asset account ID when loading "
                             "nym record.")
                             .Flush();
+                    }
                 } else if (strNodeName->Compare("outpaymentsMessage")) {
                     auto armorMail = Armored::Factory();
                     auto strMessage = String::Factory();
@@ -254,10 +256,11 @@ auto NymFile::deserialize_nymfile(
                         if (strNodeData->Exists() &&
                             strNodeData->GetLength() > 2 &&
                             strNodeData->At(0, cNewline)) {
-                            if ('\n' == cNewline)
+                            if ('\n' == cNewline) {
                                 armorMail->Set(strNodeData->Get() + 1);
-                            else
+                            } else {
                                 armorMail->Set(strNodeData->Get());
+                            }
 
                             if (armorMail->GetLength() > 2) {
                                 armorMail->GetString(
@@ -629,8 +632,9 @@ auto NymFile::serialize_nymfile(const T& lock, opentxs::String& strNym) const
     tag.add_attribute("version", m_strVersion->Get());
     tag.add_attribute("nymID", nymID->Get());
 
-    if (m_lUsageCredits != 0)
+    if (m_lUsageCredits != 0) {
         tag.add_attribute("usageCredits", std::to_string(m_lUsageCredits));
+    }
 
     target_nym_->SerializeNymIDSource(tag);
 
@@ -653,8 +657,9 @@ auto NymFile::serialize_nymfile(const T& lock, opentxs::String& strNym) const
 
             auto ascOutpayments = Armored::Factory();
 
-            if (strOutpayments->Exists())
+            if (strOutpayments->Exists()) {
                 ascOutpayments->SetString(strOutpayments);
+            }
 
             if (ascOutpayments->Exists()) {
                 tag.add_tag("outpaymentsMessage", ascOutpayments->Get());
@@ -729,10 +734,11 @@ auto NymFile::SerializeNymFile(const char* szFoldername, const char* szFilename)
         szFilename,
         "",
         "");
-    if (!bSaved)
+    if (!bSaved) {
         LogError()(OT_PRETTY_CLASS())("Error saving file: ")(
             szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
+    }
 
     return bSaved;
 }

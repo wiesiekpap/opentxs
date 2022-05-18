@@ -296,10 +296,10 @@ auto OTPartyAccount::DropFinalReceiptToInbox(
 
     OTAgent* pAgent = m_pForParty->GetAgent(str_agent_name);
 
-    if (nullptr == pAgent)
+    if (nullptr == pAgent) {
         LogError()(OT_PRETTY_CLASS())("Named agent wasn't found on party.")
             .Flush();
-    else {
+    } else {
         const auto theAccountID = Identifier::Factory(m_strAcctID);
 
         return pAgent->DropFinalReceiptToInbox(

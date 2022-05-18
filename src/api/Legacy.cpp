@@ -314,13 +314,19 @@ auto Legacy::get_app_data_folder(const UnallocatedCString& home) noexcept
 
 auto Legacy::get_home_directory() noexcept -> fs::path
 {
-    auto home = UnallocatedCString{getenv("HOME")};
+    auto home = UnallocatedCString{};
 
-    if (false == home.empty()) { return std::move(home); }
+    if (auto* env = ::getenv("HOME"); nullptr != env) {
+        home = env;
+
+        return home;
+    }
+
+    if (false == home.empty()) { return home; }
 
     home = get_home_platform();
 
-    if (false == home.empty()) { return std::move(home); }
+    if (false == home.empty()) { return home; }
 
     LogConsole()("Unable to determine home directory.").Flush();
 

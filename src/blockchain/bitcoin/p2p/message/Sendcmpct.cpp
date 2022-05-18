@@ -53,7 +53,7 @@ auto BitcoinP2PSendcmpct(
     // --------------------------------------------------------
     auto raw_item = ReturnType::Raw{};
     std::memcpy(static_cast<void*>(&raw_item), it, sizeof(raw_item));
-    it += sizeof(raw_item);
+    std::advance(it, sizeof(raw_item));
     const bool announce = (0 == raw_item.announce_.value()) ? false : true;
     const std::uint64_t version = raw_item.version_.value();
     // --------------------------------------------------------

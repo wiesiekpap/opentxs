@@ -107,7 +107,7 @@ auto BitcoinP2PGetblocks(
     }
 
     auto stop_hash = Data::Factory(it, sizeof(bitcoin::BlockHeaderHashField));
-    it += sizeof(bitcoin::BlockHeaderHashField);
+    std::advance(it, sizeof(bitcoin::BlockHeaderHashField));
 
     try {
         return new ReturnType(

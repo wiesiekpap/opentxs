@@ -88,7 +88,7 @@ auto NumList::Add(const char* szNumbers) -> bool  // if false, means the numbers
     std::locale loc;
 
     // Skip any whitespace.
-    while (std::isspace(*pChar, loc)) pChar++;
+    while (std::isspace(*pChar, loc)) { pChar++; }
 
     bool bStartedANumber =
         false;  // During the loop, set this to true when processing a digit,
@@ -137,12 +137,12 @@ auto NumList::Add(const char* szNumbers) -> bool  // if false, means the numbers
         }
 
         // End of the road.
-        if ('\0' == *pChar) break;
+        if ('\0' == *pChar) { break; }
 
         pChar++;
 
         // Skip any whitespace.
-        while (std::isspace(*pChar, loc)) pChar++;
+        while (std::isspace(*pChar, loc)) { pChar++; }
 
     }  // while
 
@@ -223,8 +223,9 @@ auto NumList::Verify(const UnallocatedSet<std::int64_t>& theNumbers) const
     bool bSuccess = true;
 
     for (const auto& it : theNumbers) {
-        if (!Verify(it))  // It must have NOT already been there.
+        if (!Verify(it)) {  // It must have NOT already been there.
             bSuccess = false;
+        }
     }
 
     return bSuccess;
@@ -269,8 +270,9 @@ auto NumList::VerifyAny(const UnallocatedSet<std::int64_t>& setData) const
     for (const auto& it : m_setData) {
         auto it_find = setData.find(it);
 
-        if (it_find != setData.end())  // found a match.
+        if (it_find != setData.end()) {  // found a match.
             return true;
+        }
     }
 
     return false;
@@ -297,8 +299,9 @@ auto NumList::Add(const UnallocatedSet<std::int64_t>& theNumbers)
     bool bSuccess = true;
 
     for (const auto& it : theNumbers) {
-        if (!Add(it))  // It must have already been there.
+        if (!Add(it)) {  // It must have already been there.
             bSuccess = false;
+        }
     }
 
     return bSuccess;
@@ -315,8 +318,9 @@ auto NumList::Remove(const UnallocatedSet<std::int64_t>& theNumbers)
     bool bSuccess = true;
 
     for (const auto& it : theNumbers) {
-        if (!Remove(it))  // It must have NOT already been there.
+        if (!Remove(it)) {  // It must have NOT already been there.
             bSuccess = false;
+        }
     }
 
     return bSuccess;

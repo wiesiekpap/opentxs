@@ -109,7 +109,7 @@ auto OTScriptable::ValidateName(const UnallocatedCString& str_name) -> bool
 // static
 auto OTScriptable::ValidateBylawName(const UnallocatedCString& str_name) -> bool
 {
-    if (!ValidateName(str_name)) return false;
+    if (!ValidateName(str_name)) { return false; }
 
     return true;
 }
@@ -117,7 +117,7 @@ auto OTScriptable::ValidateBylawName(const UnallocatedCString& str_name) -> bool
 // static
 auto OTScriptable::ValidatePartyName(const UnallocatedCString& str_name) -> bool
 {
-    if (!ValidateName(str_name)) return false;
+    if (!ValidateName(str_name)) { return false; }
 
     return true;
 }
@@ -125,7 +125,7 @@ auto OTScriptable::ValidatePartyName(const UnallocatedCString& str_name) -> bool
 // static
 auto OTScriptable::ValidateAgentName(const UnallocatedCString& str_name) -> bool
 {
-    if (!ValidateName(str_name)) return false;
+    if (!ValidateName(str_name)) { return false; }
 
     return true;
 }
@@ -134,7 +134,7 @@ auto OTScriptable::ValidateAgentName(const UnallocatedCString& str_name) -> bool
 auto OTScriptable::ValidateAccountName(const UnallocatedCString& str_name)
     -> bool
 {
-    if (!ValidateName(str_name)) return false;
+    if (!ValidateName(str_name)) { return false; }
 
     return true;
 }
@@ -143,7 +143,7 @@ auto OTScriptable::ValidateAccountName(const UnallocatedCString& str_name)
 auto OTScriptable::ValidateVariableName(const UnallocatedCString& str_name)
     -> bool
 {
-    if (!ValidateName(str_name)) return false;
+    if (!ValidateName(str_name)) { return false; }
 
     // This prefix is disallowed since it's reserved for clause parameter names.
     //
@@ -167,7 +167,7 @@ auto OTScriptable::ValidateVariableName(const UnallocatedCString& str_name)
 auto OTScriptable::ValidateClauseName(const UnallocatedCString& str_name)
     -> bool
 {
-    if (!ValidateName(str_name)) return false;
+    if (!ValidateName(str_name)) { return false; }
 
     // To avoid confusion, we disallow clauses beginning in cron_ or hook_ or
     // callback_
@@ -205,7 +205,7 @@ auto OTScriptable::ValidateClauseName(const UnallocatedCString& str_name)
 // static
 auto OTScriptable::ValidateHookName(const UnallocatedCString& str_name) -> bool
 {
-    if (!ValidateName(str_name)) return false;
+    if (!ValidateName(str_name)) { return false; }
 
     if ((str_name.compare(0, 5, "cron_") != 0) &&
         (str_name.compare(0, 5, "hook_") != 0)) {
@@ -222,7 +222,7 @@ auto OTScriptable::ValidateHookName(const UnallocatedCString& str_name) -> bool
 auto OTScriptable::ValidateCallbackName(const UnallocatedCString& str_name)
     -> bool
 {
-    if (!ValidateName(str_name)) return false;
+    if (!ValidateName(str_name)) { return false; }
 
     // If the callback name DOESN'T begin with 'callback_' then it is
     // rejected.
@@ -464,7 +464,7 @@ auto OTScriptable::AllPartiesHaveSupposedlyConfirmed() -> bool
         OTParty* pParty = it.second;
         OT_ASSERT(nullptr != pParty);
 
-        if (!(pParty->GetMySignedCopy().Exists())) return false;
+        if (!(pParty->GetMySignedCopy().Exists())) { return false; }
     }
 
     return bReturnVal;
@@ -662,10 +662,11 @@ auto OTScriptable::SendNoticeToAllParties(
                     strReference,
                     reason,
                     pstrNote,
-                    pstrAttachment))
+                    pstrAttachment)) {
                 bSuccess = false;  // Notice I don't break here -- I still allow
-                                   // it to try to notice ALL parties, even if
-                                   // one fails.
+            }
+            // it to try to notice ALL parties, even if
+            // one fails.
         }
     }
 
@@ -743,8 +744,9 @@ auto OTScriptable::GetCountTransNumsNeededForAgent(
     std::int32_t nReturnVal = 0;
 
     OTAgent* pAgent = GetAgent(str_agent_name);
-    if (nullptr == pAgent)
+    if (nullptr == pAgent) {
         return nReturnVal;  // (Looks like there is no agent with that name.)
+    }
 
     // Below this point, pAgent is good, meaning str_agent_name really IS
     // a legit agent for this party. But that doesn't necessarily mean the
@@ -753,10 +755,11 @@ auto OTScriptable::GetCountTransNumsNeededForAgent(
     // the party (for the opening num) or the authorized agent for any of
     // party's accounts (for the closing number).  So let's add it up...
     //
-    if (pAgent->IsAuthorizingAgentForParty())  // true/false whether THIS agent
-                                               // is the authorizing agent for
-                                               // his party.
+    if (pAgent->IsAuthorizingAgentForParty()) {  // true/false whether THIS
+                                                 // agent is the authorizing
+                                                 // agent for his party.
         nReturnVal++;
+    }
 
     // Add the number of accounts, owned by this agent's party, that this agent
     // is the authorized agent FOR.
@@ -779,8 +782,9 @@ auto OTScriptable::GetPartyAccount(UnallocatedCString str_acct_name) const
         OTParty* pParty = it.second;
         OT_ASSERT(nullptr != pParty);
         OTPartyAccount* pAcct = pParty->GetAccount(str_acct_name);
-        if (nullptr != pAcct)  // found it.
+        if (nullptr != pAcct) {  // found it.
             return pAcct;
+        }
     }
     return nullptr;
 }
@@ -794,8 +798,9 @@ auto OTScriptable::GetPartyAccountByID(const Identifier& theAcctID) const
 
         OTPartyAccount* pAcct = pParty->GetAccountByID(theAcctID);
 
-        if (nullptr != pAcct)  // found it.
+        if (nullptr != pAcct) {  // found it.
             return pAcct;
+        }
     }
 
     return nullptr;
@@ -809,7 +814,7 @@ auto OTScriptable::FindPartyBasedOnNymIDAsAgent(
         OTParty* pParty = it.second;
         OT_ASSERT(nullptr != pParty);
 
-        if (pParty->HasAgentByNymID(theNymID, ppAgent)) return pParty;
+        if (pParty->HasAgentByNymID(theNymID, ppAgent)) { return pParty; }
     }
     return nullptr;
 }
@@ -822,8 +827,9 @@ auto OTScriptable::FindPartyBasedOnNymIDAsAuthAgent(
         OTParty* pParty = it.second;
         OT_ASSERT(nullptr != pParty);
 
-        if (pParty->HasAuthorizingAgentByNymID(theNymID, ppAgent))
+        if (pParty->HasAuthorizingAgentByNymID(theNymID, ppAgent)) {
             return pParty;
+        }
     }
     return nullptr;
 }
@@ -851,7 +857,7 @@ auto OTScriptable::FindPartyBasedOnNymAsAgent(
         OTParty* pParty = it.second;
         OT_ASSERT(nullptr != pParty);
 
-        if (pParty->HasAgent(theNym, ppAgent)) return pParty;
+        if (pParty->HasAgent(theNym, ppAgent)) { return pParty; }
     }
     return nullptr;
 }
@@ -864,7 +870,7 @@ auto OTScriptable::FindPartyBasedOnNymAsAuthAgent(
         OTParty* pParty = it.second;
         OT_ASSERT(nullptr != pParty);
 
-        if (pParty->HasAuthorizingAgent(theNym, ppAgent)) return pParty;
+        if (pParty->HasAuthorizingAgent(theNym, ppAgent)) { return pParty; }
     }
     return nullptr;
 }
@@ -1105,17 +1111,19 @@ auto OTScriptable::VerifyPartyAuthorization(
                                          // / closing numbers, if they are
                                          // non-zero.
 
-        if (!bContentsVerified)
+        if (!bContentsVerified) {
             LogConsole()(OT_PRETTY_CLASS())(
                 "Though the signature verifies, the contract "
                 "signed by the party (")(theParty.GetPartyName())(
                 ") doesn't match this contract. (Failed comparison).")
                 .Flush();
-    } else
+        }
+    } else {
         LogConsole()(OT_PRETTY_CLASS())(
             "Signature failed to verify for party: ")(theParty.GetPartyName())(
             ".")
             .Flush();
+    }
 
     return bContentsVerified;
 }
@@ -1291,18 +1299,20 @@ auto OTScriptable::VerifyNymAsAgent(
         //
         bContentsVerified = Compare(*pPartySignedCopy);
 
-        if (!bContentsVerified)
+        if (!bContentsVerified) {
             LogConsole()(OT_PRETTY_CLASS())(
                 "Though the signature "
                 "verifies, the contract "
                 "signed by the party (")(pParty->GetPartyName())(
                 ") doesn't match this contract. (Failed comparison).")
                 .Flush();
-    } else
+        }
+    } else {
         LogConsole()(OT_PRETTY_CLASS())(
             "Signature failed to verify "
             "for party: ")(pParty->GetPartyName())(".")
             .Flush();
+    }
 
     // Todo: possibly call Compare(*pPartySignedCopy); to make sure
     // there's no funny business.
@@ -1708,8 +1718,9 @@ auto OTScriptable::GetClause(UnallocatedCString str_clause_name) const
 
         OTClause* pClause = pBylaw->GetClause(str_clause_name);
 
-        if (nullptr != pClause)  // found it.
+        if (nullptr != pClause) {  // found it.
             return pClause;
+        }
     }
 
     return nullptr;
@@ -1729,8 +1740,9 @@ auto OTScriptable::GetAgent(UnallocatedCString str_agent_name) const -> OTAgent*
 
         OTAgent* pAgent = pParty->GetAgent(str_agent_name);
 
-        if (nullptr != pAgent)  // found it.
+        if (nullptr != pAgent) {  // found it.
             return pAgent;
+        }
     }
 
     return nullptr;
@@ -1794,7 +1806,7 @@ auto OTScriptable::GetPartyByIndex(std::int32_t nIndex) const -> OTParty*
 
             ++nLoopIndex;  // 0 on first iteration.
 
-            if (nLoopIndex == nIndex) return pParty;
+            if (nLoopIndex == nIndex) { return pParty; }
         }
     }
     return nullptr;
@@ -1816,7 +1828,7 @@ auto OTScriptable::GetBylawByIndex(std::int32_t nIndex) const -> OTBylaw*
 
             ++nLoopIndex;  // 0 on first iteration.
 
-            if (nLoopIndex == nIndex) return pBylaw;
+            if (nLoopIndex == nIndex) { return pBylaw; }
         }
     }
     return nullptr;
@@ -1902,8 +1914,9 @@ auto OTScriptable::ConfirmParty(
     // This is in order to make sure that I am signing the same thing that
     // everyone else signed, before I actually sign it.
     //
-    if (!VerifyThisAgainstAllPartiesSignedCopies())
+    if (!VerifyThisAgainstAllPartiesSignedCopies()) {
         return false;  // This already logs on failure.
+    }
 
     // BY THIS POINT, we know that, of all the parties who have already signed,
     // their signed copies DO match this smart contract.
@@ -1980,11 +1993,12 @@ auto OTScriptable::ConfirmParty(
         }
 
         return false;
-    } else
+    } else {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed attempt to confirm "
             "non-existent party: ")(str_party_name)(".")
             .Flush();
+    }
 
     return false;
 }
@@ -2011,10 +2025,11 @@ auto OTScriptable::AddParty(OTParty& theParty) -> bool
         theParty.SetOwnerAgreement(*this);
 
         return true;
-    } else
+    } else {
         LogConsole()(OT_PRETTY_CLASS())("Failed attempt: party already exists "
                                         "on contract.")
             .Flush();
+    }
 
     return false;
 }
@@ -2038,10 +2053,11 @@ auto OTScriptable::RemoveParty(UnallocatedCString str_Name) -> bool
         delete pParty;
         pParty = nullptr;
         return true;
-    } else
+    } else {
         LogConsole()(OT_PRETTY_CLASS())("Failed attempt: party didn't exist "
                                         "on contract.")
             .Flush();
+    }
 
     return false;
 }
@@ -2065,10 +2081,11 @@ auto OTScriptable::RemoveBylaw(UnallocatedCString str_Name) -> bool
         delete pBylaw;
         pBylaw = nullptr;
         return true;
-    } else
+    } else {
         LogConsole()(OT_PRETTY_CLASS())("Failed attempt: bylaw didn't exist "
                                         "on contract.")
             .Flush();
+    }
 
     return false;
 }
@@ -2092,10 +2109,11 @@ auto OTScriptable::AddBylaw(OTBylaw& theBylaw) -> bool
         theBylaw.SetOwnerAgreement(*this);
 
         return true;
-    } else
+    } else {
         LogConsole()(OT_PRETTY_CLASS())("Failed attempt: bylaw already exists "
                                         "on contract.")
             .Flush();
+    }
 
     return false;
 }
@@ -2208,7 +2226,7 @@ auto vectorToString(const UnallocatedVector<std::int64_t>& v)
     std::stringstream ss;
 
     for (size_t i = 0; i < v.size(); ++i) {
-        if (i != 0) ss << " ";
+        if (i != 0) { ss << " "; }
         ss << v[i];
     }
     return ss.str();
@@ -2337,8 +2355,9 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             const UnallocatedCString str_opening_nums(
                 strOpeningNumsOrderSigning->Get());
             openingNumsInOrderOfSigning_ = stringToVector(str_opening_nums);
-        } else
+        } else {
             openingNumsInOrderOfSigning_.clear();
+        }
 
         // These determine whether instrument definition ids and/or party owner
         // IDs
@@ -2348,9 +2367,10 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         // id blank
         // until the confirmation phase.)
         //
-        if (strSpecify1->Compare("true"))
+        if (strSpecify1->Compare("true")) {
             m_bSpecifyInstrumentDefinitionID = true;
-        if (strSpecify2->Compare("true")) m_bSpecifyParties = true;
+        }
+        if (strSpecify2->Compare("true")) { m_bSpecifyParties = true; }
 
         // Load up the Parties.
         //
@@ -2401,17 +2421,19 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
                     bool bIsCopyProvided = false;  // default
 
-                    if (strIsCopyProvided->Compare("true"))
+                    if (strIsCopyProvided->Compare("true")) {
                         bIsCopyProvided = true;
+                    }
 
                     std::int64_t lOpeningTransNo = 0;
 
-                    if (strOpeningTransNo->Exists())
+                    if (strOpeningTransNo->Exists()) {
                         lOpeningTransNo = strOpeningTransNo->ToLong();
-                    else
+                    } else {
                         LogError()(OT_PRETTY_CLASS())(
                             "Expected openingTransNo in party.")
                             .Flush();
+                    }
 
                     auto* pParty = new OTParty(
                         api_.Wallet(),
@@ -2514,13 +2536,15 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
                                 bool bRepsHimself = true;  // default
 
-                                if (strAgentRepSelf->Compare("false"))
+                                if (strAgentRepSelf->Compare("false")) {
                                     bRepsHimself = false;
+                                }
 
                                 bool bIsIndividual = true;  // default
 
-                                if (strAgentIndividual->Compare("false"))
+                                if (strAgentIndividual->Compare("false")) {
                                     bIsIndividual = false;
+                                }
 
                                 // See if the same-named agent already exists on
                                 // ANY of the OTHER PARTIES
@@ -2634,10 +2658,10 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
                                 std::int64_t lClosingTransNo = 0;
 
-                                if (strClosingTransNo->Exists())
+                                if (strClosingTransNo->Exists()) {
                                     lClosingTransNo =
                                         strClosingTransNo->ToLong();
-                                else {
+                                } else {
                                     LogError()(OT_PRETTY_CLASS())(
                                         "Expected "
                                         "closingTransNo in "
@@ -2746,11 +2770,11 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                         pParty->SetMySignedCopy(strTextExpected);
                     }
 
-                    if (AddParty(*pParty))
+                    if (AddParty(*pParty)) {
                         LogVerbose()(OT_PRETTY_CLASS())("Loaded Party: ")(
                             pParty->GetPartyName())
                             .Flush();
-                    else {
+                    } else {
                         LogError()(OT_PRETTY_CLASS())("Failed loading Party: ")(
                             pParty->GetPartyName())(".")
                             .Flush();
@@ -2893,31 +2917,34 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 OTVariable::OTVariable_Type theVarType =
                                     OTVariable::Var_Error_Type;
 
-                                if (strVarType->Compare("integer"))
+                                if (strVarType->Compare("integer")) {
                                     theVarType = OTVariable::Var_Integer;
-                                else if (strVarType->Compare("string"))
+                                } else if (strVarType->Compare("string")) {
                                     theVarType = OTVariable::Var_String;
-                                else if (strVarType->Compare("bool"))
+                                } else if (strVarType->Compare("bool")) {
                                     theVarType = OTVariable::Var_Bool;
-                                else
+                                } else {
                                     LogError()(OT_PRETTY_CLASS())(
                                         "Bad variable type: ")(strVarType)(".")
                                         .Flush();
+                                }
 
                                 OTVariable::OTVariable_Access theVarAccess =
                                     OTVariable::Var_Error_Access;
 
-                                if (strVarAccess->Compare("constant"))
+                                if (strVarAccess->Compare("constant")) {
                                     theVarAccess = OTVariable::Var_Constant;
-                                else if (strVarAccess->Compare("persistent"))
+                                } else if (strVarAccess->Compare(
+                                               "persistent")) {
                                     theVarAccess = OTVariable::Var_Persistent;
-                                else if (strVarAccess->Compare("important"))
+                                } else if (strVarAccess->Compare("important")) {
                                     theVarAccess = OTVariable::Var_Important;
-                                else
+                                } else {
                                     LogError()(OT_PRETTY_CLASS())(
                                         "Bad variable access type: ")(
                                         strVarAccess)(".")
                                         .Flush();
+                                }
 
                                 if ((OTVariable::Var_Error_Access ==
                                      theVarAccess) ||
@@ -3000,14 +3027,15 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                                 return (-1);
                                             }
                                             // (else success)
-                                        } else
+                                        } else {
                                             strVarValue
-                                                ->Release();  // Necessary. If
-                                                              // it's going to
-                                                              // be a blank
+                                                ->Release();  // Necessary.
+                                                              // If it's going
+                                                              // to be a blank
                                                               // string, then
                                                               // let's make
                                                               // sure.
+                                        }
 
                                         const UnallocatedCString str_var_value =
                                             strVarValue->Get();
@@ -3371,8 +3399,9 @@ auto OTScriptable::GetVariable(UnallocatedCString str_VarName) -> OTVariable*
 
         OTVariable* pVar = pBylaw->GetVariable(str_VarName);
 
-        if (nullptr != pVar)  // found it.
+        if (nullptr != pVar) {  // found it.
             return pVar;
+        }
     }
 
     return nullptr;
@@ -3398,8 +3427,9 @@ auto OTScriptable::GetCallback(UnallocatedCString str_CallbackName) -> OTClause*
 
         OTClause* pClause = pBylaw->GetCallback(str_CallbackName);
 
-        if (nullptr != pClause)  // found it.
+        if (nullptr != pClause) {  // found it.
             return pClause;
+        }
     }
 
     return nullptr;
@@ -3426,7 +3456,7 @@ auto OTScriptable::GetHooks(
 
         // Look up all clauses matching a specific hook.
         //
-        if (pBylaw->GetHooks(str_HookName, theResults)) bReturnVal = true;
+        if (pBylaw->GetHooks(str_HookName, theResults)) { bReturnVal = true; }
     }
 
     return bReturnVal;

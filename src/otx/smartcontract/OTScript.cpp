@@ -161,17 +161,17 @@ OTScript::~OTScript()
 
 void OTScript::SetScript(const String& strValue)
 {
-    if (strValue.Exists()) m_str_script = strValue.Get();
+    if (strValue.Exists()) { m_str_script = strValue.Get(); }
 }
 
 void OTScript::SetScript(const char* new_string)
 {
-    if (nullptr != new_string) m_str_script = new_string;
+    if (nullptr != new_string) { m_str_script = new_string; }
 }
 
 void OTScript::SetScript(const char* new_string, size_t sizeLength)
 {
-    if (nullptr != new_string) m_str_script.assign(new_string, sizeLength);
+    if (nullptr != new_string) { m_str_script.assign(new_string, sizeLength); }
 }
 
 void OTScript::SetScript(const UnallocatedCString& new_string)

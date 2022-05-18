@@ -180,8 +180,9 @@ public:
         -> bool final
     {
         const auto backend = shift_right();
-        if (backend < 0 || backend > std::numeric_limits<std::int64_t>::max())
+        if (backend < 0 || backend > std::numeric_limits<std::int64_t>::max()) {
             return false;
+        }
 
         auto amount = std::int64_t{};
         try {

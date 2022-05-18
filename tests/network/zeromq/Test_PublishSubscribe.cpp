@@ -76,8 +76,10 @@ void Test_PublishSubscribe::subscribeSocketThread(
     ++subscribeThreadStartedCount_;
 
     auto end = std::time(nullptr) + 30;
-    while (callbackFinishedCount_ < callbackCount_ && std::time(nullptr) < end)
+    while (callbackFinishedCount_ < callbackCount_ &&
+           std::time(nullptr) < end) {
         std::this_thread::sleep_for(1s);
+    }
 
     ASSERT_EQ(callbackCount_, callbackFinishedCount_);
 }
@@ -99,8 +101,9 @@ void Test_PublishSubscribe::publishSocketThread(
 
     auto end = std::time(nullptr) + 15;
     while (subscribeThreadStartedCount_ < subscribeThreadCount_ &&
-           std::time(nullptr) < end)
+           std::time(nullptr) < end) {
         std::this_thread::sleep_for(1s);
+    }
 
     bool sent = publishSocket->Send([&] {
         auto out = opentxs::network::zeromq::Message{};
@@ -112,8 +115,10 @@ void Test_PublishSubscribe::publishSocketThread(
     ASSERT_TRUE(sent);
 
     end = std::time(nullptr) + 15;
-    while (callbackFinishedCount_ < callbackCount_ && std::time(nullptr) < end)
+    while (callbackFinishedCount_ < callbackCount_ &&
+           std::time(nullptr) < end) {
         std::this_thread::sleep_for(1s);
+    }
 
     ASSERT_EQ(callbackCount_, callbackFinishedCount_);
 }
@@ -203,8 +208,9 @@ TEST_F(Test_PublishSubscribe, Publish_1_Subscribe_2)
 
     auto end = std::time(nullptr) + 30;
     while (subscribeThreadStartedCount_ < subscribeThreadCount_ &&
-           std::time(nullptr) < end)
+           std::time(nullptr) < end) {
         std::this_thread::sleep_for(1s);
+    }
 
     ASSERT_EQ(subscribeThreadCount_, subscribeThreadStartedCount_);
 
@@ -238,8 +244,9 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_1)
         testMessage2_);
 
     auto end = std::time(nullptr) + 15;
-    while (publishThreadStartedCount_ < 2 && std::time(nullptr) < end)
+    while (publishThreadStartedCount_ < 2 && std::time(nullptr) < end) {
         std::this_thread::sleep_for(1s);
+    }
 
     ASSERT_EQ(2, publishThreadStartedCount_);
 
@@ -267,8 +274,10 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_1)
     ++subscribeThreadStartedCount_;
 
     end = std::time(nullptr) + 30;
-    while (callbackFinishedCount_ < callbackCount_ && std::time(nullptr) < end)
+    while (callbackFinishedCount_ < callbackCount_ &&
+           std::time(nullptr) < end) {
         std::this_thread::sleep_for(1s);
+    }
 
     ASSERT_EQ(callbackCount_, callbackFinishedCount_);
 
@@ -293,8 +302,9 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_2)
         testMessage2_);
 
     auto end = std::time(nullptr) + 15;
-    while (publishThreadStartedCount_ < 2 && std::time(nullptr) < end)
+    while (publishThreadStartedCount_ < 2 && std::time(nullptr) < end) {
         std::this_thread::sleep_for(1s);
+    }
 
     ASSERT_EQ(2, publishThreadStartedCount_);
 
@@ -313,8 +323,9 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_2)
 
     end = std::time(nullptr) + 30;
     while (subscribeThreadStartedCount_ < subscribeThreadCount_ &&
-           std::time(nullptr) < end)
+           std::time(nullptr) < end) {
         std::this_thread::sleep_for(1s);
+    }
 
     ASSERT_EQ(subscribeThreadCount_, subscribeThreadStartedCount_);
 

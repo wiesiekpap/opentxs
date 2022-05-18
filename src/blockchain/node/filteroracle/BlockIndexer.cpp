@@ -226,9 +226,8 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
     LogTrace()(OT_PRETTY_CLASS())("Incoming position: ")(print(pos)).Flush();
     auto hashes = decltype(header_.Ancestors(current, pos)){};
     auto prior = Previous{std::nullopt};
-    auto searching{true};
 
-    while (searching) {
+    while (true) {
         try {
             hashes = header_.Ancestors(compare, pos, 2000u);
 
@@ -247,10 +246,7 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
 
         if (first == pos) { return; }
 
-        if (first == current) {
-            searching = false;
-            break;
-        }
+        if (first == current) { break; }
 
         auto cfheader = db_.LoadFilterHeader(type_, first.second.Bytes());
         // TODO allocator
@@ -272,7 +268,7 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
             auto promise = std::promise<cfilter::Header>{};
             promise.set_value(std::move(cfheader));
             prior.emplace(std::move(first), promise.get_future());
-            searching = false;
+
             break;
         }
 

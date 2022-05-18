@@ -125,7 +125,7 @@ auto String::safe_strlen(const char* s, std::size_t max) -> std::size_t
 
 auto String::StringToInt(const UnallocatedCString& strNumber) -> std::int32_t
 {
-    if (strNumber.size() == 0) return 0;
+    if (strNumber.size() == 0) { return 0; }
 
     std::int32_t v = 0;
     std::size_t i = 0;
@@ -135,7 +135,7 @@ auto String::StringToInt(const UnallocatedCString& strNumber) -> std::int32_t
                     : '+';
 
     for (; i < strNumber.size(); ++i) {
-        if (strNumber[i] < '0' || strNumber[i] > '9') break;
+        if (strNumber[i] < '0' || strNumber[i] > '9') { break; }
         v = ((v * 10) + (strNumber[i] - '0'));
     }
     return ((0 == v) ? 0 : ((sign == '-') ? -v : v));
@@ -143,7 +143,7 @@ auto String::StringToInt(const UnallocatedCString& strNumber) -> std::int32_t
 
 auto String::StringToLong(const UnallocatedCString& strNumber) -> std::int64_t
 {
-    if (strNumber.size() == 0) return 0;
+    if (strNumber.size() == 0) { return 0; }
 
     std::int64_t v = 0;
     std::size_t i = 0;
@@ -153,7 +153,7 @@ auto String::StringToLong(const UnallocatedCString& strNumber) -> std::int64_t
                     : '+';
 
     for (; i < strNumber.size(); ++i) {
-        if (strNumber[i] < '0' || strNumber[i] > '9') break;
+        if (strNumber[i] < '0' || strNumber[i] > '9') { break; }
         v = ((v * 10) + (strNumber[i] - '0'));
     }
     return ((0 == v) ? 0 : ((sign == '-') ? -v : v));
@@ -161,13 +161,13 @@ auto String::StringToLong(const UnallocatedCString& strNumber) -> std::int64_t
 
 auto String::StringToUint(const UnallocatedCString& strNumber) -> std::uint32_t
 {
-    if (strNumber.size() == 0) return 0;
+    if (strNumber.size() == 0) { return 0; }
 
     std::uint32_t v = 0;
     std::size_t i = 0;
 
     for (; i < strNumber.size(); ++i) {
-        if (strNumber[i] < '0' || strNumber[i] > '9') break;
+        if (strNumber[i] < '0' || strNumber[i] > '9') { break; }
         v = ((v * 10) + (strNumber[i] - '0'));
     }
     return ((0 == v) ? 0 : v);
@@ -175,13 +175,13 @@ auto String::StringToUint(const UnallocatedCString& strNumber) -> std::uint32_t
 
 auto String::StringToUlong(const UnallocatedCString& strNumber) -> std::uint64_t
 {
-    if (strNumber.size() == 0) return 0;
+    if (strNumber.size() == 0) { return 0; }
 
     std::uint64_t v = 0;
     std::size_t i = 0;
 
     for (; i < strNumber.size(); ++i) {
-        if (strNumber[i] < '0' || strNumber[i] > '9') break;
+        if (strNumber[i] < '0' || strNumber[i] > '9') { break; }
         v = ((v * 10) + (strNumber[i] - '0'));
     }
     return ((0 == v) ? 0 : v);
@@ -230,7 +230,7 @@ String::String()
 String::String(const opentxs::Identifier& theValue)
     : String()
 {
-    if (theValue.size() > 0) theValue.GetString(*this);
+    if (theValue.size() > 0) { theValue.GetString(*this); }
 }
 
 String::String(const opentxs::Contract& theValue)
@@ -244,7 +244,7 @@ String::String(const opentxs::Contract& theValue)
 String::String(const opentxs::Armored& strValue)
     : String()
 {
-    if (strValue.Exists()) strValue.GetString(*this);
+    if (strValue.Exists()) { strValue.GetString(*this); }
 }
 
 // This version base64-DECODES the ascii-armored signature that's passed in,
@@ -258,7 +258,7 @@ String::String(const opentxs::Armored& strValue)
 String::String(const opentxs::Signature& strValue)
     : String()
 {
-    if (strValue.Exists()) strValue.GetString(*this);
+    if (strValue.Exists()) { strValue.GetString(*this); }
 }
 
 String::String(const opentxs::NymFile& value)
@@ -366,8 +366,9 @@ auto String::At(std::uint32_t lIndex, char& c) const -> bool
     if (lIndex < length_) {
         c = internal_.data()[lIndex];
         return true;
-    } else
+    } else {
         return false;
+    }
 }
 
 auto String::clone() const -> String* { return new String(*this); }
@@ -380,10 +381,11 @@ auto String::Compare(const char* strCompare) const -> bool
     const char* s1 = internal_.data();
     const char* s2 = strCompare;
 
-    for (; *s1 && *s2; s1++, s2++)
-        if (*s1 != *s2) return false;
+    for (; *s1 && *s2; s1++, s2++) {
+        if (*s1 != *s2) { return false; }
+    }
 
-    if (*s1 != *s2) return false;
+    if (*s1 != *s2) { return false; }
 
     return true;
 }
@@ -395,8 +397,9 @@ auto String::Compare(const opentxs::String& strCompare) const -> bool
     const char* s1 = internal_.data();
     const char* s2 = strCompare.Get();
 
-    for (; *s1 && *s1 != ' '; s1++, s2++)
-        if (*s1 != *s2) return false;
+    for (; *s1 && *s1 != ' '; s1++, s2++) {
+        if (*s1 != *s2) { return false; }
+    }
 
     return true;
 }
@@ -406,10 +409,13 @@ void String::Concatenate(const opentxs::String& strBuf)
 {
     UnallocatedCString str_output;
 
-    if ((length_ > 0) && (false == internal_.empty()))
+    if ((length_ > 0) && (false == internal_.empty())) {
         str_output += internal_.data();
+    }
 
-    if (strBuf.Exists() && (strBuf.GetLength() > 0)) str_output += strBuf.Get();
+    if (strBuf.Exists() && (strBuf.GetLength() > 0)) {
+        str_output += strBuf.Get();
+    }
 
     Set(str_output.c_str());
 }
@@ -421,7 +427,7 @@ auto String::Contains(const char* strCompare) const -> bool
 {
     if (internal_.empty() || nullptr == strCompare) { return false; }
 
-    if (strstr(internal_.data(), strCompare)) return true;
+    if (strstr(internal_.data(), strCompare)) { return true; }
 
     return false;
 }
@@ -430,7 +436,7 @@ auto String::Contains(const opentxs::String& strCompare) const -> bool
 {
     if (internal_.empty() || !strCompare.Exists()) { return false; }
 
-    if (strstr(internal_.data(), strCompare.Get())) return true;
+    if (strstr(internal_.data(), strCompare.Get())) { return true; }
 
     return false;
 }
@@ -456,7 +462,7 @@ void String::ConvertToUpperCase()
 //
 auto String::DecodeIfArmored(bool bEscapedIsAllowed) -> bool
 {
-    if (!Exists()) return false;
+    if (!Exists()) { return false; }
 
     bool bArmoredAndALSOescaped = false;  // "- -----BEGIN OT ARMORED"
     bool bArmoredButNOTescaped = false;   // "-----BEGIN OT ARMORED"
@@ -526,7 +532,7 @@ auto String::DecodeIfArmored(bool bEscapedIsAllowed) -> bool
 
     Release();
 
-    if (str_Trim.size() > 0) Set(str_Trim.c_str());
+    if (str_Trim.size() > 0) { Set(str_Trim.c_str()); }
 
     return Exists();
 }
@@ -694,12 +700,13 @@ void String::reset() { position_ = 0; }
 // at that length of the string minus 1.
 void String::Set(const char* new_string, std::uint32_t nEnforcedMaxLength)
 {
-    if (new_string == internal_.data())  // Already the same string.
+    if (new_string == internal_.data()) {  // Already the same string.
         return;
+    }
 
     Release();
 
-    if (nullptr == new_string) return;
+    if (nullptr == new_string) { return; }
 
     LowLevelSet(new_string, nEnforcedMaxLength);
 }
@@ -708,8 +715,9 @@ void String::Set(const opentxs::String& strBuf)
 {
     const auto& in = dynamic_cast<const String&>(strBuf);
 
-    if (this == &in)  // Already the same string.
+    if (this == &in) {  // Already the same string.
         return;
+    }
 
     Release();
 
@@ -723,7 +731,7 @@ auto String::sgets(char* szBuffer, std::uint32_t nBufSize) -> bool
 {
     if (nullptr == szBuffer) { return false; }
 
-    if (position_ >= length_) return false;
+    if (position_ >= length_) { return false; }
 
     std::uint32_t lIndex = 0;
     char* pChar = internal_.data() + position_;
@@ -758,11 +766,12 @@ auto String::sgets(char* szBuffer, std::uint32_t nBufSize) -> bool
             // neither does pChar. These local variables go away since we are
             // returning.
 
-            if (0 == *(pChar + 1))
+            if (0 == *(pChar + 1)) {
                 return false;
-            else
+            } else {
                 return true;  // there was more to read, but we stopped at the
-                              // newline.
+            }
+            // newline.
         }
     }
 
@@ -856,7 +865,7 @@ void String::WriteToFile(std::ostream& ofs) const
     char* pchar = const_cast<char*>(internal_.data());
 
     while (*pchar) {
-        if (*pchar != '\r') ofs << *pchar;
+        if (*pchar != '\r') { ofs << *pchar; }
         pchar++;
     }
 }

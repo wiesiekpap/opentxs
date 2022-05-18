@@ -194,7 +194,7 @@ auto Basket::GetClosingTransactionNoAt(std::uint32_t nIndex) -> std::int64_t
 
 auto Basket::At(std::uint32_t nIndex) -> BasketItem*
 {
-    if (nIndex < m_dequeItems.size()) return m_dequeItems.at(nIndex);
+    if (nIndex < m_dequeItems.size()) { return m_dequeItems.at(nIndex); }
 
     return nullptr;
 }
@@ -232,13 +232,16 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
              strTemp = String::Factory(
                  xml->getAttributeValue("closingTransactionNo"));
 
-        if (strTransferMultiple->Exists())
+        if (strTransferMultiple->Exists()) {
             m_nTransferMultiple = atoi(strTransferMultiple->Get());
-        if (strRequestAccountID->Exists())
+        }
+        if (strRequestAccountID->Exists()) {
             m_RequestAccountID->SetString(strRequestAccountID);
-        if (strDirection->Exists())
+        }
+        if (strDirection->Exists()) {
             m_bExchangingIn = strDirection->Compare("in");
-        if (strTemp->Exists()) SetClosingNum(strTemp->ToLong());
+        }
+        if (strTemp->Exists()) { SetClosingNum(strTemp->ToLong()); }
 
         LogVerbose()(OT_PRETTY_CLASS())("Basket Transfer multiple is ")(
             m_nTransferMultiple)(". Direction is ")(
@@ -257,12 +260,15 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         auto strTemp =
             String::Factory(xml->getAttributeValue("minimumTransfer"));
-        if (strTemp->Exists())
+        if (strTemp->Exists()) {
             pItem->lMinimumTransferAmount = strTemp->ToLong();
+        }
 
         strTemp =
             String::Factory(xml->getAttributeValue("closingTransactionNo"));
-        if (strTemp->Exists()) pItem->lClosingTransactionNo = strTemp->ToLong();
+        if (strTemp->Exists()) {
+            pItem->lClosingTransactionNo = strTemp->ToLong();
+        }
 
         auto strSubAccountID =
                  String::Factory(xml->getAttributeValue("accountID")),

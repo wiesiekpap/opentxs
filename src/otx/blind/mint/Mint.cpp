@@ -64,6 +64,7 @@ auto Mint::Imp::InstrumentDefinitionID() const
 
     return blank.get();
 }
+
 }  // namespace opentxs::otx::blind
 
 namespace opentxs::otx::blind

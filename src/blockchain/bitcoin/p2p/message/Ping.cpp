@@ -53,7 +53,7 @@ auto BitcoinP2PPing(
         auto* it{static_cast<const std::byte*>(payload)};
         ReturnType::BitcoinFormat_60001 raw{};
         std::memcpy(reinterpret_cast<std::byte*>(&raw), it, sizeof(raw));
-        it += sizeof(raw);
+        std::advance(it, sizeof(raw));
         nonce = raw.nonce_.value();
     } else {
         // Apparently there's no nonce field included. Must be a message from a

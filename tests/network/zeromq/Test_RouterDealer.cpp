@@ -219,8 +219,9 @@ TEST_F(Test_RouterDealer, Router_Dealer)
         testMessage_);
 
     auto end = std::time(nullptr) + 30;
-    while (callbackFinishedCount_ < 3 && std::time(nullptr) < end)
+    while (callbackFinishedCount_ < 3 && std::time(nullptr) < end) {
         std::this_thread::sleep_for(100ms);
+    }
 
     ASSERT_EQ(3, callbackFinishedCount_);
 
@@ -343,8 +344,9 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Reply)
         testMessage3_);
 
     auto end = std::time(nullptr) + 30;
-    while (callbackFinishedCount_ < 9 && std::time(nullptr) < end)
+    while (callbackFinishedCount_ < 9 && std::time(nullptr) < end) {
         std::this_thread::sleep_for(100ms);
+    }
 
     ASSERT_EQ(9, callbackFinishedCount_);
 
@@ -481,8 +483,9 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Router)
         testMessage3_);
 
     auto end = std::time(nullptr) + 30;
-    while (callbackFinishedCount_ < 6 && std::time(nullptr) < end)
+    while (callbackFinishedCount_ < 6 && std::time(nullptr) < end) {
         std::this_thread::sleep_for(100ms);
+    }
 
     ASSERT_EQ(6, callbackFinishedCount_);
 
@@ -491,8 +494,9 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Router)
     }
 
     end = std::time(nullptr) + 30;
-    while (callbackFinishedCount_ < 9 && std::time(nullptr) < end)
+    while (callbackFinishedCount_ < 9 && std::time(nullptr) < end) {
         std::this_thread::sleep_for(100ms);
+    }
 
     ASSERT_EQ(9, callbackFinishedCount_);
 

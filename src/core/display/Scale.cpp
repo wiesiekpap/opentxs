@@ -15,6 +15,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
 namespace opentxs::display
 {
 Scale::Scale(
@@ -23,6 +24,7 @@ Scale::Scale(
     Vector<Ratio>&& ratios,
     const OptionalInt defaultMinDecimals,
     const OptionalInt defaultMaxDecimals) noexcept
+    // NOLINTBEGIN(clang-analyzer-core.StackAddressEscape)
     : imp_(std::make_unique<Imp>(
                prefix,
                suffix,
@@ -30,6 +32,7 @@ Scale::Scale(
                defaultMinDecimals,
                defaultMaxDecimals)
                .release())
+// NOLINTEND(clang-analyzer-core.StackAddressEscape)
 {
     OT_ASSERT(imp_);
 }
@@ -111,3 +114,4 @@ Scale::~Scale()
     }
 }
 }  // namespace opentxs::display
+// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)

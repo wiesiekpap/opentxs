@@ -63,7 +63,7 @@ void OTClause::SetCode(const UnallocatedCString& str_code)
 
 auto OTClause::GetCode() const -> const char*
 {
-    if (m_strCode->Exists()) return m_strCode->Get();
+    if (m_strCode->Exists()) { return m_strCode->Get(); }
 
     return "print(\"(Empty script.)\")";  // todo hardcoding
 }
@@ -72,12 +72,13 @@ void OTClause::Serialize(Tag& parent) const
 {
     auto ascCode = Armored::Factory();
 
-    if (m_strCode->GetLength() > 2)
+    if (m_strCode->GetLength() > 2) {
         ascCode->SetString(m_strCode);
-    else
+    } else {
         LogError()(OT_PRETTY_CLASS())(
             "Empty script code in OTClause::Serialize().")
             .Flush();
+    }
 
     TagPtr pTag(new Tag("clause", ascCode->Get()));
 

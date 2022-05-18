@@ -183,10 +183,11 @@ auto PayDividendVisitor::Trigger(
                 *thePayment,
                 "payDividend");    // todo: hardcoding.
             bReturnValue = bSent;  // <======= RETURN VALUE.
-            if (bSent)
+            if (bSent) {
                 m_lAmountPaidOut +=
                     lPayoutAmount;  // At the end of iterating all accounts, if
-                                    // m_lAmountPaidOut is less than
+            }
+            // m_lAmountPaidOut is less than
             // lTotalPayoutAmount, then we return to rest
             // to the sender.
         } else {
@@ -256,12 +257,13 @@ auto PayDividendVisitor::Trigger(
                     theSenderNymID,  // recipient nym (original sender.)
                     *theReturnPayment,
                     "payDividend");  // todo: hardcoding.
-                if (bSent)
+                if (bSent) {
                     m_lAmountReturned +=
                         lPayoutAmount;  // At the end of iterating all accounts,
-                                        // if m_lAmountPaidOut+m_lAmountReturned
-                                        // is less than lTotalPayoutAmount, then
-                                        // we return the rest to the sender.
+                }
+                // if m_lAmountPaidOut+m_lAmountReturned
+                // is less than lTotalPayoutAmount, then
+                // we return the rest to the sender.
             } else {
                 const auto strPayoutUnitTypeId =
                                String::Factory(payoutUnitTypeId),

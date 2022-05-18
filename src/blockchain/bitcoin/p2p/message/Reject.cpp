@@ -140,7 +140,7 @@ auto BitcoinP2PReject(
 
     if (expectedSize <= size) {
         extra->Concatenate(it, sizeof(bitcoin::BlockHeaderHashField));
-        it += sizeof(bitcoin::BlockHeaderHashField);
+        std::advance(it, sizeof(bitcoin::BlockHeaderHashField));
     }
     // -----------------------------------------------
     try {

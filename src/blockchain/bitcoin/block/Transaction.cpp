@@ -857,6 +857,7 @@ auto Transaction::serialize(
 
     std::memcpy(static_cast<void*>(it), &lockTime, sizeof(lockTime));
     std::advance(it, sizeof(lockTime));
+    // NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
     remaining -= sizeof(lockTime);
 
     return size;

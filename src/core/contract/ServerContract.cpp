@@ -176,6 +176,7 @@ Server::Server(
     first_time_init(lock);
 }
 
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
 Server::Server(
     const api::Session& api,
     const Nym_p& nym,
@@ -197,6 +198,7 @@ Server::Server(
     auto lock = Lock{lock_};
     init_serialized(lock);
 }
+// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
 Server::Server(const Server& rhs)
     : Signable(rhs)

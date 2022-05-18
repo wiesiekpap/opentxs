@@ -350,10 +350,11 @@ auto OTMarket::GetNym_OfferList(
         const bool bSelling = pOffer->IsAsk();
 
         if (pTrade->IsStopOrder()) {
-            if (pTrade->IsGreaterThan())
+            if (pTrade->IsGreaterThan()) {
                 pOfferData->stop_sign = ">";
-            else if (pTrade->IsLessThan())
+            } else if (pTrade->IsLessThan()) {
                 pOfferData->stop_sign = "<";
+            }
 
             if (!pOfferData->stop_sign.compare(">") ||
                 !pOfferData->stop_sign.compare("<")) {
@@ -437,12 +438,12 @@ auto OTMarket::GetRecentTradeList(Armored& ascOutput, std::int32_t& nTradeCount)
     const size_t sizeList = m_pTradeList->GetTradeDataMarketCount();
     nTradeCount = static_cast<std::int32_t>(sizeList);
 
-    if (nTradeCount == 0)
+    if (nTradeCount == 0) {
         return true;  // Success, but there are 0 trade datas to return. (empty
                       // list.)
 
-    // So now, let's pack the list into strOutput...
-    else if (nTradeCount > 0) {
+        // So now, let's pack the list into strOutput...
+    } else if (nTradeCount > 0) {
         OTDB::Storage* pStorage = OTDB::GetDefaultStorage();
         OT_ASSERT(nullptr != pStorage);
 
@@ -473,13 +474,15 @@ auto OTMarket::GetRecentTradeList(Armored& ascOutput, std::int32_t& nTradeCount)
             ascOutput.SetData(theData);
 
             return true;
-        } else
+        } else {
             LogError()(OT_PRETTY_CLASS())("Error while getting buffer data.")
                 .Flush();
-    } else
+        }
+    } else {
         LogError()(OT_PRETTY_CLASS())(
             "Error: nTradeCount with negative value: ")(nTradeCount)(".")
             .Flush();
+    }
 
     return false;
 }
@@ -493,7 +496,7 @@ auto OTMarket::GetOfferList(
 {
     nOfferCount = 0;  // Outputs the actual count of offers being returned.
 
-    if (0 == lDepth) lDepth = MAX_MARKET_QUERY_DEPTH;
+    if (0 == lDepth) { lDepth = MAX_MARKET_QUERY_DEPTH; }
 
     // Loop through the offers, up to some maximum depth, and then add each
     // as a data member to an offer list, then pack it into ascOutput.
@@ -510,15 +513,16 @@ auto OTMarket::GetOfferList(
     std::int32_t nTempDepth = 0;
 
     for (auto& it : m_mapBids) {
-        if (nTempDepth++ > lDepth) break;
+        if (nTempDepth++ > lDepth) { break; }
 
         OTOffer* pOffer = it.second;
         OT_ASSERT(nullptr != pOffer);
 
         const Amount& lPriceLimit = pOffer->GetPriceLimit();
 
-        if (0 == lPriceLimit)  // Skipping any market orders.
+        if (0 == lPriceLimit) {  // Skipping any market orders.
             continue;
+        }
 
         // OfferDataMarket
         std::unique_ptr<OTDB::BidData> pOfferData(dynamic_cast<OTDB::BidData*>(
@@ -558,7 +562,7 @@ auto OTMarket::GetOfferList(
     nTempDepth = 0;
 
     for (auto& it : m_mapAsks) {
-        if (nTempDepth++ > lDepth) break;
+        if (nTempDepth++ > lDepth) { break; }
 
         OTOffer* pOffer = it.second;
         OT_ASSERT(nullptr != pOffer);
@@ -601,8 +605,9 @@ auto OTMarket::GetOfferList(
 
     // Now pack the list into strOutput...
 
-    if (nOfferCount == 0)
+    if (nOfferCount == 0) {
         return true;  // Success, but there were zero offers found.
+    }
 
     if (nOfferCount > 0) {
         OTDB::Storage* pStorage = OTDB::GetDefaultStorage();
@@ -634,11 +639,13 @@ auto OTMarket::GetOfferList(
             ascOutput.SetData(theData);
 
             return true;
-        } else
+        } else {
             LogError()(OT_PRETTY_CLASS())("Error while getting buffer data.")
                 .Flush();
-    } else
+        }
+    } else {
         LogError()(OT_PRETTY_CLASS())("Invalid: nOfferCount is < 0.").Flush();
+    }
 
     return false;
 }
@@ -670,14 +677,15 @@ auto OTMarket::GetOffer(const std::int64_t& lTransactionNum) -> OTOffer*
 
         OT_ASSERT((nullptr != pOffer));
 
-        if (pOffer->GetTransactionNum() == lTransactionNum)
+        if (pOffer->GetTransactionNum() == lTransactionNum) {
             return pOffer;
-        else
+        } else {
             LogError()(OT_PRETTY_CLASS())(
                 "Expected Offer with transaction number ")(
                 lTransactionNum)(", but found ")(pOffer->GetTransactionNum())(
                 " inside. Bad data?")
                 .Flush();
+        }
     }
 
     return nullptr;
@@ -766,10 +774,11 @@ auto OTMarket::RemoveOffer(
         pSameOffer = nullptr;
     }
 
-    if (bReturnValue)
+    if (bReturnValue) {
         return SaveMarket(reason);  // <====== SAVE since an offer was removed.
-    else
+    } else {
         return false;
+    }
 }
 
 // This method demands an Offer reference in order to verify that it really
@@ -795,7 +804,7 @@ auto OTMarket::AddOffer(
             "Failed attempt to add invalid offer to market.")
             .Flush();
 
-        if (nullptr != pTrade) pTrade->FlagForRemoval();
+        if (nullptr != pTrade) { pTrade->FlagForRemoval(); }
     } else {
         // I store duplicate lists of offer pointers. Two multimaps ordered by
         // price,
@@ -886,14 +895,16 @@ auto OTMarket::LoadMarket() -> bool
     bool bSuccess =
         OTDB::Exists(api_, api_.DataFolder(), szFoldername, szFilename, "", "");
 
-    if (bSuccess) bSuccess = LoadContract(szFoldername, szFilename);  // todo ??
+    if (bSuccess) {
+        bSuccess = LoadContract(szFoldername, szFilename);  // todo ??
+    }
 
-    if (bSuccess) bSuccess = VerifySignature(*(GetCron()->GetServerNym()));
+    if (bSuccess) { bSuccess = VerifySignature(*(GetCron()->GetServerNym())); }
 
     // Load the list of recent market trades (informational only.)
     //
     if (bSuccess) {
-        if (nullptr != m_pTradeList) delete m_pTradeList;
+        if (nullptr != m_pTradeList) { delete m_pTradeList; }
 
         auto trade_files = api::Legacy::GetFilenameBin(str_MARKET_ID->Get());
 
@@ -956,12 +967,13 @@ auto OTMarket::SaveMarket(const PasswordPrompt& reason) -> bool
                 szFoldername,  // markets
                 szSubFolder,   // markets/recent
                 filename,
-                ""))  // markets/recent/<Market_ID>.bin
+                "")) {  // markets/recent/<Market_ID>.bin
             LogError()(OT_PRETTY_CLASS())(
                 "Error saving recent trades for Market: ")(
                 szFoldername)(api::Legacy::PathSeparator())(
                 szSubFolder)(api::Legacy::PathSeparator())(szFilename)(".")
                 .Flush();
+        }
     }
 
     return true;
@@ -1032,7 +1044,7 @@ auto OTMarket::GetLowestAskPrice() -> Amount
         while (0 == lPrice) {
             ++it;
 
-            if (it == m_mapAsks.end()) break;
+            if (it == m_mapAsks.end()) { break; }
 
             lPrice = it->first;
         }
@@ -1068,10 +1080,10 @@ void OTMarket::rollback_four_accounts(
     bool b4,
     const Amount& a4)
 {
-    if (b1) p1.Credit(a1);
-    if (b2) p2.Credit(a2);
-    if (b3) p3.Debit(a3);
-    if (b4) p4.Debit(a4);
+    if (b1) { p1.Credit(a1); }
+    if (b2) { p2.Credit(a2); }
+    if (b3) { p3.Debit(a3); }
+    if (b4) { p4.Debit(a4); }
 }
 
 // By the time this is called, we have already verified most things:
@@ -1415,47 +1427,51 @@ void OTMarket::ProcessTrade(
 
         // ...or generate them otherwise...
 
-        if (true == bSuccessLoadingFirstAsset)
+        if (true == bSuccessLoadingFirstAsset) {
             bSuccessLoadingFirstAsset =
                 theFirstAssetInbox->VerifyAccount(*pServerNym);
-        else
+        } else {
             bSuccessLoadingFirstAsset = theFirstAssetInbox->GenerateLedger(
                 theTrade.GetSenderAcctID(),
                 NOTARY_ID,
                 ledgerType::inbox,
                 true);  // bGenerateFile=true
+        }
 
-        if (true == bSuccessLoadingFirstCurrency)
+        if (true == bSuccessLoadingFirstCurrency) {
             bSuccessLoadingFirstCurrency =
                 theFirstCurrencyInbox->VerifyAccount(*pServerNym);
-        else
+        } else {
             bSuccessLoadingFirstCurrency =
                 theFirstCurrencyInbox->GenerateLedger(
                     theTrade.GetCurrencyAcctID(),
                     NOTARY_ID,
                     ledgerType::inbox,
                     true);  // bGenerateFile=true
+        }
 
-        if (true == bSuccessLoadingOtherAsset)
+        if (true == bSuccessLoadingOtherAsset) {
             bSuccessLoadingOtherAsset =
                 theOtherAssetInbox->VerifyAccount(*pServerNym);
-        else
+        } else {
             bSuccessLoadingOtherAsset = theOtherAssetInbox->GenerateLedger(
                 pOtherTrade->GetSenderAcctID(),
                 NOTARY_ID,
                 ledgerType::inbox,
                 true);  // bGenerateFile=true
+        }
 
-        if (true == bSuccessLoadingOtherCurrency)
+        if (true == bSuccessLoadingOtherCurrency) {
             bSuccessLoadingOtherCurrency =
                 theOtherCurrencyInbox->VerifyAccount(*pServerNym);
-        else
+        } else {
             bSuccessLoadingOtherCurrency =
                 theOtherCurrencyInbox->GenerateLedger(
                     pOtherTrade->GetCurrencyAcctID(),
                     NOTARY_ID,
                     ledgerType::inbox,
                     true);  // bGenerateFile=true
+        }
 
         if ((false == bSuccessLoadingFirstAsset) ||
             (false == bSuccessLoadingFirstCurrency)) {
@@ -1995,8 +2011,9 @@ void OTMarket::ProcessTrade(
                     // never exceeds 50 elements total.
                     //
                     while (m_pTradeList->GetTradeDataMarketCount() >
-                           MAX_MARKET_QUERY_DEPTH)
+                           MAX_MARKET_QUERY_DEPTH) {
                         m_pTradeList->RemoveTradeDataMarket(0);
+                    }
                 }
 
                 // Account balances have changed based on these trades
@@ -2346,8 +2363,8 @@ void OTMarket::ProcessTrade(
                 // removal. No other trades will process against it and
                 // it will be removed from market soon.
                 //
-                if (bFirstTraderIsBroke) theTrade.FlagForRemoval();
-                if (bOtherTraderIsBroke) pOtherTrade->FlagForRemoval();
+                if (bFirstTraderIsBroke) { theTrade.FlagForRemoval(); }
+                if (bOtherTraderIsBroke) { pOtherTrade->FlagForRemoval(); }
 
             }  // success == false
         }      // all four boxes were successfully loaded or generated.
@@ -2437,12 +2454,14 @@ auto OTMarket::ProcessTrade(
 
     // If I'm trying to SELL something, then I care about the highest
     // bidder.
-    if (theOffer.IsAsk()) lRelevantPrice = GetHighestBidPrice();
+    if (theOffer.IsAsk()) {
+        lRelevantPrice = GetHighestBidPrice();
 
-    // ...But if I'm trying to BUY something, then I care about the
-    // lowest ask price.
-    else
+        // ...But if I'm trying to BUY something, then I care about the
+        // lowest ask price.
+    } else {
         lRelevantPrice = GetLowestAskPrice();
+    }
 
     // If there were no relevant offers (or if they were all market
     // orders, aka: 0 == lRelevantPrice), AND if *I* am a market order,
@@ -2512,11 +2531,12 @@ auto OTMarket::ProcessTrade(
             // needs to wait its turn! It will get its one shot WHEN ITS
             // TURN comes.
             //
-            if (pBid->IsMarketOrder())
+            if (pBid->IsMarketOrder()) {
                 //          if (theOffer.IsMarketOrder() &&
                 // pBid->IsMarketOrder())
                 //              continue;
                 break;
+            }
             // NOTE: Why break, instead of continue? Because since we
             // are looping through the bids, from the HIGHEST down to
             // the LOWEST, and since market orders have a ZERO price, we
@@ -2548,7 +2568,7 @@ auto OTMarket::ProcessTrade(
                     (theOffer.GetAmountAvailable() >=
                      pBid->GetMinimumIncrement()) &&
                     (nullptr != pBid->GetTrade()) &&
-                    !pBid->GetTrade()->IsFlaggedForRemoval())
+                    !pBid->GetTrade()->IsFlaggedForRemoval()) {
 
                     ProcessTrade(
                         wallet,
@@ -2556,6 +2576,7 @@ auto OTMarket::ProcessTrade(
                         theOffer,
                         *pBid,
                         reason);  // <========
+                }
             }
 
             // Else, the bid is lower than I am willing to sell. (And
@@ -2617,10 +2638,11 @@ auto OTMarket::ProcessTrade(
             // needs to wait its turn! It will get its one shot WHEN ITS
             // TURN comes.
             //
-            if (pAsk->IsMarketOrder())
+            if (pAsk->IsMarketOrder()) {
                 //          if (theOffer.IsMarketOrder() &&
                 // pAsk->IsMarketOrder())
                 continue;
+            }
 
             // I'm buying.
             // If the ask price is less than, or equal to, my price
@@ -2644,10 +2666,11 @@ auto OTMarket::ProcessTrade(
                     (theOffer.GetAmountAvailable() >=
                      pAsk->GetMinimumIncrement()) &&
                     (nullptr != pAsk->GetTrade()) &&
-                    !pAsk->GetTrade()->IsFlaggedForRemoval())
+                    !pAsk->GetTrade()->IsFlaggedForRemoval()) {
 
                     ProcessTrade(
                         wallet, theTrade, theOffer, *pAsk, reason);  // <======
+                }
             }
             // Else, the ask price is higher than I am willing to pay.
             // (And all the remaining sellers are even HIGHER.)
@@ -2683,7 +2706,9 @@ auto OTMarket::ProcessTrade(
     // Market orders only process once.
     // (So tell the caller to remove it.)
     //
-    if (theOffer.IsMarketOrder()) return false;  // remove from market.
+    if (theOffer.IsMarketOrder()) {
+        return false;  // remove from market.
+    }
 
     return true;  // stay on the market for now.
 }

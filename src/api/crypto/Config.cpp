@@ -88,43 +88,51 @@ auto Config::GetSetAll() const -> bool
     if (!GetSetValue(
             OT_KEY_ITERATION_COUNT,
             OT_DEFAULT_ITERATION_COUNT,
-            sp_nIterationCount))
+            sp_nIterationCount)) {
         return false;
+    }
     if (!GetSetValue(
             OT_KEY_SYMMETRIC_SALT_SIZE,
             OT_DEFAULT_SYMMETRIC_SALT_SIZE,
-            sp_nSymmetricSaltSize))
+            sp_nSymmetricSaltSize)) {
         return false;
+    }
     if (!GetSetValue(
             OT_KEY_SYMMETRIC_KEY_SIZE,
             OT_DEFAULT_SYMMETRIC_KEY_SIZE,
-            sp_nSymmetricKeySize))
+            sp_nSymmetricKeySize)) {
         return false;
+    }
     if (!GetSetValue(
             OT_KEY_SYMMETRIC_KEY_SIZE_MAX,
             OT_DEFAULT_SYMMETRIC_KEY_SIZE_MAX,
-            sp_nSymmetricKeySizeMax))
+            sp_nSymmetricKeySizeMax)) {
         return false;
+    }
     if (!GetSetValue(
             OT_KEY_SYMMETRIC_IV_SIZE,
             OT_DEFAULT_SYMMETRIC_IV_SIZE,
-            sp_nSymmetricIvSize))
+            sp_nSymmetricIvSize)) {
         return false;
+    }
     if (!GetSetValue(
             OT_KEY_SYMMETRIC_BUFFER_SIZE,
             OT_DEFAULT_SYMMETRIC_BUFFER_SIZE,
-            sp_nSymmetricBufferSize))
+            sp_nSymmetricBufferSize)) {
         return false;
+    }
     if (!GetSetValue(
             OT_KEY_PUBLIC_KEYSIZE,
             OT_DEFAULT_PUBLIC_KEYSIZE,
-            sp_nPublicKeysize))
+            sp_nPublicKeysize)) {
         return false;
+    }
     if (!GetSetValue(
             OT_KEY_PUBLIC_KEYSIZE_MAX,
             OT_DEFAULT_PUBLIC_KEYSIZE_MAX,
-            sp_nPublicKeysizeMax))
+            sp_nPublicKeysizeMax)) {
         return false;
+    }
 
     return config_.Save();
 }

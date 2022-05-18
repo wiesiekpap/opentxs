@@ -179,10 +179,11 @@ auto Cheque::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         SetSenderNymID(SENDER_NYM_ID);
 
         // Recipient ID
-        if (m_bHasRecipient)
+        if (m_bHasRecipient) {
             m_RECIPIENT_NYM_ID->SetString(strRecipientNymID);
-        else
+        } else {
             m_RECIPIENT_NYM_ID->clear();
+        }
 
         // Remitter ID (for vouchers)
         if (m_bHasRemitter) {
@@ -291,7 +292,7 @@ auto Cheque::IssueCheque(
 
     m_bHasRemitter = false;  // OTCheque::SetAsVoucher() will set this to true.
 
-    if (m_lAmount < 0) m_strContractType->Set("INVOICE");
+    if (m_lAmount < 0) { m_strContractType->Set("INVOICE"); }
 
     return true;
 }

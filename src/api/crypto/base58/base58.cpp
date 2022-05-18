@@ -22,7 +22,7 @@ auto DecodeBase58(const char* psz, std::vector<unsigned char>& vch) -> bool
     if (nullptr == psz) { return false; }
 
     // Skip leading spaces.
-    while (*psz && isspace(*psz)) psz++;
+    while (*psz && isspace(*psz)) { psz++; }
     // Skip and count leading '1's.
     int zeroes = 0;
     while (*psz == '1') {
@@ -36,7 +36,7 @@ auto DecodeBase58(const char* psz, std::vector<unsigned char>& vch) -> bool
     while (*psz && !isspace(*psz)) {
         // Decode base58 character
         const char* ch = strchr(pszBase58, *psz);
-        if (ch == nullptr) return false;
+        if (ch == nullptr) { return false; }
         // Apply "b256 = b256 * 58 + ch".
         auto carry = static_cast<int>(ch - pszBase58);
         for (auto it = b256.rbegin(); it != b256.rend(); it++) {
@@ -48,15 +48,15 @@ auto DecodeBase58(const char* psz, std::vector<unsigned char>& vch) -> bool
         psz++;
     }
     // Skip trailing spaces.
-    while (isspace(*psz)) psz++;
-    if (*psz != 0) return false;
+    while (isspace(*psz)) { psz++; }
+    if (*psz != 0) { return false; }
     // Skip leading zeroes in b256.
     auto it = b256.begin();
-    while (it != b256.end() && *it == 0) it++;
+    while (it != b256.end() && *it == 0) { it++; }
     // Copy result into output vector.
     vch.reserve(zeroes + (b256.end() - it));
     vch.assign(zeroes, 0x00);
-    while (it != b256.end()) vch.push_back(*(it++));
+    while (it != b256.end()) { vch.push_back(*(it++)); }
     return true;
 }
 
@@ -88,12 +88,12 @@ auto EncodeBase58(const unsigned char* pbegin, const unsigned char* pend)
     }
     // Skip leading zeroes in base58 result.
     auto it = b58.begin();
-    while (it != b58.end() && *it == 0) it++;
+    while (it != b58.end() && *it == 0) { it++; }
     // Translate the result into a string.
     std::string str;
     str.reserve(zeroes + (b58.end() - it));
     str.assign(zeroes, '1');
-    while (it != b58.end()) str += pszBase58[*(it++)];
+    while (it != b58.end()) { str += pszBase58[*(it++)]; }
     return str;
 }
 }  // namespace bitcoin_base58

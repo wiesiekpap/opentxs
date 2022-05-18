@@ -319,12 +319,13 @@ void UserCommandProcessor::check_acknowledgements(ReplyMessage& reply) const
                     // (pReplyNotice is deleted, below this point,
                     // automatically by the above Remove call.)
 
-                    if (!bDeleted || !bRemoved)
+                    if (!bDeleted || !bRemoved) {
                         LogError()(OT_PRETTY_CLASS())(
                             "Failed trying "
                             "to delete a box receipt, or "
                             "while removing its stub from the Nymbox.")
                             .Flush();
+                    }
 
                     if (bRemoved) { bIsDirtyNymbox = true; }
                 }
@@ -1266,10 +1267,9 @@ auto UserCommandProcessor::cmd_get_transaction_numbers(
     NumList theNumlist;
 
     for (std::int32_t i = 0; i < ISSUE_NUMBER_BATCH; i++) {
-        TransactionNumber number{0};
+        auto number = TransactionNumber{0};
 
         if (!server_.GetTransactor().issueNextTransactionNumber(number)) {
-            number = 0;
             LogError()(OT_PRETTY_CLASS())(
                 "Error issuing next transaction number.")
                 .Flush();
@@ -2588,12 +2588,11 @@ void UserCommandProcessor::drop_reply_notice_to_nymbox(
         return;
     }
 
-    TransactionNumber lReplyNoticeTransNum{0};
+    auto lReplyNoticeTransNum = TransactionNumber{};
     const bool bGotNextTransNum =
         server.GetTransactor().issueNextTransactionNumber(lReplyNoticeTransNum);
 
     if (!bGotNextTransNum) {
-        lReplyNoticeTransNum = 0;
         LogError()(OT_PRETTY_CLASS())(
             "Error getting next transaction number for a "
             "transactionType::replyNotice.")

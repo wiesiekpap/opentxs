@@ -83,7 +83,7 @@ public:
     ~String() override;
 
 protected:
-    virtual void Release_String();
+    void Release_String();
 
     explicit String(const opentxs::Armored& value);
     explicit String(const opentxs::Signature& value);

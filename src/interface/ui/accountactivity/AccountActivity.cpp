@@ -109,6 +109,7 @@ auto AccountActivity::SetCallbacks(Callbacks&& cb) noexcept -> void
 AccountActivity::~AccountActivity()
 {
     wait_for_startup();
+    ClearCallbacks();
     signal_shutdown().get();
     shutdown_qt();
 }

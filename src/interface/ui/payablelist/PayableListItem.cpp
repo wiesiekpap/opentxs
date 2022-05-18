@@ -46,6 +46,7 @@ PayableListItem::PayableListItem(
     , payment_code_(paymentcode)
     , currency_(currency)
 {
+    init_contact_list();
 }
 
 auto PayableListItem::PaymentCode() const noexcept -> UnallocatedCString

@@ -268,8 +268,9 @@ auto Key::GetPublicKeysBySignature(
     // Key type was not specified, because we only want keys that match the
     // metadata on theSignature.
     // And if theSignature has no metadata, then we want to return 0 keys.
-    if (('0' == cKeyType) && !theSignature.getMetaData().HasMetadata())
+    if (('0' == cKeyType) && !theSignature.getMetaData().HasMetadata()) {
         return 0;
+    }
 
     // By this point, we know that EITHER exact metadata matches must occur, and
     // the signature DOES have metadata, ('0')

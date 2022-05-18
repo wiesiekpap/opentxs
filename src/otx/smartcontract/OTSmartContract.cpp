@@ -812,7 +812,7 @@ auto OTSmartContract::IsValidOpeningNumber(
         OTParty* pParty = it.second;
         OT_ASSERT(nullptr != pParty);
 
-        if (pParty->GetOpeningTransNo() == lOpeningNum) return true;
+        if (pParty->GetOpeningTransNo() == lOpeningNum) { return true; }
     }
 
     return false;
@@ -829,7 +829,7 @@ auto OTSmartContract::HasTransactionNum(const std::int64_t& lInput) const
         const OTParty* pParty = it.second;
         OT_ASSERT(nullptr != pParty);
 
-        if (pParty->HasTransactionNum(lInput)) return true;
+        if (pParty->HasTransactionNum(lInput)) { return true; }
     }
 
     return false;
@@ -2402,13 +2402,14 @@ auto OTSmartContract::StashFunds(
 
         // ...or generate them otherwise...
 
-        if (true == bSuccessLoadingPartyInbox)
+        if (true == bSuccessLoadingPartyInbox) {
             bSuccessLoadingPartyInbox =
                 thePartyInbox->VerifyAccount(*pServerNym);
-        else
+        } else {
             LogError()(OT_PRETTY_CLASS())("Failed trying to load "
                                           "party's inbox.")
                 .Flush();
+        }
         //            OT_FAIL_MSG("ASSERT:  TRYING TO GENERATE INBOX IN STASH
         // FUNDS!!!\n");
         //            bSuccessLoadingPartyInbox        =
@@ -2561,9 +2562,9 @@ auto OTSmartContract::StashFunds(
                                                    // enough funds to
                                                    // successfully debit.
 
-                            if (bStashSuccess)
+                            if (bStashSuccess) {
                                 bSuccess = true;
-                            else
+                            } else {
                                 LogError()(OT_PRETTY_CLASS())(
                                     "ERROR: "
                                     "Debited stash account and credited "
@@ -2572,6 +2573,7 @@ auto OTSmartContract::StashFunds(
                                     "record inside the smart contract "
                                     "itself.")
                                     .Flush();
+                            }
                         }
                     } else {
                         LogError()(OT_PRETTY_CLASS())(
@@ -2620,9 +2622,9 @@ auto OTSmartContract::StashFunds(
                                                    // enough funds to
                                                    // successfully debit.
 
-                            if (bStashSuccess)
+                            if (bStashSuccess) {
                                 bSuccess = true;
-                            else
+                            } else {
                                 LogError()(OT_PRETTY_CLASS())(
                                     "ERROR: "
                                     "Debited party account and credited "
@@ -2631,6 +2633,7 @@ auto OTSmartContract::StashFunds(
                                     "record inside the smart contract "
                                     "itself.")
                                     .Flush();
+                            }
                         }
                     } else {
                         LogError()(OT_PRETTY_CLASS())(
@@ -3392,9 +3395,10 @@ auto OTSmartContract::ProcessCron(const PasswordPrompt& reason) -> bool
 
     // START DATE --------------------------------
     // Okay, so it's not expired. But might not have reached START DATE yet...
-    if (!VerifyCurrentDate())
+    if (!VerifyCurrentDate()) {
         return true;  // The Payment Plan is not yet valid, so we return. BUT,
-                      // we also
+    }
+    // we also
     // return TRUE, so it will STAY on Cron until it BECOMES valid.
 
     // Make sure there are transaction numbers available in Cron.
@@ -3597,11 +3601,12 @@ void OTSmartContract::ExecuteClauses(
                                               "smartcontract trans# ")(
                     GetTransactionNum())(", clause: ")(str_clause_name)(".")
                     .Flush();
-            } else
+            } else {
                 LogConsole()(OT_PRETTY_CLASS())("Success executing "
                                                 "smartcontract trans# ")(
                     GetTransactionNum())(", clause: ")(str_clause_name)(".")
                     .Flush();
+            }
 
             //            For now, I've decided to allow ALL clauses to trigger
             // on the hook. The flag only matters after
@@ -4550,18 +4555,20 @@ auto OTSmartContract::VerifySmartContract(
         (!bAreAnyInvalidParties && !bAreAnyInvalidAccounts);  // <=== THE RETURN
                                                               // VALUE
 
-    if (bAreAnyInvalidParties)
+    if (bAreAnyInvalidParties) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failure: There are invalid party(s) on "
             "this smart contract.")
             .Flush();
+    }
 
-    if (bAreAnyInvalidAccounts)
+    if (bAreAnyInvalidAccounts) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failure: there are invalid account(s) or "
             "authorized agent(s) on this smart "
             "contract.")
             .Flush();
+    }
 
     // IF we marked the numbers as IN USE (bBurnTransNo) but then FAILURE
     // occurred, then we need to CLOSE the opening numbers (RemoveIssuedNum)
@@ -4641,8 +4648,9 @@ void OTSmartContract::CloseoutOpeningNumbers(const PasswordPrompt& reason)
         if (GetTransactionNum() !=
             // We skip the activating Nym. (His is already closed-out in
             // NotarizeTransaction.)
-            pParty->GetOpeningTransNo())
+            pParty->GetOpeningTransNo()) {
             pParty->CloseoutOpeningNumber(strNotaryID, reason);
+        }
     }
 }
 
@@ -4988,7 +4996,7 @@ auto OTSmartContract::GetCountStashAccts() const -> std::int32_t
 //
 auto OTSmartContract::Compare(OTScriptable& rhs) const -> bool
 {
-    if (!OTScriptable::Compare(rhs)) return false;
+    if (!OTScriptable::Compare(rhs)) { return false; }
 
     if (GetCountStashes() > 0) {
         LogError()(OT_PRETTY_CLASS())(
@@ -5033,8 +5041,9 @@ auto OTSmartContract::Compare(OTScriptable& rhs) const -> bool
 
         if ((GetNotaryID() == pSmartContract->GetNotaryID()) &&
             (GetValidFrom() == pSmartContract->GetValidFrom()) &&
-            (GetValidTo() == pSmartContract->GetValidTo()))
+            (GetValidTo() == pSmartContract->GetValidTo())) {
             return true;
+        }
     }
 
     return false;
@@ -5053,7 +5062,7 @@ void OTSmartContract::UpdateContents(const PasswordPrompt& reason)
 
     auto strCanceler = String::Factory();
 
-    if (m_bCanceled) m_pCancelerNymID->GetString(strCanceler);
+    if (m_bCanceled) { m_pCancelerNymID->GetString(strCanceler); }
 
     const auto tCreation =
         formatTimestamp(m_bCalculatingID ? Time{} : GetCreationDate());
@@ -5110,12 +5119,13 @@ void OTSmartContract::UpdateContents(const PasswordPrompt& reason)
             // from the activator Nym.
             // I preserved the loop anyway. Call me crazy. But I'm still
             // displaying an error if there's more than one.
-            if (i > 0)
+            if (i > 0) {
                 LogError()(OT_PRETTY_CLASS())(
                     "ERROR: There's only ever "
                     "supposed to be a single closing number here (for "
                     "smart contracts).")
                     .Flush();
+            }
         }
     }
 
@@ -5252,8 +5262,9 @@ auto OTSmartContract::ProcessXMLNode(irr::io::IrrXMLReader*& xml)
         if (strCanceled->Exists() && strCanceled->Compare("true")) {
             m_bCanceled = true;
 
-            if (strCancelerNymID->Exists())
+            if (strCancelerNymID->Exists()) {
                 m_pCancelerNymID->SetString(strCancelerNymID);
+            }
             // else log
         } else {
             m_bCanceled = false;
@@ -5323,8 +5334,9 @@ auto OTSmartContract::ProcessXMLNode(irr::io::IrrXMLReader*& xml)
                                           "accountList.")
                 .Flush();
             nReturnVal = (-1);
-        } else
+        } else {
             nReturnVal = 1;
+        }
     } else if (strNodeName->Compare("stash"))  // the actual stashes.
     {
         const auto strStashName =
@@ -5734,13 +5746,14 @@ auto OTSmartContract::MoveFunds(
 
         // ...or generate them otherwise...
 
-        if (true == bSuccessLoadingSenderInbox)
+        if (true == bSuccessLoadingSenderInbox) {
             bSuccessLoadingSenderInbox =
                 theSenderInbox->VerifyAccount(*pServerNym);
-        else
+        } else {
             LogError()(OT_PRETTY_CLASS())("ERROR loading sender inbox "
                                           "ledger.")
                 .Flush();
+        }
 
         if (true == bSuccessLoadingRecipientInbox) {
             bSuccessLoadingRecipientInbox =
@@ -5874,11 +5887,12 @@ auto OTSmartContract::MoveFunds(
                     // (EVEN THOUGH we'll just "NOT SAVE" after any failure, so
                     // it's really superfluous.)
                     //
-                    if (!bMoveRecipient)
+                    if (!bMoveRecipient) {
                         sourceAccount.get().Credit(lAmount);  // put the money
                                                               // back
-                    else
+                    } else {
                         bSuccess = true;
+                    }
                 }
 
                 // If ANY of these failed, then roll them all back and break.

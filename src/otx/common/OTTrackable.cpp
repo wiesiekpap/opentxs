@@ -70,7 +70,7 @@ auto OTTrackable::HasTransactionNum(const std::int64_t& lInput) const -> bool
 
 void OTTrackable::GetAllTransactionNumbers(NumList& numlistOutput) const
 {
-    if (m_lTransactionNum > 0) numlistOutput.Add(m_lTransactionNum);
+    if (m_lTransactionNum > 0) { numlistOutput.Add(m_lTransactionNum); }
 }
 
 void OTTrackable::Release_Trackable()

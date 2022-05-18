@@ -113,7 +113,7 @@ FilterOracle::FilterOracle(
         return socket;
     }())
     , cb_([this](const auto type, const auto& pos) {
-        if (!running_) return;
+        if (!running_) { return; }
 
         auto lock = rLock{lock_};
         new_tip(lock, type, pos);

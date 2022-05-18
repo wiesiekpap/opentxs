@@ -197,20 +197,21 @@ auto ConfigLoader::load(
 
         bool bIsNewKey = false;
 
-        if (nullptr == szValue)
+        if (nullptr == szValue) {
             config.CheckSet_str(
                 String::Factory("permissions"),
                 String::Factory("override_nym_id"),
                 String::Factory(),
                 strValue,
                 bIsNewKey);
-        else
+        } else {
             config.CheckSet_str(
                 String::Factory("permissions"),
                 String::Factory("override_nym_id"),
                 String::Factory(szValue),
                 strValue,
                 bIsNewKey);
+        }
 
         ServerSettings::SetOverrideNymID(strValue->Get());
     }

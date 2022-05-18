@@ -82,7 +82,7 @@ auto OTCron::LoadCron() -> bool
 
     bool bSuccess = LoadContract(szFoldername, szFilename);
 
-    if (bSuccess) bSuccess = VerifySignature(*(GetServerNym()));
+    if (bSuccess) { bSuccess = VerifySignature(*(GetServerNym())); }
 
     return bSuccess;
 }
@@ -105,8 +105,9 @@ auto OTCron::SaveCron() -> bool
             szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
         return false;
-    } else
+    } else {
         return true;
+    }
 }
 
 // Loops through ALL markets, and calls pMarket->GetNym_OfferList(NYM_ID,
@@ -140,15 +141,16 @@ auto OTCron::GetNym_OfferList(
         {
             // may wish to add a log later. Anyway, keep iterationg and
             // appending, then send back whatever we have.
-        } else  // Success!
+        } else {  // Success!
             nOfferCount += nNymOfferCount;
+        }
     }
 
     // Now pack the list into strOutput...
-    if (nOfferCount == 0)
+    if (nOfferCount == 0) {
         return true;  // Success, but 0 offers being returned. (List is empty.)
 
-    else if (nOfferCount > 0) {
+    } else if (nOfferCount > 0) {
         OTDB::Storage* pStorage = OTDB::GetDefaultStorage();
         OT_ASSERT(nullptr != pStorage);
 
@@ -181,16 +183,18 @@ auto OTCron::GetNym_OfferList(
             ascOutput.SetData(theData);
 
             return true;
-        } else
+        } else {
             LogError()(OT_PRETTY_CLASS())(
                 "Null returned, or bad size, while getting buffer data in "
                 "OTCron::GetNym_OfferList.")
                 .Flush();
-    } else
+        }
+    } else {
         LogError()(OT_PRETTY_CLASS())(
             "Error: Less-than-zero nOfferCount in "
             "OTCron::GetNym_OfferList: ")(nOfferCount)(".")
             .Flush();
+    }
 
     return false;
 }
@@ -330,22 +334,24 @@ auto OTCron::GetMarketList(Armored& ascOutput, std::int32_t& nMarketCount)
             //            bSuccessSetData = ascOutput.SetData(theData);
 
             return true;
-        } else
+        } else {
             LogError()(OT_PRETTY_CLASS())(
                 "0 size, or null return value, "
                 "while getting raw data from packed buffer.")
                 .Flush();
-    } else
+        }
+    } else {
         LogError()(OT_PRETTY_CLASS())("nMarketCount is less than zero: ")(
             nMarketCount)(".")
             .Flush();
+    }
 
     return false;
 }
 
 auto OTCron::GetTransactionCount() const -> std::int32_t
 {
-    if (m_listTransactionNumbers.empty()) return 0;
+    if (m_listTransactionNumbers.empty()) { return 0; }
 
     return static_cast<std::int32_t>(m_listTransactionNumbers.size());
 }
@@ -359,7 +365,7 @@ void OTCron::AddTransactionNumber(const std::int64_t& lTransactionNum)
 // payment plans until the server object replenishes this list.
 auto OTCron::GetNextTransactionNumber() -> std::int64_t
 {
-    if (m_listTransactionNumbers.empty()) return 0;
+    if (m_listTransactionNumbers.empty()) { return 0; }
 
     std::int64_t lTransactionNum = m_listTransactionNumbers.front();
 
@@ -685,7 +691,7 @@ void OTCron::ProcessCronItems()
 
         bNeedToSave = true;
     }
-    if (bNeedToSave) SaveCron();
+    if (bNeedToSave) { SaveCron(); }
 }
 
 // OTCron IS responsible for cleaning up theItem, and takes ownership.
@@ -784,16 +790,17 @@ auto OTCron::AddCronItem(
             // Since we added an item to the Cron, we SAVE it.
             bSuccess = SaveCron();
 
-            if (bSuccess)
+            if (bSuccess) {
                 LogConsole()(OT_PRETTY_CLASS())(
                     "New CronItem has been added to Cron: ")(
                     theItem->GetTransactionNum())(".")
                     .Flush();
-            else
+            } else {
                 LogError()(OT_PRETTY_CLASS())(
                     "Error saving while adding new CronItem to Cron: ")(
                     theItem->GetTransactionNum())(".")
                     .Flush();
+            }
         }
 
         return bSuccess;
@@ -896,7 +903,7 @@ auto OTCron::FindItemOnMultimap(std::int64_t lTransactionNum)
         auto pItem = itt->second;
         OT_ASSERT(false != bool(pItem));
 
-        if (pItem->GetTransactionNum() == lTransactionNum) break;
+        if (pItem->GetTransactionNum() == lTransactionNum) { break; }
 
         ++itt;
     }
@@ -960,10 +967,12 @@ auto OTCron::GetItemByValidOpeningNum(std::int64_t lOpeningNum)
             auto pItem = it.second;
             OT_ASSERT(false != bool(pItem));
 
-            if (pItem->IsValidOpeningNumber(lOpeningNum))  // Todo optimization.
+            if (pItem->IsValidOpeningNumber(lOpeningNum)) {  // Todo
+                                                             // optimization.
                 // Probably can remove
                 // this check.
                 return pItem;
+            }
         }
     }
     // Found it!
@@ -1035,14 +1044,15 @@ auto OTCron::AddMarket(
                                     // bSaveMarketFile is false, I don't want to
                                     // save here. that's why it's in this block.
 
-            if (bSuccess)
+            if (bSuccess) {
                 LogDebug()(OT_PRETTY_CLASS())(
                     "New Market has been added to Cron.")
                     .Flush();
-            else
+            } else {
                 LogError()(OT_PRETTY_CLASS())(
                     "Error saving while adding new Market to Cron.")
                     .Flush();
+            }
         }
 
         return bSuccess;
@@ -1117,12 +1127,13 @@ auto OTCron::GetMarket(const Identifier& MARKET_ID) -> std::shared_ptr<OTMarket>
         const auto LOOP_MARKET_ID = Identifier::Factory(*pMarket);
         const auto str_LOOP_MARKET_ID = String::Factory(LOOP_MARKET_ID);
 
-        if (MARKET_ID == LOOP_MARKET_ID)
+        if (MARKET_ID == LOOP_MARKET_ID) {
             return pMarket;
-        else
+        } else {
             LogError()(OT_PRETTY_CLASS())("Expected Market with ID: ")(
                 std_MARKET_ID)(" but found ")(str_LOOP_MARKET_ID)(".")
                 .Flush();
+        }
     }
 
     return nullptr;

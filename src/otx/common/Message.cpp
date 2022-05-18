@@ -490,7 +490,7 @@ auto Message::updateContentsByType(Tag& parent) -> bool
 {
     OTMessageStrategy* strategy =
         messageStrategyManager.findStrategy(m_strCommand->Get());
-    if (!strategy) return false;
+    if (!strategy) { return false; }
     strategy->writeXml(*this, parent);
     return true;
 }
@@ -521,7 +521,7 @@ auto Message::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
     OTMessageStrategy* strategy =
         messageStrategyManager.findStrategy(xml->getNodeName());
-    if (!strategy) return 0;
+    if (!strategy) { return 0; }
     return strategy->processXml(*this, xml);
 }
 
@@ -539,7 +539,7 @@ auto Message::processXmlNodeAckReplies(
 
     m_AcknowledgedReplies.Release();
 
-    if (strDepth->Exists()) m_AcknowledgedReplies.Add(strDepth);
+    if (strDepth->Exists()) { m_AcknowledgedReplies.Add(strDepth); }
 
     return 1;
 }
@@ -565,8 +565,9 @@ auto Message::processXmlNodeNotaryMessage(
 
     auto strDateSigned = String::Factory(xml->getAttributeValue("dateSigned"));
 
-    if (strDateSigned->Exists())
+    if (strDateSigned->Exists()) {
         m_lTime = Clock::to_time_t(parseTimestamp(strDateSigned->Get()));
+    }
 
     LogVerbose()(OT_PRETTY_CLASS())(
         "===> Loading XML for Message into memory structures... ")
@@ -709,7 +710,7 @@ public:
 
         auto strDepth = String::Factory(xml->getAttributeValue("depth"));
 
-        if (strDepth->GetLength() > 0) m.m_lDepth = strDepth->ToLong();
+        if (strDepth->GetLength() > 0) { m.m_lDepth = strDepth->ToLong(); }
 
         LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
@@ -762,13 +763,14 @@ public:
 
         auto strDepth = String::Factory(xml->getAttributeValue("depth"));
 
-        if (strDepth->GetLength() > 0) m.m_lDepth = strDepth->ToLong();
+        if (strDepth->GetLength() > 0) { m.m_lDepth = strDepth->ToLong(); }
 
         const char* pElementExpected = nullptr;
-        if (m.m_bSuccess && (m.m_lDepth > 0))
+        if (m.m_bSuccess && (m.m_lDepth > 0)) {
             pElementExpected = "messagePayload";
-        else if (!m.m_bSuccess)
+        } else if (!m.m_bSuccess) {
             pElementExpected = "inReferenceTo";
+        }
 
         if (nullptr != pElementExpected) {
             auto ascTextExpected = Armored::Factory();
@@ -782,24 +784,26 @@ public:
                 return (-1);  // error condition
             }
 
-            if (m.m_bSuccess)
+            if (m.m_bSuccess) {
                 m.m_ascPayload->Set(ascTextExpected);
-            else
+            } else {
                 m.m_ascInReferenceTo = ascTextExpected;
+            }
         }
 
-        if (m.m_bSuccess)
+        if (m.m_bSuccess) {
             LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
                 m.m_bSuccess ? "SUCCESS"
                              : "FAILURE")(" NymID:    ")(m.m_strNymID)(
                 " NotaryID: ")(m.m_strNotaryID)(" MarketID: ")(m.m_strNymID2)
                 .Flush();  // m_ascPayload.Get()
-        else
+        } else {
             LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
                 m.m_bSuccess ? "SUCCESS"
                              : "FAILURE")(" NymID:    ")(m.m_strNymID)(
                 " NotaryID: ")(m.m_strNotaryID)(" MarketID: ")(m.m_strNymID2)
                 .Flush();  // m_ascInReferenceTo.Get()
+        }
 
         return 1;
     }
@@ -885,13 +889,14 @@ public:
 
         auto strDepth = String::Factory(xml->getAttributeValue("depth"));
 
-        if (strDepth->GetLength() > 0) m.m_lDepth = strDepth->ToLong();
+        if (strDepth->GetLength() > 0) { m.m_lDepth = strDepth->ToLong(); }
 
         const char* pElementExpected = nullptr;
-        if (m.m_bSuccess && (m.m_lDepth > 0))
+        if (m.m_bSuccess && (m.m_lDepth > 0)) {
             pElementExpected = "messagePayload";
-        else if (!m.m_bSuccess)
+        } else if (!m.m_bSuccess) {
             pElementExpected = "inReferenceTo";
+        }
 
         if (nullptr != pElementExpected) {
             auto ascTextExpected = Armored::Factory();
@@ -905,24 +910,26 @@ public:
                 return (-1);  // error condition
             }
 
-            if (m.m_bSuccess)
+            if (m.m_bSuccess) {
                 m.m_ascPayload->Set(ascTextExpected);
-            else
+            } else {
                 m.m_ascInReferenceTo = ascTextExpected;
+            }
         }
 
-        if (m.m_bSuccess)
+        if (m.m_bSuccess) {
             LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
                 m.m_bSuccess ? "SUCCESS"
                              : "FAILURE")(" NymID:    ")(m.m_strNymID)(
                 " NotaryID: ")(m.m_strNotaryID)(" MarketID: ")(m.m_strNymID2)
                 .Flush();  // m_ascPayload.Get()
-        else
+        } else {
             LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
                 m.m_bSuccess ? "SUCCESS"
                              : "FAILURE")(" NymID:    ")(m.m_strNymID)(
                 " NotaryID: ")(m.m_strNotaryID)(" MarketID: ")(m.m_strNymID2)
                 .Flush();  // m_ascInReferenceTo.Get()
+        }
 
         return 1;
     }
@@ -1004,13 +1011,14 @@ public:
 
         auto strDepth = String::Factory(xml->getAttributeValue("depth"));
 
-        if (strDepth->GetLength() > 0) m.m_lDepth = strDepth->ToLong();
+        if (strDepth->GetLength() > 0) { m.m_lDepth = strDepth->ToLong(); }
 
         const char* pElementExpected = nullptr;
-        if (m.m_bSuccess && (m.m_lDepth > 0))
+        if (m.m_bSuccess && (m.m_lDepth > 0)) {
             pElementExpected = "messagePayload";
-        else if (!m.m_bSuccess)
+        } else if (!m.m_bSuccess) {
             pElementExpected = "inReferenceTo";
+        }
 
         if (nullptr != pElementExpected) {
             auto ascTextExpected = Armored::Factory();
@@ -1024,22 +1032,24 @@ public:
                 return (-1);  // error condition
             }
 
-            if (m.m_bSuccess)
+            if (m.m_bSuccess) {
                 m.m_ascPayload->Set(ascTextExpected);
-            else
+            } else {
                 m.m_ascInReferenceTo = ascTextExpected;
+            }
         }
 
-        if (m.m_bSuccess)
+        if (m.m_bSuccess) {
             LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
                 m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
                 .Flush();  // m_ascPayload.Get()
-        else
+        } else {
             LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
                 m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
                 .Flush();  // m_ascInReferenceTo.Get()
+        }
 
         return 1;
     }
@@ -1607,18 +1617,19 @@ public:
             m.m_ascPayload = ascTextExpected;
         }
 
-        if (m.m_bBool)
+        if (m.m_bBool) {
             LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
                 m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(" NotaryID: ")(
                 m.m_strNotaryID)(" Nym2 Public Key: ")(m.m_strNymPublicKey)
                 .Flush();
-        else
+        } else {
             LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
                 m.m_bSuccess ? "SUCCESS"
                              : "FAILURE")(" NymID:    ")(m.m_strNymID)(
                 " NymID2:    ")(m.m_strNymID2)(" NotaryID: ")(m.m_strNotaryID)
                 .Flush();
+        }
         // m.m_ascInReferenceTo.Get()
 
         return 1;
@@ -1658,8 +1669,9 @@ public:
         auto strAdjustment =
             String::Factory(xml->getAttributeValue("adjustment"));
 
-        if (strAdjustment->GetLength() > 0)
+        if (strAdjustment->GetLength() > 0) {
             m.m_lDepth = strAdjustment->ToLong();
+        }
 
         LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(
@@ -1707,8 +1719,9 @@ public:
         auto strTotalCredits =
             String::Factory(xml->getAttributeValue("totalCredits"));
 
-        if (strTotalCredits->GetLength() > 0)
+        if (strTotalCredits->GetLength() > 0) {
             m.m_lDepth = strTotalCredits->ToLong();
+        }
 
         LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
             m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
@@ -2687,13 +2700,13 @@ public:
         const auto strBoxType =
             String::Factory(xml->getAttributeValue("boxType"));
 
-        if (strBoxType->Compare("nymbox"))
+        if (strBoxType->Compare("nymbox")) {
             m.m_lDepth = 0;
-        else if (strBoxType->Compare("inbox"))
+        } else if (strBoxType->Compare("inbox")) {
             m.m_lDepth = 1;
-        else if (strBoxType->Compare("outbox"))
+        } else if (strBoxType->Compare("outbox")) {
             m.m_lDepth = 2;
-        else {
+        } else {
             m.m_lDepth = 0;
             LogError()(OT_PRETTY_CLASS())(
                 "Error: Expected boxType to be inbox, outbox, or nymbox, in "
@@ -2772,13 +2785,13 @@ public:
         const auto strBoxType =
             String::Factory(xml->getAttributeValue("boxType"));
 
-        if (strBoxType->Compare("nymbox"))
+        if (strBoxType->Compare("nymbox")) {
             m.m_lDepth = 0;
-        else if (strBoxType->Compare("inbox"))
+        } else if (strBoxType->Compare("inbox")) {
             m.m_lDepth = 1;
-        else if (strBoxType->Compare("outbox"))
+        } else if (strBoxType->Compare("outbox")) {
             m.m_lDepth = 2;
-        else {
+        } else {
             m.m_lDepth = 0;
             LogError()(OT_PRETTY_CLASS())(
                 "Error: Expected boxType to be inbox, outbox, or nymbox, in "
@@ -3272,10 +3285,11 @@ public:
         m.m_strNotaryID = String::Factory(xml->getAttributeValue("notaryID"));
 
         const char* pElementExpected;
-        if (m.m_bSuccess)
+        if (m.m_bSuccess) {
             pElementExpected = "nymboxLedger";
-        else
+        } else {
             pElementExpected = "inReferenceTo";
+        }
 
         auto ascTextExpected = Armored::Factory();
 
@@ -3288,10 +3302,11 @@ public:
             return (-1);  // error condition
         }
 
-        if (m.m_bSuccess)
+        if (m.m_bSuccess) {
             m.m_ascPayload = ascTextExpected;
-        else
+        } else {
             m.m_ascInReferenceTo = ascTextExpected;
+        }
 
         LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
             m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
@@ -4071,8 +4086,9 @@ public:
 
         auto strTransactionNum =
             String::Factory(xml->getAttributeValue("smartContractID"));
-        if (strTransactionNum->Exists())
+        if (strTransactionNum->Exists()) {
             m.m_lTransactionNum = strTransactionNum->ToLong();
+        }
 
         if (strHasParam->Compare("true")) {
             const char* pElementExpected = "parameter";
@@ -4085,8 +4101,9 @@ public:
                     m.m_strCommand)(".")
                     .Flush();
                 return (-1);  // error condition
-            } else
+            } else {
                 m.m_ascPayload = ascTextExpected;
+            }
         }
 
         LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
@@ -4213,13 +4230,14 @@ public:
 
         auto strDepth = String::Factory(xml->getAttributeValue("depth"));
 
-        if (strDepth->GetLength() > 0) m.m_lDepth = strDepth->ToLong();
+        if (strDepth->GetLength() > 0) { m.m_lDepth = strDepth->ToLong(); }
 
         const char* pElementExpected = nullptr;
-        if (m.m_bSuccess && (m.m_lDepth > 0))
+        if (m.m_bSuccess && (m.m_lDepth > 0)) {
             pElementExpected = "messagePayload";
-        else if (!m.m_bSuccess)
+        } else if (!m.m_bSuccess) {
             pElementExpected = "inReferenceTo";
+        }
 
         if (nullptr != pElementExpected) {
             auto ascTextExpected = Armored::Factory();
@@ -4233,22 +4251,24 @@ public:
                 return (-1);  // error condition
             }
 
-            if (m.m_bSuccess)
+            if (m.m_bSuccess) {
                 m.m_ascPayload->Set(ascTextExpected);
-            else
+            } else {
                 m.m_ascInReferenceTo->Set(ascTextExpected);
+            }
         }
 
-        if (m.m_bSuccess)
+        if (m.m_bSuccess) {
             LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
                 m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
                 .Flush();  // m_ascPayload.Get()
-        else
+        } else {
             LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
                 m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
                 .Flush();  // m_ascInReferenceTo.Get()
+        }
 
         return 1;
     }

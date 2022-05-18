@@ -209,9 +209,10 @@ void Contract::CalculateContractID(Identifier& newID) const
 
     auto strTemp = String::Factory(str_Trim2.c_str());
 
-    if (!newID.CalculateDigest(strTemp->Bytes()))
+    if (!newID.CalculateDigest(strTemp->Bytes())) {
         LogError()(OT_PRETTY_CLASS())("Error calculating Contract digest.")
             .Flush();
+    }
 }
 
 void Contract::CalculateAndSetContractID(Identifier& newID)
@@ -535,7 +536,7 @@ auto Contract::VerifyWithKey(const crypto::key::Asymmetric& key) const -> bool
             // Since key and signature both have metadata, we can use it
             // to skip signatures which don't match this key.
             //
-            if (sig->getMetaData() != *(metadata)) continue;
+            if (sig->getMetaData() != *(metadata)) { continue; }
         }
 
         if (VerifySignature(key, sig, m_strSigHashType)) { return true; }
@@ -563,8 +564,9 @@ auto Contract::VerifySigAuthent(
             auto pKey = it;
             OT_ASSERT(nullptr != pKey);
 
-            if (VerifySignature(*pKey, theSignature, m_strSigHashType))
+            if (VerifySignature(*pKey, theSignature, m_strSigHashType)) {
                 return true;
+            }
         }
     } else {
         auto strNymID = String::Factory();
@@ -638,7 +640,7 @@ auto Contract::VerifySignature(
     // (The metadata may eliminate it as a possibility.)
     if ((nullptr != metadata) && metadata->HasMetadata() &&
         theSignature.getMetaData().HasMetadata()) {
-        if (theSignature.getMetaData() != *(metadata)) return false;
+        if (theSignature.getMetaData() != *(metadata)) { return false; }
     }
 
     const auto& engine = key.engine();
@@ -837,7 +839,9 @@ auto Contract::LoadContractRawFile() -> bool
     const char* szFoldername = m_strFoldername->Get();
     const char* szFilename = m_strFilename->Get();
 
-    if (!m_strFoldername->Exists() || !m_strFilename->Exists()) return false;
+    if (!m_strFoldername->Exists() || !m_strFilename->Exists()) {
+        return false;
+    }
 
     if (!OTDB::Exists(
             api_, api_.DataFolder(), szFoldername, szFilename, "", "")) {
@@ -891,10 +895,10 @@ auto Contract::LoadContract(const char* szFoldername, const char* szFilename)
     m_strFilename->Set(szFilename);
 
     // opens m_strFilename and reads into m_strRawFile
-    if (LoadContractRawFile())
+    if (LoadContractRawFile()) {
         return ParseRawFile();  // Parses m_strRawFile into the various
                                 // member variables.
-    else {
+    } else {
         LogDetail()(OT_PRETTY_CLASS())("Failed loading raw contract "
                                        "file: ")(
             m_strFoldername)(api::Legacy::PathSeparator())(m_strFilename)(".")
@@ -989,7 +993,7 @@ auto Contract::ParseRawFile() -> bool
         line = buffer1.data();
 
         if (line.length() < 2) {
-            if (bSignatureMode) continue;
+            if (bSignatureMode) { continue; }
         }
 
         // if we're on a dashed line...
@@ -1390,10 +1394,11 @@ auto Contract::CreateContract(
     // Therefore if char_at_index[lLength-1] != '\n'
     // Concatenate one!
 
-    if ('\n' == cNewline)  // It already has a newline
+    if ('\n' == cNewline) {  // It already has a newline
         m_xmlUnsigned.get() = strContract;
-    else
+    } else {
         m_xmlUnsigned->Set(strContract.Get());
+    }
 
     // This function assumes that m_xmlUnsigned is ready to be processed.
     // This function only processes that portion of the contract.
@@ -1453,10 +1458,11 @@ auto Contract::CreateContract(
 
             return true;
         }
-    } else
+    } else {
         LogError()(OT_PRETTY_CLASS())("LoadContractXML failed. strContract "
                                       "contents: ")(strContract)(".")
             .Flush();
+    }
 
     return false;
 }
@@ -1534,11 +1540,13 @@ auto Contract::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
     if (strNodeName->Compare("entity")) {
         m_strEntityShortName =
             String::Factory(xml->getAttributeValue("shortname"));
-        if (!m_strName->Exists())  // only set it if it's not already set, since
+        if (!m_strName->Exists()) {  // only set it if it's not already set,
+                                     // since
             // the wallet may have already had a user label
             // set.
             m_strName = m_strEntityShortName;  // m_strName may later be changed
-                                               // again in
+        }
+        // again in
         // OTUnitDefinition::ProcessXMLNode
 
         m_strEntityLongName =
