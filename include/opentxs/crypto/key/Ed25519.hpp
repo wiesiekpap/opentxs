@@ -14,15 +14,14 @@ namespace opentxs::crypto::key
 class OPENTXS_EXPORT Ed25519 : virtual public HD
 {
 public:
-    ~Ed25519() override = default;
-
-protected:
-    Ed25519() = default;
-
-private:
     Ed25519(const Ed25519&) = delete;
     Ed25519(Ed25519&&) = delete;
     auto operator=(const Ed25519&) -> Ed25519& = delete;
     auto operator=(Ed25519&&) -> Ed25519& = delete;
+
+    ~Ed25519() override = default;
+
+protected:
+    Ed25519() = default;
 };
 }  // namespace opentxs::crypto::key

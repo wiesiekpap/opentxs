@@ -70,6 +70,11 @@ public:
     {
         return parent_.Schedule(interval, task, last);
     }
+    Scheduler() = delete;
+    Scheduler(const Scheduler&) = delete;
+    Scheduler(Scheduler&&) = delete;
+    auto operator=(const Scheduler&) -> Scheduler& = delete;
+    auto operator=(Scheduler&&) -> Scheduler& = delete;
 
     ~Scheduler() override;
 
@@ -84,12 +89,6 @@ private:
     std::thread periodic_;
 
     virtual void storage_gc_hook() = 0;
-
-    Scheduler() = delete;
-    Scheduler(const Scheduler&) = delete;
-    Scheduler(Scheduler&&) = delete;
-    auto operator=(const Scheduler&) -> Scheduler& = delete;
-    auto operator=(Scheduler&&) -> Scheduler& = delete;
 
     void thread();
 };

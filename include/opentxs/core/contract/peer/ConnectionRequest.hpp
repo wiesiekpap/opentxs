@@ -36,6 +36,11 @@ namespace opentxs::contract::peer::request
 class OPENTXS_EXPORT Connection : virtual public peer::Request
 {
 public:
+    Connection(const Connection&) = delete;
+    Connection(Connection&&) = delete;
+    auto operator=(const Connection&) -> Connection& = delete;
+    auto operator=(Connection&&) -> Connection& = delete;
+
     ~Connection() override = default;
 
 protected:
@@ -47,10 +52,5 @@ private:
 #ifndef _WIN32
     auto clone() const noexcept -> Connection* override = 0;
 #endif
-
-    Connection(const Connection&) = delete;
-    Connection(Connection&&) = delete;
-    auto operator=(const Connection&) -> Connection& = delete;
-    auto operator=(Connection&&) -> Connection& = delete;
 };
 }  // namespace opentxs::contract::peer::request

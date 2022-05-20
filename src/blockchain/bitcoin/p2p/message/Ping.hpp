@@ -61,6 +61,10 @@ public:
         const api::Session& api,
         std::unique_ptr<Header> header,
         const bitcoin::Nonce nonce) noexcept;
+    Ping(const Ping&) = delete;
+    Ping(Ping&&) = delete;
+    auto operator=(const Ping&) -> Ping& = delete;
+    auto operator=(Ping&&) -> Ping& = delete;
 
     ~Ping() final = default;
 
@@ -69,10 +73,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Ping(const Ping&) = delete;
-    Ping(Ping&&) = delete;
-    auto operator=(const Ping&) -> Ping& = delete;
-    auto operator=(Ping&&) -> Ping& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

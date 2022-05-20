@@ -9,6 +9,7 @@
 #include "network/zeromq/socket/Receiver.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>
+#include <array>
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -143,7 +144,7 @@ void Receiver<InterfaceType, MessageType>::thread() noexcept
         Sleep(std::chrono::milliseconds(callback_wait_milliseconds_));
     }
 
-    zmq_pollitem_t poll[1];
+    auto poll = std::array<::zmq_pollitem_t, 1>{};
     poll[0].socket = socket_;
     poll[0].events = ZMQ_POLLIN;
 
@@ -156,7 +157,8 @@ void Receiver<InterfaceType, MessageType>::thread() noexcept
         for (const auto& endpoint : newEndpoints) { start(lock, endpoint); }
 
         run_tasks(lock);
-        const auto events = zmq_poll(poll, 1, receiver_poll_milliseconds_);
+        const auto events =
+            zmq_poll(poll.data(), 1, receiver_poll_milliseconds_);
 
         if (0 == events) { continue; }
 

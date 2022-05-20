@@ -43,5 +43,9 @@ elseif(UNIX)
   endif()
 endif()
 
+if(NOT ANDROID)
+  target_sources(opentxs-common PRIVATE "non-Android.cpp")
+endif()
+
 target_link_libraries(opentxs-common PRIVATE "${OT_ZMQ_TARGET}")
 target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")

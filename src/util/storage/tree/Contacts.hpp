@@ -63,6 +63,12 @@ public:
     auto Store(const proto::Contact& data, const UnallocatedCString& alias)
         -> bool;
 
+    Contacts() = delete;
+    Contacts(const Contacts&) = delete;
+    Contacts(Contacts&&) = delete;
+    auto operator=(const Contacts&) -> Contacts = delete;
+    auto operator=(Contacts&&) -> Contacts = delete;
+
     ~Contacts() final = default;
 
 private:
@@ -92,10 +98,5 @@ private:
     void reverse_merged();
 
     Contacts(const Driver& storage, const UnallocatedCString& hash);
-    Contacts() = delete;
-    Contacts(const Contacts&) = delete;
-    Contacts(Contacts&&) = delete;
-    auto operator=(const Contacts&) -> Contacts = delete;
-    auto operator=(Contacts&&) -> Contacts = delete;
 };
 }  // namespace opentxs::storage

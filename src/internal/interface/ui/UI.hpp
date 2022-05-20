@@ -294,8 +294,6 @@ struct ChildObjectData {
         , children_(std::move(rhs.children_))
     {
     }
-
-private:
     ChildObjectData() = delete;
     ChildObjectData(const ChildObjectData&) = delete;
     auto operator=(const ChildObjectData&) -> ChildObjectData& = delete;
@@ -1688,6 +1686,11 @@ struct Model {
     auto SetParent(qt::Model& parent) noexcept -> void;
 
     Model(QObject* parent) noexcept;
+    Model() = delete;
+    Model(const Model&) = delete;
+    Model(Model&&) = delete;
+    auto operator=(const Model&) -> Model& = delete;
+    auto operator=(Model&&) -> Model& = delete;
 
     ~Model();
 
@@ -1707,12 +1710,6 @@ private:
         ui::internal::Row* newParent,
         ui::internal::Row* newBefore,
         ui::internal::Row* row) noexcept -> void;
-
-    Model() = delete;
-    Model(const Model&) = delete;
-    Model(Model&&) = delete;
-    Model& operator=(const Model&) = delete;
-    Model& operator=(Model&&) = delete;
 };
 }  // namespace opentxs::ui::qt::internal
 

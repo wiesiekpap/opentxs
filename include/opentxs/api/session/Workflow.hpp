@@ -330,15 +330,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Workflow& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Workflow() = default;
-
-protected:
-    Workflow() = default;
-
-private:
     Workflow(const Workflow&) = delete;
     Workflow(Workflow&&) = delete;
     auto operator=(const Workflow&) -> Workflow& = delete;
     auto operator=(Workflow&&) -> Workflow& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Workflow() = default;
+
+protected:
+    Workflow() = default;
 };
 }  // namespace opentxs::api::session

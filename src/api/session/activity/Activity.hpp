@@ -177,6 +177,11 @@ public:
     Activity(
         const api::Session& api,
         const session::Contacts& contact) noexcept;
+    Activity() = delete;
+    Activity(const Activity&) = delete;
+    Activity(Activity&&) = delete;
+    auto operator=(const Activity&) -> Activity& = delete;
+    auto operator=(Activity&&) -> Activity& = delete;
 
     ~Activity() final;
 
@@ -226,11 +231,5 @@ private:
     auto verify_thread_exists(
         const UnallocatedCString& nym,
         const UnallocatedCString& thread) const noexcept -> bool;
-
-    Activity() = delete;
-    Activity(const Activity&) = delete;
-    Activity(Activity&&) = delete;
-    auto operator=(const Activity&) -> Activity& = delete;
-    auto operator=(Activity&&) -> Activity& = delete;
 };
 }  // namespace opentxs::api::session::imp

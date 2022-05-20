@@ -41,15 +41,14 @@ public:
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
     virtual auto Standard() const noexcept -> HDProtocol = 0;
 
-    OPENTXS_NO_EXPORT ~HD() override = default;
-
-protected:
-    HD() noexcept = default;
-
-private:
     HD(const HD&) = delete;
     HD(HD&&) = delete;
     auto operator=(const HD&) -> HD& = delete;
     auto operator=(HD&&) -> HD& = delete;
+
+    OPENTXS_NO_EXPORT ~HD() override = default;
+
+protected:
+    HD() noexcept = default;
 };
 }  // namespace opentxs::blockchain::crypto

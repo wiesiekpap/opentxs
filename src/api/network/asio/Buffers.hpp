@@ -25,6 +25,10 @@ public:
     auto get(const std::size_t bytes) noexcept -> std::pair<Index, AsioBuffer>;
 
     Buffers() noexcept;
+    Buffers(const Buffers&) = delete;
+    Buffers(Buffers&&) = delete;
+    auto operator=(const Buffers&) -> Buffers& = delete;
+    auto operator=(Buffers&&) -> Buffers& = delete;
 
     ~Buffers();
 
@@ -32,10 +36,5 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    Buffers(const Buffers&) = delete;
-    Buffers(Buffers&&) = delete;
-    Buffers& operator=(const Buffers&) = delete;
-    Buffers& operator=(Buffers&&) = delete;
 };
 }  // namespace opentxs::api::network::asio

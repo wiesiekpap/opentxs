@@ -209,10 +209,14 @@ public:
         std::optional<PatternID>&& scriptHash,
         const bool indexed,
         std::unique_ptr<internal::Output> output) noexcept(false);
+    Input() = delete;
     Input(const Input&) noexcept;
     Input(
         const Input& rhs,
         std::unique_ptr<const internal::Script> script) noexcept;
+    Input(Input&&) = delete;
+    auto operator=(const Input&) -> Input& = delete;
+    auto operator=(Input&&) -> Input& = delete;
 
     ~Input() final = default;
 
@@ -258,6 +262,7 @@ private:
             std::unique_ptr<internal::Output>&& output,
             std::optional<std::size_t>&& size,
             boost::container::flat_set<crypto::Key>&& keys) noexcept;
+        Cache() = delete;
         Cache(const Cache& rhs) noexcept;
 
     private:
@@ -268,8 +273,6 @@ private:
         std::optional<std::size_t> normalized_size_;
         boost::container::flat_set<crypto::Key> keys_;
         OTIdentifier payer_;
-
-        Cache() = delete;
     };
 
     static const VersionNumber outpoint_version_;
@@ -302,10 +305,5 @@ private:
         const noexcept -> std::optional<std::size_t>;
 
     auto index_elements() noexcept -> void;
-
-    Input() = delete;
-    Input(Input&&) = delete;
-    auto operator=(const Input&) -> Input& = delete;
-    auto operator=(Input&&) -> Input& = delete;
 };
 }  // namespace opentxs::blockchain::bitcoin::block::implementation

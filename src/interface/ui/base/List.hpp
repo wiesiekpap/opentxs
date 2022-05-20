@@ -95,6 +95,12 @@ public:
         return qt_model_;
     }
 
+    List() = delete;
+    List(const List&) = delete;
+    List(List&&) = delete;
+    auto operator=(const List&) -> List& = delete;
+    auto operator=(List&&) -> List& = delete;
+
     ~List() override
     {
         if (startup_ && startup_->joinable()) {
@@ -412,11 +418,5 @@ private:
 
         return *item;
     }
-
-    List() = delete;
-    List(const List&) = delete;
-    List(List&&) = delete;
-    auto operator=(const List&) -> List& = delete;
-    auto operator=(List&&) -> List& = delete;
 };
 }  // namespace opentxs::ui::implementation

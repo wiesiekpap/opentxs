@@ -37,6 +37,10 @@ public:
     auto Stop() noexcept -> void;
 
     Context() noexcept;
+    Context(const Context&) = delete;
+    Context(Context&&) = delete;
+    auto operator=(const Context&) -> Context& = delete;
+    auto operator=(Context&&) -> Context& = delete;
 
     ~Context();
 
@@ -44,10 +48,5 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    Context(const Context&) = delete;
-    Context(Context&&) = delete;
-    Context& operator=(const Context&) = delete;
-    Context& operator=(Context&&) = delete;
 };
 }  // namespace opentxs::api::network::asio

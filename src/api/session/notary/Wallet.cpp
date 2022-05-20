@@ -194,7 +194,7 @@ auto Wallet::mutable_ClientContext(
 
     OT_ASSERT(nullptr != child);
 
-    return Editor<otx::context::Client>(child, callback);
+    return {child, callback};
 }
 
 auto Wallet::mutable_Context(
@@ -210,7 +210,7 @@ auto Wallet::mutable_Context(
 
     OT_ASSERT(base);
 
-    return Editor<otx::context::Base>(base.get(), callback);
+    return {base.get(), callback};
 }
 
 auto Wallet::signer_nym(const identifier::Nym&) const -> Nym_p

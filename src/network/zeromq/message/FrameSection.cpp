@@ -46,14 +46,12 @@ public:
     auto end() noexcept -> zeromq::FrameIterator final { return {}; }
 
     FrameSection() = default;
-
-    ~FrameSection() final = default;
-
-private:
     FrameSection(const FrameSection&) = delete;
     FrameSection(FrameSection&&) = delete;
     auto operator=(const FrameSection&) -> FrameSection& = delete;
     auto operator=(FrameSection&) -> FrameSection& = delete;
+
+    ~FrameSection() final = default;
 };
 }  // namespace opentxs::network::zeromq::blank
 
@@ -99,9 +97,9 @@ auto FrameSection::begin() const noexcept -> const FrameIterator
 
 auto FrameSection::begin() noexcept -> FrameIterator
 {
-    return FrameIterator(std::make_unique<FrameIterator::Imp>(
-                             const_cast<Message*>(parent_), position_)
-                             .release());
+    return {std::make_unique<FrameIterator::Imp>(
+                const_cast<Message*>(parent_), position_)
+                .release()};
 }
 
 auto FrameSection::end() const noexcept -> const FrameIterator
@@ -113,9 +111,9 @@ auto FrameSection::end() const noexcept -> const FrameIterator
 
 auto FrameSection::end() noexcept -> FrameIterator
 {
-    return FrameIterator(std::make_unique<FrameIterator::Imp>(
-                             const_cast<Message*>(parent_), position_ + size_)
-                             .release());
+    return {std::make_unique<FrameIterator::Imp>(
+                const_cast<Message*>(parent_), position_ + size_)
+                .release()};
 }
 
 auto FrameSection::size() const noexcept -> std::size_t { return size_; }

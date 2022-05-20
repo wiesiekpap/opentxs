@@ -111,15 +111,14 @@ public:
         -> std::optional<ReadView> = 0;
     virtual bool CompareScriptElements(const Script& other) const = 0;
 
-    virtual ~Script() = default;
-
-protected:
-    Script() noexcept = default;
-
-private:
     Script(const Script&) = delete;
     Script(Script&&) = delete;
     auto operator=(const Script&) -> Script& = delete;
     auto operator=(Script&&) -> Script& = delete;
+
+    virtual ~Script() = default;
+
+protected:
+    Script() noexcept = default;
 };
 }  // namespace opentxs::blockchain::bitcoin::block

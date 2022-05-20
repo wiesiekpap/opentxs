@@ -58,6 +58,11 @@ public:
         const zeromq::Context& context,
         const Direction direction,
         const zeromq::ListenCallback& callback) noexcept;
+    Router() = delete;
+    Router(const Router&) = delete;
+    Router(Router&&) = delete;
+    auto operator=(const Router&) -> Router& = delete;
+    auto operator=(Router&&) -> Router& = delete;
 
     ~Router() final;
 
@@ -68,11 +73,5 @@ private:
     auto have_callback() const noexcept -> bool final { return true; }
 
     void process_incoming(const Lock& lock, Message&& message) noexcept final;
-
-    Router() = delete;
-    Router(const Router&) = delete;
-    Router(Router&&) = delete;
-    auto operator=(const Router&) -> Router& = delete;
-    auto operator=(Router&&) -> Router& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

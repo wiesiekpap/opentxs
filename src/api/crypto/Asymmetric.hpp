@@ -226,6 +226,11 @@ public:
         -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
 
     Asymmetric(const api::Session& api) noexcept;
+    Asymmetric() = delete;
+    Asymmetric(const Asymmetric&) = delete;
+    Asymmetric(Asymmetric&&) = delete;
+    auto operator=(const Asymmetric&) -> Asymmetric& = delete;
+    auto operator=(Asymmetric&&) -> Asymmetric& = delete;
 
     ~Asymmetric() final = default;
 
@@ -255,11 +260,5 @@ private:
     template <typename ReturnType, typename NullType>
     auto instantiate_serialized_key(const proto::AsymmetricKey& serialized)
         const noexcept -> std::unique_ptr<ReturnType>;
-
-    Asymmetric() = delete;
-    Asymmetric(const Asymmetric&) = delete;
-    Asymmetric(Asymmetric&&) = delete;
-    auto operator=(const Asymmetric&) -> Asymmetric& = delete;
-    auto operator=(Asymmetric&&) -> Asymmetric& = delete;
 };
 }  // namespace opentxs::api::crypto::imp

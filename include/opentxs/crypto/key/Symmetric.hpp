@@ -108,6 +108,11 @@ public:
         const PasswordPrompt& reason,
         const Secret& newPassword) -> bool = 0;
 
+    Symmetric(const Symmetric&) = delete;
+    Symmetric(Symmetric&&) = delete;
+    auto operator=(const Symmetric&) -> Symmetric& = delete;
+    auto operator=(Symmetric&&) -> Symmetric& = delete;
+
     virtual ~Symmetric() = default;
 
 protected:
@@ -117,10 +122,5 @@ private:
     friend OTSymmetricKey;
 
     virtual auto clone() const -> Symmetric* = 0;
-
-    Symmetric(const Symmetric&) = delete;
-    Symmetric(Symmetric&&) = delete;
-    auto operator=(const Symmetric&) -> Symmetric& = delete;
-    auto operator=(Symmetric&&) -> Symmetric& = delete;
 };
 }  // namespace opentxs::crypto::key

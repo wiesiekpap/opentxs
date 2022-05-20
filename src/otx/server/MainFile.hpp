@@ -28,8 +28,6 @@ namespace opentxs::server
 class MainFile
 {
 public:
-    explicit MainFile(Server& server, const PasswordPrompt& reason);
-
     auto CreateMainFile(
         const UnallocatedCString& strContract,
         const UnallocatedCString& strNotaryID,
@@ -39,14 +37,15 @@ public:
     auto SaveMainFile() -> bool;
     auto SaveMainFileToString(String& filename) -> bool;
 
-private:
-    Server& server_;
-    UnallocatedCString version_;
-
+    explicit MainFile(Server& server, const PasswordPrompt& reason);
     MainFile() = delete;
     MainFile(const MainFile&) = delete;
     MainFile(MainFile&&) = delete;
     auto operator=(const MainFile&) -> MainFile& = delete;
     auto operator=(MainFile&&) -> MainFile& = delete;
+
+private:
+    Server& server_;
+    UnallocatedCString version_;
 };
 }  // namespace opentxs::server

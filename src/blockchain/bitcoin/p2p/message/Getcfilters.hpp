@@ -66,6 +66,10 @@ public:
         const cfilter::Type type,
         const block::Height start,
         const block::Hash& stop) noexcept;
+    Getcfilters(const Getcfilters&) = delete;
+    Getcfilters(Getcfilters&&) = delete;
+    auto operator=(const Getcfilters&) -> Getcfilters& = delete;
+    auto operator=(Getcfilters&&) -> Getcfilters& = delete;
 
     ~Getcfilters() final = default;
 
@@ -76,10 +80,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Getcfilters(const Getcfilters&) = delete;
-    Getcfilters(Getcfilters&&) = delete;
-    auto operator=(const Getcfilters&) -> Getcfilters& = delete;
-    auto operator=(Getcfilters&&) -> Getcfilters& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

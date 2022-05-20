@@ -198,16 +198,15 @@ public:
         -> std::unique_ptr<opentxs::PeerObject> final;
 
     Factory(const api::session::Client& parent);
-
-    ~Factory() final = default;
-
-private:
-    const api::session::Client& client_;
-
     Factory() = delete;
     Factory(const Factory&) = delete;
     Factory(Factory&&) = delete;
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
+
+    ~Factory() final = default;
+
+private:
+    const api::session::Client& client_;
 };
 }  // namespace opentxs::api::session::client

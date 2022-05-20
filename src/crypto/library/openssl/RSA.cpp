@@ -95,6 +95,10 @@ auto OpenSSL::import_dh(const ReadView existing, ::EVP_PKEY* output)
         {
             OT_ASSERT(nullptr != dh_);
         }
+        DH(const DH&) = delete;
+        DH(DH&&) = delete;
+        auto operator=(const DH&) -> DH& = delete;
+        auto operator=(DH&&) -> DH& = delete;
 
         ~DH()
         {
@@ -103,12 +107,6 @@ auto OpenSSL::import_dh(const ReadView existing, ::EVP_PKEY* output)
                 dh_ = nullptr;
             }
         }
-
-    private:
-        DH(const DH&) = delete;
-        DH(DH&&) = delete;
-        auto operator=(const DH&) -> DH& = delete;
-        auto operator=(DH&&) -> DH& = delete;
     };
 
     auto dh = DH{};
@@ -151,6 +149,10 @@ auto OpenSSL::make_dh_key(
         {
             OT_ASSERT(nullptr != key_);
         }
+        Key(const Key&) = delete;
+        Key(Key&&) = delete;
+        auto operator=(const Key&) -> Key& = delete;
+        auto operator=(Key&&) -> Key& = delete;
 
         ~Key()
         {
@@ -159,12 +161,6 @@ auto OpenSSL::make_dh_key(
                 key_ = nullptr;
             }
         }
-
-    private:
-        Key(const Key&) = delete;
-        Key(Key&&) = delete;
-        auto operator=(const Key&) -> Key& = delete;
-        auto operator=(Key&&) -> Key& = delete;
     };
 
     auto params = Key{};

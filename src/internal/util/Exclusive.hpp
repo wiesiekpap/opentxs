@@ -42,7 +42,9 @@ public:
         Save save,
         const Callback callback = nullptr) noexcept;
     Exclusive() noexcept;
+    Exclusive(const Exclusive&) = delete;
     Exclusive(Exclusive&&) noexcept;
+    auto operator=(const Exclusive&) noexcept -> Exclusive& = delete;
     auto operator=(Exclusive&&) noexcept -> Exclusive&;
 
     ~Exclusive();
@@ -53,8 +55,5 @@ private:
     Save save_{[](Container&, eLock&, bool) -> void {}};
     std::atomic<bool> success_{true};
     Callback callback_{nullptr};
-
-    Exclusive(const Exclusive&) = delete;
-    auto operator=(const Exclusive&) noexcept -> Exclusive& = delete;
 };  // class Exclusive
 }  // namespace opentxs

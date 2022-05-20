@@ -76,6 +76,11 @@ public:
         const api::session::Storage& storage,
         const storage::Config& config,
         const Flag& bucket);
+    Sqlite3() = delete;
+    Sqlite3(const Sqlite3&) = delete;
+    Sqlite3(Sqlite3&&) = delete;
+    auto operator=(const Sqlite3&) -> Sqlite3& = delete;
+    auto operator=(Sqlite3&&) -> Sqlite3& = delete;
 
     ~Sqlite3() final;
 
@@ -120,11 +125,5 @@ private:
         const UnallocatedCString& value) const -> bool;
 
     void Init_Sqlite3();
-
-    Sqlite3() = delete;
-    Sqlite3(const Sqlite3&) = delete;
-    Sqlite3(Sqlite3&&) = delete;
-    auto operator=(const Sqlite3&) -> Sqlite3& = delete;
-    auto operator=(Sqlite3&&) -> Sqlite3& = delete;
 };
 }  // namespace opentxs::storage::driver

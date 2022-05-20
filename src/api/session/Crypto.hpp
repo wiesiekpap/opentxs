@@ -184,6 +184,11 @@ public:
         const api::session::Factory& factory,
         const api::session::Storage& storage,
         const opentxs::network::zeromq::Context& zmq) noexcept;
+    Crypto() = delete;
+    Crypto(const Crypto&) = delete;
+    Crypto(Crypto&&) = delete;
+    auto operator=(const Crypto&) -> Crypto& = delete;
+    auto operator=(Crypto&&) -> Crypto& = delete;
 
     ~Crypto() final;
 
@@ -196,11 +201,5 @@ private:
     const api::crypto::Symmetric& symmetric_;
     std::unique_ptr<api::crypto::Seed> seed_p_;
     const api::crypto::Seed& seed_;
-
-    Crypto() = delete;
-    Crypto(const Crypto&) = delete;
-    Crypto(Crypto&&) = delete;
-    auto operator=(const Crypto&) -> Crypto& = delete;
-    auto operator=(Crypto&&) -> Crypto& = delete;
 };
 }  // namespace opentxs::api::session::imp

@@ -174,6 +174,8 @@ public:
     auto Reset() -> bool final;
 
     Settings(const api::Legacy& legacy, const String& strConfigFilePath);
+    Settings(const Settings&) = delete;
+    auto operator=(const Settings&) -> Settings& = delete;
 
     ~Settings() final;
 
@@ -199,8 +201,5 @@ private:
         const String& strValue) const -> bool;
 
     auto Init() -> bool;
-
-    Settings(const Settings&) = delete;
-    auto operator=(const Settings&) -> Settings& = delete;
 };
 }  // namespace opentxs::api::imp

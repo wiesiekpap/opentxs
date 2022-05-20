@@ -43,6 +43,11 @@ public:
     virtual auto SetSocksProxy(const UnallocatedCString& proxy) const noexcept
         -> bool = 0;
 
+    Router(const Router&) = delete;
+    Router(Router&&) = delete;
+    auto operator=(const Router&) -> Router& = delete;
+    auto operator=(Router&&) -> Router& = delete;
+
     ~Router() override = default;
 
 protected:
@@ -52,10 +57,5 @@ private:
     friend OTZMQRouterSocket;
 
     virtual auto clone() const noexcept -> Router* = 0;
-
-    Router(const Router&) = delete;
-    Router(Router&&) = delete;
-    auto operator=(const Router&) -> Router& = delete;
-    auto operator=(Router&&) -> Router& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket

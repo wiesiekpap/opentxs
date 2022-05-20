@@ -136,6 +136,11 @@ public:
     virtual void SetString(const UnallocatedCString& encoded) = 0;
     virtual void SetString(const String& encoded) = 0;
 
+    Identifier(const Identifier&) = delete;
+    Identifier(Identifier&&) = delete;
+    auto operator=(const Identifier&) -> Identifier& = delete;
+    auto operator=(Identifier&&) -> Identifier& = delete;
+
     ~Identifier() override = default;
 
 protected:
@@ -147,9 +152,5 @@ private:
 #ifndef _WIN32
     auto clone() const -> Identifier* override = 0;
 #endif
-    Identifier(const Identifier&) = delete;
-    Identifier(Identifier&&) = delete;
-    auto operator=(const Identifier&) -> Identifier& = delete;
-    auto operator=(Identifier&&) -> Identifier& = delete;
 };
 }  // namespace opentxs

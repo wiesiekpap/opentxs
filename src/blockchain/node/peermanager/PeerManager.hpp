@@ -308,6 +308,11 @@ public:
         const database::BlockStorage policy,
         const UnallocatedCString& seednode,
         const UnallocatedCString& shutdown) noexcept;
+    PeerManager() = delete;
+    PeerManager(const PeerManager&) = delete;
+    PeerManager(PeerManager&&) = delete;
+    auto operator=(const PeerManager&) -> PeerManager& = delete;
+    auto operator=(PeerManager&&) -> PeerManager& = delete;
 
     ~PeerManager() final;
 
@@ -318,7 +323,6 @@ protected:
 private:
     auto shut_down() noexcept -> void;
 
-private:
     struct Jobs {
         auto Endpoint(const PeerManagerJobs type) const noexcept
             -> UnallocatedCString;
@@ -330,6 +334,7 @@ private:
         auto Shutdown() noexcept -> void;
 
         Jobs(const api::Session& api) noexcept;
+        Jobs() = delete;
 
     private:
         using EndpointMap = UnallocatedMap<PeerManagerJobs, UnallocatedCString>;
@@ -351,8 +356,6 @@ private:
             EndpointMap& map,
             const PeerManagerJobs type,
             const zmq::socket::Sender& socket) noexcept -> void;
-
-        Jobs() = delete;
     };
 
     const node::internal::Manager& node_;
@@ -370,10 +373,6 @@ private:
         const Type chain,
         const database::BlockStorage policy) noexcept -> std::size_t;
 
-    PeerManager() = delete;
-    PeerManager(const PeerManager&) = delete;
-    PeerManager(PeerManager&&) = delete;
-    auto operator=(const PeerManager&) -> PeerManager& = delete;
-    auto operator=(PeerManager&&) -> PeerManager& = delete;
+    auto shutdown(std::promise<void>& promise) noexcept -> void;
 };
 }  // namespace opentxs::blockchain::node::implementation

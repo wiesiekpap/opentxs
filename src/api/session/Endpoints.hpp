@@ -107,6 +107,11 @@ public:
     auto WorkflowAccountUpdate() const noexcept -> std::string_view final;
 
     Endpoints(const int instance) noexcept;
+    Endpoints() = delete;
+    Endpoints(const Endpoints&) = delete;
+    Endpoints(Endpoints&&) = delete;
+    auto operator=(const Endpoints&) -> Endpoints& = delete;
+    auto operator=(Endpoints&&) -> Endpoints& = delete;
 
     ~Endpoints() final = default;
 
@@ -177,11 +182,5 @@ private:
         const std::string_view path,
         const int version,
         const std::string_view suffix) const noexcept -> CString;
-
-    Endpoints() = delete;
-    Endpoints(const Endpoints&) = delete;
-    Endpoints(Endpoints&&) = delete;
-    auto operator=(const Endpoints&) -> Endpoints& = delete;
-    auto operator=(Endpoints&&) -> Endpoints& = delete;
 };
 }  // namespace opentxs::api::session::imp

@@ -60,6 +60,12 @@ public:
     auto Store(const Identifier& channelID, const proto::Bip47Channel& data)
         -> bool;
 
+    Bip47Channels() = delete;
+    Bip47Channels(const Bip47Channels&) = delete;
+    Bip47Channels(Bip47Channels&&) = delete;
+    auto operator=(const Bip47Channels&) -> Bip47Channels = delete;
+    auto operator=(Bip47Channels&&) -> Bip47Channels = delete;
+
     ~Bip47Channels() final = default;
 
 private:
@@ -91,10 +97,5 @@ private:
     auto serialize() const -> proto::StorageBip47Contexts;
 
     Bip47Channels(const Driver& storage, const UnallocatedCString& hash);
-    Bip47Channels() = delete;
-    Bip47Channels(const Bip47Channels&) = delete;
-    Bip47Channels(Bip47Channels&&) = delete;
-    auto operator=(const Bip47Channels&) -> Bip47Channels = delete;
-    auto operator=(Bip47Channels&&) -> Bip47Channels = delete;
 };
 }  // namespace opentxs::storage

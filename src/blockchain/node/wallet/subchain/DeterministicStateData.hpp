@@ -133,6 +133,13 @@ public:
         const network::zeromq::BatchID batch,
         const std::string_view parent,
         allocator_type alloc) noexcept;
+    DeterministicStateData() = delete;
+    DeterministicStateData(const DeterministicStateData&) = delete;
+    DeterministicStateData(DeterministicStateData&&) = delete;
+    auto operator=(const DeterministicStateData&)
+        -> DeterministicStateData& = delete;
+    auto operator=(DeterministicStateData&&)
+        -> DeterministicStateData& = delete;
 
     ~DeterministicStateData() final = default;
 
@@ -163,11 +170,5 @@ private:
         const block::Match& match,
         const bitcoin::block::Transaction& tx,
         database::Wallet::MatchedTransaction& output) const noexcept -> void;
-
-    DeterministicStateData() = delete;
-    DeterministicStateData(const DeterministicStateData&) = delete;
-    DeterministicStateData(DeterministicStateData&&) = delete;
-    DeterministicStateData& operator=(const DeterministicStateData&) = delete;
-    DeterministicStateData& operator=(DeterministicStateData&&) = delete;
 };
 }  // namespace opentxs::blockchain::node::wallet

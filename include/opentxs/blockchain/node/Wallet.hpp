@@ -101,15 +101,14 @@ public:
     virtual auto Height() const noexcept -> block::Height = 0;
     virtual auto StartRescan() const noexcept -> bool = 0;
 
-    virtual ~Wallet() = default;
-
-protected:
-    Wallet() noexcept = default;
-
-private:
     Wallet(const Wallet&) = delete;
     Wallet(Wallet&&) = delete;
     auto operator=(const Wallet&) -> Wallet& = delete;
     auto operator=(Wallet&&) -> Wallet& = delete;
+
+    virtual ~Wallet() = default;
+
+protected:
+    Wallet() noexcept = default;
 };
 }  // namespace opentxs::blockchain::node

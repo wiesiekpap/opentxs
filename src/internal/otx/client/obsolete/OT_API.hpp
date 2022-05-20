@@ -613,6 +613,12 @@ public:
         const Identifier& ASSET_ACCT_ID,
         const TransactionNumber& lTransactionNum) const -> CommandResult;
 
+    OT_API() = delete;
+    OT_API(const OT_API&) = delete;
+    OT_API(OT_API&&) = delete;
+    auto operator=(const OT_API&) -> OT_API = delete;
+    auto operator=(OT_API&&) -> OT_API = delete;
+
     ~OT_API() override;  // calls Cleanup();
 
 private:
@@ -685,11 +691,6 @@ private:
         const api::session::Contacts& contacts,
         const api::session::Workflow& workflow,
         const api::network::ZMQ& zmq,
-        const ContextLockCallback& lockCallback);
-    OT_API() = delete;
-    OT_API(const OT_API&) = delete;
-    OT_API(OT_API&&) = delete;
-    auto operator=(const OT_API&) -> OT_API = delete;
-    auto operator=(OT_API&&) -> OT_API = delete;
+        ContextLockCallback lockCallback);
 };
 }  // namespace opentxs

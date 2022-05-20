@@ -23,15 +23,14 @@ public:
         const std::size_t bytes,
         AllocateOutput writer) const noexcept -> bool = 0;
 
-    virtual ~Scrypt() = default;
-
-protected:
-    Scrypt() = default;
-
-private:
     Scrypt(const Scrypt&) = delete;
     Scrypt(Scrypt&&) = delete;
     auto operator=(const Scrypt&) -> Scrypt& = delete;
     auto operator=(Scrypt&&) -> Scrypt& = delete;
+
+    virtual ~Scrypt() = default;
+
+protected:
+    Scrypt() = default;
 };
 }  // namespace opentxs::crypto

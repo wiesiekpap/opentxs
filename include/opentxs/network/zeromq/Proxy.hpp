@@ -43,6 +43,11 @@ public:
         socket::Socket& frontend,
         socket::Socket& backend) -> OTZMQProxy;
 
+    Proxy(const Proxy&) = delete;
+    Proxy(Proxy&&) = default;
+    auto operator=(const Proxy&) -> Proxy& = delete;
+    auto operator=(Proxy&&) -> Proxy& = default;
+
     virtual ~Proxy() = default;
 
 protected:
@@ -52,10 +57,5 @@ private:
     friend OTZMQProxy;
 
     virtual auto clone() const -> Proxy* = 0;
-
-    Proxy(const Proxy&) = delete;
-    Proxy(Proxy&&) = default;
-    auto operator=(const Proxy&) -> Proxy& = delete;
-    auto operator=(Proxy&&) -> Proxy& = default;
 };
 }  // namespace opentxs::network::zeromq

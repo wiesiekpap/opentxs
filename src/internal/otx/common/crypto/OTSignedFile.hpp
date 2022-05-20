@@ -48,6 +48,8 @@ public:
     void Release_SignedFile();
     void UpdateContents(const PasswordPrompt& reason) override;
 
+    OTSignedFile() = delete;
+
 protected:
     OTString m_strSignedFilePayload;  // This class exists to wrap another and
                                       // save it in signed form.
@@ -105,7 +107,5 @@ private:  // Private prevents erroneous use by other classes.
         const api::Session& api,
         const char* LOCAL_SUBDIR,
         const char* FILE_NAME);
-
-    OTSignedFile() = delete;
 };
 }  // namespace opentxs

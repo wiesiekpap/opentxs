@@ -35,6 +35,11 @@ public:
     auto Success() const noexcept -> bool;
 
     OPENTXS_NO_EXPORT PushTransactionReply(Imp* imp) noexcept;
+    PushTransactionReply(const PushTransactionReply&) = delete;
+    PushTransactionReply(PushTransactionReply&&) = delete;
+    auto operator=(const PushTransactionReply&)
+        -> PushTransactionReply& = delete;
+    auto operator=(PushTransactionReply&&) -> PushTransactionReply& = delete;
 
     ~PushTransactionReply() final;
 
@@ -43,11 +48,5 @@ private:
 #pragma GCC diagnostic ignored "-Wshadow-field"
     Imp* imp_;
 #pragma GCC diagnostic pop
-
-    PushTransactionReply(const PushTransactionReply&) = delete;
-    PushTransactionReply(PushTransactionReply&&) = delete;
-    auto operator=(const PushTransactionReply&)
-        -> PushTransactionReply& = delete;
-    auto operator=(PushTransactionReply&&) -> PushTransactionReply& = delete;
 };
 }  // namespace opentxs::network::p2p

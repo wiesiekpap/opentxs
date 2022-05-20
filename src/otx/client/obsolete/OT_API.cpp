@@ -206,7 +206,7 @@ OT_API::OT_API(
     const api::session::Contacts& contacts,
     const api::session::Workflow& workflow,
     const api::network::ZMQ& zmq,
-    const ContextLockCallback& lockCallback)
+    ContextLockCallback lockCallback)
     : api_(api)
     , workflow_(workflow)
     , m_bDefaultStore(false)
@@ -214,7 +214,7 @@ OT_API::OT_API(
     , m_strConfigFilename(String::Factory())
     , m_strConfigFilePath(String::Factory())
     , m_pClient(nullptr)
-    , lock_callback_(lockCallback)
+    , lock_callback_(std::move(lockCallback))
 {
     // WARNING: do not access api_.Wallet() during construction
 

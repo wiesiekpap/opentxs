@@ -43,6 +43,36 @@ namespace opentxs::storage
 {
 class Thread final : public Node
 {
+public:
+    auto Alias() const -> UnallocatedCString;
+    auto Check(const UnallocatedCString& id) const -> bool;
+    auto ID() const -> UnallocatedCString;
+    auto Items() const -> proto::StorageThread;
+    auto Migrate(const Driver& to) const -> bool final;
+    auto UnreadCount() const -> std::size_t;
+
+    auto Add(
+        const UnallocatedCString& id,
+        const std::uint64_t time,
+        const otx::client::StorageBox& box,
+        const UnallocatedCString& alias,
+        const UnallocatedCString& contents,
+        const std::uint64_t index = 0,
+        const UnallocatedCString& account = {},
+        const std::uint32_t chain = {}) -> bool;
+    auto Read(const UnallocatedCString& id, const bool unread) -> bool;
+    auto Rename(const UnallocatedCString& newID) -> bool;
+    auto Remove(const UnallocatedCString& id) -> bool;
+    auto SetAlias(const UnallocatedCString& alias) -> bool;
+
+    Thread() = delete;
+    Thread(const Thread&) = delete;
+    Thread(Thread&&) = delete;
+    auto operator=(const Thread&) -> Thread = delete;
+    auto operator=(Thread&&) -> Thread = delete;
+
+    ~Thread() final = default;
+
 private:
     friend Threads;
     using SortKey = std::tuple<std::size_t, std::int64_t, UnallocatedCString>;
@@ -78,34 +108,5 @@ private:
         const UnallocatedSet<UnallocatedCString>& participants,
         Mailbox& mailInbox,
         Mailbox& mailOutbox);
-    Thread() = delete;
-    Thread(const Thread&) = delete;
-    Thread(Thread&&) = delete;
-    auto operator=(const Thread&) -> Thread = delete;
-    auto operator=(Thread&&) -> Thread = delete;
-
-public:
-    auto Alias() const -> UnallocatedCString;
-    auto Check(const UnallocatedCString& id) const -> bool;
-    auto ID() const -> UnallocatedCString;
-    auto Items() const -> proto::StorageThread;
-    auto Migrate(const Driver& to) const -> bool final;
-    auto UnreadCount() const -> std::size_t;
-
-    auto Add(
-        const UnallocatedCString& id,
-        const std::uint64_t time,
-        const otx::client::StorageBox& box,
-        const UnallocatedCString& alias,
-        const UnallocatedCString& contents,
-        const std::uint64_t index = 0,
-        const UnallocatedCString& account = {},
-        const std::uint32_t chain = {}) -> bool;
-    auto Read(const UnallocatedCString& id, const bool unread) -> bool;
-    auto Rename(const UnallocatedCString& newID) -> bool;
-    auto Remove(const UnallocatedCString& id) -> bool;
-    auto SetAlias(const UnallocatedCString& alias) -> bool;
-
-    ~Thread() final = default;
 };
 }  // namespace opentxs::storage

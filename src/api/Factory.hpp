@@ -40,16 +40,15 @@ public:
         -> OTSecret final;
 
     Factory(const api::Crypto& crypto) noexcept;
-
-    ~Factory() final = default;
-
-private:
-    const api::Crypto& crypto_;
-
     Factory() = delete;
     Factory(const Factory&) = delete;
     Factory(Factory&&) = delete;
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
+
+    ~Factory() final = default;
+
+private:
+    const api::Crypto& crypto_;
 };
 }  // namespace opentxs::api::imp

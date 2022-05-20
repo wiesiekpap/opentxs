@@ -99,7 +99,7 @@ public:
         return {};
     }
 
-    Imp() noexcept {}
+    Imp() noexcept = default;
     Imp(const Imp&) noexcept {}
     Imp(Imp&&) noexcept {}
 

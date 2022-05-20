@@ -53,6 +53,12 @@ public:
 
     auto Internal() noexcept -> internal::Block& final { return *this; }
 
+    Block() = delete;
+    Block(const Block&) = delete;
+    Block(Block&&) = delete;
+    auto operator=(const Block&) -> Block& = delete;
+    auto operator=(Block&&) -> Block& = delete;
+
 protected:
     const api::Session& api_;
 
@@ -60,11 +66,5 @@ protected:
 
 private:
     const block::Header& base_header_;
-
-    Block() = delete;
-    Block(const Block&) = delete;
-    Block(Block&&) = delete;
-    auto operator=(const Block&) -> Block& = delete;
-    auto operator=(Block&&) -> Block& = delete;
 };
 }  // namespace opentxs::blockchain::block::implementation

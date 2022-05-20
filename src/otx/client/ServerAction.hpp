@@ -169,18 +169,17 @@ public:
 
     ServerAction(
         const api::session::Client& api,
-        const ContextLockCallback& lockCallback);
+        ContextLockCallback lockCallback);
+    ServerAction() = delete;
+    ServerAction(const ServerAction&) = delete;
+    ServerAction(ServerAction&&) = delete;
+    auto operator=(const ServerAction&) -> ServerAction& = delete;
+    auto operator=(ServerAction&&) -> ServerAction& = delete;
 
     ~ServerAction() final = default;
 
 private:
     const api::session::Client& api_;
     ContextLockCallback lock_callback_;
-
-    ServerAction() = delete;
-    ServerAction(const ServerAction&) = delete;
-    ServerAction(ServerAction&&) = delete;
-    auto operator=(const ServerAction&) -> ServerAction& = delete;
-    auto operator=(ServerAction&&) -> ServerAction& = delete;
 };
 }  // namespace opentxs::otx::client::imp

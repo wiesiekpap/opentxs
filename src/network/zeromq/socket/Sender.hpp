@@ -28,17 +28,17 @@ namespace opentxs::network::zeromq::socket::implementation
 template <typename Interface, typename ImplementationParent = Socket>
 class Sender : virtual public Interface, virtual public ImplementationParent
 {
+public:
+    Sender(const Sender&) = delete;
+    Sender(Sender&&) = delete;
+    auto operator=(const Sender&) -> Sender& = delete;
+    auto operator=(Sender&&) -> Sender& = delete;
+
 protected:
     auto Send(zeromq::Message&& data) const noexcept -> bool override;
 
     Sender() noexcept;
 
     ~Sender() override = default;
-
-private:
-    Sender(const Sender&) = delete;
-    Sender(Sender&&) = delete;
-    auto operator=(const Sender&) -> Sender& = delete;
-    auto operator=(Sender&&) -> Sender& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

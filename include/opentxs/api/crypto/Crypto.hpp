@@ -60,15 +60,14 @@ public:
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Crypto& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Crypto() = default;
-
-protected:
-    Crypto() = default;
-
-private:
     Crypto(const Crypto&) = delete;
     Crypto(Crypto&&) = delete;
     auto operator=(const Crypto&) -> Crypto& = delete;
     auto operator=(Crypto&&) -> Crypto& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Crypto() = default;
+
+protected:
+    Crypto() = default;
 };
 }  // namespace opentxs::api

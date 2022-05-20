@@ -58,6 +58,24 @@ public:
     using GroupMap =
         UnallocatedMap<claim::ClaimType, std::shared_ptr<claim::Group>>;
 
+    auto operator+(const Section& rhs) const -> Section;
+
+    auto AddItem(const std::shared_ptr<Item>& item) const -> Section;
+    auto begin() const -> GroupMap::const_iterator;
+    auto Claim(const Identifier& item) const -> std::shared_ptr<Item>;
+    auto Delete(const Identifier& id) const -> Section;
+    auto end() const -> GroupMap::const_iterator;
+    auto Group(const claim::ClaimType& type) const -> std::shared_ptr<Group>;
+    auto HaveClaim(const Identifier& item) const -> bool;
+    auto Serialize(AllocateOutput destination, const bool withIDs = false) const
+        -> bool;
+    OPENTXS_NO_EXPORT auto SerializeTo(
+        proto::ContactData& data,
+        const bool withIDs = false) const -> bool;
+    auto Size() const -> std::size_t;
+    auto Type() const -> const claim::SectionType&;
+    auto Version() const -> VersionNumber;
+
     Section(
         const api::Session& api,
         const UnallocatedCString& nym,
@@ -82,26 +100,11 @@ public:
         const UnallocatedCString& nym,
         const VersionNumber parentVersion,
         const ReadView& serialized);
+    Section() = delete;
     Section(const Section&) noexcept;
     Section(Section&&) noexcept;
-
-    auto operator+(const Section& rhs) const -> Section;
-
-    auto AddItem(const std::shared_ptr<Item>& item) const -> Section;
-    auto begin() const -> GroupMap::const_iterator;
-    auto Claim(const Identifier& item) const -> std::shared_ptr<Item>;
-    auto Delete(const Identifier& id) const -> Section;
-    auto end() const -> GroupMap::const_iterator;
-    auto Group(const claim::ClaimType& type) const -> std::shared_ptr<Group>;
-    auto HaveClaim(const Identifier& item) const -> bool;
-    auto Serialize(AllocateOutput destination, const bool withIDs = false) const
-        -> bool;
-    OPENTXS_NO_EXPORT auto SerializeTo(
-        proto::ContactData& data,
-        const bool withIDs = false) const -> bool;
-    auto Size() const -> std::size_t;
-    auto Type() const -> const claim::SectionType&;
-    auto Version() const -> VersionNumber;
+    auto operator=(const Section&) -> Section& = delete;
+    auto operator=(Section&&) -> Section& = delete;
 
     ~Section();
 
@@ -109,9 +112,5 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    Section() = delete;
-    auto operator=(const Section&) -> Section& = delete;
-    auto operator=(Section&&) -> Section& = delete;
 };
 }  // namespace opentxs::identity::wot::claim

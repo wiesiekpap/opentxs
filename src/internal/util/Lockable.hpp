@@ -40,6 +40,10 @@ public:
         , shared_lock_()
     {
     }
+    Lockable(const Lockable&) = delete;
+    Lockable(Lockable&&) = delete;
+    auto operator=(const Lockable&) -> Lockable& = delete;
+    auto operator=(Lockable&&) -> Lockable& = delete;
 
     virtual ~Lockable() = default;
 
@@ -61,11 +65,5 @@ protected:
     {
         return CheckLock(lock, shared_lock_);
     }
-
-private:
-    Lockable(const Lockable&) = delete;
-    Lockable(Lockable&&) = delete;
-    auto operator=(const Lockable&) -> Lockable& = delete;
-    auto operator=(Lockable&&) -> Lockable& = delete;
 };
 }  // namespace opentxs

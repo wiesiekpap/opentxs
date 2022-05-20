@@ -111,6 +111,12 @@ public:
     auto SetRemoteNymboxHash(const Identifier& hash) -> void final;
     auto SetRequest(const RequestNumber req) -> void final;
 
+    Base() = delete;
+    Base(const Base&) = delete;
+    Base(Base&&) = delete;
+    auto operator=(const Base&) -> Base& = delete;
+    auto operator=(Base&&) -> Base& = delete;
+
     ~Base() override = default;
 
 protected:
@@ -200,11 +206,5 @@ private:
     auto insert_available_number(const TransactionNumber& number) -> bool;
     // Transition method used for converting from Nym class
     auto insert_issued_number(const TransactionNumber& number) -> bool;
-
-    Base() = delete;
-    Base(const Base&) = delete;
-    Base(Base&&) = delete;
-    auto operator=(const Base&) -> Base& = delete;
-    auto operator=(Base&&) -> Base& = delete;
 };
 }  // namespace opentxs::otx::context::implementation

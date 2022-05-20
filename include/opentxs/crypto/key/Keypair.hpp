@@ -71,6 +71,11 @@ public:
         Secret& privateKey,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
 
+    Keypair(const Keypair&) = delete;
+    Keypair(Keypair&&) = delete;
+    auto operator=(const Keypair&) -> Keypair& = delete;
+    auto operator=(Keypair&&) -> Keypair& = delete;
+
     virtual ~Keypair() = default;
 
 protected:
@@ -80,10 +85,5 @@ private:
     friend OTKeypair;
 
     virtual auto clone() const -> Keypair* = 0;
-
-    Keypair(const Keypair&) = delete;
-    Keypair(Keypair&&) = delete;
-    auto operator=(const Keypair&) -> Keypair& = delete;
-    auto operator=(Keypair&&) -> Keypair& = delete;
 };
 }  // namespace opentxs::crypto::key

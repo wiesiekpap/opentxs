@@ -68,5 +68,5 @@ auto ReplyCallback::Process(zeromq::Message&& message) const noexcept -> Message
     return cb(std::move(message));
 }
 
-ReplyCallback::~ReplyCallback() {}
+ReplyCallback::~ReplyCallback() = default;
 }  // namespace opentxs::network::zeromq::implementation

@@ -103,6 +103,11 @@ public:
         blind::internal::Purse& purse,
         const PasswordPrompt& reason);
     Lucre(const Lucre& rhs, blind::internal::Purse& newOwner);
+    Lucre() = delete;
+    Lucre(const Lucre&);
+    Lucre(Lucre&&) = delete;
+    auto operator=(const Lucre&) -> Lucre& = delete;
+    auto operator=(Lucre&&) -> Lucre& = delete;
 
     ~Lucre() final = default;
 
@@ -133,10 +138,5 @@ private:
         const std::shared_ptr<proto::Ciphertext> publicKey,
         const std::shared_ptr<proto::Ciphertext> privateKey,
         const std::shared_ptr<proto::Ciphertext> spendable);
-    Lucre() = delete;
-    Lucre(const Lucre&);
-    Lucre(Lucre&&) = delete;
-    auto operator=(const Lucre&) -> Lucre& = delete;
-    auto operator=(Lucre&&) -> Lucre& = delete;
 };
 }  // namespace opentxs::otx::blind::token

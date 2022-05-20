@@ -21,15 +21,14 @@ class Sodium : virtual public api::crypto::Util,
                virtual public Scrypt
 {
 public:
-    ~Sodium() override = default;
-
-protected:
-    Sodium() = default;
-
-private:
     Sodium(const Sodium&) = delete;
     Sodium(Sodium&&) = delete;
     auto operator=(const Sodium&) -> Sodium& = delete;
     auto operator=(Sodium&&) -> Sodium& = delete;
+
+    ~Sodium() override = default;
+
+protected:
+    Sodium() = default;
 };
 }  // namespace opentxs::crypto

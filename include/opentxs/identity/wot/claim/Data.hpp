@@ -154,16 +154,16 @@ public:
     auto Type() const -> claim::ClaimType;
     auto Version() const -> VersionNumber;
 
+    Data() = delete;
+    Data(Data&&) = delete;
+    auto operator=(const Data&) -> Data& = delete;
+    auto operator=(Data&&) -> Data& = delete;
+
     ~Data();
 
 private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    Data() = delete;
-    Data(Data&&) = delete;
-    auto operator=(const Data&) -> Data& = delete;
-    auto operator=(Data&&) -> Data& = delete;
 };
 }  // namespace opentxs::identity::wot::claim

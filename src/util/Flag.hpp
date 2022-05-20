@@ -22,6 +22,11 @@ public:
     auto Toggle() -> bool final;
 
     Flag(const bool state);
+    Flag() = delete;
+    Flag(const Flag&) = delete;
+    Flag(Flag&&) = delete;
+    auto operator=(const Flag&) -> Flag& = delete;
+    auto operator=(Flag&&) -> Flag& = delete;
 
     ~Flag() final = default;
 
@@ -29,11 +34,5 @@ private:
     std::atomic<bool> flag_;
 
     auto clone() const -> Flag* final { return new Flag(flag_.load()); }
-
-    Flag() = delete;
-    Flag(const Flag&) = delete;
-    Flag(Flag&&) = delete;
-    auto operator=(const Flag&) -> Flag& = delete;
-    auto operator=(Flag&&) -> Flag& = delete;
 };
 }  // namespace opentxs::implementation

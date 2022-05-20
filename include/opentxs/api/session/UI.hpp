@@ -267,15 +267,14 @@ public:
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::UI& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~UI() = default;
-
-protected:
-    UI() = default;
-
-private:
     UI(const UI&) = delete;
     UI(UI&&) = delete;
     auto operator=(const UI&) -> UI& = delete;
     auto operator=(UI&&) -> UI& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~UI() = default;
+
+protected:
+    UI() = default;
 };
 }  // namespace opentxs::api::session

@@ -60,15 +60,14 @@ public:
 
     FrameSection(Imp* imp) noexcept;
     FrameSection() noexcept;
+    FrameSection(const FrameSection&) = delete;
     FrameSection(FrameSection&& rhs) noexcept;
+    auto operator=(const FrameSection&) -> FrameSection& = delete;
     auto operator=(FrameSection&&) noexcept -> FrameSection&;
 
     virtual ~FrameSection();
 
 private:
     Imp* imp_;
-
-    FrameSection(const FrameSection&) = delete;
-    auto operator=(const FrameSection&) -> FrameSection& = delete;
 };
 }  // namespace opentxs::network::zeromq

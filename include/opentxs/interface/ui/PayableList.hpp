@@ -43,15 +43,14 @@ public:
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::PayableListItem> = 0;
 
-    ~PayableList() override = default;
-
-protected:
-    PayableList() noexcept = default;
-
-private:
     PayableList(const PayableList&) = delete;
     PayableList(PayableList&&) = delete;
     auto operator=(const PayableList&) -> PayableList& = delete;
     auto operator=(PayableList&&) -> PayableList& = delete;
+
+    ~PayableList() override = default;
+
+protected:
+    PayableList() noexcept = default;
 };
 }  // namespace opentxs::ui

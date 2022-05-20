@@ -47,6 +47,8 @@ public:
     }
     void InitInstrument();
 
+    Instrument() = delete;
+
     ~Instrument() override;
 
 protected:
@@ -77,8 +79,5 @@ protected:
         const api::Session& api,
         const identifier::Notary& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
-
-private:
-    Instrument() = delete;
 };
 }  // namespace opentxs

@@ -40,15 +40,14 @@ public:
         const opentxs::PeriodicTask& task,
         const std::chrono::seconds& last = 0s) const -> int = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Periodic() = default;
-
-protected:
-    Periodic() = default;
-
-private:
     Periodic(const Periodic&) = delete;
     Periodic(Periodic&&) = delete;
     auto operator=(const Periodic&) -> Periodic& = delete;
     auto operator=(Periodic&&) -> Periodic& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Periodic() = default;
+
+protected:
+    Periodic() = default;
 };
 }  // namespace opentxs::api

@@ -85,6 +85,11 @@ public:
     virtual auto Type() const -> PeerRequestType = 0;
     virtual auto Server() const -> const identifier::Notary& = 0;
 
+    Reply(const Reply&) = delete;
+    Reply(Reply&&) = delete;
+    auto operator=(const Reply&) -> Reply& = delete;
+    auto operator=(Reply&&) -> Reply& = delete;
+
     ~Reply() override = default;
 
 protected:
@@ -96,10 +101,5 @@ private:
 #ifndef _WIN32
     auto clone() const noexcept -> Reply* override = 0;
 #endif
-
-    Reply(const Reply&) = delete;
-    Reply(Reply&&) = delete;
-    auto operator=(const Reply&) -> Reply& = delete;
-    auto operator=(Reply&&) -> Reply& = delete;
 };
 }  // namespace opentxs::contract::peer

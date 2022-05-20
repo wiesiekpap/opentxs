@@ -112,6 +112,12 @@ public:
         const std::optional<OTSecret> exportPassword = {},
         const bool onlyPrivate = false) -> bool final;
 
+    Key() = delete;
+    Key(const Key&) = delete;
+    Key(Key&&) = delete;
+    auto operator=(const Key&) -> Key& = delete;
+    auto operator=(Key&&) -> Key& = delete;
+
     ~Key() override = default;
 
 protected:
@@ -180,11 +186,5 @@ private:
         const proto::Signature& sig,
         const CredentialModeFlag asPrivate = PRIVATE_VERSION) const -> bool;
     auto VerifySignedBySelf(const Lock& lock) const -> bool;
-
-    Key() = delete;
-    Key(const Key&) = delete;
-    Key(Key&&) = delete;
-    auto operator=(const Key&) -> Key& = delete;
-    auto operator=(Key&&) -> Key& = delete;
 };
 }  // namespace opentxs::identity::credential::implementation

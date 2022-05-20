@@ -76,6 +76,10 @@ class Transaction;
 
 namespace crypto
 {
+namespace implementation
+{
+class Notification;
+}  // namespace implementation
 
 class Account;
 class Notification;
@@ -143,6 +147,12 @@ public:
         const opentxs::PaymentCode& code,
         const crypto::Notification& subaccount,
         allocator_type alloc) noexcept;
+    NotificationStateData() = delete;
+    NotificationStateData(const NotificationStateData&) = delete;
+    NotificationStateData(NotificationStateData&&) = delete;
+    auto operator=(const NotificationStateData&)
+        -> NotificationStateData& = delete;
+    auto operator=(NotificationStateData&&) -> NotificationStateData& = delete;
 
     ~NotificationStateData() final = default;
 
@@ -182,11 +192,5 @@ private:
 
     auto init_contacts() noexcept -> void;
     auto work() noexcept -> bool final;
-
-    NotificationStateData() = delete;
-    NotificationStateData(const NotificationStateData&) = delete;
-    NotificationStateData(NotificationStateData&&) = delete;
-    NotificationStateData& operator=(const NotificationStateData&) = delete;
-    NotificationStateData& operator=(NotificationStateData&&) = delete;
 };
 }  // namespace opentxs::blockchain::node::wallet

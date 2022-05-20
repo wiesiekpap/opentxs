@@ -38,6 +38,8 @@ public:
         const TaskID taskID,
         const DepositPaymentTask& payment,
         PaymentTasks& paymenttasks);
+    DepositPayment() = delete;
+
     ~DepositPayment() final;
 
 private:
@@ -50,7 +52,5 @@ private:
 
     auto deposit() -> bool;
     auto get_account_id(const identifier::UnitDefinition& unit) -> OTIdentifier;
-
-    DepositPayment() = delete;
 };
 }  // namespace opentxs::otx::client::implementation

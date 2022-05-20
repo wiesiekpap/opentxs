@@ -19,19 +19,6 @@ template <class C>
 class OPENTXS_EXPORT SharedPimpl
 {
 public:
-    explicit SharedPimpl(const std::shared_ptr<const C>& in) noexcept
-        : pimpl_(in)
-    {
-        if (false == bool(pimpl_)) {
-            std::cout << PrintStackTrace() << '\n';
-            abort();
-        }
-    }
-    SharedPimpl(const SharedPimpl& rhs) noexcept = default;
-    SharedPimpl(SharedPimpl&& rhs) noexcept = default;
-    auto operator=(const SharedPimpl& rhs) noexcept -> SharedPimpl& = default;
-    auto operator=(SharedPimpl&& rhs) noexcept -> SharedPimpl& = default;
-
     operator const C&() const noexcept { return *pimpl_; }
 
     auto operator->() const -> const C* { return pimpl_.get(); }
@@ -54,11 +41,23 @@ public:
     }
     auto get() const noexcept -> const C& { return *pimpl_; }
 
+    explicit SharedPimpl(const std::shared_ptr<const C>& in) noexcept
+        : pimpl_(in)
+    {
+        if (false == bool(pimpl_)) {
+            std::cout << PrintStackTrace() << '\n';
+            abort();
+        }
+    }
+    SharedPimpl() = delete;
+    SharedPimpl(const SharedPimpl& rhs) noexcept = default;
+    SharedPimpl(SharedPimpl&& rhs) noexcept = default;
+    auto operator=(const SharedPimpl& rhs) noexcept -> SharedPimpl& = default;
+    auto operator=(SharedPimpl&& rhs) noexcept -> SharedPimpl& = default;
+
     ~SharedPimpl() = default;
 
 private:
     std::shared_ptr<const C> pimpl_{nullptr};
-
-    SharedPimpl() = delete;
 };  // class SharedPimpl
 }  // namespace opentxs

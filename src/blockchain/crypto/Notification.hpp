@@ -98,6 +98,10 @@ public:
         const opentxs::PaymentCode& code,
         proto::HDPath&& path,
         Identifier& out) noexcept;
+    Notification(const Notification&) = delete;
+    Notification(Notification&&) = delete;
+    auto operator=(const Notification&) -> Notification& = delete;
+    auto operator=(Notification&&) -> Notification& = delete;
 
     ~Notification() final = default;
 
@@ -138,10 +142,5 @@ private:
         throw std::out_of_range{
             "no balance elements present in notification subaccounts"};
     }
-
-    Notification(const Notification&) = delete;
-    Notification(Notification&&) = delete;
-    auto operator=(const Notification&) -> Notification& = delete;
-    auto operator=(Notification&&) -> Notification& = delete;
 };
 }  // namespace opentxs::blockchain::crypto::implementation

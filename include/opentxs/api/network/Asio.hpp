@@ -121,6 +121,11 @@ public:
 
     OPENTXS_NO_EXPORT Asio(
         const opentxs::network::zeromq::Context& zmq) noexcept;
+    Asio() = delete;
+    Asio(const Asio&) = delete;
+    Asio(Asio&&) = delete;
+    auto operator=(const Asio&) -> Asio& = delete;
+    auto operator=(Asio&&) -> Asio& = delete;
 
     OPENTXS_NO_EXPORT ~Asio();
 
@@ -128,11 +133,5 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    Asio() = delete;
-    Asio(const Asio&) = delete;
-    Asio(Asio&&) = delete;
-    auto operator=(const Asio&) -> Asio& = delete;
-    auto operator=(Asio&&) -> Asio& = delete;
 };
 }  // namespace opentxs::api::network

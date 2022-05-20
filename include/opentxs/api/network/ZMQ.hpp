@@ -61,15 +61,14 @@ public:
     virtual auto Status(const UnallocatedCString& server) const
         -> opentxs::network::ConnectionState = 0;
 
-    OPENTXS_NO_EXPORT virtual ~ZMQ() = default;
-
-protected:
-    ZMQ() = default;
-
-private:
     ZMQ(const ZMQ&) = delete;
     ZMQ(ZMQ&&) = delete;
     auto operator=(const ZMQ&) -> ZMQ& = delete;
     auto operator=(const ZMQ&&) -> ZMQ& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~ZMQ() = default;
+
+protected:
+    ZMQ() = default;
 };
 }  // namespace opentxs::api::network

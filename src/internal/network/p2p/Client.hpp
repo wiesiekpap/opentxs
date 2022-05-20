@@ -56,6 +56,11 @@ public:
     auto Init(const api::network::Blockchain& parent) noexcept -> void;
 
     Client(const api::Session& api) noexcept;
+    Client() = delete;
+    Client(const Client&) = delete;
+    Client(Client&&) = delete;
+    auto operator=(const Client&) -> Client& = delete;
+    auto operator=(Client&&) -> Client& = delete;
 
     ~Client();
 
@@ -67,9 +72,4 @@ private:
     Client(
         const api::Session& api,
         opentxs::network::zeromq::internal::Handle&& batch) noexcept;
-    Client() = delete;
-    Client(const Client&) = delete;
-    Client(Client&&) = delete;
-    auto operator=(const Client&) -> Client& = delete;
-    auto operator=(Client&&) -> Client& = delete;
 };

@@ -46,6 +46,8 @@ public:
     auto Queue(const DepositPaymentTask& task) -> BackgroundTask;
 
     PaymentTasks(client::internal::StateMachine& parent);
+    PaymentTasks() = delete;
+
     ~PaymentTasks() final = default;
 
 private:
@@ -62,7 +64,5 @@ private:
 
     auto cleanup() -> bool;
     auto get_payment_id(const OTPayment& payment) const -> OTIdentifier;
-
-    PaymentTasks() = delete;
 };
 }  // namespace opentxs::otx::client::implementation

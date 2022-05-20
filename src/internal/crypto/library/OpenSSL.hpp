@@ -18,15 +18,14 @@ class OpenSSL : virtual public HashingProvider,
                 virtual public AsymmetricProvider
 {
 public:
-    ~OpenSSL() override = default;
-
-protected:
-    OpenSSL() = default;
-
-private:
     OpenSSL(const OpenSSL&) = delete;
     OpenSSL(OpenSSL&&) = delete;
     auto operator=(const OpenSSL&) -> OpenSSL& = delete;
     auto operator=(OpenSSL&&) -> OpenSSL& = delete;
+
+    ~OpenSSL() override = default;
+
+protected:
+    OpenSSL() = default;
 };
 }  // namespace opentxs::crypto

@@ -64,6 +64,8 @@ public:
         return m_SENDER_NYM_ID;
     }
 
+    OTTrackable() = delete;
+
     ~OTTrackable() override;
 
 protected:
@@ -88,8 +90,5 @@ protected:
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const Identifier& ACCT_ID,
         const identifier::Nym& NYM_ID);
-
-private:
-    OTTrackable() = delete;
 };
 }  // namespace opentxs

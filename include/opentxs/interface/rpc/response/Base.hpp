@@ -80,6 +80,10 @@ public:
     auto Version() const noexcept -> VersionNumber;
 
     Base() noexcept;
+    Base(const Base&) = delete;
+    Base(Base&&) = delete;
+    auto operator=(const Base&) -> Base& = delete;
+    auto operator=(Base&&) -> Base& = delete;
 
     virtual ~Base();
 
@@ -87,11 +91,5 @@ protected:
     std::unique_ptr<Imp> imp_;
 
     Base(std::unique_ptr<Imp> imp) noexcept;
-
-private:
-    Base(const Base&) = delete;
-    Base(Base&&) = delete;
-    auto operator=(const Base&) -> Base& = delete;
-    auto operator=(Base&&) -> Base& = delete;
 };
 }  // namespace opentxs::rpc::response

@@ -38,15 +38,14 @@ public:
         const api::Session& api,
         const proto::Verification& item) -> UnallocatedCString;
 
-    ~Verification() override = default;
-
-protected:
-    Verification() noexcept {}  // TODO Signable
-
-private:
     Verification(const Verification&) = delete;
     Verification(Verification&&) = delete;
     auto operator=(const Verification&) -> Verification& = delete;
     auto operator=(Verification&&) -> Verification& = delete;
+
+    ~Verification() override = default;
+
+protected:
+    Verification() noexcept = default;  // TODO Signable
 };
 }  // namespace opentxs::identity::credential

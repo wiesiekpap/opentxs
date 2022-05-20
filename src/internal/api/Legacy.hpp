@@ -92,17 +92,17 @@ public:
     virtual auto ServerDataFolder(const int instance) const noexcept
         -> UnallocatedCString = 0;
 
+    Legacy(const Legacy&) = delete;
+    Legacy(Legacy&&) = delete;
+    auto operator=(const Legacy&) -> Legacy& = delete;
+    auto operator=(Legacy&&) -> Legacy& = delete;
+
     virtual ~Legacy() = default;
 
 protected:
     Legacy() noexcept = default;
 
 private:
-    Legacy(const Legacy&) = delete;
-    Legacy(Legacy&&) = delete;
-    auto operator=(const Legacy&) -> Legacy& = delete;
-    auto operator=(Legacy&&) -> Legacy& = delete;
-
     static auto internal_concatenate(
         const char* name,
         const UnallocatedCString& ext) noexcept -> UnallocatedCString;

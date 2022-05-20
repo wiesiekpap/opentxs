@@ -45,6 +45,12 @@ public:
     auto apply_socket(SocketCallback&& cb) const noexcept -> bool override;
     auto Close() const noexcept -> bool final;
 
+    Receiver() = delete;
+    Receiver(const Receiver&) = delete;
+    Receiver(Receiver&&) = delete;
+    auto operator=(const Receiver&) -> Receiver& = delete;
+    auto operator=(Receiver&&) -> Receiver& = delete;
+
 protected:
     const bool start_thread_;
     mutable std::thread receiver_thread_;
@@ -79,11 +85,5 @@ private:
     auto add_task(SocketCallback&& cb) const noexcept -> int;
     auto task_result(const int id) const noexcept -> bool;
     auto task_running(const int id) const noexcept -> bool;
-
-    Receiver() = delete;
-    Receiver(const Receiver&) = delete;
-    Receiver(Receiver&&) = delete;
-    auto operator=(const Receiver&) -> Receiver& = delete;
-    auto operator=(Receiver&&) -> Receiver& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

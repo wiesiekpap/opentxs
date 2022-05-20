@@ -266,6 +266,11 @@ public:
         const Nym_p& local,
         const Nym_p& remote,
         network::ServerConnection& connection);
+    Server() = delete;
+    Server(const Server&) = delete;
+    Server(Server&&) = delete;
+    auto operator=(const Server&) -> Server& = delete;
+    auto operator=(Server&&) -> Server& = delete;
 
     ~Server() final;
 
@@ -783,11 +788,5 @@ private:
     auto verify_tentative_number(
         const Lock& lock,
         const TransactionNumber& number) const -> bool;
-
-    Server() = delete;
-    Server(const Server&) = delete;
-    Server(Server&&) = delete;
-    auto operator=(const Server&) -> Server& = delete;
-    auto operator=(Server&&) -> Server& = delete;
 };
 }  // namespace opentxs::otx::context::implementation

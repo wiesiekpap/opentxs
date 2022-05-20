@@ -656,15 +656,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> session::internal::Wallet& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Wallet() = default;
-
-protected:
-    Wallet() = default;
-
-private:
     Wallet(const Wallet&) = delete;
     Wallet(Wallet&&) = delete;
     auto operator=(const Wallet&) -> Wallet& = delete;
     auto operator=(Wallet&&) -> Wallet& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Wallet() = default;
+
+protected:
+    Wallet() = default;
 };
 }  // namespace opentxs::api::session

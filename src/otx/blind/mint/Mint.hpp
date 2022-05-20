@@ -163,10 +163,8 @@ public:
     Imp(const api::Session& api) noexcept;
     Imp(const api::Session& api,
         const identifier::UnitDefinition& unit) noexcept;
+    Imp() = delete;
 
     ~Imp() override = default;
-
-private:
-    Imp() = delete;
 };
 }  // namespace opentxs::otx::blind

@@ -85,14 +85,13 @@ struct MailCache::Imp {
             ++counter_;
         }
 
-        ~Task() = default;
-
-    private:
         Task() = delete;
         Task(const Task&) = delete;
         Task(Task&&) = delete;
         auto operator=(const Task&) -> Task& = delete;
         auto operator=(Task&&) -> Task& = delete;
+
+        ~Task() = default;
     };
 
     auto Mail(
@@ -263,6 +262,11 @@ struct MailCache::Imp {
         , fifo_()
     {
     }
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() = default;
 
@@ -333,12 +337,6 @@ private:
             fifo_.pop();
         }
     }
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 
 MailCache::MailCache(

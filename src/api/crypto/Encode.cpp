@@ -129,8 +129,7 @@ auto Encode::DataDecode(const UnallocatedCString& input) const
 
     if (Base64Decode(SanatizeBase64(input), decoded)) {
 
-        return UnallocatedCString(
-            reinterpret_cast<const char*>(decoded.data()), decoded.size());
+        return {reinterpret_cast<const char*>(decoded.data()), decoded.size()};
     }
 
     return "";

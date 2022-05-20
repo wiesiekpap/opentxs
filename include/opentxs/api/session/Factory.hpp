@@ -610,15 +610,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto InternalSession() noexcept
         -> internal::Factory& = 0;
 
-    OPENTXS_NO_EXPORT ~Factory() override = default;
-
-protected:
-    Factory() = default;
-
-private:
     Factory(const Factory&) = delete;
     Factory(Factory&&) = delete;
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
+
+    OPENTXS_NO_EXPORT ~Factory() override = default;
+
+protected:
+    Factory() = default;
 };
 }  // namespace opentxs::api::session

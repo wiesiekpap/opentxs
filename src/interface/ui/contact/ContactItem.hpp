@@ -91,6 +91,12 @@ public:
         const ContactSubsectionRowID& rowID,
         const ContactSubsectionSortKey& sortKey,
         CustomData& custom) noexcept;
+    ContactItem() = delete;
+    ContactItem(const ContactItem&) = delete;
+    ContactItem(ContactItem&&) = delete;
+    auto operator=(const ContactItem&) -> ContactItem& = delete;
+    auto operator=(ContactItem&&) -> ContactItem& = delete;
+
     ~ContactItem() final = default;
 
 private:
@@ -99,12 +105,6 @@ private:
     auto reindex(
         const ContactSubsectionSortKey& key,
         CustomData& custom) noexcept -> bool final;
-
-    ContactItem() = delete;
-    ContactItem(const ContactItem&) = delete;
-    ContactItem(ContactItem&&) = delete;
-    auto operator=(const ContactItem&) -> ContactItem& = delete;
-    auto operator=(ContactItem&&) -> ContactItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

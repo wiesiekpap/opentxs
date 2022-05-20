@@ -60,15 +60,14 @@ public:
         -> internal::Client& = 0;
     virtual auto IssueNumber(const TransactionNumber& number) -> bool = 0;
 
-    ~Client() override = default;
-
-protected:
-    Client() = default;
-
-private:
     Client(const Client&) = delete;
     Client(Client&&) = delete;
     auto operator=(const Client&) -> Client& = delete;
     auto operator=(Client&&) -> Client& = delete;
+
+    ~Client() override = default;
+
+protected:
+    Client() = default;
 };
 }  // namespace opentxs::otx::context

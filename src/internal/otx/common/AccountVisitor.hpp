@@ -34,6 +34,12 @@ public:
 
     auto Wallet() const -> const api::session::Wallet& { return wallet_; }
 
+    AccountVisitor() = delete;
+    AccountVisitor(const AccountVisitor&) = delete;
+    AccountVisitor(AccountVisitor&&) = delete;
+    auto operator=(const AccountVisitor&) -> AccountVisitor& = delete;
+    auto operator=(AccountVisitor&&) -> AccountVisitor& = delete;
+
     virtual ~AccountVisitor() = default;
 
 protected:
@@ -44,12 +50,5 @@ protected:
     AccountVisitor(
         const api::session::Wallet& wallet,
         const identifier::Notary& notaryID);
-
-private:
-    AccountVisitor() = delete;
-    AccountVisitor(const AccountVisitor&) = delete;
-    AccountVisitor(AccountVisitor&&) = delete;
-    auto operator=(const AccountVisitor&) -> AccountVisitor& = delete;
-    auto operator=(AccountVisitor&&) -> AccountVisitor& = delete;
 };
 }  // namespace opentxs

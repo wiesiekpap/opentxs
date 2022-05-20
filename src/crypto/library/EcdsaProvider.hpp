@@ -46,18 +46,17 @@ public:
         return false;
     }
 
+    EcdsaProvider() = delete;
+    EcdsaProvider(const EcdsaProvider&) = delete;
+    EcdsaProvider(EcdsaProvider&&) = delete;
+    auto operator=(const EcdsaProvider&) -> EcdsaProvider& = delete;
+    auto operator=(EcdsaProvider&&) -> EcdsaProvider& = delete;
+
     ~EcdsaProvider() override = default;
 
 protected:
     const api::Crypto& crypto_;
 
     EcdsaProvider(const api::Crypto& crypto);
-
-private:
-    EcdsaProvider() = delete;
-    EcdsaProvider(const EcdsaProvider&) = delete;
-    EcdsaProvider(EcdsaProvider&&) = delete;
-    auto operator=(const EcdsaProvider&) -> EcdsaProvider& = delete;
-    auto operator=(EcdsaProvider&&) -> EcdsaProvider& = delete;
 };
 }  // namespace opentxs::crypto::implementation

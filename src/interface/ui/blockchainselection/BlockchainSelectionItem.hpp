@@ -89,6 +89,13 @@ public:
         const BlockchainSelectionRowID& rowID,
         const BlockchainSelectionSortKey& sortKey,
         CustomData& custom) noexcept;
+    BlockchainSelectionItem() = delete;
+    BlockchainSelectionItem(const BlockchainSelectionItem&) = delete;
+    BlockchainSelectionItem(BlockchainSelectionItem&&) = delete;
+    auto operator=(const BlockchainSelectionItem&)
+        -> BlockchainSelectionItem& = delete;
+    auto operator=(BlockchainSelectionItem&&)
+        -> BlockchainSelectionItem& = delete;
 
     ~BlockchainSelectionItem() final;
 
@@ -102,14 +109,6 @@ private:
 
     auto reindex(const BlockchainSelectionSortKey&, CustomData&) noexcept
         -> bool final;
-
-    BlockchainSelectionItem() = delete;
-    BlockchainSelectionItem(const BlockchainSelectionItem&) = delete;
-    BlockchainSelectionItem(BlockchainSelectionItem&&) = delete;
-    auto operator=(const BlockchainSelectionItem&)
-        -> BlockchainSelectionItem& = delete;
-    auto operator=(BlockchainSelectionItem&&)
-        -> BlockchainSelectionItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 #pragma GCC diagnostic pop

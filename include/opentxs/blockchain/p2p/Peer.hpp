@@ -22,15 +22,14 @@ public:
     virtual auto Connected() const noexcept -> ConnectionStatus = 0;
     virtual auto HandshakeComplete() const noexcept -> Handshake = 0;
 
-    virtual ~Peer() = default;
-
-protected:
-    Peer() noexcept = default;
-
-private:
     Peer(const Peer&) = delete;
     Peer(Peer&&) = delete;
     auto operator=(const Peer&) -> Peer& = delete;
     auto operator=(Peer&&) -> Peer& = delete;
+
+    virtual ~Peer() = default;
+
+protected:
+    Peer() noexcept = default;
 };
 }  // namespace opentxs::blockchain::p2p

@@ -1544,10 +1544,8 @@ struct ScanListener::Imp {
             , promise_()
         {
         }
-        Data(Data&&) = default;
-
-    private:
         Data() = delete;
+        Data(Data&&) = default;
         Data(const Data&) = delete;
         auto operator=(const Data&) -> Data& = delete;
         auto operator=(Data&&) -> Data& = delete;
@@ -2173,6 +2171,11 @@ struct TXOs::Imp {
         , immature_()
     {
     }
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
 private:
     struct TXO {
@@ -2196,15 +2199,8 @@ private:
             , value_(value)
         {
         }
-        TXO(const TXO& rhs)
-        noexcept
-            : outpoint_(rhs.outpoint_)
-            , value_(rhs.value_)
-        {
-        }
-
-    private:
         TXO() = delete;
+        TXO(const TXO& rhs) = default;
         TXO(TXO&&) = delete;
         auto operator=(const TXO&) -> TXO& = delete;
         auto operator=(TXO&&) -> TXO& = delete;
@@ -2315,12 +2311,6 @@ private:
             return false;
         }
     }
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 
 TXOs::TXOs(const User& owner) noexcept

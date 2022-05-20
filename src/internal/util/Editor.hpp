@@ -24,6 +24,8 @@ public:
     using LockedSave = std::function<void(ChildType*, Lock&)>;
     using UnlockedSave = std::function<void(ChildType*)>;
 
+    auto get() -> ChildType& { return *object_; }
+
     Editor(
         MutexType& objectMutex,
         ChildType* object,
@@ -40,7 +42,6 @@ public:
         assert(object_lock_);
         assert(locked_save_callback_);
     }
-
     Editor(
         ChildType* object,
         UnlockedSave save,
@@ -55,7 +56,8 @@ public:
         assert(nullptr != object);
         assert(unlocked_save_callback_);
     }
-
+    Editor() = delete;
+    Editor(const Editor&) = delete;
     Editor(Editor&& rhs)
         : object_(rhs.object_)
         , locked_(rhs.locked_)
@@ -66,8 +68,8 @@ public:
     {
         rhs.object_ = nullptr;
     }
-
-    auto get() -> ChildType& { return *object_; }
+    auto operator=(const Editor&) -> Editor& = delete;
+    auto operator=(Editor&&) -> Editor& = delete;
 
     ~Editor()
     {
@@ -96,9 +98,5 @@ private:
     std::unique_ptr<LockedSave> locked_save_callback_{nullptr};
     std::unique_ptr<UnlockedSave> unlocked_save_callback_{nullptr};
     const OptionalCallback optional_callback_{nullptr};
-
-    Editor() = delete;
-    Editor(const Editor&) = delete;
-    auto operator=(const Editor&) -> Editor& = delete;
 };  // class Editor
 }  // namespace opentxs

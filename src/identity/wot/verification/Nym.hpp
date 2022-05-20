@@ -58,13 +58,10 @@ public:
         return *items_.at(position);
     }
     auto begin() const noexcept -> const_iterator final { return cbegin(); }
-    auto cbegin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto cbegin() const noexcept -> const_iterator final { return {this, 0}; }
     auto cend() const noexcept -> const_iterator final
     {
-        return const_iterator(this, items_.size());
+        return {this, items_.size()};
     }
     auto end() const noexcept -> const_iterator final { return cend(); }
     auto ID() const noexcept -> const identifier::Nym& final { return id_; }
@@ -88,6 +85,12 @@ public:
     auto UpgradeItemVersion(
         const VersionNumber itemVersion,
         VersionNumber& nymVersion) noexcept -> bool final;
+
+    Nym() = delete;
+    Nym(const Nym&) = delete;
+    Nym(Nym&&) = delete;
+    auto operator=(const Nym&) -> Nym& = delete;
+    auto operator=(Nym&&) -> Nym& = delete;
 
     ~Nym() final = default;
 
@@ -117,10 +120,5 @@ private:
         const identifier::Nym& nym,
         const VersionNumber version = DefaultVersion) noexcept;
     Nym(internal::Group& parent, const SerializedType& serialized) noexcept;
-    Nym() = delete;
-    Nym(const Nym&) = delete;
-    Nym(Nym&&) = delete;
-    auto operator=(const Nym&) -> Nym& = delete;
-    auto operator=(Nym&&) -> Nym& = delete;
 };
 }  // namespace opentxs::identity::wot::verification::implementation

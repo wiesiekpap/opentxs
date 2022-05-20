@@ -34,6 +34,12 @@ namespace opentxs::network::zeromq::implementation
 class PairEventListener final : public zeromq::socket::implementation::Subscribe
 {
 public:
+    PairEventListener() = delete;
+    PairEventListener(const PairEventListener&) = delete;
+    PairEventListener(PairEventListener&&) = delete;
+    auto operator=(const PairEventListener&) -> PairEventListener& = delete;
+    auto operator=(PairEventListener&&) -> PairEventListener& = delete;
+
     ~PairEventListener() final = default;
 
 private:
@@ -48,10 +54,5 @@ private:
         const zeromq::Context& context,
         const zeromq::PairEventCallback& callback,
         const int instance);
-    PairEventListener() = delete;
-    PairEventListener(const PairEventListener&) = delete;
-    PairEventListener(PairEventListener&&) = delete;
-    auto operator=(const PairEventListener&) -> PairEventListener& = delete;
-    auto operator=(PairEventListener&&) -> PairEventListener& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

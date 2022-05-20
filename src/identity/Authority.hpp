@@ -200,6 +200,12 @@ public:
         UnallocatedList<UnallocatedCString>& verificationCredentialIDs) final;
     auto WriteCredentials() const -> bool final;
 
+    Authority() = delete;
+    Authority(const Authority&) = delete;
+    Authority(Authority&&) = delete;
+    auto operator=(const Authority&) -> Authority& = delete;
+    auto operator=(Authority&&) -> Authority& = delete;
+
     ~Authority() final = default;
 
 private:
@@ -338,10 +344,5 @@ private:
         const crypto::Parameters& parameters,
         VersionNumber nymVersion,
         const PasswordPrompt& reason) noexcept(false);
-    Authority() = delete;
-    Authority(const Authority&) = delete;
-    Authority(Authority&&) = delete;
-    auto operator=(const Authority&) -> Authority& = delete;
-    auto operator=(Authority&&) -> Authority& = delete;
 };
 }  // namespace opentxs::identity::implementation

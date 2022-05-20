@@ -83,14 +83,12 @@ public:
     virtual auto UnbindAll() noexcept -> bool { return {}; }
 
     Imp() = default;
-
-    virtual ~Imp() = default;
-
-private:
     Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
+
+    virtual ~Imp() = default;
 };
 }  // namespace opentxs::network::zeromq::socket
 
@@ -127,6 +125,11 @@ public:
     auto UnbindAll() noexcept -> bool final;
 
     Raw(const Context& context, const socket::Type type) noexcept;
+    Raw() = delete;
+    Raw(const Raw&) = delete;
+    Raw(Raw&&) = delete;
+    auto operator=(const Raw&) -> Raw& = delete;
+    auto operator=(Raw&&) -> Raw& = delete;
 
     ~Raw() final;
 
@@ -146,11 +149,5 @@ private:
 
     auto record_endpoint(Endpoints& out) noexcept -> void;
     auto send(Message&& msg, const int flags) noexcept -> bool;
-
-    Raw() = delete;
-    Raw(const Raw&) = delete;
-    Raw(Raw&&) = delete;
-    auto operator=(const Raw&) -> Raw& = delete;
-    auto operator=(Raw&&) -> Raw& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

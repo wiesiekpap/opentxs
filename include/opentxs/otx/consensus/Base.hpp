@@ -97,15 +97,14 @@ public:
     virtual void SetRemoteNymboxHash(const Identifier& hash) = 0;
     virtual void SetRequest(const RequestNumber req) = 0;
 
-    ~Base() override = default;
-
-protected:
-    Base() = default;
-
-private:
     Base(const Base&) = delete;
     Base(Base&&) = delete;
     auto operator=(const Base&) -> Base& = delete;
     auto operator=(Base&&) -> Base& = delete;
+
+    ~Base() override = default;
+
+protected:
+    Base() = default;
 };
 }  // namespace opentxs::otx::context

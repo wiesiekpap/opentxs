@@ -64,14 +64,13 @@ public:
     auto setActiveNym(QString) noexcept -> void;
 
     Imp(const api::session::Client& api) noexcept;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
 private:
     const api::session::Client& api_;
     IdentityManagerQt* parent_;
     libguarded::ordered_guarded<OTNymID, std::shared_mutex> active_nym_;
-
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };

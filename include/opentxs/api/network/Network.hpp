@@ -52,16 +52,15 @@ public:
     OPENTXS_NO_EXPORT auto Shutdown() noexcept -> void;
 
     OPENTXS_NO_EXPORT Network(Imp*) noexcept;
-
-    OPENTXS_NO_EXPORT ~Network();
-
-private:
-    Imp* imp_;
-
     Network() = delete;
     Network(const Network&) = delete;
     Network(Network&&) = delete;
     auto operator=(const Network&) -> Network& = delete;
     auto operator=(Network&&) -> Network& = delete;
+
+    OPENTXS_NO_EXPORT ~Network();
+
+private:
+    Imp* imp_;
 };
 }  // namespace opentxs::api::network

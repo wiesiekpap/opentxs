@@ -245,6 +245,12 @@ public:
     auto SendMonitor() noexcept -> implementation::SendMonitor& final;
     auto SetCallbacks(Callbacks&& cb) noexcept -> void final;
 
+    AccountActivity() = delete;
+    AccountActivity(const AccountActivity&) = delete;
+    AccountActivity(AccountActivity&&) = delete;
+    auto operator=(const AccountActivity&) -> AccountActivity& = delete;
+    auto operator=(AccountActivity&&) -> AccountActivity& = delete;
+
     ~AccountActivity() override;
 
 protected:
@@ -288,11 +294,5 @@ private:
 
     auto init_qt() noexcept -> void;
     auto shutdown_qt() noexcept -> void;
-
-    AccountActivity() = delete;
-    AccountActivity(const AccountActivity&) = delete;
-    AccountActivity(AccountActivity&&) = delete;
-    auto operator=(const AccountActivity&) -> AccountActivity& = delete;
-    auto operator=(AccountActivity&&) -> AccountActivity& = delete;
 };
 }  // namespace opentxs::ui::implementation

@@ -68,14 +68,12 @@ struct GetAccountActivity final : public Base::Imp {
         }())
     {
     }
-
-    ~GetAccountActivity() final = default;
-
-private:
     GetAccountActivity() = delete;
     GetAccountActivity(GetAccountActivity&&) = delete;
     auto operator=(const GetAccountActivity&) -> GetAccountActivity& = delete;
     auto operator=(GetAccountActivity&&) -> GetAccountActivity& = delete;
+
+    ~GetAccountActivity() final = default;
 };
 }  // namespace opentxs::rpc::response::implementation
 

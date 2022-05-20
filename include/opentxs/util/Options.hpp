@@ -94,6 +94,8 @@ public:
     Options(int argc, char** argv) noexcept;
     Options(const Options& rhs) noexcept;
     Options(Options&& rhs) noexcept;
+    auto operator=(const Options&) -> Options& = delete;
+    auto operator=(Options&&) noexcept -> Options& = delete;
 
     ~Options();
 
@@ -103,9 +105,6 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    auto operator=(const Options&) -> Options& = delete;
-    auto operator=(Options&&) noexcept -> Options& = delete;
 };
 
 auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options;

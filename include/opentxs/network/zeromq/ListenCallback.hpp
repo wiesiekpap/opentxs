@@ -47,6 +47,11 @@ public:
 
     virtual auto Replace(ReceiveCallback callback) noexcept -> void = 0;
 
+    ListenCallback(const ListenCallback&) = delete;
+    ListenCallback(ListenCallback&&) = default;
+    auto operator=(const ListenCallback&) -> ListenCallback& = delete;
+    auto operator=(ListenCallback&&) -> ListenCallback& = default;
+
     virtual ~ListenCallback() = default;
 
 protected:
@@ -59,13 +64,5 @@ private:
 public:
 #endif
     virtual auto clone() const -> ListenCallback* = 0;
-#ifdef _WIN32
-private:
-#endif
-
-    ListenCallback(const ListenCallback&) = delete;
-    ListenCallback(ListenCallback&&) = default;
-    auto operator=(const ListenCallback&) -> ListenCallback& = delete;
-    auto operator=(ListenCallback&&) -> ListenCallback& = default;
 };
 }  // namespace opentxs::network::zeromq

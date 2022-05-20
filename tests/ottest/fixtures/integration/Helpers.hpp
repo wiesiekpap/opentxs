@@ -112,6 +112,7 @@ struct Callbacks {
         WidgetCallback callback) noexcept -> std::future<bool>;
 
     Callbacks(const ot::UnallocatedCString& name) noexcept;
+    Callbacks() = delete;
 
 private:
     mutable std::mutex map_lock_;
@@ -120,8 +121,6 @@ private:
     WidgetTypeMap ui_names_;
 
     auto callback(ot::network::zeromq::Message&& incoming) noexcept -> void;
-
-    Callbacks() = delete;
 };
 
 struct Issuer {

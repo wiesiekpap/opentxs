@@ -90,6 +90,10 @@ public:
         const api::Session& api,
         const storage::lmdb::LMDB& lmdb,
         const blockchain::cfilter::Type filter) noexcept;
+    SubchainData() = delete;
+    SubchainData(const SubchainData&) = delete;
+    auto operator=(const SubchainData&) -> SubchainData& = delete;
+    auto operator=(SubchainData&&) -> SubchainData& = delete;
 
     ~SubchainData();
 
@@ -97,10 +101,5 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    SubchainData() = delete;
-    SubchainData(const SubchainData&) = delete;
-    auto operator=(const SubchainData&) -> SubchainData& = delete;
-    auto operator=(SubchainData&&) -> SubchainData& = delete;
 };
 }  // namespace opentxs::blockchain::database::wallet

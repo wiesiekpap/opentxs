@@ -38,15 +38,14 @@ public:
 
     virtual auto getMetaData() -> OTSignatureMetadata& = 0;
 
-    ~Signature() override = default;
-
-protected:
-    Signature() = default;
-
-private:
     Signature(const Signature&) = delete;
     Signature(Signature&&) = delete;
     auto operator=(const Signature&) -> Signature& = delete;
     auto operator=(Signature&&) -> Signature& = delete;
+
+    ~Signature() override = default;
+
+protected:
+    Signature() = default;
 };
 }  // namespace opentxs

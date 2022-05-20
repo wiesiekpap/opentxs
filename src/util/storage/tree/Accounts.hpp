@@ -76,6 +76,12 @@ public:
         const identifier::UnitDefinition& contract,
         const UnitType unit) -> bool;
 
+    Accounts() = delete;
+    Accounts(const Accounts&) = delete;
+    Accounts(Accounts&&) = delete;
+    auto operator=(const Accounts&) -> Accounts = delete;
+    auto operator=(Accounts&&) -> Accounts = delete;
+
     ~Accounts() final = default;
 
 private:
@@ -136,10 +142,5 @@ private:
     auto save(const Lock& lock) const -> bool final;
 
     Accounts(const Driver& storage, const UnallocatedCString& key);
-    Accounts() = delete;
-    Accounts(const Accounts&) = delete;
-    Accounts(Accounts&&) = delete;
-    auto operator=(const Accounts&) -> Accounts = delete;
-    auto operator=(Accounts&&) -> Accounts = delete;
 };
 }  // namespace opentxs::storage

@@ -47,6 +47,11 @@ public:
     Subscribe(
         const zeromq::Context& context,
         const zeromq::ListenCallback& callback) noexcept;
+    Subscribe() = delete;
+    Subscribe(const Subscribe&) = delete;
+    Subscribe(Subscribe&&) = delete;
+    auto operator=(const Subscribe&) -> Subscribe& = delete;
+    auto operator=(Subscribe&&) -> Subscribe& = delete;
 
     ~Subscribe() override;
 
@@ -59,11 +64,5 @@ private:
 
     void init() noexcept final;
     void process_incoming(const Lock& lock, Message&& message) noexcept final;
-
-    Subscribe() = delete;
-    Subscribe(const Subscribe&) = delete;
-    Subscribe(Subscribe&&) = delete;
-    auto operator=(const Subscribe&) -> Subscribe& = delete;
-    auto operator=(Subscribe&&) -> Subscribe& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

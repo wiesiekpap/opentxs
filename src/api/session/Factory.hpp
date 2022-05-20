@@ -918,6 +918,12 @@ public:
         const proto::UnitDefinition serialized) const noexcept(false)
         -> OTUnitDefinition final;
 
+    Factory() = delete;
+    Factory(const Factory&) = delete;
+    Factory(Factory&&) = delete;
+    auto operator=(const Factory&) -> Factory& = delete;
+    auto operator=(Factory&&) -> Factory& = delete;
+
     ~Factory() override = default;
 
 protected:
@@ -933,11 +939,5 @@ protected:
 private:
     auto instantiate_secp256k1(const ReadView key, const ReadView chaincode)
         const noexcept -> std::unique_ptr<opentxs::crypto::key::Secp256k1>;
-
-    Factory() = delete;
-    Factory(const Factory&) = delete;
-    Factory(Factory&&) = delete;
-    auto operator=(const Factory&) -> Factory& = delete;
-    auto operator=(Factory&&) -> Factory& = delete;
 };
 }  // namespace opentxs::api::session::imp

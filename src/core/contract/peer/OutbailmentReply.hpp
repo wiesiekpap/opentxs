@@ -42,6 +42,11 @@ class Outbailment final : public reply::Outbailment,
                           public peer::implementation::Reply
 {
 public:
+    auto asOutbailment() const noexcept -> const reply::Outbailment& final
+    {
+        return *this;
+    }
+
     Outbailment(
         const api::Session& api,
         const Nym_p& nym,
@@ -53,13 +58,13 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const SerializedType& serialized);
+    Outbailment() = delete;
+    Outbailment(const Outbailment&);
+    Outbailment(Outbailment&&) = delete;
+    auto operator=(const Outbailment&) -> Outbailment& = delete;
+    auto operator=(Outbailment&&) -> Outbailment& = delete;
 
     ~Outbailment() final = default;
-
-    auto asOutbailment() const noexcept -> const reply::Outbailment& final
-    {
-        return *this;
-    }
 
 private:
     friend opentxs::Factory;
@@ -71,11 +76,5 @@ private:
         return new Outbailment(*this);
     }
     auto IDVersion(const Lock& lock) const -> SerializedType final;
-
-    Outbailment() = delete;
-    Outbailment(const Outbailment&);
-    Outbailment(Outbailment&&) = delete;
-    auto operator=(const Outbailment&) -> Outbailment& = delete;
-    auto operator=(Outbailment&&) -> Outbailment& = delete;
 };
 }  // namespace opentxs::contract::peer::reply::implementation

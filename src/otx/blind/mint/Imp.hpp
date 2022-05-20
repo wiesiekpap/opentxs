@@ -125,6 +125,8 @@ public:
     auto VerifyContractID() const -> bool override;
     auto VerifyMint(const identity::Nym& theOperator) -> bool override;
 
+    Mint() = delete;
+
     ~Mint() override;
 
 protected:
@@ -157,8 +159,5 @@ protected:
         const identifier::Notary& notary,
         const identifier::Nym& serverNym,
         const identifier::UnitDefinition& unit);
-
-private:
-    Mint() = delete;
 };
 }  // namespace opentxs::otx::blind::mint

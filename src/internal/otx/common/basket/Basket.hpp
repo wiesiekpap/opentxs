@@ -104,8 +104,6 @@ namespace opentxs
 class Basket final : public Contract
 {
 public:
-    ~Basket() final;
-
     void UpdateContents(const PasswordPrompt& reason) final;
 
     void CalculateContractID(Identifier& newID) const final;
@@ -187,6 +185,10 @@ public:
         const identifier::Notary& theNotaryID,
         bool bSave = true);
 
+    Basket() = delete;
+
+    ~Basket() final;
+
 protected:
     std::int32_t m_nSubCount{0};
     // used in the actual basket
@@ -219,7 +221,5 @@ private:
         const Amount& lMinimumTransferAmount);
 
     void GenerateContents(StringXML& xmlUnsigned, bool bHideAccountID) const;
-
-    Basket() = delete;
 };
 }  // namespace opentxs

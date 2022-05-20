@@ -155,13 +155,18 @@ auto Common::sync(const UnallocatedCString& path) const -> bool
     class FileDescriptor
     {
     public:
+        operator bool() const { return good(); }
+        operator int() const { return fd_; }
+
         FileDescriptor(const UnallocatedCString& path)
             : fd_(::open(path.c_str(), O_DIRECTORY | O_RDONLY))
         {
         }
-
-        operator bool() const { return good(); }
-        operator int() const { return fd_; }
+        FileDescriptor() = delete;
+        FileDescriptor(const FileDescriptor&) = delete;
+        FileDescriptor(FileDescriptor&&) = delete;
+        auto operator=(const FileDescriptor&) -> FileDescriptor& = delete;
+        auto operator=(FileDescriptor&&) -> FileDescriptor& = delete;
 
         ~FileDescriptor()
         {
@@ -172,12 +177,6 @@ auto Common::sync(const UnallocatedCString& path) const -> bool
         int fd_{-1};
 
         auto good() const -> bool { return (-1 != fd_); }
-
-        FileDescriptor() = delete;
-        FileDescriptor(const FileDescriptor&) = delete;
-        FileDescriptor(FileDescriptor&&) = delete;
-        auto operator=(const FileDescriptor&) -> FileDescriptor& = delete;
-        auto operator=(FileDescriptor&&) -> FileDescriptor& = delete;
     };
 
     FileDescriptor fd(path);

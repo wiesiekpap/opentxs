@@ -68,7 +68,7 @@ public:
         static_assert(amount::minimum_integer_bits_ == 128u);
         static_assert(amount::maximum_integer_bits_ == 320u);
     }
-    Amount(const Amount&) noexcept {}
+    Amount(const Amount&) noexcept = default;
 
     virtual ~Amount() = default;
 };

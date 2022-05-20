@@ -107,6 +107,8 @@ public:
                                                  // serialization, this is where
                                                  // the token saves its contents
 
+    Cheque() = delete;
+
     ~Cheque() override;
 
 protected:
@@ -132,7 +134,5 @@ private:  // Private prevents erroneous use by other classes.
         const api::Session& api,
         const identifier::Notary& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
-
-    Cheque() = delete;
 };
 }  // namespace opentxs

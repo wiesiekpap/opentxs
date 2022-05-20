@@ -173,15 +173,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::HeaderOracle& = 0;
 
-    virtual ~HeaderOracle() = default;
-
-protected:
-    HeaderOracle() noexcept = default;
-
-private:
     HeaderOracle(const HeaderOracle&) = delete;
     HeaderOracle(HeaderOracle&&) = delete;
     auto operator=(const HeaderOracle&) -> HeaderOracle& = delete;
     auto operator=(HeaderOracle&&) -> HeaderOracle& = delete;
+
+    virtual ~HeaderOracle() = default;
+
+protected:
+    HeaderOracle() noexcept = default;
 };
 }  // namespace opentxs::blockchain::node

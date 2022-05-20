@@ -45,11 +45,15 @@ signals:
 
 public:
     // Tree layout
-    QString displayName() const noexcept;
-    QString nymID() const noexcept;
-    QString paymentCode() const noexcept;
+    auto displayName() const noexcept -> QString;
+    auto nymID() const noexcept -> QString;
+    auto paymentCode() const noexcept -> QString;
 
     ProfileQt(internal::Profile& parent) noexcept;
+    ProfileQt(const ProfileQt&) = delete;
+    ProfileQt(ProfileQt&&) = delete;
+    auto operator=(const ProfileQt&) -> ProfileQt& = delete;
+    auto operator=(ProfileQt&&) -> ProfileQt& = delete;
 
     ~ProfileQt() final;
 
@@ -57,9 +61,4 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    ProfileQt(const ProfileQt&) = delete;
-    ProfileQt(ProfileQt&&) = delete;
-    ProfileQt& operator=(const ProfileQt&) = delete;
-    ProfileQt& operator=(ProfileQt&&) = delete;
 };

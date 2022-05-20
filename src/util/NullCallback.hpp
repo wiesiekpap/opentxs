@@ -40,15 +40,14 @@ public:
         const UnallocatedCString& key) const -> void final;
 
     NullCallback() = default;
+    NullCallback(const NullCallback&) = delete;
+    NullCallback(NullCallback&&) = delete;
+    auto operator=(const NullCallback&) -> NullCallback& = delete;
+    auto operator=(NullCallback&&) -> NullCallback& = delete;
 
     ~NullCallback() final = default;
 
 private:
     friend opentxs::Factory;
-
-    NullCallback(const NullCallback&) = delete;
-    NullCallback(NullCallback&&) = delete;
-    auto operator=(const NullCallback&) -> NullCallback& = delete;
-    auto operator=(NullCallback&&) -> NullCallback& = delete;
 };
 }  // namespace opentxs::implementation

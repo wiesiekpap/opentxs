@@ -816,5 +816,5 @@ auto Issuer::StoreSecretInitiated() const -> bool
     return 0 != storeSecret.size();
 }
 
-Issuer::~Issuer() {}
+Issuer::~Issuer() = default;
 }  // namespace opentxs::otx::client::implementation

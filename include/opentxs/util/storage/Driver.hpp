@@ -71,13 +71,12 @@ public:
     template <class T>
     auto StoreProto(const T& data) const -> bool;
 
-protected:
-    Driver() = default;
-
-private:
     Driver(const Driver&) = delete;
     Driver(Driver&&) = delete;
     auto operator=(const Driver&) -> Driver& = delete;
     auto operator=(Driver&&) -> Driver& = delete;
+
+protected:
+    Driver() = default;
 };
 }  // namespace opentxs::storage

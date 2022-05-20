@@ -56,6 +56,10 @@ public:
         const api::Session& api,
         std::unique_ptr<Header> header,
         const Data& element) noexcept;
+    Filteradd(const Filteradd&) = delete;
+    Filteradd(Filteradd&&) = delete;
+    auto operator=(const Filteradd&) -> Filteradd& = delete;
+    auto operator=(Filteradd&&) -> Filteradd& = delete;
 
     ~Filteradd() final = default;
 
@@ -64,10 +68,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Filteradd(const Filteradd&) = delete;
-    Filteradd(Filteradd&&) = delete;
-    auto operator=(const Filteradd&) -> Filteradd& = delete;
-    auto operator=(Filteradd&&) -> Filteradd& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

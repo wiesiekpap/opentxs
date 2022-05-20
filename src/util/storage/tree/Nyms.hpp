@@ -66,6 +66,12 @@ public:
     auto SetDefault(const identifier::Nym& id) -> bool;
     void UpgradeLocalnym();
 
+    Nyms() = delete;
+    Nyms(const Nyms&) = delete;
+    Nyms(Nyms&&) = delete;
+    auto operator=(const Nyms&) -> Nyms = delete;
+    auto operator=(Nyms&&) -> Nyms = delete;
+
     ~Nyms() final = default;
 
 private:
@@ -96,10 +102,5 @@ private:
         const Driver& storage,
         const UnallocatedCString& hash,
         const api::session::Factory& factory);
-    Nyms() = delete;
-    Nyms(const Nyms&) = delete;
-    Nyms(Nyms&&) = delete;
-    auto operator=(const Nyms&) -> Nyms = delete;
-    auto operator=(Nyms&&) -> Nyms = delete;
 };
 }  // namespace opentxs::storage

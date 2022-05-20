@@ -164,8 +164,7 @@ StateMachine::StateMachine(
     const UniqueQueue<OTNotaryID>& missingservers,
     const UniqueQueue<OTUnitID>& missingUnitDefinitions,
     const PasswordPrompt& reason)
-    : opentxs::internal::StateMachine(
-          std::bind(&implementation::StateMachine::state_machine, this))
+    : opentxs::internal::StateMachine([this] { return state_machine(); })
     , payment_tasks_(*this)
     , client_(client)
     , parent_(parent)
@@ -984,6 +983,7 @@ template <typename T>
 auto StateMachine::run_task(bool (StateMachine::*func)(const TaskID) const)
     -> bool
 {
+    // NOLINTNEXTLINE(modernize-avoid-bind)
     return run_task<T>(std::bind(func, this, std::placeholders::_1));
 }
 
@@ -991,8 +991,10 @@ template <typename T>
 auto StateMachine::run_task(bool (StateMachine::*func)(const TaskID, const T&)
                                 const) -> bool
 {
+    // NOLINTBEGIN(modernize-avoid-bind)
     return run_task<T>(
         std::bind(func, this, std::placeholders::_1, std::placeholders::_2));
+    // NOLINTEND(modernize-avoid-bind)
 }
 
 template <typename T, typename R>
@@ -1208,4 +1210,6 @@ auto StateMachine::write_and_send_cheque_wrapper(
 
     return TaskDone::yes == done;
 }
+
+StateMachine::Params::~Params() {}  // NOLINT
 }  // namespace opentxs::otx::client::implementation

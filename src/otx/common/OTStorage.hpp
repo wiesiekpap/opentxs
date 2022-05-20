@@ -77,6 +77,7 @@ enum StorageType  // STORAGE TYPE
     STORE_TYPE_SUBCLASS    // (Subclass provided by API client via SWIG.)
 };
 
+// NOLINTNEXTLINE(modernize-avoid-c-arrays)
 extern const char* StoredObjectTypeStrings[];
 
 enum StoredObjectType {
@@ -223,10 +224,11 @@ public:
     virtual ~IStorable() = default;
 
     // buffer is output, inObj is input.
-    virtual bool onPack(PackedBuffer& theBuffer, Storable& inObj) = 0;
+    virtual auto onPack(PackedBuffer& theBuffer, Storable& inObj) -> bool = 0;
 
     // buffer is input, outObj is output.
-    virtual bool onUnpack(PackedBuffer& theBuffer, Storable& outObj) = 0;
+    virtual auto onUnpack(PackedBuffer& theBuffer, Storable& outObj)
+        -> bool = 0;
 
     // This is called just before packing a storable. (Opportunity to copy
     // values...)
@@ -238,14 +240,14 @@ public:
 };
 
 #define DEFINE_OT_DYNAMIC_CAST(CLASS_NAME)                                     \
-    CLASS_NAME* clone() const override                                         \
+    auto clone() const->CLASS_NAME* override                                   \
     {                                                                          \
         std::cout                                                              \
             << "********* THIS SHOULD NEVER HAPPEN!!!!! *****************"     \
             << std::endl;                                                      \
         OT_FAIL;                                                               \
     }                                                                          \
-    static CLASS_NAME* ot_dynamic_cast(Storable* pObject)                      \
+    static auto ot_dynamic_cast(Storable* pObject)->CLASS_NAME*                \
     {                                                                          \
         return dynamic_cast<CLASS_NAME*>(pObject);                             \
     }
@@ -269,10 +271,11 @@ public:
 
     // %ignore spam(uint16_t); API users don't need this function, it's for
     // internal purposes.
-    static Storable* Create(StoredObjectType eType, PackType thePackType);
+    static auto Create(StoredObjectType eType, PackType thePackType)
+        -> Storable*;
 
-    virtual Storable* clone() const = 0;
-    static Storable* ot_dynamic_cast(Storable* pObject)
+    virtual auto clone() const -> Storable* = 0;
+    static auto ot_dynamic_cast(Storable* pObject) -> Storable*
     {
         return dynamic_cast<Storable*>(pObject);
     }
@@ -291,16 +294,15 @@ protected:
 public:
     virtual ~PackedBuffer() = default;
 
-    virtual bool PackString(const UnallocatedCString& theString) = 0;
-    virtual bool UnpackString(UnallocatedCString& theString) = 0;
+    virtual auto PackString(const UnallocatedCString& theString) -> bool = 0;
+    virtual auto UnpackString(UnallocatedCString& theString) -> bool = 0;
 
-    virtual bool ReadFromIStream(
-        std::istream& inStream,
-        std::int64_t lFilesize) = 0;
-    virtual bool WriteToOStream(std::ostream& outStream) = 0;
+    virtual auto ReadFromIStream(std::istream& inStream, std::int64_t lFilesize)
+        -> bool = 0;
+    virtual auto WriteToOStream(std::ostream& outStream) -> bool = 0;
 
-    virtual const std::uint8_t* GetData() = 0;
-    virtual size_t GetSize() = 0;
+    virtual auto GetData() -> const std::uint8_t* = 0;
+    virtual auto GetSize() -> size_t = 0;
 
     virtual void SetData(const std::uint8_t* pData, size_t theSize) = 0;
 };
@@ -319,17 +321,17 @@ protected:
 public:
     virtual ~OTPacker() = default;
 
-    static OTPacker* Create(PackType ePackType);
+    static auto Create(PackType ePackType) -> OTPacker*;
 
-    PackType GetType() const;
+    auto GetType() const -> PackType;
 
-    PackedBuffer* Pack(Storable& inObj);
-    bool Unpack(PackedBuffer& inBuf, Storable& outObj);
+    auto Pack(Storable& inObj) -> PackedBuffer*;
+    auto Unpack(PackedBuffer& inBuf, Storable& outObj) -> bool;
 
-    PackedBuffer* Pack(const UnallocatedCString& inObj);
-    bool Unpack(PackedBuffer& inBuf, UnallocatedCString& outObj);
+    auto Pack(const UnallocatedCString& inObj) -> PackedBuffer*;
+    auto Unpack(PackedBuffer& inBuf, UnallocatedCString& outObj) -> bool;
 
-    virtual PackedBuffer* CreateBuffer() = 0;
+    virtual auto CreateBuffer() -> PackedBuffer* = 0;
 };
 
 // For declaring subclasses of OTPacker.
@@ -344,7 +346,7 @@ public:
     }
     ~PackerSubclass() override = default;
 
-    PackedBuffer* CreateBuffer() override { return new theBufferType; }
+    auto CreateBuffer() -> PackedBuffer* override { return new theBufferType; }
 
     // You don't see onPack and onUnpack here because they are on IStorable.
 };
@@ -366,10 +368,6 @@ class Storage
 {
 private:
     OTPacker* m_pPacker{nullptr};
-
-    Storage(Storage&&) = delete;
-    Storage& operator=(const Storage&) = delete;
-    Storage& operator=(Storage&&) = delete;
 
 protected:
     Storage()
@@ -406,49 +404,49 @@ protected:
     // subclassed in C++. But
     // for this class, it is.
     //
-    virtual bool onStorePackedBuffer(
+    virtual auto onStorePackedBuffer(
         const api::Session& api,
         PackedBuffer& theBuffer,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) = 0;
+        const UnallocatedCString& threeStr) -> bool = 0;
 
-    virtual bool onQueryPackedBuffer(
+    virtual auto onQueryPackedBuffer(
         const api::Session& api,
         PackedBuffer& theBuffer,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) = 0;
+        const UnallocatedCString& threeStr) -> bool = 0;
 
-    virtual bool onStorePlainString(
+    virtual auto onStorePlainString(
         const api::Session& api,
         const UnallocatedCString& theBuffer,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) = 0;
+        const UnallocatedCString& threeStr) -> bool = 0;
 
-    virtual bool onQueryPlainString(
+    virtual auto onQueryPlainString(
         const api::Session& api,
         UnallocatedCString& theBuffer,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) = 0;
+        const UnallocatedCString& threeStr) -> bool = 0;
 
-    virtual bool onEraseValueByKey(
+    virtual auto onEraseValueByKey(
         const api::Session& api,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) = 0;
+        const UnallocatedCString& threeStr) -> bool = 0;
 
 public:
     // Use GetPacker() to access the Packer, throughout duration of this Storage
@@ -462,108 +460,111 @@ public:
     // PackedBuffers, and knowing that the right types will be instantiated
     // automatically, with the buffer being the appropriate subclass for the
     // packer.
-    OTPacker* GetPacker(PackType ePackType = OTDB_DEFAULT_PACKER);
+    auto GetPacker(PackType ePackType = OTDB_DEFAULT_PACKER) -> OTPacker*;
 
     // See if the file is there.
-    virtual bool Exists(
+    virtual auto Exists(
         const api::Session& api,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) = 0;
+        const UnallocatedCString& threeStr) -> bool = 0;
 
-    virtual std::int64_t FormPathString(
+    virtual auto FormPathString(
         const api::Session& api,
         UnallocatedCString& strOutput,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) = 0;
+        const UnallocatedCString& threeStr) -> std::int64_t = 0;
+
+    Storage(Storage&&) = delete;
+    auto operator=(const Storage&) -> Storage& = delete;
+    auto operator=(Storage&&) -> Storage& = delete;
 
     virtual ~Storage()
     {
-        if (nullptr != m_pPacker) delete m_pPacker;
+        if (nullptr != m_pPacker) { delete m_pPacker; }
         m_pPacker = nullptr;
     }
 
     // Store/Retrieve a string.
 
-    bool StoreString(
+    auto StoreString(
         const api::Session& api,
         const UnallocatedCString& strContents,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr);
+        const UnallocatedCString& threeStr) -> bool;
 
-    UnallocatedCString QueryString(
+    auto QueryString(
         const api::Session& api,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr);
+        const UnallocatedCString& threeStr) -> UnallocatedCString;
 
-    bool StorePlainString(
+    auto StorePlainString(
         const api::Session& api,
         const UnallocatedCString& strContents,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr);
+        const UnallocatedCString& threeStr) -> bool;
 
-    UnallocatedCString QueryPlainString(
+    auto QueryPlainString(
         const api::Session& api,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr);
+        const UnallocatedCString& threeStr) -> UnallocatedCString;
 
     // Store/Retrieve an object. (Storable.)
 
-    bool StoreObject(
+    auto StoreObject(
         const api::Session& api,
         Storable& theContents,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr);
+        const UnallocatedCString& threeStr) -> bool;
 
     // Use %newobject OTDB::Storage::QueryObject();
-    Storable* QueryObject(
+    auto QueryObject(
         const api::Session& api,
         const StoredObjectType& theObjectType,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr);
+        const UnallocatedCString& threeStr) -> Storable*;
     // Store/Retrieve a Storable object inside an Armored object.
 
-    UnallocatedCString EncodeObject(
-        const api::Session& api,
-        Storable& theContents);
+    auto EncodeObject(const api::Session& api, Storable& theContents)
+        -> UnallocatedCString;
 
     // Use %newobject OTDB::Storage::DecodeObject();
-    Storable* DecodeObject(
+    auto DecodeObject(
         const StoredObjectType& theObjectType,
-        const UnallocatedCString& strInput);
+        const UnallocatedCString& strInput) -> Storable*;
 
     // Erase any value based on its location.
 
-    bool EraseValueByKey(
+    auto EraseValueByKey(
         const api::Session& api,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr);
+        const UnallocatedCString& threeStr) -> bool;
 
     // Note:
     // Make sure to use: %newobject Factory::createObj();  IN OTAPI.i file!
@@ -572,139 +573,141 @@ public:
     // (Instead of leaking because it thinks C++ will clean it up.)
     //
     // Factory for Storable objects.   %newobject Factory::createObj();
-    Storable* CreateObject(const StoredObjectType& eType);
+    auto CreateObject(const StoredObjectType& eType) -> Storable*;
 
     // Factory for Storage itself.  %ignore this in OTAPI.i  (It's accessed
     // through
     // a namespace-level function, whereas this is for internal purposes.)
     //
-    static Storage* Create(
+    static auto Create(
         const StorageType& eStorageType,
-        const PackType& ePackType);  // FACTORY
+        const PackType& ePackType) -> Storage*;  // FACTORY
 
-    StorageType GetType() const;
+    auto GetType() const -> StorageType;
 };
 
 //
 // OTDB Namespace PUBLIC INTERFACE
 //
 
-bool InitDefaultStorage(const StorageType eStoreType, const PackType ePackType);
+auto InitDefaultStorage(const StorageType eStoreType, const PackType ePackType)
+    -> bool;
 
 // Default Storage instance:
-Storage* GetDefaultStorage();
+auto GetDefaultStorage() -> Storage*;
 
 // %newobject Factory::createObj();
-Storage* CreateStorageContext(
+auto CreateStorageContext(
     const StorageType eStoreType,
-    const PackType ePackType = OTDB_DEFAULT_PACKER);
+    const PackType ePackType = OTDB_DEFAULT_PACKER) -> Storage*;
 
-Storable* CreateObject(const StoredObjectType eType);
+auto CreateObject(const StoredObjectType eType) -> Storable*;
 
 // BELOW FUNCTIONS use the DEFAULT Storage context for the OTDB Namespace
 
 // Check if the values are good.
 //
-bool CheckStringsExistInOrder(
+auto CheckStringsExistInOrder(
     const UnallocatedCString& dataFolder,
     const UnallocatedCString& strFolder,
     const UnallocatedCString& oneStr,
     const UnallocatedCString& twoStr,
     const UnallocatedCString& threeStr,
-    const char* szFuncName = nullptr);
+    const char* szFuncName = nullptr) -> bool;
 
 // See if the file is there.
 //
-bool Exists(
+auto Exists(
     const api::Session& api,
     const UnallocatedCString& dataFolder,
     const UnallocatedCString strFolder,
     const UnallocatedCString oneStr,
     const UnallocatedCString twoStr,
-    const UnallocatedCString threeStr);
+    const UnallocatedCString threeStr) -> bool;
 
-std::int64_t FormPathString(
+auto FormPathString(
     const api::Session& api,
     UnallocatedCString& strOutput,
     const UnallocatedCString& dataFolder,
     const UnallocatedCString& strFolder,
     const UnallocatedCString& oneStr,
     const UnallocatedCString& twoStr,
-    const UnallocatedCString& threeStr);
+    const UnallocatedCString& threeStr) -> std::int64_t;
 // Store/Retrieve a string.
 //
-bool StoreString(
+auto StoreString(
     const api::Session& api,
     const UnallocatedCString& strContents,
     const UnallocatedCString& dataFolder,
     const UnallocatedCString& strFolder,
     const UnallocatedCString& oneStr,
     const UnallocatedCString& twoStr,
-    const UnallocatedCString& threeStr);
+    const UnallocatedCString& threeStr) -> bool;
 
-UnallocatedCString QueryString(
+auto QueryString(
     const api::Session& api,
     const UnallocatedCString& dataFolder,
     const UnallocatedCString& strFolder,
     const UnallocatedCString& oneStr,
     const UnallocatedCString& twoStr,
-    const UnallocatedCString& threeStr);
+    const UnallocatedCString& threeStr) -> UnallocatedCString;
 
-bool StorePlainString(
+auto StorePlainString(
     const api::Session& api,
     const UnallocatedCString& strContents,
     const UnallocatedCString& dataFolder,
     const UnallocatedCString& strFolder,
     const UnallocatedCString& oneStr,
     const UnallocatedCString& twoStr,
-    const UnallocatedCString& threeStr);
+    const UnallocatedCString& threeStr) -> bool;
 
-UnallocatedCString QueryPlainString(
+auto QueryPlainString(
     const api::Session& api,
     const UnallocatedCString& dataFolder,
     const UnallocatedCString& strFolder,
     const UnallocatedCString& oneStr,
     const UnallocatedCString& twoStr,
-    const UnallocatedCString& threeStr);
+    const UnallocatedCString& threeStr) -> UnallocatedCString;
 
 // Store/Retrieve an object. (Storable.)
 //
-bool StoreObject(
+auto StoreObject(
     const api::Session& api,
     Storable& theContents,
     const UnallocatedCString& dataFolder,
     const UnallocatedCString& strFolder,
     const UnallocatedCString& oneStr,
     const UnallocatedCString& twoStr,
-    const UnallocatedCString& threeStr);
+    const UnallocatedCString& threeStr) -> bool;
 
 // Use %newobject OTDB::Storage::Query();
-Storable* QueryObject(
+auto QueryObject(
     const api::Session& api,
     const StoredObjectType theObjectType,
     const UnallocatedCString& dataFolder,
     const UnallocatedCString& strFolder,
     const UnallocatedCString& oneStr,
     const UnallocatedCString& twoStr,
-    const UnallocatedCString& threeStr);
+    const UnallocatedCString& threeStr) -> Storable*;
 
 // Store/Retrieve a Storable object inside an Armored object.
-UnallocatedCString EncodeObject(const api::Session& api, Storable& theContents);
+auto EncodeObject(const api::Session& api, Storable& theContents)
+    -> UnallocatedCString;
 
 // Use %newobject OTDB::Storage::DecodeObject();
-Storable* DecodeObject(
+auto DecodeObject(
     const StoredObjectType theObjectType,
-    const UnallocatedCString& strInput);
+    const UnallocatedCString& strInput) -> Storable*;
 
 // Erase any value based on its location.
 
-bool EraseValueByKey(
+auto EraseValueByKey(
     const api::Session& api,
     const UnallocatedCString& dataFolder,
     const UnallocatedCString& strFolder,
     const UnallocatedCString& oneStr,
     const UnallocatedCString& twoStr,
-    const UnallocatedCString& threeStr);
+    const UnallocatedCString& threeStr) -> bool;
 
 #define DECLARE_GET_ADD_REMOVE(name)                                           \
                                                                                \
@@ -712,10 +715,10 @@ protected:                                                                     \
     UnallocatedDeque<std::shared_ptr<name>> list_##name##s;                    \
                                                                                \
 public:                                                                        \
-    size_t Get##name##Count();                                                 \
-    name* Get##name(size_t nIndex);                                            \
-    bool Remove##name(size_t nIndex##name);                                    \
-    bool Add##name(name& disownObject)
+    auto Get##name##Count()->std::size_t;                                      \
+    auto Get##name(size_t nIndex)->name*;                                      \
+    auto Remove##name(size_t nIndex##name)->bool;                              \
+    auto Add##name(name& disownObject)->bool
 
 // Serialized types...
 //
@@ -798,15 +801,15 @@ public:
         const UnallocatedCString& strValue)
     {
         auto ii = the_map.find(strKey);
-        if (ii != the_map.end()) the_map.erase(ii);
+        if (ii != the_map.end()) { the_map.erase(ii); }
         the_map[strKey] = strValue;
     }
 
-    UnallocatedCString GetValue(const UnallocatedCString& strKey)
+    auto GetValue(const UnallocatedCString& strKey) -> UnallocatedCString
     {
         UnallocatedCString ret_val("");
         auto ii = the_map.find(strKey);
-        if (ii != the_map.end()) ret_val = (*ii).second;
+        if (ii != the_map.end()) { ret_val = (*ii).second; }
         return ret_val;
     }
 
@@ -1675,28 +1678,28 @@ protected:
     // you.
 
     // Confirms if a file exists.  If it exists at path; return length.
-    std::int64_t ConstructAndConfirmPath(
+    auto ConstructAndConfirmPath(
         const api::Session& api,
         UnallocatedCString& strOutput,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr);
+        const UnallocatedCString& threeStr) -> std::int64_t;
 
 public:
     // Verifies whether path exists AND creates folders where necessary.
-    std::int64_t ConstructAndCreatePath(
+    auto ConstructAndCreatePath(
         const api::Session& api,
         UnallocatedCString& strOutput,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr);
+        const UnallocatedCString& threeStr) -> std::int64_t;
 
 private:
-    std::int64_t ConstructAndConfirmPathImp(
+    auto ConstructAndConfirmPathImp(
         const api::Session& api,
         const bool bMakePath,
         UnallocatedCString& strOutput,
@@ -1704,76 +1707,76 @@ private:
         const UnallocatedCString& zeroStr,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr);
+        const UnallocatedCString& threeStr) -> std::int64_t;
 
 protected:
     // If you wish to make your own subclass of OTDB::Storage, then use
     // StorageFS as an example.
     // The below 6 methods are the only overrides you need to copy.
     //
-    bool onStorePackedBuffer(
+    auto onStorePackedBuffer(
         const api::Session& api,
         PackedBuffer& theBuffer,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) override;
+        const UnallocatedCString& threeStr) -> bool override;
 
-    bool onQueryPackedBuffer(
+    auto onQueryPackedBuffer(
         const api::Session& api,
         PackedBuffer& theBuffer,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) override;
+        const UnallocatedCString& threeStr) -> bool override;
 
-    bool onStorePlainString(
+    auto onStorePlainString(
         const api::Session& api,
         const UnallocatedCString& theBuffer,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) override;
+        const UnallocatedCString& threeStr) -> bool override;
 
-    bool onQueryPlainString(
+    auto onQueryPlainString(
         const api::Session& api,
         UnallocatedCString& theBuffer,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) override;
+        const UnallocatedCString& threeStr) -> bool override;
 
-    bool onEraseValueByKey(
+    auto onEraseValueByKey(
         const api::Session& api,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) override;
+        const UnallocatedCString& threeStr) -> bool override;
 
 public:
-    bool Exists(
+    auto Exists(
         const api::Session& api,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) override;
+        const UnallocatedCString& threeStr) -> bool override;
 
-    std::int64_t FormPathString(
+    auto FormPathString(
         const api::Session& api,
         UnallocatedCString& strOutput,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& strFolder,
         const UnallocatedCString& oneStr,
         const UnallocatedCString& twoStr,
-        const UnallocatedCString& threeStr) override;
+        const UnallocatedCString& threeStr) -> std::int64_t override;
 
-    static StorageFS* Instantiate() { return new StorageFS; }
+    static auto Instantiate() -> StorageFS* { return new StorageFS; }
 
     ~StorageFS() override;
 };

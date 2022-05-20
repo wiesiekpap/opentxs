@@ -66,15 +66,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto InternalClient() noexcept
         -> internal::Client& = 0;
 
-    OPENTXS_NO_EXPORT ~Client() override = default;
-
-protected:
-    Client() = default;
-
-private:
     Client(const Client&) = delete;
     Client(Client&&) = delete;
     auto operator=(const Client&) -> Client& = delete;
     auto operator=(Client&&) -> Client& = delete;
+
+    OPENTXS_NO_EXPORT ~Client() override = default;
+
+protected:
+    Client() = default;
 };
 }  // namespace opentxs::api::session

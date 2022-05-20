@@ -211,15 +211,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Asymmetric& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Asymmetric() = default;
-
-protected:
-    Asymmetric() = default;
-
-private:
     Asymmetric(const Asymmetric&) = delete;
     Asymmetric(Asymmetric&&) = delete;
     auto operator=(const Asymmetric&) -> Asymmetric& = delete;
     auto operator=(Asymmetric&&) -> Asymmetric& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Asymmetric() = default;
+
+protected:
+    Asymmetric() = default;
 };
 }  // namespace opentxs::api::crypto

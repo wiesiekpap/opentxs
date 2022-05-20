@@ -197,6 +197,11 @@ struct BlockchainImp final : public Blockchain::Imp {
         const api::Session& api,
         const api::session::Endpoints& endpoints,
         const opentxs::network::zeromq::Context& zmq) noexcept;
+    BlockchainImp() = delete;
+    BlockchainImp(const BlockchainImp&) = delete;
+    BlockchainImp(BlockchainImp&&) = delete;
+    auto operator=(const BlockchainImp&) -> BlockchainImp& = delete;
+    auto operator=(BlockchainImp&&) -> BlockchainImp& = delete;
 
     ~BlockchainImp() final;
 
@@ -250,11 +255,5 @@ private:
         const UnallocatedCString& seednode,
         const bool startWallet = true) const -> bool;
     auto stop(const Lock& lock, const Chain type) const noexcept -> bool;
-
-    BlockchainImp() = delete;
-    BlockchainImp(const BlockchainImp&) = delete;
-    BlockchainImp(BlockchainImp&&) = delete;
-    auto operator=(const BlockchainImp&) -> BlockchainImp& = delete;
-    auto operator=(BlockchainImp&&) -> BlockchainImp& = delete;
 };
 }  // namespace opentxs::api::network

@@ -57,6 +57,10 @@ public:
         const api::Session& api,
         std::unique_ptr<Header> header,
         const std::uint64_t fee_rate) noexcept(false);
+    Feefilter(const Feefilter&) = delete;
+    Feefilter(Feefilter&&) = delete;
+    auto operator=(const Feefilter&) -> Feefilter& = delete;
+    auto operator=(Feefilter&&) -> Feefilter& = delete;
 
     ~Feefilter() final = default;
 
@@ -65,10 +69,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Feefilter(const Feefilter&) = delete;
-    Feefilter(Feefilter&&) = delete;
-    auto operator=(const Feefilter&) -> Feefilter& = delete;
-    auto operator=(Feefilter&&) -> Feefilter& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

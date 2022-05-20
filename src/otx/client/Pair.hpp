@@ -132,6 +132,11 @@ public:
     void init() noexcept final;
 
     Pair(const Flag& running, const api::session::Client& client);
+    Pair() = delete;
+    Pair(const Pair&) = delete;
+    Pair(Pair&&) = delete;
+    auto operator=(const Pair&) -> Pair& = delete;
+    auto operator=(Pair&&) -> Pair& = delete;
 
     ~Pair() final { cleanup().get(); }
 
@@ -313,11 +318,5 @@ private:
     void callback_nym(const zmq::Message& in) noexcept;
     void callback_peer_reply(const zmq::Message& in) noexcept;
     void callback_peer_request(const zmq::Message& in) noexcept;
-
-    Pair() = delete;
-    Pair(const Pair&) = delete;
-    Pair(Pair&&) = delete;
-    auto operator=(const Pair&) -> Pair& = delete;
-    auto operator=(Pair&&) -> Pair& = delete;
 };
 }  // namespace opentxs::otx::client::implementation

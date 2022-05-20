@@ -7,12 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "api/Log.hpp"     // IWYU pragma: associated
 
-#ifdef ANDROID
-extern "C" {
-#include <android/log.h>
-}
-#endif
-
 #include <cstdlib>
 #include <future>
 #include <iostream>
@@ -75,19 +69,12 @@ auto Log::callback(zmq::Message&& message) noexcept -> void
 
     try {
         const auto level = levelFrame.as<int>();
-
-#ifdef ANDROID
-        print_android(level, text, id);
-#else
         print(level, text, id);
-#endif
     } catch (...) {
         std::cout << "Invalid level size: " << levelFrame.size() << '\n';
 
         OT_FAIL;
     }
-
-    if (publish_) { publish_socket_->Send(std::move(message)); }
 
     if (message.Body().size() >= 4) {
         const auto& promiseFrame = message.Body_at(3);
@@ -95,45 +82,7 @@ auto Log::callback(zmq::Message&& message) noexcept -> void
 
         if (nullptr != pPromise) { pPromise->set_value(); }
     }
-}
 
-void Log::print(
-    const int level,
-    const UnallocatedCString& text,
-    const UnallocatedCString& thread)
-{
-    if (false == text.empty()) {
-        std::cerr << "(" << thread << ") ";
-        std::cerr << text << std::endl;
-        std::cerr.flush();
-    }
+    if (publish_) { publish_socket_->Send(std::move(message)); }
 }
-
-#ifdef ANDROID
-void Log::print_android(
-    const int level,
-    const UnallocatedCString& text,
-    const UnallocatedCString& thread)
-{
-    switch (level) {
-        case 0:
-        case 1: {
-            __android_log_write(ANDROID_LOG_INFO, "OT Output", text.c_str());
-        } break;
-        case 2:
-        case 3: {
-            __android_log_write(ANDROID_LOG_DEBUG, "OT Debug", text.c_str());
-        } break;
-        case 4:
-        case 5: {
-            __android_log_write(
-                ANDROID_LOG_VERBOSE, "OT Verbose", text.c_str());
-        } break;
-        default: {
-            __android_log_write(
-                ANDROID_LOG_UNKNOWN, "OT Unknown", text.c_str());
-        } break;
-    }
-}
-#endif
 }  // namespace opentxs::api::imp

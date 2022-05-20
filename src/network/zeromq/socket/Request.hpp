@@ -41,6 +41,11 @@ public:
         -> bool final;
 
     Request(const zeromq::Context& context) noexcept;
+    Request() = delete;
+    Request(const Request&) = delete;
+    Request(Request&&) = delete;
+    auto operator=(const Request&) -> Request& = delete;
+    auto operator=(Request&&) -> Request& = delete;
 
     ~Request() final;
 
@@ -49,11 +54,5 @@ private:
 
     auto clone() const noexcept -> Request* final;
     auto wait(const Lock& lock) const noexcept -> bool;
-
-    Request() = delete;
-    Request(const Request&) = delete;
-    Request(Request&&) = delete;
-    auto operator=(const Request&) -> Request& = delete;
-    auto operator=(Request&&) -> Request& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

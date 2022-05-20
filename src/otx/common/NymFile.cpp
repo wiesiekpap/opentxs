@@ -646,8 +646,7 @@ auto NymFile::serialize_nymfile(const T& lock, opentxs::String& strNym) const
     }
 
     if (!(m_dequeOutpayments.empty())) {
-        for (std::uint32_t i = 0; i < m_dequeOutpayments.size(); i++) {
-            auto pMessage = m_dequeOutpayments.at(i);
+        for (auto pMessage : m_dequeOutpayments) {
             OT_ASSERT(false != bool(pMessage));
 
             auto strOutpayments = String::Factory(*pMessage);

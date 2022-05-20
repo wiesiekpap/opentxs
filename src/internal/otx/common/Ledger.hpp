@@ -255,6 +255,8 @@ public:
     static auto GetTypeString(ledgerType theType) -> char const*;
     auto GetTypeString() const -> char const* { return GetTypeString(m_Type); }
 
+    Ledger() = delete;
+
     ~Ledger() override;
 
 protected:
@@ -301,6 +303,5 @@ private:  // Private prevents erroneous use by other classes.
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Notary& theNotaryID);
-    Ledger() = delete;
 };
 }  // namespace opentxs

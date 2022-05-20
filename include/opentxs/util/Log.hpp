@@ -126,17 +126,16 @@ public:
     auto Trace(const char* file, const std::size_t line) const noexcept -> void;
 
     explicit Log(const int logLevel) noexcept;
-
-    ~Log();
-
-private:
-    Imp* imp_;
-
     Log() = delete;
     Log(const Log&) = delete;
     Log(Log&&) = delete;
     auto operator=(const Log&) -> Log& = delete;
     auto operator=(Log&&) -> Log& = delete;
+
+    ~Log();
+
+private:
+    Imp* imp_;
 };
 
 OPENTXS_EXPORT auto LogConsole() noexcept -> Log&;

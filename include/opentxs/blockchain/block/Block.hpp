@@ -54,15 +54,14 @@ public:
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Block& = 0;
 
-    virtual ~Block() = default;
-
-protected:
-    Block() noexcept = default;
-
-private:
     Block(const Block&) = delete;
     Block(Block&&) = delete;
     auto operator=(const Block&) -> Block& = delete;
     auto operator=(Block&&) -> Block& = delete;
+
+    virtual ~Block() = default;
+
+protected:
+    Block() noexcept = default;
 };
 }  // namespace opentxs::blockchain::block

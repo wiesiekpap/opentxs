@@ -74,6 +74,11 @@ public:
         -> UnallocatedCString final;
 
     Legacy(const UnallocatedCString& home) noexcept;
+    Legacy() = delete;
+    Legacy(const Legacy&) = delete;
+    Legacy(Legacy&&) = delete;
+    auto operator=(const Legacy&) -> Legacy& = delete;
+    auto operator=(Legacy&&) -> Legacy& = delete;
 
     ~Legacy() final = default;
 
@@ -112,11 +117,5 @@ private:
         const noexcept -> UnallocatedCString;
     auto get_file(const UnallocatedCString& fragment, const int instance = 0)
         const noexcept -> UnallocatedCString;
-
-    Legacy() = delete;
-    Legacy(const Legacy&) = delete;
-    Legacy(Legacy&&) = delete;
-    auto operator=(const Legacy&) -> Legacy& = delete;
-    auto operator=(Legacy&&) -> Legacy& = delete;
 };
 }  // namespace opentxs::api::imp

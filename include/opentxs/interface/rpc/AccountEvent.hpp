@@ -62,8 +62,11 @@ public:
         const UnallocatedCString& memo,
         const UnallocatedCString& uuid,
         int state) noexcept(false);
+    AccountEvent() noexcept = delete;
     OPENTXS_NO_EXPORT AccountEvent(const AccountEvent&) noexcept;
     OPENTXS_NO_EXPORT AccountEvent(AccountEvent&&) noexcept;
+    auto operator=(const AccountEvent&) -> AccountEvent& = delete;
+    auto operator=(AccountEvent&&) -> AccountEvent& = delete;
 
     OPENTXS_NO_EXPORT ~AccountEvent();
 
@@ -71,9 +74,5 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    AccountEvent() noexcept;
-    auto operator=(const AccountEvent&) -> AccountEvent& = delete;
-    auto operator=(AccountEvent&&) -> AccountEvent& = delete;
 };
 }  // namespace opentxs::rpc

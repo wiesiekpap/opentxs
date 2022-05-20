@@ -71,6 +71,11 @@ public:
         const api::Session& api,
         const opentxs::network::zeromq::socket::Publish&
             messageLoaded) noexcept;
+    MailCache() = delete;
+    MailCache(const MailCache&) = delete;
+    MailCache(MailCache&&) = delete;
+    auto operator=(const MailCache&) -> MailCache& = delete;
+    auto operator=(MailCache&&) -> MailCache& = delete;
 
     ~MailCache();
 
@@ -78,11 +83,5 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    MailCache() = delete;
-    MailCache(const MailCache&) = delete;
-    MailCache(MailCache&&) = delete;
-    auto operator=(const MailCache&) -> MailCache& = delete;
-    auto operator=(MailCache&&) -> MailCache& = delete;
 };
 }  // namespace opentxs::api::session::activity

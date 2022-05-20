@@ -66,6 +66,12 @@ public:
         const UnallocatedCString& existingID,
         const UnallocatedCString& newID) -> bool;
 
+    Threads() = delete;
+    Threads(const Threads&) = delete;
+    Threads(Threads&&) = delete;
+    auto operator=(const Threads&) -> Threads = delete;
+    auto operator=(Threads&&) -> Threads = delete;
+
     ~Threads() final = default;
 
 private:
@@ -108,10 +114,5 @@ private:
         const UnallocatedCString& hash,
         Mailbox& mailInbox,
         Mailbox& mailOutbox);
-    Threads() = delete;
-    Threads(const Threads&) = delete;
-    Threads(Threads&&) = delete;
-    auto operator=(const Threads&) -> Threads = delete;
-    auto operator=(Threads&&) -> Threads = delete;
 };
 }  // namespace opentxs::storage

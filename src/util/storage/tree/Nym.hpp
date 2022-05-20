@@ -134,6 +134,12 @@ public:
         UnallocatedCString& plaintext) -> bool;
     auto Store(const proto::Purse& purse) -> bool;
 
+    Nym() = delete;
+    Nym(const identity::Nym&) = delete;
+    Nym(Nym&&) = delete;
+    auto operator=(const identity::Nym&) -> Nym = delete;
+    auto operator=(Nym&&) -> Nym = delete;
+
     ~Nym() final;
 
 private:
@@ -249,10 +255,5 @@ private:
         const UnallocatedCString& id,
         const UnallocatedCString& hash,
         const UnallocatedCString& alias);
-    Nym() = delete;
-    Nym(const identity::Nym&) = delete;
-    Nym(Nym&&) = delete;
-    auto operator=(const identity::Nym&) -> Nym = delete;
-    auto operator=(Nym&&) -> Nym = delete;
 };
 }  // namespace opentxs::storage

@@ -44,6 +44,12 @@ class BailmentNotice final : public request::BailmentNotice,
                              public peer::implementation::Request
 {
 public:
+    auto asBailmentNotice() const noexcept
+        -> const request::BailmentNotice& final
+    {
+        return *this;
+    }
+
     BailmentNotice(
         const api::Session& api,
         const Nym_p& nym,
@@ -57,14 +63,13 @@ public:
         const Identifier& requestID,
         const UnallocatedCString& txid,
         const Amount& amount);
+    BailmentNotice() = delete;
+    BailmentNotice(const BailmentNotice&);
+    BailmentNotice(BailmentNotice&&) = delete;
+    auto operator=(const BailmentNotice&) -> BailmentNotice& = delete;
+    auto operator=(BailmentNotice&&) -> BailmentNotice& = delete;
 
     ~BailmentNotice() final = default;
-
-    auto asBailmentNotice() const noexcept
-        -> const request::BailmentNotice& final
-    {
-        return *this;
-    }
 
 private:
     friend opentxs::Factory;
@@ -82,11 +87,5 @@ private:
         return new BailmentNotice(*this);
     }
     auto IDVersion(const Lock& lock) const -> SerializedType final;
-
-    BailmentNotice() = delete;
-    BailmentNotice(const BailmentNotice&);
-    BailmentNotice(BailmentNotice&&) = delete;
-    auto operator=(const BailmentNotice&) -> BailmentNotice& = delete;
-    auto operator=(BailmentNotice&&) -> BailmentNotice& = delete;
 };
 }  // namespace opentxs::contract::peer::request::implementation

@@ -54,6 +54,12 @@ public:
         const MintSeries series,
         const UnallocatedCString& key) -> bool;
 
+    Notary() = delete;
+    Notary(const Notary&) = delete;
+    Notary(Notary&&) = delete;
+    auto operator=(const Notary&) -> Notary = delete;
+    auto operator=(Notary&&) -> Notary = delete;
+
     ~Notary() final = default;
 
 private:
@@ -83,10 +89,5 @@ private:
         const Driver& storage,
         const UnallocatedCString& key,
         const UnallocatedCString& id);
-    Notary() = delete;
-    Notary(const Notary&) = delete;
-    Notary(Notary&&) = delete;
-    auto operator=(const Notary&) -> Notary = delete;
-    auto operator=(Notary&&) -> Notary = delete;
 };
 }  // namespace opentxs::storage

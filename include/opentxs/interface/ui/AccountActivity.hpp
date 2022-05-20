@@ -127,15 +127,14 @@ public:
     virtual auto ValidateAmount(const UnallocatedCString& text) const noexcept
         -> UnallocatedCString = 0;
 
-    ~AccountActivity() override = default;
-
-protected:
-    AccountActivity() noexcept = default;
-
-private:
     AccountActivity(const AccountActivity&) = delete;
     AccountActivity(AccountActivity&&) = delete;
     auto operator=(const AccountActivity&) -> AccountActivity& = delete;
     auto operator=(AccountActivity&&) -> AccountActivity& = delete;
+
+    ~AccountActivity() override = default;
+
+protected:
+    AccountActivity() noexcept = default;
 };
 }  // namespace opentxs::ui

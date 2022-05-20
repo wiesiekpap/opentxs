@@ -192,15 +192,14 @@ public:
         Message& command,
         const PasswordPrompt& reason) -> bool = 0;
 
-    ~Server() override = default;
-
-protected:
-    Server() = default;
-
-private:
     Server(const Server&) = delete;
     Server(Server&&) = delete;
     auto operator=(const Server&) -> Server& = delete;
     auto operator=(Server&&) -> Server& = delete;
+
+    ~Server() override = default;
+
+protected:
+    Server() = default;
 };
 }  // namespace opentxs::otx::context

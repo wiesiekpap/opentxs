@@ -43,15 +43,14 @@ public:
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::IssuerItem> = 0;
 
-    ~AccountSummary() override = default;
-
-protected:
-    AccountSummary() noexcept = default;
-
-private:
     AccountSummary(const AccountSummary&) = delete;
     AccountSummary(AccountSummary&&) = delete;
     auto operator=(const AccountSummary&) -> AccountSummary& = delete;
     auto operator=(AccountSummary&&) -> AccountSummary& = delete;
+
+    ~AccountSummary() override = default;
+
+protected:
+    AccountSummary() noexcept = default;
 };
 }  // namespace opentxs::ui

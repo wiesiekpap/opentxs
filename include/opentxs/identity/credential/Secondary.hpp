@@ -14,15 +14,14 @@ namespace opentxs::identity::credential
 class OPENTXS_EXPORT Secondary : virtual public Key
 {
 public:
-    ~Secondary() override = default;
-
-protected:
-    Secondary() noexcept {}  // TODO Signable
-
-private:
     Secondary(const Secondary&) = delete;
     Secondary(Secondary&&) = delete;
     auto operator=(const Secondary&) -> Secondary& = delete;
     auto operator=(Secondary&&) -> Secondary& = delete;
+
+    ~Secondary() override = default;
+
+protected:
+    Secondary() noexcept = default;  // TODO Signable
 };
 }  // namespace opentxs::identity::credential

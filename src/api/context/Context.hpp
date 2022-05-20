@@ -152,6 +152,11 @@ public:
         Flag& running,
         const Options& args,
         PasswordCaller* externalPasswordCallback = nullptr);
+    Context() = delete;
+    Context(const Context&) = delete;
+    Context(Context&&) = delete;
+    auto operator=(const Context&) -> Context& = delete;
+    auto operator=(Context&&) -> Context& = delete;
 
     ~Context() final;
 
@@ -203,11 +208,5 @@ private:
     auto setup_default_external_password_callback() -> void;
     auto shutdown() noexcept -> void final;
     auto shutdown_qt() noexcept -> void;
-
-    Context() = delete;
-    Context(const Context&) = delete;
-    Context(Context&&) = delete;
-    auto operator=(const Context&) -> Context& = delete;
-    auto operator=(Context&&) -> Context& = delete;
 };
 }  // namespace opentxs::api::imp

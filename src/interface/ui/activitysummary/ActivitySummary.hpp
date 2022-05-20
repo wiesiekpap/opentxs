@@ -84,6 +84,11 @@ public:
         const Flag& running,
         const identifier::Nym& nymID,
         const SimpleCallback& cb) noexcept;
+    ActivitySummary() = delete;
+    ActivitySummary(const ActivitySummary&) = delete;
+    ActivitySummary(ActivitySummary&&) = delete;
+    auto operator=(const ActivitySummary&) -> ActivitySummary& = delete;
+    auto operator=(ActivitySummary&&) -> ActivitySummary& = delete;
 
     ~ActivitySummary() final;
 
@@ -106,11 +111,5 @@ private:
     void process_thread(const UnallocatedCString& threadID) noexcept;
     void process_thread(const Message& message) noexcept;
     void startup() noexcept;
-
-    ActivitySummary() = delete;
-    ActivitySummary(const ActivitySummary&) = delete;
-    ActivitySummary(ActivitySummary&&) = delete;
-    auto operator=(const ActivitySummary&) -> ActivitySummary& = delete;
-    auto operator=(ActivitySummary&&) -> ActivitySummary& = delete;
 };
 }  // namespace opentxs::ui::implementation

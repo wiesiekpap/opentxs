@@ -89,6 +89,11 @@ struct Base::Imp {
         const UnallocatedCString& unit,
         const AssociateNyms& nyms) noexcept;
     Imp(const Base* parent, const proto::RPCCommand& serialized) noexcept;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     virtual ~Imp() = default;
 
@@ -105,11 +110,5 @@ private:
         const UnallocatedCString& notary,
         const UnallocatedCString& unit,
         const Identifiers identifiers) noexcept;
-    Imp() = delete;
-
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs::rpc::request

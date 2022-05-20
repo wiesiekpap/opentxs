@@ -55,6 +55,22 @@ public slots:
     void setActiveNym(QString) const;
 
 public:
+    // NOLINTBEGIN(modernize-use-trailing-return-type)
+    Q_INVOKABLE QObject* getAccountActivityQML(
+        const QString& accountID) const noexcept;
+    Q_INVOKABLE QObject* getAccountListQML() const noexcept;
+    Q_INVOKABLE QObject* getAccountStatusQML(
+        const QString& accountID) const noexcept;
+    Q_INVOKABLE QObject* getAccountTreeQML() const noexcept;
+    Q_INVOKABLE QObject* getActivityThreadQML(
+        const QString& contactID) const noexcept;
+    Q_INVOKABLE QObject* getContactListQML() const noexcept;
+    Q_INVOKABLE QObject* getNymListQML() const noexcept;
+    Q_INVOKABLE QObject* getNymTypeQML() const noexcept;
+    Q_INVOKABLE QObject* getProfileQML() const noexcept;
+    // NOLINTEND(modernize-use-trailing-return-type)
+
+public:
     class Imp;
 
     auto getAccountActivity(const QString& accountID) const noexcept
@@ -73,37 +89,14 @@ public:
 
     auto setActiveNym(QString) noexcept -> void;
 
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-    Q_INVOKABLE QObject* getAccountActivityQML(
-        const QString& accountID) const noexcept;
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-    Q_INVOKABLE QObject* getAccountListQML() const noexcept;
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-    Q_INVOKABLE QObject* getAccountStatusQML(
-        const QString& accountID) const noexcept;
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-    Q_INVOKABLE QObject* getAccountTreeQML() const noexcept;
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-    Q_INVOKABLE QObject* getActivityThreadQML(
-        const QString& contactID) const noexcept;
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-    Q_INVOKABLE QObject* getContactListQML() const noexcept;
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-    Q_INVOKABLE QObject* getNymListQML() const noexcept;
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-    Q_INVOKABLE QObject* getNymTypeQML() const noexcept;
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-    Q_INVOKABLE QObject* getProfileQML() const noexcept;
-
     OPENTXS_NO_EXPORT IdentityManagerQt(Imp* imp) noexcept;
+    IdentityManagerQt(const IdentityManagerQt&) = delete;
     OPENTXS_NO_EXPORT IdentityManagerQt(IdentityManagerQt&& rhs) noexcept;
+    auto operator=(const IdentityManagerQt&) -> IdentityManagerQt& = delete;
+    auto operator=(IdentityManagerQt&&) -> IdentityManagerQt& = delete;
 
     ~IdentityManagerQt() override;
 
 private:
     Imp* imp_;
-
-    IdentityManagerQt(const IdentityManagerQt&) = delete;
-    IdentityManagerQt& operator=(const IdentityManagerQt&) = delete;
-    IdentityManagerQt& operator=(IdentityManagerQt&&) = delete;
 };

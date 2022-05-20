@@ -88,15 +88,14 @@ public:
     virtual auto begin() noexcept -> iterator = 0;
     virtual auto end() noexcept -> iterator = 0;
 
-    virtual ~Group() = default;
-
-protected:
-    Group() = default;
-
-private:
     Group(const Group&) = delete;
     Group(Group&&) = delete;
     auto operator=(const Group&) -> Group& = delete;
     auto operator=(Group&&) -> Group& = delete;
+
+    virtual ~Group() = default;
+
+protected:
+    Group() = default;
 };
 }  // namespace opentxs::identity::wot::verification

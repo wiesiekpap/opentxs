@@ -78,15 +78,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto InternalSymmetric() noexcept
         -> internal::Symmetric& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Symmetric() = default;
-
-protected:
-    Symmetric() = default;
-
-private:
     Symmetric(const Symmetric&) = delete;
     Symmetric(Symmetric&&) = delete;
     auto operator=(const Symmetric&) -> Symmetric& = delete;
     auto operator=(Symmetric&&) -> Symmetric& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Symmetric() = default;
+
+protected:
+    Symmetric() = default;
 };
 }  // namespace opentxs::api::crypto

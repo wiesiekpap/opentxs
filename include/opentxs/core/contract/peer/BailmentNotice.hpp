@@ -36,6 +36,11 @@ namespace opentxs::contract::peer::request
 class OPENTXS_EXPORT BailmentNotice : virtual public peer::Request
 {
 public:
+    BailmentNotice(const BailmentNotice&) = delete;
+    BailmentNotice(BailmentNotice&&) = delete;
+    auto operator=(const BailmentNotice&) -> BailmentNotice& = delete;
+    auto operator=(BailmentNotice&&) -> BailmentNotice& = delete;
+
     ~BailmentNotice() override = default;
 
 protected:
@@ -47,10 +52,5 @@ private:
 #ifndef _WIN32
     auto clone() const noexcept -> BailmentNotice* override = 0;
 #endif
-
-    BailmentNotice(const BailmentNotice&) = delete;
-    BailmentNotice(BailmentNotice&&) = delete;
-    auto operator=(const BailmentNotice&) -> BailmentNotice& = delete;
-    auto operator=(BailmentNotice&&) -> BailmentNotice& = delete;
 };
 }  // namespace opentxs::contract::peer::request

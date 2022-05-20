@@ -53,6 +53,7 @@ public:
     auto swap(Reply& rhs) noexcept -> void;
 
     OPENTXS_NO_EXPORT Reply(Imp* imp) noexcept;
+    Reply() = delete;
     Reply(const Reply&) noexcept;
     Reply(Reply&&) noexcept;
     auto operator=(const Reply&) noexcept -> Reply&;
@@ -62,9 +63,6 @@ public:
 
 protected:
     Imp* imp_;
-
-private:
-    Reply() = delete;
 };
 #pragma GCC diagnostic pop
 }  // namespace opentxs::network::zeromq::zap

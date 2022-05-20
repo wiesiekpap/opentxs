@@ -120,6 +120,11 @@ public:
         const opentxs::network::zeromq::Context& context,
         const UnallocatedCString& dataFolder,
         const int instance);
+    Notary() = delete;
+    Notary(const Notary&) = delete;
+    Notary(Notary&&) = delete;
+    auto operator=(const Notary&) -> Notary& = delete;
+    auto operator=(Notary&&) -> Notary& = delete;
 
     ~Notary() final;
 
@@ -167,11 +172,5 @@ private:
 
     auto Cleanup() -> void;
     auto Start() -> void final;
-
-    Notary() = delete;
-    Notary(const Notary&) = delete;
-    Notary(Notary&&) = delete;
-    auto operator=(const Notary&) -> Notary& = delete;
-    auto operator=(Notary&&) -> Notary& = delete;
 };
 }  // namespace opentxs::api::session::imp

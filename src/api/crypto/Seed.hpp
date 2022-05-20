@@ -232,6 +232,11 @@ public:
         const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39,
         const opentxs::network::zeromq::Context& zmq);
+    Seed() = delete;
+    Seed(const Seed&) = delete;
+    Seed(Seed&&) = delete;
+    auto operator=(const Seed&) -> Seed& = delete;
+    auto operator=(Seed&&) -> Seed& = delete;
 
     ~Seed() final = default;
 
@@ -267,11 +272,5 @@ private:
         opentxs::crypto::Seed&& seed) const noexcept -> UnallocatedCString;
     auto publish(const Identifier& id) const noexcept -> void;
     auto publish(const UnallocatedCString& id) const noexcept -> void;
-
-    Seed() = delete;
-    Seed(const Seed&) = delete;
-    Seed(Seed&&) = delete;
-    auto operator=(const Seed&) -> Seed& = delete;
-    auto operator=(Seed&&) -> Seed& = delete;
 };
 }  // namespace opentxs::api::crypto::imp

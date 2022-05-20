@@ -132,6 +132,7 @@ public:
         otx::blind::Purse&& purse,
         const contract::peer::PeerObjectType type,
         const VersionNumber version) noexcept;
+    Object() = delete;
 
     ~Object() final;
 
@@ -145,7 +146,5 @@ private:
     otx::blind::Purse purse_;
     contract::peer::PeerObjectType type_;
     VersionNumber version_;
-
-    Object() = delete;
 };
 }  // namespace opentxs::peer::implementation

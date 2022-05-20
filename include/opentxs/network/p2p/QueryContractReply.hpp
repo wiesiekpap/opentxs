@@ -35,6 +35,10 @@ public:
     auto Payload() const noexcept -> ReadView;
 
     OPENTXS_NO_EXPORT QueryContractReply(Imp* imp) noexcept;
+    QueryContractReply(const QueryContractReply&) = delete;
+    QueryContractReply(QueryContractReply&&) = delete;
+    auto operator=(const QueryContractReply&) -> QueryContractReply& = delete;
+    auto operator=(QueryContractReply&&) -> QueryContractReply& = delete;
 
     ~QueryContractReply() final;
 
@@ -43,10 +47,5 @@ private:
 #pragma GCC diagnostic ignored "-Wshadow-field"
     Imp* imp_;
 #pragma GCC diagnostic pop
-
-    QueryContractReply(const QueryContractReply&) = delete;
-    QueryContractReply(QueryContractReply&&) = delete;
-    auto operator=(const QueryContractReply&) -> QueryContractReply& = delete;
-    auto operator=(QueryContractReply&&) -> QueryContractReply& = delete;
 };
 }  // namespace opentxs::network::p2p

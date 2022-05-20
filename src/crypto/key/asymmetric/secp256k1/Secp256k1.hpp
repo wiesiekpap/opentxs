@@ -113,6 +113,11 @@ public:
         const VersionNumber version) noexcept(false);
     Secp256k1(const Secp256k1& rhs, const ReadView newPublic) noexcept;
     Secp256k1(const Secp256k1& rhs, OTSecret&& newSecretKey) noexcept;
+    Secp256k1() = delete;
+    Secp256k1(const Secp256k1&) noexcept;
+    Secp256k1(Secp256k1&&) = delete;
+    auto operator=(const Secp256k1&) -> Secp256k1& = delete;
+    auto operator=(Secp256k1&&) -> Secp256k1& = delete;
 
     ~Secp256k1() final = default;
 
@@ -139,11 +144,5 @@ private:
     {
         return std::make_unique<Secp256k1>(*this, std::move(newSecretKey));
     }
-
-    Secp256k1() = delete;
-    Secp256k1(const Secp256k1&) noexcept;
-    Secp256k1(Secp256k1&&) = delete;
-    auto operator=(const Secp256k1&) -> Secp256k1& = delete;
-    auto operator=(Secp256k1&&) -> Secp256k1& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

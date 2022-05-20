@@ -43,6 +43,10 @@ public:
         -> const p2p::State&;
 
     OPENTXS_NO_EXPORT Acknowledgement(Imp* imp) noexcept;
+    Acknowledgement(const Acknowledgement&) = delete;
+    Acknowledgement(Acknowledgement&&) = delete;
+    auto operator=(const Acknowledgement&) -> Acknowledgement& = delete;
+    auto operator=(Acknowledgement&&) -> Acknowledgement& = delete;
 
     ~Acknowledgement() final;
 
@@ -51,10 +55,5 @@ private:
 #pragma GCC diagnostic ignored "-Wshadow-field"
     Imp* imp_;
 #pragma GCC diagnostic pop
-
-    Acknowledgement(const Acknowledgement&) = delete;
-    Acknowledgement(Acknowledgement&&) = delete;
-    auto operator=(const Acknowledgement&) -> Acknowledgement& = delete;
-    auto operator=(Acknowledgement&&) -> Acknowledgement& = delete;
 };
 }  // namespace opentxs::network::p2p

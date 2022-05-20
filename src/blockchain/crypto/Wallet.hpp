@@ -67,17 +67,11 @@ public:
         -> crypto::Account& final;
     auto at(const std::size_t position) const noexcept(false)
         -> const_iterator::value_type& final;
-    auto begin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
-    auto cbegin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto begin() const noexcept -> const_iterator final { return {this, 0}; }
+    auto cbegin() const noexcept -> const_iterator final { return {this, 0}; }
     auto cend() const noexcept -> const_iterator final
     {
-        return const_iterator(this, trees_.size());
+        return {this, trees_.size()};
     }
     auto Chain() const noexcept -> opentxs::blockchain::Type final
     {
@@ -85,7 +79,7 @@ public:
     }
     auto end() const noexcept -> const_iterator final
     {
-        return const_iterator(this, trees_.size());
+        return {this, trees_.size()};
     }
     auto Internal() const noexcept -> internal::Wallet& final
     {
@@ -110,6 +104,10 @@ public:
         const api::crypto::Blockchain& parent,
         const AccountIndex& index,
         const opentxs::blockchain::Type chain) noexcept;
+    Wallet(const Wallet&) = delete;
+    Wallet(Wallet&&) = delete;
+    auto operator=(const Wallet&) -> Wallet& = delete;
+    auto operator=(Wallet&&) -> Wallet& = delete;
 
     ~Wallet() final = default;
 
@@ -145,10 +143,5 @@ private:
     auto get_or_create(const Lock& lock, const identifier::Nym& id) noexcept
         -> crypto::Account&;
     void init() noexcept;
-
-    Wallet(const Wallet&) = delete;
-    Wallet(Wallet&&) = delete;
-    auto operator=(const Wallet&) -> Wallet& = delete;
-    auto operator=(Wallet&&) -> Wallet& = delete;
 };
 }  // namespace opentxs::blockchain::crypto::implementation

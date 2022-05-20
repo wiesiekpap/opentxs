@@ -40,10 +40,9 @@ public:
     {
         assert(columns_ <= std::numeric_limits<int>::max());
     }
+    BlankModel() = delete;
 
 private:
     const std::size_t columns_;
-
-    BlankModel() = delete;
 };
 }  // namespace opentxs::ui

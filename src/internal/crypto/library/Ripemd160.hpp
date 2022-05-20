@@ -18,15 +18,14 @@ public:
         const std::size_t inputSize,
         std::uint8_t* output) const -> bool = 0;
 
-    virtual ~Ripemd160() = default;
-
-protected:
-    Ripemd160() = default;
-
-private:
     Ripemd160(const Ripemd160&) = delete;
     Ripemd160(Ripemd160&&) = delete;
     auto operator=(const Ripemd160&) -> Ripemd160& = delete;
     auto operator=(Ripemd160&&) -> Ripemd160& = delete;
+
+    virtual ~Ripemd160() = default;
+
+protected:
+    Ripemd160() = default;
 };
 }  // namespace opentxs::crypto

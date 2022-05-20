@@ -46,6 +46,11 @@ public:
         const VersionNumber version,
         const Identifier& subaccount) noexcept;
     SubchainID(const ReadView bytes) noexcept(false);
+    SubchainID() = delete;
+    SubchainID(const SubchainID&) = delete;
+    SubchainID(SubchainID&&) = delete;
+    auto operator=(const SubchainID&) -> SubchainID& = delete;
+    auto operator=(SubchainID&&) -> SubchainID& = delete;
 
     ~SubchainID() = default;
 
@@ -59,11 +64,5 @@ private:
     mutable std::optional<cfilter::Type> filter_;
     mutable std::optional<VersionNumber> version_;
     mutable std::optional<OTIdentifier> subaccount_;
-
-    SubchainID() = delete;
-    SubchainID(const SubchainID&) = delete;
-    SubchainID(SubchainID&&) = delete;
-    auto operator=(const SubchainID&) -> SubchainID& = delete;
-    auto operator=(SubchainID&&) -> SubchainID& = delete;
 };
 }  // namespace opentxs::blockchain::database::wallet::db

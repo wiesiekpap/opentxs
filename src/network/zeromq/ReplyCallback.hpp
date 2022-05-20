@@ -18,6 +18,12 @@ public:
     auto Deactivate() const noexcept -> void final;
     auto Process(zeromq::Message&& message) const noexcept -> Message override;
 
+    ReplyCallback() = delete;
+    ReplyCallback(const ReplyCallback&) = delete;
+    ReplyCallback(ReplyCallback&&) = delete;
+    auto operator=(const ReplyCallback&) -> ReplyCallback& = delete;
+    auto operator=(ReplyCallback&&) -> ReplyCallback& = delete;
+
     ~ReplyCallback() override;
 
 private:
@@ -30,10 +36,5 @@ private:
     auto clone() const -> ReplyCallback* override;
 
     ReplyCallback(zeromq::ReplyCallback::ReceiveCallback callback);
-    ReplyCallback() = delete;
-    ReplyCallback(const ReplyCallback&) = delete;
-    ReplyCallback(ReplyCallback&&) = delete;
-    auto operator=(const ReplyCallback&) -> ReplyCallback& = delete;
-    auto operator=(ReplyCallback&&) -> ReplyCallback& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

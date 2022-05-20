@@ -44,10 +44,6 @@ public:
         const AccountListRowID& rowID,
         const AccountListSortKey& sortKey,
         CustomData& custom) noexcept;
-
-    ~CustodialAccountListItem() final;
-
-private:
     CustodialAccountListItem() = delete;
     CustodialAccountListItem(const CustodialAccountListItem&) = delete;
     CustodialAccountListItem(CustodialAccountListItem&&) = delete;
@@ -55,5 +51,7 @@ private:
         -> CustodialAccountListItem& = delete;
     auto operator=(CustodialAccountListItem&&)
         -> CustodialAccountListItem& = delete;
+
+    ~CustodialAccountListItem() final;
 };
 }  // namespace opentxs::ui::implementation

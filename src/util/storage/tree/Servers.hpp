@@ -38,20 +38,6 @@ namespace opentxs::storage
 {
 class Servers final : public Node
 {
-private:
-    friend Tree;
-
-    void init(const UnallocatedCString& hash) final;
-    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
-    auto serialize() const -> proto::StorageServers;
-
-    Servers(const Driver& storage, const UnallocatedCString& hash);
-    Servers() = delete;
-    Servers(const Servers&) = delete;
-    Servers(Servers&&) = delete;
-    auto operator=(const Servers&) -> Servers = delete;
-    auto operator=(Servers&&) -> Servers = delete;
-
 public:
     auto Alias(const UnallocatedCString& id) const -> UnallocatedCString;
     auto Load(
@@ -69,6 +55,21 @@ public:
         const UnallocatedCString& alias,
         UnallocatedCString& plaintext) -> bool;
 
+    Servers() = delete;
+    Servers(const Servers&) = delete;
+    Servers(Servers&&) = delete;
+    auto operator=(const Servers&) -> Servers = delete;
+    auto operator=(Servers&&) -> Servers = delete;
+
     ~Servers() final = default;
+
+private:
+    friend Tree;
+
+    void init(const UnallocatedCString& hash) final;
+    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
+    auto serialize() const -> proto::StorageServers;
+
+    Servers(const Driver& storage, const UnallocatedCString& hash);
 };
 }  // namespace opentxs::storage

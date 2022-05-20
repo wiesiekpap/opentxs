@@ -39,6 +39,9 @@ public:
 
     NumericHash(const Type& data) noexcept;
     NumericHash() noexcept;
+    NumericHash(NumericHash&& rhs) = delete;
+    auto operator=(const NumericHash& rhs) -> NumericHash& = delete;
+    auto operator=(NumericHash&& rhs) -> NumericHash& = delete;
 
     ~NumericHash() final = default;
 
@@ -51,8 +54,5 @@ private:
     }
 
     NumericHash(const NumericHash& rhs) noexcept;
-    NumericHash(NumericHash&& rhs) = delete;
-    auto operator=(const NumericHash& rhs) -> NumericHash& = delete;
-    auto operator=(NumericHash&& rhs) -> NumericHash& = delete;
 };
 }  // namespace opentxs::blockchain::implementation

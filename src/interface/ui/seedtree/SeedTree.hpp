@@ -103,6 +103,11 @@ public:
     SeedTree(
         const api::session::Client& api,
         const SimpleCallback& cb) noexcept;
+    SeedTree() = delete;
+    SeedTree(const SeedTree&) = delete;
+    SeedTree(SeedTree&&) = delete;
+    auto operator=(const SeedTree&) -> SeedTree& = delete;
+    auto operator=(SeedTree&&) -> SeedTree& = delete;
 
     ~SeedTree() final;
 
@@ -164,11 +169,5 @@ private:
     auto process_seed(Message&& in) noexcept -> void;
     auto process_seed(const Identifier& id) noexcept -> void;
     auto startup() noexcept -> void;
-
-    SeedTree() = delete;
-    SeedTree(const SeedTree&) = delete;
-    SeedTree(SeedTree&&) = delete;
-    auto operator=(const SeedTree&) -> SeedTree& = delete;
-    auto operator=(SeedTree&&) -> SeedTree& = delete;
 };
 }  // namespace opentxs::ui::implementation

@@ -98,6 +98,11 @@ public:
         Space& output,
         const PasswordPrompt& reason) const noexcept -> bool final;
 
+    EllipticCurve() = delete;
+    EllipticCurve(EllipticCurve&&) = delete;
+    auto operator=(const EllipticCurve&) -> EllipticCurve& = delete;
+    auto operator=(EllipticCurve&&) -> EllipticCurve& = delete;
+
     virtual ~EllipticCurve() override = default;
 
 protected:
@@ -157,10 +162,5 @@ private:
         -> std::unique_ptr<EllipticCurve> = 0;
     virtual auto replace_secret_key(OTSecret&& newSecretKey) const noexcept
         -> std::unique_ptr<EllipticCurve> = 0;
-
-    EllipticCurve() = delete;
-    EllipticCurve(EllipticCurve&&) = delete;
-    auto operator=(const EllipticCurve&) -> EllipticCurve& = delete;
-    auto operator=(EllipticCurve&&) -> EllipticCurve& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

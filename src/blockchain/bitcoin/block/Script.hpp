@@ -63,13 +63,10 @@ public:
     auto CalculateHash160(const api::Session& api, const AllocateOutput output)
         const noexcept -> bool final;
     auto CalculateSize() const noexcept -> std::size_t final;
-    auto cbegin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto cbegin() const noexcept -> const_iterator final { return {this, 0}; }
     auto cend() const noexcept -> const_iterator final
     {
-        return const_iterator(this, elements_.size());
+        return {this, elements_.size()};
     }
     auto end() const noexcept -> const_iterator final { return cend(); }
     auto ExtractElements(const cfilter::Type style) const noexcept
@@ -112,7 +109,11 @@ public:
         const Position role,
         ScriptElements&& elements,
         std::optional<std::size_t> size = {}) noexcept;
+    Script() = delete;
     Script(const Script&) noexcept;
+    Script(Script&&) = delete;
+    auto operator=(const Script&) -> Script& = delete;
+    auto operator=(Script&&) -> Script& = delete;
 
     ~Script() final = default;
 
@@ -160,10 +161,5 @@ private:
 
     auto get_data(const std::size_t position) const noexcept(false) -> ReadView;
     auto get_opcode(const std::size_t position) const noexcept(false) -> OP;
-
-    Script() = delete;
-    Script(Script&&) = delete;
-    auto operator=(const Script&) -> Script& = delete;
-    auto operator=(Script&&) -> Script& = delete;
 };
 }  // namespace opentxs::blockchain::bitcoin::block::implementation

@@ -50,15 +50,14 @@ public:
     /// Returns the seed type as an enum SeedStyle.
     virtual auto Type() const noexcept -> crypto::SeedStyle = 0;
 
-    ~SeedTreeItem() override = default;
-
-protected:
-    SeedTreeItem() noexcept = default;
-
-private:
     SeedTreeItem(const SeedTreeItem&) = delete;
     SeedTreeItem(SeedTreeItem&&) = delete;
     auto operator=(const SeedTreeItem&) -> SeedTreeItem& = delete;
     auto operator=(SeedTreeItem&&) -> SeedTreeItem& = delete;
+
+    ~SeedTreeItem() override = default;
+
+protected:
+    SeedTreeItem() noexcept = default;
 };
 }  // namespace opentxs::ui

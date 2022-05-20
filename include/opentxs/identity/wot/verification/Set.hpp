@@ -78,15 +78,14 @@ public:
     virtual auto External() noexcept -> Group& = 0;
     virtual auto Internal() noexcept -> Group& = 0;
 
-    virtual ~Set() = default;
-
-protected:
-    Set() = default;
-
-private:
     Set(const Set&) = delete;
     Set(Set&&) = delete;
     auto operator=(const Set&) -> Set& = delete;
     auto operator=(Set&&) -> Set& = delete;
+
+    virtual ~Set() = default;
+
+protected:
+    Set() = default;
 };
 }  // namespace opentxs::identity::wot::verification

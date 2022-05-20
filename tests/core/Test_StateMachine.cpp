@@ -7,7 +7,6 @@
 #include <opentxs/opentxs.hpp>
 #include <atomic>
 #include <chrono>
-#include <functional>
 #include <future>
 
 #include "core/StateMachine.hpp"
@@ -36,7 +35,7 @@ public:
     }
 
     Test_State_Machine()
-        : StateMachine(std::bind(&Test_State_Machine::callback, this))
+        : StateMachine([this] { return callback(); })
         , step_(0)
         , target_(0)
         , counter_(0)

@@ -201,6 +201,11 @@ public:
         const api::Session& api,
         const session::Activity& activity,
         const session::Contacts& contact);
+    Workflow() = delete;
+    Workflow(const Workflow&) = delete;
+    Workflow(Workflow&&) = delete;
+    auto operator=(const Workflow&) -> Workflow& = delete;
+    auto operator=(Workflow&&) -> Workflow& = delete;
 
     ~Workflow() final = default;
 
@@ -410,11 +415,5 @@ private:
         const Amount pending,
         const Time time,
         const UnallocatedCString& memo) const;
-
-    Workflow() = delete;
-    Workflow(const Workflow&) = delete;
-    Workflow(Workflow&&) = delete;
-    auto operator=(const Workflow&) -> Workflow& = delete;
-    auto operator=(Workflow&&) -> Workflow& = delete;
 };
 }  // namespace opentxs::api::session::imp

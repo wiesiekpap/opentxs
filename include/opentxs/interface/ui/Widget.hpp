@@ -20,15 +20,14 @@ public:
     virtual void SetCallback(SimpleCallback cb) const noexcept = 0;
     virtual auto WidgetID() const noexcept -> OTIdentifier = 0;
 
-    virtual ~Widget() = default;
-
-protected:
-    Widget() noexcept = default;
-
-private:
     Widget(const Widget&) = delete;
     Widget(Widget&&) = delete;
     auto operator=(const Widget&) -> Widget& = delete;
     auto operator=(Widget&&) -> Widget& = delete;
+
+    virtual ~Widget() = default;
+
+protected:
+    Widget() noexcept = default;
 };
 }  // namespace opentxs::ui

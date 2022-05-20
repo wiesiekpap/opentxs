@@ -124,6 +124,11 @@ public:
         const crypto::HashType hashType) const -> bool final;
 
     Sodium(const api::Crypto& crypto) noexcept;
+    Sodium() = delete;
+    Sodium(const Sodium&) = delete;
+    Sodium(Sodium&&) = delete;
+    auto operator=(const Sodium&) -> Sodium& = delete;
+    auto operator=(Sodium&&) -> Sodium& = delete;
 
     ~Sodium() final = default;
 
@@ -171,11 +176,5 @@ private:
         std::uint8_t* output) const -> bool;
     auto TagSize(const opentxs::crypto::key::symmetric::Algorithm mode) const
         -> std::size_t final;
-
-    Sodium() = delete;
-    Sodium(const Sodium&) = delete;
-    Sodium(Sodium&&) = delete;
-    auto operator=(const Sodium&) -> Sodium& = delete;
-    auto operator=(Sodium&&) -> Sodium& = delete;
 };
 }  // namespace opentxs::crypto::implementation

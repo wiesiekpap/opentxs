@@ -79,5 +79,5 @@ auto ListenCallback::Replace(ReceiveCallback cb) noexcept -> void
     }
 }
 
-ListenCallback::~ListenCallback() {}
+ListenCallback::~ListenCallback() = default;
 }  // namespace opentxs::network::zeromq::implementation

@@ -99,7 +99,7 @@ auto NotarySession(
 auto OTX(
     const Flag& running,
     const api::session::Client& api,
-    const ContextLockCallback& lockCallback) noexcept
+    ContextLockCallback lockCallback) noexcept
     -> std::unique_ptr<api::session::OTX>;
 auto SessionCryptoAPI(
     api::Crypto& parent,

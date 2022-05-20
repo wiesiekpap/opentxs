@@ -79,13 +79,10 @@ public:
     {
         return *payload_.at(position);
     }
-    auto begin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto begin() const noexcept -> const_iterator final { return {this, 0}; }
     auto end() const noexcept -> const_iterator final
     {
-        return const_iterator(this, payload_.size());
+        return {this, payload_.size()};
     }
     auto SerializeTimestamp() const noexcept -> bool
     {
@@ -103,6 +100,10 @@ public:
         std::unique_ptr<Header> header,
         const ProtocolVersion version,
         AddressVector&& addresses) noexcept;
+    Addr(const Addr&) = delete;
+    Addr(Addr&&) = delete;
+    auto operator=(const Addr&) -> Addr& = delete;
+    auto operator=(Addr&&) -> Addr& = delete;
 
     ~Addr() final = default;
 
@@ -112,10 +113,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Addr(const Addr&) = delete;
-    Addr(Addr&&) = delete;
-    auto operator=(const Addr&) -> Addr& = delete;
-    auto operator=(Addr&&) -> Addr& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

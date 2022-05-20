@@ -143,6 +143,11 @@ public:
         const std::string_view parent,
         const network::zeromq::BatchID batch,
         allocator_type alloc) noexcept;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() final;
 
@@ -179,11 +184,5 @@ private:
         const network::zeromq::BatchID batch,
         CString&& submitEndpoint,
         allocator_type alloc) noexcept;
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs::blockchain::node::internal

@@ -310,20 +310,22 @@ auto Client::Imp::forward_to_all(Message&& message) noexcept -> void
         LogTrace()(OT_PRETTY_CLASS())("No connected peers available").Flush();
         pending_.push_back(std::move(message));
         // TODO limit queue size
-    }
+    } else {
+        for (const auto& id : connected_servers_) {
+            auto& server = servers_.at(id);
+            LogTrace()("Forwarding request to ")(id).Flush();
+            external_router_.SendExternal([&] {
+                auto msg = zeromq::Message{};
+                msg.AddFrame(server.endpoint_);
+                msg.StartBody();
 
-    for (const auto& id : connected_servers_) {
-        auto& server = servers_.at(id);
-        LogTrace()("Forwarding request to ")(id).Flush();
-        external_router_.SendExternal([&] {
-            auto msg = zeromq::Message{};
-            msg.AddFrame(server.endpoint_);
-            msg.StartBody();
+                for (const auto& frame : message.Body()) {
+                    msg.AddFrame(frame);
+                }
 
-            for (const auto& frame : message.Body()) { msg.AddFrame(frame); }
-
-            return msg;
-        }());
+                return msg;
+            }());
+        }
     }
 }
 
@@ -339,20 +341,22 @@ auto Client::Imp::forward_to_all(Chain chain, Message&& message) noexcept
         auto& pending = pending_chain_[chain];
         pending.push_back(std::move(message));
         // TODO limit queue size
-    }
+    } else {
+        for (const auto& id : providers) {
+            auto& server = servers_.at(id);
+            LogTrace()("Forwarding request to ")(id).Flush();
+            external_router_.SendExternal([&] {
+                auto msg = zeromq::Message{};
+                msg.AddFrame(server.endpoint_);
+                msg.StartBody();
 
-    for (const auto& id : providers) {
-        auto& server = servers_.at(id);
-        LogTrace()("Forwarding request to ")(id).Flush();
-        external_router_.SendExternal([&] {
-            auto msg = zeromq::Message{};
-            msg.AddFrame(server.endpoint_);
-            msg.StartBody();
+                for (const auto& frame : message.Body()) {
+                    msg.AddFrame(frame);
+                }
 
-            for (const auto& frame : message.Body()) { msg.AddFrame(frame); }
-
-            return msg;
-        }());
+                return msg;
+            }());
+        }
     }
 }
 

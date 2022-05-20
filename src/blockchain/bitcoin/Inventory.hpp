@@ -47,8 +47,11 @@ public:
 
     Inventory(const Type type, const Hash& hash) noexcept;
     Inventory(const void* payload, const std::size_t size) noexcept(false);
+    Inventory() = delete;
     Inventory(const Inventory&) noexcept;
     Inventory(Inventory&&) noexcept;
+    auto operator=(const Inventory&) -> Inventory& = delete;
+    auto operator=(Inventory&&) -> Inventory& = delete;
 
     ~Inventory() = default;
 
@@ -75,9 +78,5 @@ private:
     static auto encode_type(const Type type) noexcept(false) -> std::uint32_t;
     static auto encode_hash(const Hash& hash) noexcept(false)
         -> p2p::bitcoin::message::HashField;
-
-    Inventory() = delete;
-    auto operator=(const Inventory&) -> Inventory& = delete;
-    auto operator=(Inventory&&) -> Inventory& = delete;
 };
 }  // namespace opentxs::blockchain::bitcoin

@@ -54,15 +54,14 @@ public slots:
     void setDraft(QString);
 
 public:
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    // NOLINTBEGIN(modernize-use-trailing-return-type)
     Q_INVOKABLE bool pay(
         const QString& amount,
         const QString& sourceAccount,
         const QString& memo = "") const noexcept;
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
     Q_INVOKABLE QString paymentCode(const int currency) const noexcept;
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
     Q_INVOKABLE bool sendDraft() const noexcept;
+    // NOLINTEND(modernize-use-trailing-return-type)
 
 public:
     enum Roles {
@@ -99,6 +98,11 @@ public:
     auto threadID() const noexcept -> QString;
 
     ActivityThreadQt(internal::ActivityThread& parent) noexcept;
+    ActivityThreadQt() = delete;
+    ActivityThreadQt(const ActivityThreadQt&) = delete;
+    ActivityThreadQt(ActivityThreadQt&&) = delete;
+    auto operator=(const ActivityThreadQt&) -> ActivityThreadQt& = delete;
+    auto operator=(ActivityThreadQt&&) -> ActivityThreadQt& = delete;
 
     ~ActivityThreadQt() final;
 
@@ -106,10 +110,4 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    ActivityThreadQt() = delete;
-    ActivityThreadQt(const ActivityThreadQt&) = delete;
-    ActivityThreadQt(ActivityThreadQt&&) = delete;
-    ActivityThreadQt& operator=(const ActivityThreadQt&) = delete;
-    ActivityThreadQt& operator=(ActivityThreadQt&&) = delete;
 };

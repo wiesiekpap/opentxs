@@ -8,7 +8,6 @@
 #include "otx/client/PaymentTasks.hpp"  // IWYU pragma: associated
 
 #include <chrono>
-#include <functional>
 #include <future>
 #include <memory>
 #include <tuple>
@@ -29,7 +28,7 @@
 namespace opentxs::otx::client::implementation
 {
 PaymentTasks::PaymentTasks(client::internal::StateMachine& parent)
-    : StateMachine(std::bind(&PaymentTasks::cleanup, this))
+    : StateMachine([this] { return cleanup(); })
     , parent_(parent)
     , tasks_{}
     , unit_lock_{}
@@ -58,9 +57,9 @@ auto PaymentTasks::cleanup() -> bool
 
     lock.unlock();
 
-    for (auto i = finished.begin(); i != finished.end(); ++i) {
+    for (auto& i : finished) {
         lock.lock();
-        tasks_.erase(*i);
+        tasks_.erase(i);
         lock.unlock();
     }
 

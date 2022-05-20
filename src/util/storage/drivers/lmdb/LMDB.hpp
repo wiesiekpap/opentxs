@@ -70,6 +70,11 @@ public:
         const api::session::Storage& storage,
         const storage::Config& config,
         const Flag& bucket);
+    LMDB() = delete;
+    LMDB(const LMDB&) = delete;
+    LMDB(LMDB&&) = delete;
+    auto operator=(const LMDB&) -> LMDB& = delete;
+    auto operator=(LMDB&&) -> LMDB& = delete;
 
     ~LMDB() final;
 
@@ -94,11 +99,5 @@ private:
         std::promise<bool>* promise) const final;
 
     void Init_LMDB();
-
-    LMDB() = delete;
-    LMDB(const LMDB&) = delete;
-    LMDB(LMDB&&) = delete;
-    auto operator=(const LMDB&) -> LMDB& = delete;
-    auto operator=(LMDB&&) -> LMDB& = delete;
 };
 }  // namespace opentxs::storage::driver

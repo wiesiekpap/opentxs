@@ -74,6 +74,11 @@ public:
     static auto Factory(const String& rhs) -> OTNymID;
     static auto Factory(const identity::Nym& nym) -> OTNymID;
 
+    Nym(const Nym&) = delete;
+    Nym(Nym&&) = delete;
+    auto operator=(const Nym&) -> Nym& = delete;
+    auto operator=(Nym&&) -> Nym& = delete;
+
     ~Nym() override = default;
 
 protected:
@@ -85,9 +90,5 @@ private:
 #ifndef _WIN32
     auto clone() const -> Nym* override = 0;
 #endif
-    Nym(const Nym&) = delete;
-    Nym(Nym&&) = delete;
-    auto operator=(const Nym&) -> Nym& = delete;
-    auto operator=(Nym&&) -> Nym& = delete;
 };
 }  // namespace opentxs::identifier

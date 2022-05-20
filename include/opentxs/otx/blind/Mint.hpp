@@ -80,15 +80,14 @@ public:
 
     OPENTXS_NO_EXPORT Mint(Imp* imp) noexcept;
     OPENTXS_NO_EXPORT Mint(const api::Session& api) noexcept;
+    Mint(const Mint&) = delete;
     Mint(Mint&& rhs) noexcept;
+    auto operator=(const Mint&) -> Mint& = delete;
     auto operator=(Mint&&) noexcept -> Mint&;
 
     virtual ~Mint();
 
 private:
     Imp* imp_;
-
-    Mint(const Mint&) = delete;
-    auto operator=(const Mint&) -> Mint& = delete;
 };
 }  // namespace opentxs::otx::blind

@@ -43,6 +43,11 @@ public:
         -> bool final;
 
     PacketCrypt(const blockchain::node::HeaderOracle& oracle) noexcept;
+    PacketCrypt() = delete;
+    PacketCrypt(const PacketCrypt&) = delete;
+    PacketCrypt(PacketCrypt&&) = delete;
+    auto operator=(const PacketCrypt&) -> PacketCrypt& = delete;
+    auto operator=(PacketCrypt&&) -> PacketCrypt& = delete;
 
     ~PacketCrypt() final;
 
@@ -50,11 +55,5 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    PacketCrypt() = delete;
-    PacketCrypt(const PacketCrypt&) = delete;
-    PacketCrypt(PacketCrypt&&) = delete;
-    auto operator=(const PacketCrypt&) -> PacketCrypt& = delete;
-    auto operator=(PacketCrypt&&) -> PacketCrypt& = delete;
 };
 }  // namespace opentxs::crypto::implementation

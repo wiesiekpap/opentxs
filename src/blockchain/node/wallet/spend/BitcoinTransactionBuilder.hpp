@@ -122,13 +122,13 @@ public:
         const Proposal& proposal,
         const Type chain,
         const Amount& feeRate) noexcept;
+    BitcoinTransactionBuilder() = delete;
+
     ~BitcoinTransactionBuilder();
 
 private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    BitcoinTransactionBuilder() = delete;
 };
 }  // namespace opentxs::blockchain::node::wallet

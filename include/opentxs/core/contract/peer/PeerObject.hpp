@@ -63,15 +63,14 @@ public:
     virtual auto Payment() noexcept -> std::unique_ptr<UnallocatedCString>& = 0;
     virtual auto Purse() noexcept -> otx::blind::Purse& = 0;
 
-    virtual ~PeerObject() = default;
-
-protected:
-    PeerObject() = default;
-
-private:
     PeerObject(const PeerObject&) = delete;
     PeerObject(PeerObject&&) = delete;
     auto operator=(const PeerObject&) noexcept -> PeerObject& = delete;
     auto operator=(PeerObject&&) noexcept -> PeerObject& = delete;
+
+    virtual ~PeerObject() = default;
+
+protected:
+    PeerObject() = default;
 };
 }  // namespace opentxs

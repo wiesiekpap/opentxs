@@ -427,6 +427,12 @@ public:
     auto SaveCredential(const proto::Credential& credential) const
         -> bool final;
 
+    Wallet() = delete;
+    Wallet(const Wallet&) = delete;
+    Wallet(Wallet&&) = delete;
+    auto operator=(const Wallet&) -> Wallet& = delete;
+    auto operator=(Wallet&&) -> Wallet& = delete;
+
     ~Wallet() override;
 
 protected:
@@ -611,11 +617,5 @@ private:
         noexcept(false) -> OTServerContract;
     auto unit_definition(std::shared_ptr<contract::Unit>&& contract) const
         -> OTUnitDefinition;
-
-    Wallet() = delete;
-    Wallet(const Wallet&) = delete;
-    Wallet(Wallet&&) = delete;
-    auto operator=(const Wallet&) -> Wallet& = delete;
-    auto operator=(Wallet&&) -> Wallet& = delete;
 };
 }  // namespace opentxs::api::session::imp

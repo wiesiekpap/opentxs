@@ -92,6 +92,12 @@ public:
         OTTransaction& tranOut,
         bool& outSuccess);
 
+    Notary() = delete;
+    Notary(const Notary&) = delete;
+    Notary(Notary&&) = delete;
+    auto operator=(const Notary&) -> Notary& = delete;
+    auto operator=(Notary&&) -> Notary& = delete;
+
 private:
     friend Server;
 
@@ -300,10 +306,5 @@ private:
         Server& server,
         const PasswordPrompt& reason,
         const opentxs::api::session::Notary& manager);
-    Notary() = delete;
-    Notary(const Notary&) = delete;
-    Notary(Notary&&) = delete;
-    auto operator=(const Notary&) -> Notary& = delete;
-    auto operator=(Notary&&) -> Notary& = delete;
 };
 }  // namespace opentxs::server

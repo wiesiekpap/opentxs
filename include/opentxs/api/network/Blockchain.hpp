@@ -75,16 +75,15 @@ public:
     auto Stop(const Chain type) const noexcept -> bool;
 
     OPENTXS_NO_EXPORT Blockchain(Imp* imp) noexcept;
-
-    OPENTXS_NO_EXPORT ~Blockchain();
-
-private:
-    Imp* imp_;
-
     Blockchain() = delete;
     Blockchain(const Blockchain&) = delete;
     Blockchain(Blockchain&&) = delete;
     auto operator=(const Blockchain&) -> Blockchain& = delete;
     auto operator=(Blockchain&&) -> Blockchain& = delete;
+
+    OPENTXS_NO_EXPORT ~Blockchain();
+
+private:
+    Imp* imp_;
 };
 }  // namespace opentxs::api::network

@@ -35,15 +35,13 @@ struct ListNyms final : public Base::Imp {
     {
         check_session();
     }
-
-    ~ListNyms() final = default;
-
-private:
     ListNyms() = delete;
     ListNyms(const ListNyms&) = delete;
     ListNyms(ListNyms&&) = delete;
     auto operator=(const ListNyms&) -> ListNyms& = delete;
     auto operator=(ListNyms&&) -> ListNyms& = delete;
+
+    ~ListNyms() final = default;
 };
 }  // namespace opentxs::rpc::request::implementation
 

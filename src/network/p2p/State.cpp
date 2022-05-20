@@ -37,9 +37,7 @@ struct State::Imp {
             throw std::runtime_error{"invalid chain"};
         }
     }
-
-private:
-    Imp() noexcept;
+    Imp() noexcept = delete;
     Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;

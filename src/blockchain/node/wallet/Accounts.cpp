@@ -196,9 +196,13 @@ auto Accounts::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 
 auto Accounts::Imp::process_block_header(Message&& in) noexcept -> void
 {
-    const auto body = in.Body();
+    if (startup_reorg_.has_value()) {
+        defer(std::move(in));
 
-    if (startup_reorg_.has_value()) { defer(std::move(in)); }
+        return;
+    }
+
+    const auto body = in.Body();
 
     if (3 >= body.size()) {
         LogError()(OT_PRETTY_CLASS())(name_)(": invalid message").Flush();

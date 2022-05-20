@@ -81,16 +81,15 @@ public:
     auto UnbindAll() noexcept -> bool;
 
     Raw(Imp* imp) noexcept;
+    Raw() = delete;
+    Raw(const Raw&) = delete;
     Raw(Raw&&) noexcept;
+    auto operator=(const Raw&) -> Raw& = delete;
     auto operator=(Raw&&) noexcept -> Raw&;
 
     ~Raw();
 
 private:
     Imp* imp_;
-
-    Raw() = delete;
-    Raw(const Raw&) = delete;
-    auto operator=(const Raw&) -> Raw& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket

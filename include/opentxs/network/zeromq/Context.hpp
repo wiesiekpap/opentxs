@@ -115,15 +115,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Context& = 0;
 
-    virtual ~Context() = default;
-
-protected:
-    Context() noexcept = default;
-
-private:
     Context(const Context&) = delete;
     Context(Context&&) = delete;
     auto operator=(const Context&) -> Context& = delete;
     auto operator=(Context&&) -> Context& = delete;
+
+    virtual ~Context() = default;
+
+protected:
+    Context() noexcept = default;
 };
 }  // namespace opentxs::network::zeromq

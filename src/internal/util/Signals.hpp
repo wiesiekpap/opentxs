@@ -23,6 +23,11 @@ public:
     static void Block();
 
     Signals(const Flag& running);
+    Signals() = delete;
+    Signals(const Signals&) = delete;
+    Signals(Signals&&) = delete;
+    auto operator=(const Signals&) -> Signals& = delete;
+    auto operator=(Signals&&) -> Signals& = delete;
 
     ~Signals();
 
@@ -99,11 +104,5 @@ private:
 
     void handle();
     auto process(const int signal) -> bool;
-
-    Signals() = delete;
-    Signals(const Signals&) = delete;
-    Signals(Signals&&) = delete;
-    auto operator=(const Signals&) -> Signals& = delete;
-    auto operator=(Signals&&) -> Signals& = delete;
 };
 }  // namespace opentxs

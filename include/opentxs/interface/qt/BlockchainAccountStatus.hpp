@@ -58,6 +58,13 @@ public:
 
     BlockchainAccountStatusQt(
         internal::BlockchainAccountStatus& parent) noexcept;
+    BlockchainAccountStatusQt() = delete;
+    BlockchainAccountStatusQt(const BlockchainAccountStatusQt&) = delete;
+    BlockchainAccountStatusQt(BlockchainAccountStatusQt&&) = delete;
+    auto operator=(const BlockchainAccountStatusQt&)
+        -> BlockchainAccountStatusQt& = delete;
+    auto operator=(BlockchainAccountStatusQt&&)
+        -> BlockchainAccountStatusQt& = delete;
 
     ~BlockchainAccountStatusQt() final;
 
@@ -65,11 +72,4 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    BlockchainAccountStatusQt() = delete;
-    BlockchainAccountStatusQt(const BlockchainAccountStatusQt&) = delete;
-    BlockchainAccountStatusQt(BlockchainAccountStatusQt&&) = delete;
-    BlockchainAccountStatusQt& operator=(const BlockchainAccountStatusQt&) =
-        delete;
-    BlockchainAccountStatusQt& operator=(BlockchainAccountStatusQt&&) = delete;
 };

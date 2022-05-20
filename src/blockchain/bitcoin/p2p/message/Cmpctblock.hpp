@@ -52,6 +52,10 @@ public:
         const api::Session& api,
         std::unique_ptr<Header> header,
         const Data& raw_cmpctblock) noexcept(false);
+    Cmpctblock(const Cmpctblock&) = delete;
+    Cmpctblock(Cmpctblock&&) = delete;
+    auto operator=(const Cmpctblock&) -> Cmpctblock& = delete;
+    auto operator=(Cmpctblock&&) -> Cmpctblock& = delete;
 
     ~Cmpctblock() final = default;
 
@@ -60,10 +64,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Cmpctblock(const Cmpctblock&) = delete;
-    Cmpctblock(Cmpctblock&&) = delete;
-    auto operator=(const Cmpctblock&) -> Cmpctblock& = delete;
-    auto operator=(Cmpctblock&&) -> Cmpctblock& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

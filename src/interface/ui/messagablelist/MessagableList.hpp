@@ -81,6 +81,12 @@ public:
         const api::session::Client& api,
         const identifier::Nym& nymID,
         const SimpleCallback& cb) noexcept;
+    MessagableList() = delete;
+    MessagableList(const MessagableList&) = delete;
+    MessagableList(MessagableList&&) = delete;
+    auto operator=(const MessagableList&) -> MessagableList& = delete;
+    auto operator=(MessagableList&&) -> MessagableList& = delete;
+
     ~MessagableList() final;
 
 protected:
@@ -116,11 +122,5 @@ private:
     auto process_contact(const Message& message) noexcept -> void;
     auto process_nym(const Message& message) noexcept -> void;
     auto startup() noexcept -> void;
-
-    MessagableList() = delete;
-    MessagableList(const MessagableList&) = delete;
-    MessagableList(MessagableList&&) = delete;
-    auto operator=(const MessagableList&) -> MessagableList& = delete;
-    auto operator=(MessagableList&&) -> MessagableList& = delete;
 };
 }  // namespace opentxs::ui::implementation

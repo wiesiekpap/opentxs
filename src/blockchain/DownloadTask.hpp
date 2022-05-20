@@ -180,6 +180,10 @@ public:
         , log_(std::move(log))
     {
     }
+    Task(const Task& rhs) = delete;
+    Task(Task&& rhs) = delete;
+    auto operator=(const Task& rhs) -> Task& = delete;
+    auto operator=(Task&& rhs) -> Task& = delete;
 
     ~Task() = default;
 
@@ -193,11 +197,6 @@ private:
 
         return ++counter;
     }
-
-    Task(const Task& rhs) = delete;
-    Task(Task&& rhs) = delete;
-    auto operator=(const Task& rhs) -> Task& = delete;
-    auto operator=(Task&& rhs) -> Task& = delete;
 };
 
 template <
@@ -275,6 +274,7 @@ public:
         , last_activity_(started_)
     {
     }
+    Batch(const Batch&) = delete;
     Batch(Batch&& rhs) noexcept
         : id_(rhs.id_)
         , data_(std::move(const_cast<Vector&>(rhs.data_)))
@@ -287,6 +287,7 @@ public:
     {
         rhs.cb_ = {};
     }
+    auto operator=(const Batch&) -> Batch& = delete;
     auto operator=(Batch&& rhs) noexcept -> Batch&
     {
         if (&rhs != this) {
@@ -332,8 +333,5 @@ private:
 
         return output;
     }
-
-    Batch(const Batch&) = delete;
-    auto operator=(const Batch&) -> Batch& = delete;
 };
 }  // namespace opentxs::blockchain::download

@@ -59,15 +59,14 @@ public:
     virtual auto Xpub(const PasswordPrompt& reason) const noexcept
         -> UnallocatedCString = 0;
 
-    ~HD() override = default;
-
-protected:
-    HD() = default;
-
-private:
     HD(const HD&) = delete;
     HD(HD&&) = delete;
     auto operator=(const HD&) -> HD& = delete;
     auto operator=(HD&&) -> HD& = delete;
+
+    ~HD() override = default;
+
+protected:
+    HD() = default;
 };
 }  // namespace opentxs::crypto::key

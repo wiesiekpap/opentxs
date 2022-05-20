@@ -35,7 +35,7 @@ auto OpenSSL() noexcept -> std::unique_ptr<crypto::OpenSSL>
 
 namespace opentxs::crypto::implementation
 {
-OpenSSL::OpenSSL() noexcept {}
+OpenSSL::OpenSSL() noexcept = default;
 
 #if OPENSSL_VERSION_NUMBER >= 0x1010000fl
 OpenSSL::BIO::BIO(const BIO_METHOD* type) noexcept

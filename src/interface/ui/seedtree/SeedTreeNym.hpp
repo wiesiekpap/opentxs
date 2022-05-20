@@ -60,6 +60,12 @@ public:
         const SeedTreeItemRowID& rowID,
         const SeedTreeItemSortKey& sortKey,
         CustomData& custom) noexcept;
+    SeedTreeNym() = delete;
+    SeedTreeNym(const SeedTreeNym&) = delete;
+    SeedTreeNym(SeedTreeNym&&) = delete;
+    auto operator=(const SeedTreeNym&) -> SeedTreeNym& = delete;
+    auto operator=(SeedTreeNym&&) -> SeedTreeNym& = delete;
+
     ~SeedTreeNym() override;
 
 private:
@@ -71,11 +77,5 @@ private:
 
     auto reindex(const SeedTreeItemSortKey&, CustomData&) noexcept
         -> bool final;
-
-    SeedTreeNym() = delete;
-    SeedTreeNym(const SeedTreeNym&) = delete;
-    SeedTreeNym(SeedTreeNym&&) = delete;
-    auto operator=(const SeedTreeNym&) -> SeedTreeNym& = delete;
-    auto operator=(SeedTreeNym&&) -> SeedTreeNym& = delete;
 };
 }  // namespace opentxs::ui::implementation

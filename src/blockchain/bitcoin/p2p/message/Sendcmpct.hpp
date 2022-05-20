@@ -70,6 +70,10 @@ public:
         std::unique_ptr<Header> header,
         const bool announce,
         const std::uint64_t version) noexcept(false);
+    Sendcmpct(const Sendcmpct&) = delete;
+    Sendcmpct(Sendcmpct&&) = delete;
+    auto operator=(const Sendcmpct&) -> Sendcmpct& = delete;
+    auto operator=(Sendcmpct&&) -> Sendcmpct& = delete;
 
     ~Sendcmpct() final = default;
 
@@ -79,10 +83,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Sendcmpct(const Sendcmpct&) = delete;
-    Sendcmpct(Sendcmpct&&) = delete;
-    auto operator=(const Sendcmpct&) -> Sendcmpct& = delete;
-    auto operator=(Sendcmpct&&) -> Sendcmpct& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

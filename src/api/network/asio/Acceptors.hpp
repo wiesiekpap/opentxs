@@ -59,6 +59,11 @@ public:
     Acceptors(
         internal::Asio& parent,
         boost::asio::io_context& context) noexcept;
+    Acceptors() = delete;
+    Acceptors(const Acceptors&) = delete;
+    Acceptors(Acceptors&&) = delete;
+    auto operator=(const Acceptors&) -> Acceptors& = delete;
+    auto operator=(Acceptors&&) -> Acceptors& = delete;
 
     ~Acceptors();
 
@@ -66,11 +71,5 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    Acceptors() = delete;
-    Acceptors(const Acceptors&) = delete;
-    Acceptors(Acceptors&&) = delete;
-    Acceptors& operator=(const Acceptors&) = delete;
-    Acceptors& operator=(Acceptors&&) = delete;
 };
 }  // namespace opentxs::api::network::asio

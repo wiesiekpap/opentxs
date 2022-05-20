@@ -256,9 +256,10 @@ auto UpdateTransaction::stage(
 {
     OT_ASSERT(header);
 
+    auto hash = header->Hash();
     auto [it, added] = headers_.emplace(
         std::piecewise_construct,
-        std::forward_as_tuple(header->Hash()),
+        std::forward_as_tuple(std::move(hash)),
         std::forward_as_tuple(std::move(header), newHeader));
 
     OT_ASSERT(added);

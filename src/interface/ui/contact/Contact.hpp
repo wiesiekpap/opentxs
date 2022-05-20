@@ -78,6 +78,12 @@ public:
         const api::session::Client& api,
         const Identifier& contactID,
         const SimpleCallback& cb) noexcept;
+    Contact() = delete;
+    Contact(const Contact&) = delete;
+    Contact(Contact&&) = delete;
+    auto operator=(const Contact&) -> Contact& = delete;
+    auto operator=(Contact&&) -> Contact& = delete;
+
     ~Contact() final;
 
 private:
@@ -116,11 +122,5 @@ private:
     auto process_contact(const opentxs::Contact& contact) noexcept -> void;
     auto process_contact(const Message& message) noexcept -> void;
     auto startup() noexcept -> void;
-
-    Contact() = delete;
-    Contact(const Contact&) = delete;
-    Contact(Contact&&) = delete;
-    auto operator=(const Contact&) -> Contact& = delete;
-    auto operator=(Contact&&) -> Contact& = delete;
 };
 }  // namespace opentxs::ui::implementation

@@ -8,6 +8,7 @@
 #include "network/zeromq/socket/Request.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <memory>
@@ -96,13 +97,13 @@ auto Request::wait(const Lock& lock) const noexcept -> bool
     OT_ASSERT(verify_lock(lock))
 
     const auto start = Clock::now();
-    zmq_pollitem_t poll[1];
+    auto poll = std::array<::zmq_pollitem_t, 1>{};
     poll[0].socket = socket_;
     poll[0].events = ZMQ_POLLIN;
 
     while (running_.get()) {
         std::this_thread::yield();
-        const auto events = zmq_poll(poll, 1, poll_milliseconds_);
+        const auto events = ::zmq_poll(poll.data(), 1, poll_milliseconds_);
 
         if (0 == events) {
             LogVerbose()(OT_PRETTY_CLASS())("No messages.").Flush();

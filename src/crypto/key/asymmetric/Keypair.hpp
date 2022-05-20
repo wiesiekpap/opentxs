@@ -65,6 +65,11 @@ public:
         const opentxs::crypto::key::asymmetric::Role role,
         std::unique_ptr<crypto::key::Asymmetric> publicKey,
         std::unique_ptr<crypto::key::Asymmetric> privateKey) noexcept;
+    Keypair() = delete;
+    Keypair(const Keypair&) noexcept;
+    Keypair(Keypair&&) = delete;
+    auto operator=(const Keypair&) -> Keypair& = delete;
+    auto operator=(Keypair&&) -> Keypair& = delete;
 
     ~Keypair() final = default;
 
@@ -77,11 +82,5 @@ private:
     const opentxs::crypto::key::asymmetric::Role role_;
 
     auto clone() const -> Keypair* final { return new Keypair(*this); }
-
-    Keypair() = delete;
-    Keypair(const Keypair&) noexcept;
-    Keypair(Keypair&&) = delete;
-    auto operator=(const Keypair&) -> Keypair& = delete;
-    auto operator=(Keypair&&) -> Keypair& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

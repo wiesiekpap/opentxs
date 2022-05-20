@@ -12,17 +12,17 @@
 
 extern "C" {
 #include <pwd.h>
-#include <signal.h>
 #include <sys/resource.h>
 #include <unistd.h>
-#include <utility>
 #if __has_include(<wordexp.h>)
 #include <wordexp.h>
 #endif
 }
 
 #include <cerrno>
+#include <csignal>
 #include <cstring>
+#include <utility>
 
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"

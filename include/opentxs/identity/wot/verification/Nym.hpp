@@ -73,15 +73,14 @@ public:
         -> bool = 0;
     virtual auto DeleteItem(const Identifier& item) noexcept -> bool = 0;
 
-    virtual ~Nym() = default;
-
-protected:
-    Nym() = default;
-
-private:
     Nym(const Nym&) = delete;
     Nym(Nym&&) = delete;
     auto operator=(const Nym&) -> Nym& = delete;
     auto operator=(Nym&&) -> Nym& = delete;
+
+    virtual ~Nym() = default;
+
+protected:
+    Nym() = default;
 };
 }  // namespace opentxs::identity::wot::verification

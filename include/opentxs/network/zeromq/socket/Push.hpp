@@ -37,6 +37,11 @@ namespace opentxs::network::zeromq::socket
 class OPENTXS_EXPORT Push : virtual public curve::Client, virtual public Sender
 {
 public:
+    Push(const Push&) = delete;
+    Push(Push&&) = delete;
+    auto operator=(const Push&) -> Push& = delete;
+    auto operator=(Push&&) -> Push& = delete;
+
     ~Push() override = default;
 
 protected:
@@ -46,10 +51,5 @@ private:
     friend OTZMQPushSocket;
 
     virtual auto clone() const noexcept -> Push* = 0;
-
-    Push(const Push&) = delete;
-    Push(Push&&) = delete;
-    auto operator=(const Push&) -> Push& = delete;
-    auto operator=(Push&&) -> Push& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket

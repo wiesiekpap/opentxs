@@ -56,6 +56,10 @@ public:
         , next_(never_)
     {
     }
+    Backoff(const Backoff&) = delete;
+    Backoff(Backoff&&) = delete;
+    auto operator=(const Backoff&) -> Backoff& = delete;
+    auto operator=(Backoff&&) -> Backoff& = delete;
 
 private:
     static constexpr auto never_ = Time{};
@@ -66,10 +70,5 @@ private:
     std::chrono::milliseconds next_interval_;
     Time last_;
     Time next_;
-
-    Backoff(const Backoff&) = delete;
-    Backoff(Backoff&&) = delete;
-    auto operator=(const Backoff&) -> Backoff& = delete;
-    auto operator=(Backoff&&) -> Backoff& = delete;
 };
 }  // namespace opentxs

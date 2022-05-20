@@ -74,6 +74,13 @@ public:
         opentxs::Amount amount,
         UnallocatedCString&& displayAmount,
         UnallocatedCString&& memo) noexcept;
+    BlockchainActivityThreadItem() = delete;
+    BlockchainActivityThreadItem(const BlockchainActivityThreadItem&) = delete;
+    BlockchainActivityThreadItem(BlockchainActivityThreadItem&&) = delete;
+    auto operator=(const BlockchainActivityThreadItem&)
+        -> BlockchainActivityThreadItem& = delete;
+    auto operator=(BlockchainActivityThreadItem&&)
+        -> BlockchainActivityThreadItem& = delete;
 
     ~BlockchainActivityThreadItem() final = default;
 
@@ -85,13 +92,5 @@ private:
 
     auto reindex(const ActivityThreadSortKey& key, CustomData& custom) noexcept
         -> bool final;
-
-    BlockchainActivityThreadItem() = delete;
-    BlockchainActivityThreadItem(const BlockchainActivityThreadItem&) = delete;
-    BlockchainActivityThreadItem(BlockchainActivityThreadItem&&) = delete;
-    auto operator=(const BlockchainActivityThreadItem&)
-        -> BlockchainActivityThreadItem& = delete;
-    auto operator=(BlockchainActivityThreadItem&&)
-        -> BlockchainActivityThreadItem& = delete;
 };
 }  // namespace opentxs::ui::implementation

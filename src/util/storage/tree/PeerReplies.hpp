@@ -37,20 +37,6 @@ namespace opentxs::storage
 {
 class PeerReplies final : public Node
 {
-private:
-    friend Nym;
-
-    void init(const UnallocatedCString& hash) final;
-    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
-    auto serialize() const -> proto::StorageNymList;
-
-    PeerReplies(const Driver& storage, const UnallocatedCString& hash);
-    PeerReplies() = delete;
-    PeerReplies(const PeerReplies&) = delete;
-    PeerReplies(PeerReplies&&) = delete;
-    auto operator=(const PeerReplies&) -> PeerReplies = delete;
-    auto operator=(PeerReplies&&) -> PeerReplies = delete;
-
 public:
     auto Load(
         const UnallocatedCString& id,
@@ -60,6 +46,21 @@ public:
     auto Delete(const UnallocatedCString& id) -> bool;
     auto Store(const proto::PeerReply& data) -> bool;
 
+    PeerReplies() = delete;
+    PeerReplies(const PeerReplies&) = delete;
+    PeerReplies(PeerReplies&&) = delete;
+    auto operator=(const PeerReplies&) -> PeerReplies = delete;
+    auto operator=(PeerReplies&&) -> PeerReplies = delete;
+
     ~PeerReplies() final = default;
+
+private:
+    friend Nym;
+
+    void init(const UnallocatedCString& hash) final;
+    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
+    auto serialize() const -> proto::StorageNymList;
+
+    PeerReplies(const Driver& storage, const UnallocatedCString& hash);
 };
 }  // namespace opentxs::storage

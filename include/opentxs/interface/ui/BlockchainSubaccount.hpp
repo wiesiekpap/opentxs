@@ -36,16 +36,15 @@ public:
     virtual auto Next() const noexcept -> SharedPimpl<BlockchainSubchain> = 0;
     virtual auto SubaccountID() const noexcept -> const Identifier& = 0;
 
-    ~BlockchainSubaccount() override = default;
-
-protected:
-    BlockchainSubaccount() noexcept = default;
-
-private:
     BlockchainSubaccount(const BlockchainSubaccount&) = delete;
     BlockchainSubaccount(BlockchainSubaccount&&) = delete;
     auto operator=(const BlockchainSubaccount&)
         -> BlockchainSubaccount& = delete;
     auto operator=(BlockchainSubaccount&&) -> BlockchainSubaccount& = delete;
+
+    ~BlockchainSubaccount() override = default;
+
+protected:
+    BlockchainSubaccount() noexcept = default;
 };
 }  // namespace opentxs::ui

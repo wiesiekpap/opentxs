@@ -78,7 +78,10 @@ public:
         const Type chain,
         const cfilter::Type filter,
         const std::string_view shutdown) noexcept;
+    Account(const Account&) = delete;
     Account(Account&&) noexcept;
+    auto operator=(const Account&) -> Account& = delete;
+    auto operator=(Account&&) -> Account& = delete;
 
     ~Account();
 
@@ -88,9 +91,5 @@ private:
     // TODO switch to std::shared_ptr once the android ndk ships a version of
     // libc++ with unfucked pmr / allocate_shared support
     boost::shared_ptr<Imp> imp_;
-
-    Account(const Account&) = delete;
-    auto operator=(const Account&) -> Account& = delete;
-    auto operator=(Account&&) -> Account& = delete;
 };
 }  // namespace opentxs::blockchain::node::wallet

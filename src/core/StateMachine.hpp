@@ -58,6 +58,12 @@ public:
      */
     auto Wait() const noexcept -> WaitFuture;
 
+    StateMachine() = delete;
+    StateMachine(const StateMachine&) = delete;
+    StateMachine(StateMachine&&) = delete;
+    auto operator=(const StateMachine&) -> StateMachine& = delete;
+    auto operator=(StateMachine&&) -> StateMachine& = delete;
+
     virtual ~StateMachine()
     {
         if (false == clean_.load()) { Stop(); }
@@ -96,11 +102,5 @@ private:
     void execute() const noexcept;
     auto make_wait_promise(const Lock& decisionLock, const bool set = false)
         const noexcept -> WaitFuture;
-
-    StateMachine() = delete;
-    StateMachine(const StateMachine&) = delete;
-    StateMachine(StateMachine&&) = delete;
-    auto operator=(const StateMachine&) -> StateMachine& = delete;
-    auto operator=(StateMachine&&) -> StateMachine& = delete;
 };
 }  // namespace opentxs::internal

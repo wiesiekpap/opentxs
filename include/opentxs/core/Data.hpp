@@ -176,6 +176,11 @@ public:
     virtual auto WriteInto() noexcept -> AllocateOutput = 0;
     virtual auto zeroMemory() -> void = 0;
 
+    Data(const Data& rhs) = delete;
+    Data(Data&& rhs) = delete;
+    auto operator=(const Data& rhs) -> Data& = delete;
+    auto operator=(Data&& rhs) -> Data& = delete;
+
     virtual ~Data() = default;
 
 protected:
@@ -188,13 +193,5 @@ private:
 public:
 #endif
     virtual auto clone() const -> Data* = 0;
-#ifdef _WIN32
-private:
-#endif
-
-    Data(const Data& rhs) = delete;
-    Data(Data&& rhs) = delete;
-    auto operator=(const Data& rhs) -> Data& = delete;
-    auto operator=(Data&& rhs) -> Data& = delete;
 };
 }  // namespace opentxs

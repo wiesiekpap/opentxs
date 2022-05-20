@@ -60,6 +60,12 @@ public:
     auto GetVerificationSet(proto::VerificationSet& verificationSet) const
         -> bool final;
 
+    Verification() = delete;
+    Verification(const Verification&) = delete;
+    Verification(Verification&&) = delete;
+    auto operator=(const Verification&) -> Verification& = delete;
+    auto operator=(Verification&&) -> Verification& = delete;
+
     ~Verification() final = default;
 
 private:
@@ -88,10 +94,5 @@ private:
         const identity::Source& source,
         const internal::Primary& master,
         const proto::Credential& credential) noexcept(false);
-    Verification() = delete;
-    Verification(const Verification&) = delete;
-    Verification(Verification&&) = delete;
-    auto operator=(const Verification&) -> Verification& = delete;
-    auto operator=(Verification&&) -> Verification& = delete;
 };
 }  // namespace opentxs::identity::credential::implementation

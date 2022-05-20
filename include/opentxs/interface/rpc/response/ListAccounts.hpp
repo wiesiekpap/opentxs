@@ -45,13 +45,11 @@ public:
     OPENTXS_NO_EXPORT ListAccounts(
         const proto::RPCResponse& serialized) noexcept(false);
     ListAccounts() noexcept;
-
-    ~ListAccounts() final;
-
-private:
     ListAccounts(const ListAccounts&) = delete;
     ListAccounts(ListAccounts&&) = delete;
     auto operator=(const ListAccounts&) -> ListAccounts& = delete;
     auto operator=(ListAccounts&&) -> ListAccounts& = delete;
+
+    ~ListAccounts() final;
 };
 }  // namespace opentxs::rpc::response

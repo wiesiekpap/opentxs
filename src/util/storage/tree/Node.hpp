@@ -67,6 +67,20 @@ using Index = UnallocatedMap<UnallocatedCString, Metadata>;
 
 class Node
 {
+public:
+    virtual auto List() const -> ObjectList;
+    virtual auto Migrate(const Driver& to) const -> bool;
+    auto Root() const -> UnallocatedCString;
+    auto UpgradeLevel() const -> VersionNumber;
+
+    Node() = delete;
+    Node(const Node&) = delete;
+    Node(Node&&) = delete;
+    auto operator=(const Node&) -> Node& = delete;
+    auto operator=(Node&&) -> Node& = delete;
+
+    virtual ~Node() = default;
+
 protected:
     template <class T>
     auto store_proto(
@@ -187,13 +201,6 @@ protected:
         return (incoming > revision);
     }
 
-private:
-    Node() = delete;
-    Node(const Node&) = delete;
-    Node(Node&&) = delete;
-    auto operator=(const Node&) -> Node& = delete;
-    auto operator=(Node&&) -> Node& = delete;
-
 protected:
     friend storage::Root;
 
@@ -270,13 +277,5 @@ protected:
     virtual void init(const UnallocatedCString& hash) = 0;
 
     Node(const Driver& storage, const UnallocatedCString& key);
-
-public:
-    virtual auto List() const -> ObjectList;
-    virtual auto Migrate(const Driver& to) const -> bool;
-    auto Root() const -> UnallocatedCString;
-    auto UpgradeLevel() const -> VersionNumber;
-
-    virtual ~Node() = default;
 };
 }  // namespace opentxs::storage

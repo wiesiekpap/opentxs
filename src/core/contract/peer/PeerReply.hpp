@@ -93,6 +93,12 @@ public:
     }
     auto Type() const -> PeerRequestType final { return type_; }
 
+    Reply() = delete;
+    Reply(const Reply&) noexcept;
+    Reply(Reply&&) = delete;
+    auto operator=(const Reply&) -> Reply& = delete;
+    auto operator=(Reply&&) -> Reply& = delete;
+
     ~Reply() override = default;
 
 protected:
@@ -115,7 +121,6 @@ protected:
         const Nym_p& nym,
         const SerializedType& serialized,
         const UnallocatedCString& conditions = {});
-    Reply(const Reply&) noexcept;
 
 private:
     const OTNymID initiator_;
@@ -135,10 +140,5 @@ private:
 
     auto update_signature(const Lock& lock, const PasswordPrompt& reason)
         -> bool final;
-
-    Reply() = delete;
-    Reply(Reply&&) = delete;
-    auto operator=(const Reply&) -> Reply& = delete;
-    auto operator=(Reply&&) -> Reply& = delete;
 };
 }  // namespace opentxs::contract::peer::implementation

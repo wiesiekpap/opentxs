@@ -145,7 +145,7 @@ auto Nyms::mutable_Nym(const UnallocatedCString& id) -> Editor<storage::Nym>
     std::function<void(storage::Nym*, Lock&)> callback =
         [&](storage::Nym* in, Lock& lock) -> void { this->save(in, lock, id); };
 
-    return Editor<storage::Nym>(write_lock_, nym(id), callback);
+    return {write_lock_, nym(id), callback};
 }
 
 auto Nyms::nym(const UnallocatedCString& id) const -> storage::Nym*

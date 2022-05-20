@@ -76,6 +76,11 @@ public:
     auto Xpub(const PasswordPrompt& reason) const noexcept
         -> UnallocatedCString final;
 
+    HD() = delete;
+    HD(HD&&) = delete;
+    auto operator=(const HD&) -> HD& = delete;
+    auto operator=(HD&&) -> HD& = delete;
+
 protected:
     auto erase_private_data(const Lock& lock) -> void final;
 
@@ -142,10 +147,5 @@ private:
         -> std::tuple<bool, Bip32Depth, Bip32Index>;
     auto serialize(const Lock& lock, Serialized& serialized) const noexcept
         -> bool final;
-
-    HD() = delete;
-    HD(HD&&) = delete;
-    auto operator=(const HD&) -> HD& = delete;
-    auto operator=(HD&&) -> HD& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

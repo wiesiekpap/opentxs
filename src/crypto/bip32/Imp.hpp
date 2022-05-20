@@ -98,6 +98,11 @@ public:
         const Data& key) const -> UnallocatedCString;
 
     Imp(const api::Crypto& crypto) noexcept;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() final = default;
 
@@ -141,11 +146,5 @@ private:
         const AllocateOutput privateKey,
         const AllocateOutput code,
         const AllocateOutput publicKey) const noexcept -> bool;
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs::crypto

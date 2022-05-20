@@ -441,9 +441,9 @@ void Server::CreateMainFile(bool& mainFileExists)
     const auto passphrase =
         manager_.Crypto().Seed().Passphrase(seedID, reason_);
     UnallocatedCString json;
-    json += "{ \"passphrase\": \"";
+    json += R"({ "passphrase": ")";
     json += passphrase;
-    json += "\", \"words\": \"";
+    json += R"(", "words": ")";
     json += words;
     json += "\" }\n";
 

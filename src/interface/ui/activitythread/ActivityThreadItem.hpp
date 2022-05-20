@@ -86,6 +86,12 @@ public:
     auto Timestamp() const noexcept -> Time final;
     auto Type() const noexcept -> otx::client::StorageBox final { return box_; }
 
+    ActivityThreadItem() = delete;
+    ActivityThreadItem(const ActivityThreadItem&) = delete;
+    ActivityThreadItem(ActivityThreadItem&&) = delete;
+    auto operator=(const ActivityThreadItem&) -> ActivityThreadItem& = delete;
+    auto operator=(ActivityThreadItem&&) -> ActivityThreadItem& = delete;
+
     ~ActivityThreadItem() override = default;
 
 protected:
@@ -114,12 +120,6 @@ protected:
 private:
     auto qt_data(const int column, const int role, QVariant& out) const noexcept
         -> void final;
-
-    ActivityThreadItem() = delete;
-    ActivityThreadItem(const ActivityThreadItem&) = delete;
-    ActivityThreadItem(ActivityThreadItem&&) = delete;
-    auto operator=(const ActivityThreadItem&) -> ActivityThreadItem& = delete;
-    auto operator=(ActivityThreadItem&&) -> ActivityThreadItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

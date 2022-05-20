@@ -3,12 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include <errno.h>
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
 #include <zmq.h>
 #include <array>
 #include <atomic>
+#include <cerrno>
 #include <chrono>
 #include <cstddef>
 #include <iostream>
@@ -26,6 +26,12 @@ using namespace std::literals::chrono_literals;
 
 class RouterRouterF : public ::testing::Test
 {
+public:
+    RouterRouterF(const RouterRouterF&) = delete;
+    RouterRouterF(RouterRouterF&&) = delete;
+    auto operator=(const RouterRouterF&) -> RouterRouterF& = delete;
+    auto operator=(RouterRouterF&&) -> RouterRouterF& = delete;
+
 protected:
     using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
 
@@ -50,7 +56,7 @@ protected:
     {
     }
 
-    ~RouterRouterF()
+    ~RouterRouterF() override
     {
         running_ = false;
 
@@ -58,11 +64,6 @@ protected:
     }
 
 private:
-    RouterRouterF(const RouterRouterF&) = delete;
-    RouterRouterF(RouterRouterF&&) = delete;
-    RouterRouterF& operator=(const RouterRouterF&) = delete;
-    RouterRouterF& operator=(RouterRouterF&&) = delete;
-
     auto thread() noexcept -> void
     {
         ot::Signals::Block();

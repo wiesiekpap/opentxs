@@ -72,6 +72,11 @@ public:
 
     virtual void InitAlias(const UnallocatedCString& alias) = 0;
 
+    Unit(const Unit&) = delete;
+    Unit(Unit&&) = delete;
+    auto operator=(const Unit&) -> Unit& = delete;
+    auto operator=(Unit&&) -> Unit& = delete;
+
     ~Unit() override = default;
 
 protected:
@@ -83,10 +88,5 @@ private:
 #ifndef _WIN32
     auto clone() const noexcept -> Unit* override = 0;
 #endif
-
-    Unit(const Unit&) = delete;
-    Unit(Unit&&) = delete;
-    auto operator=(const Unit&) -> Unit& = delete;
-    auto operator=(Unit&&) -> Unit& = delete;
 };
 }  // namespace opentxs::contract

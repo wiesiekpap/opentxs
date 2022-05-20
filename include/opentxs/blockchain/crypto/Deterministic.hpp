@@ -70,15 +70,14 @@ public:
     virtual auto RootNode(const PasswordPrompt& reason) const noexcept
         -> HDKey = 0;
 
-    OPENTXS_NO_EXPORT ~Deterministic() override = default;
-
-protected:
-    Deterministic() noexcept = default;
-
-private:
     Deterministic(const Deterministic&) = delete;
     Deterministic(Deterministic&&) = delete;
     auto operator=(const Deterministic&) -> Deterministic& = delete;
     auto operator=(Deterministic&&) -> Deterministic& = delete;
+
+    OPENTXS_NO_EXPORT ~Deterministic() override = default;
+
+protected:
+    Deterministic() noexcept = default;
 };
 }  // namespace opentxs::blockchain::crypto
