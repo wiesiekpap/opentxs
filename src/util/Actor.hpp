@@ -76,7 +76,8 @@ public:
     }
 
 protected:
-    //This interface used to be private and accessed through friend relationship.
+    // This interface used to be private and accessed through friend
+    // relationship.
     using Work = JobType;
     virtual auto do_startup() noexcept -> void = 0;
     virtual auto do_shutdown() noexcept -> void = 0;
@@ -158,9 +159,11 @@ protected:
             handle_message(std::move(message));
         }
     }
+
 private:
     // unused - remove?
     auto init_complete() noexcept -> void { init_promise_.set_value(); }
+
 protected:
     auto shutdown_actor() noexcept -> void
     {
@@ -171,8 +174,8 @@ protected:
             pipeline_.Close();
         }
     }
-protected:
 
+protected:
     Actor(
         const api::Session& api,
         const Log& logger,

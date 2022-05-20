@@ -246,7 +246,6 @@ protected:
         const std::string_view parent,
         allocator_type alloc) noexcept;
 
-
 private:
     using Transactions =
         Vector<std::shared_ptr<const block::bitcoin::Transaction>>;
