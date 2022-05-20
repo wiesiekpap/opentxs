@@ -105,8 +105,7 @@ auto FeeSource::Imp::jitter() noexcept -> std::chrono::seconds
 auto FeeSource::Imp::pipeline(network::zeromq::Message&& in) noexcept -> void
 {
     if (false == running_.load()) {
-        shutdown(shutdown_promise_);
-
+        protect_shutdown([this] { shut_down(); });
         return;
     }
 
@@ -126,7 +125,7 @@ auto FeeSource::Imp::pipeline(network::zeromq::Message&& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            shutdown(shutdown_promise_);
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Work::query: {
             query();
@@ -247,18 +246,22 @@ auto FeeSource::Imp::state_machine() noexcept -> bool
     }
 }
 
-auto FeeSource::Imp::Shutdown() noexcept -> void { signal_shutdown(); }
-
-auto FeeSource::Imp::shutdown(std::promise<void>& promise) noexcept -> void
+auto FeeSource::Imp::Shutdown() noexcept -> void
 {
-    if (auto previous = running_.exchange(false); previous) {
-        timer_.Cancel();
-        pipeline_.Close();
-        promise.set_value();
-    }
+    protect_shutdown([this] { shut_down(); });
 }
 
-FeeSource::Imp::~Imp() = default;
+auto FeeSource::Imp::shut_down() noexcept -> void
+{
+    timer_.Cancel();
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
+}
+
+FeeSource::Imp::~Imp()
+{
+    protect_shutdown([this] { shut_down(); });
+}
 }  // namespace opentxs::blockchain::node::wallet
 
 namespace opentxs::blockchain::node::wallet

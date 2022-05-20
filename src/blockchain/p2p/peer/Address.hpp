@@ -65,6 +65,10 @@ public:
 
     Address(pointer address) noexcept;
 
+    virtual ~Address();
+
+    operator bool() { return address_ != nullptr; }
+
 private:
     mutable std::mutex lock_;
     pointer address_;

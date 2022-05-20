@@ -81,6 +81,7 @@ public:
     auto Bytes() const noexcept -> ReadView;
     OPENTXS_NO_EXPORT auto Internal() const noexcept -> const internal::Frame&;
     auto data() const noexcept -> const void*;
+    auto data() noexcept -> void*;
     auto size() const noexcept -> std::size_t;
 
     operator zmq_msg_t*() noexcept;

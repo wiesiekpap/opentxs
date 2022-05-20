@@ -83,7 +83,8 @@ using AccountTreeList = List<
     AccountTreeSortKey,
     AccountTreePrimaryID>;
 
-class AccountTree final : public AccountTreeList, Worker<AccountTree>
+class AccountTree final : public AccountTreeList,
+                          public Worker<api::session::Client>
 {
 public:
     auto Debug() const noexcept -> UnallocatedCString final;
@@ -99,9 +100,14 @@ public:
 
     ~AccountTree() final;
 
-private:
-    friend Worker<AccountTree>;
+protected:
+    auto pipeline(Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
 
+private:
+    auto shut_down() noexcept -> void;
+
+private:
     enum class Work : OTZMQWorkType {
         shutdown = value(WorkType::Shutdown),
         custodial = value(WorkType::AccountUpdated),
@@ -166,7 +172,6 @@ private:
 
     auto add_children(ChildMap&& children) noexcept -> void;
     auto load() noexcept -> void;
-    auto pipeline(Message&& in) noexcept -> void;
     auto process_blockchain(Message&& message) noexcept -> void;
     auto process_blockchain_balance(Message&& message) noexcept -> void;
     auto process_custodial(Message&& message) noexcept -> void;

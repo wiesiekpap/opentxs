@@ -234,6 +234,12 @@ auto Raw::send(Message&& msg, const int baseFlags) noexcept -> bool
     if (false == sent) {
         std::cerr << (OT_PRETTY_CLASS())
                   << "Send error: " << ::zmq_strerror(zmq_errno()) << '\n';
+        std::cerr << "bound_endpoints_: ";
+        for (const auto& s : bound_endpoints_) { std::cerr << s << " "; }
+        std::cerr << std::endl;
+        std::cerr << "connected_endpoints_: ";
+        for (const auto& s : connected_endpoints_) { std::cerr << s << " "; }
+        std::cerr << std::endl;
     }
 
     return sent;

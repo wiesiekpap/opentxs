@@ -204,7 +204,7 @@ auto Wallet::Init() noexcept -> void
     trigger();
 }
 
-auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
+auto Wallet::pipeline(zmq::Message&& in) noexcept -> void
 {
     if (false == running_.load()) { return; }
 
@@ -230,7 +230,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            shutdown(shutdown_promise_);
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Work::statemachine: {
             do_work();
@@ -253,15 +253,13 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
     }
 }
 
-auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
+auto Wallet::shut_down() noexcept -> void
 {
-    if (auto previous = running_.exchange(false); previous) {
-        LogDetail()("Shutting down ")(print(chain_))(" wallet").Flush();
-        accounts_.Shutdown();
-        pipeline_.Close();
-        fee_oracle_.Shutdown();
-        promise.set_value();
-    }
+    LogDetail()("Shutting down ")(print(chain_))(" wallet").Flush();
+    accounts_.Shutdown();
+    close_pipeline();
+    fee_oracle_.Shutdown();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto Wallet::StartRescan() const noexcept -> bool
@@ -278,5 +276,8 @@ auto Wallet::state_machine() noexcept -> bool
     return proposals_.Run();
 }
 
-Wallet::~Wallet() { stop_worker().get(); }
+Wallet::~Wallet()
+{
+    protect_shutdown([this] { shut_down(); });
+}
 }  // namespace opentxs::blockchain::node::implementation

@@ -111,7 +111,7 @@ class Identifier;
 namespace opentxs::blockchain::node::implementation
 {
 class Wallet final : virtual public node::internal::Wallet,
-                     Worker<Wallet, api::Session>
+                     public Worker<api::Session>
 {
 public:
     auto ConstructTransaction(
@@ -165,9 +165,9 @@ public:
     auto StartRescan() const noexcept -> bool final;
 
     auto Init() noexcept -> void final;
-    auto Shutdown() noexcept -> std::shared_future<void> final
+    auto Shutdown() noexcept -> void final
     {
-        return signal_shutdown();
+        protect_shutdown([this] { shut_down(); });
     }
 
     Wallet(
@@ -180,9 +180,14 @@ public:
 
     ~Wallet() final;
 
-private:
-    friend Worker<Wallet, api::Session>;
+protected:
+    auto pipeline(zmq::Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
 
+private:
+    auto shut_down() noexcept -> void;
+
+private:
     using Work = wallet::WalletJobs;
 
     const node::internal::Network& parent_;
@@ -191,10 +196,6 @@ private:
     wallet::FeeOracle fee_oracle_;
     wallet::Accounts accounts_;
     wallet::Proposals proposals_;
-
-    auto pipeline(const zmq::Message& in) noexcept -> void;
-    auto shutdown(std::promise<void>& promise) noexcept -> void;
-    auto state_machine() noexcept -> bool;
 
     Wallet() = delete;
     Wallet(const Wallet&) = delete;

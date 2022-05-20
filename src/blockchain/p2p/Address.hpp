@@ -96,9 +96,10 @@ public:
         const Time lastConnected,
         const UnallocatedSet<Service>& services,
         const bool incoming) noexcept(false);
-    Address(const Address& rhs) noexcept;
 
-    ~Address() final = default;
+    ~Address() final;
+
+    Address(const Address* rhs) noexcept;
 
 private:
     const api::Session& api_;
@@ -133,14 +134,15 @@ private:
         const Time lastConnected,
         const UnallocatedSet<Service>& services) noexcept -> SerializedType;
 
-    auto clone() const noexcept -> Address* final { return new Address(*this); }
+    auto clone() const noexcept -> Address* final { return new Address(this); }
     auto clone_internal() const noexcept
         -> std::unique_ptr<internal::Address> final
     {
-        return std::make_unique<Address>(*this);
+        return std::make_unique<Address>(this);
     }
 
     Address() = delete;
+    Address(const Address&) = delete;
     Address(Address&&) = delete;
     auto operator=(const Address&) -> Address& = delete;
     auto operator=(Address&&) -> Address& = delete;

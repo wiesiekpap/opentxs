@@ -68,7 +68,8 @@ using MessagableListList = List<
     MessagableListSortKey,
     MessagableListPrimaryID>;
 
-class MessagableList final : public MessagableListList, Worker<MessagableList>
+class MessagableList final : public MessagableListList,
+                             public Worker<api::session::Client>
 {
 public:
     auto ID() const noexcept -> const Identifier& final
@@ -82,9 +83,14 @@ public:
         const SimpleCallback& cb) noexcept;
     ~MessagableList() final;
 
-private:
-    friend Worker<MessagableList>;
+protected:
+    auto pipeline(Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
 
+private:
+    auto shut_down() noexcept -> void;
+
+private:
     enum class Work : OTZMQWorkType {
         contact = value(WorkType::ContactUpdated),
         nym = value(WorkType::NymUpdated),
@@ -104,7 +110,6 @@ private:
         return MessagableListList::last(id);
     }
 
-    auto pipeline(const Message& in) noexcept -> void;
     auto process_contact(
         const MessagableListRowID& id,
         const MessagableListSortKey& key) noexcept -> void;

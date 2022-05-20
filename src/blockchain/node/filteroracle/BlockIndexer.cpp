@@ -178,8 +178,7 @@ auto FilterOracle::BlockIndexer::download() noexcept -> void
     }
 }
 
-auto FilterOracle::BlockIndexer::pipeline(const zmq::Message& in) noexcept
-    -> void
+auto FilterOracle::BlockIndexer::pipeline(zmq::Message&& in) noexcept -> void
 {
     if (false == running_.load()) { return; }
 
@@ -200,7 +199,7 @@ auto FilterOracle::BlockIndexer::pipeline(const zmq::Message& in) noexcept
 
     switch (work) {
         case Work::shutdown: {
-            shutdown(shutdown_promise_);
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Work::heartbeat: {
             if (dm_enabled()) { process_position(block_.Tip()); }
@@ -220,6 +219,11 @@ auto FilterOracle::BlockIndexer::pipeline(const zmq::Message& in) noexcept
             OT_FAIL;
         }
     }
+}
+
+auto FilterOracle::BlockIndexer::state_machine() noexcept -> bool
+{
+    return BlockDMFilter::state_machine();
 }
 
 auto FilterOracle::BlockIndexer::process_position(
@@ -371,13 +375,10 @@ auto FilterOracle::BlockIndexer::reset_to_genesis() noexcept -> void
     Reset(genesis, promise.get_future());
 }
 
-auto FilterOracle::BlockIndexer::shutdown(std::promise<void>& promise) noexcept
-    -> void
+auto FilterOracle::BlockIndexer::shut_down() noexcept -> void
 {
-    if (auto previous = running_.exchange(false); previous) {
-        pipeline_.Close();
-        promise.set_value();
-    }
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto FilterOracle::BlockIndexer::update_tip(
@@ -398,5 +399,13 @@ auto FilterOracle::BlockIndexer::update_tip(
     notify_(type_, position);
 }
 
-FilterOracle::BlockIndexer::~BlockIndexer() { signal_shutdown().get(); }
+FilterOracle::BlockIndexer::~BlockIndexer()
+{
+    try {
+        signal_shutdown().get();
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+        // TODO MT-34 improve
+    }
+}
 }  // namespace opentxs::blockchain::node::implementation

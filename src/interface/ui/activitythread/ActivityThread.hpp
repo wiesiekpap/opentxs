@@ -151,7 +151,8 @@ using ActivityThreadList = List<
     ActivityThreadSortKey,
     ActivityThreadPrimaryID>;
 
-class ActivityThread final : public ActivityThreadList, Worker<ActivityThread>
+class ActivityThread final : public ActivityThreadList,
+                             public Worker<api::session::Client>
 {
 public:
     auto CanMessage() const noexcept -> bool final;
@@ -185,9 +186,14 @@ public:
 
     ~ActivityThread() final;
 
-private:
-    friend Worker<ActivityThread>;
+protected:
+    auto pipeline(Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
 
+private:
+    auto shut_down() noexcept -> void;
+
+private:
     enum class Work : OTZMQWorkType {
         shutdown = value(WorkType::Shutdown),
         contact = value(WorkType::ContactUpdated),
@@ -231,7 +237,6 @@ private:
     auto load_contacts(const proto::StorageThread& thread) noexcept -> void;
     auto load_thread(const proto::StorageThread& thread) noexcept -> void;
     auto new_thread() noexcept -> void;
-    auto pipeline(Message&& in) noexcept -> void;
     auto process_contact(const Message& message) noexcept -> void;
     auto process_item(const proto::StorageThreadItem& item) noexcept(false)
         -> ActivityThreadRowID;
@@ -241,7 +246,6 @@ private:
     auto process_thread(const Message& message) noexcept -> void;
     auto refresh_thread() noexcept -> void;
     auto set_participants() noexcept -> void;
-    auto state_machine() noexcept -> bool final;
     auto startup() noexcept -> void;
     auto update_display_name() noexcept -> bool;
     auto update_messagability(otx::client::Messagability value) noexcept

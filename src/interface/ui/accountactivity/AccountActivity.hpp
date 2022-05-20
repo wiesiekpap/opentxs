@@ -120,7 +120,7 @@ using AccountActivityList = List<
     states.
  */
 class AccountActivity : public AccountActivityList,
-                        protected Worker<AccountActivity>
+                        public Worker<api::session::Client>
 {
 public:
     auto AccountID() const noexcept -> UnallocatedCString final
@@ -275,8 +275,6 @@ protected:
         const SimpleCallback& cb) noexcept;
 
 private:
-    friend Worker<AccountActivity>;
-
     struct QT;
 
     QT* qt_;
@@ -289,7 +287,6 @@ private:
         CustomData& custom) const noexcept -> RowPointer final;
 
     auto init_qt() noexcept -> void;
-    virtual auto pipeline(const Message& in) noexcept -> void = 0;
     auto shutdown_qt() noexcept -> void;
 
     AccountActivity() = delete;

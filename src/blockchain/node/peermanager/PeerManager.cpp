@@ -383,7 +383,7 @@ auto PeerManager::pipeline(zmq::Message&& message) noexcept -> void
             do_work();
         } break;
         case Work::Shutdown: {
-            shutdown(shutdown_promise_);
+            protect_shutdown([this] { shut_down(); });
         } break;
         default: {
             OT_FAIL;
@@ -436,15 +436,12 @@ auto PeerManager::RequestHeaders() const noexcept -> bool
     return true;
 }
 
-auto PeerManager::shutdown(std::promise<void>& promise) noexcept -> void
+auto PeerManager::shut_down() noexcept -> void
 {
-    if (auto previous = running_.exchange(false); previous) {
-        init_.get();
-        pipeline_.Close();
-        jobs_.Shutdown();
-        peers_.Shutdown();
-        promise.set_value();
-    }
+    close_pipeline();
+    jobs_.Shutdown();
+    peers_.Shutdown();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto PeerManager::state_machine() noexcept -> bool
@@ -467,5 +464,8 @@ auto PeerManager::VerifyPeer(const int id, const UnallocatedCString& address)
     api_.Network().Blockchain().Internal().UpdatePeer(chain_, address);
 }
 
-PeerManager::~PeerManager() { signal_shutdown().get(); }
+PeerManager::~PeerManager()
+{
+    protect_shutdown([this] { shut_down(); });
+}
 }  // namespace opentxs::blockchain::node::implementation

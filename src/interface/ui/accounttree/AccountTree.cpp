@@ -416,9 +416,7 @@ auto AccountTree::pipeline(Message&& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            if (auto previous = running_.exchange(false); previous) {
-                shutdown(shutdown_promise_);
-            }
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Work::custodial: {
             process_custodial(std::move(in));
@@ -441,6 +439,14 @@ auto AccountTree::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }
+}
+
+auto AccountTree::state_machine() noexcept -> bool { return false; }
+
+auto AccountTree::shut_down() noexcept -> void
+{
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto AccountTree::process_blockchain(Message&& message) noexcept -> void
@@ -542,6 +548,6 @@ auto AccountTree::subscribe(SubscribeSet&& chains) const noexcept -> void
 AccountTree::~AccountTree()
 {
     wait_for_startup();
-    signal_shutdown().get();
+    protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

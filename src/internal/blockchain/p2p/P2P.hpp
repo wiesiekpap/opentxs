@@ -41,13 +41,14 @@ struct Address : virtual public p2p::Address {
     virtual auto PreviousLastConnected() const noexcept -> Time = 0;
     virtual auto PreviousServices() const noexcept
         -> UnallocatedSet<Service> = 0;
+    virtual int diag() { return -1; }
 
     ~Address() override = default;
 };
 
 struct Peer : virtual public p2p::Peer {
     virtual auto AddressID() const noexcept -> OTIdentifier = 0;
-    virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
+    virtual auto Shutdown() noexcept -> void = 0;
 
     virtual ~Peer() override = default;
 };

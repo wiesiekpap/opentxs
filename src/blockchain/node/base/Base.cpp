@@ -180,13 +180,7 @@ struct NullWallet final : public node::internal::Wallet {
     auto StartRescan() const noexcept -> bool final { return {}; }
 
     auto Init() noexcept -> void final {}
-    auto Shutdown() noexcept -> std::shared_future<void> final
-    {
-        auto promise = std::promise<void>{};
-        promise.set_value();
-
-        return promise.get_future();
-    }
+    auto Shutdown() noexcept -> void final {}
 
     NullWallet(const api::Session& api)
         : api_(api)
@@ -704,7 +698,7 @@ auto Base::pipeline(zmq::Message&& in) noexcept -> void
 
     switch (task) {
         case Task::Shutdown: {
-            shutdown(shutdown_promise_);
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Task::SyncReply:
         case Task::SyncNewBlock: {
@@ -1186,26 +1180,10 @@ auto Base::SendToPaymentCode(
     return SendToPaymentCode(nymID, recipient.asBase58(), amount, memo);
 }
 
-auto Base::shutdown(std::promise<void>& promise) noexcept -> void
+auto Base::shut_down() noexcept -> void
 {
-    if (auto previous = running_.exchange(false); previous) {
-        init_.get();
-        pipeline_.Close();
-        shutdown_sender_.Activate();
-        wallet_.Shutdown();
-
-        if (sync_server_) { sync_server_->Shutdown(); }
-
-        if (p2p_requestor_) {
-            sync_socket_->Send(MakeWork(WorkType::Shutdown));
-        }
-
-        peer_.Shutdown();
-        filters_.Shutdown();
-        block_.Shutdown();
-        shutdown_sender_.Close();
-        promise.set_value();
-    }
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto Base::StartWallet() noexcept -> void
@@ -1429,5 +1407,19 @@ auto Base::UpdateLocalHeight(const block::Position position) const noexcept
     trigger();
 }
 
-Base::~Base() { Shutdown().get(); }
+Base::~Base()
+{
+    protect_shutdown([this] { shut_down(); });
+    shutdown_sender_.Activate();
+    wallet_.Shutdown();
+
+    if (sync_server_) { sync_server_->Shutdown(); }
+
+    if (p2p_requestor_) { sync_socket_->Send(MakeWork(WorkType::Shutdown)); }
+
+    peer_.Shutdown();
+    filters_.Shutdown();
+    block_.Shutdown();
+    shutdown_sender_.Close();
+}
 }  // namespace opentxs::blockchain::node::implementation

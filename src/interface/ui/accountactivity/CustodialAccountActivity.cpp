@@ -378,7 +378,7 @@ auto CustodialAccountActivity::NotaryName() const noexcept -> UnallocatedCString
     return notary_->EffectiveName();
 }
 
-auto CustodialAccountActivity::pipeline(const Message& in) noexcept -> void
+auto CustodialAccountActivity::pipeline(Message&& in) noexcept -> void
 {
     if (false == running_.load()) { return; }
 
@@ -424,9 +424,7 @@ auto CustodialAccountActivity::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         case Work::shutdown: {
-            if (auto previous = running_.exchange(false); previous) {
-                shutdown(shutdown_promise_);
-            }
+            protect_shutdown([this] { shut_down(); });
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())("Unhandled type").Flush();
@@ -434,6 +432,17 @@ auto CustodialAccountActivity::pipeline(const Message& in) noexcept -> void
             OT_FAIL;
         }
     }
+}
+
+auto CustodialAccountActivity::state_machine() noexcept -> bool
+{
+    return false;
+}
+
+auto CustodialAccountActivity::shut_down() noexcept -> void
+{
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto CustodialAccountActivity::process_balance(const Message& message) noexcept
@@ -605,6 +614,6 @@ auto CustodialAccountActivity::Unit() const noexcept -> UnitType
 CustodialAccountActivity::~CustodialAccountActivity()
 {
     wait_for_startup();
-    signal_shutdown().get();
+    protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

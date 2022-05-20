@@ -159,6 +159,8 @@ auto Frame::Bytes() const noexcept -> ReadView { return imp_->Bytes(); }
 
 auto Frame::data() const noexcept -> const void* { return imp_->data(); }
 
+auto Frame::data() noexcept -> void* { return imp_->data(); }
+
 auto Frame::Internal() const noexcept -> const internal::Frame&
 {
     return *imp_;

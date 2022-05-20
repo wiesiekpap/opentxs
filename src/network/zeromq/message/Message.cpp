@@ -166,9 +166,9 @@ auto Message::Imp::AddFrame(const ProtobufType& input) noexcept -> Frame&
 auto Message::Imp::AppendBytes() noexcept -> AllocateOutput
 {
     return [this](const std::size_t size) -> WritableView {
-        auto& frame = frames_.emplace_back(factory::ZMQFrame(size));
+        Frame& frame = frames_.emplace_back(factory::ZMQFrame(size));
 
-        return {const_cast<void*>(frame.data()), frame.size()};
+        return WritableView{frame.data(), frame.size()};
     };
 }
 
@@ -177,7 +177,7 @@ auto Message::Imp::at(const std::size_t index) const noexcept(false)
 {
     OT_ASSERT(frames_.size() > index);
 
-    return const_cast<const Frame&>(frames_.at(index));
+    return frames_.at(index);
 }
 
 auto Message::Imp::at(const std::size_t index) noexcept(false) -> Frame&
@@ -189,9 +189,8 @@ auto Message::Imp::at(const std::size_t index) noexcept(false) -> Frame&
 
 auto Message::Imp::begin() const noexcept -> const FrameIterator
 {
-    return FrameIterator{std::make_unique<FrameIterator::Imp>(
-                             const_cast<zeromq::Message*>(parent_))
-                             .release()};
+    return FrameIterator{
+        std::make_unique<FrameIterator::Imp>(parent_).release()};
 }
 
 auto Message::Imp::Body() const noexcept -> const FrameSection
@@ -240,8 +239,7 @@ auto Message::Imp::body_position() const noexcept -> std::size_t
 auto Message::Imp::end() const noexcept -> const FrameIterator
 {
     return FrameIterator{
-        std::make_unique<FrameIterator::Imp>(
-            const_cast<zeromq::Message*>(parent_), frames_.size())
+        std::make_unique<FrameIterator::Imp>(parent_, frames_.size())
             .release()};
 }
 
