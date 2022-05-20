@@ -169,7 +169,13 @@ public:
 
     ~BlockchainAccountActivity() final;
 
+protected:
+    auto pipeline(Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
+
 private:
+    auto shut_down() noexcept -> void;
+
     struct Progress {
         auto get_percentage() const noexcept -> double
         {
@@ -229,7 +235,6 @@ private:
         -> UnallocatedCString final;
 
     auto load_thread() noexcept -> void;
-    auto pipeline(const Message& in) noexcept -> void final;
     auto process_balance(const Message& in) noexcept -> void;
     auto process_block(const Message& in) noexcept -> void;
     auto process_contact(const Message& in) noexcept -> void;

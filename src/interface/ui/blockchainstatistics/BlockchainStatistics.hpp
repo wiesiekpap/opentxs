@@ -88,7 +88,7 @@ using BlockchainStatisticsList = List<
     BlockchainStatisticsPrimaryID>;
 
 class BlockchainStatistics final : public BlockchainStatisticsList,
-                                   Worker<BlockchainStatistics>
+                                   public Worker<api::session::Client>
 {
 public:
     BlockchainStatistics(
@@ -97,9 +97,14 @@ public:
 
     ~BlockchainStatistics() final;
 
-private:
-    friend Worker<BlockchainStatistics>;
+protected:
+    auto pipeline(Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
 
+private:
+    auto shut_down() noexcept -> void;
+
+private:
     enum class Work : OTZMQWorkType {
         shutdown = value(WorkType::Shutdown),
         blockheader = value(WorkType::BlockchainNewHeader),
@@ -134,7 +139,6 @@ private:
     auto custom(const BlockchainStatisticsRowID& chain) noexcept -> CustomData;
     auto get_cache(const BlockchainStatisticsRowID& chain) noexcept(false)
         -> CachedData&;
-    auto pipeline(const Message& in) noexcept -> void;
     auto process_balance(const Message& in) noexcept -> void;
     auto process_block(const Message& in) noexcept -> void;
     auto process_block_header(const Message& in) noexcept -> void;

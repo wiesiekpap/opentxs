@@ -158,7 +158,7 @@ auto BlockchainStatistics::get_cache(
     }
 }
 
-auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
+auto BlockchainStatistics::pipeline(Message&& in) noexcept -> void
 {
     if (false == running_.load()) { return; }
 
@@ -182,9 +182,7 @@ auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            if (auto previous = running_.exchange(false); previous) {
-                shutdown(shutdown_promise_);
-            }
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Work::blockheader: {
             process_block_header(in);
@@ -227,6 +225,15 @@ auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
             OT_FAIL;
         }
     }
+}
+
+auto BlockchainStatistics::state_machine() noexcept -> bool { return false; }
+
+auto BlockchainStatistics::shut_down() noexcept -> void
+{
+    timer_.Cancel();
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto BlockchainStatistics::process_balance(const Message& in) noexcept -> void
@@ -384,8 +391,7 @@ auto BlockchainStatistics::startup() noexcept -> void
 
 BlockchainStatistics::~BlockchainStatistics()
 {
-    timer_.Cancel();
     wait_for_startup();
-    signal_shutdown().get();
+    protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

@@ -94,16 +94,6 @@ public:
     {
         return qt_model_;
     }
-    auto shutdown(std::promise<void>& promise) noexcept -> void
-    {
-        wait_for_startup();
-
-        try {
-            promise.set_value();
-        } catch (...) {
-        }
-    }
-    virtual auto state_machine() noexcept -> bool { return false; }
 
     ~List() override
     {
@@ -226,7 +216,15 @@ protected:
 
         return std::future_status::ready == startup_future_.wait_for(none);
     }
-    auto wait_for_startup() const noexcept -> void { startup_future_.get(); }
+    auto wait_for_startup() const noexcept -> void
+    {
+        try {
+            startup_future_.get();
+        } catch (const std::exception& e) {
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+            // TODO MT-34 improve
+        }
+    }
 
     auto add_item(
         const RowID& id,

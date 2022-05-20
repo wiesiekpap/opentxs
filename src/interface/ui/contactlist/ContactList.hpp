@@ -98,7 +98,7 @@ using ContactListList = List<
 
 class ContactList final : virtual public internal::ContactList,
                           public ContactListList,
-                          Worker<ContactList>
+                          public Worker<api::session::Client>
 {
 public:
     auto AddContact(
@@ -117,9 +117,14 @@ public:
         const SimpleCallback& cb) noexcept;
     ~ContactList() final;
 
-private:
-    friend Worker<ContactList>;
+protected:
+    auto pipeline(Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
 
+private:
+    auto shut_down() noexcept -> void;
+
+private:
     enum class Work : OTZMQWorkType {
         contact = value(WorkType::ContactUpdated),
         init = OT_ZMQ_INIT_SIGNAL,
@@ -159,7 +164,6 @@ private:
         return owner_contact_id_;
     }
 
-    auto pipeline(const Message& in) noexcept -> void;
     auto process_contact(const Message& message) noexcept -> void;
     auto process_contact(const Identifier& contactID) noexcept -> void;
     auto startup() noexcept -> void;

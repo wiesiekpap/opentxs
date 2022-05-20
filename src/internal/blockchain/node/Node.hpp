@@ -467,7 +467,7 @@ struct PeerManager {
         const noexcept -> void = 0;
 
     virtual auto init() noexcept -> void = 0;
-    virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
+    virtual auto Shutdown() noexcept -> void = 0;
 
     virtual ~PeerManager() = default;
 };
@@ -525,7 +525,7 @@ struct Network : virtual public node::Manager {
         const block::Position position) const noexcept -> void = 0;
 
     virtual auto FilterOracleInternal() noexcept -> internal::FilterOracle& = 0;
-    virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
+    virtual auto Shutdown() noexcept -> void = 0;
     virtual auto StartWallet() noexcept -> void = 0;
 
     ~Network() override = default;
@@ -564,7 +564,7 @@ struct Wallet : virtual public node::Wallet {
     virtual auto FeeEstimate() const noexcept -> std::optional<Amount> = 0;
 
     virtual auto Init() noexcept -> void = 0;
-    virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
+    virtual auto Shutdown() noexcept -> void = 0;
 
     ~Wallet() override = default;
 };

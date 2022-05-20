@@ -195,7 +195,6 @@ public:
     ~FilterOracle() final;
 
 private:
-    friend Worker<FilterOracle, api::Session>;
     friend internal::FilterOracle;
 
     using FilterHeaderHex = UnallocatedCString;

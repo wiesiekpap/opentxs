@@ -202,10 +202,10 @@ auto Peers::Import(UnallocatedVector<Address_p> peers) noexcept -> bool
     return insert(lock, std::move(newPeers));
 }
 
-auto Peers::Insert(Address_p pAddress) noexcept -> bool
+auto Peers::Insert(Address_p&& pAddress) noexcept -> bool
 {
     auto peers = UnallocatedVector<Address_p>{};
-    peers.emplace_back(std::move(pAddress));
+    peers.push_back(std::move(pAddress));
     Lock lock(lock_);
 
     return insert(lock, std::move(peers));
@@ -213,18 +213,18 @@ auto Peers::Insert(Address_p pAddress) noexcept -> bool
 
 auto Peers::insert(
     const Lock& lock,
-    UnallocatedVector<Address_p> peers) noexcept -> bool
+    UnallocatedVector<Address_p>&& peers) noexcept -> bool
 {
     auto parentTxn = lmdb_.TransactionRW();
 
-    for (auto& pAddress : peers) {
+    for (const auto& pAddress : peers) {
         if (false == bool(pAddress)) {
             LogError()(OT_PRETTY_CLASS())("Invalid peer").Flush();
 
             return false;
         }
 
-        auto& address = *pAddress;
+        const auto& address = *pAddress;
         const auto id = address.ID().str();
         auto deleteServices = address.PreviousServices();
 

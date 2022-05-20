@@ -105,7 +105,7 @@ using BlockchainSelectionList = List<
     BlockchainSelectionPrimaryID>;
 
 class BlockchainSelection final : public BlockchainSelectionList,
-                                  Worker<BlockchainSelection>
+                                  public Worker<api::session::Client>
 {
 public:
     auto Disable(const blockchain::Type type) const noexcept -> bool final;
@@ -120,9 +120,13 @@ public:
 
     ~BlockchainSelection() final;
 
-private:
-    friend Worker<BlockchainSelection>;
+    auto pipeline(Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
 
+private:
+    auto shut_down() noexcept -> void;
+
+private:
     struct Callback {
         auto run(blockchain::Type chain, bool enabled, std::size_t total)
             const noexcept -> void
@@ -168,7 +172,6 @@ private:
         CustomData& custom) const noexcept -> RowPointer final;
     auto disable(const Message& in) noexcept -> void;
     auto enable(const Message& in) noexcept -> void;
-    auto pipeline(const Message& in) noexcept -> void;
     auto process_state(const Message& in) noexcept -> void;
     auto startup() noexcept -> void;
 

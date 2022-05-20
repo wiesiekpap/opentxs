@@ -391,9 +391,7 @@ auto ActivityThread::pipeline(Message&& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            if (auto previous = running_.exchange(false); previous) {
-                shutdown(shutdown_promise_);
-            }
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Work::contact: {
             process_contact(in);
@@ -422,6 +420,12 @@ auto ActivityThread::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }
+}
+
+auto ActivityThread::shut_down() noexcept -> void
+{
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto ActivityThread::process_contact(const Message& in) noexcept -> void
@@ -985,6 +989,11 @@ auto ActivityThread::validate_account(
 ActivityThread::~ActivityThread()
 {
     wait_for_startup();
-    signal_shutdown().get();
+    try {
+        signal_shutdown().get();
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+        // TODO MT-34 improve
+    }
 }
 }  // namespace opentxs::ui::implementation

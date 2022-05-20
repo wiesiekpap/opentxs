@@ -53,7 +53,7 @@ public:
         const UnallocatedSet<Service> withServices) const noexcept -> Address_p;
 
     auto Import(UnallocatedVector<Address_p> peers) noexcept -> bool;
-    auto Insert(Address_p address) noexcept -> bool;
+    auto Insert(Address_p&& address) noexcept -> bool;
 
     Peers(const api::Session& api, storage::lmdb::LMDB& lmdb) noexcept(false);
 
@@ -77,7 +77,7 @@ private:
     TypeIndexMap networks_;
     ConnectedIndexMap connected_;
 
-    auto insert(const Lock& lock, UnallocatedVector<Address_p> peers) noexcept
+    auto insert(const Lock& lock, UnallocatedVector<Address_p>&& peers) noexcept
         -> bool;
     auto load_address(const UnallocatedCString& id) const noexcept(false)
         -> Address_p;

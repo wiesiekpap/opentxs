@@ -76,7 +76,8 @@ using AccountListList = List<
     AccountListSortKey,
     AccountListPrimaryID>;
 
-class AccountList final : public AccountListList, Worker<AccountList>
+class AccountList final : public AccountListList,
+                          public Worker<api::session::Client>
 {
 public:
     AccountList(
@@ -86,9 +87,14 @@ public:
 
     ~AccountList() final;
 
-private:
-    friend Worker<AccountList>;
+protected:
+    auto pipeline(Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
 
+private:
+    auto shut_down() noexcept -> void;
+
+private:
     enum class Work : OTZMQWorkType {
         shutdown = value(WorkType::Shutdown),
         custodial = value(WorkType::AccountUpdated),
@@ -128,7 +134,6 @@ private:
         UnitType type,
         Amount&& balance,
         UnallocatedCString&& name) noexcept -> void;
-    auto pipeline(Message&& in) noexcept -> void;
     auto process_custodial(Message&& message) noexcept -> void;
     auto process_blockchain(Message&& message) noexcept -> void;
     auto process_blockchain_balance(Message&& message) noexcept -> void;

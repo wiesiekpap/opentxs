@@ -435,8 +435,6 @@ void OTTransaction::SetClosingNum(std::int64_t lClosingNum)
 //
 auto OTTransaction::VerifyAccount(const identity::Nym& theNym) -> bool
 {
-    auto* pParent = const_cast<Ledger*>(m_pParent);
-
     // Make sure that the supposed AcctID matches the one read from the file.
     //
     if (!VerifyContractID()) {
@@ -445,8 +443,8 @@ auto OTTransaction::VerifyAccount(const identity::Nym& theNym) -> bool
     }
     // todo security audit:
     else if (
-        IsAbbreviated() && (pParent != nullptr) &&
-        !pParent->VerifySignature(theNym)) {
+        IsAbbreviated() && (m_pParent != nullptr) &&
+        !m_pParent->VerifySignature(theNym)) {
         LogError()(OT_PRETTY_CLASS())(
             "Error verifying signature on parent ledger "
             "for abbreviated transaction receipt.")

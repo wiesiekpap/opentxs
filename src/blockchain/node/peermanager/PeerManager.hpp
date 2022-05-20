@@ -120,7 +120,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::blockchain::node::implementation
 {
 class PeerManager final : virtual public node::internal::PeerManager,
-                          public Worker<PeerManager, api::Session>
+                          public Worker<api::Session>
 {
 public:
     class IncomingConnectionManager;
@@ -275,9 +275,9 @@ public:
     auto VerifyPeer(const int id, const UnallocatedCString& address)
         const noexcept -> void final;
 
-    auto Shutdown() noexcept -> std::shared_future<void> final
+    auto Shutdown() noexcept -> void final
     {
-        return signal_shutdown();
+        protect_shutdown([this] { shut_down(); });
     }
 
     auto init() noexcept -> void final;
@@ -298,9 +298,14 @@ public:
 
     ~PeerManager() final;
 
-private:
-    friend Worker<PeerManager, api::Session>;
+protected:
+    auto pipeline(zmq::Message&& message) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
 
+private:
+    auto shut_down() noexcept -> void;
+
+private:
     struct Jobs {
         auto Endpoint(const Task type) const noexcept -> UnallocatedCString;
         auto Work(const Task task) const noexcept -> network::zeromq::Message;
@@ -349,10 +354,6 @@ private:
     static auto peer_target(
         const Type chain,
         const database::BlockStorage policy) noexcept -> std::size_t;
-
-    auto pipeline(zmq::Message&& message) noexcept -> void;
-    auto shutdown(std::promise<void>& promise) noexcept -> void;
-    auto state_machine() noexcept -> bool;
 
     PeerManager() = delete;
     PeerManager(const PeerManager&) = delete;

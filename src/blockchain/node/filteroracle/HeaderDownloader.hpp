@@ -29,9 +29,10 @@ using HeaderDM = download::Manager<
     cfilter::Hash,
     cfilter::Header,
     cfilter::Type>;
-using HeaderWorker = Worker<FilterOracle::HeaderDownloader, api::Session>;
+using HeaderWorker = Worker<api::Session>;
 
-class FilterOracle::HeaderDownloader : public HeaderDM, public HeaderWorker
+class FilterOracle::HeaderDownloader final : public HeaderDM,
+                                             public HeaderWorker
 {
 public:
     using Callback =
@@ -77,11 +78,25 @@ public:
         OT_ASSERT(checkpoint_);
     }
 
-    ~HeaderDownloader() { signal_shutdown().get(); }
+    ~HeaderDownloader() final
+    {
+        try {
+            signal_shutdown().get();
+        } catch (const std::exception& e) {
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+            // TODO MT-34 improve
+        }
+    }
+
+protected:
+    auto pipeline(zmq::Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
+
+private:
+    auto shut_down() noexcept -> void;
 
 private:
     friend HeaderDM;
-    friend HeaderWorker;
 
     internal::FilterDatabase& db_;
     const HeaderOracle& header_;
@@ -126,48 +141,6 @@ private:
         filter_.UpdatePosition(position);
     }
 
-    auto pipeline(const zmq::Message& in) noexcept -> void
-    {
-        if (false == running_.load()) { return; }
-
-        const auto body = in.Body();
-
-        OT_ASSERT(1 <= body.size());
-
-        const auto work = [&] {
-            try {
-
-                return body.at(0).as<FilterOracle::Work>();
-            } catch (...) {
-
-                OT_FAIL;
-            }
-        }();
-
-        switch (work) {
-            case FilterOracle::Work::shutdown: {
-                shutdown(shutdown_promise_);
-            } break;
-            case FilterOracle::Work::block:
-            case FilterOracle::Work::reorg: {
-                process_position(in);
-                run_if_enabled();
-            } break;
-            case FilterOracle::Work::reset_filter_tip: {
-                process_reset(in);
-            } break;
-            case FilterOracle::Work::heartbeat: {
-                process_position();
-                run_if_enabled();
-            } break;
-            case FilterOracle::Work::statemachine: {
-                run_if_enabled();
-            } break;
-            default: {
-                OT_FAIL;
-            }
-        }
-    }
     auto process_position(const zmq::Message& in) noexcept -> void
     {
         {
@@ -252,12 +225,61 @@ private:
 
         OT_ASSERT(saved);
     }
-    auto shutdown(std::promise<void>& promise) noexcept -> void
-    {
-        if (auto previous = running_.exchange(false); previous) {
-            pipeline_.Close();
-            promise.set_value();
+};
+
+auto FilterOracle::HeaderDownloader::pipeline(zmq::Message&& in) noexcept
+    -> void
+{
+    if (false == running_.load()) { return; }
+
+    const auto body = in.Body();
+
+    OT_ASSERT(1 <= body.size());
+
+    const auto work = [&] {
+        try {
+
+            return body.at(0).as<FilterOracle::Work>();
+        } catch (...) {
+
+            OT_FAIL;
+        }
+    }();
+
+    switch (work) {
+        case FilterOracle::Work::shutdown: {
+            protect_shutdown([this] { shut_down(); });
+        } break;
+        case FilterOracle::Work::block:
+        case FilterOracle::Work::reorg: {
+            process_position(in);
+            run_if_enabled();
+        } break;
+        case FilterOracle::Work::reset_filter_tip: {
+            process_reset(in);
+        } break;
+        case FilterOracle::Work::heartbeat: {
+            process_position();
+            run_if_enabled();
+        } break;
+        case FilterOracle::Work::statemachine: {
+            run_if_enabled();
+        } break;
+        default: {
+            OT_FAIL;
         }
     }
-};
+}
+
+auto FilterOracle::HeaderDownloader::state_machine() noexcept -> bool
+{
+    return HeaderDM::state_machine();
+}
+
+auto FilterOracle::HeaderDownloader::shut_down() noexcept -> void
+{
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
+}
+
 }  // namespace opentxs::blockchain::node::implementation

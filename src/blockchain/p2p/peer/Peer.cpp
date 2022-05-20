@@ -357,7 +357,7 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
 
     switch (task) {
         case Task::Shutdown: {
-            shutdown(shutdown_promise_);
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Task::Mempool: {
             process_mempool(message);
@@ -566,28 +566,25 @@ auto Peer::send(std::pair<zmq::Frame, zmq::Frame>&& frames) noexcept
     }
 }
 
-auto Peer::Shutdown() noexcept -> std::shared_future<void>
+auto Peer::Shutdown() noexcept -> void
 {
-    return signal_shutdown();
+    protect_shutdown([this] { shut_down(); });
 }
 
-auto Peer::shutdown(std::promise<void>& promise) noexcept -> void
+auto Peer::shut_down() noexcept -> void
 {
-    if (auto previous = running_.exchange(false); previous) {
-        init_.get();
-        pipeline_.Close();
-        const auto state = state_.value_.exchange(State::Shutdown);
-        connection_->stop_external();
-        break_promises();
-        connection_->shutdown_external();
+    close_pipeline();
+    const auto state = state_.value_.exchange(State::Shutdown);
+    connection_->stop_external();
+    break_promises();
+    connection_->shutdown_external();
 
-        if ((State::Handshake != state) && (State::Listening != state)) {
-            update_address_activity();
-        }
-
-        log_("Disconnected from ")(address_.Display()).Flush();
-        promise.set_value();
+    if ((State::Handshake != state) && (State::Listening != state)) {
+        update_address_activity();
     }
+
+    log_("Disconnected from ")(address_.Display()).Flush();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto Peer::start_verify() noexcept -> void
@@ -803,7 +800,8 @@ auto Peer::transmit(zmq::Message&& message) noexcept -> void
 
 auto Peer::update_address_activity() noexcept -> void
 {
-    database_.AddOrUpdate(address_.UpdateTime(activity_.get()));
+    auto addr(address_.UpdateTime(activity_.get()));
+    database_.AddOrUpdate(std::move(addr));
 }
 
 auto Peer::update_address_services(
@@ -812,5 +810,8 @@ auto Peer::update_address_services(
     database_.AddOrUpdate(address_.UpdateServices(services));
 }
 
-Peer::~Peer() { signal_shutdown().get(); }
+Peer::~Peer()
+{
+    protect_shutdown([this] { shut_down(); });
+}
 }  // namespace opentxs::blockchain::p2p::implementation
