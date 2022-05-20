@@ -50,9 +50,9 @@
 namespace opentxs::blockchain::node::base
 {
 using SyncDM = download::Manager<SyncServer, GCS, int, cfilter::Type>;
-using SyncWorker = Worker<SyncServer, api::Session>;
+using SyncWorker = Worker<api::Session>;
 
-class SyncServer : public SyncDM, public SyncWorker
+class SyncServer final : public SyncDM, public SyncWorker
 {
 public:
     auto Tip() const noexcept { return db_.SyncTip(); }
@@ -113,11 +113,25 @@ public:
         ::zmq_connect(socket_.get(), endpoint_.c_str());
     }
 
-    ~SyncServer() { signal_shutdown().get(); }
+    ~SyncServer() final
+    {
+        try {
+            Shutdown().get();
+        } catch (const std::exception& e) {
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+            // TODO MT-34 improve
+        }
+    }
+
+protected:
+    auto pipeline(zmq::Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
+
+private:
+    auto shut_down() noexcept -> void;
 
 private:
     friend SyncDM;
-    friend SyncWorker;
 
     using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
     using OTSocket = network::zeromq::socket::implementation::Socket;
@@ -187,48 +201,6 @@ private:
             // TODO allocator
             task->download(
                 filter_.LoadFilter(type_, task->position_.second, {}));
-        }
-    }
-    auto pipeline(const zmq::Message& in) noexcept -> void
-    {
-        if (false == running_.load()) { return; }
-
-        const auto body = in.Body();
-
-        OT_ASSERT(1 <= body.size());
-
-        using Work = Work;
-        const auto work = [&] {
-            try {
-
-                return body.at(0).as<Work>();
-            } catch (...) {
-
-                OT_FAIL;
-            }
-        }();
-        auto lock = Lock{zmq_lock_};
-
-        switch (work) {
-            case Work::shutdown: {
-                shutdown(shutdown_promise_);
-            } break;
-            case Work::heartbeat: {
-                if (dm_enabled()) { process_position(filter_.Tip(type_)); }
-
-                run_if_enabled();
-            } break;
-            case Work::filter: {
-                process_position(in);
-                run_if_enabled();
-            } break;
-            case Work::statemachine: {
-                download();
-                run_if_enabled();
-            } break;
-            default: {
-                OT_FAIL;
-            }
         }
     }
     auto process_position(const zmq::Message& in) noexcept -> void
@@ -431,13 +403,6 @@ private:
             OTSocket::send_message(lock, socket_.get(), std::move(work));
         }
     }
-    auto shutdown(std::promise<void>& promise) noexcept -> void
-    {
-        if (auto previous = running_.exchange(false); previous) {
-            pipeline_.Close();
-            promise.set_value();
-        }
-    }
     auto zmq_thread() noexcept -> void
     {
         Signals::Block();
@@ -484,4 +449,58 @@ private:
         ::zmq_disconnect(socket_.get(), endpoint_.c_str());
     }
 };
+
+auto SyncServer::pipeline(zmq::Message&& in) noexcept -> void
+{
+    if (false == running_.load()) { return; }
+
+    const auto body = in.Body();
+
+    OT_ASSERT(1 <= body.size());
+
+    using Work = Work;
+    const auto work = [&] {
+        try {
+
+            return body.at(0).as<Work>();
+        } catch (...) {
+
+            OT_FAIL;
+        }
+    }();
+    auto lock = Lock{zmq_lock_};
+
+    switch (work) {
+        case Work::shutdown: {
+            protect_shutdown([this] { shut_down(); });
+        } break;
+        case Work::heartbeat: {
+            if (dm_enabled()) { process_position(filter_.Tip(type_)); }
+
+            run_if_enabled();
+        } break;
+        case Work::filter: {
+            process_position(in);
+            run_if_enabled();
+        } break;
+        case Work::statemachine: {
+            download();
+            run_if_enabled();
+        } break;
+        default: {
+            OT_FAIL;
+        }
+    }
+}
+
+auto SyncServer::state_machine() noexcept -> bool
+{
+    return SyncDM::state_machine();
+}
+
+auto SyncServer::shut_down() noexcept -> void
+{
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
+}
 }  // namespace opentxs::blockchain::node::base

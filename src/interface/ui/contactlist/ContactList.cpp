@@ -155,7 +155,7 @@ auto ContactList::construct_row(
     return factory::ContactListItem(*this, Widget::api_, id, index);
 }
 
-auto ContactList::pipeline(const Message& in) noexcept -> void
+auto ContactList::pipeline(Message&& in) noexcept -> void
 {
     if (false == running_.load()) { return; }
 
@@ -188,9 +188,7 @@ auto ContactList::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         case Work::shutdown: {
-            if (auto previous = running_.exchange(false); previous) {
-                shutdown(shutdown_promise_);
-            }
+            protect_shutdown([this] { shut_down(); });
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())("Unhandled type").Flush();
@@ -198,6 +196,14 @@ auto ContactList::pipeline(const Message& in) noexcept -> void
             OT_FAIL;
         }
     }
+}
+
+auto ContactList::state_machine() noexcept -> bool { return false; }
+
+auto ContactList::shut_down() noexcept -> void
+{
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto ContactList::process_contact(const Message& in) noexcept -> void
@@ -243,6 +249,6 @@ auto ContactList::startup() noexcept -> void
 ContactList::~ContactList()
 {
     wait_for_startup();
-    signal_shutdown().get();
+    protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

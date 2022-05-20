@@ -90,7 +90,7 @@ using SeedTreeList = List<
     SeedTreeSortKey,
     SeedTreePrimaryID>;
 
-class SeedTree final : public SeedTreeList, Worker<SeedTree>
+class SeedTree final : public SeedTreeList, public Worker<api::session::Client>
 {
 public:
     auto ClearCallbacks() const noexcept -> void final;
@@ -106,9 +106,14 @@ public:
 
     ~SeedTree() final;
 
-private:
-    friend Worker<SeedTree>;
+protected:
+    auto pipeline(Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
 
+private:
+    auto shut_down() noexcept -> void;
+
+private:
     enum class Work : OTZMQWorkType {
         shutdown = value(WorkType::Shutdown),
         new_nym = value(WorkType::NymCreated),
@@ -154,7 +159,6 @@ private:
     auto check_default_nym() noexcept -> void;
     auto check_default_seed() noexcept -> void;
     auto load() noexcept -> void;
-    auto pipeline(Message&& in) noexcept -> void;
     auto process_nym(Message&& in) noexcept -> void;
     auto process_nym(const identifier::Nym& id) noexcept -> void;
     auto process_seed(Message&& in) noexcept -> void;

@@ -187,9 +187,7 @@ auto BlockchainAccountStatus::pipeline(Message&& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            if (auto previous = running_.exchange(false); previous) {
-                shutdown(shutdown_promise_);
-            }
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Work::newaccount: {
             process_account(in);
@@ -213,6 +211,14 @@ auto BlockchainAccountStatus::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }
+}
+
+auto BlockchainAccountStatus::state_machine() noexcept -> bool { return false; }
+
+auto BlockchainAccountStatus::shut_down() noexcept -> void
+{
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto BlockchainAccountStatus::populate(
@@ -507,5 +513,8 @@ auto BlockchainAccountStatus::subchain_display_name(
     return out;
 }
 
-BlockchainAccountStatus::~BlockchainAccountStatus() = default;
+BlockchainAccountStatus::~BlockchainAccountStatus()
+{
+    protect_shutdown([this] { shut_down(); });
+}
 }  // namespace opentxs::ui::implementation

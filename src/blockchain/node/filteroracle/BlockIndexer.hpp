@@ -102,10 +102,10 @@ using BlockDMFilter = download::Manager<
     std::shared_ptr<const block::bitcoin::Block>,
     cfilter::Header,
     cfilter::Type>;
-using BlockWorkerFilter = Worker<FilterOracle::BlockIndexer, api::Session>;
+using BlockWorkerFilter = Worker<api::Session>;
 
-class FilterOracle::BlockIndexer : public BlockDMFilter,
-                                   public BlockWorkerFilter
+class FilterOracle::BlockIndexer final : public BlockDMFilter,
+                                         public BlockWorkerFilter
 {
 public:
     auto NextBatch() noexcept { return allocate_batch(type_); }
@@ -122,11 +122,17 @@ public:
         const UnallocatedCString& shutdown,
         const NotifyCallback& notify) noexcept;
 
-    ~BlockIndexer();
+    ~BlockIndexer() final;
+
+protected:
+    auto pipeline(zmq::Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
+
+private:
+    auto shut_down() noexcept -> void;
 
 private:
     friend BlockDMFilter;
-    friend BlockWorkerFilter;
 
     internal::FilterDatabase& db_;
     const HeaderOracle& header_;
@@ -148,12 +154,10 @@ private:
         const noexcept -> void;
 
     auto download() noexcept -> void;
-    auto pipeline(const zmq::Message& in) noexcept -> void;
     auto process_position(const zmq::Message& in) noexcept -> void;
     auto process_position(const Position& pos) noexcept -> void;
     auto queue_processing(DownloadedData&& data) noexcept -> void;
     auto reset_to_genesis() noexcept -> void;
-    auto shutdown(std::promise<void>& promise) noexcept -> void;
 };
 
 struct FilterOracle::BlockIndexerData {

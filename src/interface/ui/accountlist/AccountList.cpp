@@ -260,9 +260,7 @@ auto AccountList::pipeline(Message&& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            if (auto previous = running_.exchange(false); previous) {
-                shutdown(shutdown_promise_);
-            }
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Work::custodial: {
             process_custodial(std::move(in));
@@ -285,6 +283,14 @@ auto AccountList::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }
+}
+
+auto AccountList::state_machine() noexcept -> bool { return false; }
+
+auto AccountList::shut_down() noexcept -> void
+{
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto AccountList::print(Work type) noexcept -> const char*
@@ -375,7 +381,6 @@ auto AccountList::subscribe(const blockchain::Type chain) const noexcept -> void
 
 AccountList::~AccountList()
 {
-    wait_for_startup();
-    signal_shutdown().get();
+    protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

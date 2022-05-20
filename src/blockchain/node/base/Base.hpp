@@ -128,8 +128,7 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::blockchain::node::implementation
 {
-class Base : virtual public node::internal::Network,
-             public Worker<Base, api::Session>
+class Base : virtual public node::internal::Network, public Worker<api::Session>
 {
 public:
     enum class Work : OTZMQWorkType {
@@ -238,9 +237,9 @@ public:
     {
         return filters_;
     }
-    auto Shutdown() noexcept -> std::shared_future<void> final
+    auto Shutdown() noexcept -> void final
     {
-        return signal_shutdown();
+        protect_shutdown([this] { shut_down(); });
     }
     auto StartWallet() noexcept -> void final;
     auto Wallet() const noexcept -> const node::Wallet& final
@@ -249,6 +248,11 @@ public:
     }
 
     ~Base() override;
+
+protected:
+    auto pipeline(zmq::Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
+    auto shut_down() noexcept -> void;
 
 private:
     const cfilter::Type filter_type_;
@@ -284,8 +288,6 @@ protected:
         const UnallocatedCString& syncEndpoint) noexcept;
 
 private:
-    friend Worker<Base, api::Session>;
-
     enum class State : int {
         UpdatingHeaders,
         UpdatingBlocks,
@@ -377,7 +379,6 @@ private:
     auto notify_sync_client() const noexcept -> void;
     auto target() const noexcept -> block::Height;
 
-    auto pipeline(zmq::Message&& in) noexcept -> void;
     auto process_block(zmq::Message&& in) noexcept -> void;
     auto process_filter_update(zmq::Message&& in) noexcept -> void;
     auto process_header(zmq::Message&& in) noexcept -> void;
@@ -385,8 +386,6 @@ private:
     auto process_send_to_payment_code(zmq::Message&& in) noexcept -> void;
     auto process_sync_data(zmq::Message&& in) noexcept -> void;
     auto reset_heartbeat() noexcept -> void;
-    auto shutdown(std::promise<void>& promise) noexcept -> void;
-    auto state_machine() noexcept -> bool;
     auto state_machine_headers() noexcept -> void;
     auto state_transition_blocks() noexcept -> void;
     auto state_transition_filters() noexcept -> void;

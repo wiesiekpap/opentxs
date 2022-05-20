@@ -405,9 +405,7 @@ auto SeedTree::pipeline(Message&& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            if (auto previous = running_.exchange(false); previous) {
-                shutdown(shutdown_promise_);
-            }
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Work::new_nym:
         case Work::changed_nym: {
@@ -428,6 +426,14 @@ auto SeedTree::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }
+}
+
+auto SeedTree::state_machine() noexcept -> bool { return false; }
+
+auto SeedTree::shut_down() noexcept -> void
+{
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto SeedTree::process_nym(Message&& in) noexcept -> void
@@ -501,6 +507,6 @@ auto SeedTree::startup() noexcept -> void
 SeedTree::~SeedTree()
 {
     wait_for_startup();
-    signal_shutdown().get();
+    protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

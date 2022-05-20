@@ -88,6 +88,8 @@ namespace opentxs::blockchain::p2p::implementation
 {
 const VersionNumber Address::DefaultVersion{1};
 
+Address::~Address() {}
+
 Address::Address(
     const api::Session& api,
     const VersionNumber version,
@@ -150,20 +152,20 @@ Address::Address(
     }
 }
 
-Address::Address(const Address& rhs) noexcept
-    : api_(rhs.api_)
-    , version_(rhs.version_)
-    , id_(rhs.id_)
-    , protocol_(rhs.protocol_)
-    , network_(rhs.network_)
-    , bytes_(rhs.bytes_)
-    , port_(rhs.port_)
-    , chain_(rhs.chain_)
-    , previous_last_connected_(rhs.previous_last_connected_)
-    , previous_services_(rhs.previous_services_)
-    , incoming_(rhs.incoming_)
-    , last_connected_(rhs.last_connected_)
-    , services_(rhs.services_)
+Address::Address(const Address* rhs) noexcept
+    : api_(rhs->api_)
+    , version_(rhs->version_)
+    , id_(rhs->id_)
+    , protocol_(rhs->protocol_)
+    , network_(rhs->network_)
+    , bytes_(rhs->bytes_)
+    , port_(rhs->port_)
+    , chain_(rhs->chain_)
+    , previous_last_connected_(rhs->previous_last_connected_)
+    , previous_services_(rhs->previous_services_)
+    , incoming_(rhs->incoming_)
+    , last_connected_(rhs->last_connected_)
+    , services_(rhs->services_)
 {
 }
 

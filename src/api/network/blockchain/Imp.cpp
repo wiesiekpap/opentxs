@@ -487,7 +487,7 @@ auto BlockchainImp::Shutdown() noexcept -> void
         LogVerbose()("Shutting down ")(networks_.size())(" blockchain clients")
             .Flush();
 
-        for (auto& [chain, network] : networks_) { network->Shutdown().get(); }
+        for (auto& [chain, network] : networks_) { network->Shutdown(); }
 
         networks_.clear();
     }
@@ -610,7 +610,7 @@ auto BlockchainImp::stop(const Lock& lock, const Chain type) const noexcept
     OT_ASSERT(it->second);
 
     sync_server_.Disable(type);
-    it->second->Shutdown().get();
+    it->second->Shutdown();
     networks_.erase(it);
     LogVerbose()(OT_PRETTY_CLASS())("stopped chain ")(print(type)).Flush();
     publish_chain_state(type, false);

@@ -69,16 +69,21 @@ using NymListList = List<
     NymListSortKey,
     NymListPrimaryID>;
 
-class NymList final : public NymListList, Worker<NymList>
+class NymList final : public NymListList, public Worker<api::session::Client>
 {
 public:
     NymList(const api::session::Client& api, const SimpleCallback& cb) noexcept;
 
     ~NymList() final;
 
-private:
-    friend Worker<NymList>;
+protected:
+    auto pipeline(Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
 
+private:
+    auto shut_down() noexcept -> void;
+
+private:
     enum class Work : OTZMQWorkType {
         newnym = value(WorkType::NymCreated),
         nymchanged = value(WorkType::NymUpdated),
@@ -94,7 +99,6 @@ private:
 
     auto load() noexcept -> void;
     auto load(OTNymID&& id) noexcept -> void;
-    auto pipeline(Message&& in) noexcept -> void;
     auto process_new_nym(Message&& in) noexcept -> void;
     auto process_nym_changed(Message&& in) noexcept -> void;
     auto startup() noexcept -> void;

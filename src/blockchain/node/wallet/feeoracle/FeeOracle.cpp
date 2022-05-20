@@ -87,7 +87,7 @@ auto FeeOracle::Imp::EstimatedFee() const noexcept -> std::optional<Amount>
 auto FeeOracle::Imp::pipeline(network::zeromq::Message&& in) noexcept -> void
 {
     if (false == running_.load()) {
-        shutdown(shutdown_promise_);
+        protect_shutdown([this] { shut_down(); });
 
         return;
     }
@@ -108,7 +108,7 @@ auto FeeOracle::Imp::pipeline(network::zeromq::Message&& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            shutdown(shutdown_promise_);
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Work::update_estimate: {
             process_update(std::move(in));
@@ -196,20 +196,22 @@ auto FeeOracle::Imp::state_machine() noexcept -> bool
     return false;
 }
 
-auto FeeOracle::Imp::Shutdown() noexcept -> void { signal_shutdown(); }
-
-auto FeeOracle::Imp::shutdown(std::promise<void>& promise) noexcept -> void
+auto FeeOracle::Imp::Shutdown() noexcept -> void
 {
-    if (auto previous = running_.exchange(false); previous) {
-        for (auto& source : sources_) { source.Shutdown(); }
-
-        timer_.Cancel();
-        pipeline_.Close();
-        promise.set_value();
-    }
+    protect_shutdown([this] { shut_down(); });
 }
 
-FeeOracle::Imp::~Imp() { signal_shutdown().get(); }
+auto FeeOracle::Imp::shut_down() noexcept -> void
+{
+    timer_.Cancel();
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
+}
+
+FeeOracle::Imp::~Imp()
+{
+    protect_shutdown([this] { shut_down(); });
+}
 }  // namespace opentxs::blockchain::node::wallet
 
 namespace opentxs::blockchain::node::wallet

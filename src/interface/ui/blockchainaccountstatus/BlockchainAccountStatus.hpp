@@ -71,7 +71,7 @@ using BlockchainAccountStatusType = List<
     BlockchainAccountStatusPrimaryID>;
 
 class BlockchainAccountStatus final : public BlockchainAccountStatusType,
-                                      Worker<BlockchainAccountStatus>
+                                      public Worker<api::session::Client>
 {
 public:
     auto Chain() const noexcept -> blockchain::Type final { return chain_; }
@@ -88,9 +88,14 @@ public:
 
     ~BlockchainAccountStatus() final;
 
-private:
-    friend Worker<BlockchainAccountStatus>;
+protected:
+    auto pipeline(Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
 
+private:
+    auto shut_down() noexcept -> void;
+
+private:
     enum class Work : OTZMQWorkType {
         shutdown = value(WorkType::Shutdown),
         newaccount = value(WorkType::BlockchainAccountCreated),
@@ -138,7 +143,6 @@ private:
 
     auto add_children(ChildMap&& children) noexcept -> void;
     auto load() noexcept -> void;
-    auto pipeline(Message&& in) noexcept -> void;
     auto process_account(const Message& in) noexcept -> void;
     auto process_progress(const Message& in) noexcept -> void;
     auto process_reorg(const Message& in) noexcept -> void;

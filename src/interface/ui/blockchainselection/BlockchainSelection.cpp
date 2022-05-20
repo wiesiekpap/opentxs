@@ -168,7 +168,7 @@ auto BlockchainSelection::filter(const ui::Blockchains type) noexcept
     }
 }
 
-auto BlockchainSelection::pipeline(const Message& in) noexcept -> void
+auto BlockchainSelection::pipeline(Message&& in) noexcept -> void
 {
     if (false == running_.load()) { return; }
 
@@ -192,9 +192,7 @@ auto BlockchainSelection::pipeline(const Message& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            if (auto previous = running_.exchange(false); previous) {
-                shutdown(shutdown_promise_);
-            }
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Work::statechange: {
             process_state(in);
@@ -219,6 +217,14 @@ auto BlockchainSelection::pipeline(const Message& in) noexcept -> void
             OT_FAIL;
         }
     }
+}
+
+auto BlockchainSelection::state_machine() noexcept -> bool { return false; }
+
+auto BlockchainSelection::shut_down() noexcept -> void
+{
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto BlockchainSelection::process_state(const Message& in) noexcept -> void
@@ -283,6 +289,6 @@ auto BlockchainSelection::startup() noexcept -> void
 BlockchainSelection::~BlockchainSelection()
 {
     wait_for_startup();
-    signal_shutdown().get();
+    protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

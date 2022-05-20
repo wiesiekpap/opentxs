@@ -102,8 +102,7 @@ auto BlockDownloader::check_task(TaskType& task) const noexcept -> void
     }
 }
 
-auto BlockDownloader::pipeline(const network::zeromq::Message& in) noexcept
-    -> void
+auto BlockDownloader::pipeline(network::zeromq::Message&& in) noexcept -> void
 {
     if (false == running_.load()) { return; }
 
@@ -123,7 +122,7 @@ auto BlockDownloader::pipeline(const network::zeromq::Message& in) noexcept
 
     switch (work) {
         case Work::shutdown: {
-            shutdown(shutdown_promise_);
+            protect_shutdown([this] { shut_down(); });
         } break;
         case Work::block:
         case Work::reorg: {
@@ -143,6 +142,11 @@ auto BlockDownloader::pipeline(const network::zeromq::Message& in) noexcept
             OT_FAIL;
         }
     }
+}
+
+auto BlockDownloader::state_machine() noexcept -> bool
+{
+    return BlockDMBlock::state_machine();
 }
 
 auto BlockDownloader::process_position(
@@ -208,12 +212,10 @@ auto BlockDownloader::Shutdown() noexcept -> std::shared_future<void>
     return signal_shutdown();
 }
 
-auto BlockDownloader::shutdown(std::promise<void>& promise) noexcept -> void
+auto BlockDownloader::shut_down() noexcept -> void
 {
-    if (auto previous = running_.exchange(false); previous) {
-        pipeline_.Close();
-        promise.set_value();
-    }
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto BlockDownloader::trigger_state_machine() const noexcept -> void
@@ -237,5 +239,13 @@ auto BlockDownloader::update_tip(const Position& position, const int&)
     socket_->Send(std::move(work));
 }
 
-BlockDownloader::~BlockDownloader() { signal_shutdown().get(); }
+BlockDownloader::~BlockDownloader()
+{
+    try {
+        Shutdown().get();
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+        // TODO MT-34 improve
+    }
+}
 }  // namespace opentxs::blockchain::node::blockoracle

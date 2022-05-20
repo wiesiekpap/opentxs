@@ -75,7 +75,7 @@ auto PayableList::construct_row(
         currency_);
 }
 
-auto PayableList::pipeline(const Message& in) noexcept -> void
+auto PayableList::pipeline(Message&& in) noexcept -> void
 {
     if (false == running_.load()) { return; }
 
@@ -111,9 +111,7 @@ auto PayableList::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         case Work::shutdown: {
-            if (auto previous = running_.exchange(false); previous) {
-                shutdown(shutdown_promise_);
-            }
+            protect_shutdown([this] { shut_down(); });
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())("Unhandled type").Flush();
@@ -121,6 +119,14 @@ auto PayableList::pipeline(const Message& in) noexcept -> void
             OT_FAIL;
         }
     }
+}
+
+auto PayableList::state_machine() noexcept -> bool { return false; }
+
+auto PayableList::shut_down() noexcept -> void
+{
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
 }
 
 auto PayableList::process_contact(
@@ -202,6 +208,6 @@ auto PayableList::startup() noexcept -> void
 PayableList::~PayableList()
 {
     wait_for_startup();
-    signal_shutdown().get();
+    protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

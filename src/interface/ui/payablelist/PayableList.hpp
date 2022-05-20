@@ -73,7 +73,8 @@ using PayableListList = List<
     PayableListSortKey,
     PayablePrimaryID>;
 
-class PayableList final : public PayableListList, Worker<PayableList>
+class PayableList final : public PayableListList,
+                          public Worker<api::session::Client>
 {
 public:
     auto ID() const noexcept -> const Identifier& final
@@ -88,9 +89,14 @@ public:
         const SimpleCallback& cb) noexcept;
     ~PayableList() final;
 
-private:
-    friend Worker<PayableList>;
+protected:
+    auto pipeline(Message&& in) noexcept -> void final;
+    auto state_machine() noexcept -> bool final;
 
+private:
+    auto shut_down() noexcept -> void;
+
+private:
     enum class Work : OTZMQWorkType {
         contact = value(WorkType::ContactUpdated),
         nym = value(WorkType::NymUpdated),
@@ -111,7 +117,6 @@ private:
         return PayableListList::last(id);
     }
 
-    auto pipeline(const Message& in) noexcept -> void;
     auto process_contact(
         const PayableListRowID& id,
         const PayableListSortKey& key) noexcept -> void;
