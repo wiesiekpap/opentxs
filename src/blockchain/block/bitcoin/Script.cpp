@@ -710,7 +710,7 @@ auto Script::ExtractPatterns(const api::Session& api) const noexcept
         std::begin(hashes),
         std::end(hashes),
         std::back_inserter(output),
-        [&](const auto& hash) -> auto{
+        [&](const auto& hash) -> auto {
             return api.Crypto().Blockchain().IndexItem(hash->Bytes());
         });
 

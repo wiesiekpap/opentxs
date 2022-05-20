@@ -5,8 +5,9 @@
 
 #pragma once
 
-#include <atomic>
 #include <cs_plain_guarded.h>
+#include <zmq.h>
+#include <atomic>
 #include <cstddef>
 #include <functional>
 #include <future>
@@ -16,7 +17,6 @@
 #include <stdexcept>
 #include <string_view>
 #include <utility>
-#include <zmq.h>
 
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Handle.hpp"

@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <atomic>
 #include <cs_plain_guarded.h>
+#include <atomic>
 #include <cstddef>
 #include <random>
 #include <shared_mutex>
