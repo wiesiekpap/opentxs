@@ -11,6 +11,7 @@
 
 #include "blockchain/DownloadManager.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/database/Cfilter.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"

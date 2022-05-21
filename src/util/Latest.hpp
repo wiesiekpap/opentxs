@@ -8,6 +8,7 @@
 #include <mutex>
 
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Mutex.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs

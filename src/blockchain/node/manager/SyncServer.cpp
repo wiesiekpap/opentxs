@@ -150,6 +150,7 @@ auto SyncServer::batch_size(const std::size_t in) noexcept -> std::size_t
     }
 }
 auto SyncServer::check_task(TaskType&) const noexcept -> void {}
+
 auto SyncServer::hello(const Lock&, const block::Position& incoming)
     const noexcept
 {
@@ -164,7 +165,9 @@ auto SyncServer::hello(const Lock&, const block::Position& incoming)
 
     return std::make_tuple(needSync, parent, std::move(state));
 }
+
 auto SyncServer::trigger_state_machine() const noexcept -> void { trigger(); }
+
 auto SyncServer::update_tip(const Position& position, const int&) const noexcept
     -> void
 {
@@ -387,7 +390,6 @@ auto SyncServer::zmq_thread() noexcept -> void
     pollItem.events = ZMQ_POLLIN;
 
     OT_ASSERT(std::numeric_limits<int>::max() >= poll.size());
-
     while (zmq_running_) {
         constexpr auto timeout = 250ms;
         const auto events = ::zmq_poll(

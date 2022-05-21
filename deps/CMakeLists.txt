@@ -12,21 +12,17 @@ if(PACKETCRYPT_EXPORT)
 endif()
 
 if(${CMAKE_CXX_COMPILER_ID}
-        MATCHES
-        GNU
-        )
-  target_compile_options(
-          irrxml PRIVATE -Wno-suggest-override
-  )
+   MATCHES
+   GNU
+)
+  target_compile_options(irrxml PRIVATE -Wno-suggest-override)
 endif()
 
 if(${CMAKE_CXX_COMPILER_ID}
-        MATCHES
-        Clang
-        )
-  target_compile_options(
-          irrxml PRIVATE -Wno-inconsistent-missing-override
-  )
+   MATCHES
+   Clang
+)
+  target_compile_options(irrxml PRIVATE -Wno-inconsistent-missing-override)
 endif()
 
 if(CASH_LUCRE_EXPORT)

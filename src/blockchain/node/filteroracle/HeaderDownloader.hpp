@@ -58,9 +58,6 @@ protected:
     auto state_machine() noexcept -> bool final;
 
 private:
-    auto shut_down() noexcept -> void;
-
-private:
     friend HeaderDM;
 
     database::Cfilter& db_;
@@ -84,6 +81,7 @@ private:
     auto process_reset(const zmq::Message& in) noexcept -> void;
 
     auto queue_processing(DownloadedData&& data) noexcept -> void;
+    auto shut_down() noexcept -> void;
 };
 
 }  // namespace opentxs::blockchain::node::implementation

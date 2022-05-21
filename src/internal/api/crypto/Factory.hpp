@@ -5,6 +5,10 @@
 
 #pragma once
 
+#include <memory>
+
+#include "opentxs/util/Container.hpp"
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {

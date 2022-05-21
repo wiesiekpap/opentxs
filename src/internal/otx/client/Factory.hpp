@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "internal/util/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

@@ -5,6 +5,43 @@
 
 #pragma once
 
+#include <future>
+
+#include "opentxs/util/Container.hpp"
+#include "opentxs/util/storage/Driver.hpp"
+#include "opentxs/util/storage/Plugin.hpp"
+
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+// inline namespace v1
+// {
+namespace api
+{
+namespace network
+{
+class Asio;
+}  // namespace network
+
+namespace session
+{
+class Storage;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
+namespace storage
+{
+class Config;
+class Plugin;
+}  // namespace storage
+
+class Flag;
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
+
 namespace opentxs::storage
 {
 /** \brief An example implementation of \ref Storage which demonstrates how
@@ -59,55 +96,9 @@ namespace opentxs::storage
  */
 class StorageExample : public virtual Plugin, public virtual Driver
 {
-private:
+protected:
     using ot_super = Plugin;  // Used for constructor delegation
 
-    /** The default constructor can not be used because any implementation
-     *   of \ref opentxs::storage::Driver will require arguments.
-     */
-    StorageExample() = delete;
-
-    /** This is the required parameter profile for an opentx::storage child
-     *  class constructor.
-     *
-     *  \param[in] config An instantiated \ref storage::Config object
-     *                    containing configuration information. Used both by
-     *                    the child class and the parent class.
-     *  \param[in] hash   A std::function providing digest functionality. Only
-     *                    used in the parent class.
-     *  \param[in] random A std::function providing random number generation.
-     *                    May be useful for some child classes.
-     *  \param[in] bucket Reference to bool containing the current bucket
-     */
-    StorageExample(
-        const storage::Config& config,
-        const Digest& hash,
-        const Random& random,
-        const Flag& bucket)
-        : ot_super(config, hash random, bucket)
-    {
-        Init_StorageExample();
-    }
-
-    /** The copy constructor for \ref Storage classes must be disabled
-     *  because the class will always be instantiated as a singleton.
-     */
-    StorageExample(const StorageExample&) = delete;
-
-    /** The copy assignment operator for \ref Storage classes must be
-     *  disabled because the class will always be instantiated as a singleton.
-     */
-    StorageExample& operator=(const StorageExample&) = delete;
-
-    /** Polymorphic initialization method. Child class-specific actions go here.
-     */
-    void Init_StorageExample();
-
-    /** Polymorphic cleanup method. Child class-specific actions go here.
-     */
-    void Cleanup_StorageExample();
-
-public:
     /** Obtain the most current value of the root hash
      *  \returns The value most recently provided to the \ref StoreRoot method,
      *           or an empty string
@@ -121,9 +112,10 @@ public:
      *  Child classes should implement this functionality via any method which
      *  achieves the required behavior.
      */
-    UnallocatedCString LoadRoot() const override;
+    auto LoadRoot() const -> UnallocatedCString override;
 
     /** Record a new value for the root hash
+     *  \param[in] commit set to true if this is the last store of a transaction
      *  \param[in] hash the new root hash
      *  \returns true if the new value has been stored in the backend
      *
@@ -134,7 +126,8 @@ public:
      *  Child classes should implement this functionality via any method which
      *  achieves the required behavior.
      */
-    bool StoreRoot(const UnallocatedCString& hash) const override;
+    auto StoreRoot(const bool commit, const UnallocatedCString& hash) const
+        -> bool override;
 
     /** Retrieve a previously-stored value
      *
@@ -146,14 +139,15 @@ public:
      *
      *  \warning This method is required to be thread safe
      */
-    bool LoadFromBucket(
+    auto LoadFromBucket(
         const UnallocatedCString& key,
         UnallocatedCString& value,
-        const bool bucket) const override;
+        const bool bucket) const -> bool override;
 
     using ot_super::Store;  // Needed for overload resolution
     /** Record a new value in the backend
      *
+     *  \param[in] isTransaction true if the store is part of a transaction
      *  \param[in] key the key of the object to be stored
      *  \param[in] value the value of the specified key
      *  \param[in] bucket save the key in either the primary (true) or
@@ -162,13 +156,15 @@ public:
      *
      *  \warning This method is required to be thread safe
      */
-    bool Store(
+    auto Store(
+        const bool isTransaction,
         const UnallocatedCString& key,
         const UnallocatedCString& value,
-        const bool bucket) const override;
+        const bool bucket) const -> bool override;
 
     /** Asynchronously record a new value in the backend
      *
+     *  \param[in] isTransaction true if the store is part of a transaction
      *  \param[in] key the key of the object to be stored
      *  \param[in] value the value of the specified key
      *  \param[in] bucket save the key in either the primary (true) or
@@ -177,11 +173,12 @@ public:
      *
      *  \warning This method is required to be thread safe
      */
-    void Store(
+    auto Store(
+        const bool isTransaction,
         const UnallocatedCString& key,
         const UnallocatedCString& value,
         const bool bucket,
-        std::promise<bool>& promise) const override;
+        std::promise<bool>& promise) const -> void override;
 
     /** Completely erase the contents of the specified bucket
      *
@@ -205,15 +202,56 @@ public:
      *      bucket can be implemented with a DROP TABLE command followed by a
      *      CREATE TABLE command.
      */
-    bool EmptyBucket(const bool bucket) override;
+    auto EmptyBucket(const bool bucket) const -> bool override;
 
-    /** Polymorphic cleanup method.
+    /** The default constructor can not be used because any implementation
+     *   of \ref opentxs::storage::Driver will require arguments.
      */
-    void Cleanup() override { Cleanup_StorageExample(); }
+    StorageExample() = delete;
 
     /** Polymorphic destructor.
      */
-    ~StorageExample() { Cleanup_StorageExample(); }
-};
+    ~StorageExample() override { Cleanup_StorageExample(); }
 
+private:
+    /** This is the required parameter profile for an opentx::storage child
+     *  class constructor.
+     *
+     *  \param[in] crypto  Crypto api singleton. Used by parent class.
+     *  \param[in] asio    Asio api singleton. Used by parent class.
+     *  \param[in] storage Storage api singleton. Used by parent class.
+     *  \param[in] config  An instantiated \ref storage::Config object
+     *                     containing configuration information. Used both by
+     *                     the child class and the parent class.
+     *  \param[in] bucket  Reference to bool containing the current bucket
+     */
+    StorageExample(
+        const api::Crypto& crypto,
+        const api::network::Asio& asio,
+        const api::session::Storage& storage,
+        const storage::Config& config,
+        const Flag& bucket)
+        : ot_super(crypto, asio, storage, config, bucket)
+    {
+        Init_StorageExample();
+    }
+
+    /** The copy constructor for \ref Storage classes must be disabled
+     *  because the class will always be instantiated as a singleton.
+     */
+    StorageExample(const StorageExample&) = delete;
+
+    /** The copy assignment operator for \ref Storage classes must be
+     *  disabled because the class will always be instantiated as a singleton.
+     */
+    auto operator=(const StorageExample&) -> StorageExample& = delete;
+
+    /** Polymorphic initialization method. Child class-specific actions go here.
+     */
+    auto Init_StorageExample() -> void;
+
+    /** Polymorphic cleanup method. Child class-specific actions go here.
+     */
+    auto Cleanup_StorageExample() -> void;
+};
 }  // namespace opentxs::storage

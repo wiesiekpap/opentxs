@@ -22,6 +22,7 @@ namespace zeromq
 {
 namespace internal
 {
+class Handle;
 class Thread;
 }  // namespace internal
 

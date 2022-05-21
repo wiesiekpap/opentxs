@@ -10,6 +10,8 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
+namespace opentxs
+{
 // Reads from cin until Newline.
 inline UnallocatedCString OT_CLI_ReadLine()
 {
@@ -49,3 +51,4 @@ inline UnallocatedCString OT_CLI_ReadUntilEOF()
 
     return result;
 }
+}  // namespace opentxs

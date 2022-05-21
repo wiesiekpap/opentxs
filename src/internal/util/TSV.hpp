@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "opentxs/util/Bytes.hpp"
+
 namespace opentxs
 {
 template <typename Input>

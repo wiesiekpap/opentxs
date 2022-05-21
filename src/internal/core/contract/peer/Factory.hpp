@@ -5,6 +5,14 @@
 
 #pragma once
 
+#include <memory>
+
+#include "opentxs/core/contract/peer/PeerReply.hpp"
+#include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/identity/Types.hpp"
+#include "opentxs/util/Container.hpp"
+#include "opentxs/util/Numbers.hpp"
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
@@ -19,6 +27,23 @@ class Client;
 
 class Session;
 }  // namespace api
+
+namespace otx
+{
+namespace blind
+{
+class Purse;
+}  // namespace blind
+}  // namespace otx
+
+namespace proto
+{
+class PeerObject;
+}  // namespace proto
+
+class Armored;
+class PasswordPrompt;
+class PeerObject;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -63,7 +88,6 @@ auto PeerObject(
     -> std::unique_ptr<opentxs::PeerObject>;
 auto PeerReply(const api::Session& api) noexcept
     -> std::unique_ptr<contract::peer::Reply>;
-
 auto PeerRequest(const api::Session& api) noexcept
     -> std::unique_ptr<contract::peer::Request>;
 }  // namespace opentxs::factory

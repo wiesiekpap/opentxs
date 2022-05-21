@@ -9,6 +9,7 @@
 #include <string_view>
 
 #include "internal/blockchain/database/Types.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
