@@ -20,8 +20,9 @@
 
 #include "1_Internal.hpp"
 #include "core/Worker.hpp"
-#include "internal/blockchain/node/FilterOracle.hpp"
 #include "internal/blockchain/node/Types.hpp"
+#include "internal/blockchain/node/filteroracle/FilterOracle.hpp"
+#include "internal/blockchain/node/filteroracle/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
@@ -79,6 +80,11 @@ class Cfilter;
 
 namespace node
 {
+namespace filteroracle
+{
+class BlockIndexer;
+}  // namespace filteroracle
+
 namespace internal
 {
 class BlockOracle;
@@ -120,15 +126,10 @@ namespace opentxs::blockchain::node::implementation
 class FilterOracle final : virtual public node::internal::FilterOracle
 {
 public:
-    class BlockIndexer;
     class FilterDownloader;
     class HeaderDownloader;
     class SyncIndexer;
-    struct BlockIndexerData;
     struct SyncClientFilterData;
-
-    using NotifyCallback =
-        std::function<void(const cfilter::Type, const block::Position&)>;
 
     enum class Work : OTZMQWorkType {
         shutdown = value(WorkType::Shutdown),
@@ -164,7 +165,10 @@ public:
         alloc::Default alloc) const noexcept -> GCS final;
     auto ProcessBlock(const bitcoin::block::Block& block) const noexcept
         -> bool final;
-    auto ProcessBlock(BlockIndexerData& data) const noexcept -> void;
+    auto ProcessBlock(
+        const cfilter::Type type,
+        const bitcoin::block::Block& block,
+        alloc::Default alloc) const noexcept -> GCS final;
     auto ProcessSyncData(
         const block::Hash& prior,
         const Vector<block::Hash>& hashes,
@@ -212,10 +216,10 @@ private:
     const cfilter::Type default_type_;
     mutable std::recursive_mutex lock_;
     OTZMQPublishSocket new_filters_;
-    const NotifyCallback cb_;
+    const filteroracle::NotifyCallback cb_;
     mutable std::unique_ptr<FilterDownloader> filter_downloader_;
     mutable std::unique_ptr<HeaderDownloader> header_downloader_;
-    mutable std::unique_ptr<BlockIndexer> block_indexer_;
+    mutable std::unique_ptr<filteroracle::BlockIndexer> block_indexer_;
     mutable Time last_sync_progress_;
     mutable UnallocatedMap<cfilter::Type, block::Position> last_broadcast_;
     mutable JobCounter outstanding_jobs_;
@@ -225,9 +229,6 @@ private:
         const rLock&,
         const cfilter::Type type,
         const block::Position& tip) const noexcept -> void;
-    auto process_block(
-        const cfilter::Type type,
-        const bitcoin::block::Block& block) const noexcept -> GCS;
     auto reset_tips_to(
         const cfilter::Type type,
         const block::Position& position,

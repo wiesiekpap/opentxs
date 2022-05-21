@@ -53,12 +53,20 @@ public:
     virtual auto GetFilterJob() const noexcept -> CfilterJob = 0;
     virtual auto GetHeaderJob() const noexcept -> CfheaderJob = 0;
     virtual auto Heartbeat() const noexcept -> void = 0;
+    auto Internal() const noexcept -> const internal::FilterOracle& final
+    {
+        return *this;
+    }
     virtual auto LoadFilterOrResetTip(
         const cfilter::Type type,
         const block::Position& position,
         alloc::Default alloc) const noexcept -> GCS = 0;
     virtual auto ProcessBlock(const bitcoin::block::Block& block) const noexcept
         -> bool = 0;
+    virtual auto ProcessBlock(
+        cfilter::Type type,
+        const bitcoin::block::Block& block,
+        alloc::Default alloc) const noexcept -> GCS = 0;
     virtual auto ProcessSyncData(
         const block::Hash& prior,
         const Vector<block::Hash>& hashes,
@@ -66,6 +74,7 @@ public:
     virtual auto Tip(const cfilter::Type type) const noexcept
         -> block::Position = 0;
 
+    auto Internal() noexcept -> internal::FilterOracle& final { return *this; }
     virtual auto Start() noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 

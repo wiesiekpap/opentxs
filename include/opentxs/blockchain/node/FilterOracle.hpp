@@ -30,6 +30,14 @@ namespace cfilter
 class Header;
 }  // namespace cfilter
 
+namespace node
+{
+namespace internal
+{
+class FilterOracle;
+}  // namespace internal
+}  // namespace node
+
 class GCS;
 }  // namespace blockchain
 // }  // namespace v1
@@ -44,6 +52,8 @@ public:
     virtual auto DefaultType() const noexcept -> cfilter::Type = 0;
     virtual auto FilterTip(const cfilter::Type type) const noexcept
         -> block::Position = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::FilterOracle& = 0;
     virtual auto LoadFilter(
         const cfilter::Type type,
         const block::Hash& block,
@@ -54,6 +64,9 @@ public:
     virtual auto LoadFilterHeader(
         const cfilter::Type type,
         const block::Hash& block) const noexcept -> cfilter::Header = 0;
+
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept
+        -> internal::FilterOracle& = 0;
 
     FilterOracle(const FilterOracle&) = delete;
     FilterOracle(FilterOracle&&) = delete;

@@ -188,6 +188,10 @@ namespace implementation
 {
 }  // namespace implementation
 
+namespace filteroracle
+{
+}  // namespace filteroracle
+
 namespace internal
 {
 }  // namespace internal

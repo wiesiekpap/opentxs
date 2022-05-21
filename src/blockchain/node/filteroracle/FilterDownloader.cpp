@@ -52,7 +52,7 @@ FilterOracle::FilterDownloader::FilterDownloader(
     const blockchain::Type chain,
     const cfilter::Type type,
     const UnallocatedCString& shutdown,
-    const NotifyCallback& notify) noexcept
+    const filteroracle::NotifyCallback& notify) noexcept
     : FilterDM(
           [&] { return db.FilterTip(type); }(),
           [&] {

@@ -3,27 +3,16 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_forward_declare opentxs::blockchain::node::implementation::FilterOracle::BlockIndexer
-// IWYU pragma: no_forward_declare opentxs::blockchain::node::implementation::FilterOracle::BlockIndexerData
+// IWYU pragma: no_include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 
 #pragma once
 
-#include <cstddef>
-#include <exception>
-#include <functional>
-#include <future>
-#include <iosfwd>
-#include <memory>
-#include <utility>
+#include <boost/smart_ptr/shared_ptr.hpp>
+#include <string_view>
 
-#include "blockchain/DownloadManager.hpp"
-#include "blockchain/DownloadTask.hpp"
-#include "blockchain/node/filteroracle/FilterOracle.hpp"
-#include "core/Worker.hpp"
-#include "internal/blockchain/Blockchain.hpp"
-#include "internal/blockchain/database/Cfilter.hpp"
-#include "opentxs/api/session/Session.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
+#include "internal/blockchain/node/filteroracle/BlockIndexer.hpp"
+#include "internal/blockchain/node/filteroracle/Types.hpp"
+#include "internal/network/zeromq/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/block/Block.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
@@ -32,11 +21,9 @@
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
-#include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Time.hpp"
-#include "util/JobCounter.hpp"
+#include "util/Actor.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -50,14 +37,6 @@ class Session;
 
 namespace blockchain
 {
-namespace bitcoin
-{
-namespace block
-{
-class Block;
-}  // namespace block
-}  // namespace bitcoin
-
 namespace database
 {
 class Cfilter;
@@ -65,18 +44,8 @@ class Cfilter;
 
 namespace node
 {
-namespace implementation
-{
 class FilterOracle;
-}  // namespace implementation
-
-namespace internal
-{
-class BlockOracle;
 class Manager;
-}  // namespace internal
-
-class HeaderOracle;
 }  // namespace node
 }  // namespace blockchain
 
@@ -84,11 +53,6 @@ namespace network
 {
 namespace zeromq
 {
-namespace socket
-{
-class Push;
-}  // namespace socket
-
 class Message;
 }  // namespace zeromq
 }  // namespace network
@@ -96,95 +60,70 @@ class Message;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::blockchain::node::implementation
+namespace opentxs::blockchain::node::filteroracle
 {
-using BlockDMFilter = download::Manager<
-    FilterOracle::BlockIndexer,
-    std::shared_ptr<const bitcoin::block::Block>,
-    cfilter::Header,
-    cfilter::Type>;
-using BlockWorkerFilter = Worker<api::Session>;
-
-class FilterOracle::BlockIndexer final : public BlockDMFilter,
-                                         public BlockWorkerFilter
+class BlockIndexer::Imp final : public Actor<BlockIndexerJob>
 {
 public:
-    auto NextBatch() noexcept { return allocate_batch(type_); }
+    auto Init(boost::shared_ptr<Imp> me) noexcept -> void;
+    auto Reindex() noexcept -> void;
+    auto Shutdown() noexcept -> void;
 
-    BlockIndexer(
-        const api::Session& api,
+    Imp(const api::Session& api,
+        const node::Manager& node,
+        const node::FilterOracle& parent,
         database::Cfilter& db,
-        const HeaderOracle& header,
-        const internal::BlockOracle& block,
-        const internal::Manager& node,
-        FilterOracle& parent,
-        const blockchain::Type chain,
-        const cfilter::Type type,
-        const UnallocatedCString& shutdown,
-        const NotifyCallback& notify) noexcept;
+        NotifyCallback&& notify,
+        blockchain::Type chain,
+        cfilter::Type type,
+        std::string_view parentEndpoint,
+        const network::zeromq::BatchID batch,
+        allocator_type alloc) noexcept;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
-    ~BlockIndexer() final;
-
-protected:
-    auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
-
-private:
-    auto shut_down() noexcept -> void;
+    ~Imp() final;
 
 private:
-    friend BlockDMFilter;
+    enum class State {
+        normal,
+        shutdown,
+    };
 
+    const api::Session& api_;
+    const node::Manager& node_;
+    const node::FilterOracle& parent_;
     database::Cfilter& db_;
-    const HeaderOracle& header_;
-    const internal::BlockOracle& block_;
-    const internal::Manager& node_;
-    FilterOracle& parent_;
     const blockchain::Type chain_;
-    const cfilter::Type type_;
-    const NotifyCallback& notify_;
-    JobCounter job_counter_;
+    const cfilter::Type filter_type_;
+    const NotifyCallback notify_;
+    State state_;
+    cfilter::Header previous_header_;
+    cfilter::Header current_header_;
+    block::Position best_position_;
+    block::Position current_position_;
 
-    auto batch_ready() const noexcept -> void { trigger(); }
-    auto batch_size(const std::size_t in) const noexcept -> std::size_t;
-    auto calculate_cfheaders(
-        UnallocatedVector<BlockIndexerData>& cache) const noexcept -> bool;
-    auto check_task(TaskType&) const noexcept -> void {}
-    auto trigger_state_machine() const noexcept -> void { trigger(); }
-    auto update_tip(const Position& position, const cfilter::Header&)
-        const noexcept -> void;
-
-    auto download() noexcept -> void;
-    auto process_position(const zmq::Message& in) noexcept -> void;
-    auto process_position(const Position& pos) noexcept -> void;
-    auto queue_processing(DownloadedData&& data) noexcept -> void;
-    auto reset_to_genesis() noexcept -> void;
+    auto calculate_next_block() noexcept -> bool;
+    auto do_shutdown() noexcept -> void final;
+    auto do_startup() noexcept -> void final;
+    auto find_best_position(block::Position candidate) noexcept -> void;
+    auto pipeline(const Work work, Message&& msg) noexcept -> void final;
+    auto process_block(network::zeromq::Message&& in) noexcept -> void;
+    auto process_block(block::Position&& position) noexcept -> void;
+    auto process_reindex(network::zeromq::Message&& in) noexcept -> void;
+    auto process_reorg(network::zeromq::Message&& in) noexcept -> void;
+    auto process_reorg(block::Position&& commonParent) noexcept -> void;
+    auto reset(block::Position&& to) noexcept -> void;
+    auto state_normal(const Work work, network::zeromq::Message&& msg) noexcept
+        -> void;
+    auto transition_state_shutdown() noexcept -> void;
+    auto update_position(
+        const block::Position& previousCfheader,
+        const block::Position& previousCfilter,
+        const block::Position& newTip) noexcept -> void;
+    auto work() noexcept -> bool final;
 };
-
-struct FilterOracle::BlockIndexerData {
-    using Task = FilterOracle::BlockIndexer::BatchType::TaskType;
-
-    const Task& incoming_data_;
-    const cfilter::Type type_;
-    cfilter::Hash filter_hash_;
-    database::Cfilter::CFilterParams& filter_data_;
-    database::Cfilter::CFHeaderParams& header_data_;
-    Outstanding& job_counter_;
-
-    BlockIndexerData(
-        cfilter::Hash blank,
-        const Task& data,
-        const cfilter::Type type,
-        database::Cfilter::CFilterParams& filter,
-        database::Cfilter::CFHeaderParams& header,
-        Outstanding& jobCounter) noexcept
-        : incoming_data_(data)
-        , type_(type)
-        , filter_hash_(std::move(blank))
-        , filter_data_(filter)
-        , header_data_(header)
-        , job_counter_(jobCounter)
-    {
-    }
-};
-}  // namespace opentxs::blockchain::node::implementation
+}  // namespace opentxs::blockchain::node::filteroracle
