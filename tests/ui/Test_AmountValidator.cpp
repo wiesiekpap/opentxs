@@ -14,10 +14,10 @@
 
 #include "internal/api/session/Client.hpp"
 #include "internal/otx/client/Pair.hpp"
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/fixtures/common/Client.hpp"
 #include "ottest/fixtures/common/Notary.hpp"
 #include "ottest/fixtures/common/User.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 namespace ot = opentxs;
 
@@ -51,7 +51,8 @@ TEST_F(Test_AmountValidator, preconditions)
     const auto& session = StartClient(0);
     session.OTX().DisableAutoaccept();
     session.InternalClient().Pair().Stop().get();
-    const auto seed = ImportBip39(session, GetVectors3().alice_.words_);
+    const auto seed =
+        ImportBip39(session, GetPaymentCodeVector3().alice_.words_);
 
     EXPECT_FALSE(seed.empty());
     EXPECT_TRUE(SetIntroductionServer(session, server));

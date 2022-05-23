@@ -15,12 +15,10 @@
 #include <memory>
 #include <utility>
 
-#include "bip158/Bip158.hpp"
-#include "bip158/bch_filter_1307544.hpp"
-#include "bip158/bch_filter_1307723.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
+#include "ottest/data/blockchain/Bip158.hpp"
 #include "ottest/fixtures/blockchain/Basic.hpp"
 
 namespace ottest
@@ -107,7 +105,7 @@ struct Test_BitcoinBlock : public ::testing::Test {
                 api_.Factory().DataFromBytes(ot::reader(bytes)));
         }
 
-        const auto& expectedElements = indexed_elements_.at(vector.height_);
+        const auto& expectedElements = GetBip158Elements().at(vector.height_);
         auto previousOutputs = vector.PreviousOutputs(api_);
 
         EXPECT_TRUE(CompareElements(output, expectedElements));
@@ -370,7 +368,7 @@ TEST_F(Test_BitcoinBlock, xec_genesis_testnet)
 
 TEST_F(Test_BitcoinBlock, bip158)
 {
-    for (const auto& vector : bip_158_vectors_) {
+    for (const auto& vector : GetBip158Vectors()) {
         const auto raw = vector.Block(api_);
         const auto pBlock = api_.Factory().BitcoinBlock(
             ot::blockchain::Type::Bitcoin_testnet3, raw->Bytes());
@@ -424,7 +422,7 @@ TEST_F(Test_BitcoinBlock, bip158)
 
 TEST_F(Test_BitcoinBlock, gcs_headers)
 {
-    for (const auto& vector : bip_158_vectors_) {
+    for (const auto& vector : GetBip158Vectors()) {
         const auto blockHash = vector.Block(api_);
         const auto encodedFilter = vector.Filter(api_);
         const auto previousHeader = vector.PreviousFilterHeader(api_);
@@ -446,7 +444,7 @@ TEST_F(Test_BitcoinBlock, gcs_headers)
 
 TEST_F(Test_BitcoinBlock, serialization)
 {
-    for (const auto& vector : bip_158_vectors_) {
+    for (const auto& vector : GetBip158Vectors()) {
         const auto raw = vector.Block(api_);
         const auto pBlock = api_.Factory().BitcoinBlock(
             ot::blockchain::Type::Bitcoin_testnet3, raw->Bytes());
@@ -463,7 +461,7 @@ TEST_F(Test_BitcoinBlock, serialization)
 
 TEST_F(Test_BitcoinBlock, bch_filter_1307544)
 {
-    const auto& filter = bch_filter_1307544_;
+    const auto& filter = GetBchCfilter1307544();
     const auto blockHash = api_.Factory().DataFromHex(
         "a9df8e8b72336137aaf70ac0d390c2a57b2afc826201e9f78b00000000000000");
     const auto encodedFilter = ot::ReadView{
@@ -489,7 +487,7 @@ TEST_F(Test_BitcoinBlock, bch_filter_1307544)
 
 TEST_F(Test_BitcoinBlock, bch_filter_1307723)
 {
-    const auto& filter = bch_filter_1307723_;
+    const auto& filter = GetBchCfilter1307723();
     const auto blockHash = api_.Factory().DataFromHex(
         "c28ca17ec9727809b449447eac0ba416a0b347f3836843f31303000000000000");
     const auto encodedFilter = ot::ReadView{

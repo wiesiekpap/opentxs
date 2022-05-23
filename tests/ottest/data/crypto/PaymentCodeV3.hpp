@@ -11,7 +11,7 @@ namespace ot = opentxs;
 
 namespace ottest
 {
-struct VectorV3 {
+struct PaymentCodeVectorV3 {
     ot::UnallocatedCString words_{};
     ot::UnallocatedCString payment_code_{};
     ot::UnallocatedVector<ot::UnallocatedCString> locators_{};
@@ -24,13 +24,13 @@ struct VectorV3 {
     ot::UnallocatedCString G_{};
 };
 
-struct VectorsV3 {
+struct PaymentCodeVectorsV3 {
     ot::UnallocatedCString outpoint_{};
-    VectorV3 alice_{};
-    VectorV3 bob_{};
-    VectorV3 chris_{};
-    VectorV3 daniel_{};
+    PaymentCodeVectorV3 alice_{};
+    PaymentCodeVectorV3 bob_{};
+    PaymentCodeVectorV3 chris_{};
+    PaymentCodeVectorV3 daniel_{};
 };
 
-auto GetVectors3() noexcept -> const VectorsV3&;
+auto GetPaymentCodeVector3() noexcept -> const PaymentCodeVectorsV3&;
 }  // namespace ottest

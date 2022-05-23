@@ -15,9 +15,9 @@
 #include <type_traits>
 #include <utility>
 
-#include "crypto/Bip32Vectors.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
+#include "ottest/data/crypto/Bip32.hpp"
 
 namespace ot = opentxs;
 
@@ -699,7 +699,7 @@ TEST_F(Test_BlockchainAPI, TestChainDiff)
 
 TEST_F(Test_BlockchainAPI, TestBip32_standard_1)
 {
-    const auto& test = bip32_test_cases_.at(0);
+    const auto& test = Bip32TestCases().at(0);
     const ot::UnallocatedCString empty{};
     auto bytes = api_.Factory().DataFromHex(test.seed_);
     auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
@@ -738,7 +738,7 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_1)
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#test-vector-3
 TEST_F(Test_BlockchainAPI, TestBip32_standard_3)
 {
-    const auto& test = bip32_test_cases_.at(2);
+    const auto& test = Bip32TestCases().at(2);
     const ot::UnallocatedCString empty{};
     auto bytes = api_.Factory().DataFromHex(test.seed_);
     auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());

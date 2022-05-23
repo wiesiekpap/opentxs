@@ -16,9 +16,9 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/fixtures/blockchain/Regtest.hpp"
 #include "ottest/fixtures/common/Counter.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 namespace ottest
 {
@@ -103,7 +103,7 @@ protected:
             if (!alice_p_) {
                 const auto reason =
                     client_1_.Factory().PasswordPrompt(__func__);
-                const auto& vector = GetVectors3().alice_;
+                const auto& vector = GetPaymentCodeVector3().alice_;
                 const auto seedID = [&] {
                     const auto words =
                         client_1_.Factory().SecretFromText(vector.words_);
@@ -137,7 +137,7 @@ protected:
             if (!bob_p_) {
                 const auto reason =
                     client_2_.Factory().PasswordPrompt(__func__);
-                const auto& vector = GetVectors3().bob_;
+                const auto& vector = GetPaymentCodeVector3().bob_;
                 const auto seedID = [&] {
                     const auto words =
                         client_2_.Factory().SecretFromText(vector.words_);

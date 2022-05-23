@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "dummy/Mocks/DummyInterfaceMock.hpp"
+#include "dummy/mocks/DummyInterfaceMock.hpp"
 
 namespace ottest
 {

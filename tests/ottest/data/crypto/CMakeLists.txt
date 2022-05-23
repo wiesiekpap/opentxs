@@ -3,6 +3,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-if(SECP256K1_EXPORT AND BIP32_EXPORT)
-  target_sources(ottest PRIVATE "Helpers.hpp" "Helpers.cpp")
-endif()
+target_sources(
+  ottest
+  PRIVATE
+    "Bip32.cpp"
+    "Bip32.hpp"
+    "PaymentCodeV1.cpp"
+    "PaymentCodeV1.hpp"
+    "PaymentCodeV3.cpp"
+    "PaymentCodeV3.hpp"
+)

@@ -10,7 +10,7 @@
 
 #include "internal/identity/Nym.hpp"
 #include "ottest/fixtures/blockchain/RegtestSimple.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/fixtures/ui/AccountTree.hpp"
 
 namespace ottest
@@ -26,7 +26,7 @@ TEST_F(
     EXPECT_TRUE(Connect());
     // Create wallets
     auto [user_bob, success] = CreateClient(
-        opentxs::Options{}, 3, name_bob_, GetVectors3().bob_.words_, address_);
+        opentxs::Options{}, 3, name_bob_, GetPaymentCodeVector3().bob_.words_, address_);
     EXPECT_TRUE(success);
 
     auto bob_address = GetWalletAddress(user_bob);
@@ -48,7 +48,7 @@ TEST_F(
         opentxs::Options{},
         3,
         name_andrew,
-        GetVectors3().bob_.words_,
+        GetPaymentCodeVector3().bob_.words_,
         address_);
 
     EXPECT_TRUE(success2);

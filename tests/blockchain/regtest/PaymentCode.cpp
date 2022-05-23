@@ -16,11 +16,11 @@
 
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/fixtures/blockchain/Regtest.hpp"
 #include "ottest/fixtures/common/Counter.hpp"
 #include "ottest/fixtures/common/User.hpp"
 #include "ottest/fixtures/integration/Helpers.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 #include "ottest/fixtures/rpc/Helpers.hpp"
 #include "ottest/fixtures/ui/AccountActivity.hpp"
 #include "ottest/fixtures/ui/AccountList.hpp"
@@ -436,7 +436,8 @@ TEST_F(Regtest_payment_code, send_to_bob)
         client_1_.Network().Blockchain().GetChain(test_chain_);
     auto future = network.SendToPaymentCode(
         alice_.nym_id_,
-        client_1_.Factory().PaymentCode(GetVectors3().bob_.payment_code_),
+        client_1_.Factory().PaymentCode(
+            GetPaymentCodeVector3().bob_.payment_code_),
         1000000000,
         memo_outgoing_);
     const auto& txid = transactions_ptxid_.emplace_back(future.get().second);
@@ -561,7 +562,8 @@ TEST_F(Regtest_payment_code, alice_contact_list_first_spend_unconfirmed)
     ASSERT_TRUE(wait_for_counter(contact_list_alice_, false));
     EXPECT_TRUE(check_contact_list(alice_, expected));
     EXPECT_TRUE(check_contact_list_qt(alice_, expected));
-    EXPECT_TRUE(CheckContactID(alice_, bob_, GetVectors3().bob_.payment_code_));
+    EXPECT_TRUE(CheckContactID(
+        alice_, bob_, GetPaymentCodeVector3().bob_.payment_code_));
 }
 
 TEST_F(Regtest_payment_code, alice_account_activity_first_spend_unconfirmed)
@@ -720,8 +722,8 @@ TEST_F(Regtest_payment_code, bob_contact_list_first_unconfirmed_incoming)
     ASSERT_TRUE(wait_for_counter(contact_list_bob_, false));
     EXPECT_TRUE(check_contact_list(bob_, expected));
     EXPECT_TRUE(check_contact_list_qt(bob_, expected));
-    EXPECT_TRUE(
-        CheckContactID(bob_, alice_, GetVectors3().alice_.payment_code_));
+    EXPECT_TRUE(CheckContactID(
+        bob_, alice_, GetPaymentCodeVector3().alice_.payment_code_));
 }
 
 TEST_F(Regtest_payment_code, bob_account_activity_first_unconfirmed_incoming)
@@ -1378,7 +1380,8 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
         client_1_.Network().Blockchain().GetChain(test_chain_);
     auto future = network.SendToPaymentCode(
         alice_.nym_id_,
-        client_1_.Factory().PaymentCode(GetVectors3().bob_.payment_code_),
+        client_1_.Factory().PaymentCode(
+            GetPaymentCodeVector3().bob_.payment_code_),
         1500000000,
         memo_outgoing_);
     const auto& txid = transactions_ptxid_.emplace_back(future.get().second);

@@ -7,7 +7,7 @@
 #include <opentxs/opentxs.hpp>
 #include <memory>
 
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 
 namespace ot = opentxs;
 
@@ -30,8 +30,8 @@ TEST_F(Test_PaymentCodeAPI, init) {}
 
 TEST_F(Test_PaymentCodeAPI, alice)
 {
-    const auto& vector = GetVectors3().alice_;
-    const auto& remote = GetVectors3().bob_;
+    const auto& vector = GetPaymentCodeVector3().alice_;
+    const auto& remote = GetPaymentCodeVector3().bob_;
     constexpr auto receiveChain{ot::blockchain::Type::Bitcoin};
     constexpr auto sendChain{ot::blockchain::Type::Bitcoin_testnet3};
     const auto reason = alice_.Factory().PasswordPrompt(__func__);
@@ -134,8 +134,8 @@ TEST_F(Test_PaymentCodeAPI, alice)
 
 TEST_F(Test_PaymentCodeAPI, bob)
 {
-    const auto& vector = GetVectors3().bob_;
-    const auto& remote = GetVectors3().alice_;
+    const auto& vector = GetPaymentCodeVector3().bob_;
+    const auto& remote = GetPaymentCodeVector3().alice_;
     constexpr auto receiveChain{ot::blockchain::Type::Bitcoin_testnet3};
     constexpr auto sendChain{ot::blockchain::Type::Bitcoin};
     const auto reason = bob_.Factory().PasswordPrompt(__func__);
