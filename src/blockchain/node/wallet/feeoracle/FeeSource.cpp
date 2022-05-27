@@ -189,7 +189,7 @@ auto FeeSource::Imp::startup() noexcept -> void
 
 auto FeeSource::Imp::state_machine() noexcept -> bool
 {
-    if (!future_.has_value()) { return false; }
+    if (false == future_.has_value()) { return false; }
 
     auto& future = future_.value();
     static constexpr auto limit = 25ms;

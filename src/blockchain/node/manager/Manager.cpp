@@ -340,7 +340,7 @@ Base::Base(
         try {
             const auto boost = boost::asio::ip::make_address(addr);
 
-            if (!boost.is_v4()) {
+            if (false == boost.is_v4()) {
                 throw std::runtime_error{"Wrong address type (not ipv4)"};
             }
 
@@ -373,7 +373,7 @@ Base::Base(
         try {
             const auto boost = boost::asio::ip::make_address(addr);
 
-            if (!boost.is_v6()) {
+            if (false == boost.is_v6()) {
                 throw std::runtime_error{"Wrong address type (not ipv6)"};
             }
 
@@ -441,7 +441,7 @@ auto Base::AddBlock(const std::shared_ptr<const bitcoin::block::Block> pBlock)
         return false;
     }
 
-    if (!filters_.ProcessBlock(block)) {
+    if (false == filters_.ProcessBlock(block)) {
         LogError()(OT_PRETTY_CLASS())("failed to index ")(print(chain_))(
             " block")
             .Flush();
@@ -449,7 +449,7 @@ auto Base::AddBlock(const std::shared_ptr<const bitcoin::block::Block> pBlock)
         return false;
     }
 
-    if (!header_.AddHeader(block.Header().clone())) {
+    if (false == header_.AddHeader(block.Header().clone())) {
         LogError()(OT_PRETTY_CLASS())("failed to process ")(print(chain_))(
             " header")
             .Flush();
@@ -704,7 +704,7 @@ auto Base::pipeline(zmq::Message&& in) -> void
 
 auto Base::process_block(network::zeromq::Message&& in) noexcept -> void
 {
-    if (!running_.load()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -719,7 +719,7 @@ auto Base::process_block(network::zeromq::Message&& in) noexcept -> void
 
 auto Base::process_filter_update(network::zeromq::Message&& in) noexcept -> void
 {
-    if (!running_.load()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -735,7 +735,7 @@ auto Base::process_filter_update(network::zeromq::Message&& in) noexcept -> void
         auto display = std::stringstream{};
         display << std::setprecision(3) << progress << "%";
 
-        if (!config_.disable_wallet_) {
+        if (false == config_.disable_wallet_) {
             LogDetail()(print(chain_))(" chain sync progress: ")(
                 height)(" of ")(target)(" (")(display.str())(")")
                 .Flush();
@@ -748,7 +748,7 @@ auto Base::process_filter_update(network::zeromq::Message&& in) noexcept -> void
 
 auto Base::process_header(network::zeromq::Message&& in) noexcept -> void
 {
-    if (!running_.load()) { return; }
+    if (false == running_.load()) { return; }
 
     waiting_for_headers_->Off();
     headers_received_ = Clock::now();
@@ -781,7 +781,7 @@ auto Base::process_header(network::zeromq::Message&& in) noexcept -> void
         headers.emplace_back(instantiate_header(header));
     }
 
-    if (!headers.empty()) { header_.AddHeaders(headers); }
+    if (false == headers.empty()) { header_.AddHeaders(headers); }
 
     work_promises_.clear(promise);
 }
@@ -789,7 +789,7 @@ auto Base::process_header(network::zeromq::Message&& in) noexcept -> void
 auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
     -> void
 {
-    if (!running_.load()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -874,7 +874,7 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
 auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
     -> void
 {
-    if (!running_.load()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -936,7 +936,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
         constexpr auto subchain{Subchain::Outgoing};
         const auto index = account.Reserve(subchain, reason);
 
-        if (!index.has_value()) {
+        if (false == index.has_value()) {
             rc = SendResult::HDDerivationFailure;
 
             throw std::runtime_error{"Failed to allocate next key"};
@@ -1139,8 +1139,12 @@ auto Base::shutdown(std::promise<void>& promise) noexcept -> void
     }
 }
 
+auto Base::shutdown_timers() noexcept -> void { heartbeat_.Cancel(); }
+
 auto Base::shut_down() noexcept -> void
 {
+    shutdown_timers();
+
     close_pipeline();
     shutdown_sender_.Activate();
     wallet_.Shutdown();
@@ -1162,7 +1166,7 @@ auto Base::StartWallet() noexcept -> void
 
 auto Base::state_machine() noexcept -> bool
 {
-    if (!running_.load()) { return false; }
+    if (false == running_.load()) { return false; }
 
     const auto& log = LogTrace();
     log(OT_PRETTY_CLASS())("Starting state machine for ")(print(chain_))
@@ -1350,7 +1354,7 @@ auto Base::target() const noexcept -> block::Height
 
 auto Base::UpdateHeight(const block::Height height) const noexcept -> void
 {
-    if (!running_.load()) { return; }
+    if (false == running_.load()) { return; }
 
     remote_chain_height_.store(std::max(height, remote_chain_height_.load()));
     trigger();
@@ -1359,7 +1363,7 @@ auto Base::UpdateHeight(const block::Height height) const noexcept -> void
 auto Base::UpdateLocalHeight(const block::Position position) const noexcept
     -> void
 {
-    if (!running_.load()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto& [height, hash] = position;
     LogDetail()(print(chain_))(" block header chain updated to hash ")(
