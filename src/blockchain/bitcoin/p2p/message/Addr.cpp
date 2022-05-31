@@ -198,28 +198,28 @@ auto Addr::ExtractAddress(AddressByteField in) noexcept
     auto& [type, bytes] = output;
     auto prefix = Data::Factory();
 
-    if (bytes->Extract(AddressVersion::cjdns_prefix_->size(), prefix) &&
-        AddressVersion::cjdns_prefix_ == prefix) {
+    if (bytes->Extract(AddressVersion::cjdns_prefix()->size(), prefix) &&
+        AddressVersion::cjdns_prefix() == prefix) {
         type = Network::cjdns;
     } else if (
-        bytes->Extract(AddressVersion::ipv4_prefix_->size(), prefix) &&
-        AddressVersion::ipv4_prefix_ == prefix) {
+        bytes->Extract(AddressVersion::ipv4_prefix()->size(), prefix) &&
+        AddressVersion::ipv4_prefix() == prefix) {
         type = Network::ipv4;
         bytes->Extract(
-            bytes->size() - AddressVersion::ipv4_prefix_->size(),
+            bytes->size() - AddressVersion::ipv4_prefix()->size(),
             prefix,
-            AddressVersion::ipv4_prefix_->size());
+            AddressVersion::ipv4_prefix()->size());
         bytes = prefix;
 
         OT_ASSERT(4 == bytes->size());
     } else if (
-        bytes->Extract(AddressVersion::onion_prefix_->size(), prefix) &&
-        AddressVersion::onion_prefix_ == prefix) {
+        bytes->Extract(AddressVersion::onion_prefix()->size(), prefix) &&
+        AddressVersion::onion_prefix() == prefix) {
         type = Network::onion2;
         bytes->Extract(
-            bytes->size() - AddressVersion::onion_prefix_->size(),
+            bytes->size() - AddressVersion::onion_prefix()->size(),
             prefix,
-            AddressVersion::onion_prefix_->size());
+            AddressVersion::onion_prefix()->size());
         bytes = prefix;
 
         OT_ASSERT(10 == bytes->size());

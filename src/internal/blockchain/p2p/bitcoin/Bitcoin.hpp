@@ -201,9 +201,9 @@ enum class Service : std::uint8_t {
 };
 
 struct AddressVersion {
-    static const OTData cjdns_prefix_;
-    static const OTData ipv4_prefix_;
-    static const OTData onion_prefix_;
+    static auto cjdns_prefix() -> OTData;
+    static auto ipv4_prefix() -> OTData;
+    static auto onion_prefix() -> OTData;
 
     BitVectorField services_;
     AddressByteField address_;

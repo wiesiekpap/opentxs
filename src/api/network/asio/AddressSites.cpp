@@ -9,37 +9,42 @@
 
 namespace opentxs::api::network
 {
-const Vector<Asio::Imp::Site> Asio::Imp::sites{
-    {
-        "ip4only.me",
-        "http",
-        "/api/",
-        ResponseType::IPvonly,
-        IPversion::IPV4,
-        11,
-    },
-    {
-        "ip6only.me",
-        "http",
-        "/api/",
-        ResponseType::IPvonly,
-        IPversion::IPV6,
-        11,
-    },
-    {
-        "ip4.seeip.org",
-        "https",
-        "/",
-        ResponseType::AddressOnly,
-        IPversion::IPV4,
-        11,
-    },
-    {
-        "ip6.seeip.org",
-        "https",
-        "/",
-        ResponseType::AddressOnly,
-        IPversion::IPV6,
-        11,
-    }};
+auto Asio::Imp::sites() -> const Vector<Imp::Site>&
+{
+    static const auto sites = Vector<Imp::Site>{
+        {
+            "ip4only.me",
+            "http",
+            "/api/",
+            ResponseType::IPvonly,
+            IPversion::IPV4,
+            11,
+        },
+        {
+            "ip6only.me",
+            "http",
+            "/api/",
+            ResponseType::IPvonly,
+            IPversion::IPV6,
+            11,
+        },
+        {
+            "ip4.seeip.org",
+            "https",
+            "/",
+            ResponseType::AddressOnly,
+            IPversion::IPV4,
+            11,
+        },
+        {
+            "ip6.seeip.org",
+            "https",
+            "/",
+            ResponseType::AddressOnly,
+            IPversion::IPV6,
+            11,
+        }};
+
+    return sites;
+}
 }  // namespace opentxs::api::network

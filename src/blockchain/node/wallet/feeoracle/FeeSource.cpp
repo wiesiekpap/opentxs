@@ -60,7 +60,11 @@ auto FeeSources(
 
 namespace opentxs::blockchain::node::wallet
 {
-const display::Scale FeeSource::Imp::scale_{"", "", {{10, 0}}, 0, 3};
+auto FeeSource::Imp::display_scale() -> const display::Scale&
+{
+    static auto scale = display::Scale{"", "", {{10, 0}}, 0, 3};
+    return scale;
+}
 
 FeeSource::Imp::Imp(
     const api::Session& api,
@@ -141,8 +145,9 @@ std::optional<Amount> FeeSource::Imp::process_value(Rate rate, Scale scale)
 {
     auto value{static_cast<std::int64_t>(rate * scale)};
 
-    LogTrace()(OT_PRETTY_CLASS())("obtained scaled amount ")(scale_.Format(
-        value))(" from raw input ")(rate)(" and scale value ")(scale)
+    LogTrace()(OT_PRETTY_CLASS())("obtained scaled amount ")(
+        display_scale().Format(value))(" from raw input ")(
+        rate)(" and scale value ")(scale)
         .Flush();
     return (0 > value) ? std::nullopt : std::optional<Amount>(value);
 }
@@ -189,7 +194,7 @@ auto FeeSource::Imp::startup() noexcept -> void
 
 auto FeeSource::Imp::state_machine() noexcept -> bool
 {
-    if (!future_.has_value()) { return false; }
+    if (false == future_.has_value()) { return false; }
 
     auto& future = future_.value();
     static constexpr auto limit = 25ms;

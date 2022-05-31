@@ -85,7 +85,7 @@ private:
     friend WebRequest<HTTPS>;
     using Stream = beast::ssl_stream<beast::tcp_stream>;
 
-    static const Vector<CString> ssl_certs_;
+    static auto ssl_certs() -> const Vector<CString>&;
 
     ssl::context ssl_;
     std::optional<Stream> stream_;
