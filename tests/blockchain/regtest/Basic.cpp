@@ -417,7 +417,7 @@ TEST_F(Regtest_fixture_hd, account_list_one_block_before_maturation)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
-TEST_F(Regtest_fixture_hd, account_status_one_block_before_maturation)
+TEST_F(Regtest_fixture_hd, DISABLED_account_status_one_block_before_maturation)
 {
     const auto expected = BlockchainAccountStatusData{
         alice_.nym_id_->str(),
@@ -585,7 +585,7 @@ TEST_F(Regtest_fixture_hd, account_list_mature)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
-TEST_F(Regtest_fixture_hd, account_status_mature)
+TEST_F(Regtest_fixture_hd, DISABLED_account_status_mature)
 {
     const auto expected = BlockchainAccountStatusData{
         alice_.nym_id_->str(),

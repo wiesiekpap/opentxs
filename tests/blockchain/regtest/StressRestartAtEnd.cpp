@@ -16,7 +16,7 @@ namespace ottest
 {
 const int number_of_tests = 10;
 
-TEST_F(Restart_fixture, send_multiple_transactions_remove_user_compare)
+TEST_F(Restart_fixture, DISABLED_send_multiple_transactions_remove_user_compare)
 {
     EXPECT_TRUE(Start());
     EXPECT_TRUE(Connect());

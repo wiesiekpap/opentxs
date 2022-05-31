@@ -18,7 +18,7 @@
 namespace ottest
 {
 
-TEST_F(Regtest_fixture_simple, send_to_client)
+TEST_F(Regtest_fixture_simple, DISABLED_send_to_client)
 {
     EXPECT_TRUE(Start());
     EXPECT_TRUE(Connect());
@@ -89,7 +89,7 @@ TEST_F(Regtest_fixture_simple, send_to_client)
 
         SendCoins(*receiver, *sender, target_height, coin_to_send);
         std::this_thread::sleep_for(std::chrono::seconds(20));
-        
+
         auto loaded_transactions = CollectTransactionsForFeeCalculations(
             *sender, send_transactions_, transactions_);
         auto fee = CalculateFee(send_transactions_, loaded_transactions);
