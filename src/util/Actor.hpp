@@ -127,7 +127,8 @@ protected:
             init_promise_.set_value();
             log_(name_)(" ")(__FUNCTION__)(": initialization complete").Flush();
             flush_cache();
-        } catch (...) {
+        } catch (const std::exception& e) {
+            log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
             LogError()(name_)(" ")(__FUNCTION__)(
                 ": init message received twice")
                 .Flush();
@@ -255,10 +256,9 @@ private:
 
         const auto work = [&] {
             try {
-
-                return body.at(0).as<Work>();
-            } catch (...) {
-
+                return body.at(0).as<Work>(); // Frame::as can throw error
+            } catch (const std::exception& e) {
+                log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
                 throw std::runtime_error{
                     "message does not contain a valid work tag"};
             }
@@ -281,7 +281,7 @@ private:
 
             OT_ASSERT(initFinished);
 
-            handle_message(
+            handle_message(  //noexcept
                 false,
                 isInit,
                 initFinished,
@@ -375,7 +375,15 @@ private:
 
             if (false == lock.owns_lock()) {
                 auto log{type};
-                const auto queue = [&] {
+                if (false != initFinished || false == isInit) {
+                    if (canDrop) {
+                        log_(name_)(" ")(__FUNCTION__)(
+                            ": dropping message of type ")(
+                            type)(" until init is processed")
+                            .Flush();
+                        return;
+                    }
+                } else {
                     log_(name_)(" ")(__FUNCTION__)(
                         ": queueing message of type ")(
                         log)(" until reorg is processed")
@@ -386,25 +394,6 @@ private:
                         if (!e) { trigger(); }
                     });
                     defer(std::move(in));
-                };
-
-                if (false == initFinished) {
-                    if (canDrop) {
-                        log_(name_)(" ")(__FUNCTION__)(
-                            ": dropping message of type ")(
-                            type)(" until init is processed")
-                            .Flush();
-
-                        return;
-                    } else if (false == isInit) {
-                        queue();
-
-                        return;
-                    }
-                } else {
-                    queue();
-
-                    return;
                 }
             }
 
