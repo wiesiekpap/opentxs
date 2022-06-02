@@ -30,5 +30,7 @@ add_opentx_test(ottest-blockchain-regtest-sync-client SyncClient.cpp)
 add_opentx_test(ottest-blockchain-regtest-rename RenameWallet.cpp)
 add_opentx_test(ottest-blockchain-regtest-restart Restart.cpp)
 add_opentx_test(ottest-blockchain-regtest-restart-end StressRestartAtEnd.cpp)
-add_opentx_test(ottest-blockchain-regtest-restart-inloop StressRestartInLoop.cpp)
+add_opentx_test(
+  ottest-blockchain-regtest-restart-inloop StressRestartInLoop.cpp
+)
 add_opentx_test(ottest-blockchain-regtest-simple-transfer SimpleTransfer.cpp)
