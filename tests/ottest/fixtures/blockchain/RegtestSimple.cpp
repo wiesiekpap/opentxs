@@ -449,6 +449,7 @@ void Regtest_fixture_simple::MineTransaction(
     transactions.emplace_back(std::move(send_transaction));
 
     Mine(current_height++, transactions.size(), default_, transactions);
+
     send_transactions_.emplace_back(std::move(transactions[0]));
 }
 

@@ -22,70 +22,75 @@ class QtApplication
 private:
     const opentxs::Time started_;
     std::atomic<bool> running_;
-    std::promise<QObject*> promise_;
+    std::promise<void> promise_thread_running_;
     std::thread thread_;
+    std::unique_ptr<QCoreApplication> qt_;
+
+private:
+    static void sstarter(QtApplication* app) { app->starter(); }
+    void starter()
+    {
+        static char test[]{"test"};
+        static char* argv[]{&test[0], nullptr};
+        int argc{1};
+        qt_.reset(new QCoreApplication(argc, argv));
+        promise_thread_running_.set_value();
+        if (qt_->instance()) { qt_->exec(); }
+    }
 
 public:
-    std::shared_future<QObject*> future_;
-
+    auto get_core_app() { return qt_.get(); }
     auto start() noexcept -> void
     {
         if (auto running = running_.exchange(true); false == running) {
-            thread_ = std::thread{[this] {
-                char test[]{"test"};
-                char* argv[]{&test[0], nullptr};
-                int argc{1};
-                auto qt = QCoreApplication(argc, argv);
-                promise_.set_value(&qt);
-                qt.exec();
-            }};
+            std::future<void> future_thread_running =
+                promise_thread_running_.get_future();
+            thread_ = std::thread(sstarter, this);
+            future_thread_running.get();
         }
     }
 
     auto stop() noexcept -> void
     {
         if (auto running = running_.exchange(false); running) {
-            future_.get();
-            // FIXME find correct way to shut down QCoreApplication without
-            // getting random segfaults
-            static constexpr auto delay = 4s;
-            static constexpr auto zero = 0us;
-            const auto elapsed = opentxs::Clock::now() - started_;
-            const auto wait =
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    delay - elapsed);
-            opentxs::Sleep(std::max(wait, zero));
+            promise_thread_running_ = std::promise<void>{};
+            do {
+                QCoreApplication::processEvents();
+            } while (QCoreApplication::hasPendingEvents());
+
             QCoreApplication::exit(0);
 
             if (thread_.joinable()) { thread_.join(); }
 
-            promise_ = {};
-            future_ = promise_.get_future();
+            qt_.release();
         }
     }
 
     QtApplication() noexcept
         : started_(opentxs::Clock::now())
         , running_(false)
-        , promise_()
+        , promise_thread_running_()
         , thread_()
-        , future_(promise_.get_future())
+        , qt_{}
     {
     }
 
-    ~QtApplication() { stop(); }
+    ~QtApplication()
+    {
+        stop();
+        qt_.release();
+    }
 };
 
-QtApplication qt_{};
+QtApplication qt_app{};
 
 auto GetQT() noexcept -> QObject*
 {
-    qt_.start();
-
-    return qt_.future_.get();
+    qt_app.start();
+    return qt_app.get_core_app();
 }
 
-auto StartQT(bool) noexcept -> void { qt_.start(); }
+auto StartQT(bool) noexcept -> void { qt_app.start(); }
 
-auto StopQT() noexcept -> void { qt_.stop(); }
+auto StopQT() noexcept -> void { qt_app.stop(); }
 }  // namespace ottest

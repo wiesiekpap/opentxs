@@ -15,7 +15,7 @@
 namespace ottest
 {
 
-TEST_F(Restart_fixture, send_to_client_reboot_confirm_data)
+TEST_F(Restart_fixture, DISABLED_send_to_client_reboot_confirm_data)
 {
     EXPECT_TRUE(Start());
     EXPECT_TRUE(Connect());
