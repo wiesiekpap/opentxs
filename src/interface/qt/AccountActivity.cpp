@@ -9,12 +9,14 @@
 #include "opentxs/interface/qt/AccountActivity.hpp"  // IWYU pragma: associated
 
 #include <QDateTime>
+#include <QDir>
 #include <QList>
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <algorithm>
 #include <cstdint>
+#include <fstream>
 #include <iterator>
 #include <memory>
 #include <utility>
@@ -27,6 +29,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/Unit.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -236,6 +239,57 @@ auto AccountActivityQt::validateAmount(const QString& amount) const noexcept
     -> QString
 {
     return imp_->parent_.ValidateAmount(amount.toStdString()).c_str();
+}
+
+QString AccountActivityQt::dumpData(
+    const BlockchainAccountStatusQt* accountStatus) const noexcept
+{
+    QDateTime dateTime = dateTime.currentDateTime();
+    QString currentDateTime = dateTime.toString("MM-dd-yy hh_mm_ss");
+    std::string fileName{
+        "transaction-dump_" + currentDateTime.toStdString() + ".csv"};
+    std::ofstream outfile(fileName);
+    std::stringstream stream;
+    auto transactionCount = rowCount();
+
+    const auto it =
+        display::GetDefinition(imp_->parent_.Unit()).DisplayScales().begin();
+    auto currencySign = it->second.Suffix();
+
+    stream << currencySign.data() << " Transactions: " << transactionCount
+           << " Time: " << currentDateTime.toStdString().c_str() << "\n";
+
+    for (int i = 0; i < transactionCount; ++i) {
+        auto timestamp = data(index(i, 0));
+        auto label = data(index(i, 1));
+        auto amount = data(index(i, 2));
+        auto txid = data(index(i, 3));
+        auto memo = data(index(i, 4));
+        auto polarity = data(index(i, 5));
+        amount = amount.toString().replace(currencySign.data(), "");  // remove
+                                                                      // notary
+        amount =
+            amount.toString().replace("/s+/g", " ");  // uniformly replace space
+        // graphemes
+
+        // store the data:
+        stream << i << "," << polarity.toString().toStdString() << ","
+               << amount.toString().toStdString() << ","
+               << label.toString().toStdString() << ","
+               << timestamp.toString().toStdString() << ","
+               << txid.toString().toStdString() << "\n";
+    }
+
+    stream << "\n\nFinal displayBalance: "
+           << displayBalance().replace("/s+/g", " ").toStdString() << "\n\n\n";
+
+    for (int i = 0; i < accountStatus->rowCount(); ++i) {
+        auto row = accountStatus->data(accountStatus->index(i, 0));
+        stream << row.toString().toStdString() << "\n";
+    }
+
+    outfile << stream.str();
+    return QDir::currentPath() + "/" + fileName.c_str();
 }
 
 AccountActivityQt::~AccountActivityQt()
