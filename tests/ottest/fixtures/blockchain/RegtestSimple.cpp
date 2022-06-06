@@ -609,6 +609,15 @@ void Regtest_fixture_simple::MineBlocksForUsers(
     }
     advance_blockchain(users, target_height);
 }
+auto Regtest_fixture_simple::GetHeight(const User& user) const noexcept
+    -> opentxs::blockchain::block::Height
+{
+    const auto& network =
+        user.api_->Network().Blockchain().GetChain(test_chain_);
+    const auto& wallet = network.Wallet();
+
+    return wallet.Height();
+}
 
 void Regtest_fixture_simple::compare_outputs(
     const std::set<UTXO>& pre_reboot_outputs,
@@ -631,7 +640,8 @@ void Regtest_fixture_simple::advance_blockchain(
     std::vector<std::unique_ptr<ScanListener>> scan_listeners;
     std::vector<std::unique_ptr<std::future<void>>> external_scan_listeners;
     std::vector<std::unique_ptr<std::future<void>>> internal_scan_listeners;
-
+    // Safety mechanism
+    ot::Sleep(100ms);
     for (const auto& user : users) {
         auto scan_listener = std::make_unique<ScanListener>(*user.get().api_);
         scan_listeners.push_back(std::move(scan_listener));
@@ -654,6 +664,7 @@ void Regtest_fixture_simple::advance_blockchain(
         EXPECT_TRUE(scan_listeners[i]->wait(*external_scan_listeners[i]));
         EXPECT_TRUE(scan_listeners[i]->wait(*internal_scan_listeners[i]));
     }
+
     target_height += static_cast<int>(MaturationInterval());
 }
 

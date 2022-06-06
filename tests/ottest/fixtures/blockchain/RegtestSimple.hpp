@@ -200,6 +200,9 @@ protected:
         Height& target_height,
         const int& number_of_blocks_to_mine);
 
+    auto GetHeight(const User& user) const noexcept
+        -> opentxs::blockchain::block::Height;
+
 private:
     void compare_outputs(
         const std::set<UTXO>& pre_reboot_outputs,
