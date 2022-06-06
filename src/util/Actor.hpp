@@ -127,12 +127,14 @@ protected:
             init_promise_.set_value();
             log_(name_)(" ")(__FUNCTION__)(": initialization complete").Flush();
             flush_cache();
-        } catch (const std::exception& e) {
+        } catch (const std::future_error& e) { // possible no_state or promise_already_satisfied
             log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
             LogError()(name_)(" ")(__FUNCTION__)(
                 ": init message received twice")
                 .Flush();
-
+            OT_FAIL;
+        } catch (const std::exception& e) {  // possible exception from copy or move
+            log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
             OT_FAIL;
         }
     }
@@ -253,14 +255,18 @@ private:
 
             throw std::runtime_error{"empty message received"};
         }
-
         const auto work = [&] {
             try {
-                return body.at(0).as<Work>(); // Frame::as can throw error
-            } catch (const std::exception& e) {
+                return body.at(0).as<Work>();
+            } catch (const std::out_of_range& e) { // from FrameSection or deeper from std::vector
                 log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
-                throw std::runtime_error{
-                    "message does not contain a valid work tag"};
+                OT_FAIL
+            } catch (const std::runtime_error& e) { // from Frame
+                log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
+                throw std::runtime_error{ e.what() };
+            } catch (const std::exception& e) { //possible via copy of template type
+                log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
+                OT_FAIL
             }
         }();
 
@@ -289,8 +295,12 @@ private:
                 type,
                 work,
                 std::move(in));
-        } catch (const std::exception& e) {
+        } catch (const std::runtime_error& e) { // re-throw from decode_message_type
             log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
+            OT_FAIL
+        } catch (const std::exception& e) { // from copy constructors used in structured binding
+            log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
+            OT_FAIL
         }
     }
     auto handle_message(
@@ -349,12 +359,11 @@ private:
     auto handle_message(const Work work, Message&& msg) noexcept -> void
     {
         try {
-            pipeline(work, std::move(msg));
+            pipeline(work, std::move(msg)); //move doesn't throw and pipeline is defined as noexcept
         } catch (const std::exception& e) {
             log_(name_)(" ")(__FUNCTION__)(": error processing ")(print(work))(
                 " message: ")(e.what())
                 .Flush();
-
             OT_FAIL;
         }
     }
@@ -375,15 +384,7 @@ private:
 
             if (false == lock.owns_lock()) {
                 auto log{type};
-                if (false != initFinished || false == isInit) {
-                    if (canDrop) {
-                        log_(name_)(" ")(__FUNCTION__)(
-                            ": dropping message of type ")(
-                            type)(" until init is processed")
-                            .Flush();
-                        return;
-                    }
-                } else {
+                const auto queue = [&] {
                     log_(name_)(" ")(__FUNCTION__)(
                         ": queueing message of type ")(
                         log)(" until reorg is processed")
@@ -394,6 +395,25 @@ private:
                         if (!e) { trigger(); }
                     });
                     defer(std::move(in));
+                };
+
+                if (false == initFinished) {
+                    if (canDrop) {
+                        log_(name_)(" ")(__FUNCTION__)(
+                            ": dropping message of type ")(
+                            type)(" until init is processed")
+                            .Flush();
+
+                        return;
+                    } else if (false == isInit) {
+                        queue();
+
+                        return;
+                    }
+                } else {
+                    queue();
+
+                    return;
                 }
             }
 
