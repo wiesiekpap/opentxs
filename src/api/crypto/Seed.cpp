@@ -400,21 +400,15 @@ auto Seed::GetPaymentCode(
     }
 
     const auto& api = asymmetric_.Internal().API();
-    const auto code = [&] {
-        auto out = factory_.Secret(0);
-        api.Crypto().Hash().Digest(
-            opentxs::crypto::HashType::Sha256D,
-            key.PublicKey(),
-            out->WriteInto());
+    auto code = factory_.Secret(0);
+    api.Crypto().Hash().Digest(
+        opentxs::crypto::HashType::Sha256D,
+        key.PublicKey(),
+        code->WriteInto());
 
-        return out;
-    }();
-    const auto path = [&] {
-        auto out = proto::HDPath{};
-        key.Path(out);
+    auto path = proto::HDPath{};
+    key.Path(path);
 
-        return out;
-    }();
     using Type = opentxs::crypto::key::asymmetric::Algorithm;
 
     return factory::Secp256k1Key(
@@ -709,12 +703,9 @@ auto Seed::publish(const UnallocatedCString& id) const noexcept -> void
 
 auto Seed::publish(const Identifier& id) const noexcept -> void
 {
-    socket_->Send([&] {
-        auto out = MakeWork(WorkType::SeedUpdated);
-        out.AddFrame(id);
-
-        return out;
-    }());
+    auto message = MakeWork(WorkType::SeedUpdated);
+    message.AddFrame(id);
+    socket_->Send(std::move(message));
 }
 
 auto Seed::SeedDescription(UnallocatedCString seedID) const noexcept
@@ -728,19 +719,13 @@ auto Seed::SeedDescription(UnallocatedCString seedID) const noexcept
     const auto isDefault = (seedID == primary);
 
     try {
-        const auto [type, alias] = [&] {
-            auto proto = proto::Seed{};
-            auto name = UnallocatedCString{};
-
-            if (false == storage_.Load(seedID, proto, name)) {
-                throw std::runtime_error{
-                    UnallocatedCString{"Failed to load seed "} + seedID};
-            }
-
-            return std::make_pair(
-                opentxs::crypto::internal::Seed::Translate(proto.type()),
-                std::move(name));
-        }();
+        auto proto = proto::Seed{};
+        auto alias = UnallocatedCString{};
+        if (false == storage_.Load(seedID, proto, alias)) {
+            throw std::runtime_error{
+                UnallocatedCString{"Failed to load seed "} + seedID};
+        }
+        auto type = opentxs::crypto::internal::Seed::Translate(proto.type());
         auto out = std::stringstream{};
 
         if (alias.empty()) {
@@ -755,8 +740,8 @@ auto Seed::SeedDescription(UnallocatedCString seedID) const noexcept
         if (isDefault) { out << " (default)"; }
 
         return out.str();
-    } catch (...) {
-
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
         return "Invalid seed";
     }
 }
@@ -770,13 +755,14 @@ auto Seed::SetDefault(const Identifier& id) const noexcept -> bool
     }
 
     const auto seedID = id.str();
-    const auto exists = [&] {
-        for (const auto& [value, alias] : api_.Storage().SeedList()) {
-            if (value == seedID) { return true; }
-        }
 
-        return false;
-    }();
+    auto exists = false;
+    for (const auto& [value, alias] : api_.Storage().SeedList()) {
+        if (value == seedID) {
+            exists = true;
+            break;
+        }
+    }
 
     if (false == exists) {
         LogError()(OT_PRETTY_CLASS())("Seed ")(id)(" does not exist").Flush();
