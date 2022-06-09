@@ -214,48 +214,33 @@ auto BalanceOracle::Imp::process_registration(Message&& in) noexcept -> void
     const auto haveNym = (2 < body.size());
     auto output = opentxs::blockchain::Balance{};
     const auto& chainFrame = body.at(1);
-    const auto nym = [&] {
-        if (haveNym) {
+    const auto nym =
+        haveNym ? api_.Factory().NymID(body.at(2)) : api_.Factory().NymID();
 
-            return api_.Factory().NymID(body.at(2));
-        } else {
-
-            return api_.Factory().NymID();
-        }
-    }();
     const auto chain = chainFrame.as<Chain>();
+
     const auto postcondition = ScopeGuard{[&]() {
-        router_.Send([&] {
-            auto work = opentxs::network::zeromq::tagged_reply_to_message(
-                in, WorkType::BlockchainBalance);
-            work.AddFrame(chainFrame);
-            output.first.Serialize(work.AppendBytes());
-            output.second.Serialize(work.AppendBytes());
+        auto work = opentxs::network::zeromq::tagged_reply_to_message(
+            in, WorkType::BlockchainBalance);
+        work.AddFrame(chainFrame);
+        output.first.Serialize(work.AppendBytes());
+        output.second.Serialize(work.AppendBytes());
 
-            if (haveNym) { work.AddFrame(nym); }
+        if (haveNym) { work.AddFrame(nym); }
 
-            return work;
-        }());
+        router_.Send(std::move(work));
     }};
+
     const auto unsupported =
         (0 == opentxs::blockchain::SupportedChains().count(chain)) &&
         (Chain::UnitTest != chain);
 
     if (unsupported) { return; }
 
-    auto& subscribers = [&]() -> auto&
-    {
-        auto& chainData = data_[chain];
+    auto& chainData = data_[chain];
+    auto& subscribers =
+        haveNym ? chainData.second[nym].second : chainData.first.second;
 
-        if (haveNym) {
-
-            return chainData.second[nym].second;
-        } else {
-
-            return chainData.first.second;
-        }
-    }
-    ();
     const auto& id =
         subscribers.emplace(api_.Factory().DataFromBytes(connectionID.Bytes()))
             .first->get();
@@ -281,26 +266,13 @@ auto BalanceOracle::Imp::process_registration(Message&& in) noexcept -> void
 
 auto BalanceOracle::Imp::process_update_balance(
     const Chain chain,
-    Balance input) noexcept -> void
+    Balance&& input) noexcept -> void
 {
-    auto changed{false};
-    auto& data = [&]() -> auto&
-    {
-        if (auto i = data_.find(chain); i != data_.end()) {
-            auto& out = i->second.first;
-            changed = (out.first != input);
-
-            return out;
-        } else {
-            changed = true;
-
-            return data_[chain].first;
-        }
-    }
-    ();
-    auto& balance = data.first;
-    const auto& subscribers = data.second;
-    balance.swap(input);
+    const auto& [chainData, added] = data_.try_emplace(chain);
+    auto& balance = chainData->second.first.first;
+    const auto& subscribers = chainData->second.first.second;
+    auto changed = added || (balance != input);
+    balance = std::move(input);
 
     if (changed) { notify_subscribers(subscribers, balance, chain); }
 }
@@ -308,34 +280,16 @@ auto BalanceOracle::Imp::process_update_balance(
 auto BalanceOracle::Imp::process_update_balance(
     const identifier::Nym& owner,
     const Chain chain,
-    Balance input) noexcept -> void
+    Balance&& input) noexcept -> void
 {
-    auto changed{false};
-    auto& data = [&]() -> auto&
-    {
-        if (auto i = data_.find(chain); i != data_.end()) {
-            auto& nymData = i->second.second;
+    const auto& [chainData, chainAdded] = data_.try_emplace(chain);
+    const auto& [data, ownerAdded] =
+        chainData->second.second.try_emplace(owner);
+    bool changed = chainAdded || ownerAdded || (data->second.first != input);
 
-            if (auto j = nymData.find(owner); j != nymData.end()) {
-                auto& out = j->second;
-                changed = (out.first != input);
-
-                return out;
-            } else {
-                changed = true;
-
-                return nymData[owner];
-            }
-        } else {
-            changed = true;
-
-            return data_[chain].second[owner];
-        }
-    }
-    ();
-    auto& balance = data.first;
-    const auto& subscribers = data.second;
-    balance.swap(input);
+    auto& balance = data->second.first;
+    const auto& subscribers = data->second.second;
+    balance = std::move(input);
 
     if (changed) { notify_subscribers(subscribers, owner, balance, chain); }
 }
@@ -348,9 +302,9 @@ auto BalanceOracle::Imp::process_update_chain_balance(Message&& in) noexcept
     OT_ASSERT(3 < body.size());
 
     const auto chain = body.at(1).as<Chain>();
-    const auto balance = std::make_pair(
+    auto balance = std::make_pair(
         factory::Amount(body.at(2)), factory::Amount(body.at(3)));
-    process_update_balance(chain, balance);
+    process_update_balance(chain, std::move(balance));
 }
 
 auto BalanceOracle::Imp::process_update_nym_balance(Message&& in) noexcept
@@ -362,22 +316,19 @@ auto BalanceOracle::Imp::process_update_nym_balance(Message&& in) noexcept
 
     const auto chain = body.at(1).as<Chain>();
     const auto owner = api_.Factory().NymID(body.at(2));
-    const auto balance = std::make_pair(
+    auto balance = std::make_pair(
         factory::Amount(body.at(3)), factory::Amount(body.at(4)));
-    process_update_balance(owner, chain, balance);
+    process_update_balance(owner, chain, std::move(balance));
 }
 
 auto BalanceOracle::Imp::UpdateBalance(const Chain chain, const Balance balance)
     const noexcept -> void
 {
-    pipeline_.Push([&] {
-        auto out = MakeWork(Work::update_chain_balance);
-        out.AddFrame(chain);
-        out.AddFrame(balance.first);
-        out.AddFrame(balance.second);
-
-        return out;
-    }());
+    auto work = MakeWork(Work::update_chain_balance);
+    work.AddFrame(chain);
+    work.AddFrame(balance.first);
+    work.AddFrame(balance.second);
+    pipeline_.Push(std::move(work));
 }
 
 auto BalanceOracle::Imp::UpdateBalance(
@@ -385,15 +336,13 @@ auto BalanceOracle::Imp::UpdateBalance(
     const Chain chain,
     const Balance balance) const noexcept -> void
 {
-    pipeline_.Push([&] {
-        auto out = MakeWork(Work::update_nym_balance);
-        out.AddFrame(chain);
-        out.AddFrame(owner);
-        out.AddFrame(balance.first);
-        out.AddFrame(balance.second);
+    auto work = MakeWork(Work::update_nym_balance);
+    work.AddFrame(chain);
+    work.AddFrame(owner);
+    work.AddFrame(balance.first);
+    work.AddFrame(balance.second);
 
-        return out;
-    }());
+    pipeline_.Push(std::move(work));
 }
 
 auto BalanceOracle::Imp::do_startup() noexcept -> void {}

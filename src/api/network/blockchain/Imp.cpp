@@ -344,7 +344,7 @@ auto BlockchainImp::Init(
     OT_ASSERT(db_);
 
     auto sync = (0 < options.RemoteBlockchainSyncServers().size()) ||
-                      options.ProvideBlockchainSyncServer();
+                options.ProvideBlockchainSyncServer();
 
     using Policy = opentxs::blockchain::database::BlockStorage;
     base_config_ = std::make_unique<Config>();
@@ -521,7 +521,8 @@ auto BlockchainImp::start(
                 endpoint = sync_server_.Endpoint(type);
             }
 
-            const auto& config= config_.try_emplace(type, *base_config_).first->second;
+            const auto& config =
+                config_.try_emplace(type, *base_config_).first->second;
             auto [iter, added] = networks_.emplace(
                 type,
                 factory::BlockchainNetworkBitcoin(
