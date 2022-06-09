@@ -758,7 +758,10 @@ auto Seed::SetDefault(const Identifier& id) const noexcept -> bool
 
     auto exists = false;
     for (const auto& [value, alias] : api_.Storage().SeedList()) {
-        if (value == seedID) { exists = true; }
+        if (value == seedID) {
+            exists = true;
+            break;
+        }
     }
 
     if (false == exists) {
