@@ -129,16 +129,11 @@ auto Asio::Imp::Connect(
                     e.message())
                     .Flush();
             }
-
-            data_socket_->Send([&] {
-                auto work =
-                    opentxs::network::zeromq::tagged_reply_to_connection(
-                        reader(connection),
-                        e ? WorkType::AsioDisconnect : WorkType::AsioConnect);
-                work.AddFrame(address);
-
-                return work;
-            }());
+            auto work = opentxs::network::zeromq::tagged_reply_to_connection(
+                reader(connection),
+                e ? WorkType::AsioDisconnect : WorkType::AsioConnect);
+            work.AddFrame(address);
+            data_socket_->Send(std::move(work));
         });
 
     return true;
@@ -149,7 +144,7 @@ auto Asio::Imp::IOContext() noexcept -> boost::asio::io_context&
     return *io_context_;
 }
 
-auto Asio::Imp::data_callback(zmq::Message&& in) noexcept -> void
+auto Asio::Imp::data_callback(zmq::Message&& in) -> void
 {
     const auto header = in.Header();
 
@@ -164,30 +159,19 @@ auto Asio::Imp::data_callback(zmq::Message&& in) noexcept -> void
     if (0 == body.size()) { return; }
 
     try {
-        const auto work = [&] {
-            try {
+        auto workType{static_cast<WorkType>(body.at(0).as<OTZMQWorkType>())};
 
-                return body.at(0).as<OTZMQWorkType>();
-            } catch (...) {
-
-                throw std::runtime_error{"Wrong size for work frame"};
-            }
-        }();
-
-        switch (work) {
-            case value(WorkType::AsioRegister): {
-                data_socket_->Send([&] {
-                    auto work =
-                        opentxs::network::zeromq::tagged_reply_to_message(
-                            in, WorkType::AsioRegister);
-                    work.AddFrame(connectionID);
-
-                    return work;
-                }());
+        switch (workType) {
+            case WorkType::AsioRegister: {
+                auto work = opentxs::network::zeromq::tagged_reply_to_message(
+                    in, WorkType::AsioRegister);
+                work.AddFrame(connectionID);
+                data_socket_->Send(std::move(work));
             } break;
             default: {
                 throw std::runtime_error{
-                    "Unknown work type " + std::to_string(work)};
+                    "Unknown work type " +
+                    std::to_string(static_cast<unsigned int>(workType))};
             }
         }
     } catch (const std::exception& e) {
@@ -266,17 +250,8 @@ auto Asio::Imp::Post(ThreadPool type, Asio::Callback cb) noexcept -> bool
 
     if (shutdown()) { return false; }
 
-    auto& pool = [&]() -> auto&
-    {
-        if (ThreadPool::Network == type) {
-
-            return *io_context_;
-        } else {
-
-            return thread_pools_.at(type);
-        }
-    }
-    ();
+    auto& pool =
+        ThreadPool::Network == type ? *io_context_ : thread_pools_.at(type);
     boost::asio::post(pool.get(), std::move(cb));
 
     return true;
@@ -285,32 +260,30 @@ auto Asio::Imp::Post(ThreadPool type, Asio::Callback cb) noexcept -> bool
 auto Asio::Imp::process_address_query(
     const ResponseType type,
     std::shared_ptr<std::promise<OTData>> promise,
-    std::future<Response> future) const noexcept -> void
+    std::future<Response> future) const -> void
 {
     if (!promise) { return; }
 
     try {
-        const auto string = [&] {
-            auto output = CString{};
-            const auto body = future.get().body();
+        CString string{};
+        const auto body = future.get().body();
 
-            switch (type) {
-                case ResponseType::IPvonly: {
-                    auto parts = Vector<CString>{};
-                    algo::split(parts, body, algo::is_any_of(","));
+        switch (type) {
+            case ResponseType::IPvonly: {
+                auto parts = Vector<CString>{};
+                algo::split(parts, body, algo::is_any_of(","));
 
-                    if (parts.size() > 1) { output = parts[1]; }
-                } break;
-                case ResponseType::AddressOnly: {
-                    output = body;
-                } break;
-                default: {
-                    throw std::runtime_error{"Unknown response type"};
-                }
+                if (parts.size() > 1) { string = parts[1]; }
+            } break;
+
+            case ResponseType::AddressOnly: {
+                string = body;
+            } break;
+
+            default: {
+                throw std::runtime_error{"Unknown response type"};
             }
-
-            return output;
-        }();
+        }
 
         if (string.empty()) { throw std::runtime_error{"Empty response"}; }
 
@@ -371,32 +344,29 @@ auto Asio::Imp::Receive(
     if (0 == id.size()) { return false; }
 
     auto bufData = buffers_.get(bytes);
-    const auto& endpoint = socket.endpoint_;
     boost::asio::async_read(
         socket.socket_,
         bufData.second,
-        [this, connection{space(id)}, type, bufData, address{endpoint.str()}](
+        [this, id, type, bufData, address = socket.endpoint_.str()](
             const auto& e, auto size) {
-            data_socket_->Send([&] {
-                const auto& [index, buffer] = bufData;
-                auto work =
-                    opentxs::network::zeromq::tagged_reply_to_connection(
-                        reader(connection),
-                        e ? value(WorkType::AsioDisconnect) : type);
+            auto connection{space(id)};
 
-                if (e) {
-                    LogVerbose()(OT_PRETTY_CLASS())("asio receive error: ")(
-                        e.message())
-                        .Flush();
-                    work.AddFrame(address);
-                } else {
-                    work.AddFrame(buffer.data(), buffer.size());
-                }
+            const auto& [index, buffer] = bufData;
+            auto work = opentxs::network::zeromq::tagged_reply_to_connection(
+                reader(connection), e ? value(WorkType::AsioDisconnect) : type);
 
-                OT_ASSERT(1 < work.Body().size());
+            if (e) {
+                LogVerbose()(OT_PRETTY_CLASS())("asio receive error: ")(
+                    e.message())
+                    .Flush();
+                work.AddFrame(address);
+            } else {
+                work.AddFrame(buffer.data(), buffer.size());
+            }
 
-                return work;
-            }());
+            OT_ASSERT(1 < work.Body().size());
+
+            data_socket_->Send(std::move(work));
             buffers_.clear(bufData.first);
         });
 
@@ -537,35 +507,31 @@ auto Asio::Imp::send_notification(const ReadView notify) const noexcept -> void
 
     try {
         const auto endpoint = CString{notify};
-        auto& socket = [&]() -> auto&
-        {
-            auto handle = notify_.lock();
-            auto& map = *handle;
+        GuardedSocket* guardedSocket;
 
-            if (auto it = map.find(endpoint); map.end() != it) {
+        auto handle = notify_.lock();
+        auto& map = *handle;
 
-                return it->second;
+        if (auto it = map.find(endpoint); map.end() != it) {
+            guardedSocket = &it->second;
+        } else {
+            auto out = factory::ZMQSocket(
+                zmq_, opentxs::network::zeromq::socket::Type::Publish);
+            const auto rc = out.Connect(endpoint.data());
+
+            if (false == rc) {
+                throw std::runtime_error{
+                    "Failed to connect to notification endpoint"};
             }
 
-            auto [it, added] = map.try_emplace(endpoint, [&] {
-                auto out = factory::ZMQSocket(
-                    zmq_, opentxs::network::zeromq::socket::Type::Publish);
-                const auto rc = out.Connect(endpoint.data());
+            auto [iter, added] = map.try_emplace(endpoint, std::move(out));
 
-                if (false == rc) {
-                    throw std::runtime_error{
-                        "Failed to connect to notification endpoint"};
-                }
-
-                return out;
-            }());
-
-            return it->second;
+            guardedSocket = &iter->second;
         }
-        ();
+
         LogTrace()(OT_PRETTY_CLASS())("notifying ")(endpoint).Flush();
         const auto rc =
-            socket.lock()->Send(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL));
+            guardedSocket->lock()->Send(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL));
 
         if (false == rc) {
             throw std::runtime_error{"Failed to send notification"};

@@ -108,21 +108,21 @@ private:
         }
 
         auto lock = Lock{lock_};
-        const auto bytes = [&] {
-            const auto address = next_socket_.remote_endpoint().address();
 
-            if (address.is_v4()) {
-                const auto bytes = address.to_v4().to_bytes();
-                auto* it = reinterpret_cast<const std::byte*>(bytes.data());
+        Space bytes{};
 
-                return Space{it, std::next(it, bytes.size())};
-            } else {
-                const auto bytes = address.to_v6().to_bytes();
-                auto* it = reinterpret_cast<const std::byte*>(bytes.data());
+        if (const auto address = next_socket_.remote_endpoint().address();
+            address.is_v4()) {
+            const auto bytesArray = address.to_v4().to_bytes();
+            auto* it = reinterpret_cast<const std::byte*>(bytesArray.data());
 
-                return Space{it, std::next(it, bytes.size())};
-            }
-        }();
+            bytes = Space{it, std::next(it, bytesArray.size())};
+        } else {
+            const auto bytesArray = address.to_v6().to_bytes();
+            auto* it = reinterpret_cast<const std::byte*>(bytesArray.data());
+
+            bytes = Space{it, std::next(it, bytesArray.size())};
+        }
         auto endpoint = opentxs::network::asio::Endpoint{
             endpoint_.GetType(), reader(bytes), endpoint_.GetPort()};
         cb_(opentxs::network::asio::Socket{
