@@ -155,16 +155,12 @@ auto BlockchainImp::ActivityDescription(
     auto output = std::stringstream{};
     const auto amount = tx.NetBalanceChange(nym);
     const auto memo = tx.Memo();
-    const auto names = [&] {
-        auto out = UnallocatedSet<UnallocatedCString>{};
-        const auto contacts = tx.AssociatedRemoteContacts(contacts_, nym);
+    const auto& contacts = tx.AssociatedRemoteContacts(contacts_, nym);
+    std::set<std::string> names;
 
-        for (const auto& id : contacts) {
-            out.emplace(contacts_.ContactName(id, BlockchainToUnit(chain)));
-        }
-
-        return out;
-    }();
+    for (const auto& id : contacts) {
+        names.emplace(contacts_.ContactName(id, BlockchainToUnit(chain)));
+    }
 
     if (0 < amount) {
         output << "Incoming ";
@@ -260,15 +256,13 @@ auto BlockchainImp::broadcast_update_signal(
 {
     const auto chains = tx.Chains();
     std::for_each(std::begin(chains), std::end(chains), [&](const auto& chain) {
-        transaction_updates_->Send([&] {
-            auto work = opentxs::network::zeromq::tagged_message(
-                WorkType::BlockchainNewTransaction);
-            work.AddFrame(tx.ID());
-            work.AddFrame(chain);
-            work.Internal().AddFrame(proto);
+        auto work = opentxs::network::zeromq::tagged_message(
+            WorkType::BlockchainNewTransaction);
+        work.AddFrame(tx.ID());
+        work.AddFrame(chain);
+        work.Internal().AddFrame(proto);
 
-            return work;
-        }());
+        transaction_updates_->Send(std::move(work));
     });
 }
 
@@ -298,16 +292,14 @@ auto BlockchainImp::KeyGenerated(
     const opentxs::blockchain::crypto::SubaccountType type,
     const opentxs::blockchain::crypto::Subchain subchain) const noexcept -> void
 {
-    key_updates_->Send([&] {
-        auto work = MakeWork(OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL);
-        work.AddFrame(chain);
-        work.AddFrame(account);
-        work.AddFrame(subaccount);
-        work.AddFrame(subchain);
-        work.AddFrame(type);
+    auto work = MakeWork(OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL);
+    work.AddFrame(chain);
+    work.AddFrame(account);
+    work.AddFrame(subaccount);
+    work.AddFrame(subchain);
+    work.AddFrame(type);
 
-        return work;
-    }());
+    key_updates_->Send(std::move(work));
 }
 
 auto BlockchainImp::LoadTransactionBitcoin(const TxidHex& txid) const noexcept
@@ -376,16 +368,14 @@ auto BlockchainImp::notify_new_account(
     opentxs::blockchain::Type chain,
     opentxs::blockchain::crypto::SubaccountType type) const noexcept -> void
 {
-    new_blockchain_accounts_->Send([&] {
-        auto work = opentxs::network::zeromq::tagged_message(
-            WorkType::BlockchainAccountCreated);
-        work.AddFrame(chain);
-        work.AddFrame(owner);
-        work.AddFrame(type);
-        work.AddFrame(id);
+    auto work = opentxs::network::zeromq::tagged_message(
+        WorkType::BlockchainAccountCreated);
+    work.AddFrame(chain);
+    work.AddFrame(owner);
+    work.AddFrame(type);
+    work.AddFrame(id);
 
-        return work;
-    }());
+    new_blockchain_accounts_->Send(std::move(work));
 }
 
 auto BlockchainImp::ProcessContact(const Contact& contact) const noexcept
@@ -502,19 +492,17 @@ auto BlockchainImp::ReportScan(
 
     const auto bytes = id.Bytes();
     const auto hash = progress.second.Bytes();
-    scan_updates_->Send([&] {
-        auto work = opentxs::network::zeromq::tagged_message(
-            WorkType::BlockchainWalletScanProgress);
-        work.AddFrame(chain);
-        work.AddFrame(owner.data(), owner.size());
-        work.AddFrame(type);
-        work.AddFrame(bytes.data(), bytes.size());
-        work.AddFrame(subchain);
-        work.AddFrame(progress.first);
-        work.AddFrame(hash.data(), hash.size());
+    auto work = opentxs::network::zeromq::tagged_message(
+        WorkType::BlockchainWalletScanProgress);
+    work.AddFrame(chain);
+    work.AddFrame(owner.data(), owner.size());
+    work.AddFrame(type);
+    work.AddFrame(bytes.data(), bytes.size());
+    work.AddFrame(subchain);
+    work.AddFrame(progress.first);
+    work.AddFrame(hash.data(), hash.size());
 
-        return work;
-    }());
+    scan_updates_->Send(std::move(work));
 }
 
 auto BlockchainImp::Unconfirm(
