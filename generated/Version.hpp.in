@@ -38,11 +38,15 @@ namespace session
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
+}  // namespace block
 }  // namespace bitcoin
+
+namespace block
+{
 }  // namespace block
 
 namespace cfilter

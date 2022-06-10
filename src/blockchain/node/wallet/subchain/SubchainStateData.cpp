@@ -30,12 +30,15 @@
 #include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/bitcoin/cfilter/GCS.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/BlockOracle.hpp"
+#include "internal/blockchain/node/FilterOracle.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Manager.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/BoostPMR.hpp"
@@ -46,13 +49,13 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/bitcoin/block/Block.hpp"
+#include "opentxs/blockchain/bitcoin/block/Output.hpp"
+#include "opentxs/blockchain/bitcoin/block/Script.hpp"
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
@@ -422,8 +425,8 @@ namespace opentxs::blockchain::node::wallet
 {
 SubchainStateData::SubchainStateData(
     const api::Session& api,
-    const node::internal::Network& node,
-    node::internal::WalletDatabase& db,
+    const node::internal::Manager& node,
+    database::Wallet& db,
     const node::internal::Mempool& mempool,
     const crypto::Subaccount& subaccount,
     const cfilter::Type filter,
@@ -497,7 +500,7 @@ SubchainStateData::SubchainStateData(
     , match_cache_(alloc)
     , scan_dirty_(false)
     , process_queue_(0)
-    , rescan_progress_(-1)
+    , progress_position_(std::nullopt)
     , to_block_oracle_(pipeline_.Internal().ExtraSocket(0))
     , to_children_(pipeline_.Internal().ExtraSocket(1))
     , to_scan_(pipeline_.Internal().ExtraSocket(2))
@@ -528,8 +531,8 @@ SubchainStateData::SubchainStateData(
 
 SubchainStateData::SubchainStateData(
     const api::Session& api,
-    const node::internal::Network& node,
-    node::internal::WalletDatabase& db,
+    const node::internal::Manager& node,
+    database::Wallet& db,
     const node::internal::Mempool& mempool,
     const crypto::Subaccount& subaccount,
     const cfilter::Type filter,
@@ -850,7 +853,7 @@ auto SubchainStateData::IndexElement(
     const cfilter::Type type,
     const blockchain::crypto::Element& input,
     const Bip32Index index,
-    WalletDatabase::ElementMap& output) const noexcept -> void
+    database::Wallet::ElementMap& output) const noexcept -> void
 {
     log_(OT_PRETTY_CLASS())(name_)(" element ")(
         index)(" extracting filter matching patterns")
@@ -927,7 +930,7 @@ auto SubchainStateData::process_watchdog_ack(Message&& in) noexcept -> void
 
 auto SubchainStateData::ProcessBlock(
     const block::Position& position,
-    const block::bitcoin::Block& block) const noexcept -> bool
+    const bitcoin::block::Block& block) const noexcept -> bool
 {
     const auto start = Clock::now();
     const auto& name = name_;
@@ -1013,7 +1016,7 @@ auto SubchainStateData::ProcessBlock(
 }
 
 auto SubchainStateData::ProcessTransaction(
-    const block::bitcoin::Transaction& tx,
+    const bitcoin::block::Transaction& tx,
     const Log& log) const noexcept -> void
 {
     auto buf = std::array<std::byte, 4_KiB>{};
@@ -1374,7 +1377,7 @@ auto SubchainStateData::select_all(
     const Elements& in,
     MatchesToTest& out) const noexcept -> void
 {
-    const auto subchainID = WalletDatabase::SubchainID{subchain_, id_};
+    const auto subchainID = database::Wallet::SubchainID{subchain_, id_};
     auto& [outpoint, key] = out;
     auto alloc = outpoint.get_allocator();
     const auto SelectKey = [&](const auto& all, auto& out) {
@@ -1417,7 +1420,7 @@ auto SubchainStateData::select_matches(
     const Elements& in,
     MatchesToTest& out) const noexcept -> bool
 {
-    const auto subchainID = WalletDatabase::SubchainID{subchain_, id_};
+    const auto subchainID = database::Wallet::SubchainID{subchain_, id_};
     auto& [outpoint, key] = out;
     auto alloc = outpoint.get_allocator();
     const auto SelectKey =
@@ -1613,7 +1616,7 @@ auto SubchainStateData::select_targets(
 }
 
 auto SubchainStateData::set_key_data(
-    block::bitcoin::Transaction& tx) const noexcept -> void
+    bitcoin::block::Transaction& tx) const noexcept -> void
 {
     const auto keys = tx.Keys();
     auto data = block::KeyData{};
@@ -1725,11 +1728,11 @@ auto SubchainStateData::to_patterns(const Elements& in, allocator_type alloc)
     const noexcept -> Patterns
 {
     auto out = Patterns{alloc};
-    const auto subchainID = WalletDatabase::SubchainID{subchain_, id_};
+    const auto subchainID = database::Wallet::SubchainID{subchain_, id_};
     auto cb = [&](const auto& vector) {
         for (const auto& [index, data] : vector) {
             out.emplace_back(std::make_pair(
-                WalletDatabase::ElementID{index, subchainID},
+                database::Wallet::ElementID{index, subchainID},
                 [&](const auto& source) {
                     auto pattern = Vector<std::byte>{alloc};
                     copy(reader(source), writer(pattern));
@@ -1842,7 +1845,7 @@ auto SubchainStateData::translate(const TXOs& utxos, Patterns& outpoints)
             OT_ASSERT(account == id_);
 
             outpoints.emplace_back(
-                WalletDatabase::ElementID{
+                database::Wallet::ElementID{
                     static_cast<Bip32Index>(index),
                     {static_cast<crypto::Subchain>(subchain),
                      std::move(account)}},

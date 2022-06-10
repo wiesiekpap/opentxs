@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
+#include <optional>
 #include <string_view>
 #include <thread>
 #include <type_traits>
@@ -17,6 +18,8 @@
 
 #include "Proto.hpp"
 #include "internal/api/session/Factory.hpp"
+#include "internal/blockchain/bitcoin/block/Transaction.hpp"
+#include "internal/network/zeromq/message/Message.hpp"
 #include "internal/otx/common/Cheque.hpp"  // IWYU pragma: keep
 #include "internal/otx/common/Item.hpp"    // IWYU pragma: keep
 #include "internal/otx/common/Message.hpp"
@@ -29,8 +32,8 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/api/session/Workflow.hpp"
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Contact.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/Unit.hpp"
@@ -48,6 +51,7 @@
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "serialization/protobuf/BlockchainTransaction.pb.h"
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
 #include "serialization/protobuf/StorageThread.pb.h"
 #include "serialization/protobuf/StorageThreadItem.pb.h"
@@ -106,7 +110,7 @@ auto Activity::activity_preload_thread(
 auto Activity::add_blockchain_transaction(
     const eLock& lock,
     const identifier::Nym& nym,
-    const blockchain::block::bitcoin::Transaction& transaction) const noexcept
+    const blockchain::bitcoin::block::Transaction& transaction) const noexcept
     -> bool
 {
     const auto incoming = transaction.AssociatedRemoteContacts(contact_, nym);
@@ -174,12 +178,23 @@ auto Activity::add_blockchain_transaction(
         api_.Storage().UnaffiliatedBlockchainTransaction(nym, txid);
     }
 
+    const auto proto = transaction.Internal().Serialize();
+
+    if (false == proto.has_value()) {
+        LogError()(OT_PRETTY_CLASS())("failed to serialize transaction ")(
+            transaction.ID().asHex())
+            .Flush();
+
+        return false;
+    }
+
     std::for_each(std::begin(chains), std::end(chains), [&](const auto& chain) {
         get_blockchain(lock, nym).Send([&] {
             auto out = opentxs::network::zeromq::tagged_message(
                 WorkType::BlockchainNewTransaction);
             out.AddFrame(txid);
             out.AddFrame(chain);
+            out.Internal().AddFrame(proto.value());
 
             return out;
         }());
@@ -190,7 +205,7 @@ auto Activity::add_blockchain_transaction(
 #endif  // OT_BLOCKCHAIN
 
 auto Activity::AddBlockchainTransaction(
-    const blockchain::block::bitcoin::Transaction& transaction) const noexcept
+    const blockchain::bitcoin::block::Transaction& transaction) const noexcept
     -> bool
 {
 #if OT_BLOCKCHAIN

@@ -835,23 +835,21 @@ auto Regtest_fixture_base::Mine(
     auto previousHeader =
         headerOracle.LoadHeader(headerOracle.BestHash(ancestor))->as_Bitcoin();
 
-    OT_ASSERT(previousHeader);
-
     for (auto i = std::size_t{0u}; i < count; ++i) {
         auto promise = mined_blocks_.allocate();
 
         OT_ASSERT(gen);
 
-        auto tx = gen(previousHeader->Height() + 1);
+        auto tx = gen(previousHeader.Height() + 1);
 
         OT_ASSERT(tx);
 
         auto block = miner_.Factory().BitcoinBlock(
-            *previousHeader,
+            previousHeader,
             tx,
-            previousHeader->nBits(),
+            previousHeader.nBits(),
             extra,
-            previousHeader->Version(),
+            previousHeader.Version(),
             [start{ot::Clock::now()}] {
                 return (ot::Clock::now() - start) > std::chrono::minutes(2);
             });
@@ -864,8 +862,6 @@ auto Regtest_fixture_base::Mine(
         OT_ASSERT(added);
 
         previousHeader = block->Header().as_Bitcoin();
-
-        OT_ASSERT(previousHeader);
     }
 
     auto output = true;
@@ -877,9 +873,9 @@ auto Regtest_fixture_base::Mine(
 
         const auto [height, hash] = future.get();
 
-        EXPECT_EQ(hash, previousHeader->Hash());
+        EXPECT_EQ(hash, previousHeader.Hash());
 
-        output &= (hash == previousHeader->Hash());
+        output &= (hash == previousHeader.Hash());
     }
 
     for (auto& future : wallets) {
@@ -991,7 +987,7 @@ auto Regtest_fixture_base::TestUTXOs(
             EXPECT_EQ(output.Value(), exAmount);
 
             const auto& script = output.Script();
-            using Position = ot::blockchain::block::bitcoin::Script::Position;
+            using Position = ot::blockchain::bitcoin::block::Script::Position;
             out &= (script.Role() == Position::Output);
 
             EXPECT_EQ(script.Role(), Position::Output);
@@ -1961,14 +1957,14 @@ TXOState::Data::Data() noexcept
 
 struct TXOs::Imp {
     auto AddConfirmed(
-        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const ot::blockchain::bitcoin::block::Transaction& tx,
         const std::size_t index,
         const ot::blockchain::crypto::Subaccount& owner) noexcept -> bool
     {
         return add_to_map(tx, index, owner, confirmed_incoming_);
     }
     auto AddGenerated(
-        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const ot::blockchain::bitcoin::block::Transaction& tx,
         const std::size_t index,
         const ot::blockchain::crypto::Subaccount& owner,
         const ot::blockchain::block::Height position) noexcept -> bool
@@ -1987,7 +1983,7 @@ struct TXOs::Imp {
         }
     }
     auto AddUnconfirmed(
-        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const ot::blockchain::bitcoin::block::Transaction& tx,
         const std::size_t index,
         const ot::blockchain::crypto::Subaccount& owner) noexcept -> bool
     {
@@ -2226,7 +2222,7 @@ private:
     Immature immature_;
 
     auto add_to_map(
-        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const ot::blockchain::bitcoin::block::Transaction& tx,
         const std::size_t index,
         const ot::blockchain::crypto::Subaccount& owner,
         Map& map) noexcept -> bool
@@ -2331,7 +2327,7 @@ TXOs::TXOs(const User& owner) noexcept
 }
 
 auto TXOs::AddConfirmed(
-    const ot::blockchain::block::bitcoin::Transaction& tx,
+    const ot::blockchain::bitcoin::block::Transaction& tx,
     const std::size_t index,
     const ot::blockchain::crypto::Subaccount& owner) noexcept -> bool
 {
@@ -2339,7 +2335,7 @@ auto TXOs::AddConfirmed(
 }
 
 auto TXOs::AddGenerated(
-    const ot::blockchain::block::bitcoin::Transaction& tx,
+    const ot::blockchain::bitcoin::block::Transaction& tx,
     const std::size_t index,
     const ot::blockchain::crypto::Subaccount& owner,
     const ot::blockchain::block::Height position) noexcept -> bool
@@ -2348,7 +2344,7 @@ auto TXOs::AddGenerated(
 }
 
 auto TXOs::AddUnconfirmed(
-    const ot::blockchain::block::bitcoin::Transaction& tx,
+    const ot::blockchain::bitcoin::block::Transaction& tx,
     const std::size_t index,
     const ot::blockchain::crypto::Subaccount& owner) noexcept -> bool
 {

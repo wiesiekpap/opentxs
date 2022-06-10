@@ -19,13 +19,13 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Header;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
 namespace cfilter
 {
@@ -69,7 +69,7 @@ public:
     virtual auto GetDefaultCheckpoint() const noexcept -> CheckpointData = 0;
     virtual auto Init() noexcept -> void = 0;
     virtual auto LoadBitcoinHeader(const block::Hash& hash) const noexcept
-        -> std::unique_ptr<block::bitcoin::Header> = 0;
+        -> std::unique_ptr<bitcoin::block::Header> = 0;
     virtual auto ProcessSyncData(
         block::Hash& prior,
         Vector<block::Hash>& hashes,

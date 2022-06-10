@@ -24,7 +24,7 @@
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Manager.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -35,12 +35,12 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Block.hpp"
+#include "opentxs/blockchain/bitcoin/block/Output.hpp"
+#include "opentxs/blockchain/bitcoin/block/Outputs.hpp"
+#include "opentxs/blockchain/bitcoin/block/Script.hpp"
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"
-#include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Notification.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
@@ -61,8 +61,8 @@ namespace opentxs::blockchain::node::wallet
 {
 NotificationStateData::NotificationStateData(
     const api::Session& api,
-    const node::internal::Network& node,
-    node::internal::WalletDatabase& db,
+    const node::internal::Manager& node,
+    database::Wallet& db,
     const node::internal::Mempool& mempool,
     const cfilter::Type filter,
     const crypto::Subchain subchain,
@@ -123,7 +123,7 @@ auto NotificationStateData::get_index(
 }
 
 auto NotificationStateData::handle_confirmed_matches(
-    const block::bitcoin::Block& block,
+    const bitcoin::block::Block& block,
     const block::Position& position,
     const block::Matches& confirmed,
     const Log& log) const noexcept -> void
@@ -156,7 +156,7 @@ auto NotificationStateData::handle_confirmed_matches(
 
 auto NotificationStateData::handle_mempool_matches(
     const block::Matches& matches,
-    std::unique_ptr<const block::bitcoin::Transaction> tx) const noexcept
+    std::unique_ptr<const bitcoin::block::Transaction> tx) const noexcept
     -> void
 {
     const auto& [utxo, general] = matches;
@@ -240,7 +240,7 @@ auto NotificationStateData::init_keys() const noexcept -> OTPasswordPrompt
 
 auto NotificationStateData::process(
     const block::Match match,
-    const block::bitcoin::Transaction& tx,
+    const bitcoin::block::Transaction& tx,
     const PasswordPrompt& reason) const noexcept -> void
 {
     const auto& [txid, elementID] = match;

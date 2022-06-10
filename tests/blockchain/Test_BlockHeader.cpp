@@ -7,8 +7,8 @@
 #include <opentxs/opentxs.hpp>
 #include <memory>
 
-#include "1_Internal.hpp"  // IWYU pragma: keep
-#include "internal/blockchain/block/Block.hpp"
+#include "internal/blockchain/block/Factory.hpp"
+#include "internal/blockchain/block/Header.hpp"
 #include "ottest/fixtures/blockchain/Basic.hpp"
 
 namespace b = ot::blockchain;
@@ -76,13 +76,19 @@ TEST_F(Test_BlockHeader, btc_genesis_block_header)
 
     const auto& header = *pHeader;
 
-    EXPECT_EQ(header.EffectiveState(), bb::Header::Status::Normal);
+    EXPECT_EQ(
+        header.Internal().EffectiveState(),
+        bb::internal::Header::Status::Normal);
     EXPECT_EQ(expectedHash.get(), header.Hash());
     EXPECT_EQ(header.Height(), 0);
-    EXPECT_EQ(header.InheritedState(), bb::Header::Status::Normal);
-    EXPECT_FALSE(header.IsBlacklisted());
-    EXPECT_FALSE(header.IsDisconnected());
-    EXPECT_EQ(header.LocalState(), bb::Header::Status::Checkpoint);
+    EXPECT_EQ(
+        header.Internal().InheritedState(),
+        bb::internal::Header::Status::Normal);
+    EXPECT_FALSE(header.Internal().IsBlacklisted());
+    EXPECT_FALSE(header.Internal().IsDisconnected());
+    EXPECT_EQ(
+        header.Internal().LocalState(),
+        bb::internal::Header::Status::Checkpoint);
     EXPECT_EQ(numericHash, header.NumericHash()->asHex());
     EXPECT_EQ(header.ParentHash(), blankHash.get());
 
@@ -112,13 +118,19 @@ TEST_F(Test_BlockHeader, ltc_genesis_block_header)
 
     const auto& header = *pHeader;
 
-    EXPECT_EQ(header.EffectiveState(), bb::Header::Status::Normal);
+    EXPECT_EQ(
+        header.Internal().EffectiveState(),
+        bb::internal::Header::Status::Normal);
     EXPECT_EQ(expectedHash.get(), header.Hash());
     EXPECT_EQ(header.Height(), 0);
-    EXPECT_EQ(header.InheritedState(), bb::Header::Status::Normal);
-    EXPECT_FALSE(header.IsBlacklisted());
-    EXPECT_FALSE(header.IsDisconnected());
-    EXPECT_EQ(header.LocalState(), bb::Header::Status::Checkpoint);
+    EXPECT_EQ(
+        header.Internal().InheritedState(),
+        bb::internal::Header::Status::Normal);
+    EXPECT_FALSE(header.Internal().IsBlacklisted());
+    EXPECT_FALSE(header.Internal().IsDisconnected());
+    EXPECT_EQ(
+        header.Internal().LocalState(),
+        bb::internal::Header::Status::Checkpoint);
     EXPECT_EQ(numericHash, header.NumericHash()->asHex());
     EXPECT_EQ(header.ParentHash(), blankHash.get());
 
@@ -150,14 +162,23 @@ TEST_F(Test_BlockHeader, serialize_deserialize)
     EXPECT_EQ(expectedHash.get(), restored->Hash());
 
     EXPECT_EQ(restored->Difficulty(), header.Difficulty());
-    EXPECT_EQ(restored->EffectiveState(), header.EffectiveState());
+    EXPECT_EQ(
+        restored->Internal().EffectiveState(),
+        header.Internal().EffectiveState());
     EXPECT_EQ(restored->Hash(), header.Hash());
     EXPECT_EQ(restored->Height(), header.Height());
     EXPECT_EQ(restored->IncrementalWork(), header.IncrementalWork());
-    EXPECT_EQ(restored->InheritedState(), header.InheritedState());
-    EXPECT_EQ(restored->IsBlacklisted(), header.IsBlacklisted());
-    EXPECT_EQ(restored->IsDisconnected(), header.IsDisconnected());
-    EXPECT_EQ(restored->LocalState(), header.LocalState());
+    EXPECT_EQ(
+        restored->Internal().InheritedState(),
+        header.Internal().InheritedState());
+    EXPECT_EQ(
+        restored->Internal().IsBlacklisted(),
+        header.Internal().IsBlacklisted());
+    EXPECT_EQ(
+        restored->Internal().IsDisconnected(),
+        header.Internal().IsDisconnected());
+    EXPECT_EQ(
+        restored->Internal().LocalState(), header.Internal().LocalState());
     EXPECT_EQ(restored->NumericHash(), header.NumericHash());
     EXPECT_EQ(restored->ParentHash(), header.ParentHash());
     EXPECT_EQ(restored->ParentWork(), header.ParentWork());

@@ -4,8 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 if(OT_BLOCKCHAIN_EXPORT)
-  add_subdirectory(bitcoin)
-  add_subdirectory(pkt)
+  add_subdirectory(header)
 endif()
 
 target_sources(opentxs-common PRIVATE "Hash.cpp" "Outpoint.cpp")
@@ -21,19 +20,19 @@ if(OT_BLOCKCHAIN_EXPORT)
     opentxs-common
     PRIVATE
       "${opentxs_SOURCE_DIR}/src/internal/blockchain/block/Block.hpp"
+      "${opentxs_SOURCE_DIR}/src/internal/blockchain/block/Factory.hpp"
+      "${opentxs_SOURCE_DIR}/src/internal/blockchain/block/Types.hpp"
+      "${opentxs_SOURCE_DIR}/src/internal/blockchain/block/Validator.hpp"
       "Block.cpp"
       "Block.hpp"
       "Common.cpp"
       "Hash.cpp"
-      "Header.cpp"
-      "Header.hpp"
   )
   list(
     APPEND
     cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Block.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Hash.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Header.hpp"
   )
 endif()
 

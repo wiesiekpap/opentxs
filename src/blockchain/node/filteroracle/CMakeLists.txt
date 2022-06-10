@@ -6,6 +6,7 @@
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/FilterOracle.hpp"
     "BlockIndexer.cpp"
     "BlockIndexer.hpp"
     "FilterCheckpoints.hpp"

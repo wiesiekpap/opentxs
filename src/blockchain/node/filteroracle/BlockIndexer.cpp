@@ -19,6 +19,7 @@
 #include "blockchain/DownloadTask.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/api/session/Endpoints.hpp"
+#include "internal/blockchain/database/Cfilter.hpp"
 #include "internal/blockchain/node/BlockOracle.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
@@ -26,12 +27,12 @@
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Block.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -48,10 +49,10 @@ namespace opentxs::blockchain::node::implementation
 {
 FilterOracle::BlockIndexer::BlockIndexer(
     const api::Session& api,
-    internal::FilterDatabase& db,
+    database::Cfilter& db,
     const HeaderOracle& header,
     const internal::BlockOracle& block,
-    const internal::Network& node,
+    const internal::Manager& node,
     FilterOracle& parent,
     const blockchain::Type chain,
     const cfilter::Type type,
@@ -311,8 +312,8 @@ auto FilterOracle::BlockIndexer::queue_processing(
 {
     if (0u == data.size()) { return; }
 
-    auto filters = Vector<internal::FilterDatabase::CFilterParams>{};
-    auto headers = Vector<internal::FilterDatabase::CFHeaderParams>{};
+    auto filters = Vector<database::Cfilter::CFilterParams>{};
+    auto headers = Vector<database::Cfilter::CFHeaderParams>{};
     auto cache = UnallocatedVector<BlockIndexerData>{};
     const auto& tip = data.back();
 

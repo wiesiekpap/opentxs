@@ -12,7 +12,8 @@
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/bitcoin/block/Factory.hpp"
+#include "internal/blockchain/bitcoin/block/Transaction.hpp"
 
 namespace ot = opentxs;
 
@@ -99,8 +100,8 @@ struct Test_BitcoinTransaction : public ::testing::Test {
     const ot::OTData in_script_2_;
     const ot::OTData in_script_3_;
 
-    using Pattern = ot::blockchain::block::bitcoin::Script::Pattern;
-    using Position = ot::blockchain::block::bitcoin::Script::Position;
+    using Pattern = ot::blockchain::bitcoin::block::Script::Pattern;
+    using Position = ot::blockchain::bitcoin::block::Script::Position;
 
     Test_BitcoinTransaction()
         : api_(ot::Context().StartClientSession(0))

@@ -15,10 +15,11 @@
 #include <utility>
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/bitcoin/block/Factory.hpp"
+#include "internal/blockchain/bitcoin/block/Script.hpp"
 #include "ottest/Basic.hpp"  // IWYU pragma: keep
 
-namespace b = ot::blockchain::block::bitcoin;
+namespace b = ot::blockchain::bitcoin::block;
 
 namespace
 {
@@ -864,7 +865,7 @@ const ot::UnallocatedVector<std::byte> key_1_{
 };
 
 constexpr auto chain_{ot::blockchain::Type::Bitcoin};
-using Position = ot::blockchain::block::bitcoin::Script::Position;
+using Position = ot::blockchain::bitcoin::block::Script::Position;
 
 TEST(Test_BitcoinScript, opcodes_general)
 {

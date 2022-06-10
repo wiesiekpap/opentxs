@@ -16,7 +16,7 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
@@ -81,7 +81,7 @@ auto BlockchainBalanceItem::reindex(
     const implementation::AccountActivitySortKey& key,
     implementation::CustomData& custom) noexcept -> bool
 {
-    using Transaction = opentxs::blockchain::block::bitcoin::Transaction;
+    using Transaction = opentxs::blockchain::bitcoin::block::Transaction;
 
     extract_custom<proto::PaymentWorkflow>(custom, 0);
     extract_custom<proto::PaymentEvent>(custom, 1);

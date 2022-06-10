@@ -20,23 +20,27 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/api/session/Factory.hpp"
-#if OT_BLOCKCHAIN
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#endif  // OT_BLOCKCHAIN
+#include "internal/blockchain/bitcoin/block/Factory.hpp"
+#include "internal/blockchain/bitcoin/block/Input.hpp"    // IWYU pragma: keep
+#include "internal/blockchain/bitcoin/block/Inputs.hpp"   // IWYU pragma: keep
+#include "internal/blockchain/bitcoin/block/Output.hpp"   // IWYU pragma: keep
+#include "internal/blockchain/bitcoin/block/Outputs.hpp"  // IWYU pragma: keep
+#include "internal/blockchain/bitcoin/block/Script.hpp"
+#include "internal/blockchain/bitcoin/block/Transaction.hpp"
+#include "internal/blockchain/bitcoin/block/Types.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/BlockchainBlockHeader.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#if OT_BLOCKCHAIN
+#include "opentxs/blockchain/bitcoin/block/Header.hpp"
+#include "opentxs/blockchain/bitcoin/block/Script.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#endif  // OT_BLOCKCHAIN
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
@@ -74,7 +78,7 @@ Factory::Factory(const api::session::Client& parent)
 auto Factory::BitcoinBlock(
     const opentxs::blockchain::Type chain,
     const ReadView bytes) const noexcept
-    -> std::shared_ptr<const opentxs::blockchain::block::bitcoin::Block>
+    -> std::shared_ptr<const opentxs::blockchain::bitcoin::block::Block>
 {
     return factory::BitcoinBlock(client_, chain, bytes);
 }
@@ -86,7 +90,7 @@ auto Factory::BitcoinBlock(
     const UnallocatedVector<Transaction_p>& extraTransactions,
     const std::int32_t version,
     const AbortFunction abort) const noexcept
-    -> std::shared_ptr<const opentxs::blockchain::block::bitcoin::Block>
+    -> std::shared_ptr<const opentxs::blockchain::bitcoin::block::Block>
 {
     return factory::BitcoinBlock(
         api_,
@@ -112,7 +116,7 @@ auto Factory::BitcoinGenerationTransaction(
     const auto sequence = boost::endian::little_uint32_buf_t{0xffffffff};
     const auto cb = [&] {
         const auto bip34 =
-            opentxs::blockchain::block::bitcoin::internal::EncodeBip34(height);
+            opentxs::blockchain::bitcoin::block::internal::EncodeBip34(height);
         auto output = space(bip34.size() + coinbase.size());
         auto it = output.data();
         std::memcpy(it, bip34.data(), bip34.size());
@@ -124,7 +128,7 @@ auto Factory::BitcoinGenerationTransaction(
     }();
     const auto cs = opentxs::blockchain::bitcoin::CompactSize{cb.size()};
     auto inputs = UnallocatedVector<std::unique_ptr<
-        opentxs::blockchain::block::bitcoin::internal::Input>>{};
+        opentxs::blockchain::bitcoin::block::internal::Input>>{};
     inputs.emplace_back(factory::BitcoinTransactionInput(
         api_,
         chain,
@@ -135,9 +139,9 @@ auto Factory::BitcoinGenerationTransaction(
         true,
         {}));
     auto outputs = UnallocatedVector<std::unique_ptr<
-        opentxs::blockchain::block::bitcoin::internal::Output>>{};
+        opentxs::blockchain::bitcoin::block::internal::Output>>{};
     auto index{-1};
-    using Position = opentxs::blockchain::block::bitcoin::Script::Position;
+    using Position = opentxs::blockchain::bitcoin::block::Script::Position;
 
     for (auto& [amount, pScript, keys] : scripts) {
         if (false == bool(pScript)) { return {}; }
@@ -170,7 +174,7 @@ auto Factory::BitcoinTransaction(
     const ReadView bytes,
     const bool isGeneration,
     const Time& time) const noexcept
-    -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>
+    -> std::unique_ptr<const opentxs::blockchain::bitcoin::block::Transaction>
 {
     using Encoded = opentxs::blockchain::bitcoin::EncodedTransaction;
 

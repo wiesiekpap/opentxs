@@ -18,7 +18,7 @@
 #include "blockchain/database/wallet/Output.hpp"
 #include "blockchain/database/wallet/Position.hpp"
 #include "blockchain/database/wallet/Types.hpp"
-#include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/database/Types.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
@@ -46,18 +46,21 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
+{
+namespace block
 {
 namespace internal
 {
-struct Output;
+class Output;
 }  // namespace internal
 
 class Output;
+}  // namespace block
 }  // namespace bitcoin
 
+namespace block
+{
 class Outpoint;
 }  // namespace block
 }  // namespace blockchain
@@ -104,7 +107,7 @@ public:
     auto GetNym(const identifier::Nym& id) const noexcept -> const Outpoints&;
     auto GetNyms() const noexcept -> const Nyms&;
     auto GetOutput(const block::Outpoint& id) const noexcept(false)
-        -> const block::bitcoin::internal::Output&;
+        -> const bitcoin::block::internal::Output&;
     auto GetPosition() const noexcept -> const db::Position&;
     auto GetPosition(const block::Position& id) const noexcept
         -> const Outpoints&;
@@ -116,7 +119,7 @@ public:
     auto AddOutput(
         const block::Outpoint& id,
         MDB_txn* tx,
-        std::unique_ptr<block::bitcoin::Output> output) noexcept -> bool;
+        std::unique_ptr<bitcoin::block::Output> output) noexcept -> bool;
     auto AddOutput(
         const block::Outpoint& id,
         const node::TxoState state,
@@ -124,7 +127,7 @@ public:
         const AccountID& account,
         const SubchainID& subchain,
         MDB_txn* tx,
-        std::unique_ptr<block::bitcoin::Output> output) noexcept -> bool;
+        std::unique_ptr<bitcoin::block::Output> output) noexcept -> bool;
     auto AddToAccount(
         const AccountID& id,
         const block::Outpoint& output,
@@ -161,14 +164,14 @@ public:
         MDB_txn* tx) noexcept -> bool;
     auto Clear() noexcept -> void;
     auto GetOutput(const block::Outpoint& id) noexcept(false)
-        -> block::bitcoin::internal::Output&;
+        -> bitcoin::block::internal::Output&;
     auto GetOutput(
         const SubchainID& subchain,
         const block::Outpoint& id) noexcept(false)
-        -> block::bitcoin::internal::Output&;
+        -> bitcoin::block::internal::Output&;
     auto UpdateOutput(
         const block::Outpoint& id,
-        const block::bitcoin::Output& output,
+        const bitcoin::block::Output& output,
         MDB_txn* tx) noexcept -> bool;
     auto UpdatePosition(const block::Position&, MDB_txn* tx) noexcept -> bool;
 
@@ -192,7 +195,7 @@ private:
     std::optional<db::Position> position_;
     robin_hood::unordered_node_map<
         block::Outpoint,
-        std::unique_ptr<block::bitcoin::Output>>
+        std::unique_ptr<bitcoin::block::Output>>
         outputs_;
     robin_hood::unordered_node_map<OTIdentifier, Outpoints> accounts_;
     robin_hood::unordered_node_map<crypto::Key, Outpoints> keys_;
@@ -205,20 +208,20 @@ private:
 
     auto get_position() const noexcept -> const db::Position&;
     auto load_output(const block::Outpoint& id) const noexcept(false)
-        -> const block::bitcoin::internal::Output&;
+        -> const bitcoin::block::internal::Output&;
     template <typename MapKeyType, typename MapType>
     auto load_output_index(const MapKeyType& key, MapType& map) const noexcept
         -> const Outpoints&;
 
     auto load_output(const block::Outpoint& id) noexcept(false)
-        -> block::bitcoin::internal::Output&;
+        -> bitcoin::block::internal::Output&;
     template <typename MapKeyType, typename MapType>
     auto load_output_index(const MapKeyType& key, MapType& map) noexcept
         -> Outpoints&;
     auto populate() noexcept -> void;
     auto write_output(
         const block::Outpoint& id,
-        const block::bitcoin::Output& output,
+        const bitcoin::block::Output& output,
         MDB_txn* tx) noexcept -> bool;
 };
 }  // namespace opentxs::blockchain::database::wallet

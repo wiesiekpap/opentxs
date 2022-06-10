@@ -8,7 +8,7 @@
 #include <chrono>
 #include <memory>
 
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "ottest/fixtures/blockchain/Regtest.hpp"
 
 namespace ottest
@@ -27,13 +27,10 @@ TEST_F(Regtest_fixture_single, generate_block)
 
         return genesis->as_Bitcoin();
     }();
-
-    ASSERT_TRUE(previousHeader);
-
     using OutputBuilder = ot::api::session::Factory::OutputBuilder;
     auto tx = miner_.Factory().BitcoinGenerationTransaction(
         test_chain_,
-        previousHeader->Height() + 1,
+        previousHeader.Height() + 1,
         [&] {
             auto output = ot::UnallocatedVector<OutputBuilder>{};
             const auto text = ot::UnallocatedCString{"null"};
@@ -86,11 +83,11 @@ TEST_F(Regtest_fixture_single, generate_block)
     }
 
     auto block = miner_.Factory().BitcoinBlock(
-        *previousHeader,
+        previousHeader,
         tx,
-        previousHeader->nBits(),
+        previousHeader.nBits(),
         {},
-        previousHeader->Version(),
+        previousHeader.Version(),
         [start{ot::Clock::now()}] {
             return (ot::Clock::now() - start) > std::chrono::minutes(1);
         });

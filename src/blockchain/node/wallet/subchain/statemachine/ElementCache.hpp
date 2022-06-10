@@ -11,7 +11,7 @@
 #include <tuple>
 #include <utility>
 
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Wallet.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
@@ -40,9 +40,9 @@ namespace opentxs::blockchain::node::wallet
 class ElementCache final : public Allocated
 {
 public:
-    using Map = internal::WalletDatabase::ElementMap;
-    using Patterns = internal::WalletDatabase::Patterns;
-    using TXOs = internal::WalletDatabase::TXOs;
+    using Map = database::Wallet::ElementMap;
+    using Patterns = database::Wallet::Patterns;
+    using TXOs = database::Wallet::TXOs;
 
     struct Elements final : public Allocated {
         Vector<std::pair<Bip32Index, std::array<std::byte, 20>>> elements_20_;
@@ -73,7 +73,7 @@ public:
 
     ElementCache(
         Patterns&& data,
-        Vector<internal::WalletDatabase::UTXO>&& txos,
+        Vector<database::Wallet::UTXO>&& txos,
         allocator_type alloc) noexcept;
 
     ~ElementCache() final;

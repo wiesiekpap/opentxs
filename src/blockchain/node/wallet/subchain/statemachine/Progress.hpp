@@ -72,7 +72,7 @@ public:
     ~Imp() final = default;
 
 private:
-    std::optional<block::Position> last_reported_;
+    network::zeromq::socket::Raw& to_scan_;
 
     auto notify(const block::Position& pos) const noexcept -> void;
 

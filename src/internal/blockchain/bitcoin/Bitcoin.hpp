@@ -32,16 +32,16 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
+{
+namespace block
 {
 namespace internal
 {
-struct Input;
+class Input;
 }  // namespace internal
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 }  // namespace blockchain
 // }  // namespace v1
 }  // namespace opentxs
@@ -176,8 +176,8 @@ struct Bip143Hashes {
         const be::little_int32_buf_t& version,
         const be::little_uint32_buf_t& locktime,
         const SigHash& sigHash,
-        const block::bitcoin::internal::Input& input) const noexcept(false)
-        -> Space;
+        const blockchain::bitcoin::block::internal::Input& input) const
+        noexcept(false) -> Space;
     auto Sequences(const SigHash type) const noexcept -> const Hash&;
 
 private:

@@ -8,7 +8,7 @@
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <string_view>
 
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Work.hpp"
@@ -54,7 +54,7 @@ public:
         -> BitcoinBlockResults final;
     auto SubmitBlock(const ReadView in) const noexcept -> void;
     auto Tip() const noexcept -> block::Position final;
-    auto Validate(const block::bitcoin::Block& block) const noexcept
+    auto Validate(const bitcoin::block::Block& block) const noexcept
         -> bool final;
 
     auto Init() noexcept -> void;

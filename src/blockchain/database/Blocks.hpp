@@ -17,14 +17,13 @@
 #include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "internal/blockchain/database/Database.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Input.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -49,13 +48,16 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Block;
+}  // namespace block
 }  // namespace bitcoin
 
+namespace block
+{
 class Block;
 }  // namespace block
 
@@ -85,7 +87,7 @@ class Blocks
 {
 public:
     auto LoadBitcoin(const block::Hash& block) const noexcept
-        -> std::shared_ptr<const block::bitcoin::Block>;
+        -> std::shared_ptr<const bitcoin::block::Block>;
     auto SetTip(const block::Position& position) const noexcept -> bool;
     auto Store(const block::Block& block) const noexcept -> bool;
     auto Tip() const noexcept -> block::Position;

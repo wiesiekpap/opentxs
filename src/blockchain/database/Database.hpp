@@ -27,12 +27,18 @@
 #include "blockchain/database/common/Database.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
+#include "internal/blockchain/database/Cfilter.hpp"
 #include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/database/Peer.hpp"
+#include "internal/blockchain/database/Sync.hpp"
+#include "internal/blockchain/database/Types.hpp"
+#include "internal/blockchain/database/Wallet.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
-#include "internal/blockchain/node/Node.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Header.hpp"
+#include "opentxs/blockchain/bitcoin/block/Input.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
@@ -41,10 +47,9 @@
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Header.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -68,15 +73,18 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
+{
+namespace block
 {
 class Block;
 class Header;
 class Transaction;
+}  // namespace block
 }  // namespace bitcoin
 
+namespace block
+{
 class Block;
 class Header;
 }  // namespace block
@@ -91,6 +99,12 @@ class Database;
 
 namespace node
 {
+namespace internal
+{
+class Manager;
+struct SpendPolicy;
+}  // namespace internal
+
 class HeaderOracle;
 class UpdateTransaction;
 }  // namespace node
@@ -124,7 +138,7 @@ class Identifier;
 
 namespace opentxs::blockchain::implementation
 {
-class Database final : public internal::Database
+class Database final : public database::Database
 {
 public:
     auto AddConfirmedTransactions(
@@ -141,7 +155,7 @@ public:
         const NodeID& account,
         const crypto::Subchain subchain,
         const Vector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction,
+        const bitcoin::block::Transaction& transaction,
         TXOs& txoCreated) noexcept -> bool final
     {
         return wallet_.AddMempoolTransaction(
@@ -150,7 +164,7 @@ public:
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
-        const block::bitcoin::Transaction& transaction) noexcept -> bool final
+        const bitcoin::block::Transaction& transaction) noexcept -> bool final
     {
         return wallet_.AddOutgoingTransaction(
             proposalID, proposal, transaction);
@@ -185,7 +199,7 @@ public:
         return common_.BlockExists(block);
     }
     auto BlockLoadBitcoin(const block::Hash& block) const noexcept
-        -> std::shared_ptr<const block::bitcoin::Block> final
+        -> std::shared_ptr<const bitcoin::block::Block> final
     {
         return blocks_.LoadBitcoin(block);
     }
@@ -239,7 +253,7 @@ public:
     {
         return wallet_.ForgetProposals(ids);
     }
-    auto DisconnectedHashes() const noexcept -> node::DisconnectedList final
+    auto DisconnectedHashes() const noexcept -> database::DisconnectedList final
     {
         return headers_.DisconnectedHashes();
     }
@@ -479,7 +493,7 @@ public:
     {
         return sync_.SetTip(position);
     }
-    auto SiblingHashes() const noexcept -> node::Hashes final
+    auto SiblingHashes() const noexcept -> database::Hashes final
     {
         return headers_.SiblingHashes();
     }
@@ -541,7 +555,7 @@ public:
     }
     // Returns null pointer if the header does not exist
     auto TryLoadBitcoinHeader(const block::Hash& hash) const noexcept
-        -> std::unique_ptr<block::bitcoin::Header> final
+        -> std::unique_ptr<bitcoin::block::Header> final
     {
         return headers_.TryLoadBitcoinHeader(hash);
     }
@@ -554,7 +568,7 @@ public:
 
     Database(
         const api::Session& api,
-        const node::internal::Network& network,
+        const node::internal::Manager& network,
         const database::common::Database& common,
         const blockchain::Type chain,
         const blockchain::cfilter::Type filter) noexcept;
@@ -572,8 +586,8 @@ private:
     mutable database::Blocks blocks_;
     mutable database::Filters filters_;
     mutable database::Headers headers_;
-    mutable database::Wallet wallet_;
-    mutable database::Sync sync_;
+    mutable database::implemenation::Wallet wallet_;
+    mutable database::implementation::Sync sync_;
 
     static auto init_db(storage::lmdb::LMDB& db) noexcept -> void;
 

@@ -14,15 +14,15 @@
 #include <type_traits>
 
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/blockchain/bitcoin/block/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/Outpoint.hpp"        // IWYU pragma: keep
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
 ElementCache::ElementCache(
     Patterns&& data,
-    Vector<internal::WalletDatabase::UTXO>&& txos,
+    Vector<database::Wallet::UTXO>&& txos,
     allocator_type alloc) noexcept
     : log_(LogTrace())
     , data_(alloc)
@@ -46,8 +46,7 @@ ElementCache::ElementCache(
     log_("  * ")(elements_.txos_.size())(" txo elements").Flush();
 }
 
-auto ElementCache::Add(internal::WalletDatabase::ElementMap&& data) noexcept
-    -> void
+auto ElementCache::Add(database::Wallet::ElementMap&& data) noexcept -> void
 {
     for (auto& i : data) {
         auto& [incomingKey, incomingValues] = i;

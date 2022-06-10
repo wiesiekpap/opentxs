@@ -28,8 +28,10 @@
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/Block.hpp"
+#include "internal/blockchain/database/Cfilter.hpp"
+#include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Factory.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -37,12 +39,12 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Block.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
@@ -63,10 +65,10 @@ namespace opentxs::factory
 auto BlockchainFilterOracle(
     const api::Session& api,
     const blockchain::node::internal::Config& config,
-    const blockchain::node::internal::Network& node,
+    const blockchain::node::internal::Manager& node,
     const blockchain::node::HeaderOracle& header,
     const blockchain::node::internal::BlockOracle& block,
-    blockchain::node::internal::FilterDatabase& database,
+    blockchain::database::Cfilter& database,
     const blockchain::Type chain,
     const blockchain::cfilter::Type filter,
     const UnallocatedCString& shutdown) noexcept
@@ -88,8 +90,8 @@ struct FilterOracle::SyncClientFilterData {
     const block::Hash& block_hash_;
     const network::p2p::Block& incoming_data_;
     cfilter::Hash filter_hash_;
-    internal::FilterDatabase::CFilterParams& filter_data_;
-    internal::FilterDatabase::CFHeaderParams& header_data_;
+    database::Cfilter::CFilterParams& filter_data_;
+    database::Cfilter::CFHeaderParams& header_data_;
     Outstanding& job_counter_;
     Future previous_header_;
     Promise calculated_header_;
@@ -97,8 +99,8 @@ struct FilterOracle::SyncClientFilterData {
     SyncClientFilterData(
         const block::Hash& block,
         const network::p2p::Block& data,
-        internal::FilterDatabase::CFilterParams& filter,
-        internal::FilterDatabase::CFHeaderParams& header,
+        database::Cfilter::CFilterParams& filter,
+        database::Cfilter::CFHeaderParams& header,
         Outstanding& jobCounter,
         Future&& previous) noexcept
         : block_hash_(block)
@@ -116,10 +118,10 @@ struct FilterOracle::SyncClientFilterData {
 FilterOracle::FilterOracle(
     const api::Session& api,
     const internal::Config& config,
-    const internal::Network& node,
+    const internal::Manager& node,
     const HeaderOracle& header,
     const internal::BlockOracle& block,
-    internal::FilterDatabase& database,
+    database::Cfilter& database,
     const blockchain::Type chain,
     const blockchain::cfilter::Type filter,
     const UnallocatedCString& shutdown) noexcept
@@ -306,6 +308,12 @@ auto FilterOracle::compare_tips_to_header_chain() noexcept -> bool
     return true;
 }
 
+auto FilterOracle::FilterTip(const cfilter::Type type) const noexcept
+    -> block::Position
+{
+    return database_.FilterTip(type);
+}
+
 auto FilterOracle::GetFilterJob() const noexcept -> CfilterJob
 {
     auto lock = rLock{lock_};
@@ -345,6 +353,28 @@ auto FilterOracle::Heartbeat() const noexcept -> void
     if ((Clock::now() - last_sync_progress_) > limit) {
         new_tip(lock, default_type_, database_.FilterTip(default_type_));
     }
+}
+
+auto FilterOracle::LoadFilter(
+    const cfilter::Type type,
+    const block::Hash& block,
+    alloc::Default alloc) const noexcept -> GCS
+{
+    return database_.LoadFilter(type, block.Bytes(), alloc);
+}
+
+auto FilterOracle::LoadFilters(
+    const cfilter::Type type,
+    const Vector<block::Hash>& blocks) const noexcept -> Vector<GCS>
+{
+    return database_.LoadFilters(type, blocks);
+}
+
+auto FilterOracle::LoadFilterHeader(
+    const cfilter::Type type,
+    const block::Hash& block) const noexcept -> cfilter::Header
+{
+    return database_.LoadFilterHeader(type, block.Bytes());
 }
 
 auto FilterOracle::LoadFilterOrResetTip(
@@ -411,12 +441,12 @@ auto FilterOracle::new_tip(
 }
 
 auto FilterOracle::ProcessBlock(
-    const block::bitcoin::Block& block) const noexcept -> bool
+    const bitcoin::block::Block& block) const noexcept -> bool
 {
     const auto& id = block.ID();
     const auto& header = block.Header();
-    auto filters = Vector<internal::FilterDatabase::CFilterParams>{};
-    auto headers = Vector<internal::FilterDatabase::CFHeaderParams>{};
+    auto filters = Vector<database::Cfilter::CFilterParams>{};
+    auto headers = Vector<database::Cfilter::CFHeaderParams>{};
     const auto& cfilter =
         filters.emplace_back(id, process_block(default_type_, block)).second;
 
@@ -516,8 +546,8 @@ auto FilterOracle::ProcessSyncData(
     const Vector<block::Hash>& hashes,
     const network::p2p::Data& data) const noexcept -> void
 {
-    auto filters = Vector<internal::FilterDatabase::CFilterParams>{};
-    auto headers = Vector<internal::FilterDatabase::CFHeaderParams>{};
+    auto filters = Vector<database::Cfilter::CFilterParams>{};
+    auto headers = Vector<database::Cfilter::CFHeaderParams>{};
     const auto& blocks = data.Blocks();
     const auto incoming = blocks.front().Height();
     const auto finalFilter = data.LastPosition(api_);
@@ -642,7 +672,7 @@ auto FilterOracle::ProcessSyncData(
 
 auto FilterOracle::process_block(
     const cfilter::Type filterType,
-    const block::bitcoin::Block& block) const noexcept -> GCS
+    const bitcoin::block::Block& block) const noexcept -> GCS
 {
     const auto& id = block.ID();
     const auto params = blockchain::internal::GetFilterParams(filterType);
@@ -795,6 +825,12 @@ auto FilterOracle::Start() noexcept -> void
     if (filter_downloader_) { filter_downloader_->Start(); }
 
     if (block_indexer_) { block_indexer_->Start(); }
+}
+
+auto FilterOracle::Tip(const cfilter::Type type) const noexcept
+    -> block::Position
+{
+    return database_.FilterTip(type);
 }
 
 FilterOracle::~FilterOracle() { Shutdown(); }

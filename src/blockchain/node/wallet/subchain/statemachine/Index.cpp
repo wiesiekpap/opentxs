@@ -99,8 +99,7 @@ auto Index::Imp::do_startup() noexcept -> void
         .Flush();
 }
 
-auto Index::Imp::done(
-    node::internal::WalletDatabase::ElementMap&& elements) noexcept -> void
+auto Index::Imp::done(database::Wallet::ElementMap&& elements) noexcept -> void
 {
     auto& db = parent_.db_;
     const auto& index = parent_.db_key_;

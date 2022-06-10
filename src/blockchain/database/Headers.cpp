@@ -20,16 +20,20 @@
 #include "blockchain/database/common/Database.hpp"
 #include "blockchain/node/UpdateTransaction.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
-#include "internal/blockchain/block/Block.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/bitcoin/block/Factory.hpp"
+#include "internal/blockchain/bitcoin/block/Header.hpp"  // IWYU pragma: keep
+#include "internal/blockchain/block/Factory.hpp"
+#include "internal/blockchain/block/Header.hpp"
+#include "internal/blockchain/database/Types.hpp"
+#include "internal/blockchain/node/Manager.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Header.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -46,7 +50,7 @@ namespace opentxs::blockchain::database
 {
 Headers::Headers(
     const api::Session& api,
-    const node::internal::Network& network,
+    const node::internal::Manager& network,
     const common::Database& common,
     const storage::lmdb::LMDB& lmdb,
     const blockchain::Type type) noexcept
@@ -166,8 +170,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
             BlockHeaderMetadata,
             hash.Bytes(),
             [&] {
-                auto out = block::Header::SerializedType{};
-                data.second.first->Serialize(out);
+                auto out = block::internal::Header::SerializedType{};
+                data.second.first->Internal().Serialize(out);
 
                 return proto::ToString(out.local());
             }(),
@@ -356,10 +360,10 @@ auto Headers::CurrentCheckpoint() const noexcept -> block::Position
     return checkpoint(lock);
 }
 
-auto Headers::DisconnectedHashes() const noexcept -> node::DisconnectedList
+auto Headers::DisconnectedHashes() const noexcept -> database::DisconnectedList
 {
     Lock lock(lock_);
-    auto output = node::DisconnectedList{};
+    auto output = database::DisconnectedList{};
     lmdb_.Read(
         BlockHeaderDisconnected,
         [&](const auto key, const auto value) -> bool {
@@ -417,8 +421,8 @@ auto Headers::import_genesis(const blockchain::Type type) const noexcept -> void
 
             const auto result =
                 lmdb_.Store(BlockHeaderMetadata, hash.Bytes(), [&] {
-                    auto proto = block::Header::SerializedType{};
-                    genesis->Serialize(proto);
+                    auto proto = block::internal::Header::SerializedType{};
+                    genesis->Internal().Serialize(proto);
 
                     return proto::ToString(proto.local());
                 }());
@@ -441,8 +445,9 @@ auto Headers::import_genesis(const blockchain::Type type) const noexcept -> void
                           BlockHeaderMetadata,
                           hash.Bytes(),
                           [&] {
-                              auto proto = block::Header::SerializedType{};
-                              genesis->Serialize(proto);
+                              auto proto =
+                                  block::internal::Header::SerializedType{};
+                              genesis->Internal().Serialize(proto);
 
                               return proto::ToString(proto.local());
                           }())
@@ -480,7 +485,7 @@ auto Headers::IsSibling(const block::Hash& hash) const noexcept -> bool
 }
 
 auto Headers::load_bitcoin_header(const block::Hash& hash) const
-    -> std::unique_ptr<block::bitcoin::Header>
+    -> std::unique_ptr<bitcoin::block::Header>
 {
     auto proto = common_.LoadBlockHeader(hash);
     const auto haveMeta =
@@ -500,7 +505,7 @@ auto Headers::load_bitcoin_header(const block::Hash& hash) const
         throw std::out_of_range("Wrong header format");
     }
 
-    return std::move(output);
+    return output;
 }
 
 auto Headers::load_header(const block::Hash& hash) const
@@ -579,10 +584,10 @@ auto Headers::recent_hashes(const Lock& lock, alloc::Resource* alloc)
     return output;
 }
 
-auto Headers::SiblingHashes() const noexcept -> node::Hashes
+auto Headers::SiblingHashes() const noexcept -> database::Hashes
 {
     Lock lock(lock_);
-    auto output = node::Hashes{};
+    auto output = database::Hashes{};
     lmdb_.Read(
         BlockHeaderSiblings,
         [&](const auto, const auto value) -> bool {
@@ -596,7 +601,7 @@ auto Headers::SiblingHashes() const noexcept -> node::Hashes
 }
 
 auto Headers::TryLoadBitcoinHeader(const block::Hash& hash) const noexcept
-    -> std::unique_ptr<block::bitcoin::Header>
+    -> std::unique_ptr<bitcoin::block::Header>
 {
     try {
         return load_bitcoin_header(hash);

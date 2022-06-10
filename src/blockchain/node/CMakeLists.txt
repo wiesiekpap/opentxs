@@ -6,9 +6,8 @@
 add_subdirectory(blockoracle)
 
 if(OT_BLOCKCHAIN_EXPORT)
-  add_subdirectory(base)
-  add_subdirectory(bitcoin)
   add_subdirectory(filteroracle)
+  add_subdirectory(manager)
   add_subdirectory(p2p)
   add_subdirectory(peermanager)
   add_subdirectory(wallet)
@@ -24,14 +23,18 @@ if(OT_BLOCKCHAIN_EXPORT)
   target_sources(
     opentxs-common
     PRIVATE
+      "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/Config.hpp"
       "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/Factory.hpp"
       "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/HeaderOracle.hpp"
-      "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/Node.hpp"
+      "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/Mempool.hpp"
+      "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/SpendPolicy.hpp"
+      "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/Types.hpp"
+      "Common.cpp"
+      "Config.cpp"
       "HeaderOracle.cpp"
       "HeaderOracle.hpp"
       "Mempool.cpp"
       "Mempool.hpp"
-      "Node.cpp"
       "UpdateTransaction.cpp"
       "UpdateTransaction.hpp"
   )

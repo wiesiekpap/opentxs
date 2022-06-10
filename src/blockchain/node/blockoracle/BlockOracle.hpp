@@ -24,9 +24,11 @@
 
 #include "blockchain/node/blockoracle/Cache.hpp"
 #include "core/Worker.hpp"
+#include "internal/blockchain/block/Validator.hpp"
+#include "internal/blockchain/database/Block.hpp"
 #include "internal/blockchain/node/BlockBatch.hpp"
 #include "internal/blockchain/node/BlockOracle.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -56,13 +58,13 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Block;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
 namespace node
 {
@@ -75,6 +77,7 @@ class BlockDownloader;
 namespace internal
 {
 class BlockBatch;
+class Manager;
 }  // namespace internal
 
 class HeaderOracle;
@@ -120,7 +123,7 @@ public:
         -> BitcoinBlockResults;
     auto SubmitBlock(const ReadView in) const noexcept -> void;
     auto Tip() const noexcept -> block::Position { return db_.BlockTip(); }
-    auto Validate(const block::bitcoin::Block& block) const noexcept -> bool
+    auto Validate(const bitcoin::block::Block& block) const noexcept -> bool
     {
         return validator_->Validate(block);
     }
@@ -133,9 +136,9 @@ public:
     auto StartDownloader() noexcept -> void;
 
     Imp(const api::Session& api,
-        const internal::Network& node,
+        const internal::Manager& node,
         const node::HeaderOracle& header,
-        internal::BlockDatabase& db,
+        database::Block& db,
         const blockchain::Type chain,
         const std::string_view parent,
         const network::zeromq::BatchID batch,
@@ -155,22 +158,22 @@ private:
         libguarded::shared_guarded<blockoracle::Cache, std::shared_mutex>;
 
     const api::Session& api_;
-    const internal::Network& node_;
-    const internal::BlockDatabase& db_;
+    const internal::Manager& node_;
+    const database::Block& db_;
     const CString submit_endpoint_;
-    const std::unique_ptr<const internal::BlockValidator> validator_;
+    const std::unique_ptr<const block::Validator> validator_;
     const std::unique_ptr<blockoracle::BlockDownloader> block_downloader_;
     mutable Cache cache_;
 
     static auto get_validator(
         const blockchain::Type chain,
         const node::HeaderOracle& headers) noexcept
-        -> std::unique_ptr<const internal::BlockValidator>;
+        -> std::unique_ptr<const block::Validator>;
 
     Imp(const api::Session& api,
-        const internal::Network& node,
+        const internal::Manager& node,
         const node::HeaderOracle& header,
-        internal::BlockDatabase& db,
+        database::Block& db,
         const blockchain::Type chain,
         const std::string_view parent,
         const network::zeromq::BatchID batch,

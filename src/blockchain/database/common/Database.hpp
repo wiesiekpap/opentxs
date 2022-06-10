@@ -15,9 +15,8 @@
 #include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/database/Types.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
-#include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -31,8 +30,6 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
-#include "serialization/protobuf/BlockchainTransaction.pb.h"
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -53,14 +50,17 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
+{
+namespace block
 {
 class Block;
 class Transaction;
+}  // namespace block
 }  // namespace bitcoin
 
+namespace block
+{
 class Header;
 }  // namespace block
 
@@ -75,6 +75,12 @@ class Block;
 class Data;
 }  // namespace p2p
 }  // namespace network
+
+namespace proto
+{
+class BlockchainBlockHeader;
+class BlockchainTransaction;
+}  // namespace proto
 
 class Contact;
 class Data;
@@ -163,7 +169,9 @@ public:
         const Height height,
         opentxs::network::p2p::Data& output) const noexcept -> bool;
     auto LoadTransaction(const ReadView txid) const noexcept
-        -> std::unique_ptr<block::bitcoin::Transaction>;
+        -> std::unique_ptr<bitcoin::block::Transaction>;
+    auto LoadTransaction(const ReadView txid, proto::BlockchainTransaction& out)
+        const noexcept -> std::unique_ptr<bitcoin::block::Transaction>;
     auto LookupContact(const Data& pubkeyHash) const noexcept
         -> UnallocatedSet<OTIdentifier>;
     auto LookupTransactions(const PatternID pattern) const noexcept
@@ -184,8 +192,11 @@ public:
         const Vector<CFilterParams>& filters) const noexcept -> bool;
     auto StoreSync(const Chain chain, const SyncItems& items) const noexcept
         -> bool;
-    auto StoreTransaction(const block::bitcoin::Transaction& tx) const noexcept
+    auto StoreTransaction(const bitcoin::block::Transaction& tx) const noexcept
         -> bool;
+    auto StoreTransaction(
+        const bitcoin::block::Transaction& tx,
+        proto::BlockchainTransaction& out) const noexcept -> bool;
     auto SyncTip(const Chain chain) const noexcept -> Height;
     auto UpdateContact(const Contact& contact) const noexcept
         -> UnallocatedVector<pTxid>;

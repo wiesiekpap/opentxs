@@ -1673,7 +1673,7 @@ TEST_F(Regtest_payment_code, alice_second_outgoing_transaction)
         ASSERT_EQ(script.size(), 2u);
 
         const auto& placeholder = script.at(0u);
-        using OP = ot::blockchain::block::bitcoin::OP;
+        using OP = ot::blockchain::bitcoin::block::OP;
 
         EXPECT_EQ(placeholder.opcode_, OP::ZERO);
 

@@ -12,7 +12,7 @@
 
 #include "Proto.hpp"
 #include "Proto.tpp"
-#include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/database/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/util/Bytes.hpp"

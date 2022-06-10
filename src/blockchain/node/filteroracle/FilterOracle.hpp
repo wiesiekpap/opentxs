@@ -20,7 +20,8 @@
 
 #include "1_Internal.hpp"
 #include "core/Worker.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/FilterOracle.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
@@ -63,19 +64,26 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Block;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
+
+namespace database
+{
+class Cfilter;
+}  // namespace database
 
 namespace node
 {
 namespace internal
 {
 class BlockOracle;
+class Manager;
+struct Config;
 }  // namespace internal
 
 class HeaderOracle;
@@ -137,46 +145,31 @@ public:
         return default_type_;
     }
     auto FilterTip(const cfilter::Type type) const noexcept
-        -> block::Position final
-    {
-        return database_.FilterTip(type);
-    }
+        -> block::Position final;
     auto GetFilterJob() const noexcept -> CfilterJob final;
     auto GetHeaderJob() const noexcept -> CfheaderJob final;
     auto Heartbeat() const noexcept -> void final;
     auto LoadFilter(
         const cfilter::Type type,
         const block::Hash& block,
-        alloc::Default alloc) const noexcept -> GCS final
-    {
-        return database_.LoadFilter(type, block.Bytes(), alloc);
-    }
+        alloc::Default alloc) const noexcept -> GCS final;
     auto LoadFilters(
         const cfilter::Type type,
-        const Vector<block::Hash>& blocks) const noexcept -> Vector<GCS> final
-    {
-        return database_.LoadFilters(type, blocks);
-    }
+        const Vector<block::Hash>& blocks) const noexcept -> Vector<GCS> final;
     auto LoadFilterHeader(const cfilter::Type type, const block::Hash& block)
-        const noexcept -> cfilter::Header final
-    {
-        return database_.LoadFilterHeader(type, block.Bytes());
-    }
+        const noexcept -> cfilter::Header final;
     auto LoadFilterOrResetTip(
         const cfilter::Type type,
         const block::Position& position,
         alloc::Default alloc) const noexcept -> GCS final;
-    auto ProcessBlock(const block::bitcoin::Block& block) const noexcept
+    auto ProcessBlock(const bitcoin::block::Block& block) const noexcept
         -> bool final;
     auto ProcessBlock(BlockIndexerData& data) const noexcept -> void;
     auto ProcessSyncData(
         const block::Hash& prior,
         const Vector<block::Hash>& hashes,
         const network::p2p::Data& data) const noexcept -> void final;
-    auto Tip(const cfilter::Type type) const noexcept -> block::Position final
-    {
-        return database_.FilterTip(type);
-    }
+    auto Tip(const cfilter::Type type) const noexcept -> block::Position final;
 
     auto Shutdown() noexcept -> void final;
     auto Start() noexcept -> void final;
@@ -184,10 +177,10 @@ public:
     FilterOracle(
         const api::Session& api,
         const internal::Config& config,
-        const internal::Network& node,
+        const internal::Manager& node,
         const HeaderOracle& header,
         const internal::BlockOracle& block,
-        internal::FilterDatabase& database,
+        database::Cfilter& database,
         const blockchain::Type chain,
         const blockchain::cfilter::Type filter,
         const UnallocatedCString& shutdown) noexcept;
@@ -206,9 +199,9 @@ private:
     static const CheckpointMap filter_checkpoints_;
 
     const api::Session& api_;
-    const internal::Network& node_;
+    const internal::Manager& node_;
     const HeaderOracle& header_;
-    internal::FilterDatabase& database_;
+    database::Cfilter& database_;
     const network::zeromq::socket::Publish& filter_notifier_;
     const blockchain::Type chain_;
     const cfilter::Type default_type_;
@@ -229,7 +222,7 @@ private:
         const block::Position& tip) const noexcept -> void;
     auto process_block(
         const cfilter::Type type,
-        const block::bitcoin::Block& block) const noexcept -> GCS;
+        const bitcoin::block::Block& block) const noexcept -> GCS;
     auto reset_tips_to(
         const cfilter::Type type,
         const block::Position& position,

@@ -8,8 +8,10 @@
 #include <opentxs/opentxs.hpp>
 #include <type_traits>
 
+#include "internal/blockchain/block/Header.hpp"
+#include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Factory.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Manager.hpp"
 
 namespace ottest
 {
@@ -2775,8 +2777,8 @@ auto Test_HeaderOracle_base::verify_post_state(const PostStateVector& vector)
         EXPECT_EQ(hash, block.Hash());
         EXPECT_EQ(pHash, block.ParentHash());
         EXPECT_EQ(height, block.Height());
-        EXPECT_EQ(status, block.LocalState());
-        EXPECT_EQ(pStatus, block.InheritedState());
+        EXPECT_EQ(status, block.Internal().LocalState());
+        EXPECT_EQ(pStatus, block.Internal().InheritedState());
     }
 
     return true;

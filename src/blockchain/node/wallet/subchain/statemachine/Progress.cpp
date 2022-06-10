@@ -19,21 +19,26 @@
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "blockchain/node/wallet/subchain/statemachine/ElementCache.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Wallet.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Context.hpp"
+#include "internal/network/zeromq/socket/Pipeline.hpp"
+#include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -49,8 +54,15 @@ Progress::Imp::Imp(
           {},
           {
               {parent->to_progress_endpoint_, Direction::Bind},
+          },
+          {},
+          {
+              {SocketType::Push,
+               {
+                   {parent->to_scan_endpoint_, Direction::Connect},
+               }},
           })
-    , last_reported_(std::nullopt)
+    , to_scan_(pipeline_.Internal().ExtraSocket(1))
 {
 }
 
@@ -66,12 +78,14 @@ auto Progress::Imp::do_process_update(Message&& msg) noexcept -> void
     OT_ASSERT(0u < clean.size());
 
     const auto& best = clean.crbegin()->second;
-    auto& last = last_reported_;
+    auto handle = parent_.progress_position_.lock();
+    auto& last = *handle;
 
     if ((false == last.has_value()) || (last.value() != best)) {
         parent_.db_.SubchainSetLastScanned(parent_.db_key_, best);
         last = best;
         notify(best);
+        to_scan_.Send(MakeWork(Work::statemachine));
     }
 
     const auto database = Clock::now();
@@ -97,17 +111,20 @@ auto Progress::Imp::ProcessReorg(
     const Lock& headerOracleLock,
     const block::Position& parent) noexcept -> void
 {
-    if (last_reported_.has_value()) {
-        const auto target = parent_.ReorgTarget(
-            headerOracleLock, parent, last_reported_.value());
-        last_reported_ = target;
+    auto handle = parent_.progress_position_.lock();
+    auto& last = *handle;
+
+    if (last.has_value()) {
+        const auto target =
+            parent_.ReorgTarget(headerOracleLock, parent, last.value());
+        last = target;
         notify(target);
     }
 }
 
 auto Progress::Imp::process_do_rescan(Message&& in) noexcept -> void
 {
-    last_reported_.reset();
+    parent_.progress_position_.lock()->reset();
     const auto& best = parent_.null_position_;
     parent_.db_.SubchainSetLastScanned(parent_.db_key_, best);
     notify(best);

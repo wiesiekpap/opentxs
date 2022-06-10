@@ -64,7 +64,6 @@ private:
     std::promise<void> shutdown_promise_;
     std::shared_future<void> shutdown_complete_;
     std::mutex shutdown_mutex_;
-
     Time last_executed_;
     mutable std::atomic<bool> state_machine_queued_;
 

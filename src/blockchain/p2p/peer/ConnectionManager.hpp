@@ -13,7 +13,7 @@
 #include <tuple>
 #include <utility>
 
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -68,7 +68,7 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::blockchain::p2p::peer
 {
-using Task = node::internal::PeerManager::Task;
+using Task = node::PeerManagerJobs;
 
 class ConnectionManager
 {

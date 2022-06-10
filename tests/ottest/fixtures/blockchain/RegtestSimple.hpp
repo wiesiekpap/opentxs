@@ -28,13 +28,13 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Header;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
 namespace crypto
 {
@@ -116,14 +116,14 @@ protected:
         unsigned block_number,
         unsigned transaction_number,
         unsigned amount) noexcept
-        -> std::unique_ptr<opentxs::blockchain::block::bitcoin::Header>;
+        -> std::unique_ptr<opentxs::blockchain::bitcoin::block::Header>;
 
     auto MineBlocks(
         Height ancestor,
         std::size_t block_number,
         const Generator& gen,
         const ot::UnallocatedVector<Transaction>& extra) noexcept
-        -> std::unique_ptr<opentxs::blockchain::block::bitcoin::Header>;
+        -> std::unique_ptr<opentxs::blockchain::bitcoin::block::Header>;
 
     auto MineBlocks(const Height ancestor, const std::size_t count) noexcept
         -> bool;
@@ -168,7 +168,7 @@ protected:
         const int coins_to_send = coins_to_send_);
 
     std::vector<
-        std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>>
+        std::unique_ptr<const opentxs::blockchain::bitcoin::block::Transaction>>
     CollectTransactionsForFeeCalculations(
         const User& user,
         const std::vector<Transaction>& send_transactions,
@@ -177,7 +177,7 @@ protected:
     Amount CalculateFee(
         const std::vector<Transaction>& send_transactions,
         std::vector<std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Transaction>>&
+            const opentxs::blockchain::bitcoin::block::Transaction>>&
             loaded_transactions) const;
 
     void CollectOutputs(

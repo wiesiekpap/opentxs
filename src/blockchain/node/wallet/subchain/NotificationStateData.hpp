@@ -23,7 +23,7 @@
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/Block.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/block/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Index.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -65,14 +65,14 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
+{
+namespace block
 {
 class Block;
 class Transaction;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
 namespace crypto
 {
@@ -85,13 +85,17 @@ class Account;
 class Notification;
 }  // namespace crypto
 
+namespace database
+{
+class Wallet;
+}  // namespace database
+
 namespace node
 {
 namespace internal
 {
-struct Mempool;
-struct Network;
-struct WalletDatabase;
+class Manager;
+class Mempool;
 }  // namespace internal
 
 namespace wallet
@@ -133,8 +137,8 @@ class NotificationStateData final : public SubchainStateData
 public:
     NotificationStateData(
         const api::Session& api,
-        const node::internal::Network& node,
-        node::internal::WalletDatabase& db,
+        const node::internal::Manager& node,
+        database::Wallet& db,
         const node::internal::Mempool& mempool,
         const cfilter::Type filter,
         const crypto::Subchain subchain,
@@ -163,18 +167,18 @@ private:
     auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
         const noexcept -> Index final;
     auto handle_confirmed_matches(
-        const block::bitcoin::Block& block,
+        const bitcoin::block::Block& block,
         const block::Position& position,
         const block::Matches& confirmed,
         const Log& log) const noexcept -> void final;
     auto handle_mempool_matches(
         const block::Matches& matches,
-        std::unique_ptr<const block::bitcoin::Transaction> tx) const noexcept
+        std::unique_ptr<const bitcoin::block::Transaction> tx) const noexcept
         -> void final;
     auto init_keys() const noexcept -> OTPasswordPrompt;
     auto process(
         const block::Match match,
-        const block::bitcoin::Transaction& tx,
+        const bitcoin::block::Transaction& tx,
         const PasswordPrompt& reason) const noexcept -> void;
     auto process(
         const opentxs::PaymentCode& remote,

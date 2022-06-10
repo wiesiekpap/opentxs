@@ -15,9 +15,8 @@
 
 #include "blockchain/node/blockoracle/BlockBatch.hpp"
 #include "blockchain/node/blockoracle/BlockDownloader.hpp"
-#include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/database/Types.hpp"
 #include "internal/blockchain/node/Factory.hpp"
-#include "internal/blockchain/node/Node.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -39,9 +38,9 @@ namespace opentxs::factory
 {
 auto BlockOracle(
     const api::Session& api,
-    const blockchain::node::internal::Network& node,
+    const blockchain::node::internal::Manager& node,
     const blockchain::node::HeaderOracle& header,
-    blockchain::node::internal::BlockDatabase& db,
+    blockchain::database::Block& db,
     const blockchain::Type chain,
     const UnallocatedCString& shutdown) noexcept
     -> blockchain::node::internal::BlockOracle
@@ -96,9 +95,9 @@ namespace opentxs::blockchain::node::internal
 {
 BlockOracle::Imp::Imp(
     const api::Session& api,
-    const internal::Network& node,
+    const internal::Manager& node,
     const node::HeaderOracle& header,
-    internal::BlockDatabase& db,
+    database::Block& db,
     const blockchain::Type chain,
     const std::string_view parent,
     const network::zeromq::BatchID batch,
@@ -150,9 +149,9 @@ BlockOracle::Imp::Imp(
 
 BlockOracle::Imp::Imp(
     const api::Session& api,
-    const internal::Network& node,
+    const internal::Manager& node,
     const node::HeaderOracle& header,
-    internal::BlockDatabase& db,
+    database::Block& db,
     const blockchain::Type chain,
     const std::string_view parent,
     const network::zeromq::BatchID batch,
@@ -361,7 +360,7 @@ auto BlockOracle::Tip() const noexcept -> block::Position
     return imp_->Tip();
 }
 
-auto BlockOracle::Validate(const block::bitcoin::Block& block) const noexcept
+auto BlockOracle::Validate(const bitcoin::block::Block& block) const noexcept
     -> bool
 {
     return imp_->Validate(block);

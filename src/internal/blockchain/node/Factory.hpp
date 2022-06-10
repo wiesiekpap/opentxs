@@ -8,7 +8,7 @@
 #include <memory>
 #include <string_view>
 
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -35,37 +35,28 @@ namespace blockchain
 {
 namespace database
 {
-namespace common
-{
-class Database;
-}  // namespace common
+class Block;
+class Cfilter;
+class Header;
+class Peer;
+class Wallet;
 }  // namespace database
 
 namespace node
 {
 namespace internal
 {
-struct BlockDatabase;
 class BlockOracle;
+class FilterOracle;
+class Mempool;
+class Manager;
+class PeerManager;
+class Wallet;
 struct Config;
-struct FilterDatabase;
-struct FilterOracle;
-struct HeaderDatabase;
-struct Mempool;
-struct Network;
-struct PeerDatabase;
-struct PeerManager;
-struct Wallet;
-struct WalletDatabase;
 }  // namespace internal
 
 class HeaderOracle;
 }  // namespace node
-
-namespace internal
-{
-struct Database;
-}  // namespace internal
 }  // namespace blockchain
 // }  // namespace v1
 }  // namespace opentxs
@@ -73,20 +64,13 @@ struct Database;
 
 namespace opentxs::factory
 {
-auto BlockchainDatabase(
-    const api::Session& api,
-    const blockchain::node::internal::Network& node,
-    const blockchain::database::common::Database& db,
-    const blockchain::Type chain,
-    const blockchain::cfilter::Type filter) noexcept
-    -> std::unique_ptr<blockchain::internal::Database>;
 auto BlockchainFilterOracle(
     const api::Session& api,
     const blockchain::node::internal::Config& config,
-    const blockchain::node::internal::Network& node,
+    const blockchain::node::internal::Manager& node,
     const blockchain::node::HeaderOracle& header,
     const blockchain::node::internal::BlockOracle& block,
-    blockchain::node::internal::FilterDatabase& database,
+    blockchain::database::Cfilter& database,
     const blockchain::Type chain,
     const blockchain::cfilter::Type filter,
     const UnallocatedCString& shutdown) noexcept
@@ -97,16 +81,16 @@ auto BlockchainNetworkBitcoin(
     const blockchain::node::internal::Config& config,
     const UnallocatedCString& seednode,
     const UnallocatedCString& syncEndpoint) noexcept
-    -> std::unique_ptr<blockchain::node::internal::Network>;
+    -> std::unique_ptr<blockchain::node::internal::Manager>;
 auto BlockchainPeerManager(
     const api::Session& api,
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Mempool& mempool,
-    const blockchain::node::internal::Network& node,
+    const blockchain::node::internal::Manager& node,
     const blockchain::node::HeaderOracle& headers,
     const blockchain::node::internal::FilterOracle& filter,
     const blockchain::node::internal::BlockOracle& block,
-    blockchain::node::internal::PeerDatabase& database,
+    blockchain::database::Peer& database,
     const blockchain::Type type,
     const blockchain::database::BlockStorage policy,
     const UnallocatedCString& seednode,
@@ -114,23 +98,23 @@ auto BlockchainPeerManager(
     -> std::unique_ptr<blockchain::node::internal::PeerManager>;
 auto BlockchainWallet(
     const api::Session& api,
-    const blockchain::node::internal::Network& parent,
-    blockchain::node::internal::WalletDatabase& db,
+    const blockchain::node::internal::Manager& parent,
+    blockchain::database::Wallet& db,
     const blockchain::node::internal::Mempool& mempool,
     const blockchain::Type chain,
     const std::string_view shutdown)
     -> std::unique_ptr<blockchain::node::internal::Wallet>;
 auto BlockOracle(
     const api::Session& api,
-    const blockchain::node::internal::Network& node,
+    const blockchain::node::internal::Manager& node,
     const blockchain::node::HeaderOracle& header,
-    blockchain::node::internal::BlockDatabase& db,
+    blockchain::database::Block& db,
     const blockchain::Type chain,
     const UnallocatedCString& shutdown) noexcept
     -> blockchain::node::internal::BlockOracle;
 auto HeaderOracle(
     const api::Session& api,
-    blockchain::node::internal::HeaderDatabase& database,
+    blockchain::database::Header& database,
     const blockchain::Type type) noexcept
     -> std::unique_ptr<blockchain::node::HeaderOracle>;
 }  // namespace opentxs::factory

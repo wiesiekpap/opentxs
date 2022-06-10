@@ -11,6 +11,8 @@
 #include <tuple>
 #include <utility>
 
+#include "internal/blockchain/database/Header.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
@@ -21,7 +23,7 @@ namespace opentxs::blockchain::node
 {
 UpdateTransaction::UpdateTransaction(
     const api::Session& api,
-    const internal::HeaderDatabase& db)
+    const database::Header& db)
     : api_(api)
     , db_(db)
     , have_reorg_(false)
@@ -73,7 +75,7 @@ auto UpdateTransaction::ClearCheckpoint() -> void
     checkpoint_ = make_blank<block::Position>::value(api_);
 }
 
-auto UpdateTransaction::ConnectBlock(ChainSegment&& segment) -> void
+auto UpdateTransaction::ConnectBlock(database::ChainSegment&& segment) -> void
 {
     {
         auto& cached = disconnected();
@@ -97,7 +99,7 @@ auto UpdateTransaction::ConnectBlock(ChainSegment&& segment) -> void
 
 auto UpdateTransaction::DisconnectBlock(const block::Header& header) -> void
 {
-    ChainSegment item{header.ParentHash(), header.Hash()};
+    database::ChainSegment item{header.ParentHash(), header.Hash()};
 
     {
         auto& cached = disconnected();
@@ -108,7 +110,8 @@ auto UpdateTransaction::DisconnectBlock(const block::Header& header) -> void
     disconnected_.emplace(std::move(item));
 }
 
-auto UpdateTransaction::disconnected() const noexcept -> DisconnectedList&
+auto UpdateTransaction::disconnected() const noexcept
+    -> database::DisconnectedList&
 {
     if (false == cached_disconnected_.has_value()) {
         cached_disconnected_ = db_.DisconnectedHashes();
@@ -205,7 +208,7 @@ auto UpdateTransaction::SetReorgParent(const block::Position& pos) noexcept
     if (set) { reorg_from_ = pos; }
 }
 
-auto UpdateTransaction::siblings() const noexcept -> Hashes&
+auto UpdateTransaction::siblings() const noexcept -> database::Hashes&
 {
     if (false == cached_siblings_.has_value()) {
         cached_siblings_ = db_.SiblingHashes();

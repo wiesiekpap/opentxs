@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/blockchain/block/bitcoin/Block.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/bitcoin/block/Block.hpp"
 
 #pragma once
 
@@ -25,13 +25,13 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Block;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
 namespace node
 {
@@ -58,7 +58,7 @@ public:
     virtual auto LoadBitcoin(const Vector<block::Hash>& hashes) const noexcept
         -> BitcoinBlockResults = 0;
     virtual auto Tip() const noexcept -> block::Position = 0;
-    virtual auto Validate(const block::bitcoin::Block& block) const noexcept
+    virtual auto Validate(const bitcoin::block::Block& block) const noexcept
         -> bool = 0;
 
     OPENTXS_NO_EXPORT virtual ~BlockOracle() = default;

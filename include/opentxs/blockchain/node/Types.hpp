@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/blockchain/block/bitcoin/Block.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/bitcoin/block/Block.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/node/SendResult.hpp"
 
 #pragma once
@@ -27,13 +27,13 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Block;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 }  // namespace blockchain
 // }  // namespace v1
 }  // namespace opentxs
@@ -48,7 +48,7 @@ enum class TxoState : std::uint16_t;
 enum class TxoTag : std::uint16_t;
 
 using BitcoinBlockResult =
-    std::shared_future<std::shared_ptr<const block::bitcoin::Block>>;
+    std::shared_future<std::shared_ptr<const bitcoin::block::Block>>;
 using BitcoinBlockResults = Vector<BitcoinBlockResult>;
 using SendOutcome = std::pair<SendResult, block::pTxid>;
 

@@ -18,16 +18,15 @@
 #include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "internal/blockchain/database/Database.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Types.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Input.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Allocator.hpp"
@@ -48,13 +47,16 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Header;
+}  // namespace block
 }  // namespace bitcoin
 
+namespace block
+{
 class Header;
 }  // namespace block
 
@@ -68,6 +70,11 @@ class Database;
 
 namespace node
 {
+namespace internal
+{
+class Manager;
+}  // namespace internal
+
 class UpdateTransaction;
 }  // namespace node
 }  // namespace blockchain
@@ -86,7 +93,7 @@ public:
         return load_header(best().second);
     }
     auto CurrentCheckpoint() const noexcept -> block::Position;
-    auto DisconnectedHashes() const noexcept -> node::DisconnectedList;
+    auto DisconnectedHashes() const noexcept -> database::DisconnectedList;
     auto HasDisconnectedChildren(const block::Hash& hash) const noexcept
         -> bool;
     auto HaveCheckpoint() const noexcept -> bool;
@@ -101,10 +108,10 @@ public:
     }
     auto RecentHashes(alloc::Resource* alloc) const noexcept
         -> Vector<block::Hash>;
-    auto SiblingHashes() const noexcept -> node::Hashes;
+    auto SiblingHashes() const noexcept -> database::Hashes;
     // Returns null pointer if the header does not exist
     auto TryLoadBitcoinHeader(const block::Hash& hash) const noexcept
-        -> std::unique_ptr<block::bitcoin::Header>;
+        -> std::unique_ptr<bitcoin::block::Header>;
     // Returns null pointer if the header does not exist
     auto TryLoadHeader(const block::Hash& hash) const noexcept
         -> std::unique_ptr<block::Header>;
@@ -113,14 +120,14 @@ public:
 
     Headers(
         const api::Session& api,
-        const node::internal::Network& network,
+        const node::internal::Manager& network,
         const common::Database& common,
         const storage::lmdb::LMDB& lmdb,
         const blockchain::Type type) noexcept;
 
 private:
     const api::Session& api_;
-    const node::internal::Network& network_;
+    const node::internal::Manager& network_;
     const common::Database& common_;
     const storage::lmdb::LMDB& lmdb_;
     mutable std::mutex lock_;
@@ -132,7 +139,7 @@ private:
         -> bool;
     // Throws std::out_of_range if the header does not exist
     auto load_bitcoin_header(const block::Hash& hash) const noexcept(false)
-        -> std::unique_ptr<block::bitcoin::Header>;
+        -> std::unique_ptr<bitcoin::block::Header>;
     // Throws std::out_of_range if the header does not exist
     auto load_header(const block::Hash& hash) const noexcept(false)
         -> std::unique_ptr<block::Header>;

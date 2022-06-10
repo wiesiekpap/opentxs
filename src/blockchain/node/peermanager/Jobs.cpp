@@ -9,7 +9,6 @@
 
 #include <utility>
 
-#include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -39,26 +38,28 @@ PeerManager::Jobs::Jobs(const api::Session& api) noexcept
     , broadcast_block_(zmq_.PublishSocket())
     , endpoint_map_([&] {
         auto map = EndpointMap{};
-        listen(map, Task::Getheaders, getheaders_);
-        listen(map, Task::JobAvailableCfheaders, getcfheaders_);
-        listen(map, Task::JobAvailableCfilters, getcfilters_);
-        listen(map, Task::JobAvailableBlock, getblocks_);
-        listen(map, Task::Heartbeat, heartbeat_);
-        listen(map, Task::Getblock, getblock_);
-        listen(map, Task::BroadcastTransaction, broadcast_transaction_);
-        listen(map, Task::BroadcastBlock, broadcast_block_);
+        listen(map, PeerManagerJobs::Getheaders, getheaders_);
+        listen(map, PeerManagerJobs::JobAvailableCfheaders, getcfheaders_);
+        listen(map, PeerManagerJobs::JobAvailableCfilters, getcfilters_);
+        listen(map, PeerManagerJobs::JobAvailableBlock, getblocks_);
+        listen(map, PeerManagerJobs::Heartbeat, heartbeat_);
+        listen(map, PeerManagerJobs::Getblock, getblock_);
+        listen(
+            map, PeerManagerJobs::BroadcastTransaction, broadcast_transaction_);
+        listen(map, PeerManagerJobs::BroadcastBlock, broadcast_block_);
 
         return map;
     }())
     , socket_map_({
-          {Task::Getheaders, &getheaders_.get()},
-          {Task::JobAvailableCfheaders, &getcfheaders_.get()},
-          {Task::JobAvailableBlock, &getcfilters_.get()},
-          {Task::JobAvailableCfilters, &getblocks_.get()},
-          {Task::Heartbeat, &heartbeat_.get()},
-          {Task::Getblock, &getblock_.get()},
-          {Task::BroadcastTransaction, &broadcast_transaction_.get()},
-          {Task::BroadcastBlock, &broadcast_block_.get()},
+          {PeerManagerJobs::Getheaders, &getheaders_.get()},
+          {PeerManagerJobs::JobAvailableCfheaders, &getcfheaders_.get()},
+          {PeerManagerJobs::JobAvailableBlock, &getcfilters_.get()},
+          {PeerManagerJobs::JobAvailableCfilters, &getblocks_.get()},
+          {PeerManagerJobs::Heartbeat, &heartbeat_.get()},
+          {PeerManagerJobs::Getblock, &getblock_.get()},
+          {PeerManagerJobs::BroadcastTransaction,
+           &broadcast_transaction_.get()},
+          {PeerManagerJobs::BroadcastBlock, &broadcast_block_.get()},
       })
 {
     // WARNING if any publish sockets are converted to push sockets or vice
@@ -66,7 +67,7 @@ PeerManager::Jobs::Jobs(const api::Session& api) noexcept
     // be updated
 }
 
-auto PeerManager::Jobs::Dispatch(const Task type) noexcept -> void
+auto PeerManager::Jobs::Dispatch(const PeerManagerJobs type) noexcept -> void
 {
     Dispatch(Work(type));
 }
@@ -80,7 +81,7 @@ auto PeerManager::Jobs::Dispatch(zmq::Message&& work) noexcept -> void
     const auto task = [&] {
         try {
 
-            return body.at(0).as<Task>();
+            return body.at(0).as<PeerManagerJobs>();
         } catch (...) {
 
             OT_FAIL;
@@ -90,7 +91,7 @@ auto PeerManager::Jobs::Dispatch(zmq::Message&& work) noexcept -> void
     socket_map_.at(task)->Send(std::move(work));
 }
 
-auto PeerManager::Jobs::Endpoint(const Task type) const noexcept
+auto PeerManager::Jobs::Endpoint(const PeerManagerJobs type) const noexcept
     -> UnallocatedCString
 {
     try {
@@ -104,7 +105,7 @@ auto PeerManager::Jobs::Endpoint(const Task type) const noexcept
 
 auto PeerManager::Jobs::listen(
     EndpointMap& map,
-    const Task type,
+    const PeerManagerJobs type,
     const zmq::socket::Sender& socket) noexcept -> void
 {
     auto [it, added] =
@@ -122,7 +123,7 @@ auto PeerManager::Jobs::Shutdown() noexcept -> void
     for (auto [type, socket] : socket_map_) { socket->Close(); }
 }
 
-auto PeerManager::Jobs::Work(const Task task) const noexcept
+auto PeerManager::Jobs::Work(const PeerManagerJobs task) const noexcept
     -> network::zeromq::Message
 {
     return network::zeromq::tagged_message(task);

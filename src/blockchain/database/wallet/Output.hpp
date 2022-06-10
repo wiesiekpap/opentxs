@@ -16,7 +16,7 @@
 #include <mutex>
 #include <optional>
 
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Wallet.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
@@ -40,13 +40,13 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Transaction;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
 namespace database
 {
@@ -56,6 +56,14 @@ class Proposal;
 class SubchainData;
 }  // namespace wallet
 }  // namespace database
+
+namespace node
+{
+namespace internal
+{
+struct SpendPolicy;
+}  // namespace internal
+}  // namespace node
 }  // namespace blockchain
 
 namespace identifier
@@ -89,7 +97,7 @@ namespace opentxs::blockchain::database::wallet
 {
 using AccountID = Identifier;
 using SubchainID = Identifier;
-using Parent = node::internal::WalletDatabase;
+using Parent = database::Wallet;
 using NodeID = Parent::NodeID;
 using BatchedMatches = Parent::BatchedMatches;
 using UTXO = Parent::UTXO;
@@ -143,12 +151,12 @@ public:
         const AccountID& account,
         const SubchainID& subchain,
         const Vector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction,
+        const bitcoin::block::Transaction& transaction,
         TXOs& txoConsumed) const noexcept -> bool;
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
-        const block::bitcoin::Transaction& transaction) noexcept -> bool;
+        const bitcoin::block::Transaction& transaction) noexcept -> bool;
     auto AdvanceTo(const block::Position& pos) noexcept -> bool;
     auto CancelProposal(const Identifier& id) noexcept -> bool;
     auto FinalizeReorg(MDB_txn* tx, const block::Position& pos) noexcept

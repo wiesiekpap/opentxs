@@ -19,19 +19,19 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Block;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 
 namespace node
 {
 namespace internal
 {
-struct Network;
+class Manager;
 }  // namespace internal
 
 class BlockOracle;
@@ -64,7 +64,7 @@ public:
     using PendingOutgoing = std::future<SendOutcome>;
 
     virtual auto AddBlock(
-        const std::shared_ptr<const block::bitcoin::Block> block) const noexcept
+        const std::shared_ptr<const bitcoin::block::Block> block) const noexcept
         -> bool = 0;
     virtual auto AddPeer(const blockchain::p2p::Address& address) const noexcept
         -> bool = 0;
@@ -81,7 +81,7 @@ public:
     virtual auto GetVerifiedPeerCount() const noexcept -> std::size_t = 0;
     virtual auto HeaderOracle() const noexcept -> const node::HeaderOracle& = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
-        -> const internal::Network& = 0;
+        -> const internal::Manager& = 0;
     virtual auto Listen(const blockchain::p2p::Address& address) const noexcept
         -> bool = 0;
     virtual auto SendToAddress(

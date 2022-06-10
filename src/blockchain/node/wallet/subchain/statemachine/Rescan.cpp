@@ -18,7 +18,9 @@
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Wallet.hpp"
+#include "internal/blockchain/node/FilterOracle.hpp"
+#include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
@@ -62,10 +64,6 @@ Rescan::Imp::Imp(
           {
               {SocketType::Push,
                {
-                   {parent->to_scan_endpoint_, Direction::Connect},
-               }},
-              {SocketType::Push,
-               {
                    {parent->to_process_endpoint_, Direction::Connect},
                }},
               {SocketType::Push,
@@ -73,9 +71,8 @@ Rescan::Imp::Imp(
                    {parent->to_progress_endpoint_, Direction::Connect},
                }},
           })
-    , to_scan_(pipeline_.Internal().ExtraSocket(1))
-    , to_process_(pipeline_.Internal().ExtraSocket(2))
-    , to_progress_(pipeline_.Internal().ExtraSocket(3))
+    , to_process_(pipeline_.Internal().ExtraSocket(1))
+    , to_progress_(pipeline_.Internal().ExtraSocket(2))
     , last_scanned_(std::nullopt)
     , filter_tip_(std::nullopt)
     , highest_dirty_(parent_.null_position_)
@@ -300,7 +297,6 @@ auto Rescan::Imp::process_do_rescan(Message&& in) noexcept -> void
     last_scanned_.reset();
     highest_dirty_ = parent_.null_position_;
     dirty_.clear();
-    update_progress();
     to_progress_.Send(std::move(in));
 }
 
@@ -384,21 +380,18 @@ auto Rescan::Imp::set_last_scanned(const block::Position& value) noexcept
     -> void
 {
     last_scanned_ = value;
-    update_progress();
 }
 
 auto Rescan::Imp::set_last_scanned(
     const std::optional<block::Position>& value) noexcept -> void
 {
     last_scanned_ = value;
-    update_progress();
 }
 
 auto Rescan::Imp::set_last_scanned(
     std::optional<block::Position>&& value) noexcept -> void
 {
     last_scanned_ = std::move(value);
-    update_progress();
 }
 
 auto Rescan::Imp::stop() const noexcept -> block::Height
@@ -420,12 +413,6 @@ auto Rescan::Imp::stop() const noexcept -> block::Height
         .Flush();
 
     return stopHeight;
-}
-
-auto Rescan::Imp::update_progress() noexcept -> void
-{
-    parent_.rescan_progress_.store(current().first);
-    to_scan_.Send(MakeWork(Work::statemachine));
 }
 
 auto Rescan::Imp::work() noexcept -> bool

@@ -54,13 +54,13 @@ class Session;
 
 namespace blockchain
 {
-namespace block
-{
 namespace bitcoin
 {
+namespace block
+{
 class Transaction;
-}  // namespace bitcoin
 }  // namespace block
+}  // namespace bitcoin
 }  // namespace blockchain
 
 namespace identifier
@@ -84,7 +84,7 @@ namespace opentxs::api::session::imp
 class Activity final : virtual public internal::Activity, Lockable
 {
 public:
-    auto AddBlockchainTransaction(const blockchain::block::bitcoin::Transaction&
+    auto AddBlockchainTransaction(const blockchain::bitcoin::block::Transaction&
                                       transaction) const noexcept -> bool final;
     auto AddPaymentEvent(
         const identifier::Nym& nymID,
@@ -204,7 +204,7 @@ private:
     auto add_blockchain_transaction(
         const eLock& lock,
         const identifier::Nym& nym,
-        const blockchain::block::bitcoin::Transaction& transaction)
+        const blockchain::bitcoin::block::Transaction& transaction)
         const noexcept -> bool;
 #endif  // OT_BLOCKCHAIN
     auto nym_to_contact(const UnallocatedCString& nymID) const noexcept

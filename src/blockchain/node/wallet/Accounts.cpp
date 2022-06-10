@@ -20,8 +20,10 @@
 #include <utility>
 
 #include "internal/blockchain/crypto/Crypto.hpp"
+#include "internal/blockchain/database/Wallet.hpp"
+#include "internal/blockchain/node/FilterOracle.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/wallet/Account.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Types.hpp"
@@ -89,8 +91,8 @@ namespace opentxs::blockchain::node::wallet
 {
 Accounts::Imp::Imp(
     const api::Session& api,
-    const node::internal::Network& node,
-    node::internal::WalletDatabase& db,
+    const node::internal::Manager& node,
+    database::Wallet& db,
     const node::internal::Mempool& mempool,
     const network::zeromq::BatchID batch,
     const Type chain,
@@ -139,8 +141,8 @@ Accounts::Imp::Imp(
 
 Accounts::Imp::Imp(
     const api::Session& api,
-    const node::internal::Network& node,
-    node::internal::WalletDatabase& db,
+    const node::internal::Manager& node,
+    database::Wallet& db,
     const node::internal::Mempool& mempool,
     const network::zeromq::BatchID batch,
     const Type chain,
@@ -458,8 +460,8 @@ namespace opentxs::blockchain::node::wallet
 {
 Accounts::Accounts(
     const api::Session& api,
-    const node::internal::Network& node,
-    node::internal::WalletDatabase& db,
+    const node::internal::Manager& node,
+    database::Wallet& db,
     const node::internal::Mempool& mempool,
     const Type chain) noexcept
     : imp_([&] {

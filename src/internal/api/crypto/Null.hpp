@@ -8,7 +8,7 @@
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 
@@ -63,7 +63,7 @@ public:
     auto ActivityDescription(
         const identifier::Nym&,
         const Chain,
-        const opentxs::blockchain::block::bitcoin::Transaction&) const noexcept
+        const opentxs::blockchain::bitcoin::block::Transaction&) const noexcept
         -> UnallocatedCString final
     {
         return {};
@@ -149,13 +149,13 @@ public:
     {
     }
     auto LoadTransactionBitcoin(const Txid&) const noexcept -> std::unique_ptr<
-        const opentxs::blockchain::block::bitcoin::Transaction> final
+        const opentxs::blockchain::bitcoin::block::Transaction> final
     {
         return {};
     }
     auto LoadTransactionBitcoin(const TxidHex&) const noexcept
         -> std::unique_ptr<
-            const opentxs::blockchain::block::bitcoin::Transaction> final
+            const opentxs::blockchain::bitcoin::block::Transaction> final
     {
         return {};
     }
@@ -243,9 +243,10 @@ public:
     {
         return {};
     }
-    auto ProcessTransaction(
+    auto ProcessTransactions(  // TODO: MT-84
         const Chain,
-        const opentxs::blockchain::block::bitcoin::Transaction&,
+        Set<std::shared_ptr<
+            opentxs::blockchain::bitcoin::block::Transaction>>&&,
         const PasswordPrompt&) const noexcept -> bool final
     {
         return {};

@@ -23,7 +23,8 @@
 #include "IncomingConnectionManager.hpp"
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Peer.hpp"
+#include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/blockchain/p2p/bitcoin/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -48,11 +49,11 @@ PeerManager::Peers::Peers(
     const api::Session& api,
     const internal::Config& config,
     const node::internal::Mempool& mempool,
-    const internal::Network& node,
+    const internal::Manager& node,
     const HeaderOracle& headers,
     const internal::FilterOracle& filter,
     const internal::BlockOracle& block,
-    internal::PeerDatabase& database,
+    database::Peer& database,
     const internal::PeerManager& parent,
     const database::BlockStorage policy,
     const UnallocatedCString& shutdown,

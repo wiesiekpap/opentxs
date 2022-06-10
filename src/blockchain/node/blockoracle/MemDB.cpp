@@ -12,7 +12,7 @@
 
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
+#include "opentxs/blockchain/bitcoin/block/Block.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 

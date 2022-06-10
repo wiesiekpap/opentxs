@@ -6,8 +6,8 @@
 #include <gtest/gtest.h>
 #include <thread>
 
+#include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "ottest/fixtures/blockchain/Restart.hpp"
 
 namespace ottest

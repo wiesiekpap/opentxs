@@ -30,15 +30,6 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
-namespace client
-{
-namespace internal
-{
-struct Network;
-struct PeerManager;
-}  // namespace internal
-}  // namespace client
-
 namespace p2p
 {
 namespace bitcoin

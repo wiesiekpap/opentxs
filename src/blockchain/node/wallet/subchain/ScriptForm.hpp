@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"
+#include "opentxs/blockchain/bitcoin/block/Script.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -38,8 +38,8 @@ namespace opentxs::blockchain::node::wallet
 class ScriptForm
 {
 public:
-    using Type = block::bitcoin::Script::Pattern;
-    using Script = std::unique_ptr<const block::bitcoin::Script>;
+    using Type = bitcoin::block::Script::Pattern;
+    using Script = std::unique_ptr<const bitcoin::block::Script>;
 
     bool segwit_;
     Type primary_;

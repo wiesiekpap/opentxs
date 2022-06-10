@@ -20,6 +20,7 @@
 #include <utility>
 
 #include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"

@@ -19,9 +19,12 @@
 #include "Proto.hpp"
 #include "blockchain/node/wallet/spend/BitcoinTransactionBuilder.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/bitcoin/block/Factory.hpp"
+#include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "internal/blockchain/node/Node.hpp"
+#include "internal/blockchain/database/Wallet.hpp"
+#include "internal/blockchain/node/Manager.hpp"
+#include "internal/blockchain/node/SpendPolicy.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -30,6 +33,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/block/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/node/SendResult.hpp"
 #include "opentxs/core/Data.hpp"
@@ -75,8 +79,8 @@ public:
     }
 
     Imp(const api::Session& api,
-        const node::internal::Network& node,
-        node::internal::WalletDatabase& db,
+        const node::internal::Manager& node,
+        database::Wallet& db,
         const Type chain) noexcept
         : api_(api)
         , node_(node)
@@ -192,8 +196,8 @@ private:
     };
 
     const api::Session& api_;
-    const node::internal::Network& node_;
-    node::internal::WalletDatabase& db_;
+    const node::internal::Manager& node_;
+    database::Wallet& db_;
     const Type chain_;
     mutable std::mutex lock_;
     mutable Pending pending_;
@@ -488,8 +492,8 @@ private:
 
 Proposals::Proposals(
     const api::Session& api,
-    const node::internal::Network& node,
-    node::internal::WalletDatabase& db,
+    const node::internal::Manager& node,
+    database::Wallet& db,
     const Type chain) noexcept
     : imp_(std::make_unique<Imp>(api, node, db, chain))
 {

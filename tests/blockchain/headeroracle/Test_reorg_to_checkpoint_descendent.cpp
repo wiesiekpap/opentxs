@@ -21,6 +21,8 @@ TEST_F(Test_HeaderOracle, reorg_to_checkpoint_descendent)
 
     EXPECT_TRUE(header_oracle_.AddCheckpoint(2, get_block_hash(BLOCK_6)));
 
+    // TODO : MT-87 : Fix this test when a sleep is added here // sleep(2)
+
     const auto [height, hash] = header_oracle_.GetCheckpoint();
 
     EXPECT_EQ(height, 2);
