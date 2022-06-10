@@ -270,13 +270,15 @@ auto BlockchainImp::enable(
 
 auto BlockchainImp::EnabledChains() const noexcept -> UnallocatedSet<Chain>
 {
-    auto out = UnallocatedSet<Chain>{};
+    UnallocatedSet<Chain> out{};
     init_.get();
-    const auto data = [&] {
+    UnallocatedVector<
+        ::opentxs::blockchain::database::common::Database::EnabledChain>
+        data;
+    {
         auto lock = Lock{lock_};
-
-        return db_->LoadEnabledChains();
-    }();
+        data = db_->LoadEnabledChains();
+    }
     std::transform(
         data.begin(),
         data.end(),
@@ -304,15 +306,12 @@ auto BlockchainImp::GetSyncServers() const noexcept -> Endpoints
 auto BlockchainImp::Hello() const noexcept -> SyncData
 {
     auto lock = Lock{lock_};
-    auto chains = [&] {
-        auto output = Chains{};
 
-        for (const auto& [chain, network] : networks_) {
-            output.emplace_back(chain);
-        }
-
-        return output;
-    }();
+    Chains chains{};
+    chains.reserve(networks_.size());
+    for (const auto& [chain, network] : networks_) {
+        chains.emplace_back(chain);
+    }
 
     return hello(lock, chains);
 }
@@ -344,32 +343,26 @@ auto BlockchainImp::Init(
 
     OT_ASSERT(db_);
 
-    const_cast<std::unique_ptr<Config>&>(base_config_) = [&] {
-        auto out = std::make_unique<Config>();
-        auto& output = *out;
-        const auto sync = (0 < options.RemoteBlockchainSyncServers().size()) ||
-                          options.ProvideBlockchainSyncServer();
+    auto sync = (0 < options.RemoteBlockchainSyncServers().size()) ||
+                      options.ProvideBlockchainSyncServer();
 
-        using Policy = opentxs::blockchain::database::BlockStorage;
+    using Policy = opentxs::blockchain::database::BlockStorage;
+    base_config_ = std::make_unique<Config>();
+    if (Policy::All == db_->BlockPolicy()) {
+        base_config_->generate_cfilters_ = true;
 
-        if (Policy::All == db_->BlockPolicy()) {
-            output.generate_cfilters_ = true;
-
-            if (sync) {
-                output.provide_sync_server_ = true;
-                output.disable_wallet_ = true;
-            }
-        } else if (sync || (false == options.TestMode())) {
-            output.use_sync_server_ = true;
-
-        } else {
-            output.download_cfilters_ = true;
+        if (sync) {
+            base_config_->provide_sync_server_ = true;
+            base_config_->disable_wallet_ = true;
         }
+    } else if (sync || (false == options.TestMode())) {
+        base_config_->use_sync_server_ = true;
 
-        output.disable_wallet_ = !options.BlockchainWalletEnabled();
+    } else {
+        base_config_->download_cfilters_ = true;
+    }
 
-        return out;
-    }();
+    base_config_->disable_wallet_ = !options.BlockchainWalletEnabled();
 
     if (base_config_->use_sync_server_) { sync_client_.emplace(api_); }
 
@@ -379,26 +372,19 @@ auto BlockchainImp::Init(
         "tcp://metier1.opentransactions.org:8814",
         "tcp://metier2.opentransactions.org:8814",
     };
-    const auto existing = [&] {
-        auto out = Set<CString>{};
 
-        for (const auto& server : GetSyncServers()) {
-            // TODO GetSyncServers should return pmr strings
-            out.emplace(server.c_str());
-        }
+    const auto servers = GetSyncServers();
+    // TODO GetSyncServers should return pmr strings
+    Set<CString> existing(servers.begin(), servers.end());
 
-        for (const auto& server : defaultServers) {
-            if (0 == out.count(server)) {
-                if (false == api_.GetOptions().TestMode()) {
-                    AddSyncServer(server);
-                }
-
-                out.emplace(server);
+    for (const auto& server : defaultServers) {
+        if (0 == existing.count(server)) {
+            if (false == api_.GetOptions().TestMode()) {
+                AddSyncServer(server);
             }
+            existing.emplace(server);
         }
-
-        return out;
-    }();
+    }
 
     try {
         for (const auto& endpoint : options.RemoteBlockchainSyncServers()) {
@@ -423,14 +409,12 @@ auto BlockchainImp::IsEnabled(
 
 auto BlockchainImp::publish_chain_state(Chain type, bool state) const -> void
 {
-    chain_state_publisher_->Send([&] {
-        auto work = opentxs::network::zeromq::tagged_message(
-            WorkType::BlockchainStateChange);
-        work.AddFrame(type);
-        work.AddFrame(state);
+    auto work = opentxs::network::zeromq::tagged_message(
+        WorkType::BlockchainStateChange);
+    work.AddFrame(type);
+    work.AddFrame(state);
 
-        return work;
-    }());
+    chain_state_publisher_->Send(std::move(work));
 }
 
 auto BlockchainImp::PublishStartup(
@@ -441,13 +425,11 @@ auto BlockchainImp::PublishStartup(
     auto push = api_.Network().ZeroMQ().PushSocket(Dir::Connect);
     auto out =
         push->Start(api_.Endpoints().Internal().BlockchainStartupPull().data());
-    out &= push->Send([&] {
-        auto out = MakeWork(type);
-        out.AddFrame(chain);
 
-        return out;
-    }());
+    auto work = MakeWork(type);
+    work.AddFrame(chain);
 
+    out &= push->Send(std::move(work));
     return out;
 }
 
@@ -456,15 +438,13 @@ auto BlockchainImp::ReportProgress(
     const opentxs::blockchain::block::Height current,
     const opentxs::blockchain::block::Height target) const noexcept -> void
 {
-    sync_updates_->Send([&] {
-        auto work = opentxs::network::zeromq::tagged_message(
-            WorkType::BlockchainSyncProgress);
-        work.AddFrame(chain);
-        work.AddFrame(current);
-        work.AddFrame(target);
+    auto work = opentxs::network::zeromq::tagged_message(
+        WorkType::BlockchainSyncProgress);
+    work.AddFrame(chain);
+    work.AddFrame(current);
+    work.AddFrame(target);
 
-        return work;
-    }());
+    sync_updates_->Send(std::move(work));
 }
 
 auto BlockchainImp::RestoreNetworks() const noexcept -> void
@@ -508,7 +488,7 @@ auto BlockchainImp::start(
     const Lock& lock,
     const Chain type,
     const UnallocatedCString& seednode,
-    const bool startWallet) const noexcept -> bool
+    const bool startWallet) const -> bool
 {
     init_.get();
 
@@ -533,33 +513,22 @@ auto BlockchainImp::start(
     switch (opentxs::blockchain::params::Chains().at(type).p2p_protocol_) {
         case p2p::Protocol::bitcoin: {
             auto endpoint = UnallocatedCString{};
+            if (!base_config_)
+                throw std::runtime_error("Base config not initialized!");
 
             if (base_config_->provide_sync_server_) {
                 sync_server_.Enable(type);
                 endpoint = sync_server_.Endpoint(type);
             }
 
-            auto& config = [&]() -> const Config& {
-                {
-                    auto it = config_.find(type);
-
-                    if (config_.end() != it) { return it->second; }
-                }
-
-                auto [it, added] = config_.emplace(type, *base_config_);
-
-                OT_ASSERT(added);
-
-                return it->second;
-            }();
-
-            auto [it, added] = networks_.emplace(
+            const auto& config= config_.try_emplace(type, *base_config_).first->second;
+            auto [iter, added] = networks_.emplace(
                 type,
                 factory::BlockchainNetworkBitcoin(
                     api_, type, config, seednode, endpoint));
             LogConsole()(print(type))(" client is running").Flush();
             publish_chain_state(type, true);
-            auto& node = *(it->second);
+            auto& node = *(iter->second);
 
             if (startWallet) { node.StartWallet(); }
 
@@ -578,9 +547,10 @@ auto BlockchainImp::StartSyncServer(
     const UnallocatedCString& sync,
     const UnallocatedCString& publicSync,
     const UnallocatedCString& update,
-    const UnallocatedCString& publicUpdate) const noexcept -> bool
+    const UnallocatedCString& publicUpdate) const -> bool
 {
     auto lock = Lock{lock_};
+    if (!base_config_) throw std::runtime_error("Base config not initialized!");
 
     if (base_config_->provide_sync_server_) {
         return sync_server_.Start(sync, publicSync, update, publicUpdate);
