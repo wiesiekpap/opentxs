@@ -282,17 +282,14 @@ private:
         const Identifier& id,
         const otx::client::StorageBox box) const noexcept -> OTIdentifier
     {
-        const auto preimage = [&] {
-            auto out = space(nym.size() + id.size() + sizeof(box));
-            auto it = out.data();
-            std::memcpy(it, nym.data(), nym.size());
-            std::advance(it, nym.size());
-            std::memcpy(it, id.data(), id.size());
-            std::advance(it, id.size());
-            std::memcpy(it, &box, sizeof(box));
+        auto preimage = space(nym.size() + id.size() + sizeof(box));
+        auto it = preimage.data();
+        std::memcpy(it, nym.data(), nym.size());
+        std::advance(it, nym.size());
+        std::memcpy(it, id.data(), id.size());
+        std::advance(it, id.size());
+        std::memcpy(it, &box, sizeof(box));
 
-            return out;
-        }();
         auto out = api_.Factory().Identifier();
         out->CalculateDigest(reader(preimage));
 
