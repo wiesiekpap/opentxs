@@ -189,15 +189,13 @@ auto Activity::add_blockchain_transaction(
     }
 
     std::for_each(std::begin(chains), std::end(chains), [&](const auto& chain) {
-        get_blockchain(lock, nym).Send([&] {
-            auto out = opentxs::network::zeromq::tagged_message(
-                WorkType::BlockchainNewTransaction);
-            out.AddFrame(txid);
-            out.AddFrame(chain);
-            out.Internal().AddFrame(proto.value());
+        auto message = opentxs::network::zeromq::tagged_message(
+            WorkType::BlockchainNewTransaction);
+        message.AddFrame(txid);
+        message.AddFrame(chain);
+        message.Internal().AddFrame(proto.value());
 
-            return out;
-        }());
+        get_blockchain(lock, nym).Send(std::move(message));
     });
 
     return output;
@@ -446,18 +444,9 @@ auto Activity::Mail(
     mail_.CacheText(nym, id, box, text);
     const auto data = UnallocatedCString{String::Factory(mail)->Get()};
     const auto localName = String::Factory(nym);
-    const auto participantNymID = [&]() -> UnallocatedCString {
-        if (localName->Compare(mail.m_strNymID2)) {
-            // This is an incoming message. The contact id is the sender's id.
-
-            return mail.m_strNymID->Get();
-        } else {
-            // This is an outgoing message. The contact id is the recipient's
-            // id.
-
-            return mail.m_strNymID2->Get();
-        }
-    }();
+    const auto participantNymID = localName->Compare(mail.m_strNymID2)
+                                      ? mail.m_strNymID->Get()
+                                      : mail.m_strNymID2->Get();
     const auto contact = nym_to_contact(participantNymID);
 
     OT_ASSERT(contact);
@@ -494,15 +483,11 @@ auto Activity::Mail(
     const otx::client::StorageBox box,
     const PeerObject& text) const noexcept -> UnallocatedCString
 {
-    return Mail(nym, mail, box, [&]() -> UnallocatedCString {
-        if (auto& out = text.Message(); out) {
-
-            return *out;
-        } else {
-
-            return {};
-        }
-    }());
+    return Mail(
+        nym,
+        mail,
+        box,
+        text.Message() ? *text.Message() : UnallocatedCString{});
 }
 
 auto Activity::MailRemove(
@@ -688,13 +673,11 @@ auto Activity::publish(const identifier::Nym& nymID, const Identifier& threadID)
     const noexcept -> void
 {
     auto& socket = get_publisher(nymID);
-    socket.Send([&] {
-        auto work = opentxs::network::zeromq::tagged_message(
-            WorkType::ActivityThreadUpdated);
-        work.AddFrame(threadID);
+    auto work = opentxs::network::zeromq::tagged_message(
+        WorkType::ActivityThreadUpdated);
+    work.AddFrame(threadID);
 
-        return work;
-    }());
+    socket.Send(std::move(work));
 }
 
 auto Activity::start_publisher(
