@@ -1691,15 +1691,13 @@ auto OTX::publish_messagability(
     otx::client::Messagability value) const noexcept
     -> otx::client::Messagability
 {
-    messagability_->Send([&] {
-        auto work = opentxs::network::zeromq::tagged_message(
-            WorkType::OTXMessagability);
-        work.AddFrame(sender);
-        work.AddFrame(contact);
-        work.AddFrame(value);
+    auto work =
+        opentxs::network::zeromq::tagged_message(WorkType::OTXMessagability);
+    work.AddFrame(sender);
+    work.AddFrame(contact);
+    work.AddFrame(value);
 
-        return work;
-    }());
+    messagability_->Send(std::move(work));
 
     return value;
 }
@@ -2335,14 +2333,12 @@ void OTX::update_task(
         }
 
         if (publish) {
-            task_finished_->Send([&] {
-                auto work = opentxs::network::zeromq::tagged_message(
-                    WorkType::OTXTaskComplete);
-                work.AddFrame(taskID);
-                work.AddFrame(value);
+            auto work = opentxs::network::zeromq::tagged_message(
+                WorkType::OTXTaskComplete);
+            work.AddFrame(taskID);
+            work.AddFrame(value);
 
-                return work;
-            }());
+            task_finished_->Send(std::move(work));
         }
     } catch (...) {
         LogError()(OT_PRETTY_CLASS())(

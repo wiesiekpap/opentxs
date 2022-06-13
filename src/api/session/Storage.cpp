@@ -682,29 +682,32 @@ auto Storage::Load(
     const bool checking) const -> bool
 {
     auto temp = std::make_shared<proto::PeerReply>(output);
-    const auto rc = [&] {
-        switch (box) {
-            case otx::client::StorageBox::SENTPEERREPLY: {
-                return Root().Tree().Nyms().Nym(nymID).SentReplyBox().Load(
-                    id, temp, checking);
-            }
-            case otx::client::StorageBox::INCOMINGPEERREPLY: {
-                return Root().Tree().Nyms().Nym(nymID).IncomingReplyBox().Load(
-                    id, temp, checking);
-            }
-            case otx::client::StorageBox::FINISHEDPEERREPLY: {
-                return Root().Tree().Nyms().Nym(nymID).FinishedReplyBox().Load(
-                    id, temp, checking);
-            }
-            case otx::client::StorageBox::PROCESSEDPEERREPLY: {
-                return Root().Tree().Nyms().Nym(nymID).ProcessedReplyBox().Load(
-                    id, temp, checking);
-            }
-            default: {
-                return false;
-            }
+    bool rc{false};
+    switch (box) {
+        case otx::client::StorageBox::SENTPEERREPLY: {
+            rc = Root().Tree().Nyms().Nym(nymID).SentReplyBox().Load(
+                id, temp, checking);
+            break;
         }
-    }();
+        case otx::client::StorageBox::INCOMINGPEERREPLY: {
+            rc = Root().Tree().Nyms().Nym(nymID).IncomingReplyBox().Load(
+                id, temp, checking);
+            break;
+        }
+        case otx::client::StorageBox::FINISHEDPEERREPLY: {
+            rc = Root().Tree().Nyms().Nym(nymID).FinishedReplyBox().Load(
+                id, temp, checking);
+            break;
+        }
+        case otx::client::StorageBox::PROCESSEDPEERREPLY: {
+            rc = Root().Tree().Nyms().Nym(nymID).ProcessedReplyBox().Load(
+                id, temp, checking);
+            break;
+        }
+        default: {
+            rc = false;
+        }
+    }
 
     if (rc && temp) { output = *temp; }
 
@@ -721,42 +724,33 @@ auto Storage::Load(
 {
     auto temp = std::make_shared<proto::PeerRequest>(output);
     auto alias = UnallocatedCString{};
-    const auto rc = [&] {
-        switch (box) {
-            case otx::client::StorageBox::SENTPEERREQUEST: {
-                return Root().Tree().Nyms().Nym(nymID).SentRequestBox().Load(
-                    id, temp, alias, checking);
-            }
-            case otx::client::StorageBox::INCOMINGPEERREQUEST: {
-                return Root()
-                    .Tree()
-                    .Nyms()
-                    .Nym(nymID)
-                    .IncomingRequestBox()
-                    .Load(id, temp, alias, checking);
-            }
-            case otx::client::StorageBox::FINISHEDPEERREQUEST: {
-                return Root()
-                    .Tree()
-                    .Nyms()
-                    .Nym(nymID)
-                    .FinishedRequestBox()
-                    .Load(id, temp, alias, checking);
-            }
-            case otx::client::StorageBox::PROCESSEDPEERREQUEST: {
-                return Root()
-                    .Tree()
-                    .Nyms()
-                    .Nym(nymID)
-                    .ProcessedRequestBox()
-                    .Load(id, temp, alias, checking);
-            }
-            default: {
+    bool rc{false};
 
-                return false;
-            }
+    switch (box) {
+        case otx::client::StorageBox::SENTPEERREQUEST: {
+            rc = Root().Tree().Nyms().Nym(nymID).SentRequestBox().Load(
+                id, temp, alias, checking);
+            break;
         }
-    }();
+        case otx::client::StorageBox::INCOMINGPEERREQUEST: {
+            rc = Root().Tree().Nyms().Nym(nymID).IncomingRequestBox().Load(
+                id, temp, alias, checking);
+            break;
+        }
+        case otx::client::StorageBox::FINISHEDPEERREQUEST: {
+            rc = Root().Tree().Nyms().Nym(nymID).FinishedRequestBox().Load(
+                id, temp, alias, checking);
+            break;
+        }
+        case otx::client::StorageBox::PROCESSEDPEERREQUEST: {
+            rc = Root().Tree().Nyms().Nym(nymID).ProcessedRequestBox().Load(
+                id, temp, alias, checking);
+            break;
+        }
+        default: {
+            rc = false;
+        }
+    }
 
     if (rc && temp) {
         output = *temp;
