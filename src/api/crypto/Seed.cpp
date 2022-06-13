@@ -402,9 +402,7 @@ auto Seed::GetPaymentCode(
     const auto& api = asymmetric_.Internal().API();
     auto code = factory_.Secret(0);
     api.Crypto().Hash().Digest(
-        opentxs::crypto::HashType::Sha256D,
-        key.PublicKey(),
-        code->WriteInto());
+        opentxs::crypto::HashType::Sha256D, key.PublicKey(), code->WriteInto());
 
     auto path = proto::HDPath{};
     key.Path(path);

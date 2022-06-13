@@ -26,7 +26,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 
-
 namespace opentxs
 {
 
@@ -52,7 +51,6 @@ class Hash;
 }  // namespace blockchain
 
 }  // namespace opentxs
-
 
 namespace opentxs::blockchain::bitcoin::block
 {

@@ -76,6 +76,5 @@ set_tests_properties(
 )
 
 set_tests_properties(
-  ottest-blockchain-headeroracle-reorg_to_checkpoint
-  PROPERTIES DISABLED TRUE
+  ottest-blockchain-headeroracle-reorg_to_checkpoint PROPERTIES DISABLED TRUE
 )
