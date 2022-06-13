@@ -13,8 +13,8 @@
 #include <ostream>
 #include <stdexcept>
 #include <string_view>
-#include <tuple>
 #include <thread>
+#include <tuple>
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "ottest/fixtures/blockchain/Regtest.hpp"
