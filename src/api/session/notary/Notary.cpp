@@ -318,21 +318,7 @@ auto Notary::GetPrivateMint(
     // Modifying the private version may invalidate the public version
     seriesMap.erase(PUBLIC_SERIES);
 
-    auto& output = [&]() -> auto&
-    {
-        if (auto it = seriesMap.find(seriesID); seriesMap.end() != it) {
-
-            return it->second;
-        }
-
-        auto [it, added] = seriesMap.emplace(seriesID, *this);
-
-        OT_ASSERT(added);
-
-        return it->second;
-    }
-    ();
-
+    auto& output = seriesMap.try_emplace(seriesID, *this).first->second;
     if (!output) { output = load_private_mint(lock, id, seriesID); }
 
     return output;
@@ -344,22 +330,7 @@ auto Notary::GetPublicMint(const identifier::UnitDefinition& unitID)
     auto lock = opentxs::Lock{mint_lock_};
     const UnallocatedCString id{unitID.str()};
     const UnallocatedCString seriesID{PUBLIC_SERIES};
-    auto& output = [&]() -> auto&
-    {
-        auto& map = mints_[id];
-
-        if (auto it = map.find(seriesID); map.end() != it) {
-
-            return it->second;
-        }
-
-        auto [it, added] = map.emplace(seriesID, *this);
-
-        OT_ASSERT(added);
-
-        return it->second;
-    }
-    ();
+    auto& output = mints_[id].try_emplace(seriesID, *this).first->second;
 
     if (!output) { output = load_public_mint(lock, id, seriesID); }
 
