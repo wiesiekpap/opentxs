@@ -754,17 +754,11 @@ auto Seed::SetDefault(const Identifier& id) const noexcept -> bool
 
     const auto seedID = id.str();
 
-    auto exists = false;
-    for (const auto& [value, alias] : api_.Storage().SeedList()) {
-        if (value == seedID) {
-            exists = true;
-            break;
-        }
-    }
-
-    if (false == exists) {
+    if (std::none_of(
+            api_.Storage().SeedList().cbegin(),
+            api_.Storage().SeedList().cend(),
+            [&seedID](const auto& seed) { return seed.first == seedID; })) {
         LogError()(OT_PRETTY_CLASS())("Seed ")(id)(" does not exist").Flush();
-
         return false;
     }
 
