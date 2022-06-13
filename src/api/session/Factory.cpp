@@ -2214,13 +2214,9 @@ auto Factory::ServerID(const opentxs::Identifier& in) const noexcept
 auto Factory::ServerID(const google::protobuf::MessageLite& proto) const
     -> OTIdentifier
 {
-    const auto id = [&] {
-        const auto bytes = Data(proto);
-        auto out = ServerID();
-        out->CalculateDigest(bytes->Bytes());
-
-        return out;
-    }();
+    const auto bytes = Data(proto);
+    auto id = ServerID();
+    id->CalculateDigest(bytes->Bytes());
 
     return Identifier(id->str());
 }
@@ -2682,13 +2678,9 @@ auto Factory::UnitID(const opentxs::Identifier& in) const noexcept -> OTUnitID
 auto Factory::UnitID(const google::protobuf::MessageLite& proto) const
     -> OTIdentifier
 {
-    const auto id = [&] {
-        const auto bytes = Data(proto);
-        auto out = UnitID();
-        out->CalculateDigest(bytes->Bytes());
-
-        return out;
-    }();
+    const auto bytes = Data(proto);
+    auto id = UnitID();
+    id->CalculateDigest(bytes->Bytes());
 
     return Identifier(id->str());
 }
