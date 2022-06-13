@@ -40,13 +40,11 @@ namespace opentxs::api::session::ui
 struct UpdateManager::Imp {
     auto ActivateUICallback(const Identifier& id) const noexcept -> void
     {
-        pipeline_.Push([&] {
-            auto out = opentxs::network::zeromq::Message{};
-            out.StartBody();
-            out.AddFrame(id);
+        auto message = opentxs::network::zeromq::Message{};
+        message.StartBody();
+        message.AddFrame(id);
 
-            return out;
-        }());
+        pipeline_.Push(std::move(message));
     }
     auto ClearUICallbacks(const Identifier& id) const noexcept -> void
     {
@@ -127,13 +125,11 @@ private:
         }
 
         const auto& socket = publisher_.get();
-        socket.Send([&] {
-            auto work = opentxs::network::zeromq::tagged_message(
-                WorkType::UIModelUpdated);
-            work.AddFrame(std::move(idFrame));
+        auto work =
+            opentxs::network::zeromq::tagged_message(WorkType::UIModelUpdated);
+        work.AddFrame(std::move(idFrame));
 
-            return work;
-        }());
+        socket.Send(std::move(work));
     }
 };
 
