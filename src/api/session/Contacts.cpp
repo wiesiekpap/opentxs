@@ -148,15 +148,15 @@ auto Contacts::check_nyms() noexcept -> void
 {
     auto buf = std::array<std::byte, 4096>{};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
-    const auto contacts = [&] {
-        auto out = Vector<OTIdentifier>{&alloc};
+
+    Vector<OTIdentifier> contacts{&alloc};
+    {
         auto lock = rLock{lock_};
-        out.reserve(contact_name_map_.size());
-
-        for (auto& [key, value] : contact_name_map_) { out.emplace_back(key); }
-
-        return out;
-    }();
+        contacts.reserve(contact_name_map_.size());
+        for (auto& [key, value] : contact_name_map_) {
+            contacts.emplace_back(key);
+        }
+    }
     auto nyms = Vector<OTNymID>{&alloc};
 
     for (const auto& id : contacts) {
@@ -214,11 +214,9 @@ auto Contacts::contact(const rLock& lock, const UnallocatedCString& label) const
 
     auto it = add_contact(lock, contact.release());
     auto& output = it->second.second;
-    const auto proto = [&] {
-        auto out = proto::Contact{};
-        output->Serialize(out);
-        return out;
-    }();
+
+    proto::Contact proto{};
+    output->Serialize(proto);
 
     if (false == api_.Storage().Store(proto)) {
         LogError()(OT_PRETTY_CLASS())("Unable to save contact.").Flush();
@@ -285,11 +283,7 @@ auto Contacts::ContactName(const Identifier& id, UnitType currencyHint) const
     using Type = UnitType;
 
     if ((Type::Error == currencyHint) && (false == alias.empty())) {
-        const auto isPaymentCode = [&] {
-            auto code = api_.Factory().PaymentCode(alias);
-
-            return code.Valid();
-        }();
+        const auto isPaymentCode = api_.Factory().PaymentCode(alias).Valid();
 
         if (false == isPaymentCode) { return alias; }
     }
@@ -359,12 +353,9 @@ auto Contacts::import_contacts(const rLock& lock) -> void
 
     for (const auto& it : nyms) {
         const auto nymID = api_.Factory().NymID(it.first);
-        const auto contactID = [&] {
-            auto out = api_.Factory().Identifier();
-            out->Assign(nymID->data(), nymID->size());
 
-            return out;
-        }();
+        auto contactID = api_.Factory().Identifier();
+        contactID->Assign(nymID->data(), nymID->size());
 
         api_.Storage().ContactOwnerNym(nymID->str());
 
@@ -517,16 +508,12 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
     auto& lhs = const_cast<opentxs::Contact&>(*parentContact);
     auto& rhs = const_cast<opentxs::Contact&>(*childContact);
     lhs += rhs;
-    const auto lProto = [&] {
-        auto out = proto::Contact{};
-        lhs.Serialize(out);
-        return out;
-    }();
-    const auto rProto = [&] {
-        auto out = proto::Contact{};
-        rhs.Serialize(out);
-        return out;
-    }();
+
+    proto::Contact lProto{};
+    lhs.Serialize(lProto);
+
+    proto::Contact rProto{};
+    rhs.Serialize(rProto);
 
     if (false == api_.Storage().Store(rProto)) {
         LogError()(OT_PRETTY_CLASS())(": Unable to create save child contact.")
@@ -710,12 +697,8 @@ auto Contacts::NewContactFromAddress(
 
         OT_FAIL;
     }
-
-    const auto proto = [&] {
-        auto out = proto::Contact{};
-        contact.Serialize(out);
-        return out;
-    }();
+    proto::Contact proto{};
+    contact.Serialize(proto);
 
     if (false == api_.Storage().Store(proto)) {
         LogError()(OT_PRETTY_CLASS())("Unable to save contact.").Flush();
@@ -810,15 +793,13 @@ auto Contacts::pipeline(opentxs::network::zeromq::Message&& in) noexcept -> void
         OT_FAIL;
     }
 
-    const auto work = [&] {
-        try {
+    Work work;
+    try {
+        work = body.at(0).as<Work>();
+    } catch (...) {
+        OT_FAIL;
+    }
 
-            return body.at(0).as<Work>();
-        } catch (...) {
-
-            OT_FAIL;
-        }
-    }();
     switch (work) {
         case Work::shutdown: {
             pipeline_.Close();
@@ -826,13 +807,9 @@ auto Contacts::pipeline(opentxs::network::zeromq::Message&& in) noexcept -> void
         case Work::nymcreated:
         case Work::nymupdated: {
             OT_ASSERT(1 < body.size());
+            auto id = api_.Factory().NymID();
+            id->Assign(body.at(1).Bytes());
 
-            const auto id = [&] {
-                auto out = api_.Factory().NymID();
-                out->Assign(body.at(1).Bytes());
-
-                return out;
-            }();
             const auto nym = api_.Wallet().Nym(id);
 
             OT_ASSERT(nym);
@@ -865,13 +842,11 @@ auto Contacts::refresh_indices(const rLock& lock, opentxs::Contact& contact)
 
     const auto& id = contact.ID();
     contact_name_map_[id] = contact.Label();
-    publisher_->Send([&] {
-        auto work =
-            opentxs::network::zeromq::tagged_message(WorkType::ContactUpdated);
-        work.AddFrame(id);
+    auto work =
+        opentxs::network::zeromq::tagged_message(WorkType::ContactUpdated);
+    work.AddFrame(id);
 
-        return work;
-    }());
+    publisher_->Send(std::move(work));
 }
 
 auto Contacts::refresh_nyms() noexcept -> void
@@ -894,12 +869,8 @@ auto Contacts::refresh_nyms() noexcept -> void
 void Contacts::save(opentxs::Contact* contact) const
 {
     OT_ASSERT(nullptr != contact);
-
-    const auto proto = [&] {
-        auto out = proto::Contact{};
-        contact->Serialize(out);
-        return out;
-    }();
+    proto::Contact proto{};
+    contact->Serialize(proto);
 
     if (false == api_.Storage().Store(proto)) {
         LogError()(OT_PRETTY_CLASS())(": Unable to create or save contact.")
@@ -1069,11 +1040,8 @@ void Contacts::update_nym_map(
             }
 
             oldContact->RemoveNym(nymID);
-            const auto proto = [&] {
-                auto out = proto::Contact{};
-                oldContact->Serialize(out);
-                return out;
-            }();
+            auto proto = proto::Contact{};
+            oldContact->Serialize(proto);
 
             if (false == api_.Storage().Store(proto)) {
                 LogError()(OT_PRETTY_CLASS())(
@@ -1085,11 +1053,8 @@ void Contacts::update_nym_map(
         } else {
             LogError()(OT_PRETTY_CLASS())("Duplicate nym found.").Flush();
             contact.RemoveNym(nymID);
-            const auto proto = [&] {
-                auto out = proto::Contact{};
-                contact.Serialize(out);
-                return out;
-            }();
+            proto::Contact proto{};
+            contact.Serialize(proto);
 
             if (false == api_.Storage().Store(proto)) {
                 LogError()(OT_PRETTY_CLASS())(
