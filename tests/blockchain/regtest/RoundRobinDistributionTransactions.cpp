@@ -112,13 +112,18 @@ TEST_F(Regtest_fixture_simple, round_robin_distribution_transactions)
         receiver->expected_balance_ += coin_to_send;
         WaitForSynchro(*receiver, target_height, receiver->expected_balance_);
 
+        auto loaded_transactions = CollectTransactionsForFeeCalculations(
+            *sender, send_transactions_, transactions_ptxid_);
+        auto fee = CalculateFee(send_transactions_, loaded_transactions);
+        send_transactions_.clear();
+
+        sender->expected_balance_ -= Amount{coin_to_send} + fee;
+
         auto& sender_balance = GetBalance(*sender);
         auto& receiver_balance = GetBalance(*receiver);
 
-        EXPECT_LT(sender_balance, sender->expected_balance_ - coin_to_send);
+        EXPECT_EQ(sender_balance, sender->expected_balance_);
         EXPECT_EQ(receiver_balance, receiver->expected_balance_);
-
-        sender->expected_balance_ = sender_balance;
 
         sender_it++;
         receiver_it++;

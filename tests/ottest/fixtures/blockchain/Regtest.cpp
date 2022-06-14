@@ -1164,7 +1164,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
 
         OT_ASSERT(output);
 
-        const auto& txid = transactions_.emplace_back(output->ID()).get();
+        const auto& txid = transactions_ptxid_.emplace_back(output->ID()).get();
 
         for (auto i = Index{0}; i < Index{count}; ++i) {
             auto& [bytes, amount, pattern] = meta.at(i);
@@ -1232,7 +1232,7 @@ auto Regtest_fixture_hd::SendHD() const noexcept -> const bca::HD&
 auto Regtest_fixture_hd::Shutdown() noexcept -> void
 {
     listener_p_.reset();
-    transactions_.clear();
+    transactions_ptxid_.clear();
     Regtest_fixture_normal::Shutdown();
 }
 
@@ -1368,7 +1368,7 @@ Regtest_payment_code::Regtest_payment_code()
 
         OT_ASSERT(output);
 
-        const auto& txid = transactions_.emplace_back(output->ID()).get();
+        const auto& txid = transactions_ptxid_.emplace_back(output->ID()).get();
         auto& [bytes, amount, pattern] = meta.at(0);
         expected_.emplace(
             std::piecewise_construct,
@@ -1507,7 +1507,7 @@ auto Regtest_payment_code::Shutdown() noexcept -> void
 {
     listener_bob_p_.reset();
     listener_alice_p_.reset();
-    transactions_.clear();
+    transactions_ptxid_.clear();
     Regtest_fixture_normal::Shutdown();
 }
 
@@ -2452,7 +2452,7 @@ WalletListener::~WalletListener() = default;
 
 bool Regtest_fixture_base::init_{false};
 Regtest_fixture_base::Expected Regtest_fixture_base::expected_{};
-Regtest_fixture_base::Transactions Regtest_fixture_base::transactions_{};
+Regtest_fixture_base::Transactions Regtest_fixture_base::transactions_ptxid_{};
 ot::blockchain::block::Height Regtest_fixture_base::height_{0};
 std::optional<BlockchainStartup> Regtest_fixture_base::miner_startup_s_{};
 std::optional<BlockchainStartup> Regtest_fixture_base::sync_server_startup_s_{};

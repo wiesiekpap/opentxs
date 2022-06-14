@@ -210,5 +210,9 @@ private:
     void advance_blockchain(
         std::vector<std::reference_wrapper<const User>>& users,
         Height& target_height);
+    auto WaitForOutputs(
+        const User& receiver,
+        std::vector<Transaction>& transactions,
+        const size_t output_size) -> void;
 };
 }  // namespace ottest

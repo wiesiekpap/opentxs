@@ -218,7 +218,7 @@ TEST_F(Regtest_fixture_hd, first_block)
 
     const auto& tx = *pTx;
 
-    EXPECT_EQ(tx.ID(), transactions_.at(0));
+    EXPECT_EQ(tx.ID(), transactions_ptxid_.at(0));
     EXPECT_EQ(tx.BlockPosition(), 0);
     EXPECT_EQ(tx.Outputs().size(), 100);
     EXPECT_TRUE(tx.IsGeneration());
@@ -256,7 +256,7 @@ TEST_F(Regtest_fixture_hd, account_activity_immature)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(0)),
                 std::nullopt,
                 1,
             },
@@ -390,7 +390,7 @@ TEST_F(Regtest_fixture_hd, account_activity_one_block_before_maturation)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(0)),
                 std::nullopt,
                 10,
             },
@@ -561,7 +561,7 @@ TEST_F(Regtest_fixture_hd, account_activity_mature)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(0)),
                 std::nullopt,
                 11,
             },
@@ -692,7 +692,7 @@ TEST_F(Regtest_fixture_hd, account_activity_failed_spend)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(0)),
                 std::nullopt,
                 11,
             },
@@ -745,7 +745,7 @@ TEST_F(Regtest_fixture_hd, spend)
 
     auto future = network.SendToAddress(
         alice_.nym_id_, address, 1400000000, memo_outgoing_);
-    const auto& txid = transactions_.emplace_back(future.get().second);
+    const auto& txid = transactions_ptxid_.emplace_back(future.get().second);
 
     EXPECT_FALSE(txid->empty());
 
@@ -802,7 +802,7 @@ TEST_F(Regtest_fixture_hd, account_activity_unconfirmed_spend)
                 "",
                 "",
                 "Outgoing Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(1)),
                 std::nullopt,
                 0,
             },
@@ -815,7 +815,7 @@ TEST_F(Regtest_fixture_hd, account_activity_unconfirmed_spend)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(0)),
                 std::nullopt,
                 11,
             },
@@ -866,7 +866,7 @@ TEST_F(Regtest_fixture_hd, confirm)
     account_list_.expected_ += 2;
     account_activity_.expected_ += ((3 * count) + 3);
     account_status_.expected_ += (6u * count);
-    const auto& txid = transactions_.at(1).get();
+    const auto& txid = transactions_ptxid_.at(1).get();
     const auto extra = [&] {
         auto output = ot::UnallocatedVector<Transaction>{};
         const auto& pTX = output.emplace_back(
@@ -883,14 +883,14 @@ TEST_F(Regtest_fixture_hd, confirm)
     EXPECT_TRUE(listener_.wait(future1));
     EXPECT_TRUE(listener_.wait(future2));
     EXPECT_TRUE(txos_.Mature(end));
-    EXPECT_TRUE(txos_.Confirm(transactions_.at(0)));
+    EXPECT_TRUE(txos_.Confirm(transactions_ptxid_.at(0)));
     EXPECT_TRUE(txos_.Confirm(txid));
 }
 
 TEST_F(Regtest_fixture_hd, outgoing_transaction)
 {
     const auto pTX = client_1_.Crypto().Blockchain().LoadTransactionBitcoin(
-        transactions_.at(1));
+        transactions_ptxid_.at(1));
 
     ASSERT_TRUE(pTX);
 
@@ -903,14 +903,16 @@ TEST_F(Regtest_fixture_hd, outgoing_transaction)
     using Tag = ot::blockchain::node::TxoTag;
 
     {
-        const auto tags = wallet.GetTags({transactions_.at(1)->Bytes(), 0});
+        const auto tags =
+            wallet.GetTags({transactions_ptxid_.at(1)->Bytes(), 0});
 
         EXPECT_EQ(tags.size(), 2);
         EXPECT_EQ(tags.count(Tag::Normal), 1);
         EXPECT_EQ(tags.count(Tag::Change), 1);
     }
     {
-        const auto tags = wallet.GetTags({transactions_.at(1)->Bytes(), 1});
+        const auto tags =
+            wallet.GetTags({transactions_ptxid_.at(1)->Bytes(), 1});
 
         EXPECT_EQ(tags.size(), 0);
     }
@@ -948,7 +950,7 @@ TEST_F(Regtest_fixture_hd, account_activity_confirmed_spend)
                 "",
                 "",
                 "Outgoing Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(1)),
                 std::nullopt,
                 1,
             },
@@ -961,7 +963,7 @@ TEST_F(Regtest_fixture_hd, account_activity_confirmed_spend)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(0)),
                 std::nullopt,
                 12,
             },
@@ -1059,8 +1061,8 @@ TEST_F(Regtest_fixture_hd, txodb_confirmed_spend) { EXPECT_TRUE(CheckTXODB()); }
 //     EXPECT_TRUE(Mine(start, count));
 //     EXPECT_TRUE(listener_.wait(future1));
 //     EXPECT_TRUE(listener_.wait(future2));
-//     EXPECT_TRUE(txos_.OrphanGeneration(transactions_.at(0)));
-//     EXPECT_TRUE(txos_.Orphan(transactions_.at(1)));
+//     EXPECT_TRUE(txos_.OrphanGeneration(transactions_ptxid_.at(0)));
+//     EXPECT_TRUE(txos_.Orphan(transactions_ptxid_.at(1)));
 //     EXPECT_TRUE(txos_.Mature(end));
 // }
 

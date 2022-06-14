@@ -65,7 +65,7 @@ TEST_F(Restart_fixture, DISABLED_send_remove_user_compare_repeat)
         EXPECT_LT(GetBalance(user_alice), sender_balance);
 
         auto loaded_transactions = CollectTransactionsForFeeCalculations(
-            user_alice, send_transactions_, transactions_);
+            user_alice, send_transactions_, transactions_ptxid_);
         auto fee = CalculateFee(send_transactions_, loaded_transactions);
 
         EXPECT_EQ(

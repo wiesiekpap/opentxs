@@ -37,7 +37,7 @@ protected:
 
     static ot::Nym_p alice_p_;
     static ot::Nym_p bob_p_;
-    static Transactions transactions_;
+    static Transactions transactions_ptxid_;
     static std::unique_ptr<ScanListener> listener_alice_p_;
     static std::unique_ptr<ScanListener> listener_bob_p_;
 
@@ -91,7 +91,7 @@ protected:
     {
         listener_bob_p_.reset();
         listener_alice_p_.reset();
-        transactions_.clear();
+        transactions_ptxid_.clear();
         bob_p_.reset();
         alice_p_.reset();
         Regtest_fixture_normal::Shutdown();
@@ -234,7 +234,7 @@ protected:
 
             OT_ASSERT(output);
 
-            transactions_.emplace_back(output->ID());
+            transactions_ptxid_.emplace_back(output->ID());
 
             return output;
         })
@@ -262,7 +262,7 @@ protected:
 
 ot::Nym_p Regtest_stress::alice_p_{};
 ot::Nym_p Regtest_stress::bob_p_{};
-Regtest_stress::Transactions Regtest_stress::transactions_{};
+Regtest_stress::Transactions Regtest_stress::transactions_ptxid_{};
 std::unique_ptr<ScanListener> Regtest_stress::listener_alice_p_{};
 std::unique_ptr<ScanListener> Regtest_stress::listener_bob_p_{};
 

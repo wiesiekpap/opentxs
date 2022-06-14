@@ -113,7 +113,7 @@ auto Regtest_fixture_simple::TransactionGenerator(
         test_chain_, height, std::move(output), coinbase_fun_);
 
     const auto& txid =
-        transactions_.emplace_back(output_transaction->ID()).get();
+        transactions_ptxid_.emplace_back(output_transaction->ID()).get();
 
     for (auto i = Index{0}; i < Index{count}; ++i) {
         auto& [bytes, amount, pattern] = meta.at(i);
@@ -405,6 +405,9 @@ auto Regtest_fixture_simple::WaitForSynchro(
         }
         std::this_thread::sleep_for(std::chrono::seconds(5));
     }
+
+    now = std::chrono::steady_clock::now();
+    EXPECT_LT(now, end);
 }
 auto Regtest_fixture_simple::GetDisplayBalance(
     opentxs::Amount value) const noexcept -> std::string
@@ -446,6 +449,7 @@ void Regtest_fixture_simple::MineTransaction(
     auto send_transaction =
         user.api_->Crypto().Blockchain().LoadTransactionBitcoin(
             transactions_to_confirm);
+    transactions_ptxid_.emplace_back(send_transaction->ID());
     transactions.emplace_back(std::move(send_transaction));
 
     Mine(current_height++, transactions.size(), default_, transactions);
@@ -469,11 +473,60 @@ void Regtest_fixture_simple::SendCoins(
     std::cout << sender.name_ + " send " << coins_to_send << " to "
               << receiver.name_ << " address: " << address << std::endl;
 
+    const auto& network_receiver =
+        receiver.api_->Network().Blockchain().GetChain(test_chain_);
+    auto output_size =
+        network_receiver.Wallet()
+            .GetOutputs(
+                receiver.nym_->ID(), blockchain::node::TxoState::ConfirmedNew)
+            .size();
     auto future = network.SendToAddress(
         sender.nym_id_, address, coins_to_send, memo_outgoing);
 
     // We need to confirm send transaction, so it is available after restore
     MineTransaction(sender, future.get().second, current_height);
+    WaitForOutputs(receiver, send_transactions_, output_size);
+}
+
+auto Regtest_fixture_simple::WaitForOutputs(
+    const User& receiver,
+    std::vector<Transaction>& transactions,
+    const size_t output_size) -> void
+{
+    const auto& network =
+        receiver.api_->Network().Blockchain().GetChain(test_chain_);
+
+    auto begin = std::chrono::steady_clock::now();
+    auto now = begin;
+    auto end = begin + wait_time_limit_;
+
+    for (auto& transaction : transactions) {
+        while (now < end) {
+            auto wallet_transactions = network.Wallet().GetTransactions();
+
+            if (std::find(
+                    wallet_transactions.begin(),
+                    wallet_transactions.end(),
+                    transaction->ID()) != wallet_transactions.end()) {
+
+                auto wallet_outputs = network.Wallet().GetOutputs(
+                    receiver.nym_->ID(),
+                    blockchain::node::TxoState::ConfirmedNew);
+
+                if (output_size + 1 == wallet_outputs.size()) {
+                    ot::LogConsole()("WaitForOutputs found all outputs ")(
+                        wallet_outputs.size())
+                        .Flush();
+                    break;
+                }
+            }
+
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+    }
+
+    now = std::chrono::steady_clock::now();
+    EXPECT_LT(now, end);
 }
 
 Amount Regtest_fixture_simple::CalculateFee(

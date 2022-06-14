@@ -15,7 +15,7 @@
 namespace ottest
 {
 
-TEST_F(Restart_fixture, DISABLED_send_to_client_reboot_confirm_data)
+TEST_F(Restart_fixture, send_to_client_reboot_confirm_data)
 {
     EXPECT_TRUE(Start());
     EXPECT_TRUE(Connect());
@@ -49,18 +49,15 @@ TEST_F(Restart_fixture, DISABLED_send_to_client_reboot_confirm_data)
 
     // Send coins from alice to bob
     SendCoins(user_bob, user_alice, current_height_);
+    WaitForSynchro(
+        user_bob, current_height_, balance_after_mine_ + coin_to_send_);
 
     // Save current balance and check if is correct
     receiver_balance_after_send = GetBalance(user_bob);
-    sender_balance_after_send = GetBalance(user_alice);
 
     ot::LogConsole()(
         "Bob balance after send " +
         GetDisplayBalance(receiver_balance_after_send))
-        .Flush();
-    ot::LogConsole()(
-        "Alice balance after send " +
-        GetDisplayBalance(sender_balance_after_send))
         .Flush();
 
     // Collect outputs
@@ -71,16 +68,23 @@ TEST_F(Restart_fixture, DISABLED_send_to_client_reboot_confirm_data)
     std::map<ot::blockchain::node::TxoState, std::size_t>
         alice_number_of_outputs_per_type;
 
-    sleep(10);
     CollectOutputs(user_bob, bob_outputs, bob_number_of_outputs_per_type);
     CollectOutputs(user_alice, alice_outputs, alice_number_of_outputs_per_type);
 
     EXPECT_EQ(balance_after_mine_ + coin_to_send_, receiver_balance_after_send);
 
     auto loaded_transactions = CollectTransactionsForFeeCalculations(
-        user_alice, send_transactions_, transactions_);
+        user_alice, send_transactions_, transactions_ptxid_);
     auto fee = CalculateFee(send_transactions_, loaded_transactions);
 
+    WaitForSynchro(
+        user_alice,
+        current_height_,
+        Amount{balance_after_mine_} - Amount{coin_to_send_} - fee);
+    sender_balance_after_send = GetBalance(user_alice);
+    ot::LogConsole()(
+        "Alice balance after send " + GetDisplayBalance(GetBalance(user_alice)))
+        .Flush();
     EXPECT_EQ(
         Amount{balance_after_mine_} - Amount{coin_to_send_} - fee,
         sender_balance_after_send);
@@ -112,7 +116,6 @@ TEST_F(Restart_fixture, DISABLED_send_to_client_reboot_confirm_data)
     EXPECT_EQ(user_bob_after_reboot.PaymentCode(), bobs_payment_code);
 
     EXPECT_EQ(GetBalance(user_alice_after_reboot), sender_balance_after_send);
-
     EXPECT_EQ(user_alice_after_reboot.PaymentCode(), alice_payment_code);
 
     // Compare names and addresses
@@ -129,7 +132,6 @@ TEST_F(Restart_fixture, DISABLED_send_to_client_reboot_confirm_data)
     EXPECT_EQ(bob_outputs.size(), alice_outputs.size());
 
     // Compare outputs
-    sleep(10);
     ValidateOutputs(
         user_bob_after_reboot, bob_outputs, bob_number_of_outputs_per_type);
 

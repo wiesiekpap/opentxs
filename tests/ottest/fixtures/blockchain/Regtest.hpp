@@ -400,7 +400,7 @@ protected:
 
     static bool init_;
     static Expected expected_;
-    static Transactions transactions_;
+    static Transactions transactions_ptxid_;
     static ot::blockchain::block::Height height_;
     static std::optional<BlockchainStartup> miner_startup_s_;
     static std::optional<BlockchainStartup> sync_server_startup_s_;

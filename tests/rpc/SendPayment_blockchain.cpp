@@ -21,7 +21,7 @@ protected:
     using Subchain = ot::blockchain::crypto::Subchain;
 
     static ot::Nym_p alex_p_;
-    static ot::UnallocatedDeque<ot::blockchain::block::pTxid> transactions_;
+    static ot::UnallocatedDeque<ot::blockchain::block::pTxid> transactions_ptxid_;
     static std::unique_ptr<ScanListener> listener_p_;
 
     const ot::identity::Nym& alex_;
@@ -32,7 +32,7 @@ protected:
     auto Cleanup() noexcept -> void final
     {
         listener_p_.reset();
-        transactions_.clear();
+        transactions_ptxid_.clear();
         alex_p_.reset();
         Regtest_fixture_normal::Shutdown();
         RPC_fixture::Cleanup();
@@ -99,7 +99,7 @@ protected:
 
             OT_ASSERT(output);
 
-            transactions_.emplace_back(output->ID()).get();
+            transactions_ptxid_.emplace_back(output->ID()).get();
 
             return output;
         })
@@ -117,7 +117,7 @@ protected:
 };
 
 ot::Nym_p RPC_BC::alex_p_{};
-ot::UnallocatedDeque<ot::blockchain::block::pTxid> RPC_BC::transactions_{};
+ot::UnallocatedDeque<ot::blockchain::block::pTxid> RPC_BC::transactions_ptxid_{};
 std::unique_ptr<ScanListener> RPC_BC::listener_p_{};
 
 TEST_F(RPC_BC, preconditions)
@@ -184,7 +184,7 @@ TEST_F(RPC_BC, blockchain_payment)
     EXPECT_EQ(pending.at(0).first, 0);
     EXPECT_NE(pending.at(0).second.size(), 0);
 
-    transactions_.emplace_back(
+    transactions_ptxid_.emplace_back(
         client_1_.Factory().DataFromHex(pending.at(0).second));
 }
 

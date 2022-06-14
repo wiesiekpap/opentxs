@@ -320,7 +320,7 @@ TEST_F(Regtest_payment_code, first_block)
 
     const auto& tx = *pTx;
 
-    EXPECT_EQ(tx.ID(), transactions_.at(0));
+    EXPECT_EQ(tx.ID(), transactions_ptxid_.at(0));
     EXPECT_EQ(tx.BlockPosition(), 0);
     ASSERT_EQ(tx.Outputs().size(), 1);
     EXPECT_TRUE(tx.IsGeneration());
@@ -358,7 +358,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_initial_receive)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(0)),
                 std::nullopt,
                 11,
             },
@@ -439,7 +439,7 @@ TEST_F(Regtest_payment_code, send_to_bob)
         client_1_.Factory().PaymentCode(GetVectors3().bob_.payment_code_),
         1000000000,
         memo_outgoing_);
-    const auto& txid = transactions_.emplace_back(future.get().second);
+    const auto& txid = transactions_ptxid_.emplace_back(future.get().second);
 
     ASSERT_FALSE(txid->empty());
 
@@ -451,7 +451,7 @@ TEST_F(Regtest_payment_code, send_to_bob)
 
         const auto& tx = *pTX;
         EXPECT_TRUE(
-            txos_alice_.SpendUnconfirmed({transactions_.at(0)->Bytes(), 0}));
+            txos_alice_.SpendUnconfirmed({transactions_ptxid_.at(0)->Bytes(), 0}));
         EXPECT_TRUE(txos_alice_.AddUnconfirmed(tx, 1, SendHD()));
         // NOTE do not update Bob's txos since the recipient payment code
         // subaccount does not exist yet.
@@ -490,7 +490,7 @@ TEST_F(Regtest_payment_code, first_outgoing_transaction)
     const auto& me = alice_.nym_id_;
     const auto self = contact.ContactID(me);
     const auto other = contact.ContactID(bob_.nym_id_);
-    const auto& txid = transactions_.at(1).get();
+    const auto& txid = transactions_ptxid_.at(1).get();
     const auto pTX = blockchain.LoadTransactionBitcoin(txid);
 
     ASSERT_TRUE(pTX);
@@ -598,7 +598,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_unconfirmed)
                 "",
                 "Outgoing Unit Test Simulation transaction to "
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(1)),
                 std::nullopt,
                 0,
             },
@@ -611,7 +611,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_unconfirmed)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(0)),
                 std::nullopt,
                 11,
             },
@@ -758,7 +758,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_first_unconfirmed_incoming)
                 "",
                 "Incoming Unit Test Simulation transaction from "
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(1)),
                 std::nullopt,
                 0,
             },
@@ -858,7 +858,7 @@ TEST_F(Regtest_payment_code, bob_txodb_first_unconfirmed_incoming)
         // NOTE normally this would be done when the transaction was first sent
         // but the subaccount returned by ReceivePC() did not exist yet.
         const auto pTX = client_1_.Crypto().Blockchain().LoadTransactionBitcoin(
-            transactions_.at(1));
+            transactions_ptxid_.at(1));
 
         ASSERT_TRUE(pTX);
 
@@ -885,7 +885,7 @@ TEST_F(Regtest_payment_code, confirm_send)
     account_list_bob_.expected_ += 0;
     account_tree_alice_.expected_ += 2;
     account_tree_bob_.expected_ += 0;
-    const auto& txid = transactions_.at(1).get();
+    const auto& txid = transactions_ptxid_.at(1).get();
     const auto extra = [&] {
         auto output = ot::UnallocatedVector<Transaction>{};
         const auto pTX = output.emplace_back(
@@ -902,7 +902,7 @@ TEST_F(Regtest_payment_code, confirm_send)
     EXPECT_TRUE(listener_alice_.wait(future1));
     EXPECT_TRUE(listener_alice_.wait(future2));
     EXPECT_TRUE(txos_alice_.Mature(end));
-    EXPECT_TRUE(txos_alice_.Confirm(transactions_.at(0)));
+    EXPECT_TRUE(txos_alice_.Confirm(transactions_ptxid_.at(0)));
     EXPECT_TRUE(txos_alice_.Confirm(txid));
     EXPECT_TRUE(txos_bob_.Mature(end));
     EXPECT_TRUE(txos_bob_.Confirm(txid));
@@ -945,7 +945,7 @@ TEST_F(Regtest_payment_code, second_block)
         const auto& tx = *pTx;
         expected.emplace_back(ot::space(tx.ID().Bytes(), ot::alloc::System()));
 
-        EXPECT_EQ(tx.ID(), transactions_.at(1));
+        EXPECT_EQ(tx.ID(), transactions_ptxid_.at(1));
         EXPECT_EQ(tx.BlockPosition(), 1);
         EXPECT_FALSE(tx.IsGeneration());
         ASSERT_EQ(tx.Inputs().size(), 1);
@@ -1042,7 +1042,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_confirmed)
                 "",
                 "Outgoing Unit Test Simulation transaction to "
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(1)),
                 std::nullopt,
                 1,
             },
@@ -1055,7 +1055,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_confirmed)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(0)),
                 std::nullopt,
                 12,
             },
@@ -1196,7 +1196,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_first_spend_confirmed)
                 "",
                 "Incoming Unit Test Simulation transaction from "
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(1)),
                 std::nullopt,
                 1,
             },
@@ -1306,7 +1306,7 @@ TEST_F(Regtest_payment_code, bob_first_incoming_transaction)
     const auto& me = bob_.nym_id_;
     const auto self = contact.ContactID(me);
     const auto other = contact.ContactID(alice_.nym_id_);
-    const auto& txid = transactions_.at(1).get();
+    const auto& txid = transactions_ptxid_.at(1).get();
     const auto pTX = blockchain.LoadTransactionBitcoin(txid);
 
     ASSERT_TRUE(pTX);
@@ -1381,7 +1381,7 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
         client_1_.Factory().PaymentCode(GetVectors3().bob_.payment_code_),
         1500000000,
         memo_outgoing_);
-    const auto& txid = transactions_.emplace_back(future.get().second);
+    const auto& txid = transactions_ptxid_.emplace_back(future.get().second);
 
     ASSERT_FALSE(txid->empty());
 
@@ -1393,7 +1393,7 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
 
         const auto& tx = *pTX;
         EXPECT_TRUE(
-            txos_alice_.SpendUnconfirmed({transactions_.at(1)->Bytes(), 1}));
+            txos_alice_.SpendUnconfirmed({transactions_ptxid_.at(1)->Bytes(), 1}));
         EXPECT_TRUE(txos_bob_.AddUnconfirmed(tx, 0, ReceivePC()));
         EXPECT_TRUE(txos_alice_.AddUnconfirmed(tx, 1, SendHD()));
     }
@@ -1454,7 +1454,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
                 "",
                 "Outgoing Unit Test Simulation transaction to "
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
-                ot::blockchain::HashToNumber(transactions_.at(2)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(2)),
                 std::nullopt,
                 0,
             },
@@ -1468,7 +1468,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
                 "",
                 "Outgoing Unit Test Simulation transaction to "
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(1)),
                 std::nullopt,
                 1,
             },
@@ -1481,7 +1481,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(0)),
                 std::nullopt,
                 12,
             },
@@ -1638,7 +1638,7 @@ TEST_F(Regtest_payment_code, alice_second_outgoing_transaction)
     const auto& me = alice_.nym_id_;
     const auto self = contact.ContactID(me);
     const auto other = contact.ContactID(bob_.nym_id_);
-    const auto& txid = transactions_.at(2).get();
+    const auto& txid = transactions_ptxid_.at(2).get();
     const auto pTX = blockchain.LoadTransactionBitcoin(txid);
 
     ASSERT_TRUE(pTX);
@@ -1735,7 +1735,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_second_unconfirmed_incoming)
                 "",
                 "Incoming Unit Test Simulation transaction from "
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
-                ot::blockchain::HashToNumber(transactions_.at(2)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(2)),
                 std::nullopt,
                 0,
             },
@@ -1749,7 +1749,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_second_unconfirmed_incoming)
                 "",
                 "Incoming Unit Test Simulation transaction from "
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(1)),
                 std::nullopt,
                 1,
             },
@@ -1974,7 +1974,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
                 "",
                 "",
                 "Outgoing Unit Test Simulation transaction to Bob",
-                ot::blockchain::HashToNumber(transactions_.at(2)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(2)),
                 std::nullopt,
                 0,
             },
@@ -1987,7 +1987,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
                 "",
                 "",
                 "Outgoing Unit Test Simulation transaction to Bob",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(1)),
                 std::nullopt,
                 1,
             },
@@ -2000,7 +2000,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(0)),
                 std::nullopt,
                 12,
             },
@@ -2149,7 +2149,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction from Alice",
-                ot::blockchain::HashToNumber(transactions_.at(2)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(2)),
                 std::nullopt,
                 0,
             },
@@ -2162,7 +2162,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction from Alice",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(transactions_ptxid_.at(1)),
                 std::nullopt,
                 1,
             },
