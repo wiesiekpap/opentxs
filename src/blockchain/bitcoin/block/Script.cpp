@@ -797,12 +797,8 @@ auto Script::IsNotification(
 
     if ((33u != bytes.size()) && (65u != bytes.size())) { return false; }
 
-    const auto expect = [&] {
-        auto out = Space{};
-        recipient.Locator(writer(out), version);
-
-        return out;
-    }();
+    Space expect{};
+    recipient.Locator(writer(expect), version);
 
     if (32u != expect.size()) { return false; }
 
@@ -1172,16 +1168,12 @@ auto Script::SigningSubscript(const blockchain::Type chain) const noexcept
 {
     switch (type_) {
         case Pattern::PayToWitnessPubkeyHash: {
-            auto elements = [&] {
-                auto out = ScriptElements{};
-                out.emplace_back(internal::Opcode(OP::DUP));
-                out.emplace_back(internal::Opcode(OP::HASH160));
-                out.emplace_back(internal::PushData(PubkeyHash().value()));
-                out.emplace_back(internal::Opcode(OP::EQUALVERIFY));
-                out.emplace_back(internal::Opcode(OP::CHECKSIG));
-
-                return out;
-            }();
+            auto elements = ScriptElements{};
+            elements.emplace_back(internal::Opcode(OP::DUP));
+            elements.emplace_back(internal::Opcode(OP::HASH160));
+            elements.emplace_back(internal::PushData(PubkeyHash().value()));
+            elements.emplace_back(internal::Opcode(OP::EQUALVERIFY));
+            elements.emplace_back(internal::Opcode(OP::CHECKSIG));
 
             return std::make_unique<Script>(
                 chain_, Position::Output, std::move(elements));

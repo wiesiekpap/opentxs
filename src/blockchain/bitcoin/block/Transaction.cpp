@@ -230,6 +230,11 @@ auto BitcoinTransaction(
         auto outputs =
             std::unique_ptr<const blockchain::bitcoin::block::Outputs>{};
 
+        std::optional<std::size_t> size =
+            std::numeric_limits<std::size_t>::max() == position
+                ? std::nullopt
+                : std::optional{position};
+
         return std::make_unique<ReturnType>(
             api,
             ReturnType::default_version_,
@@ -247,15 +252,7 @@ auto BitcoinTransaction(
                 std::move(instantiatedOutputs), outputBytes),
             UnallocatedVector<blockchain::Type>{chain},
             make_blank<blockchain::block::Position>::value(api),
-            [&]() -> std::optional<std::size_t> {
-                if (std::numeric_limits<std::size_t>::max() == position) {
-
-                    return std::nullopt;
-                } else {
-
-                    return position;
-                }
-            }());
+            std::move(size));
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
@@ -333,6 +330,14 @@ auto BitcoinTransaction(
                 ](auto& in) -> auto { return std::move(in.second); });
         }
 
+        blockchain::block::Height height =
+            in.has_mined_block() ? in.mined_height() : -1;
+        blockchain::block::Hash hash;
+        if (in.has_mined_block() && !hash.Assign(in.mined_block()))
+            throw std::runtime_error{"invalid mined_block"};
+
+        blockchain::block::Position position{height, hash};
+
         return std::make_unique<ReturnType>(
             api,
             in.version(),
@@ -347,29 +352,8 @@ auto BitcoinTransaction(
             factory::BitcoinTransactionInputs(std::move(inputs)),
             factory::BitcoinTransactionOutputs(std::move(outputs)),
             std::move(chains),
-            blockchain::block::Position{
-                [&]() -> blockchain::block::Height {
-                    if (in.has_mined_block()) {
+            std::move(position));
 
-                        return in.mined_height();
-                    } else {
-
-                        return -1;
-                    }
-                }(),
-                [&] {
-                    auto out = blockchain::block::Hash();
-
-                    if (in.has_mined_block()) {
-                        const auto rc = out.Assign(in.mined_block());
-
-                        if (false == rc) {
-                            throw std::runtime_error{"invalid mined_block"};
-                        }
-                    }
-
-                    return out;
-                }()});
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
