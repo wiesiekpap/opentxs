@@ -364,20 +364,15 @@ auto Version::payload(AllocateOutput out) const noexcept -> bool
         if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
         auto userAgent = Data::Factory();
-        const auto bytes = [&] {
-            auto output = sizeof(BitcoinFormat_1);
+        auto bytes = sizeof(BitcoinFormat_1);
 
-            if (106 <= version_) {
-                userAgent = BitcoinString(user_agent_);
-                output += sizeof(BitcoinFormat_106) + userAgent->size();
-            }
+        if (106 <= version_) {
+            userAgent = BitcoinString(user_agent_);
+            bytes += sizeof(BitcoinFormat_106) + userAgent->size();
+        }
 
-            if (209 <= version_) { output += sizeof(BitcoinFormat_209); }
-
-            if (70001 <= version_) { output += sizeof(std::byte); }
-
-            return output;
-        }();
+        if (209 <= version_) { bytes += sizeof(BitcoinFormat_209); }
+        if (70001 <= version_) { bytes += sizeof(std::byte); }
 
         auto output = out(bytes);
 

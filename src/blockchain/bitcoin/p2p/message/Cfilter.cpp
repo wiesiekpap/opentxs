@@ -124,13 +124,10 @@ auto BitcoinP2PCfilter(
 {
     namespace bitcoin = blockchain::p2p::bitcoin;
     using ReturnType = bitcoin::message::implementation::Cfilter;
-
-    return new ReturnType(api, network, type, hash, filter.ElementCount(), [&] {
-        auto out = Space{};
-        filter.Compressed(writer(out));
-
-        return out;
-    }());
+    Space bytes{};
+    filter.Compressed(writer(bytes));
+    return new ReturnType(
+        api, network, type, hash, filter.ElementCount(), bytes);
 }
 }  // namespace opentxs::factory
 
@@ -172,19 +169,13 @@ Cfilter::Cfilter(
 auto Cfilter::payload(AllocateOutput out) const noexcept -> bool
 {
     try {
-        const auto payload = [&] {
-            auto filter = [&] {
-                auto output = CompactSize(count_).Encode();
-                output.insert(output.end(), filter_.begin(), filter_.end());
+        auto filter = CompactSize(count_).Encode();
+        filter.insert(filter.end(), filter_.begin(), filter_.end());
 
-                return output;
-            }();
-            auto output = CompactSize(filter.size()).Encode();
-            output.reserve(output.size() + filter.size());
-            std::move(filter.begin(), filter.end(), std::back_inserter(output));
+        auto payload = CompactSize(filter.size()).Encode();
+        payload.reserve(payload.size() + filter.size());
+        std::move(filter.begin(), filter.end(), std::back_inserter(payload));
 
-            return output;
-        }();
         static constexpr auto fixed = sizeof(BitcoinFormat);
         const auto bytes = fixed + payload.size();
 
