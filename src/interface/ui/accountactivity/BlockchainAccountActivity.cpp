@@ -114,6 +114,7 @@ BlockchainAccountActivity::BlockchainAccountActivity(
         UnallocatedCString{api.Endpoints().BlockchainTransactions(nymID)},
         UnallocatedCString{api.Endpoints().ContactUpdate()},
     });
+    start();
     balance_socket_->Send([&] {
         using Job = api::crypto::blockchain::BalanceOracleJobs;
         auto work = network::zeromq::tagged_message(Job::registration);
@@ -236,10 +237,7 @@ auto BlockchainAccountActivity::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainAccountActivity::state_machine() noexcept -> bool
-{
-    return false;
-}
+auto BlockchainAccountActivity::state_machine() noexcept -> int { return -1; }
 
 auto BlockchainAccountActivity::shut_down() noexcept -> void
 {

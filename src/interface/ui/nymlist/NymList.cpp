@@ -49,12 +49,13 @@ NymList::NymList(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     : NymListList(api, api.Factory().Identifier(), cb, false)
-    , Worker(api, {})
+    , Worker(api, "NymList")
 {
     init_executor({
         UnallocatedCString{api.Endpoints().NymCreated()},
         UnallocatedCString{api.Endpoints().NymDownload()},
     });
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -132,7 +133,7 @@ auto NymList::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto NymList::state_machine() noexcept -> bool { return false; }
+auto NymList::state_machine() noexcept -> int { return -1; }
 
 auto NymList::shut_down() noexcept -> void
 {
