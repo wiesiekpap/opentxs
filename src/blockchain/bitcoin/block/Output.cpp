@@ -141,6 +141,18 @@ auto BitcoinTransactionOutput(
         }
 
         for (const auto& pattern : in.pubkey_hash()) { pkh.emplace(pattern); }
+        const auto& hash = in.mined_block();
+        blockchain::block::Position position =
+            0 < hash.size()
+                ? std::make_pair(
+                      in.mined_height(), blockchain::block::Hash{hash})
+                : make_blank<blockchain::block::Position>::value(api);
+
+        UnallocatedSet<blockchain::node::TxoTag> txoTags;
+
+        for (const auto& tag : in.tag()) {
+            txoTags.emplace(static_cast<blockchain::node::TxoTag>(tag));
+        }
 
         auto out = std::make_unique<ReturnType>(
             api,
@@ -156,46 +168,24 @@ auto BitcoinTransactionOutput(
                  ? std::make_optional<blockchain::PatternID>(in.script_hash())
                  : std::nullopt),
             in.indexed(),
-            [&]() -> blockchain::block::Position {
-                if (const auto& hash = in.mined_block(); 0 < hash.size()) {
-
-                    return std::make_pair(
-                        in.mined_height(), blockchain::block::Hash{hash});
-                } else {
-
-                    return make_blank<blockchain::block::Position>::value(api);
-                }
-            }(),
+            position,
             static_cast<blockchain::node::TxoState>(in.state()),
-            [&] {
-                auto out = UnallocatedSet<blockchain::node::TxoTag>{};
-
-                for (const auto& tag : in.tag()) {
-                    out.emplace(static_cast<blockchain::node::TxoTag>(tag));
-                }
-
-                return out;
-            }());
+            txoTags);
 
         for (const auto& payer : in.payer()) {
             if (false == payer.empty()) {
-                out->SetPayer([&] {
-                    auto id = api.Factory().Identifier();
-                    id->Assign(payer.data(), payer.size());
+                auto id = api.Factory().Identifier();
+                id->Assign(payer.data(), payer.size());
 
-                    return id;
-                }());
+                out->SetPayer(id);
             }
         }
 
         for (const auto& payee : in.payee()) {
             if (false == payee.empty()) {
-                out->SetPayee([&] {
-                    auto id = api.Factory().Identifier();
-                    id->Assign(payee.data(), payee.size());
-
-                    return id;
-                }());
+                auto id = api.Factory().Identifier();
+                id->Assign(payee.data(), payee.size());
+                out->SetPayee(id);
             }
         }
 
