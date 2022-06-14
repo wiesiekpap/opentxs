@@ -523,12 +523,10 @@ auto Header::find_nonce() noexcept(false) -> void
     auto view = ReadView{};
 
     while (true) {
-        bytes = preimage([&] {
-            auto out = SerializedType{};
-            Serialize(out);
+        SerializedType out{};
+        Serialize(out);
+        bytes = preimage(out);
 
-            return out;
-        }());
         view = ReadView{reinterpret_cast<const char*>(&bytes), sizeof(bytes)};
         pow = calculate_pow(api_, type_, view);
 
