@@ -672,44 +672,35 @@ auto Blockchain::Imp::get_node(const Identifier& accountID) const
     noexcept(false) -> opentxs::blockchain::crypto::Subaccount&
 {
     const auto& nymID = accounts_.Owner(accountID);
-    const auto& wallet = [&]() -> auto&
-    {
-        const auto type =
-            api_.Storage().BlockchainSubaccountAccountType(nymID, accountID);
 
-        if (UnitType::Error == type) {
-            const auto error =
-                UnallocatedCString{"unable to determine unit type for "
-                                   "blockchain subaccount "} +
-                accountID.str() + " belonging to nym " + nymID.str();
+    const auto type =
+        api_.Storage().BlockchainSubaccountAccountType(nymID, accountID);
 
-            throw std::out_of_range(error);
-        }
+    if (UnitType::Error == type) {
+        const auto error =
+            UnallocatedCString{"unable to determine unit type for "
+                               "blockchain subaccount "} +
+            accountID.str() + " belonging to nym " + nymID.str();
 
-        return wallets_.Get(UnitToBlockchain(type));
+        throw std::out_of_range(error);
     }
-    ();
-    const auto& account = wallet.Account(nymID);
-    const auto& subaccount =
-        [&]() -> const opentxs::blockchain::crypto::Subaccount& {
-        switch (accounts_.Type(accountID)) {
-            case opentxs::blockchain::crypto::SubaccountType::HD: {
 
-                return account.GetHD().at(accountID);
-            }
-            case opentxs::blockchain::crypto::SubaccountType::PaymentCode: {
+    const auto& account = wallets_.Get(UnitToBlockchain(type)).Account(nymID);
+    switch (accounts_.Type(accountID)) {
+        case opentxs::blockchain::crypto::SubaccountType::HD: {
 
-                return account.GetPaymentCode().at(accountID);
-            }
-            case opentxs::blockchain::crypto::SubaccountType::Imported:
-            case opentxs::blockchain::crypto::SubaccountType::Error:
-            default: {
-                throw std::out_of_range("subaccount type not supported");
-            }
+            return account.GetHD().at(accountID).Internal();
         }
-    }();
+        case opentxs::blockchain::crypto::SubaccountType::PaymentCode: {
 
-    return subaccount.Internal();
+            return account.GetPaymentCode().at(accountID).Internal();
+        }
+        case opentxs::blockchain::crypto::SubaccountType::Imported:
+        case opentxs::blockchain::crypto::SubaccountType::Error:
+        default: {
+            throw std::out_of_range("subaccount type not supported");
+        }
+    }
 }
 
 auto Blockchain::Imp::HDSubaccount(
@@ -1077,18 +1068,15 @@ auto Blockchain::Imp::p2wpkh(
 {
     try {
         const auto& hrp = hrp_map_.at(chain);
-        const auto prog = [&] {
-            auto out = UnallocatedVector<std::uint8_t>{};
-            std::transform(
-                hash.begin(),
-                hash.end(),
-                std::back_inserter(out),
-                [](const auto& byte) {
-                    return std::to_integer<std::uint8_t>(byte);
-                });
-
-            return out;
-        }();
+        UnallocatedVector<std::uint8_t> prog{};
+        prog.reserve(hash.size());
+        std::transform(
+            hash.begin(),
+            hash.end(),
+            std::back_inserter(prog),
+            [](const auto& byte) {
+                return std::to_integer<std::uint8_t>(byte);
+            });
 
         return segwit_addr::encode(hrp, 0, prog);
     } catch (...) {

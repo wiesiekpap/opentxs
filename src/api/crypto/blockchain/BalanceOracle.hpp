@@ -106,12 +106,12 @@ private:
         const Balance& balance,
         const Chain chain) noexcept -> void;
     auto process_registration(Message&& in) noexcept -> void;
-    auto process_update_balance(const Chain chain, Balance balance) noexcept
+    auto process_update_balance(const Chain chain, Balance&& balance) noexcept
         -> void;
     auto process_update_balance(
         const identifier::Nym& owner,
         const Chain chain,
-        Balance balance) noexcept -> void;
+        Balance&& balance) noexcept -> void;
     auto process_update_chain_balance(Message&& in) noexcept -> void;
     auto process_update_nym_balance(Message&& in) noexcept -> void;
 };
