@@ -234,19 +234,10 @@ auto Addr::payload(AllocateOutput out) const noexcept -> bool
         if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
         const auto cs = CompactSize(payload_.size()).Encode();
-        const auto bytes = [&] {
-            const auto size = [this] {
-                if (SerializeTimestamp()) {
+        const auto size = SerializeTimestamp() ? sizeof(BitcoinFormat_31402)
+                                               : sizeof(AddressVersion);
+        const auto bytes = cs.size() + (payload_.size() * size);
 
-                    return sizeof(BitcoinFormat_31402);
-                } else {
-
-                    return sizeof(AddressVersion);
-                }
-            }();
-
-            return cs.size() + (payload_.size() * size);
-        }();
         auto output = out(bytes);
 
         if (false == output.valid(bytes)) {
