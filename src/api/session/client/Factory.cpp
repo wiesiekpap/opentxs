@@ -114,19 +114,17 @@ auto Factory::BitcoinGenerationTransaction(
     const auto serializedVersion = boost::endian::little_int32_buf_t{version};
     const auto locktime = boost::endian::little_uint32_buf_t{0};
     const auto sequence = boost::endian::little_uint32_buf_t{0xffffffff};
-    const auto cb = [&] {
-        const auto bip34 =
-            opentxs::blockchain::bitcoin::block::internal::EncodeBip34(height);
-        auto output = space(bip34.size() + coinbase.size());
-        auto it = output.data();
-        std::memcpy(it, bip34.data(), bip34.size());
-        std::advance(it, bip34.size());
-        std::memcpy(it, coinbase.data(), coinbase.size());
-        output.resize(std::min<std::size_t>(output.size(), 100u));
 
-        return output;
-    }();
-    const auto cs = opentxs::blockchain::bitcoin::CompactSize{cb.size()};
+    const auto bip34 =
+        opentxs::blockchain::bitcoin::block::internal::EncodeBip34(height);
+    auto bytes = space(bip34.size() + coinbase.size());
+    auto it = bytes.data();
+    std::memcpy(it, bip34.data(), bip34.size());
+    std::advance(it, bip34.size());
+    std::memcpy(it, coinbase.data(), coinbase.size());
+    bytes.resize(std::min<std::size_t>(bytes.size(), 100u));
+
+    const auto cs = opentxs::blockchain::bitcoin::CompactSize{bytes.size()};
     auto inputs = UnallocatedVector<std::unique_ptr<
         opentxs::blockchain::bitcoin::block::internal::Input>>{};
     inputs.emplace_back(factory::BitcoinTransactionInput(
@@ -134,7 +132,7 @@ auto Factory::BitcoinGenerationTransaction(
         chain,
         outpoint.Bytes(),
         cs,
-        reader(cb),
+        reader(bytes),
         ReadView{reinterpret_cast<const char*>(&sequence), sizeof(sequence)},
         true,
         {}));
@@ -147,14 +145,15 @@ auto Factory::BitcoinGenerationTransaction(
         if (false == bool(pScript)) { return {}; }
 
         const auto& script = *pScript;
-        auto bytes = Space{};
-        script.Serialize(writer(bytes));
+        auto scriptBytes = Space{};
+        script.Serialize(writer(scriptBytes));
         outputs.emplace_back(factory::BitcoinTransactionOutput(
             api_,
             chain,
             static_cast<std::uint32_t>(++index),
             Amount{amount},
-            factory::BitcoinScript(chain, reader(bytes), Position::Output),
+            factory::BitcoinScript(
+                chain, reader(scriptBytes), Position::Output),
             std::move(keys)));
     }
 
