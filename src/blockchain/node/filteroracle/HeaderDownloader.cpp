@@ -50,6 +50,8 @@ FilterOracle::HeaderDownloader::HeaderDownloader(
     init_executor(
         {shutdown, UnallocatedCString{api_.Endpoints().BlockchainReorg()}});
 
+    start();
+
     OT_ASSERT(checkpoint_);
 }
 
@@ -232,10 +234,13 @@ auto FilterOracle::HeaderDownloader::pipeline(zmq::Message&& in) -> void
         }
     }
 }
-auto FilterOracle::HeaderDownloader::state_machine() noexcept -> bool
+
+auto FilterOracle::HeaderDownloader::state_machine() noexcept -> int
 {
-    return HeaderDM::state_machine();
+    tdiag("HeaderDownloader::state_machine");
+    return HeaderDM::state_machine() ? 20 : 400;
 }
+
 auto FilterOracle::HeaderDownloader::shut_down() noexcept -> void
 {
     close_pipeline();

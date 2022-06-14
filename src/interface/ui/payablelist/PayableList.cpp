@@ -51,13 +51,14 @@ PayableList::PayableList(
     const UnitType& currency,
     const SimpleCallback& cb) noexcept
     : PayableListList(api, nymID, cb, false)
-    , Worker(api, {})
+    , Worker(api, "PayableList")
     , owner_contact_id_(Widget::api_.Factory().Identifier())  // FIXME wtf
     , currency_(currency)
 {
     init_executor(
         {UnallocatedCString{api.Endpoints().ContactUpdate()},
          UnallocatedCString{api.Endpoints().NymDownload()}});
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -121,7 +122,7 @@ auto PayableList::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto PayableList::state_machine() noexcept -> bool { return false; }
+auto PayableList::state_machine() noexcept -> int { return -1; }
 
 auto PayableList::shut_down() noexcept -> void
 {

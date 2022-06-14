@@ -65,7 +65,7 @@ BlockchainStatistics::BlockchainStatistics(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     : BlockchainStatisticsList(api, api.Factory().Identifier(), cb, false)
-    , Worker(api, {})
+    , Worker(api, "BlockchainStatistics")
     , blockchain_(api.Network().Blockchain())
     , cache_()
     , timer_(api.Network().Asio().Internal().GetTimer())
@@ -79,6 +79,7 @@ BlockchainStatistics::BlockchainStatistics(
         UnallocatedCString{api.Endpoints().BlockchainStateChange()},
         UnallocatedCString{api.Endpoints().BlockchainWalletUpdated()},
     });
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -227,7 +228,7 @@ auto BlockchainStatistics::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainStatistics::state_machine() noexcept -> bool { return false; }
+auto BlockchainStatistics::state_machine() noexcept -> int { return -1; }
 
 auto BlockchainStatistics::shut_down() noexcept -> void
 {

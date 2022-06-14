@@ -101,7 +101,7 @@ SyncServer::SyncServer(
           "sync server",
           2000,
           1000)
-    , SyncWorker(api, 20ms)
+    , SyncWorker(api, "SyncServer")
     , db_(db)
     , header_(header)
     , filter_(filter)
@@ -121,6 +121,7 @@ SyncServer::SyncServer(
              api_.Endpoints().Internal().BlockchainFilterUpdated(chain_)}});
     ::zmq_setsockopt(socket_.get(), ZMQ_LINGER, &linger_, sizeof(linger_));
     ::zmq_connect(socket_.get(), endpoint_.c_str());
+    start();
 }
 
 SyncServer::~SyncServer()
@@ -166,7 +167,7 @@ auto SyncServer::hello(const Lock&, const block::Position& incoming)
 
     return std::make_tuple(needSync, parent, std::move(state));
 }
-
+update_tip
 auto SyncServer::trigger_state_machine() const noexcept -> void { trigger(); }
 
 auto SyncServer::update_tip(const Position& position, const int&) const noexcept
@@ -454,9 +455,10 @@ auto SyncServer::pipeline(zmq::Message&& in) -> void
     }
 }
 
-auto SyncServer::state_machine() noexcept -> bool
+auto SyncServer::state_machine() noexcept -> int
 {
-    return SyncDM::state_machine();
+    tdiag("SyncServer::state_machine");
+    return SyncDM::state_machine() ? 20 : 400;
 }
 
 auto SyncServer::shut_down() noexcept -> void

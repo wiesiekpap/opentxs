@@ -55,7 +55,7 @@ public:
 
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     friend HeaderDM;
@@ -83,5 +83,4 @@ private:
     auto queue_processing(DownloadedData&& data) noexcept -> void;
     auto shut_down() noexcept -> void;
 };
-
 }  // namespace opentxs::blockchain::node::implementation
