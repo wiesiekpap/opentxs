@@ -78,7 +78,7 @@ class Process::Imp final : public statemachine::Job
 public:
     auto ProcessReorg(
         const Lock& headerOracleLock,
-        const block::Position& parent) noexcept -> void final;
+        const block::Position& parent) noexcept -> void;
 
     Imp(const boost::shared_ptr<const SubchainStateData>& parent,
         const network::zeromq::BatchID batch,
@@ -90,6 +90,11 @@ public:
     Imp& operator=(Imp&&) = delete;
 
     ~Imp() final = default;
+
+private:
+    auto sProcessReorg(
+        const Lock& headerOracleLock,
+        const block::Position& parent) noexcept -> void;
 
 private:
     using Waiting = Deque<block::Position>;

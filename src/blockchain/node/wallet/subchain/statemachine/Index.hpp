@@ -70,7 +70,7 @@ public:
     Imp& operator=(const Imp&) = delete;
     Imp& operator=(Imp&&) = delete;
 
-    ~Imp() override = default;
+    ~Imp() override;
 
 protected:
     auto do_startup() noexcept -> void final;

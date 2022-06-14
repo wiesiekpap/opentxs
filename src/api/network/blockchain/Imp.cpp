@@ -575,17 +575,26 @@ auto BlockchainImp::Stop(const Chain type) const noexcept -> bool
 auto BlockchainImp::stop(const Lock& lock, const Chain type) const noexcept
     -> bool
 {
+    std::cerr << "==============stop(,) 1\n";
     auto it = networks_.find(type);
 
+    std::cerr << "==============stop(,) 2\n";
+
     if (networks_.end() == it) { return true; }
+    std::cerr << "==============stop(,) 3\n";
 
     OT_ASSERT(it->second);
+    std::cerr << "==============stop(,) 4\n";
 
     sync_server_.Disable(type);
+    std::cerr << "==============stop(,) 5\n";
     it->second->Shutdown();
+    std::cerr << "==============stop(,) 6\n";
     networks_.erase(it);
+    std::cerr << "==============stop(,) 7\n";
     LogVerbose()(OT_PRETTY_CLASS())("stopped chain ")(print(type)).Flush();
     publish_chain_state(type, false);
+    std::cerr << "==============stop(,) 8\n";
 
     return true;
 }

@@ -12,6 +12,7 @@
 #include <boost/system/error_code.hpp>  // IWYU pragma: keep
 #include <chrono>
 #include <string_view>
+#include <typeinfo>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
@@ -88,8 +89,7 @@ Job::Job(
     const network::zeromq::EndpointArgs& subscribe,
     const network::zeromq::EndpointArgs& pull,
     const network::zeromq::EndpointArgs& dealer,
-    const Vector<network::zeromq::SocketData>& extra,
-    Set<Work>&& neverDrop) noexcept
+    const Vector<network::zeromq::SocketData>& extra) noexcept
     : Actor(
           parent->api_,
           logger,
@@ -121,8 +121,7 @@ Job::Job(
               std::copy(extra.begin(), extra.end(), std::back_inserter(out));
 
               return out;
-          }(),
-          std::move(neverDrop))
+          }())
     , parent_p_(parent)
     , parent_(*parent_p_)
     , job_type_(type)
@@ -146,33 +145,40 @@ auto Job::add_last_reorg(Message& out) const noexcept -> void
 
 auto Job::ChangeState(const State state, StateSequence reorg) noexcept -> bool
 {
+    return synchronize(
+        [state, reorg, this] { return sChangeState(state, reorg); });
+}
+auto Job::sChangeState(const State state, StateSequence reorg) noexcept -> bool
+{
     if (auto old = pending_state_.exchange(state); old == state) {
 
+        tdiag("ChangeState ALREADY GOOD");
         return true;
     }
 
-    auto lock = lock_for_reorg(name_, reorg_lock_);
     auto output{false};
+    try {
 
-    switch (state) {
-        case State::normal: {
-            if (State::reorg != state_) { break; }
-            output = transition_state_normal();
-        } break;
-        case State::reorg: {
-            if (State::shutdown == state_) { break; }
+        switch (state) {
+            case State::normal: {
+                if (State::reorg != state_) { break; }
+                output = transition_state_normal();
+            } break;
+            case State::reorg: {
+                if (State::shutdown == state_) { break; }
 
-            output = transition_state_reorg(reorg);
-        } break;
-        case State::shutdown: {
-            if (State::reorg == state_) { break; }
+                output = transition_state_reorg(reorg);
+            } break;
+            case State::shutdown: {
+                if (State::reorg == state_) { break; }
 
-            output = transition_state_shutdown();
-        } break;
-        default: {
-            OT_FAIL;
+                output = transition_state_shutdown();
+            } break;
+            default: {
+                tdiag("nonreentrant_ChangeState default FAIL");
+                OT_FAIL;
+            }
         }
-    }
 
     if (!output) {
         LogError()(OT_PRETTY_CLASS())(name_)(" failed to change state from ")(
@@ -180,6 +186,9 @@ auto Job::ChangeState(const State state, StateSequence reorg) noexcept -> bool
             .Flush();
     }
 
+    } catch (const std::exception& e) {
+        output = false;
+    }
     return output;
 }
 
@@ -454,6 +463,7 @@ auto Job::state_reorg(const Work work, Message&& msg) noexcept -> void
             log_(OT_PRETTY_CLASS())(name_)(" deferring ")(print(work))(
                 " message processing until reorg is complete")
                 .Flush();
+            tdiag("-------------defer------------");
             defer(std::move(msg));
         } break;
         case Work::shutdown:

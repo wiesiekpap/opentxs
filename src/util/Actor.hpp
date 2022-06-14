@@ -7,10 +7,10 @@
 
 #pragma once
 
+#include <boost/smart_ptr/weak_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <atomic>
 #include <chrono>
-#include <deque>
 #include <functional>
 #include <future>
 #include <memory>
@@ -22,12 +22,10 @@
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
-#include "internal/util/Future.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Timer.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -42,14 +40,13 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/Reactor.hpp"
 #include "util/ScopeGuard.hpp"
-#include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
-// inline namespace v1
-// {
+
 namespace api
 {
 class Session;
@@ -62,9 +59,13 @@ class Log;
 
 namespace opentxs
 {
+
 template <typename JobType>
-class Actor : virtual public Allocated
+class Actor : public Reactor, virtual public Allocated
 {
+private:
+    std::atomic<bool> running_;
+
 public:
     using Message = network::zeromq::Message;
 
@@ -89,7 +90,6 @@ protected:
     using SocketType = network::zeromq::socket::Type;
 
     const Log& log_;
-    mutable std::timed_mutex reorg_lock_;
     network::zeromq::Pipeline pipeline_;
     bool disable_automatic_processing_;
 
@@ -101,51 +101,44 @@ protected:
             pipeline_.Push(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL));
         }
     }
-    auto signal_shutdown() const noexcept -> void
+    auto signal_shutdown(bool immediate = false) noexcept -> void
     {
-        if (running_) { pipeline_.Push(MakeWork(WorkType::Shutdown)); }
+        shutdown_actor();
     }
-    template <typename SharedPtr>
-    auto signal_startup(SharedPtr me) const noexcept -> void
+    template <typename ME>
+    auto signal_startup(const boost::shared_ptr<ME>& me) noexcept -> void
     {
-        if (running_) {
-            pipeline_.Internal().SetCallback(
-                [=](auto&& m) { me->worker(std::move(m)); });
+        tdiag("signal_startup");
+        if (running_ && start()) {
+            boost::weak_ptr<ME> wp(me);
+            pipeline_.Internal().SetCallback([wp](auto&& m) {
+                if (auto also_me = wp.lock()) also_me->worker(std::move(m));
+            });
             pipeline_.Push(MakeWork(OT_ZMQ_INIT_SIGNAL));
         }
+        notify();
     }
+    // Deprecated, messages should no longer be received during reorg.
     auto defer(Message&& message) noexcept -> void
     {
+        // TODO investigate any occurrences of defer call,
+        // remove defer, cache_ and flush_cache.
         cache_.emplace(std::move(message));
+        log_(name_)(" ")(__FUNCTION__)(": unexpected message!!!")(
+            ", investigate")
+            .Flush();
     }
 
     auto do_init() noexcept -> void
     {
         log_(name_)(" ")(__FUNCTION__)(": initializing").Flush();
         do_startup();
-
-        try {
-            init_promise_.set_value();
-            log_(name_)(" ")(__FUNCTION__)(": initialization complete").Flush();
-            flush_cache();
-        } catch (const std::future_error& e) {  // possible no_state or
-                                                // promise_already_satisfied
-            log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
-            LogError()(name_)(" ")(__FUNCTION__)(
-                ": init message received twice")
-                .Flush();
-            OT_FAIL;
-        } catch (const std::exception& e) {  // possible exception from copy or
-                                             // move
-            log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
-            OT_FAIL;
-        }
     }
     auto do_work() noexcept -> void
     {
         rate_limit_state_machine();
         state_machine_queued_.store(false);
-        repeat(work());
+        trigger_repeat_if(work());
     }
     auto flush_cache() noexcept -> void
     {
@@ -166,18 +159,32 @@ protected:
         }
     }
 
-private:
-    // unused - remove?
-    auto init_complete() noexcept -> void { init_promise_.set_value(); }
-
 protected:
     auto shutdown_actor() noexcept -> void
     {
-        init_future_.get();
+        tdiag(dname(this), "CLOSE 1  XXXXXXXXXXXXXXXXXXXXXXX");
+        std::ostringstream os;
+        os << this;
+        tdiag(os.str());
 
-        if (auto previous = running_.exchange(false); previous) {
+        if (in_reactor_thread()) {
             do_shutdown();
+            tdiag(dname(this), "CLOSE 2A  XXXXXXXXXXXXXXXXXXXXXXX");
+            tdiag(os.str());
             pipeline_.Close();
+        } else {
+            if (auto previous = running_.exchange(false); previous) {
+                if (stop()) {
+                    notify();
+                    wait_for_shutdown();
+                }
+                do_shutdown();
+                tdiag(dname(this), "CLOSE 2B  XXXXXXXXXXXXXXXXXXXXXXX");
+                tdiag(os.str());
+                pipeline_.Close();
+            } else {
+                tdiag(dname(this), "CLOSE 2C  XXXXXXXXXXXXXXXXXXXXXXX");
+            }
         }
     }
 
@@ -185,58 +192,57 @@ protected:
     Actor(
         const api::Session& api,
         const Log& logger,
-        const CString&& name,
+        CString&& name,
         const std::chrono::milliseconds rateLimit,
         const network::zeromq::BatchID batch,
         allocator_type alloc,
         const network::zeromq::EndpointArgs& subscribe = {},
         const network::zeromq::EndpointArgs& pull = {},
         const network::zeromq::EndpointArgs& dealer = {},
-        const Vector<network::zeromq::SocketData>& extra = {},
-        Set<Work>&& neverDrop = {}) noexcept
-        : name_(std::move(name))
-        , log_(logger)
-        , reorg_lock_()
-        , pipeline_(api.Network().ZeroMQ().Internal().Pipeline(
+        const Vector<network::zeromq::SocketData>& extra = {}) noexcept
+        : Reactor(logger, name)
+        , running_{true}
+        , name_(std::move(name))
+        , log_{logger}
+        , pipeline_{api.Network().ZeroMQ().Internal().Pipeline(
               {},
               subscribe,
               pull,
               dealer,
               extra,
               batch,
-              alloc.resource()))
-        , disable_automatic_processing_(false)
-        , rate_limit_(rateLimit)
-        , never_drop_(std::move(neverDrop))
-        , init_promise_()
-        , init_future_(init_promise_.get_future())
-        , running_(true)
-        , last_executed_(Clock::now())
+              alloc.resource())}
+        , disable_automatic_processing_{false}
+        , rate_limit_{rateLimit}
+        , last_executed_{Clock::now()}
         , cache_(alloc)
-        , state_machine_queued_(false)
-        , retry_(api.Network().Asio().Internal().GetTimer())
+        , state_machine_queued_{false}
+        , retry_{api.Network().Asio().Internal().GetTimer()}
     {
         log_(name_)(" ")(__FUNCTION__)(": using ZMQ batch ")(
             pipeline_.BatchID())
             .Flush();
+        tdiag("Actor::Actor");
+        notify();
     }
 
-    ~Actor() override { retry_.Cancel(); }
-
-private:
-    auto wait_for_init() const noexcept -> void { init_future_.get(); }
+    ~Actor() override
+    {
+        std::ostringstream os{};
+        os << processing_thread_id();
+        tdiag("Actor::~Actor 1", os.str());
+        retry_.Cancel();
+        tdiag("Actor::~Actor 2", os.str());
+    }
 
 private:
     const std::chrono::milliseconds rate_limit_;
-    const Set<Work> never_drop_;
-    std::promise<void> init_promise_;
-    std::shared_future<void> init_future_;
-    std::atomic<bool> running_;
     Time last_executed_;
     std::queue<Message, Deque<Message>> cache_;
     mutable std::atomic<bool> state_machine_queued_;
     Timer retry_;
 
+private:
     auto rate_limit_state_machine() const noexcept
     {
         const auto wait = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -249,7 +255,7 @@ private:
             Sleep(wait);
         }
     }
-
+    // TODO remove when defer() is gone.
     auto decode_message_type(const network::zeromq::Message& in) noexcept(false)
     {
         const auto body = in.Body();
@@ -258,45 +264,38 @@ private:
 
             throw std::runtime_error{"empty message received"};
         }
-        const auto work = [&] {
-            try {
-                return body.at(0).as<Work>();
-            } catch (const std::out_of_range& e) {  // from FrameSection or
-                                                    // deeper from std::vector
-                log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
-                OT_FAIL
-            } catch (const std::runtime_error& e) {  // from Frame
-                log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
-                throw std::runtime_error{e.what()};
-            } catch (const std::exception& e) {  // possible via copy of
-                                                 // template type
-                log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
-                OT_FAIL
-            }
-        }();
+
+        Work work{};
+        try {
+            work = body.at(0).as<Work>();
+        } catch (const std::out_of_range& e) {  // from FrameSection or
+                                                // deeper from std::vector
+            log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
+            OT_FAIL
+        } catch (const std::runtime_error& e) {  // from Frame
+            log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
+            throw;
+        } catch (const std::exception& e) {  // possible via copy of
+                                             // template type
+            log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
+            OT_FAIL
+        }
 
         const auto type = print(work);
         log_(name_)(" ")(__FUNCTION__)(": message type is: ")(type).Flush();
         const auto isInit =
             OT_ZMQ_INIT_SIGNAL == static_cast<OTZMQWorkType>(work);
-        const auto canDrop = (0u == never_drop_.count(work));
-        const auto initFinished = IsReady(init_future_);
 
-        return std::make_tuple(work, type, isInit, canDrop, initFinished);
+        return std::make_tuple(work, type, isInit);
     }
     auto handle_message(network::zeromq::Message&& in) noexcept -> void
     {
         try {
-            const auto [work, type, isInit, canDrop, initFinished] =
-                decode_message_type(in);
-
-            OT_ASSERT(initFinished);
+            const auto [work, type, isInit] = decode_message_type(in);
 
             handle_message(  // noexcept
                 false,
                 isInit,
-                initFinished,
-                canDrop,
                 type,
                 work,
                 std::move(in));
@@ -313,53 +312,34 @@ private:
     auto handle_message(
         const bool topLevel,
         const bool isInit,
-        const bool initFinished,
-        const bool canDrop,
         const std::string_view type,
         const Work work,
         network::zeromq::Message&& in) noexcept -> void
     {
-        if (false == initFinished) {
-            if (isInit) {
-                do_init();
-                flush_cache();
-            } else if (canDrop) {
-                log_(name_)(" ")(__FUNCTION__)(": dropping message of type ")(
-                    type)(" until init is processed")
+        if (disable_automatic_processing_) {
+            log_(name_)(" ")(__FUNCTION__)(": processing ")(
+                type)(" in bypass mode")
+                .Flush();
+            handle_message(work, std::move(in));
+
+            return;
+        } else if (topLevel) {
+            flush_cache();
+        }
+
+        switch (static_cast<OTZMQWorkType>(work)) {
+            case value(WorkType::Shutdown): {
+                log_(name_)(" ")(__FUNCTION__)(": shutting down").Flush();
+                this->shutdown_actor();
+            } break;
+            case OT_ZMQ_STATE_MACHINE_SIGNAL: {
+                log_(name_)(" ")(__FUNCTION__)(": executing state machine")
                     .Flush();
-            } else {
-                log_(name_)(" ")(__FUNCTION__)(": queueing message of type ")(
-                    type)(" until init is processed")
-                    .Flush();
-                defer(std::move(in));
-            }
-        } else {
-            if (disable_automatic_processing_) {
-                log_(name_)(" ")(__FUNCTION__)(": processing ")(
-                    type)(" in bypass mode")
-                    .Flush();
+                do_work();
+            } break;
+            default: {
+                log_(name_)(" ")(__FUNCTION__)(": processing ")(type).Flush();
                 handle_message(work, std::move(in));
-
-                return;
-            } else if (topLevel) {
-                flush_cache();
-            }
-
-            switch (static_cast<OTZMQWorkType>(work)) {
-                case value(WorkType::Shutdown): {
-                    log_(name_)(" ")(__FUNCTION__)(": shutting down").Flush();
-                    this->shutdown_actor();
-                } break;
-                case OT_ZMQ_STATE_MACHINE_SIGNAL: {
-                    log_(name_)(" ")(__FUNCTION__)(": executing state machine")
-                        .Flush();
-                    do_work();
-                } break;
-                default: {
-                    log_(name_)(" ")(__FUNCTION__)(": processing ")(type)
-                        .Flush();
-                    handle_message(work, std::move(in));
-                }
             }
         }
     }
@@ -375,71 +355,26 @@ private:
             OT_FAIL;
         }
     }
-    auto repeat(const bool again) noexcept -> void
+    auto trigger_repeat_if(const bool again) noexcept -> void
     {
         if (again) { trigger(); }
 
         last_executed_ = Clock::now();
     }
-    auto worker(network::zeromq::Message&& in) noexcept -> void
+
+    // The reactor calls to dispatch unqueued messages.
+    auto handle(Message&& in) noexcept -> void final
     {
-        log_(name_)(" ")(__FUNCTION__)(": Message received").Flush();
-
         try {
-            const auto [work, type, isInit, canDrop, initFinished] =
-                decode_message_type(in);
-            auto lock = std::unique_lock<std::timed_mutex>{reorg_lock_, 1s};
+            const auto [work, type, isInit] = decode_message_type(in);
 
-            if (false == lock.owns_lock()) {
-                auto log{type};
-                const auto queue = [&] {
-                    log_(name_)(" ")(__FUNCTION__)(
-                        ": queueing message of type ")(
-                        log)(" until reorg is processed")
-                        .Flush();
-                    defer(std::move(in));
-                    retry_.SetRelative(1s);
-                    retry_.Wait([this](const auto& e) {
-                        if (!e) { trigger(); }
-                    });
-                    defer(std::move(in));
-                };
-
-                if (false == initFinished) {
-                    if (canDrop) {
-                        log_(name_)(" ")(__FUNCTION__)(
-                            ": dropping message of type ")(
-                            type)(" until init is processed")
-                            .Flush();
-
-                        return;
-                    } else if (false == isInit) {
-                        queue();
-
-                        return;
-                    }
-                } else {
-                    queue();
-
-                    return;
-                }
-            }
-
-            if (false == lock.owns_lock()) {
-                // If this branch is reached then a reorg must have been
-                // initiated in between when this object was constructed and
-                // before the init message was received. Only in this one case
-                // we will block the thread until the lock is available.
-                lock.lock();
-            }
-
-            handle_message(
-                true, isInit, initFinished, canDrop, type, work, std::move(in));
+            handle_message(true, isInit, type, work, std::move(in));
         } catch (const std::exception& e) {
             log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
         }
-
-        log_(name_)(" ")(__FUNCTION__)(": message processing complete").Flush();
     }
+
+    // All received messages are queued for the reactor.
+    auto worker(Message&& in) noexcept -> void { enqueue(std::move(in)); }
 };
 }  // namespace opentxs
