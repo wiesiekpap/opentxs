@@ -761,12 +761,10 @@ auto GCS::Test(const ReadView target) const noexcept -> bool
         std::byte,
         sizeof(target) + sizeof(ReadView) + sizeof(gcs::Element)>{};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
-    const auto input = [&] {
-        auto out = Targets{&alloc};
-        out.emplace_back(target);
 
-        return out;
-    }();
+    auto input = Targets{&alloc};
+    input.emplace_back(target);
+
     const auto set = hashed_set_construct(input, &alloc);
 
     OT_ASSERT(1 == set.size());
