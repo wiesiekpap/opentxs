@@ -6,6 +6,7 @@
 #include "ottest/fixtures/blockchain/Regtest.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
+#include <iostream>
 #include <thread>
 
 #include "internal/identity/Nym.hpp"
@@ -38,9 +39,11 @@ TEST_F(
     nym_no_const.SetAlias(name_andrew);
 
     EXPECT_EQ(GetWalletName(user_bob), name_andrew);
+    std::cerr << "RENAME 8\n";
 
     // Cleanup
     CloseClient(user_bob.name_);
+    std::cerr << "RENAME 9\n";
     ot::LogConsole()("User removed");
 
     // Create user with same seed but different name
@@ -50,15 +53,20 @@ TEST_F(
         name_andrew,
         GetVectors3().bob_.words_,
         address_);
+    std::cerr << "RENAME 10\n";
 
     EXPECT_TRUE(success2);
 
     // Compare name and address
     EXPECT_EQ(GetWalletName(user_andrew_after_reboot), name_andrew);
+    std::cerr << "RENAME 11\n";
     EXPECT_EQ(bob_address, GetWalletAddress(user_andrew_after_reboot));
+    std::cerr << "RENAME 12\n";
 
     CloseClient(user_andrew_after_reboot.name_);
+    std::cerr << "RENAME 13\n";
     Shutdown();
+    std::cerr << "RENAME 14\n";
 }
 
 }  // namespace ottest

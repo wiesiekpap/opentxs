@@ -256,6 +256,14 @@ protected:
         allocator_type alloc) noexcept;
 
 private:
+    auto sChangeState(const State state, StateSequence reorg) noexcept -> bool;
+    auto sProcessReorg(
+        const Lock& headerOracleLock,
+        storage::lmdb::LMDB::Transaction& tx,
+        std::atomic_int& errors,
+        const block::Position& ancestor) noexcept -> void;
+
+private:
     using Transactions =
         Vector<std::shared_ptr<const bitcoin::block::Transaction>>;
     using Task = node::internal::Wallet::Task;

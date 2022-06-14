@@ -208,6 +208,15 @@ auto Rescan::Imp::ProcessReorg(
     const Lock& headerOracleLock,
     const block::Position& parent) noexcept -> void
 {
+    synchronize([&lock = std::as_const(headerOracleLock), &parent, this] {
+        sProcessReorg(lock, parent);
+    });
+}
+
+auto Rescan::Imp::sProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
+{
     if (last_scanned_.has_value()) {
         const auto target = parent_.ReorgTarget(
             headerOracleLock, parent, last_scanned_.value());

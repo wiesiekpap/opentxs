@@ -9,6 +9,7 @@
 #include <opentxs/opentxs.hpp>
 #include <atomic>
 #include <future>
+#include <iostream>
 #include <optional>
 #include <ostream>
 #include <stdexcept>
@@ -312,7 +313,9 @@ auto Regtest_fixture_simple::CreateClient(
         throw std::runtime_error("Error connecting to client1 socket");
     }
 
-    const auto status = done.wait_for(std::chrono::minutes(2));
+    std::cerr << "ABOUT TO WAIT 120s\n";
+    const auto status = done.wait_for(std::chrono::seconds(30));
+    std::cerr << "BACK AFTER 120s\n";
     const auto future = (std::future_status::ready == status);
 
     return {user, added && start && future && listener_added};
@@ -321,9 +324,13 @@ auto Regtest_fixture_simple::CreateClient(
 auto Regtest_fixture_simple::CloseClient(const ot::UnallocatedCString& name)
     -> void
 {
+    std::cerr << "==============CloseClient 1\n";
     users_.at(name).api_->Network().Blockchain().Stop(test_chain_);
+    std::cerr << "==============CloseClient 2\n";
     users_.erase(name);
+    std::cerr << "==============CloseClient 3\n";
     user_listeners_.erase(name);
+    std::cerr << "==============CloseClient 4\n";
 }
 
 auto Regtest_fixture_simple::GetBalance(const User& user) const -> const Amount
