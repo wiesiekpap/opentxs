@@ -7,9 +7,11 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstring>
 #include <functional>
 #include <future>
 #include <mutex>
+#include <optional>
 
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Types.hpp"
@@ -28,6 +30,7 @@
 #include "opentxs/util/Log.hpp"
 #include "util/Thread.hpp"
 #include "util/Work.hpp"
+#include "util/threadutil.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -48,7 +51,7 @@ class Client;
 namespace opentxs
 {
 template <typename API = api::session::Client>
-class Worker
+class Worker : public ThreadDisplay
 {
 protected:
     virtual auto pipeline(network::zeromq::Message&& in) -> void = 0;
@@ -67,6 +70,7 @@ private:
     std::mutex shutdown_mutex_;
     Time last_executed_;
     mutable std::atomic<bool> state_machine_queued_;
+    std::once_flag thread_register_once_;
 
 protected:
     network::zeromq::Pipeline pipeline_;
@@ -116,8 +120,15 @@ protected:
         , shutdown_mutex_{}
         , last_executed_{Clock::now()}
         , state_machine_queued_{false}
+        , thread_register_once_{}
         , pipeline_{api.Network().ZeroMQ().Internal().Pipeline(
               [this](auto&& in) {
+                  std::call_once(thread_register_once_, [this]() {
+                      auto thread_handle = ThreadMonitor::add_current_thread(
+                          ThreadMonitor::default_name(get_class()), "");
+                      set_host_thread(thread_handle);
+                  });
+
                   if (running_) pipeline(std::move(in));
               },
               workerThreadName,

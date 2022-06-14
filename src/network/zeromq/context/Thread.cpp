@@ -167,7 +167,8 @@ auto Thread::poll(Items& data) noexcept -> void
 
             try {
                 callback(std::move(message));
-            } catch (...) {
+            } catch (const std::exception& e) {
+                std::cerr << "THREAD EXCEPTION: " << e.what() << "\n";
             }
         }
     }

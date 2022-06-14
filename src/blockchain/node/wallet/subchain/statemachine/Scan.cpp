@@ -71,6 +71,14 @@ Scan::Imp::Imp(
 {
 }
 
+Scan::Imp::~Imp()
+{
+    tdiag("Scan::~Imp ENTERED");
+    //    shutdown_actor();
+    tdiag("Scan::Imp DELETED !!!!!!!!!!!!!!!!!!!!!!!!!!");
+    //    *static_cast<char*>(nullptr) = 0;
+}
+
 auto Scan::Imp::caught_up() const noexcept -> bool
 {
     return current() == filter_tip_.value_or(parent_.null_position_);
@@ -123,6 +131,14 @@ auto Scan::Imp::do_startup() noexcept -> void
 }
 
 auto Scan::Imp::ProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
+{
+    synchronize([&lock = std::as_const(headerOracleLock), &parent, this] {
+        sProcessReorg(lock, parent);
+    });
+}
+auto Scan::Imp::sProcessReorg(
     const Lock& headerOracleLock,
     const block::Position& parent) noexcept -> void
 {

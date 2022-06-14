@@ -7,8 +7,10 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <atomic>
+#include <chrono>
 #include <exception>
 #include <optional>
+#include <string>
 
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
@@ -19,6 +21,7 @@
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Actor.hpp"
+#include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -96,8 +99,10 @@ protected:
         const network::zeromq::EndpointArgs& subscribe = {},
         const network::zeromq::EndpointArgs& pull = {},
         const network::zeromq::EndpointArgs& dealer = {},
-        const Vector<network::zeromq::SocketData>& extra = {},
-        Set<Work>&& neverDrop = {}) noexcept;
+        const Vector<network::zeromq::SocketData>& extra = {}) noexcept;
+
+private:
+    auto sChangeState(const State state, StateSequence reorg) noexcept -> bool;
 
 private:
     using HandledReorgs = Set<StateSequence>;

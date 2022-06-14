@@ -63,10 +63,15 @@ Index::Imp::Imp(
     , to_rescan_(pipeline_.Internal().ExtraSocket(1))
     , last_indexed_(std::nullopt)
 {
+    tdiag("Imp(....)");
 }
+
+Index::Imp::~Imp() { tdiag("~Imp()"); }
 
 auto Index::Imp::do_process_update(Message&& msg) noexcept -> void
 {
+    tdiag("do_process_update(M&&)");
+
     auto clean = Set<ScanStatus>{get_allocator()};
     auto dirty = Set<block::Position>{get_allocator()};
     decode(parent_.api_, msg, clean, dirty);

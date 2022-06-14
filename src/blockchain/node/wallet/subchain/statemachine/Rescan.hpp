@@ -79,13 +79,11 @@ public:
     ~Imp() final = default;
 
 private:
-    network::zeromq::socket::Raw& to_process_;
-    network::zeromq::socket::Raw& to_progress_;
-    std::optional<block::Position> last_scanned_;
-    std::optional<block::Position> filter_tip_;
-    block::Position highest_dirty_;
-    Set<block::Position> dirty_;
+    auto sProcessReorg(
+        const Lock& headerOracleLock,
+        const block::Position& parent) noexcept -> void;
 
+private:
     auto before(const block::Position& position) const noexcept
         -> block::Position;
     auto can_advance() const noexcept -> bool;
@@ -112,5 +110,13 @@ private:
     auto set_last_scanned(std::optional<block::Position>&& value) noexcept
         -> void;
     auto work() noexcept -> bool final;
+
+private:
+    network::zeromq::socket::Raw& to_process_;
+    network::zeromq::socket::Raw& to_progress_;
+    std::optional<block::Position> last_scanned_;
+    std::optional<block::Position> filter_tip_;
+    block::Position highest_dirty_;
+    Set<block::Position> dirty_;
 };
 }  // namespace opentxs::blockchain::node::wallet

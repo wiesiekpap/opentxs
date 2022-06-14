@@ -198,6 +198,15 @@ auto Process::Imp::ProcessReorg(
     const Lock& headerOracleLock,
     const block::Position& parent) noexcept -> void
 {
+    synchronize([&lock = std::as_const(headerOracleLock), &parent, this] {
+        sProcessReorg(lock, parent);
+    });
+}
+
+auto Process::Imp::sProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
+{
     txid_cache_.clear();
     waiting_.erase(
         std::remove_if(

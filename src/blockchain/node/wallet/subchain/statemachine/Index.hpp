@@ -74,7 +74,7 @@ public:
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
 
-    ~Imp() override = default;
+    ~Imp() override;
 
 protected:
     auto do_startup() noexcept -> void final;

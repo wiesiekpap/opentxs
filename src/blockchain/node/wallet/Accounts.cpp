@@ -354,7 +354,6 @@ auto Accounts::Imp::Shutdown() noexcept -> void
     // WARNING this function must never be called from with this class's
     // Actor::worker function or else a deadlock will occur. Shutdown must only
     // be called by a different Actor.
-    auto lock = std::unique_lock<std::timed_mutex>{reorg_lock_};
     transition_state_shutdown();
 }
 

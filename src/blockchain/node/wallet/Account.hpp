@@ -133,9 +133,17 @@ public:
         const std::string_view fromParent,
         allocator_type alloc) noexcept;
 
-    ~Imp() final { signal_shutdown(); }
+    ~Imp() final;
 
-protected:
+private:
+    auto sChangeState(const State state, StateSequence reorg) noexcept -> bool;
+    auto sProcessReorg(
+        const Lock& headerOracleLock,
+        storage::lmdb::LMDB::Transaction& tx,
+        std::atomic_int& errors,
+        const block::Position& parent) noexcept -> void;
+
+private:
     auto do_startup() noexcept -> void override;
     auto do_shutdown() noexcept -> void override;
     auto pipeline(const Work work, Message&& msg) noexcept -> void override;

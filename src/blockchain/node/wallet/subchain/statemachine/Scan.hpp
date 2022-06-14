@@ -76,14 +76,14 @@ public:
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
 
-    ~Imp() final = default;
+    ~Imp() final;
 
 private:
-    network::zeromq::socket::Raw& to_process_;
-    std::optional<block::Position> last_scanned_;
-    std::optional<block::Position> filter_tip_;
-    bool enabled_;
+    auto sProcessReorg(
+        const Lock& headerOracleLock,
+        const block::Position& parent) noexcept -> void;
 
+private:
     auto caught_up() const noexcept -> bool;
     auto current() const noexcept -> const block::Position&;
     auto tip() const noexcept -> const block::Position&;

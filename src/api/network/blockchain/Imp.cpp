@@ -345,8 +345,8 @@ auto BlockchainImp::Init(
 
     OT_ASSERT(db_);
 
-    const auto sync = (0 < options.RemoteBlockchainSyncServers().size()) ||
-                      options.ProvideBlockchainSyncServer();
+    auto sync = (0 < options.RemoteBlockchainSyncServers().size()) ||
+                options.ProvideBlockchainSyncServer();
 
     using Policy = opentxs::blockchain::database::BlockStorage;
     base_config_ = std::make_unique<Config>();
