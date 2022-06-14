@@ -279,15 +279,11 @@ auto Workflow::InstantiatePurse(
         case PaymentWorkflowType::OutgoingCash:
         case PaymentWorkflowType::IncomingCash: {
             try {
-                const auto serialized = [&] {
-                    auto out = proto::Purse{};
+                proto::Purse serialized{};
 
-                    if (false == ExtractPurse(workflow, out)) {
-                        throw std::runtime_error{"Missing purse"};
-                    }
-
-                    return out;
-                }();
+                if (false == ExtractPurse(workflow, serialized)) {
+                    throw std::runtime_error{"Missing purse"};
+                }
 
                 purse = api.Factory().InternalSession().Purse(serialized);
 
@@ -649,12 +645,11 @@ auto Workflow::AllocateCash(
     source.set_version(versions_.at(PaymentWorkflowType::OutgoingCash).source_);
     source.set_id(workflowID->str());
     source.set_revision(1);
-    source.set_item([&] {
-        auto proto = proto::Purse{};
-        purse.Internal().Serialize(proto);
 
-        return proto::ToString(proto);
-    }());
+    proto::Purse proto{};
+    purse.Internal().Serialize(proto);
+    source.set_item(proto::ToString(proto));
+
     workflow.set_notary(purse.Notary().str());
     auto& event = *workflow.add_event();
     event.set_version(versions_.at(PaymentWorkflowType::OutgoingCash).event_);
@@ -2306,17 +2301,12 @@ auto Workflow::InstantiateCheque(
     const Identifier& id) const -> Cheque
 {
     try {
-        const auto workflow = [&] {
-            auto out = proto::PaymentWorkflow{};
+        proto::PaymentWorkflow workflow{};
 
-            if (false == LoadWorkflow(nym, id, out)) {
-                throw std::runtime_error{
-                    UnallocatedCString{"Workflow "} + id.str() + " not found"};
-            }
-
-            return out;
-        }();
-
+        if (false == LoadWorkflow(nym, id, workflow)) {
+            throw std::runtime_error{
+                UnallocatedCString{"Workflow "} + id.str() + " not found"};
+        }
         if (false == ContainsCheque(workflow)) {
 
             throw std::runtime_error{
@@ -2337,16 +2327,12 @@ auto Workflow::InstantiatePurse(
     const Identifier& id) const -> Purse
 {
     try {
-        const auto workflow = [&] {
-            auto out = proto::PaymentWorkflow{};
+        proto::PaymentWorkflow workflow{};
 
-            if (false == LoadWorkflow(nym, id, out)) {
-                throw std::runtime_error{
-                    UnallocatedCString{"Workflow "} + id.str() + " not found"};
-            }
-
-            return out;
-        }();
+        if (false == LoadWorkflow(nym, id, workflow)) {
+            throw std::runtime_error{
+                UnallocatedCString{"Workflow "} + id.str() + " not found"};
+        }
 
         return session::Workflow::InstantiatePurse(api_, workflow);
     } catch (const std::exception& e) {
@@ -2546,12 +2532,11 @@ auto Workflow::ReceiveCash(
     source.set_version(versions_.at(PaymentWorkflowType::IncomingCash).source_);
     source.set_id(workflowID->str());
     source.set_revision(1);
-    source.set_item([&] {
-        auto proto = proto::Purse{};
-        purse.Internal().Serialize(proto);
 
-        return proto::ToString(proto);
-    }());
+    proto::Purse proto{};
+    purse.Internal().Serialize(proto);
+    source.set_item(proto::ToString(proto));
+
     workflow.set_notary(purse.Notary().str());
     auto& event = *workflow.add_event();
     event.set_version(versions_.at(PaymentWorkflowType::IncomingCash).event_);
@@ -2664,13 +2649,11 @@ auto Workflow::save_workflow(
     OT_ASSERT(saved)
 
     if (false == accountID.empty()) {
-        account_publisher_->Send([&] {
-            auto work = opentxs::network::zeromq::tagged_message(
-                WorkType::WorkflowAccountUpdate);
-            work.AddFrame(accountID);
+        auto work = opentxs::network::zeromq::tagged_message(
+            WorkType::WorkflowAccountUpdate);
+        work.AddFrame(accountID);
 
-            return work;
-        }());
+        account_publisher_->Send(std::move(work));
     }
 
     return valid && saved;
