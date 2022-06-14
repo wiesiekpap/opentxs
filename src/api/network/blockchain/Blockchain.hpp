@@ -179,8 +179,8 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
         [[maybe_unused]] const UnallocatedCString& syncEndpoint,
         [[maybe_unused]] const UnallocatedCString& publicSyncEndpoint,
         [[maybe_unused]] const UnallocatedCString& updateEndpoint,
-        [[maybe_unused]] const UnallocatedCString& publicUpdateEndpoint)
-        const noexcept -> bool
+        [[maybe_unused]] const UnallocatedCString& publicUpdateEndpoint) const
+        -> bool
     {
         return {};
     }

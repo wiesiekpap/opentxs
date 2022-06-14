@@ -269,13 +269,9 @@ auto Dht::process_request(
             (this->*get)(id->str());
         }
     }
-
-    return [&] {
-        auto out = opentxs::network::zeromq::Message{};
-        out.AddFrame(output);
-
-        return out;
-    }();
+    auto message = opentxs::network::zeromq::Message{};
+    message.AddFrame(output);
+    return message;
 }
 
 auto Dht::ProcessPublicNym(

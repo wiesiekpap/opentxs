@@ -179,8 +179,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         const UnallocatedCString& syncEndpoint,
         const UnallocatedCString& publicSyncEndpoint,
         const UnallocatedCString& updateEndpoint,
-        const UnallocatedCString& publicUpdateEndpoint) const noexcept
-        -> bool final;
+        const UnallocatedCString& publicUpdateEndpoint) const -> bool final;
     auto Stop(const Imp::Chain type) const noexcept -> bool final;
     auto SyncEndpoint() const noexcept -> std::string_view final;
     auto UpdatePeer(
@@ -228,7 +227,7 @@ private:
     OTZMQPublishSocket sync_updates_;
     OTZMQPublishSocket mempool_;
     blockchain::StartupPublisher startup_publisher_;
-    const std::unique_ptr<Config> base_config_;
+    std::unique_ptr<Config> base_config_;
     mutable std::mutex lock_;
     mutable UnallocatedMap<Chain, Config> config_;
     mutable UnallocatedMap<Chain, pNode> networks_;
@@ -249,7 +248,7 @@ private:
         const Lock& lock,
         const Chain type,
         const UnallocatedCString& seednode,
-        const bool startWallet = true) const noexcept -> bool;
+        const bool startWallet = true) const -> bool;
     auto stop(const Lock& lock, const Chain type) const noexcept -> bool;
 
     BlockchainImp() = delete;
