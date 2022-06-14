@@ -188,7 +188,7 @@ private:
     auto process_address_query(
         const ResponseType type,
         std::shared_ptr<std::promise<OTData>> promise,
-        std::future<Response> future) const noexcept -> void;
+        std::future<Response> future) const -> void;
     auto process_json(
         const ReadView notify,
         std::shared_ptr<std::promise<boost::json::value>> promise,
@@ -207,7 +207,7 @@ private:
         const noexcept -> void;
     auto send_notification(const ReadView notify) const noexcept -> void;
 
-    auto data_callback(zmq::Message&& in) noexcept -> void;
+    auto data_callback(zmq::Message&& in) -> void;
     auto retrieve_address_async(
         const struct Site& site,
         std::shared_ptr<std::promise<OTData>> promise) -> void;
