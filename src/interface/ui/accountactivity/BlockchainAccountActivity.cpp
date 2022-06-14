@@ -63,6 +63,7 @@
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Container.hpp"
 #include "util/Thread.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::factory
 {
@@ -116,6 +117,7 @@ BlockchainAccountActivity::BlockchainAccountActivity(
         UnallocatedCString{api.Endpoints().BlockchainTransactions(nymID)},
         UnallocatedCString{api.Endpoints().ContactUpdate()},
     });
+    start();
     balance_socket_->Send([&] {
         using Job = api::crypto::blockchain::BalanceOracleJobs;
         auto work = network::zeromq::tagged_message(Job::registration);
@@ -238,14 +240,15 @@ auto BlockchainAccountActivity::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainAccountActivity::state_machine() noexcept -> bool
+auto BlockchainAccountActivity::state_machine() noexcept -> int
 {
-    return false;
+    return SM_off;
 }
 
 auto BlockchainAccountActivity::shut_down() noexcept -> void
 {
     close_pipeline();
+    stop();
     // TODO MT-34 investigate what other actions might be needed
 }
 
@@ -576,7 +579,6 @@ auto BlockchainAccountActivity::ValidateAmount(
 
 BlockchainAccountActivity::~BlockchainAccountActivity()
 {
-    wait_for_startup();
     protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

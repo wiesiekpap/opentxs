@@ -510,9 +510,6 @@ private:
     OTZMQPublishSocket unit_publisher_;
     OTZMQPublishSocket peer_reply_publisher_;
     OTZMQPublishSocket peer_request_publisher_;
-    OTZMQRequestSocket dht_nym_requester_;
-    OTZMQRequestSocket dht_server_requester_;
-    OTZMQRequestSocket dht_unit_requester_;
     OTZMQPushSocket find_nym_;
     opentxs::network::zeromq::internal::Handle handle_;
     opentxs::network::zeromq::internal::Batch& batch_;
@@ -520,6 +517,8 @@ private:
     opentxs::network::zeromq::socket::Raw& p2p_socket_;
     opentxs::network::zeromq::socket::Raw& loopback_;
     mutable GuardedSocket to_loopback_;
+    class WalletReactor;
+    std::unique_ptr<WalletReactor> reactor_;
     opentxs::network::zeromq::internal::Thread* thread_;
 
     static auto reverse_unit_map(const UnitNameMap& map) -> UnitNameReverse;

@@ -112,6 +112,7 @@
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/Exclusive.tpp"
+#include "util/Reactor.hpp"
 #include "util/Thread.hpp"
 
 template class opentxs::Exclusive<opentxs::Account>;
@@ -119,6 +120,30 @@ template class opentxs::Shared<opentxs::Account>;
 
 namespace opentxs::api::session::imp
 {
+
+// Introduced to remove any non-instantaneous processing from the thread
+// pool responsible for socket servicing.
+class Wallet::WalletReactor : public Reactor
+{
+public:
+    WalletReactor(opentxs::network::zeromq::ListenCallback& callback)
+        : Reactor("Wallet", 1)
+        , callback_(callback)
+    {
+    }
+
+private:
+    auto handle(opentxs::network::zeromq::Message&& in, unsigned idx) noexcept
+        -> void override
+    {
+        callback_.Process(std::move(in));
+    }
+    auto last_job_str() const noexcept -> std::string final { return "Wallet"; }
+
+private:
+    opentxs::network::zeromq::ListenCallback& callback_;
+};
+
 Wallet::Wallet(const api::Session& api)
     : api_(api)
     , context_map_()
@@ -148,9 +173,6 @@ Wallet::Wallet(const api::Session& api)
     , unit_publisher_(api_.Network().ZeroMQ().PublishSocket())
     , peer_reply_publisher_(api_.Network().ZeroMQ().PublishSocket())
     , peer_request_publisher_(api_.Network().ZeroMQ().PublishSocket())
-    , dht_nym_requester_{api_.Network().ZeroMQ().RequestSocket()}
-    , dht_server_requester_{api_.Network().ZeroMQ().RequestSocket()}
-    , dht_unit_requester_{api_.Network().ZeroMQ().RequestSocket()}
     , find_nym_(api_.Network().ZeroMQ().PushSocket(
           opentxs::network::zeromq::socket::Direction::Connect))
     , handle_([&] {
@@ -199,14 +221,13 @@ Wallet::Wallet(const api::Session& api)
 
         return socket;
     }())
+    , reactor_(std::make_unique<WalletReactor>(p2p_callback_))
     , thread_(api_.Network().ZeroMQ().Internal().Start(
           batch_.id_,
           {
               {p2p_socket_.ID(),
                &p2p_socket_,
-               [id = p2p_socket_.ID(), &cb = p2p_callback_](auto&& m) {
-                   cb.Process(std::move(m));
-               }},
+               [this](auto&& m) { reactor_->post(std::move(m)); }},
               {loopback_.ID(),
                &loopback_,
                [id = loopback_.ID(), &socket = p2p_socket_, &batch = batch_](
@@ -216,6 +237,7 @@ Wallet::Wallet(const api::Session& api)
           },
           batch_.thread_name_))
 {
+    reactor_->start();
     LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(batch_.id_).Flush();
     account_publisher_->Start(api_.Endpoints().AccountUpdate().data());
     issuer_publisher_->Start(api_.Endpoints().IssuerUpdate().data());
@@ -225,9 +247,6 @@ Wallet::Wallet(const api::Session& api)
     unit_publisher_->Start(api_.Endpoints().UnitUpdate().data());
     peer_reply_publisher_->Start(api_.Endpoints().PeerReplyUpdate().data());
     peer_request_publisher_->Start(api_.Endpoints().PeerRequestUpdate().data());
-    dht_nym_requester_->Start(api_.Endpoints().DhtRequestNym().data());
-    dht_server_requester_->Start(api_.Endpoints().DhtRequestServer().data());
-    dht_unit_requester_->Start(api_.Endpoints().DhtRequestUnit().data());
     find_nym_->Start(api_.Endpoints().FindNym().data());
 
     OT_ASSERT(nullptr != thread_);
@@ -2643,11 +2662,6 @@ auto Wallet::search_notary(const identifier::Notary& id) const noexcept -> void
     LogVerbose()(OT_PRETTY_CLASS())(
         "Searching remote networks for unknown notary ")(id)
         .Flush();
-    auto work =
-        opentxs::network::zeromq::tagged_message(WorkType::DHTRequestServer);
-    work.AddFrame(id);
-
-    dht_server_requester_->Send(std::move(work));
 
     to_loopback_.modify_detach([&id](auto& socket) {
         const auto command = factory::BlockchainSyncQueryContract(id);
@@ -2663,11 +2677,6 @@ auto Wallet::search_nym(const identifier::Nym& id) const noexcept -> void
     LogVerbose()(OT_PRETTY_CLASS())(
         "Searching remote networks for unknown nym ")(id)
         .Flush();
-    auto work =
-        opentxs::network::zeromq::tagged_message(WorkType::DHTRequestNym);
-    work.AddFrame(id);
-
-    dht_nym_requester_->Send(std::move(work));
 
     to_loopback_.modify_detach([&id](auto& socket) {
         const auto command = factory::BlockchainSyncQueryContract(id);
@@ -2684,11 +2693,6 @@ auto Wallet::search_unit(const identifier::UnitDefinition& id) const noexcept
     LogVerbose()(OT_PRETTY_CLASS())(
         "Searching remote networks for unknown unit definition ")(id)
         .Flush();
-    auto work =
-        opentxs::network::zeromq::tagged_message(WorkType::DHTRequestUnit);
-    work.AddFrame(id);
-
-    dht_unit_requester_->Send(std::move(work));
 
     to_loopback_.modify_detach([&id](auto& socket) {
         const auto command = factory::BlockchainSyncQueryContract(id);
@@ -3397,5 +3401,9 @@ auto Wallet::SaveCredential(const proto::Credential& credential) const -> bool
     return api_.Storage().Store(credential);
 }
 
-Wallet::~Wallet() { handle_.Release(); }
+Wallet::~Wallet()
+{
+    reactor_->stop();
+    handle_.Release();
+}
 }  // namespace opentxs::api::session::imp

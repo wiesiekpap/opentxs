@@ -55,6 +55,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::base
 {
@@ -91,7 +92,7 @@ SyncServer::SyncServer(
     const UnallocatedCString& shutdown,
     const UnallocatedCString& publishEndpoint) noexcept
     : SyncDM(
-          [&] { return db.SyncTip(); }(),
+          db.SyncTip(),
           [&] {
               auto promise = std::promise<int>{};
               promise.set_value(0);
@@ -101,7 +102,7 @@ SyncServer::SyncServer(
           "sync server",
           2000,
           1000)
-    , SyncWorker(api, 20ms)
+    , SyncWorker(api, "SyncServer")
     , db_(db)
     , header_(header)
     , filter_(filter)
@@ -121,6 +122,7 @@ SyncServer::SyncServer(
              api_.Endpoints().Internal().BlockchainFilterUpdated(chain_)}});
     ::zmq_setsockopt(socket_.get(), ZMQ_LINGER, &linger_, sizeof(linger_));
     ::zmq_connect(socket_.get(), endpoint_.c_str());
+    start();
 }
 
 SyncServer::~SyncServer()
@@ -179,6 +181,7 @@ auto SyncServer::update_tip(const Position& position, const int&) const noexcept
     LogDetail()(print(chain_))(" sync data updated to height ")(
         position.height_)
         .Flush();
+    tdiag("update_tip to", position.height_);
 }
 
 auto SyncServer::download() noexcept -> void
@@ -239,6 +242,7 @@ auto SyncServer::process_position(const Position& pos) noexcept -> void
             if (first.height_ <= current.height_) {
                 LogTrace()(OT_PRETTY_CLASS())(__func__)(": reorg detected")
                     .Flush();
+                tdiag("REORG");
             }
 
             LogTrace()(OT_PRETTY_CLASS())(__func__)(
@@ -454,14 +458,16 @@ auto SyncServer::pipeline(zmq::Message&& in) -> void
     }
 }
 
-auto SyncServer::state_machine() noexcept -> bool
+auto SyncServer::state_machine() noexcept -> int
 {
-    return SyncDM::state_machine();
+    tdiag("SyncServer::state_machine");
+    return SyncDM::state_machine() ? SM_SyncServer_fast : SM_SyncServer_slow;
 }
 
 auto SyncServer::shut_down() noexcept -> void
 {
     close_pipeline();
+    stop();
     // TODO MT-34 investigate what other actions might be needed
 }
 

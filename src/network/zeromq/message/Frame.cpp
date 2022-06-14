@@ -108,7 +108,7 @@ auto Frame::Imp::operator<(const zeromq::Frame& rhs) const noexcept -> bool
 auto Frame::Imp::operator==(const zeromq::Frame& rhs) const noexcept -> bool
 {
     return (size() == rhs.size()) &&
-           (0 == std::memcmp(data(), rhs.data(), std::min(size(), rhs.size())));
+           (0 == std::memcmp(data(), rhs.data(), size()));
 }
 
 Frame::Imp::~Imp() { ::zmq_msg_close(&message_); }

@@ -418,7 +418,7 @@ protected:
     const BlockchainStartup& client_1_startup_;
     const BlockchainStartup& client_2_startup_;
     const b::p2p::Address& address_;
-    const PeerListener& connection_;
+    PeerListener& connection_;
     const Generator default_;
     MinedBlocks& mined_blocks_;
     BlockListener& block_1_;
@@ -461,7 +461,7 @@ private:
 
     static const ot::UnallocatedSet<ot::blockchain::node::TxoState> states_;
     static std::unique_ptr<const ot::OTBlockchainAddress> listen_address_;
-    static std::unique_ptr<const PeerListener> peer_listener_;
+    static std::unique_ptr<PeerListener> peer_listener_;
     static std::unique_ptr<MinedBlocks> mined_block_cache_;
     static BlockListen block_listener_;
     static WalletListen wallet_listener_;
@@ -480,8 +480,7 @@ private:
         const ot::api::session::Client& miner,
         const ot::api::session::Client& syncServer,
         const ot::api::session::Client& client1,
-        const ot::api::session::Client& client2) noexcept
-        -> const PeerListener&;
+        const ot::api::session::Client& client2) noexcept -> PeerListener&;
     static auto init_wallet(
         const int index,
         const ot::api::Session& api) noexcept -> WalletListener&;
@@ -516,7 +515,7 @@ protected:
 class Regtest_fixture_hd : public Regtest_fixture_normal
 {
 protected:
-    static const User alice_;
+    static User alice_;
     static TXOs txos_;
     static std::unique_ptr<ScanListener> listener_p_;
 
@@ -546,8 +545,8 @@ protected:
         "I have come here to chew bubblegum and kick ass...and I'm all out of "
         "bubblegum."};
 
-    static const User alice_;
-    static const User bob_;
+    static User alice_;
+    static User bob_;
     static Server server_1_;
     static TXOs txos_alice_;
     static TXOs txos_bob_;
@@ -606,7 +605,7 @@ private:
 class Regtest_fixture_sync : public Regtest_fixture_single
 {
 protected:
-    static const User alex_;
+    static User alex_;
     static std::optional<ot::OTServerContract> notary_;
     static std::optional<ot::OTUnitDefinition> unit_;
 

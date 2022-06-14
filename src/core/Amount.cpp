@@ -354,6 +354,12 @@ auto Amount::Serialize(const AllocateOutput dest) const noexcept -> bool
     return imp_->Serialize(dest);
 }
 
+auto Amount::str() const -> std::string { return imp_->str(); }
+auto Amount::out(std::ostream& os) const -> std::ostream&
+{
+    return imp_->out(os);
+}
+
 auto Amount::swap(Amount& rhs) noexcept -> void { std::swap(imp_, rhs.imp_); }
 
 Amount::~Amount()
@@ -363,6 +369,12 @@ Amount::~Amount()
         imp_ = nullptr;
     }
 }
+
+auto operator<<(std::ostream& os, const Amount& a) -> std::ostream&
+{
+    return a.out(os);
+}
+
 }  // namespace opentxs
 
 namespace opentxs

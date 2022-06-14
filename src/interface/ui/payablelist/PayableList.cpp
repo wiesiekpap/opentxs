@@ -27,6 +27,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::factory
 {
@@ -51,13 +52,14 @@ PayableList::PayableList(
     const UnitType& currency,
     const SimpleCallback& cb) noexcept
     : PayableListList(api, nymID, cb, false)
-    , Worker(api, {})
+    , Worker(api, "PayableList")
     , owner_contact_id_(Widget::api_.Factory().Identifier())  // FIXME wtf
     , currency_(currency)
 {
     init_executor(
         {UnallocatedCString{api.Endpoints().ContactUpdate()},
          UnallocatedCString{api.Endpoints().NymDownload()}});
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -121,11 +123,12 @@ auto PayableList::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto PayableList::state_machine() noexcept -> bool { return false; }
+auto PayableList::state_machine() noexcept -> int { return SM_off; }
 
 auto PayableList::shut_down() noexcept -> void
 {
     close_pipeline();
+    stop();
     // TODO MT-34 investigate what other actions might be needed
 }
 
@@ -207,7 +210,6 @@ auto PayableList::startup() noexcept -> void
 
 PayableList::~PayableList()
 {
-    wait_for_startup();
     protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

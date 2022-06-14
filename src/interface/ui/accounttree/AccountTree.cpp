@@ -46,6 +46,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/Log.hpp"
+#include "util/tuning.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -70,7 +71,7 @@ AccountTree::AccountTree(
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : AccountTreeList(api, nymID, cb, false)
-    , Worker(api, 100ms)
+    , Worker(api, "AccountTree")
 {
     // TODO monitor for notary nym changes since this may affect custodial
     // account names
@@ -78,6 +79,7 @@ AccountTree::AccountTree(
         UnallocatedCString{api.Endpoints().AccountUpdate()},
         UnallocatedCString{api.Endpoints().BlockchainAccountCreated()},
     });
+    start();
     // TODO this model might never initialize if blockchain support is disabled
     pipeline_.ConnectDealer(api.Endpoints().BlockchainBalance(), [](auto) {
         return MakeWork(Work::init);
@@ -441,11 +443,12 @@ auto AccountTree::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto AccountTree::state_machine() noexcept -> bool { return false; }
+auto AccountTree::state_machine() noexcept -> int { return SM_off; }
 
 auto AccountTree::shut_down() noexcept -> void
 {
     close_pipeline();
+    stop();
     // TODO MT-34 investigate what other actions might be needed
 }
 
@@ -547,7 +550,6 @@ auto AccountTree::subscribe(SubscribeSet&& chains) const noexcept -> void
 
 AccountTree::~AccountTree()
 {
-    wait_for_startup();
     protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

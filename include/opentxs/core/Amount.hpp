@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <string>
 #include <string_view>
 #include <type_traits>
 
@@ -129,6 +130,9 @@ public:
 
     auto Serialize(const AllocateOutput dest) const noexcept -> bool;
 
+    auto str() const -> std::string;
+    auto out(std::ostream&) const -> std::ostream&;
+
     auto swap(Amount& rhs) noexcept -> void;
 
     Amount(int);
@@ -150,4 +154,7 @@ public:
 private:
     Imp* imp_;
 };
+
+auto operator<<(std::ostream&, const Amount&) -> std::ostream&;
+
 }  // namespace opentxs

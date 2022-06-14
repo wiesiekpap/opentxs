@@ -28,6 +28,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/tuning.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -49,12 +50,13 @@ NymList::NymList(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     : NymListList(api, api.Factory().Identifier(), cb, false)
-    , Worker(api, {})
+    , Worker(api, "NymList")
 {
     init_executor({
         UnallocatedCString{api.Endpoints().NymCreated()},
         UnallocatedCString{api.Endpoints().NymDownload()},
     });
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -132,11 +134,12 @@ auto NymList::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto NymList::state_machine() noexcept -> bool { return false; }
+auto NymList::state_machine() noexcept -> int { return SM_off; }
 
 auto NymList::shut_down() noexcept -> void
 {
     close_pipeline();
+    stop();
     // TODO MT-34 investigate what other actions might be needed
 }
 
@@ -178,7 +181,6 @@ auto NymList::startup() noexcept -> void
 
 NymList::~NymList()
 {
-    wait_for_startup();
     protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

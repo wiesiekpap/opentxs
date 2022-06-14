@@ -13,7 +13,6 @@
 #include "internal/api/crypto/blockchain/BalanceOracle.hpp"
 #include "internal/api/crypto/blockchain/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
-#include "internal/util/Timer.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -76,7 +75,8 @@ protected:
     auto do_startup() noexcept -> void override;
     auto do_shutdown() noexcept -> void override;
     auto pipeline(const Work work, Message&& msg) noexcept -> void override;
-    auto work() noexcept -> bool override;
+    auto work() noexcept -> int override;
+    auto to_str(Work w) const noexcept -> std::string final;
 
 private:
     using Subscribers = Set<OTData>;

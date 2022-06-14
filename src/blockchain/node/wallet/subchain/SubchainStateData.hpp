@@ -14,7 +14,6 @@
 #include <cs_plain_guarded.h>
 #include <cs_shared_guarded.h>
 #include <atomic>
-#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -44,7 +43,6 @@
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/Mutex.hpp"
 #include "internal/util/P0330.hpp"
-#include "internal/util/Timer.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/block/Script.hpp"
@@ -251,7 +249,8 @@ protected:
     auto do_startup() noexcept -> void override;
     auto do_shutdown() noexcept -> void override;
     auto pipeline(const Work work, Message&& msg) noexcept -> void override;
-    auto work() noexcept -> bool override;
+    auto work() noexcept -> int override;
+    auto to_str(Work w) const noexcept -> std::string final;
 
     using TXOs = database::Wallet::TXOs;
     auto set_key_data(bitcoin::block::Transaction& tx) const noexcept -> void;
@@ -267,6 +266,14 @@ protected:
         const network::zeromq::BatchID batch,
         const std::string_view parent,
         allocator_type alloc) noexcept;
+
+private:
+    auto sChangeState(const State state, StateSequence reorg) noexcept -> bool;
+    auto sProcessReorg(
+        const Lock& headerOracleLock,
+        storage::lmdb::LMDB::Transaction& tx,
+        std::atomic_int& errors,
+        const block::Position& ancestor) noexcept -> void;
 
 private:
     using Transactions =
@@ -316,7 +323,6 @@ private:
     std::optional<wallet::Scan> scan_;
     bool have_children_;
     Map<JobType, Time> child_activity_;
-    Timer watchdog_;
 
     static auto describe(
         const crypto::Subaccount& account,

@@ -10,12 +10,15 @@
 #include <pthread.h>
 #include <mutex>
 
+#include "util/threadutil.hpp"
+
 namespace opentxs
 {
 
 auto SetThisThreadsName(std::string_view threadName) noexcept -> void
 {
-    if (!threadName.empty()) {
+    if (!threadName.empty() && threadName.data() &&
+        ThreadMonitor::given_name().empty()) {
         pthread_setname_np(pthread_self(), threadName.data());
     }
 }

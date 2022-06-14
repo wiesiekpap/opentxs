@@ -56,6 +56,7 @@
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -217,12 +218,12 @@ auto NotificationStateData::init_keys() const noexcept -> OTPasswordPrompt
     auto handle = code_.lock();
 
     if (auto key{handle->Key()}; key) {
-        if (false == key->HasPrivate()) {
+        if (!key->HasPrivate()) {
             auto seed{path_.root()};
             const auto upgraded = handle->Internal().AddPrivateKeys(
                 seed, *path_.child().rbegin(), reason);
 
-            if (false == upgraded) { OT_FAIL; }
+            if (!upgraded) { OT_FAIL; }
         }
     } else {
         OT_FAIL;
@@ -288,11 +289,10 @@ auto NotificationStateData::process(
         .Flush();
 }
 
-auto NotificationStateData::work() noexcept -> bool
+auto NotificationStateData::work() noexcept -> int
 {
     auto again = SubchainStateData::work();
     init_contacts();
-
     return again;
 }
 }  // namespace opentxs::blockchain::node::wallet

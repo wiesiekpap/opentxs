@@ -43,6 +43,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
+#include "util/tuning.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -65,10 +66,9 @@ BlockchainStatistics::BlockchainStatistics(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     : BlockchainStatisticsList(api, api.Factory().Identifier(), cb, false)
-    , Worker(api, {})
+    , Worker(api, "BlockchainStatistics")
     , blockchain_(api.Network().Blockchain())
     , cache_()
-    , timer_(api.Network().Asio().Internal().GetTimer())
 {
     init_executor({
         UnallocatedCString{api.Endpoints().BlockchainBlockDownloadQueue()},
@@ -79,6 +79,7 @@ BlockchainStatistics::BlockchainStatistics(
         UnallocatedCString{api.Endpoints().BlockchainStateChange()},
         UnallocatedCString{api.Endpoints().BlockchainWalletUpdated()},
     });
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -227,12 +228,12 @@ auto BlockchainStatistics::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainStatistics::state_machine() noexcept -> bool { return false; }
+auto BlockchainStatistics::state_machine() noexcept -> int { return SM_off; }
 
 auto BlockchainStatistics::shut_down() noexcept -> void
 {
-    timer_.Cancel();
     close_pipeline();
+    stop();
     // TODO MT-34 investigate what other actions might be needed
 }
 
@@ -355,8 +356,10 @@ auto BlockchainStatistics::process_timer(const Message& in) noexcept -> void
         } catch (...) {
         }
     }
-
-    reset_timer();
+    using namespace std::literals;
+    if (!Widget::api_.GetOptions().TestMode()) {
+        post_at(MakeWork(Work::timer), Clock::now() + 60s);
+    }
 }
 
 auto BlockchainStatistics::process_work(const Message& in) noexcept -> void
@@ -368,17 +371,6 @@ auto BlockchainStatistics::process_work(const Message& in) noexcept -> void
     process_chain(body.at(1).as<blockchain::Type>());
 }
 
-auto BlockchainStatistics::reset_timer() noexcept -> void
-{
-    if (Widget::api_.GetOptions().TestMode()) { return; }
-
-    using namespace std::literals;
-    timer_.SetRelative(60s);
-    timer_.Wait([this](const auto& ec) {
-        if (!ec) { pipeline_.Push(MakeWork(Work::timer)); }
-    });
-}
-
 auto BlockchainStatistics::startup() noexcept -> void
 {
     for (const auto& chain : blockchain_.EnabledChains()) {
@@ -386,7 +378,10 @@ auto BlockchainStatistics::startup() noexcept -> void
     }
 
     finish_startup();
-    reset_timer();
+    using namespace std::literals;
+    if (!Widget::api_.GetOptions().TestMode()) {
+        post_at(MakeWork(Work::timer), Clock::now() + 60s);
+    }
 }
 
 BlockchainStatistics::~BlockchainStatistics()

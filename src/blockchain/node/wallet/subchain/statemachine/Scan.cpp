@@ -38,6 +38,7 @@
 #include "util/Actor.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -71,6 +72,8 @@ Scan::Imp::Imp(
 {
 }
 
+Scan::Imp::~Imp() { tdiag("Scan::Imp::~Imp"); }
+
 auto Scan::Imp::caught_up() const noexcept -> bool
 {
     return current() == filter_tip_.value_or(parent_.null_position_);
@@ -89,7 +92,7 @@ auto Scan::Imp::current() const noexcept -> const block::Position&
 
 auto Scan::Imp::do_startup() noexcept -> void
 {
-    disable_automatic_processing_ = true;
+    disable_automatic_processing(true);
     const auto& node = parent_.node_;
     const auto& filters = node.FilterOracleInternal();
     last_scanned_ = parent_.db_.SubchainLastScanned(parent_.db_key_);
@@ -123,6 +126,14 @@ auto Scan::Imp::do_startup() noexcept -> void
 }
 
 auto Scan::Imp::ProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
+{
+    synchronize([&lock = std::as_const(headerOracleLock), &parent, this] {
+        sProcessReorg(lock, parent);
+    });
+}
+auto Scan::Imp::sProcessReorg(
     const Lock& headerOracleLock,
     const block::Position& parent) noexcept -> void
 {
@@ -182,7 +193,7 @@ auto Scan::Imp::tip() const noexcept -> const block::Position&
     }
 }
 
-auto Scan::Imp::work() noexcept -> bool
+auto Scan::Imp::work() noexcept -> int
 {
     auto post = ScopeGuard{[&] { Job::work(); }};
 
@@ -191,7 +202,7 @@ auto Scan::Imp::work() noexcept -> bool
             " scanning not possible until a filter tip value is received ")
             .Flush();
 
-        return false;
+        return SM_off;
     }
 
     if (false == enabled_) {
@@ -202,7 +213,7 @@ auto Scan::Imp::work() noexcept -> bool
                 " waiting to begin scan until cfilter sync is complete")
                 .Flush();
 
-            return false;
+            return SM_off;
         } else {
             log_(OT_PRETTY_CLASS())(parent_.name_)(
                 " starting scan since cfilter sync is complete")
@@ -215,7 +226,7 @@ auto Scan::Imp::work() noexcept -> bool
             " all available filters have been scanned")
             .Flush();
 
-        return false;
+        return SM_off;
     }
 
     const auto height = current().height_;
@@ -223,7 +234,7 @@ auto Scan::Imp::work() noexcept -> bool
     if (auto handle = parent_.progress_position_.lock(); handle->has_value())
         rescan = handle->value().height_;
     else
-        rescan = -1;
+        rescan = SM_off;
 
     const auto& threshold = parent_.scan_threshold_;
 
@@ -233,7 +244,7 @@ auto Scan::Imp::work() noexcept -> bool
             height - threshold)(" from current position of ")(rescan)
             .Flush();
 
-        return false;
+        return SM_off;
     }
 
     auto buf = std::array<std::byte, scan_status_bytes_ * 1000u>{};
@@ -267,17 +278,18 @@ auto Scan::Imp::work() noexcept -> bool
 
     if (highestClean.has_value()) {
         clean.emplace_back(ScanState::scan_clean, highestClean.value());
-        // TODO: remove Lambda
-        to_process_.SendDeferred([&] {
-            auto out = MakeWork(Work::update);
-            add_last_reorg(out);
-            encode(clean, out);
-
-            return out;
-        }());
+        to_process_.SendDeferred(make_update(std::move(clean)));
     }
+    return !caught_up() ? SM_Scan_fast : SM_Scan_slow;
+}
 
-    return (false == caught_up());
+network::zeromq::Message Scan::Imp::make_update(
+    Vector<ScanStatus>&& vec) const noexcept
+{
+    auto work = MakeWork(Work::update);
+    add_last_reorg(work);
+    encode(vec, work);
+    return work;
 }
 }  // namespace opentxs::blockchain::node::wallet
 

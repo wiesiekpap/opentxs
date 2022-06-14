@@ -31,6 +31,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/tuning.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -55,7 +56,7 @@ BlockchainSelection::BlockchainSelection(
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
     : BlockchainSelectionList(api, Identifier::Factory(), cb, false)
-    , Worker(api, {})
+    , Worker(api, "BlockchainSelection")
     , filter_(filter(type))
     , chain_state_([&] {
         auto out = UnallocatedMap<blockchain::Type, bool>{};
@@ -69,6 +70,7 @@ BlockchainSelection::BlockchainSelection(
 {
     init_executor(
         {UnallocatedCString{api.Endpoints().BlockchainStateChange()}});
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -225,11 +227,12 @@ auto BlockchainSelection::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainSelection::state_machine() noexcept -> bool { return false; }
+auto BlockchainSelection::state_machine() noexcept -> int { return SM_off; }
 
 auto BlockchainSelection::shut_down() noexcept -> void
 {
     close_pipeline();
+    stop();
     // TODO MT-34 investigate what other actions might be needed
 }
 
@@ -294,7 +297,6 @@ auto BlockchainSelection::startup() noexcept -> void
 
 BlockchainSelection::~BlockchainSelection()
 {
-    wait_for_startup();
     protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

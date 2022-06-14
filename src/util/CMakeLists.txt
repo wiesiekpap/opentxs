@@ -56,6 +56,8 @@ target_sources(
     "Polarity.hpp"
     "Random.cpp"
     "Random.hpp"
+    "Reactor.cpp"
+    "Reactor.hpp"
     "ScopeGuard.cpp"
     "ScopeGuard.hpp"
     "Signals.cpp"
@@ -63,9 +65,13 @@ target_sources(
     "Sodium.hpp"
     "Thread.cpp"
     "Thread.hpp"
+    "threadutil.cpp"
+    "threadutil.hpp"
     "Time.cpp"
+    "timed.hpp"
     "Timer.cpp"
     "Timer.hpp"
+    "tuning.hpp"
     "Work.hpp"
 )
 target_include_directories(

@@ -42,6 +42,7 @@
 #include "opentxs/util/Log.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::filteroracle
 {
@@ -87,13 +88,7 @@ BlockIndexer::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          [&] {
-              auto out = CString{print(chain), alloc};
-              out.append(" filter oracle block indexer");
-
-              return out;
-          }(),
-          0ms,
+          std::string(print(chain)) + ".BlockIndexer",
           batch,
           alloc,
           {
@@ -120,7 +115,7 @@ BlockIndexer::Imp::Imp(
 {
 }
 
-auto BlockIndexer::Imp::calculate_next_block() noexcept -> bool
+auto BlockIndexer::Imp::calculate_next_block() noexcept -> int
 {
     OT_ASSERT(0 <= current_position_.height_);
 
@@ -134,7 +129,7 @@ auto BlockIndexer::Imp::calculate_next_block() noexcept -> bool
             height)
             .Flush();
 
-        return true;
+        return SM_BlockIndexer_fast;
     }
 
     auto future = blockOracle.LoadBitcoin(hash);
@@ -144,19 +139,19 @@ auto BlockIndexer::Imp::calculate_next_block() noexcept -> bool
             .asHex(hash)(" not yet downloaded")
             .Flush();
 
-        return true;
+        return SM_BlockIndexer_fast;
     }
 
     const auto pBlock = future.get();
 
-    if (false == bool(pBlock)) {
+    if (!pBlock) {
         // NOTE the only time the future should contain an uninitialized pointer
         // is if the block oracle is shutting down
         log_(OT_PRETTY_CLASS())(name_)(": block ")
             .asHex(hash)(" unavailable")
             .Flush();
 
-        return false;
+        return SM_off;
     }
 
     const auto& block = *pBlock;
@@ -169,7 +164,7 @@ auto BlockIndexer::Imp::calculate_next_block() noexcept -> bool
             .Flush();
         process_reorg(headerOracle.CommonParent(position).first);
 
-        return true;
+        return SM_BlockIndexer_fast;
     }
 
     auto alloc = get_allocator();
@@ -201,11 +196,13 @@ auto BlockIndexer::Imp::calculate_next_block() noexcept -> bool
     current_position_ = std::move(position);
     notify_(filter_type_, current_position_);
 
-    return current_position_ != best_position_;
+    return current_position_ == best_position_ ? SM_BlockIndexer_slow
+                                               : SM_BlockIndexer_fast;
 }
 
 auto BlockIndexer::Imp::do_shutdown() noexcept -> void
 {
+    transition_state_shutdown();
     current_header_ = {};
     previous_header_ = {};
     best_position_ = block::Position{};
@@ -371,14 +368,7 @@ auto BlockIndexer::Imp::reset(block::Position&& to) noexcept -> void
     find_best_position(std::move(to));
 }
 
-auto BlockIndexer::Imp::Shutdown() noexcept -> void
-{
-    // WARNING this function must never be called from with this class's
-    // Actor::worker function or else a deadlock will occur. Shutdown must only
-    // be called by a different Actor.
-    auto lock = std::unique_lock<std::timed_mutex>{reorg_lock_};
-    transition_state_shutdown();
-}
+auto BlockIndexer::Imp::Shutdown() noexcept -> void { signal_shutdown(); }
 
 auto BlockIndexer::Imp::state_normal(const Work work, Message&& msg) noexcept
     -> void
@@ -449,11 +439,16 @@ auto BlockIndexer::Imp::update_position(
     if (changed) { notify_(filter_type_, newTip); }
 }
 
-auto BlockIndexer::Imp::work() noexcept -> bool
+auto BlockIndexer::Imp::work() noexcept -> int
 {
-    if (current_position_ == best_position_) { return false; }
+    if (current_position_ == best_position_) { return SM_off; }
 
     return calculate_next_block();
+}
+
+auto BlockIndexer::Imp::to_str(Work value) const noexcept -> std::string
+{
+    return std::string(print(value));
 }
 
 BlockIndexer::Imp::~Imp() = default;

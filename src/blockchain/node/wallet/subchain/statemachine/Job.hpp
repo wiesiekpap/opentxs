@@ -7,18 +7,20 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <atomic>
+#include <chrono>
 #include <exception>
 #include <optional>
+#include <string>
 
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
-#include "internal/util/Timer.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Actor.hpp"
+#include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -81,7 +83,8 @@ protected:
     auto do_startup() noexcept -> void override;
     auto do_shutdown() noexcept -> void override;
     auto pipeline(const Work work, Message&& msg) noexcept -> void override;
-    auto work() noexcept -> bool override;
+    auto work() noexcept -> int override;
+    auto to_str(Work w) const noexcept -> std::string final;
 
     const SubchainStateData& parent_;
 
@@ -96,8 +99,10 @@ protected:
         const network::zeromq::EndpointArgs& subscribe = {},
         const network::zeromq::EndpointArgs& pull = {},
         const network::zeromq::EndpointArgs& dealer = {},
-        const Vector<network::zeromq::SocketData>& extra = {},
-        Set<Work>&& neverDrop = {}) noexcept;
+        const Vector<network::zeromq::SocketData>& extra = {}) noexcept;
+
+private:
+    auto sChangeState(const State state, StateSequence reorg) noexcept -> bool;
 
 private:
     using HandledReorgs = Set<StateSequence>;
@@ -107,7 +112,6 @@ private:
     std::atomic<State> pending_state_;
     std::atomic<State> state_;
     HandledReorgs reorgs_;
-    Timer watchdog_;
 
     auto process_block(Message&& in) noexcept -> void;
     auto process_filter(Message&& in) noexcept -> void;

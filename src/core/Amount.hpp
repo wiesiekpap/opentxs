@@ -176,6 +176,9 @@ public:
         return copy(amount, dest);
     }
 
+    auto str() const -> std::string { return amount_.str(); }
+    auto out(std::ostream& os) const -> std::ostream& { return os << amount_; }
+
     auto SerializeBitcoin(const AllocateOutput dest) const noexcept
         -> bool final
     {
@@ -303,4 +306,5 @@ public:
 private:
     amount::Integer amount_;
 };
+
 }  // namespace opentxs

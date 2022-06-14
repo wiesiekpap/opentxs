@@ -27,6 +27,7 @@
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::factory
 {
@@ -74,7 +75,7 @@ FeeSource::Imp::Imp(
     bool https,
     allocator_type&& alloc) noexcept
     : Allocated(std::move(alloc))
-    , Worker(api, {})
+    , Worker(api, "FeeSource")
     , hostname_(std::move(hostname))
     , path_(std::move(path))
     , https_(https)
@@ -94,8 +95,29 @@ FeeSource::Imp::Imp(
     }())
     , future_(std::nullopt)
     , timer_(api.Network().Asio().Internal().GetTimer())
+    , last_job_{}
 {
     pipeline_.BindSubscriber(asio_, [](auto) { return MakeWork(Work::init); });
+    start();
+}
+
+auto FeeSource::Imp::to_string(Work value) const noexcept -> const std::string&
+{
+    static const auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::query, "query"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"},
+    };
+    try {
+        return Map.at(value);
+    } catch (...) {
+        LogError()(__FUNCTION__)("invalid FeeSource job: ")(
+            static_cast<OTZMQWorkType>(value))
+            .Flush();
+
+        OT_FAIL;
+    }
 }
 
 auto FeeSource::Imp::jitter() noexcept -> std::chrono::seconds
@@ -115,6 +137,7 @@ auto FeeSource::Imp::pipeline(network::zeromq::Message&& in) -> void
     OT_ASSERT(0 < body.size());
 
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
 
     switch (work) {
         case Work::shutdown: {
@@ -192,12 +215,12 @@ auto FeeSource::Imp::startup() noexcept -> void
     reset_timer();
 }
 
-auto FeeSource::Imp::state_machine() noexcept -> bool
+auto FeeSource::Imp::state_machine() noexcept -> int
 {
-    if (false == future_.has_value()) { return false; }
+    if (!future_.has_value()) { return SM_off; }
 
     auto& future = future_.value();
-    static constexpr auto limit = 25ms;
+    static constexpr auto limit = 5ms;
     static constexpr auto ready = std::future_status::ready;
 
     try {
@@ -210,17 +233,22 @@ auto FeeSource::Imp::state_machine() noexcept -> bool
 
             reset_timer();
 
-            return false;
+            return SM_off;
         } else {
             LogError()(OT_PRETTY_CLASS())("Future is not ready").Flush();
 
-            return true;
+            return SM_FeeSource_fast;
         }
     } catch (const std::exception& e) {
         LogError()(e.what()).Flush();
 
-        return false;
+        return SM_off;
     }
+}
+
+auto FeeSource::Imp::last_job_str() const noexcept -> std::string
+{
+    return to_string(last_job_);
 }
 
 auto FeeSource::Imp::Shutdown() noexcept -> void
@@ -232,6 +260,7 @@ auto FeeSource::Imp::shut_down() noexcept -> void
 {
     timer_.Cancel();
     close_pipeline();
+    stop();
     // TODO MT-34 investigate what other actions might be needed
 }
 

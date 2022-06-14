@@ -19,7 +19,6 @@
 #include "interface/ui/base/List.hpp"
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
-#include "internal/util/Timer.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -105,7 +104,7 @@ public:
 
 protected:
     auto pipeline(Message&& in) noexcept -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -135,7 +134,6 @@ private:
 
     const api::network::Blockchain& blockchain_;
     Map<BlockchainStatisticsRowID, CachedData> cache_;
-    Timer timer_;
 
     auto construct_row(
         const BlockchainStatisticsRowID& id,
@@ -154,7 +152,6 @@ private:
     auto process_state(const Message& in) noexcept -> void;
     auto process_timer(const Message& in) noexcept -> void;
     auto process_work(const Message& in) noexcept -> void;
-    auto reset_timer() noexcept -> void;
     auto startup() noexcept -> void;
 };
 }  // namespace opentxs::ui::implementation

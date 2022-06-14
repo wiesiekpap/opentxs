@@ -24,7 +24,6 @@
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/Subchain.hpp"
 #include "internal/network/zeromq/Types.hpp"
-#include "internal/util/Timer.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -121,7 +120,8 @@ protected:
     auto do_startup() noexcept -> void override;
     auto do_shutdown() noexcept -> void override;
     auto pipeline(const Work work, Message&& msg) noexcept -> void override;
-    auto work() noexcept -> bool override;
+    auto work() noexcept -> int override;
+    auto to_str(Work w) const noexcept -> std::string final;
 
 private:
     enum class State {

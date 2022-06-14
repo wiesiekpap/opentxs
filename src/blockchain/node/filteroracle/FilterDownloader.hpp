@@ -23,6 +23,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -54,7 +55,8 @@ public:
 
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
+    std::string last_job_str() const noexcept final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -68,6 +70,7 @@ private:
     const blockchain::Type chain_;
     const cfilter::Type type_;
     const filteroracle::NotifyCallback& notify_;
+    FilterOracle::Work last_job_;
 
     auto batch_ready() const noexcept -> void;
     static auto batch_size(std::size_t in) noexcept -> std::size_t;
@@ -79,5 +82,4 @@ private:
     auto process_reset(const zmq::Message& in) noexcept -> void;
     auto queue_processing(DownloadedData&& data) noexcept -> void;
 };
-
 }  // namespace opentxs::blockchain::node::implementation

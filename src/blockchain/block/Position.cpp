@@ -128,7 +128,7 @@ auto Position::operator>(const Position& rhs) const noexcept -> bool
 
     if (height_ < rhs.height_) { return false; }
 
-    return hash_ != rhs.hash_;
+    return hash_ > rhs.hash_;
 }
 
 auto Position::operator>=(const Position& rhs) const noexcept -> bool

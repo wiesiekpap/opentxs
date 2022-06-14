@@ -54,7 +54,7 @@ FilterOracle::FilterDownloader::FilterDownloader(
     const UnallocatedCString& shutdown,
     const filteroracle::NotifyCallback& notify) noexcept
     : FilterDM(
-          [&] { return db.FilterTip(type); }(),
+          db.FilterTip(type),
           [&] {
               auto promise = std::promise<cfilter::Header>{};
               const auto tip = db.FilterTip(type);
@@ -65,15 +65,17 @@ FilterOracle::FilterDownloader::FilterDownloader(
           "cfilter",
           20000,
           10000)
-    , FilterWorker(api, 20ms)
+    , FilterWorker(api, "FilterDownloader")
     , db_(db)
     , header_(header)
     , node_(node)
     , chain_(chain)
     , type_(type)
     , notify_(notify)
+    , last_job_{}
 {
     init_executor({shutdown});
+    start();
 }
 
 FilterOracle::FilterDownloader::~FilterDownloader()
@@ -184,6 +186,7 @@ auto FilterOracle::FilterDownloader::pipeline(zmq::Message&& in) -> void
 
     using Work = FilterOracle::Work;
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
 
     switch (work) {
         case Work::shutdown: {
@@ -205,15 +208,23 @@ auto FilterOracle::FilterDownloader::pipeline(zmq::Message&& in) -> void
     }
 }
 
-auto FilterOracle::FilterDownloader::state_machine() noexcept -> bool
+auto FilterOracle::FilterDownloader::state_machine() noexcept -> int
 {
-    return FilterDM::state_machine();
+    tdiag("FilterDownloader::state_machine");
+    return FilterDM::state_machine() ? SM_FilterDownloader_fast
+                                     : SM_FilterDownloader_slow;
 }
 
 auto FilterOracle::FilterDownloader::shut_down() noexcept -> void
 {
     close_pipeline();
+    stop();
     // TODO MT-34 investigate what other actions might be needed
+}
+
+std::string FilterOracle::FilterDownloader::last_job_str() const noexcept
+{
+    return FilterOracle::to_str(last_job_);
 }
 
 }  // namespace opentxs::blockchain::node::implementation

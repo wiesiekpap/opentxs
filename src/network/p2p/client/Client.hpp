@@ -18,7 +18,6 @@
 #include "internal/network/p2p/Client.hpp"
 #include "internal/network/zeromq/Handle.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
-#include "internal/util/Timer.hpp"
 #include "network/p2p/client/Server.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -28,6 +27,7 @@
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/Reactor.hpp"
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -68,7 +68,7 @@ class Message;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-class opentxs::network::p2p::Client::Imp
+class opentxs::network::p2p::Client::Imp : public Reactor
 {
 public:
     using Chain = opentxs::blockchain::Type;
@@ -86,7 +86,14 @@ public:
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
 
-    ~Imp();
+    ~Imp() override;
+
+private:
+    // Reactor interface
+    auto handle(network::zeromq::Message&& in, unsigned idx) noexcept
+        -> void override;
+    auto last_job_str() const noexcept -> std::string final;
+    // end Reactor interface
 
 private:
     using ServerMap = Map<CString, client::Server>;
@@ -121,7 +128,6 @@ private:
     mutable std::random_device rd_;
     mutable std::default_random_engine eng_;
     client::Server blank_;
-    Timer timer_;
     HeightMap progress_;
     ServerMap servers_;
     ChainMap clients_;
@@ -154,7 +160,6 @@ private:
     auto process_server(Message&& msg) noexcept -> void;
     auto process_server(const CString ep) noexcept -> void;
     auto process_wallet(Message&& msg) noexcept -> void;
-    auto reset_timer() noexcept -> void;
     auto server_is_active(client::Server& server) noexcept -> void;
     auto server_is_stalled(client::Server& server) noexcept -> void;
     auto shutdown() noexcept -> void;

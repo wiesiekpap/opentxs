@@ -146,6 +146,8 @@ public:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
+    static std::string to_str(FilterOracle::Work);
+
     auto DefaultType() const noexcept -> cfilter::Type final
     {
         return default_type_;
