@@ -93,7 +93,6 @@ BlockIndexer::Imp::Imp(
 
               return out;
           }(),
-          0ms,
           batch,
           alloc,
           {
@@ -449,11 +448,11 @@ auto BlockIndexer::Imp::update_position(
     if (changed) { notify_(filter_type_, newTip); }
 }
 
-auto BlockIndexer::Imp::work() noexcept -> bool
+auto BlockIndexer::Imp::work() noexcept -> int
 {
-    if (current_position_ == best_position_) { return false; }
+    if (current_position_ == best_position_) { return -1; }
 
-    return calculate_next_block();
+    return calculate_next_block() ? 20 : 500;
 }
 
 BlockIndexer::Imp::~Imp() = default;

@@ -89,9 +89,10 @@ struct UpdateManager::Imp {
         , map_()
         , publisher_(api.Network().ZeroMQ().PublishSocket())
         , pipeline_(api.Network().ZeroMQ().Internal().Pipeline(
-              [this](auto&& in) { pipeline(std::move(in)); },
+              std::string("UpdateManager"),
+              [this](auto&& in) { pipeline(std::move(in)); })),
               updateManagerThreadName))
-    {
+   {
         publisher_->Start(api_.Endpoints().WidgetUpdate().data());
         LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(pipeline_.BatchID())
             .Flush();

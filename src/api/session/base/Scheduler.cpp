@@ -129,7 +129,7 @@ void Scheduler::thread()
     while (running_) {
         // Storage has its own interval checking.
         storage_gc_hook();
-        Sleep(100ms);
+        std::this_thread::sleep_for(100ms);
     }
 }
 

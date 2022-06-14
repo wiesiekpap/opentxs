@@ -158,7 +158,7 @@ public:
         auto LookupIncomingSocket(const int id) noexcept(false)
             -> opentxs::network::asio::Socket;
         auto Disconnect(const int id) noexcept -> void;
-        auto Run() noexcept -> bool;
+        auto Run() noexcept -> int;
         auto Shutdown() noexcept -> void;
 
         Peers(
@@ -270,6 +270,7 @@ public:
     auto GetVerifiedPeerCount() const noexcept -> std::size_t final;
     auto Heartbeat() const noexcept -> void final
     {
+        tdiag("Heartbeat about to dispatch Heartbeat");
         jobs_.Dispatch(PeerManagerJobs::Heartbeat);
     }
     auto JobReady(const PeerManagerJobs type) const noexcept -> void final;
@@ -318,7 +319,7 @@ public:
 
 protected:
     auto pipeline(zmq::Message&& message) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -351,6 +352,7 @@ private:
         OTZMQPublishSocket broadcast_block_;
         const EndpointMap endpoint_map_;
         const SocketMap socket_map_;
+        std::atomic<bool> closed_;
 
         static auto listen(
             EndpointMap& map,
@@ -358,6 +360,7 @@ private:
             const zmq::socket::Sender& socket) noexcept -> void;
     };
 
+    std::atomic<bool> closed_;
     const node::internal::Manager& node_;
     database::Peer& database_;
     const Type chain_;

@@ -97,6 +97,10 @@ public:
 
     ~Imp() final;
 
+protected:
+    auto pipeline(zmq::Message&& in) -> void final;
+    auto state_machine() noexcept -> int final;
+
 private:
     enum class State {
         normal,
