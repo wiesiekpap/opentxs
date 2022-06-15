@@ -366,16 +366,13 @@ auto Element::Serialize() const noexcept -> Element::SerializedType
 {
     auto lock = rLock{lock_};
 
-    if (false == cached_.has_value()) {
-        const auto key = [&] {
-            auto serialized = proto::AsymmetricKey{};
-            if (pkey_->HasPrivate()) {
-                pkey_->asPublicEC()->Serialize(serialized);
-            } else {
-                pkey_->Serialize(serialized);
-            }
-            return serialized;
-        }();
+    if (!cached_.has_value()) {
+        proto::AsymmetricKey key{};
+        if (pkey_->HasPrivate()) {
+            pkey_->asPublicEC()->Serialize(key);
+        } else {
+            pkey_->Serialize(key);
+        }
 
         auto& output = cached_.emplace();
         output.set_version(
