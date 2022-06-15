@@ -149,18 +149,15 @@ void Wallet::init() noexcept
 
     for (const auto& id : nyms) {
         const auto nymID = api_.Factory().NymID(id);
-        const auto hdAccounts = [&] {
-            auto out = Accounts{};
-            const auto list = api_.Storage().BlockchainAccountList(
-                id, BlockchainToUnit(chain_));
-            std::transform(
-                list.begin(),
-                list.end(),
-                std::inserter(out, out.end()),
-                [&](const auto& in) { return api_.Factory().Identifier(in); });
+        Accounts hdAccounts{};
+        const auto list =
+            api_.Storage().BlockchainAccountList(id, BlockchainToUnit(chain_));
+        std::transform(
+            list.begin(),
+            list.end(),
+            std::inserter(hdAccounts, hdAccounts.end()),
+            [&](const auto& in) { return api_.Factory().Identifier(in); });
 
-            return out;
-        }();
         const auto pcAccounts = api_.Storage().Bip47ChannelsByChain(
             nymID, BlockchainToUnit(chain_));
 
