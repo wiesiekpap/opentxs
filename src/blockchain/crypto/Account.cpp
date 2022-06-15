@@ -269,12 +269,9 @@ auto Account::find_next_element(
 
 auto Account::FindNym(const identifier::Nym& id) const noexcept -> void
 {
-    find_nym_->Send([&] {
-        auto work = network::zeromq::tagged_message(WorkType::OTXSearchNym);
-        work.AddFrame(id);
-
-        return work;
-    }());
+    auto work = network::zeromq::tagged_message(WorkType::OTXSearchNym);
+    work.AddFrame(id);
+    find_nym_->Send(std::move(work));
 }
 
 auto Account::GetNextChangeKey(const PasswordPrompt& reason) const
