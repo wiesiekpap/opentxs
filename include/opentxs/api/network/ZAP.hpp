@@ -12,6 +12,9 @@
 
 namespace opentxs::api::network
 {
+/**
+ api::network::ZAP used for accessing ZAP specific functionality.
+ */
 class OPENTXS_EXPORT ZAP
 {
 public:

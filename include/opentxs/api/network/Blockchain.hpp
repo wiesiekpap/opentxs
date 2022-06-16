@@ -39,6 +39,9 @@ class Manager;
 
 namespace opentxs::api::network
 {
+/**
+ The api::network::Blockchain API is used for accessing blockchain-related network functionality.
+ */
 class OPENTXS_EXPORT Blockchain
 {
 public:

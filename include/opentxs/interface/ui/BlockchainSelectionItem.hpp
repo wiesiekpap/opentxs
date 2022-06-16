@@ -29,12 +29,19 @@ using OTUIBlockchainSelectionItem = SharedPimpl<ui::BlockchainSelectionItem>;
 
 namespace opentxs::ui
 {
+/**
+ This model represents a single blockchain. It is a single row from the BlockchainSelection model.
+*/
 class OPENTXS_EXPORT BlockchainSelectionItem : virtual public ListRow
 {
 public:
+    /// Returns the display name of this blockchain.
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
+    /// Returns boolean indicating whether or not this blockchain is enabled.
     virtual auto IsEnabled() const noexcept -> bool = 0;
+    /// Returns boolean indicating whether or not this blockchain is a testnet.
     virtual auto IsTestnet() const noexcept -> bool = 0;
+    /// Returns enum containing the blockchain type.
     virtual auto Type() const noexcept -> blockchain::Type = 0;
 
     ~BlockchainSelectionItem() override = default;

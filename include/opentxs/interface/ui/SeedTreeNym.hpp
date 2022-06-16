@@ -15,11 +15,18 @@
 
 namespace opentxs::ui
 {
+/**
+ This model represents one of the nyms available for a seed in this wallet.
+ Each of the rows in the SeedTreeItem model is a different SeedTreeNym.
+ */
 class OPENTXS_EXPORT SeedTreeNym : virtual public ListRow
 {
 public:
+    /// Returns the index for this Nym.
     virtual auto Index() const noexcept -> std::size_t = 0;
+    /// Returns the display name for this Nym.
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
+    /// Returns the NymID for this Nym.
     virtual auto NymID() const noexcept -> UnallocatedCString = 0;
 
     ~SeedTreeNym() override = default;

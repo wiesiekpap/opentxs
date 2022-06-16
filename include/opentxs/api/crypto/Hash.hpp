@@ -45,6 +45,9 @@ class Secret;
 
 namespace opentxs::api::crypto
 {
+/**
+ The api::crypto::Hash API contains various hash-related functions.
+ */
 class OPENTXS_EXPORT Hash
 {
 public:

@@ -50,6 +50,9 @@ class Secret;
 
 namespace opentxs::api::crypto
 {
+/**
+ The api::crypto::Asymmetric API is used for instantiating asymmetric keys and related crypto objects.
+ */
 class OPENTXS_EXPORT Asymmetric
 {
 public:

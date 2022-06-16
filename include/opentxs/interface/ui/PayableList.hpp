@@ -26,11 +26,18 @@ class PayableListItem;
 
 namespace opentxs::ui
 {
+/**
+  Like ContactList, this model manages a set of rows containing the Contacts in the wallet.
+  However, this model only contains contacts that are payable.
+  Each row contains a PayableListItem model, which is derived from ContactListItem.
+*/
 class OPENTXS_EXPORT PayableList : virtual public List
 {
 public:
+    /// returns the first row, containing a valid PayableListItem or an empty smart pointer (if list is empty).
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::PayableListItem> = 0;
+    /// returns the next row, containing a valid PayableListItem or an empty smart pointer (if at end of list).
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::PayableListItem> = 0;
 

@@ -18,10 +18,15 @@ using PeriodicTask = std::function<void()>;
 
 namespace opentxs::api
 {
+/**
+ The Periodic API is used for scheduling and canceling recurring tasks.
+ */
 class OPENTXS_EXPORT Periodic
 {
 public:
+    /// Cancels a periodic task.
     virtual auto Cancel(const int task) const -> bool = 0;
+    /// Reschedules a periodic task.
     virtual auto Reschedule(
         const int task,
         const std::chrono::seconds& interval) const -> bool = 0;

@@ -32,14 +32,25 @@ using OTUIActivitySummaryItem = SharedPimpl<ui::ActivitySummaryItem>;
 
 namespace opentxs::ui
 {
+/**
+   ActivitySummaryItem is a high-level summary of a single conversational thread, meant to appear in a list
+   of other recently active threads. Similar to the chat history on a smart phone, ActivitySummaryItem
+   represents a single one of the conversational threads in that history.
+ */
 class OPENTXS_EXPORT ActivitySummaryItem : virtual public ListRow
 {
 public:
+    /// Returns the contact's display name for this thread.
     virtual auto DisplayName() const noexcept -> UnallocatedCString = 0;
+    /// Returns the contact's image as a URI string.
     virtual auto ImageURI() const noexcept -> UnallocatedCString = 0;
+    /// Returns the display text (such as a message preview) for this thread.
     virtual auto Text() const noexcept -> UnallocatedCString = 0;
+    /// Returns the thread ID
     virtual auto ThreadID() const noexcept -> UnallocatedCString = 0;
+    /// Returns the timestamp of the most recent update to this thread.
     virtual auto Timestamp() const noexcept -> Time = 0;
+    /// Returns the thread type as an enum.
     virtual auto Type() const noexcept -> otx::client::StorageBox = 0;
 
     ~ActivitySummaryItem() override = default;

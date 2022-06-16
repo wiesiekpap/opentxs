@@ -35,6 +35,10 @@ class Context;
 
 namespace opentxs::api::network
 {
+/**
+ The top-level network API. Used for accessing the Asio API, the Blockchain network API,
+ the DHT network API, and the ZeroMQ network API.
+ */
 class OPENTXS_EXPORT Network
 {
 public:

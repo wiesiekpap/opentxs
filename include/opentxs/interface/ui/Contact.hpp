@@ -27,15 +27,24 @@ class ContactSection;
 
 namespace opentxs::ui
 {
+/**
+  This model represents a single contact.
+  Each row is a ContactSection containing metadata about this contact.
+*/
 class OPENTXS_EXPORT Contact : virtual public List
 {
 public:
+    /// Returns the ContactID for this contact.
     virtual auto ContactID() const noexcept -> UnallocatedCString = 0;
+    /// Returns the display label for this contact.
     virtual auto DisplayName() const noexcept -> UnallocatedCString = 0;
+    /// Returns the first contact section.
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ContactSection> = 0;
+    /// Returns the next contact section.
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ContactSection> = 0;
+    /// Returns the payment code for this contact.
     virtual auto PaymentCode() const noexcept -> UnallocatedCString = 0;
 
     ~Contact() override = default;

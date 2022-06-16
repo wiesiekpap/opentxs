@@ -36,6 +36,9 @@ class Secret;
 
 namespace opentxs::api::crypto
 {
+/**
+ The api::crypto::Symmetric API contains functions specific to symmetric keys. (AES etc).
+ */
 class OPENTXS_EXPORT Symmetric
 {
 public:

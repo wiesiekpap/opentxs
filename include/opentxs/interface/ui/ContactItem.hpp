@@ -28,12 +28,20 @@ using OTUIContactItem = SharedPimpl<ui::ContactItem>;
 
 namespace opentxs::ui
 {
+/**
+  Each row in the ContactSubsection model is a ContactItem.
+  This ContactItem model represents a specific claim about a Contact.
+*/
 class OPENTXS_EXPORT ContactItem : virtual public ListRow
 {
 public:
+    /// Returns the claim ID for this claim.
     virtual auto ClaimID() const noexcept -> UnallocatedCString = 0;
+    /// Returns a boolean indicating whether or not this claim is active.
     virtual auto IsActive() const noexcept -> bool = 0;
+    /// Returns a boolean indicating whether or not this is the primary claim.
     virtual auto IsPrimary() const noexcept -> bool = 0;
+    /// Returns the actual contains of the claim as a string.
     virtual auto Value() const noexcept -> UnallocatedCString = 0;
 
     ~ContactItem() override = default;

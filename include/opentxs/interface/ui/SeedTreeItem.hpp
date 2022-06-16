@@ -30,14 +30,24 @@ class SeedTreeNym;
 
 namespace opentxs::ui
 {
+/**
+ This model represents one of the seeds available in this wallet.
+ Each of the rows in the SeedTree model is a different SeedTreeItem.
+ */
 class OPENTXS_EXPORT SeedTreeItem : virtual public List, virtual public ListRow
 {
 public:
+    /// Returns debug information about this item.
     virtual auto Debug() const noexcept -> UnallocatedCString = 0;
+    /// Returns the first nym for this seed, as a SeedTreeNym.
     virtual auto First() const noexcept -> SharedPimpl<SeedTreeNym> = 0;
+    /// Returns the display name for this seed.
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
+    /// Returns the next nym for this seed, as a SeedTreeNym.
     virtual auto Next() const noexcept -> SharedPimpl<SeedTreeNym> = 0;
+    /// Returns the ID for this seed.
     virtual auto SeedID() const noexcept -> UnallocatedCString = 0;
+    /// Returns the seed type as an enum SeedStyle.
     virtual auto Type() const noexcept -> crypto::SeedStyle = 0;
 
     ~SeedTreeItem() override = default;

@@ -28,17 +28,29 @@ using OTUIProfileItem = SharedPimpl<ui::ProfileItem>;
 
 namespace opentxs::ui
 {
+/**
+ This model represents a single claim on the wallet user's identity credentials.
+ Each of these claims is a single row on the ProfileSubsection model.
+ */
 class OPENTXS_EXPORT ProfileItem : virtual public ListRow
 {
 public:
+    /// Returns the ID for this claim.
     virtual auto ClaimID() const noexcept -> UnallocatedCString = 0;
+    /// Deletes this claim from the user's credentials. Returns success or failure.
     virtual auto Delete() const noexcept -> bool = 0;
+    /// Indicates whether or not this claim is active.
     virtual auto IsActive() const noexcept -> bool = 0;
+    /// Indicates whether or not this claim is primary.
     virtual auto IsPrimary() const noexcept -> bool = 0;
+    /// Sets this claim as 'active' or 'inactive' on the wallet user's credentials.
     virtual auto SetActive(const bool& active) const noexcept -> bool = 0;
+    /// Sets this claim as 'primary' or 'not primary' on the wallet user's credentials.
     virtual auto SetPrimary(const bool& primary) const noexcept -> bool = 0;
+    // Sets the value of this claim.
     virtual auto SetValue(const UnallocatedCString& value) const noexcept
         -> bool = 0;
+    /// Returns the value of this claim.
     virtual auto Value() const noexcept -> UnallocatedCString = 0;
 
     ~ProfileItem() override = default;

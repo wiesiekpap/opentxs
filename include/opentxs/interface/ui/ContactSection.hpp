@@ -31,16 +31,24 @@ using OTUIContactSection = SharedPimpl<ui::ContactSection>;
 
 namespace opentxs::ui
 {
+/**
+  This model represents a section of meta-data for a specific contact.
+  Each row is a ContactSubsection containing metadata about this contact.
+*/
 class OPENTXS_EXPORT ContactSection : virtual public List,
                                       virtual public ListRow
 {
 public:
+    /// Returns the section name.
     virtual auto Name(const UnallocatedCString& lang) const noexcept
         -> UnallocatedCString = 0;
+    /// Returns the first contact subsection.
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ContactSubsection> = 0;
+    /// Returns the next contact subsection.
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ContactSubsection> = 0;
+    /// Returns the section type as an enum.
     virtual auto Type() const noexcept -> identity::wot::claim::SectionType = 0;
 
     ~ContactSection() override = default;

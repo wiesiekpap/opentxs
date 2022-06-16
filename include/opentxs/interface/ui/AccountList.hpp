@@ -26,11 +26,17 @@ class AccountListItem;
 
 namespace opentxs::ui
 {
+/**
+  This model manages a set of rows containing a list of accounts for the UI.
+  Each row contains an AccountListItem.
+*/
 class OPENTXS_EXPORT AccountList : virtual public List
 {
 public:
+    /// returns the first row, containing a valid AccountListItem or an empty smart pointer (if list is empty).
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::AccountListItem> = 0;
+    /// returns the next row, containing a valid AccountListItem or an empty smart pointer (if at end of list).
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::AccountListItem> = 0;
 
