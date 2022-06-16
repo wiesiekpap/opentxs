@@ -232,14 +232,7 @@ auto BlockFilter::store(
         const auto bytes = proto.ByteSizeLong();
         const auto table = translate_filter(type);
 
-        auto index = util::IndexData{};
-        auto cb = [&index](const ReadView in) {
-            if (sizeof(index) != in.size()) { return; }
-
-            std::memcpy(static_cast<void*>(&index), in.data(), in.size());
-        };
-
-        lmdb_.Load(table, blockHash, cb);
+        auto index = LoadDBTransaction(lmdb_, table, blockHash);
 
         auto callback = [&](auto& tx) -> bool {
             const auto result = lmdb_.Store(table, blockHash, tsv(index), tx);
@@ -342,13 +335,7 @@ auto BlockFilter::StoreFilters(
         auto lock = Lock{bulk_.Mutex()};
 
         for (auto& i : data) {
-            const auto readIndex = [&](const auto in) {
-                auto& [block, header, filter, bytes, index] = i;
 
-                if (sizeof(index) != in.size()) { return; }
-
-                std::memcpy(static_cast<void*>(&index), in.data(), in.size());
-            };
             auto writeIndex = [&](auto& tx) -> bool {
                 const auto& [block, header, filter, bytes, index] = i;
                 const auto result = lmdb_.Store(fTable, block, tsv(index), tx);
@@ -364,7 +351,8 @@ auto BlockFilter::StoreFilters(
                 return true;
             };
             auto& [block, header, filter, bytes, index] = i;
-            lmdb_.Load(fTable, block, readIndex);
+            LoadDBTransaction(lmdb_, fTable, block);
+
             auto view =
                 bulk_.WriteView(lock, tx, index, std::move(writeIndex), bytes);
 

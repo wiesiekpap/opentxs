@@ -9,7 +9,9 @@
 
 #pragma once
 
+#include <cstring>
 #include <memory>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -19,6 +21,7 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/MappedFileStorage.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -81,4 +84,20 @@ enum Table {
 auto ChainToSyncTable(const opentxs::blockchain::Type chain) noexcept(false)
     -> int;
 auto SyncTables() noexcept -> const UnallocatedVector<SyncTableData>&;
+
+template <class T>
+util::IndexData LoadDBTransaction(
+    const storage::lmdb::LMDB& lmdb,
+    int table,
+    const T& str)
+{
+    util::IndexData index{};
+    auto cb = [&index](const ReadView in) {
+        if (sizeof(index) != in.size()) { return; }
+
+        std::memcpy(static_cast<void*>(&index), in.data(), in.size());
+    };
+    lmdb.Load(table, str, cb);
+    return index;
+}
 }  // namespace opentxs::blockchain::database::common

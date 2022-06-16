@@ -7,9 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/database/common/BlockHeaders.hpp"  // IWYU pragma: associated
 
-#include <cstring>
 #include <stdexcept>
-#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -21,7 +19,6 @@
 #include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "util/LMDB.hpp"
@@ -45,13 +42,7 @@ auto BlockHeader::Exists(
 auto BlockHeader::Load(const opentxs::blockchain::block::Hash& hash) const
     noexcept(false) -> proto::BlockchainBlockHeader
 {
-    util::IndexData index{};
-    auto cb = [&index](const ReadView in) {
-        if (sizeof(index) != in.size()) { return; }
-
-        std::memcpy(static_cast<void*>(&index), in.data(), in.size());
-    };
-    lmdb_.Load(table_, hash.Bytes(), cb);
+    auto index = LoadDBTransaction(lmdb_, table_, hash.Bytes());
 
     if (0 == index.size_) { throw std::out_of_range("Block header not found"); }
 
@@ -113,14 +104,8 @@ auto BlockHeader::store(
 
         const auto bytes = proto.ByteSizeLong();
 
-        util::IndexData index{};
-
-        auto cb = [&index](const ReadView in) {
-            if (sizeof(index) != in.size()) { return; }
-
-            std::memcpy(static_cast<void*>(&index), in.data(), in.size());
-        };
-        lmdb_.Load(table_, hash.Bytes(), cb);
+        util::IndexData index = LoadDBTransaction(lmdb_, table_, hash.Bytes());
+        ;
 
         auto cb2 = [&](auto& tx) -> bool {
             const auto result =
