@@ -13,7 +13,6 @@
 #include <shared_mutex>
 #include <stdexcept>
 #include <type_traits>
-#include <utility>
 
 #include "blockchain/database/wallet/SubchainCache.hpp"
 #include "blockchain/database/wallet/SubchainID.hpp"
@@ -28,14 +27,11 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/Types.hpp"
 #include "util/LMDB.hpp"
 #include "util/ScopeGuard.hpp"
 
@@ -108,7 +104,7 @@ struct SubchainData::Imp {
             print(position))
             .Flush();
 
-        if (false == cache_.SetLastScanned(subchain, position, tx)) {
+        if (!cache_.SetLastScanned(subchain, position, tx)) {
             throw std::runtime_error{"database error"};
         }
 
@@ -135,7 +131,7 @@ struct SubchainData::Imp {
                 for (const auto& pattern : patterns) {
                     output = cache_.AddPattern(id, index, reader(pattern), tx);
 
-                    if (false == output) {
+                    if (!output) {
                         throw std::runtime_error{"failed to store pattern"};
                     }
                 }
@@ -143,14 +139,14 @@ struct SubchainData::Imp {
 
             output = cache_.SetLastIndexed(subchain, highest, tx);
 
-            if (false == output) {
+            if (!output) {
                 throw std::runtime_error{"failed to update highest indexed"};
             }
 
             for (auto& patternID : newIndices) {
                 output = cache_.AddPatternIndex(subchain, patternID, tx);
 
-                if (false == output) {
+                if (!output) {
                     throw std::runtime_error{
                         "failed to store subchain pattern index"};
                 }
@@ -158,7 +154,7 @@ struct SubchainData::Imp {
 
             output = tx.Finalize(true);
 
-            if (false == output) {
+            if (!output) {
                 throw std::runtime_error{"failed to commit transaction"};
             }
 
