@@ -8,7 +8,6 @@
 #include "blockchain/database/Sync.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
-#include <utility>
 
 #include "blockchain/database/common/Database.hpp"
 #include "internal/blockchain/Blockchain.hpp"
@@ -88,7 +87,7 @@ auto Sync::SetTip(const block::Position& position) const noexcept -> bool
 auto Sync::Store(const block::Position& tip, const Items& items) const noexcept
     -> bool
 {
-    if (false == common_.StoreSync(chain_, items)) {
+    if (!common_.StoreSync(chain_, items)) {
         LogError()(OT_PRETTY_CLASS())("Failed to store sync data").Flush();
 
         return false;

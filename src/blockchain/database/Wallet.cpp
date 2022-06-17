@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "blockchain/database/Wallet.hpp"  // IWYU pragma: associated
 
-#include <stdexcept>
 #include <utility>
 
 #include "blockchain/database/common/Database.hpp"
@@ -50,7 +49,7 @@ auto Wallet::AddConfirmedTransactions(
 auto Wallet::AddMempoolTransaction(
     const NodeID& balanceNode,
     const crypto::Subchain subchain,
-    const Vector<std::uint32_t> outputIndices,
+    const Vector<std::uint32_t>& outputIndices,
     const bitcoin::block::Transaction& original,
     TXOs& txoCreated) const noexcept -> bool
 {
@@ -267,10 +266,7 @@ auto Wallet::ReorgTo(
     }
 
     for (const auto& position : reorg) {
-        if (false == outputs_.StartReorg(tx, subchainID, position)) {
-
-            return false;
-        }
+        if (!outputs_.StartReorg(tx, subchainID, position)) { return false; }
     }
 
     return true;
@@ -281,7 +277,7 @@ auto Wallet::ReserveUTXO(
     const Identifier& id,
     node::internal::SpendPolicy& policy) const noexcept -> std::optional<UTXO>
 {
-    if (false == proposals_.Exists(id)) {
+    if (!proposals_.Exists(id)) {
         LogError()(OT_PRETTY_CLASS())("Proposal ")(id)(" does not exist")
             .Flush();
 

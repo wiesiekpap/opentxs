@@ -141,7 +141,7 @@ public:
     auto AddMempoolTransaction(
         const NodeID& balanceNode,
         const crypto::Subchain subchain,
-        const Vector<std::uint32_t> outputIndices,
+        const Vector<std::uint32_t>& outputIndices,
         const bitcoin::block::Transaction& transaction,
         TXOs& txoCreated) const noexcept -> bool;
     auto AddOutgoingTransaction(
