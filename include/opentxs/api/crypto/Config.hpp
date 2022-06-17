@@ -43,7 +43,8 @@ auto HaveSupport(opentxs::crypto::key::asymmetric::Algorithm) noexcept -> bool;
 auto HaveSupport(opentxs::crypto::key::symmetric::Algorithm) noexcept -> bool;
 
 /**
- The api::crypto::Config API is used for accessing crypto-specific configuration information.
+ The api::crypto::Config API is used for accessing crypto-specific configuration
+ information.
  */
 class OPENTXS_EXPORT Config
 {

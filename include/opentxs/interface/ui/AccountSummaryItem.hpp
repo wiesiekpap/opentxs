@@ -29,8 +29,8 @@ using OTUIAccountSummaryItem = SharedPimpl<ui::AccountSummaryItem>;
 namespace opentxs::ui
 {
 /**
-  This model manages the AccountSummaryItem, which is a single row on the AccountSummary model
-  and which represents a single account in the wallet.
+  This model manages the AccountSummaryItem, which is a single row on the
+  AccountSummary model and which represents a single account in the wallet.
 */
 class OPENTXS_EXPORT AccountSummaryItem : virtual public ListRow
 {
@@ -39,7 +39,8 @@ public:
     virtual auto AccountID() const noexcept -> UnallocatedCString = 0;
     /// Returns the account's balance as an Amount object.
     virtual auto Balance() const noexcept -> Amount = 0;
-    /// Returns the balance of the account, formatted as a string for display in the UI.
+    /// Returns the balance of the account, formatted as a string for display in
+    /// the UI.
     virtual auto DisplayBalance() const noexcept -> UnallocatedCString = 0;
     /// Returns the display name of the account.
     virtual auto Name() const noexcept -> UnallocatedCString = 0;

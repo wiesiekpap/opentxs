@@ -33,9 +33,10 @@ using OTUIActivitySummaryItem = SharedPimpl<ui::ActivitySummaryItem>;
 namespace opentxs::ui
 {
 /**
-   ActivitySummaryItem is a high-level summary of a single conversational thread, meant to appear in a list
-   of other recently active threads. Similar to the chat history on a smart phone, ActivitySummaryItem
-   represents a single one of the conversational threads in that history.
+   ActivitySummaryItem is a high-level summary of a single conversational
+   thread, meant to appear in a list of other recently active threads. Similar
+   to the chat history on a smart phone, ActivitySummaryItem represents a single
+   one of the conversational threads in that history.
  */
 class OPENTXS_EXPORT ActivitySummaryItem : virtual public ListRow
 {

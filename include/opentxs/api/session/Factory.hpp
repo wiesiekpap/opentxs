@@ -148,7 +148,8 @@ class PaymentCode;
 namespace opentxs::api::session
 {
 /**
- The Factory API for opentxs sessions, used for instantiating many different object types native to opentxs.
+ The Factory API for opentxs sessions, used for instantiating many different
+ object types native to opentxs.
  */
 class OPENTXS_EXPORT Factory : virtual public api::Factory
 {

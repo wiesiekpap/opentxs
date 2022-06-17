@@ -29,7 +29,8 @@ using OTUIContactListItem = SharedPimpl<ui::ContactListItem>;
 namespace opentxs::ui
 {
 /**
-  This model represents a single ContactListItem from a row in the ContactList model.
+  This model represents a single ContactListItem from a row in the ContactList
+  model.
 */
 class OPENTXS_EXPORT ContactListItem : virtual public ListRow
 {

@@ -32,9 +32,10 @@ namespace opentxs::ui
 {
 /**
    The AccountTree model contains a list of AccountCurrency models.
-   AccountCurrency is for iterating and displaying the accounts available in the wallet for a given unit type.
-   For example, all of the Bitcoin accounts. Or all of the Ethereum accounts. Etc.
-   Each row in the AccountCurrency model contains an AccountTreeItem, representing an individual account.
+   AccountCurrency is for iterating and displaying the accounts available in the
+   wallet for a given unit type. For example, all of the Bitcoin accounts. Or
+   all of the Ethereum accounts. Etc. Each row in the AccountCurrency model
+   contains an AccountTreeItem, representing an individual account.
  */
 class OPENTXS_EXPORT AccountCurrency : virtual public List,
                                        virtual public ListRow

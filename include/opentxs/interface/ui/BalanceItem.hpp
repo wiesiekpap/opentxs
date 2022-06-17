@@ -34,20 +34,23 @@ using OTUIBalanceItem = SharedPimpl<ui::BalanceItem>;
 namespace opentxs::ui
 {
 /**
-  This model contains a Balance Item, representing a single ledger entry for a specific account.
-  The AccountActivity class contains a list of Balance Items.
+  This model contains a Balance Item, representing a single ledger entry for a
+  specific account. The AccountActivity class contains a list of Balance Items.
 */
 class OPENTXS_EXPORT BalanceItem : virtual public ListRow
 {
 public:
     /// Returns the balance item's amount, as an Amount object.
     virtual auto Amount() const noexcept -> opentxs::Amount = 0;
-    /// Returns the number of confirmations for the associated blockchain transaction, if relevant.
+    /// Returns the number of confirmations for the associated blockchain
+    /// transaction, if relevant.
     virtual auto Confirmations() const noexcept -> int = 0;
-    /// Returns a vector of strings containing Contacts relevant to this balance item.
+    /// Returns a vector of strings containing Contacts relevant to this balance
+    /// item.
     virtual auto Contacts() const noexcept
         -> UnallocatedVector<UnallocatedCString> = 0;
-    /// Returns the amount of this balance item as a string formatted for display in the UI.
+    /// Returns the amount of this balance item as a string formatted for
+    /// display in the UI.
     virtual auto DisplayAmount() const noexcept -> UnallocatedCString = 0;
     /// Returns the memo for this balance item.
     virtual auto Memo() const noexcept -> UnallocatedCString = 0;

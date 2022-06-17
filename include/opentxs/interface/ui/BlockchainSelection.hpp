@@ -34,17 +34,21 @@ namespace opentxs::ui
 class OPENTXS_EXPORT BlockchainSelection : virtual public List
 {
 public:
-    /// returns the first row, containing a valid BlockchainSelectionItem or an empty smart pointer (if list is empty).
+    /// returns the first row, containing a valid BlockchainSelectionItem or an
+    /// empty smart pointer (if list is empty).
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::BlockchainSelectionItem> = 0;
-    /// returns the next row, containing a valid BlockchainSelectionItem or an empty smart pointer (if at end of list).
+    /// returns the next row, containing a valid BlockchainSelectionItem or an
+    /// empty smart pointer (if at end of list).
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::BlockchainSelectionItem> = 0;
 
-    /// This function can be used to disable a blockchain in the wallet. Returns success or failure.
+    /// This function can be used to disable a blockchain in the wallet. Returns
+    /// success or failure.
     virtual auto Disable(const blockchain::Type type) const noexcept
         -> bool = 0;
-    /// This function can be used to enable a blockchain in the wallet. Returns success or failure.
+    /// This function can be used to enable a blockchain in the wallet. Returns
+    /// success or failure.
     virtual auto Enable(const blockchain::Type type) const noexcept -> bool = 0;
 
     ~BlockchainSelection() override = default;

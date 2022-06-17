@@ -37,15 +37,18 @@ class OPENTXS_EXPORT ProfileItem : virtual public ListRow
 public:
     /// Returns the ID for this claim.
     virtual auto ClaimID() const noexcept -> UnallocatedCString = 0;
-    /// Deletes this claim from the user's credentials. Returns success or failure.
+    /// Deletes this claim from the user's credentials. Returns success or
+    /// failure.
     virtual auto Delete() const noexcept -> bool = 0;
     /// Indicates whether or not this claim is active.
     virtual auto IsActive() const noexcept -> bool = 0;
     /// Indicates whether or not this claim is primary.
     virtual auto IsPrimary() const noexcept -> bool = 0;
-    /// Sets this claim as 'active' or 'inactive' on the wallet user's credentials.
+    /// Sets this claim as 'active' or 'inactive' on the wallet user's
+    /// credentials.
     virtual auto SetActive(const bool& active) const noexcept -> bool = 0;
-    /// Sets this claim as 'primary' or 'not primary' on the wallet user's credentials.
+    /// Sets this claim as 'primary' or 'not primary' on the wallet user's
+    /// credentials.
     virtual auto SetPrimary(const bool& primary) const noexcept -> bool = 0;
     // Sets the value of this claim.
     virtual auto SetValue(const UnallocatedCString& value) const noexcept

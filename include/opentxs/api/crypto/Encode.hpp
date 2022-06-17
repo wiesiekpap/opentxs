@@ -35,7 +35,8 @@ class Encode;
 namespace opentxs::api::crypto
 {
 /**
- The api::crypto::encode API is used for encoding and decoding data, and related functions.
+ The api::crypto::encode API is used for encoding and decoding data, and related
+ functions.
  */
 class Encode
 {

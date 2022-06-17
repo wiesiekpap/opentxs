@@ -32,8 +32,9 @@ class ProfileSection;
 namespace opentxs::ui
 {
 /**
- This model contains the wallet user's Profile data, and also has methods for manipulating that data.
- This includes the claims on this user's identity credentials.
+ This model contains the wallet user's Profile data, and also has methods for
+ manipulating that data. This includes the claims on this user's identity
+ credentials.
  */
 class OPENTXS_EXPORT Profile : virtual public List
 {
@@ -66,12 +67,14 @@ public:
         const UnallocatedCString& claimID) const noexcept -> bool = 0;
     /// Returns the display name for the user's profile in this wallet.
     virtual auto DisplayName() const noexcept -> UnallocatedCString = 0;
-    /// Returns the first ProfileSection for this profile, containing metadata about the wallet user.
+    /// Returns the first ProfileSection for this profile, containing metadata
+    /// about the wallet user.
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ProfileSection> = 0;
     /// Returns the profile ID for the wallet user.
     virtual auto ID() const noexcept -> UnallocatedCString = 0;
-    /// Returns the next ProfileSection for this profile, containing metadata about the wallet user.
+    /// Returns the next ProfileSection for this profile, containing metadata
+    /// about the wallet user.
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ProfileSection> = 0;
     /// Returns the payment code for the wallet user.
@@ -82,7 +85,8 @@ public:
         const int type,
         const UnallocatedCString& claimID,
         const bool active) const noexcept -> bool = 0;
-    /// Sets a given claim as 'primary' or 'not primary' in the user's credentials. (Such as primary display name).
+    /// Sets a given claim as 'primary' or 'not primary' in the user's
+    /// credentials. (Such as primary display name).
     virtual auto SetPrimary(
         const int section,
         const int type,

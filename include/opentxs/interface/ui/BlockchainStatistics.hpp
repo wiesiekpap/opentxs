@@ -28,15 +28,18 @@ class BlockchainStatisticsItem;
 namespace opentxs::ui
 {
 /**
- The rows in this model each represent a single blockchain and its related wallet statistics.
+ The rows in this model each represent a single blockchain and its related
+ wallet statistics.
 */
 class OPENTXS_EXPORT BlockchainStatistics : virtual public List
 {
 public:
-    /// returns the first row, containing a valid BlockchainStatisticsItem or an empty smart pointer (if list is empty).
+    /// returns the first row, containing a valid BlockchainStatisticsItem or an
+    /// empty smart pointer (if list is empty).
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::BlockchainStatisticsItem> = 0;
-    /// returns the next row, containing a valid BlockchainStatisticsItem or an empty smart pointer (if at end of list).
+    /// returns the next row, containing a valid BlockchainStatisticsItem or an
+    /// empty smart pointer (if at end of list).
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::BlockchainStatisticsItem> = 0;
 

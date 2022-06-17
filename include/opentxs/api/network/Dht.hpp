@@ -31,8 +31,9 @@ class Dht;
 namespace opentxs::api::network
 {
 /**
- The api::network::Dht API is used for accessing functions specific to using a DHT.
- For example, to query the DHT for a Nym's credentials, or for a server contract, or an asset contract.
+ The api::network::Dht API is used for accessing functions specific to using a
+ DHT. For example, to query the DHT for a Nym's credentials, or for a server
+ contract, or an asset contract.
  */
 class OPENTXS_EXPORT Dht
 {

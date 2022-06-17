@@ -52,7 +52,8 @@ public:
     virtual auto ConnectedPeers() const noexcept -> std::size_t = 0;
     /// Returns the number of filters downloaded so far for this blockchain.
     virtual auto Filters() const noexcept -> Position = 0;
-    /// Returns the number of block headers downloaded so far for this blockchain.
+    /// Returns the number of block headers downloaded so far for this
+    /// blockchain.
     virtual auto Headers() const noexcept -> Position = 0;
     /// Returns the display name for this blockchain.
     virtual auto Name() const noexcept -> UnallocatedCString = 0;

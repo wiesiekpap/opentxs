@@ -42,15 +42,17 @@ class OPENTXS_EXPORT BlockchainAccountStatus : virtual public List
 public:
     /// Returns the chain type for this blockchain account.
     virtual auto Chain() const noexcept -> blockchain::Type = 0;
-    /// returns the first row, containing a valid BlockchainSubaccountSource or an empty smart pointer (if list is empty).
+    /// returns the first row, containing a valid BlockchainSubaccountSource or
+    /// an empty smart pointer (if list is empty).
     virtual auto First() const noexcept
         -> SharedPimpl<BlockchainSubaccountSource> = 0;
-    /// returns the next row, containing a valid BlockchainSubaccountSource or an empty smart pointer (if at end of list).
+    /// returns the next row, containing a valid BlockchainSubaccountSource or
+    /// an empty smart pointer (if at end of list).
     virtual auto Next() const noexcept
         -> SharedPimpl<BlockchainSubaccountSource> = 0;
     /// Returns the NymID of the owner of this account.
     virtual auto Owner() const noexcept -> const identifier::Nym& = 0;
-    
+
     ~BlockchainAccountStatus() override = default;
 
 protected:

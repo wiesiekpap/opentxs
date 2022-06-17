@@ -29,9 +29,10 @@ using OTUIPayableListItem = SharedPimpl<ui::PayableListItem>;
 namespace opentxs::ui
 {
 /**
-  This model represents a single PayableListItem from a row in the PayableList model.
-  It contains everything found in a ContactListItem (from which it is derived) but it adds a method for
-  retrieving the payment code for this contact.
+  This model represents a single PayableListItem from a row in the PayableList
+  model. It contains everything found in a ContactListItem (from which it is
+  derived) but it adds a method for retrieving the payment code for this
+  contact.
 */
 class OPENTXS_EXPORT PayableListItem : virtual public ContactListItem
 {

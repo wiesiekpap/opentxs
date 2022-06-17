@@ -26,7 +26,7 @@ namespace opentxs::api
 {
 /**
  The Settings API, used for working with the config files.
- 
+
  */
 class OPENTXS_EXPORT Settings
 {
@@ -36,7 +36,7 @@ public:
 
     /**
        @name Load and Save.
-     
+
        Core (Public Load and Save)
 
        @return Success or failure.
@@ -57,8 +57,9 @@ public:
 
     /**
        @name Check
-     
-       Check Only (get value of key from configuration, if the key exists, then out_bKeyExist will be true.)
+
+       Check Only (get value of key from configuration, if the key exists, then
+       out_bKeyExist will be true.)
 
        @return Success or failure.
     */
@@ -82,8 +83,9 @@ public:
 
     /**
        @name Set only
-     
-       Set new or update value, out_bNewOrUpdate will be true if the value changes.
+
+       Set new or update value, out_bNewOrUpdate will be true if the value
+       changes.
 
        @return Success or failure.
     */

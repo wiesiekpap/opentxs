@@ -31,8 +31,9 @@ using OTUIContactSubsection = SharedPimpl<ui::ContactSubsection>;
 namespace opentxs::ui
 {
 /**
-  This model represents a subsection of meta-data for a ContactSection of a specific Contact.
-  Each row is a ContactItem containing metadata about this contact.
+  This model represents a subsection of meta-data for a ContactSection of a
+  specific Contact. Each row is a ContactItem containing metadata about this
+  contact.
 */
 class OPENTXS_EXPORT ContactSubsection : virtual public List,
                                          virtual public ListRow

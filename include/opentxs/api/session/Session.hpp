@@ -82,7 +82,8 @@ public:
     /// Returns the network API for this session.
     virtual auto Network() const noexcept -> const network::Network& = 0;
     virtual auto QtRootObject() const noexcept -> QObject* = 0;
-    /// This timeout determines how long the software will keep a master key available in memory.
+    /// This timeout determines how long the software will keep a master key
+    /// available in memory.
     virtual auto SetMasterKeyTimeout(
         const std::chrono::seconds& timeout) const noexcept -> void = 0;
     OPENTXS_NO_EXPORT virtual auto Storage() const noexcept
