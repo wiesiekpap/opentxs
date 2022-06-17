@@ -124,7 +124,7 @@ Database::Database(
 
 auto Database::init_db(storage::lmdb::LMDB& db) noexcept -> void
 {
-    if (false == db.Exists(database::Config, tsv(database::Key::Version))) {
+    if (!db.Exists(database::Config, tsv(database::Key::Version))) {
         const auto stored = db.Store(
             database::Config, tsv(database::Key::Version), tsv(db_version_));
 

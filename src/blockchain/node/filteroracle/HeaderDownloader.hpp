@@ -192,7 +192,6 @@ private:
     {
         if (data.empty()) { return; }
 
-        const auto& previous = data.front()->previous_.get();
         auto hashes = Vector<cfilter::Hash>{};
         auto headers = Vector<database::Cfilter::CFHeaderParams>{};
 
@@ -220,8 +219,7 @@ private:
             }
         }
 
-        const auto saved =
-            db_.StoreFilterHeaders(type_, previous.Bytes(), std::move(headers));
+        const auto saved = db_.StoreFilterHeaders(type_, std::move(headers));
 
         OT_ASSERT(saved);
     }

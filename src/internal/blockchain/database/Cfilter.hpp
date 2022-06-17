@@ -83,7 +83,6 @@ public:
         const block::Position& tip) noexcept -> bool = 0;
     virtual auto StoreFilterHeaders(
         const cfilter::Type type,
-        const ReadView previous,
         const Vector<CFHeaderParams> headers) noexcept -> bool = 0;
 
     virtual ~Cfilter() = default;

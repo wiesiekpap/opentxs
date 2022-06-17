@@ -7,10 +7,6 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "blockchain/database/Filters.hpp"  // IWYU pragma: associated
 
-#include <boost/container/flat_map.hpp>
-#include <boost/container/vector.hpp>
-#include <cstddef>
-#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -28,9 +24,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database
@@ -96,7 +90,7 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
         const auto needFilter =
             blank_position_.first == CurrentTip(style).first;
 
-        if (false == (needHeader || needFilter)) { return; }
+        if (!(needHeader || needFilter)) { return; }
 
         const auto pBlock = factory::GenesisBlockHeader(api_, chain);
 
@@ -117,17 +111,13 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
         auto success{false};
 
         if (needHeader) {
-            auto headers = Vector<CFHeaderParams>{
-                {blockHash,
-                 [&](const auto& hex) {
-                     auto out = cfilter::Header{};
-                     const auto rc = out.DecodeHex(hex);
 
-                     OT_ASSERT(rc);
+            cfilter::Header header{};
+            auto result = header.DecodeHex(genesis.first);
+            OT_ASSERT(result);
 
-                     return out;
-                 }(genesis.first),
-                 gcs.Hash()}};
+            auto headers =
+                Vector<CFHeaderParams>{{blockHash, header, gcs.Hash()}};
             success = common_.StoreFilterHeaders(style, headers);
 
             OT_ASSERT(success);
@@ -228,7 +218,7 @@ auto Filters::StoreFilters(
 {
     auto output = common_.StoreFilters(type, headers, filters);
 
-    if (false == output) {
+    if (!output) {
         LogError()(OT_PRETTY_CLASS())("Failed to save filters").Flush();
 
         return false;
@@ -245,7 +235,7 @@ auto Filters::StoreFilters(
                      parentTxn)
                  .first;
 
-    if (false == output) {
+    if (!output) {
         LogError()(OT_PRETTY_CLASS())("Failed to set header tip").Flush();
 
         return false;
@@ -259,7 +249,7 @@ auto Filters::StoreFilters(
                      parentTxn)
                  .first;
 
-    if (false == output) {
+    if (!output) {
         LogError()(OT_PRETTY_CLASS())("Failed to set filter tip").Flush();
 
         return false;
@@ -277,7 +267,6 @@ auto Filters::StoreFilters(
 
 auto Filters::StoreHeaders(
     const cfilter::Type type,
-    const ReadView previous,
     const Vector<CFHeaderParams> headers) const noexcept -> bool
 {
     return common_.StoreFilterHeaders(type, headers);
