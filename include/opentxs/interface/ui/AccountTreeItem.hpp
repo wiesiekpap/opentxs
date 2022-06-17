@@ -27,12 +27,15 @@ class Amount;
 namespace opentxs::ui
 {
 /**
-  AccountTreeItem is the tree item that represents a single account, as seen from the AccountTree model.
-  Each row in the AccountTree is an AccountCurrency, which contains all of the accounts of a given unit type.
-  Each row in the AccountCurrency model contains an AccountTreeItem representing each of the accounts
-  in the wallet of that currency type. For example, AccountTree may contain an AccountCurrency row for
-  Bitcoin and an AccountCurrency row for Ethereum. The row for Bitcoin contains a list of Bitcoin accounts,
-  and the row for Ethereum contains a list of Ethereum accounts (each represented as an AccountTreeItem).
+  AccountTreeItem is the tree item that represents a single account, as seen
+  from the AccountTree model. Each row in the AccountTree is an AccountCurrency,
+  which contains all of the accounts of a given unit type. Each row in the
+  AccountCurrency model contains an AccountTreeItem representing each of the
+  accounts in the wallet of that currency type. For example, AccountTree may
+  contain an AccountCurrency row for Bitcoin and an AccountCurrency row for
+  Ethereum. The row for Bitcoin contains a list of Bitcoin accounts, and the row
+  for Ethereum contains a list of Ethereum accounts (each represented as an
+  AccountTreeItem).
  */
 class OPENTXS_EXPORT AccountTreeItem : virtual public ListRow
 {
@@ -43,17 +46,22 @@ public:
     virtual auto Balance() const noexcept -> Amount = 0;
     /// Returns the ContractID when relevant.
     virtual auto ContractID() const noexcept -> UnallocatedCString = 0;
-    /// Returns the balance of the account as a formatted string for display in the UI.
+    /// Returns the balance of the account as a formatted string for display in
+    /// the UI.
     virtual auto DisplayBalance() const noexcept -> UnallocatedCString = 0;
-    /// Returns the unit type of the account ("bitcoin" etc) as a formatted string for display in the UI.
+    /// Returns the unit type of the account ("bitcoin" etc) as a formatted
+    /// string for display in the UI.
     virtual auto DisplayUnit() const noexcept -> UnallocatedCString = 0;
     /// Returns display name for the account.
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
-    /// Returns the NotaryID for the account when relevant. (For off-chain accounts).
+    /// Returns the NotaryID for the account when relevant. (For off-chain
+    /// accounts).
     virtual auto NotaryID() const noexcept -> UnallocatedCString = 0;
-    /// Returns the display name for the account's notary, when relevant. (For off-chain accounts).
+    /// Returns the display name for the account's notary, when relevant. (For
+    /// off-chain accounts).
     virtual auto NotaryName() const noexcept -> UnallocatedCString = 0;
-    /// Returns the account type. (Issuer account, off-chain account, or blockchain account).
+    /// Returns the account type. (Issuer account, off-chain account, or
+    /// blockchain account).
     virtual auto Type() const noexcept -> AccountType = 0;
     /// Returns the unit type of the account as an enum.
     virtual auto Unit() const noexcept -> UnitType = 0;

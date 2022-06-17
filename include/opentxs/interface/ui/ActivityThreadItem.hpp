@@ -33,9 +33,10 @@ using OTUIActivityThreadItem = SharedPimpl<ui::ActivityThreadItem>;
 namespace opentxs::ui
 {
 /**
-   ActivityThreadItem is an individual chat message (or payment notice) as it appears inside the
-   ActivityThread. For example, if Alice has sent 2 chat messages to Bob, then both users will see
-   those messages as 2 individual ActivityThreadItems that appear as 2 rows inside an ActivityThread.
+   ActivityThreadItem is an individual chat message (or payment notice) as it
+   appears inside the ActivityThread. For example, if Alice has sent 2 chat
+   messages to Bob, then both users will see those messages as 2 individual
+   ActivityThreadItems that appear as 2 rows inside an ActivityThread.
  */
 class OPENTXS_EXPORT ActivityThreadItem : virtual public ListRow
 {
@@ -44,11 +45,13 @@ public:
     virtual auto Amount() const noexcept -> opentxs::Amount = 0;
     /// Boolean value showing whether or not this item is a deposit to a server.
     virtual auto Deposit() const noexcept -> bool = 0;
-    /// Returns the amount of this thread item, if relevant, as a formatted string for display in the UI.
+    /// Returns the amount of this thread item, if relevant, as a formatted
+    /// string for display in the UI.
     virtual auto DisplayAmount() const noexcept -> UnallocatedCString = 0;
     /// Returns a string containing the ID of the sender.
     virtual auto From() const noexcept -> UnallocatedCString = 0;
-    /// Boolean value showing whether or not this item is still in the process of loading.
+    /// Boolean value showing whether or not this item is still in the process
+    /// of loading.
     virtual auto Loading() const noexcept -> bool = 0;
     /// Boolean value showing whether or not this item is marked as read.
     virtual auto MarkRead() const noexcept -> bool = 0;
@@ -62,7 +65,8 @@ public:
     virtual auto Text() const noexcept -> UnallocatedCString = 0;
     /// Returns the timestamp for this thread item.
     virtual auto Timestamp() const noexcept -> Time = 0;
-    /// Returns the type for this item. (Message, incoming cheque, outgoing blockchain transfer, etc).
+    /// Returns the type for this item. (Message, incoming cheque, outgoing
+    /// blockchain transfer, etc).
     virtual auto Type() const noexcept -> otx::client::StorageBox = 0;
 
     ~ActivityThreadItem() override = default;

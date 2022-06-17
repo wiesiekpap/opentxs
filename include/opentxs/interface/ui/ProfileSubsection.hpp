@@ -31,8 +31,9 @@ using OTUIProfileSubsection = SharedPimpl<ui::ProfileSubsection>;
 namespace opentxs::ui
 {
 /**
-  This model represents a subsection of meta-data for a ProfileSection for the wallet user Profile.
-  Each row is a ProfileItem containing metadata about the wallet user from his identity credentials.
+  This model represents a subsection of meta-data for a ProfileSection for the
+  wallet user Profile. Each row is a ProfileItem containing metadata about the
+  wallet user from his identity credentials.
 */
 class OPENTXS_EXPORT ProfileSubsection : virtual public List,
                                          virtual public ListRow
@@ -58,15 +59,18 @@ public:
     /// Used to set a given claim in this subsection as 'active' or 'inactive'.
     virtual auto SetActive(const UnallocatedCString& claimID, const bool active)
         const noexcept -> bool = 0;
-    /// Used to set a given claim in this subsection as 'primary' or 'not primary'.
+    /// Used to set a given claim in this subsection as 'primary' or 'not
+    /// primary'.
     virtual auto SetPrimary(
         const UnallocatedCString& claimID,
         const bool primary) const noexcept -> bool = 0;
-    /// Sets the value for a given claimID in this subsection of the user's credentials.
+    /// Sets the value for a given claimID in this subsection of the user's
+    /// credentials.
     virtual auto SetValue(
         const UnallocatedCString& claimID,
         const UnallocatedCString& value) const noexcept -> bool = 0;
-    /// Returns the ClaimType for this subsection of the user's credentials. All claims in this subsection are the same type.
+    /// Returns the ClaimType for this subsection of the user's credentials. All
+    /// claims in this subsection are the same type.
     virtual auto Type() const noexcept -> identity::wot::claim::ClaimType = 0;
 
     ~ProfileSubsection() override = default;

@@ -29,24 +29,30 @@ class ActivityThreadItem;
 namespace opentxs::ui
 {
 /**
-  This model manages the ActivityThread between the user and one of his contacts.
-  Each row in ActivityThread is a different ActivityThreadItem (chat message, incoming transaction, etc).
-  This class is also a convenient way to grab relevant information about the current thread, such as
-  the participants or the draft. Includes functionality for directly sending a payment inside the current thread.
+  This model manages the ActivityThread between the user and one of his
+  contacts. Each row in ActivityThread is a different ActivityThreadItem (chat
+  message, incoming transaction, etc). This class is also a convenient way to
+  grab relevant information about the current thread, such as the participants
+  or the draft. Includes functionality for directly sending a payment inside the
+  current thread.
  */
 class OPENTXS_EXPORT ActivityThread : virtual public List
 {
 public:
     /// Boolean value showing whether or not this contact can be messaged.
     virtual auto CanMessage() const noexcept -> bool = 0;
-    /// Returns the display name for this thread (usually the name of the Contact).
+    /// Returns the display name for this thread (usually the name of the
+    /// Contact).
     virtual auto DisplayName() const noexcept -> UnallocatedCString = 0;
-    /// returns the first row, containing a valid ActivityThreadItem or an empty smart pointer (if list is empty).
+    /// returns the first row, containing a valid ActivityThreadItem or an empty
+    /// smart pointer (if list is empty).
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem> = 0;
-    /// Returns the current draft (contains the draft of the newest outgoing message, not yet sent).
+    /// Returns the current draft (contains the draft of the newest outgoing
+    /// message, not yet sent).
     virtual auto GetDraft() const noexcept -> UnallocatedCString = 0;
-    /// returns the next row, containing a valid ActivityThreadItem or an empty smart pointer (if at end of list).
+    /// returns the next row, containing a valid ActivityThreadItem or an empty
+    /// smart pointer (if at end of list).
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem> = 0;
     /// Returns a string containing the participants in this thread.
@@ -78,7 +84,8 @@ public:
         -> UnallocatedCString = 0;
     /// Sends the current draft.
     virtual auto SendDraft() const noexcept -> bool = 0;
-    /// Whenever the user makes edits to his newest unsent message, save the latest version here.
+    /// Whenever the user makes edits to his newest unsent message, save the
+    /// latest version here.
     virtual auto SetDraft(const UnallocatedCString& draft) const noexcept
         -> bool = 0;
     /// Returns the ID for this thread.

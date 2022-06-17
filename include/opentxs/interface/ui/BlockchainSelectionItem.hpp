@@ -30,7 +30,8 @@ using OTUIBlockchainSelectionItem = SharedPimpl<ui::BlockchainSelectionItem>;
 namespace opentxs::ui
 {
 /**
- This model represents a single blockchain. It is a single row from the BlockchainSelection model.
+ This model represents a single blockchain. It is a single row from the
+ BlockchainSelection model.
 */
 class OPENTXS_EXPORT BlockchainSelectionItem : virtual public ListRow
 {

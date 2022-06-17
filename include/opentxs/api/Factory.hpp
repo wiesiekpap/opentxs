@@ -30,9 +30,10 @@ namespace opentxs::api
 /**
  The top-level Factory API, used for instantiating secrets.
  A Secret is a piece of data, similar to a string or byte vector.
- But secrets, unlike normal strings or byte vectors, have additional secrecy requirements.
- They are used to store, for example, private keys. They have additional security requirements
- such as wiping their memory to zero when destructed.
+ But secrets, unlike normal strings or byte vectors, have additional secrecy
+ requirements. They are used to store, for example, private keys. They have
+ additional security requirements such as wiping their memory to zero when
+ destructed.
  */
 class OPENTXS_EXPORT Factory
 {

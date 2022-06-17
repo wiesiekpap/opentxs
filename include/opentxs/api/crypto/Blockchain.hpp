@@ -75,7 +75,8 @@ class PaymentCode;
 namespace opentxs::api::crypto
 {
 /**
- The api::crypto::Blockchain API is used for accessing blockchain-related crypto functionality.
+ The api::crypto::Blockchain API is used for accessing blockchain-related crypto
+ functionality.
  */
 class OPENTXS_EXPORT Blockchain
 {

@@ -29,7 +29,8 @@ using OTUIUnitListItem = SharedPimpl<ui::UnitListItem>;
 namespace opentxs::ui
 {
 /**
- This model describes a single unit type from the UnitList. (Bitcoin, Ethereum, etc).
+ This model describes a single unit type from the UnitList. (Bitcoin, Ethereum,
+ etc).
  */
 class OPENTXS_EXPORT UnitListItem : virtual public ListRow
 {

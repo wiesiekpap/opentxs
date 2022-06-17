@@ -27,7 +27,8 @@ class UnitListItem;
 namespace opentxs::ui
 {
 /**
- This model contains a row for each of the different unit types available in this wallet.
+ This model contains a row for each of the different unit types available in
+ this wallet.
  */
 class OPENTXS_EXPORT UnitList : virtual public List
 {

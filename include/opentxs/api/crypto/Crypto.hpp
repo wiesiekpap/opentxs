@@ -40,8 +40,9 @@ class Bip39;
 namespace opentxs::api
 {
 /**
- The api::crypto API is used for accessing high-level crypto-specific functionality like Encode or Hash.
- It's also used for accessing lower-level APIs such as Config or Util.
+ The api::crypto API is used for accessing high-level crypto-specific
+ functionality like Encode or Hash. It's also used for accessing lower-level
+ APIs such as Config or Util.
  */
 class OPENTXS_EXPORT Crypto
 {

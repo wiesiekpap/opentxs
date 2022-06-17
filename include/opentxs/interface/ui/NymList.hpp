@@ -27,16 +27,18 @@ class NymListItem;
 namespace opentxs::ui
 {
 /**
-  This model manages a set of rows containing the Nyms (user identities) in the wallet.
-  Each row contains a NymListItem model representing a Nym.
+  This model manages a set of rows containing the Nyms (user identities) in the
+  wallet. Each row contains a NymListItem model representing a Nym.
 */
 class OPENTXS_EXPORT NymList : virtual public List
 {
 public:
-    /// returns the first row, containing a valid NymListItem or an empty smart pointer (if list is empty).
+    /// returns the first row, containing a valid NymListItem or an empty smart
+    /// pointer (if list is empty).
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::NymListItem> = 0;
-    /// returns the next row, containing a valid NymListItem or an empty smart pointer (if at end of list).
+    /// returns the next row, containing a valid NymListItem or an empty smart
+    /// pointer (if at end of list).
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::NymListItem> = 0;
 
