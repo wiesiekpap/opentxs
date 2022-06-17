@@ -9,13 +9,11 @@
 
 #include <cstddef>
 #include <cstring>
-#include <iterator>
 #include <stdexcept>
 
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::database::wallet::db
@@ -68,7 +66,7 @@ auto SubchainID::FilterType() const noexcept -> cfilter::Type
 {
     auto lock = Lock{lock_};
 
-    if (false == filter_.has_value()) {
+    if (!filter_.has_value()) {
         auto type = cfilter::Type{};
         static constexpr auto offset = sizeof(crypto::Subchain);
         static constexpr auto size = sizeof(type);
@@ -85,7 +83,7 @@ auto SubchainID::SubaccountID(const api::Session& api) const noexcept
 {
     auto lock = Lock{lock_};
 
-    if (false == subaccount_.has_value()) {
+    if (!subaccount_.has_value()) {
         static constexpr auto offset = fixed_;
         const auto size = data_.size() - offset;
         const auto start = std::next(data_.data(), offset);
@@ -100,7 +98,7 @@ auto SubchainID::Type() const noexcept -> crypto::Subchain
 {
     auto lock = Lock{lock_};
 
-    if (false == subchain_.has_value()) {
+    if (!subchain_.has_value()) {
         auto type = crypto::Subchain{};
         static constexpr auto offset = std::size_t{0};
         static constexpr auto size = sizeof(type);
@@ -116,7 +114,7 @@ auto SubchainID::Version() const noexcept -> VersionNumber
 {
     auto lock = Lock{lock_};
 
-    if (false == version_.has_value()) {
+    if (!version_.has_value()) {
         auto type = VersionNumber{};
         static constexpr auto offset =
             sizeof(crypto::Subchain) + sizeof(cfilter::Type);

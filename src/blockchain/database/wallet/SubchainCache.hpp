@@ -73,7 +73,6 @@ using Mode = storage::lmdb::LMDB::Mode;
 constexpr auto id_index_{Table::SubchainID};
 constexpr auto last_indexed_{Table::SubchainLastIndexed};
 constexpr auto last_scanned_{Table::SubchainLastScanned};
-constexpr auto match_index_{Table::SubchainMatches};
 constexpr auto pattern_index_{Table::SubchainPatterns};
 constexpr auto patterns_{Table::WalletPatterns};
 constexpr auto subchain_config_{Table::Config};
@@ -136,8 +135,6 @@ private:
     using PatternsMap = robin_hood::unordered_node_map<pPatternID, dbPatterns>;
     using PatternIndexMap =
         robin_hood::unordered_node_map<pSubchainIndex, dbPatternIndex>;
-    using MatchIndexMap =
-        robin_hood::unordered_node_map<block::Hash, dbPatternIndex>;
     using Mutex = boost::upgrade_mutex;
 
     const api::Session& api_;
