@@ -26,6 +26,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::blockoracle
 {
@@ -47,12 +48,13 @@ BlockDownloader::BlockDownloader(
           "block",
           2000,
           1000)
-    , BlockWorkerBlock(api, 20ms)
+    , BlockWorkerBlock(api, std::string{"BlockDownloader"})
     , db_(db)
     , header_(header)
     , node_(node)
     , chain_(chain)
     , socket_(api_.Network().ZeroMQ().PublishSocket())
+    , last_job_{}
 {
     init_executor(
         {UnallocatedCString{shutdown},
@@ -60,7 +62,29 @@ BlockDownloader::BlockDownloader(
     auto zmq = socket_->Start(
         api_.Endpoints().Internal().BlockchainBlockUpdated(chain_).data());
 
+    start();
+
     OT_ASSERT(zmq);
+}
+
+auto BlockDownloader::to_string(Work value) const -> const std::string&
+{
+    static const auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::block, "block"},
+        {Work::reorg, "reorg"},
+        {Work::heartbeat, "heartbeat"},
+        {Work::statemachine, "statemachine"},
+    };
+    try {
+        return Map.at(value);
+    } catch (...) {
+        LogError()(__FUNCTION__)("invalid BlockDownloader job: ")(
+            static_cast<OTZMQWorkType>(value))
+            .Flush();
+
+        OT_FAIL;
+    }
 }
 
 auto BlockDownloader::batch_ready() const noexcept -> void
@@ -93,11 +117,12 @@ auto BlockDownloader::check_task(TaskType& task) const noexcept -> void
     const auto& hash = task.position_.hash_;
 
     if (auto block = db_.BlockLoadBitcoin(hash); bool(block)) {
+        tdiag("check_task about to download");
         task.download(std::move(block));
     }
 }
 
-auto BlockDownloader::pipeline(network::zeromq::Message&& in) noexcept -> void
+auto BlockDownloader::pipeline(network::zeromq::Message&& in) -> void
 {
     if (false == running_.load()) { return; }
 
@@ -105,18 +130,25 @@ auto BlockDownloader::pipeline(network::zeromq::Message&& in) noexcept -> void
 
     OT_ASSERT(1 <= body.size());
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
 
     switch (work) {
         case Work::shutdown: {
             protect_shutdown([this] { shut_down(); });
         } break;
-        case Work::block:
+        case Work::block: {
+            tdiag("block");
+            if (dm_enabled()) { process_position(in); }
+            run_if_enabled();
+        } break;
         case Work::reorg: {
+            tdiag("reorg");
             if (dm_enabled()) { process_position(in); }
 
             run_if_enabled();
         } break;
         case Work::heartbeat: {
+            tdiag("heartbeat");
             if (dm_enabled()) { process_position(); }
 
             run_if_enabled();
@@ -130,9 +162,16 @@ auto BlockDownloader::pipeline(network::zeromq::Message&& in) noexcept -> void
     }
 }
 
-auto BlockDownloader::state_machine() noexcept -> bool
+auto BlockDownloader::state_machine() noexcept -> int
 {
-    return BlockDMBlock::state_machine();
+    tdiag("BlockDownloader::state_machine");
+    return BlockDMBlock::state_machine() ? SM_BlockDownloader_fast
+                                         : SM_BlockDownloader_slow;
+}
+
+auto BlockDownloader::last_job_str() const noexcept -> std::string
+{
+    return to_string(last_job_);
 }
 
 auto BlockDownloader::process_position(
@@ -183,6 +222,8 @@ auto BlockDownloader::queue_processing(DownloadedData&& data) noexcept -> void
 
         const auto& block = *pBlock;
 
+        tdiag("storing block, size: ", (sizeof *pBlock));
+
         // TODO implement batch db updates
         if (db_.BlockStore(block)) {
             task->process(0);
@@ -200,6 +241,7 @@ auto BlockDownloader::Shutdown() noexcept -> std::shared_future<void>
 
 auto BlockDownloader::shut_down() noexcept -> void
 {
+    stop();
     close_pipeline();
     // TODO MT-34 investigate what other actions might be needed
 }

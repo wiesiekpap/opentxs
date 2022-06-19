@@ -47,6 +47,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
+#include "util/tuning.hpp"
 
 namespace opentxs::factory
 {
@@ -71,7 +72,7 @@ BlockchainAccountStatus::BlockchainAccountStatus(
     const blockchain::Type chain,
     const SimpleCallback& cb) noexcept
     : BlockchainAccountStatusType(api, id, cb, false)
-    , Worker(api, 100ms)
+    , Worker(api, "BlockchainAccountStatus")
     , chain_(chain)
 {
     init_executor({
@@ -79,6 +80,7 @@ BlockchainAccountStatus::BlockchainAccountStatus(
         UnallocatedCString{api.Endpoints().BlockchainReorg()},
         UnallocatedCString{api.Endpoints().BlockchainScanProgress()},
     });
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -213,7 +215,7 @@ auto BlockchainAccountStatus::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainAccountStatus::state_machine() noexcept -> bool { return false; }
+auto BlockchainAccountStatus::state_machine() noexcept -> int { return SM_off; }
 
 auto BlockchainAccountStatus::shut_down() noexcept -> void
 {

@@ -629,6 +629,10 @@ else()
   add_definitions(-DOT_VALGRIND=0)
 endif()
 
+if (DEFINED ENV{USE_TDIAG})
+  add_definitions(-DTDIAG)
+endif()
+
 # Network
 
 if(OT_DHT)

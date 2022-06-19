@@ -75,12 +75,12 @@ auto PairSocket(
     -> std::unique_ptr<network::zeromq::socket::Pair>;
 auto Pipeline(
     const network::zeromq::Context& context,
+    std::string&& diagnostic,
     std::function<void(network::zeromq::Message&&)>&& callback,
     const network::zeromq::EndpointArgs& subscribe,
     const network::zeromq::EndpointArgs& pull,
     const network::zeromq::EndpointArgs& dealer,
     const Vector<network::zeromq::SocketData>& extra,
-    const std::string_view threadName,
     const std::optional<network::zeromq::BatchID>& preallocated,
     alloc::Resource* pmr) noexcept -> opentxs::network::zeromq::Pipeline;
 auto PublishSocket(const network::zeromq::Context& context)

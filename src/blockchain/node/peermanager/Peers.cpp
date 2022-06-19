@@ -38,6 +38,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -608,11 +609,11 @@ auto PeerManager::Peers::set_default_peer(
     return localhost;
 }
 
-auto PeerManager::Peers::Run() noexcept -> bool
+auto PeerManager::Peers::Run() noexcept -> int
 {
     auto ticket = gatekeeper_.get();
 
-    if (ticket || invalid_peer_) { return false; }
+    if (ticket || invalid_peer_) { return SM_off; }
 
     const auto target = minimum_peers_.load();
 
@@ -625,7 +626,7 @@ auto PeerManager::Peers::Run() noexcept -> bool
         if (peer) { add_peer(std::move(peer)); }
     }
 
-    return target > peers_.size();
+    return target > peers_.size() ? SM_PeerManager_fast : SM_PeerManager_slow;
 }
 
 auto PeerManager::Peers::Shutdown() noexcept -> void

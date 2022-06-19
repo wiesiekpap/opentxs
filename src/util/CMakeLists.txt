@@ -68,8 +68,10 @@ target_sources(
     "threadutil.cpp"
     "threadutil.hpp"
     "Time.cpp"
+    "timed.hpp"
     "Timer.cpp"
     "Timer.hpp"
+    "tuning.hpp"
     "Work.hpp"
 )
 target_include_directories(

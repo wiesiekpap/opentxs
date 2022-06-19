@@ -112,6 +112,7 @@
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/Exclusive.tpp"
+#include "util/Reactor.hpp"
 #include "util/Thread.hpp"
 
 template class opentxs::Exclusive<opentxs::Account>;
@@ -119,6 +120,30 @@ template class opentxs::Shared<opentxs::Account>;
 
 namespace opentxs::api::session::imp
 {
+
+// Introduced to remove any non-instantaneous processing from the thread
+// pool responsible for socket servicing.
+class Wallet::WalletReactor : public Reactor
+{
+public:
+    WalletReactor(opentxs::network::zeromq::ListenCallback& callback)
+        : Reactor("Wallet", 1)
+        , callback_(callback)
+    {
+    }
+
+private:
+    auto handle(opentxs::network::zeromq::Message&& in, unsigned idx) noexcept
+        -> void override
+    {
+        callback_.Process(std::move(in));
+    }
+    auto last_job_str() const noexcept -> std::string final { return "Wallet"; }
+
+private:
+    opentxs::network::zeromq::ListenCallback& callback_;
+};
+
 Wallet::Wallet(const api::Session& api)
     : api_(api)
     , context_map_()
@@ -199,14 +224,13 @@ Wallet::Wallet(const api::Session& api)
 
         return socket;
     }())
+    , reactor_(std::make_unique<WalletReactor>(p2p_callback_))
     , thread_(api_.Network().ZeroMQ().Internal().Start(
           batch_.id_,
           {
               {p2p_socket_.ID(),
                &p2p_socket_,
-               [id = p2p_socket_.ID(), &cb = p2p_callback_](auto&& m) {
-                   cb.Process(std::move(m));
-               }},
+               [this](auto&& m) { reactor_->post(std::move(m)); }},
               {loopback_.ID(),
                &loopback_,
                [id = loopback_.ID(), &socket = p2p_socket_, &batch = batch_](
@@ -216,6 +240,7 @@ Wallet::Wallet(const api::Session& api)
           },
           batch_.thread_name_))
 {
+    reactor_->start();
     LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(batch_.id_).Flush();
     account_publisher_->Start(api_.Endpoints().AccountUpdate().data());
     issuer_publisher_->Start(api_.Endpoints().IssuerUpdate().data());
@@ -3397,5 +3422,9 @@ auto Wallet::SaveCredential(const proto::Credential& credential) const -> bool
     return api_.Storage().Store(credential);
 }
 
-Wallet::~Wallet() { handle_.Release(); }
+Wallet::~Wallet()
+{
+    reactor_->stop();
+    handle_.Release();
+}
 }  // namespace opentxs::api::session::imp

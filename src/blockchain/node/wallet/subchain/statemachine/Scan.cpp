@@ -38,6 +38,7 @@
 #include "util/Actor.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -71,13 +72,7 @@ Scan::Imp::Imp(
 {
 }
 
-Scan::Imp::~Imp()
-{
-    tdiag("Scan::~Imp ENTERED");
-    //    shutdown_actor();
-    tdiag("Scan::Imp DELETED !!!!!!!!!!!!!!!!!!!!!!!!!!");
-    //    *static_cast<char*>(nullptr) = 0;
-}
+Scan::Imp::~Imp() { tdiag("Scan::Imp::~Imp"); }
 
 auto Scan::Imp::caught_up() const noexcept -> bool
 {
@@ -97,7 +92,7 @@ auto Scan::Imp::current() const noexcept -> const block::Position&
 
 auto Scan::Imp::do_startup() noexcept -> void
 {
-    disable_automatic_processing_ = true;
+    disable_automatic_processing(true);
     const auto& node = parent_.node_;
     const auto& filters = node.FilterOracleInternal();
     last_scanned_ = parent_.db_.SubchainLastScanned(parent_.db_key_);
@@ -198,7 +193,7 @@ auto Scan::Imp::tip() const noexcept -> const block::Position&
     }
 }
 
-auto Scan::Imp::work() noexcept -> bool
+auto Scan::Imp::work() noexcept -> int
 {
     auto post = ScopeGuard{[&] { Job::work(); }};
 
@@ -207,7 +202,7 @@ auto Scan::Imp::work() noexcept -> bool
             " scanning not possible until a filter tip value is received ")
             .Flush();
 
-        return false;
+        return SM_off;
     }
 
     if (false == enabled_) {
@@ -218,7 +213,7 @@ auto Scan::Imp::work() noexcept -> bool
                 " waiting to begin scan until cfilter sync is complete")
                 .Flush();
 
-            return false;
+            return SM_off;
         } else {
             log_(OT_PRETTY_CLASS())(parent_.name_)(
                 " starting scan since cfilter sync is complete")
@@ -231,7 +226,7 @@ auto Scan::Imp::work() noexcept -> bool
             " all available filters have been scanned")
             .Flush();
 
-        return false;
+        return SM_off;
     }
 
     const auto height = current().height_;
@@ -239,7 +234,7 @@ auto Scan::Imp::work() noexcept -> bool
     if (auto handle = parent_.progress_position_.lock(); handle->has_value())
         rescan = handle->value().height_;
     else
-        rescan = -1;
+        rescan = SM_off;
 
     const auto& threshold = parent_.scan_threshold_;
 
@@ -249,7 +244,7 @@ auto Scan::Imp::work() noexcept -> bool
             height - threshold)(" from current position of ")(rescan)
             .Flush();
 
-        return false;
+        return SM_off;
     }
 
     auto buf = std::array<std::byte, scan_status_bytes_ * 1000u>{};
@@ -293,7 +288,16 @@ auto Scan::Imp::work() noexcept -> bool
         }());
     }
 
-    return (false == caught_up());
+    return !caught_up() ? SM_Scan_fast : SM_Scan_slow;
+}
+
+network::zeromq::Message Scan::Imp::make_work(
+    Vector<ScanStatus>&& vec) const noexcept
+{
+    auto work = MakeWork(Work::update);
+    add_last_reorg(work);
+    encode(vec, work);
+    return work;
 }
 }  // namespace opentxs::blockchain::node::wallet
 

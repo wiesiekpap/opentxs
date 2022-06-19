@@ -97,6 +97,14 @@ public:
 
     ~Imp() final;
 
+protected:
+    auto pipeline(const Work work, network::zeromq::Message&& msg) noexcept
+        -> void final;
+    auto do_shutdown() noexcept -> void final;
+    auto do_startup() noexcept -> void final;
+    auto work() noexcept -> int final;
+    auto to_str(Work) const noexcept -> std::string final;
+
 private:
     enum class State {
         normal,
@@ -116,11 +124,8 @@ private:
     block::Position best_position_;
     block::Position current_position_;
 
-    auto calculate_next_block() noexcept -> bool;
-    auto do_shutdown() noexcept -> void final;
-    auto do_startup() noexcept -> void final;
+    auto calculate_next_block() noexcept -> int;
     auto find_best_position(block::Position candidate) noexcept -> void;
-    auto pipeline(const Work work, Message&& msg) noexcept -> void final;
     auto process_block(network::zeromq::Message&& in) noexcept -> void;
     auto process_block(block::Position&& position) noexcept -> void;
     auto process_reindex(network::zeromq::Message&& in) noexcept -> void;
@@ -134,6 +139,5 @@ private:
         const block::Position& previousCfheader,
         const block::Position& previousCfilter,
         const block::Position& newTip) noexcept -> void;
-    auto work() noexcept -> bool final;
 };
 }  // namespace opentxs::blockchain::node::filteroracle

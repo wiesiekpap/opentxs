@@ -38,10 +38,10 @@ static_assert(
     periodicThreadName.size() <= MAX_THREAD_NAME_SIZE,
     "name is too long");
 
-constexpr std::string_view balanceOracleThreadName{"BalOrcl\0"};
-static_assert(
-    balanceOracleThreadName.size() <= MAX_THREAD_NAME_SIZE,
-    "name is too long");
+// constexpr std::string_view balanceOracleThreadName{"BalOrcl\0"};
+// static_assert(
+//     balanceOracleThreadName.size() <= MAX_THREAD_NAME_SIZE,
+//     "name is too long");
 
 constexpr std::string_view dhtNymThreadName{"DHTnym\0"};
 static_assert(
@@ -228,10 +228,10 @@ static_assert(
     messageProcessorThreadName.size() <= MAX_THREAD_NAME_SIZE,
     "name is too long");
 
-constexpr std::string_view workerThreadName{"Worker\0"};
-static_assert(
-    workerThreadName.size() <= MAX_THREAD_NAME_SIZE,
-    "name is too long");
+// constexpr std::string_view workerThreadName{"Worker\0"};
+// static_assert(
+//     workerThreadName.size() <= MAX_THREAD_NAME_SIZE,
+//     "name is too long");
 
 constexpr std::string_view sendMonitorThreadName{"SendMonitor\0"};
 static_assert(
@@ -248,11 +248,11 @@ static_assert(
     RPCTaskThreadName.size() <= MAX_THREAD_NAME_SIZE,
     "name is too long");
 
-constexpr std::string_view blockchainAccountActivityThreadName{
-    "BCAccountActv\0"};
-static_assert(
-    blockchainAccountActivityThreadName.size() <= MAX_THREAD_NAME_SIZE,
-    "name is too long");
+// constexpr std::string_view blockchainAccountActivityThreadName{
+//     "BCAccountActv\0"};
+// static_assert(
+//     blockchainAccountActivityThreadName.size() <= MAX_THREAD_NAME_SIZE,
+//     "name is too long");
 
 constexpr std::string_view widgetThreadName{"Widget\0"};
 static_assert(
@@ -277,13 +277,13 @@ static_assert(
 
 constexpr std::string_view asioTransmitThreadName{"AsioTransmit\0"};
 static_assert(
-        asioTransmitThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    asioTransmitThreadName.size() <= MAX_THREAD_NAME_SIZE,
     "name is too long");
 
-constexpr std::string_view P2PClientThreadName{"P2PClient\0"};
-static_assert(
-    P2PClientThreadName.size() <= MAX_THREAD_NAME_SIZE,
-    "name is too long");
+// constexpr std::string_view P2PClientThreadName{"P2PClient\0"};
+// static_assert(
+//     P2PClientThreadName.size() <= MAX_THREAD_NAME_SIZE,
+//     "name is too long");
 
 constexpr std::string_view P2PServerThreadName{"P2PServer\0"};
 static_assert(

@@ -54,6 +54,7 @@
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/StorageThread.pb.h"
 #include "serialization/protobuf/StorageThreadItem.pb.h"
+#include "util/tuning.hpp"
 
 template class std::tuple<
     opentxs::OTIdentifier,
@@ -85,7 +86,7 @@ ActivityThread::ActivityThread(
     const Identifier& threadID,
     const SimpleCallback& cb) noexcept
     : ActivityThreadList(api, nymID, cb, false)
-    , Worker(api, 100ms)
+    , Worker(api, "ActivityThread")
     , threadID_(threadID)
     , self_contact_(api.Contacts().NymToContact(primary_id_))
     , contacts_()
@@ -105,6 +106,7 @@ ActivityThread::ActivityThread(
         UnallocatedCString{api.Endpoints().MessageLoaded()},
         UnallocatedCString{api.Endpoints().TaskComplete()},
     });
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -861,7 +863,7 @@ auto ActivityThread::startup() noexcept -> void
     trigger();
 }
 
-auto ActivityThread::state_machine() noexcept -> bool
+auto ActivityThread::state_machine() noexcept -> int
 {
     auto again{false};
 
@@ -872,7 +874,7 @@ auto ActivityThread::state_machine() noexcept -> bool
         switch (value) {
             case otx::client::Messagability::READY: {
 
-                return false;
+                return SM_ActivityThread_fast;
             }
             case otx::client::Messagability::UNREGISTERED: {
 
@@ -883,7 +885,7 @@ auto ActivityThread::state_machine() noexcept -> bool
         }
     }
 
-    return again;
+    return again ? SM_ActivityThread_fast : SM_ActivityThread_slow;
 }
 
 auto ActivityThread::ThreadID() const noexcept -> UnallocatedCString

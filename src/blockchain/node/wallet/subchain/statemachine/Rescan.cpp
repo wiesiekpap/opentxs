@@ -35,6 +35,7 @@
 #include "opentxs/util/Types.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -400,7 +401,7 @@ auto Rescan::Imp::stop() const noexcept -> block::Height
     return stopHeight;
 }
 
-auto Rescan::Imp::work() noexcept -> bool
+auto Rescan::Imp::work() noexcept -> int
 {
     auto post = ScopeGuard{[&] {
         if (last_scanned_.has_value()) {
@@ -422,7 +423,7 @@ auto Rescan::Imp::work() noexcept -> bool
     if (false == parent_.scan_dirty_) {
         log_(OT_PRETTY_CLASS())(name_)(" rescan is not necessary").Flush();
 
-        return false;
+        return SM_off;
     }
 
     if (rescan_finished()) {
@@ -431,7 +432,7 @@ auto Rescan::Imp::work() noexcept -> bool
             " rescan has caught up to current filter tip")
             .Flush();
 
-        return false;
+        return SM_off;
     }
 
     auto highestTested = current();
@@ -443,7 +444,7 @@ auto Rescan::Imp::work() noexcept -> bool
             "beyond height ")(highestTested.height_)
             .Flush();
 
-        return false;
+        return SM_off;
     }
 
     auto dirty = Vector<ScanStatus>{get_allocator()};
@@ -484,7 +485,7 @@ auto Rescan::Imp::work() noexcept -> bool
             .Flush();
     }
 
-    return can_advance();
+    return can_advance() ? SM_Rescan_fast : SM_Rescan_slow;
 }
 }  // namespace opentxs::blockchain::node::wallet
 

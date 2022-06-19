@@ -28,6 +28,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::factory
 {
@@ -50,12 +51,13 @@ MessagableList::MessagableList(
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : MessagableListList(api, nymID, cb, false)
-    , Worker(api, {})
+    , Worker(api, "MessagableList")
     , owner_contact_id_(Widget::api_.Contacts().ContactID(nymID))
 {
     init_executor(
         {UnallocatedCString{api.Endpoints().ContactUpdate()},
          UnallocatedCString{api.Endpoints().NymDownload()}});
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -113,7 +115,7 @@ auto MessagableList::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto MessagableList::state_machine() noexcept -> bool { return false; }
+auto MessagableList::state_machine() noexcept -> int { return SM_off; }
 
 auto MessagableList::shut_down() noexcept -> void
 {

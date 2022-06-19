@@ -115,7 +115,7 @@ public:
 
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -147,7 +147,6 @@ private:
     auto trigger_state_machine() const noexcept -> void;
     auto update_tip(const Position& position, const int&) const noexcept
         -> void;
-
     auto download() noexcept -> void;
     auto process_position(const zmq::Message& in) noexcept -> void;
     auto process_position(const Position& pos) noexcept -> void;
@@ -155,5 +154,4 @@ private:
     auto queue_processing(DownloadedData&& data) noexcept -> void;
     auto zmq_thread() noexcept -> void;
 };
-
 }  // namespace opentxs::blockchain::node::base

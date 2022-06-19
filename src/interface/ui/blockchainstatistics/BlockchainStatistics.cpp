@@ -43,6 +43,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
+#include "util/tuning.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -65,7 +66,7 @@ BlockchainStatistics::BlockchainStatistics(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     : BlockchainStatisticsList(api, api.Factory().Identifier(), cb, false)
-    , Worker(api, {})
+    , Worker(api, "BlockchainStatistics")
     , blockchain_(api.Network().Blockchain())
     , cache_()
     , timer_(api.Network().Asio().Internal().GetTimer())
@@ -79,6 +80,7 @@ BlockchainStatistics::BlockchainStatistics(
         UnallocatedCString{api.Endpoints().BlockchainStateChange()},
         UnallocatedCString{api.Endpoints().BlockchainWalletUpdated()},
     });
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -227,7 +229,7 @@ auto BlockchainStatistics::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainStatistics::state_machine() noexcept -> bool { return false; }
+auto BlockchainStatistics::state_machine() noexcept -> int { return SM_off; }
 
 auto BlockchainStatistics::shut_down() noexcept -> void
 {

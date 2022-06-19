@@ -23,6 +23,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -54,7 +55,7 @@ public:
 
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -79,5 +80,4 @@ private:
     auto process_reset(const zmq::Message& in) noexcept -> void;
     auto queue_processing(DownloadedData&& data) noexcept -> void;
 };
-
 }  // namespace opentxs::blockchain::node::implementation

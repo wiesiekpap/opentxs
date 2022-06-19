@@ -87,7 +87,8 @@ public:
     auto Disable(const blockchain::Type type) const noexcept -> bool final;
     auto Enable(const blockchain::Type type) const noexcept -> bool final;
     auto EnabledCount() const noexcept -> std::size_t final;
-    auto EnabledChains() const noexcept -> UnallocatedSet<blockchain::Type> final;
+    auto EnabledChains() const noexcept
+        -> UnallocatedSet<blockchain::Type> final;
     auto Set(EnabledCallback&& cb) const noexcept -> void final;
 
     BlockchainSelection(
@@ -103,7 +104,7 @@ public:
     ~BlockchainSelection() final;
 
     auto pipeline(Message&& in) noexcept -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;

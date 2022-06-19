@@ -43,6 +43,8 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/ByteLiterals.hpp"
+#include "util/threadutil.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::blockoracle
 {
@@ -117,7 +119,6 @@ auto Cache::FinishBatch(const BatchID id) noexcept -> void
     } else {
         LogError()(OT_PRETTY_CLASS())("batch")(id)(" does not exist").Flush();
     }
-
     publish_download_queue();
 }
 
@@ -380,6 +381,9 @@ auto Cache::Request(const Vector<block::Hash>& hashes) noexcept
         }
 
         if (auto pBlock = db_.BlockLoadBitcoin(block); bool(pBlock)) {
+            std::cerr
+                << ThreadMonitor::get_name()
+                << " QQQ Cache::Request about to push prefulfilled future\n";
             // TODO this should be checked in the block factory function
             OT_ASSERT(pBlock->ID() == block);
 
@@ -451,6 +455,7 @@ auto Cache::Request(const Vector<block::Hash>& hashes) noexcept
 auto Cache::Shutdown() noexcept -> void
 {
     if (running_) {
+        std::cerr << ThreadMonitor::get_name() << " Cache::Shutdown\n";
         running_ = false;
         mem_.clear();
 
@@ -464,9 +469,9 @@ auto Cache::Shutdown() noexcept -> void
     }
 }
 
-auto Cache::StateMachine() noexcept -> bool
+auto Cache::StateMachine() noexcept -> int
 {
-    if (!running_) { return false; }
+    if (!running_) { return SM_off; }
 
     LogVerbose()(OT_PRETTY_CLASS())(print(chain_))(" download queue contains ")(
         pending_.size())(" blocks.")
@@ -497,6 +502,6 @@ auto Cache::StateMachine() noexcept -> bool
 
     if (!blockList.empty()) { node_.RequestBlocks(blockList); }
 
-    return !pending_.empty();
+    return pending_.empty() ? SM_Cache_slow : SM_Cache_fast;
 }
 }  // namespace opentxs::blockchain::node::blockoracle

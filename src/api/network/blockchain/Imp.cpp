@@ -40,8 +40,8 @@
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "util/Thread.hpp"
 #include "util/Work.hpp"
+#include "util/threadutil.hpp"
 
 namespace opentxs::api::network
 {
@@ -114,8 +114,7 @@ BlockchainImp::BlockchainImp(
                [socket = &block_queue_out_](auto&& m) {
                    socket->SendDeferred(std::move(m));
                }},
-          },
-          blockchainThreadName))
+          }))
     , active_peer_updates_([&] {
         auto out = zmq.PublishSocket();
         const auto listen = out->Start(endpoints.BlockchainPeer().data());
@@ -445,7 +444,6 @@ auto BlockchainImp::ReportProgress(
     work.AddFrame(chain);
     work.AddFrame(current);
     work.AddFrame(target);
-
     sync_updates_->Send(std::move(work));
 }
 

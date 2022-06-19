@@ -38,7 +38,7 @@ FilterOracle::HeaderDownloader::HeaderDownloader(
           "cfheader",
           20000,
           10000)
-    , HeaderWorker(api, 20ms)
+    , HeaderWorker(api, std::string{"Header downloader"})
     , db_(db)
     , header_(header)
     , node_(node)
@@ -197,7 +197,6 @@ auto FilterOracle::HeaderDownloader::queue_processing(
 
     OT_ASSERT(saved);
 }
-
 auto FilterOracle::HeaderDownloader::pipeline(zmq::Message&& in) -> void
 {
     if (!running_.load()) { return; }
@@ -232,9 +231,11 @@ auto FilterOracle::HeaderDownloader::pipeline(zmq::Message&& in) -> void
         }
     }
 }
-auto FilterOracle::HeaderDownloader::state_machine() noexcept -> bool
+auto FilterOracle::HeaderDownloader::state_machine() noexcept -> int
 {
-    return HeaderDM::state_machine();
+    tdiag("HeaderDownloader::state_machine");
+    return HeaderDM::state_machine() ? SM_HeaderDownloader_fast
+                                     : SM_HeaderDownloader_slow;
 }
 auto FilterOracle::HeaderDownloader::shut_down() noexcept -> void
 {

@@ -44,6 +44,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/tuning.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -68,7 +69,7 @@ AccountList::AccountList(
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : AccountListList(api, nymID, cb, false)
-    , Worker(api, {})
+    , Worker(api, "AccountList")
     , chains_()
 {
     // TODO monitor for notary nym changes since this may affect custodial
@@ -77,6 +78,7 @@ AccountList::AccountList(
         UnallocatedCString{api.Endpoints().AccountUpdate()},
         UnallocatedCString{api.Endpoints().BlockchainAccountCreated()},
     });
+    start();
     pipeline_.ConnectDealer(api.Endpoints().BlockchainBalance(), [](auto) {
         return MakeWork(Work::init);
     });
@@ -285,7 +287,7 @@ auto AccountList::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto AccountList::state_machine() noexcept -> bool { return false; }
+auto AccountList::state_machine() noexcept -> int { return SM_off; }
 
 auto AccountList::shut_down() noexcept -> void
 {

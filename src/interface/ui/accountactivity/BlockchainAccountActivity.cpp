@@ -62,7 +62,7 @@
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Container.hpp"
-#include "util/Thread.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::factory
 {
@@ -98,8 +98,7 @@ BlockchainAccountActivity::BlockchainAccountActivity(
           [this](auto&& in) { pipeline_.Push(std::move(in)); }))
     , balance_socket_(Widget::api_.Network().ZeroMQ().DealerSocket(
           balance_cb_,
-          network::zeromq::socket::Direction::Connect,
-          blockchainAccountActivityThreadName))
+          network::zeromq::socket::Direction::Connect))
     , progress_()
     , height_(0)
 {
@@ -116,6 +115,7 @@ BlockchainAccountActivity::BlockchainAccountActivity(
         UnallocatedCString{api.Endpoints().BlockchainTransactions(nymID)},
         UnallocatedCString{api.Endpoints().ContactUpdate()},
     });
+    start();
     balance_socket_->Send([&] {
         using Job = api::crypto::blockchain::BalanceOracleJobs;
         auto work = network::zeromq::tagged_message(Job::registration);
@@ -238,9 +238,9 @@ auto BlockchainAccountActivity::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainAccountActivity::state_machine() noexcept -> bool
+auto BlockchainAccountActivity::state_machine() noexcept -> int
 {
-    return false;
+    return SM_off;
 }
 
 auto BlockchainAccountActivity::shut_down() noexcept -> void

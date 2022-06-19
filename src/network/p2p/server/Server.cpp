@@ -61,7 +61,8 @@
 namespace opentxs::network::p2p
 {
 Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
-    : api_(api)
+    : Reactor("Server", 2)
+    , api_(api)
     , zmq_(zmq)
     , handle_(zmq_.Internal().MakeBatch([&] {
         auto out = Vector<zeromq::socket::Type>{};
@@ -81,10 +82,10 @@ Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
     }())
     , external_callback_(
           batch_.listen_callbacks_.emplace_back(zeromq::ListenCallback::Factory(
-              [this](auto&& msg) { process_external(std::move(msg)); })))
+              [this](auto&& msg) { post(std::move(msg), 1); })))
     , internal_callback_(
           batch_.listen_callbacks_.emplace_back(zeromq::ListenCallback::Factory(
-              [this](auto&& msg) { process_internal(std::move(msg)); })))
+              [this](auto&& msg) { post(std::move(msg), 0); })))
     , sync_([&]() -> auto& {
         auto& out = batch_.sockets_.at(0);
         const auto rc = out.SetExposedUntrusted();
@@ -177,7 +178,28 @@ Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
     , gate_()
 {
     LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(batch_.id_).Flush();
+    tdiag("About to start");
+    start();
+    thread_->SetName("SvrSkt");
 }
+
+auto Server::Imp::handle(network::zeromq::Message&& in, unsigned idx) noexcept
+    -> void
+{
+    switch (idx) {
+        case 0:
+            process_internal(std::move(in));
+            break;
+        case 1:
+            process_external(std::move(in));
+            break;
+        default:
+            LogTrace()(OT_PRETTY_CLASS())("Invalid reactor job index ")(idx)
+                .Flush();
+    }
+}
+
+auto Server::Imp::last_job_str() const noexcept -> std::string { return {}; }
 
 auto Server::Imp::process_external(zeromq::Message&& incoming) noexcept -> void
 {
@@ -310,7 +332,9 @@ auto Server::Imp::process_sync(
 
 Server::Imp::~Imp()
 {
+    tdiag("Server::Imp::~Imp");
     gate_.shutdown();
+    stop();
     handle_.Release();
 }
 }  // namespace opentxs::network::p2p

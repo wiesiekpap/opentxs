@@ -33,6 +33,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::factory
 {
@@ -55,13 +56,14 @@ ContactList::ContactList(
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : ContactListList(api, nymID, cb, false)
-    , Worker(api, {})
+    , Worker(api, "ContactList")
     , owner_contact_id_(Widget::api_.Contacts().ContactID(nymID))
 {
     OT_ASSERT(false == owner_contact_id_->empty());
 
     process_contact(owner_contact_id_);
     init_executor({UnallocatedCString{api.Endpoints().ContactUpdate()}});
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -199,7 +201,7 @@ auto ContactList::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto ContactList::state_machine() noexcept -> bool { return false; }
+auto ContactList::state_machine() noexcept -> int { return SM_off; }
 
 auto ContactList::shut_down() noexcept -> void
 {
