@@ -629,6 +629,7 @@ auto Regtest_fixture_base::Connect(const b::p2p::Address& address) noexcept
         const auto& client =
             sync_server_.Network().Blockchain().GetChain(test_chain_);
         const auto added = client.AddPeer(address);
+        std::cerr << "StartSyncServer\n";
         const auto started =
             sync_server_.Network().Blockchain().StartSyncServer(
                 sync_server_sync_,
@@ -814,26 +815,37 @@ auto Regtest_fixture_base::Mine(
     const Generator& gen,
     const ot::UnallocatedVector<Transaction>& extra) noexcept -> bool
 {
+    std::cerr << "Regtest_fixture_base::Mine 1\n";
     const auto targetHeight = ancestor + static_cast<Height>(count);
     auto blocks = ot::UnallocatedVector<BlockListener::Future>{};
     auto wallets = ot::UnallocatedVector<WalletListener::Future>{};
     blocks.reserve(client_count_);
+    std::cerr << "Regtest_fixture_base::Mine 2\n";
     wallets.reserve(client_count_);
+    std::cerr << "Regtest_fixture_base::Mine 3 client_count_=" << client_count_
+              << "\n";
 
     if (0 < client_count_) {
         blocks.emplace_back(block_1_.GetFuture(targetHeight));
         wallets.emplace_back(wallet_1_.GetFuture(targetHeight));
     }
+    std::cerr << "Regtest_fixture_base::Mine 4 client_count_=" << client_count_
+              << "\n";
 
     if (1 < client_count_) {
         blocks.emplace_back(block_2_.GetFuture(targetHeight));
         wallets.emplace_back(wallet_2_.GetFuture(targetHeight));
     }
 
+    std::cerr << "Regtest_fixture_base::Mine 5\n";
+
     const auto& network = miner_.Network().Blockchain().GetChain(test_chain_);
     const auto& headerOracle = network.HeaderOracle();
+    std::cerr << "Regtest_fixture_base::Mine 6\n";
     auto previousHeader =
         headerOracle.LoadHeader(headerOracle.BestHash(ancestor))->as_Bitcoin();
+
+    std::cerr << "Regtest_fixture_base::Mine 7\n";
 
     for (auto i = std::size_t{0u}; i < count; ++i) {
         auto promise = mined_blocks_.allocate();
@@ -863,6 +875,7 @@ auto Regtest_fixture_base::Mine(
 
         previousHeader = block->Header().as_Bitcoin();
     }
+    std::cerr << "Regtest_fixture_base::Mine 8\n";
 
     auto output = true;
     constexpr auto limit = std::chrono::minutes(5);
@@ -877,6 +890,7 @@ auto Regtest_fixture_base::Mine(
 
         output &= (hash == previousHeader.Hash());
     }
+    std::cerr << "Regtest_fixture_base::Mine 9\n";
 
     for (auto& future : wallets) {
         OT_ASSERT(future.wait_for(limit) == Status::ready);
@@ -887,6 +901,7 @@ auto Regtest_fixture_base::Mine(
 
         output &= (height == targetHeight);
     }
+    std::cerr << "Regtest_fixture_base::Mine 10\n";
 
     if (output) { height_ = targetHeight; }
 
@@ -1840,13 +1855,18 @@ struct SyncSubscriber::Imp {
 
     auto check_update(ot::network::zeromq::Message&& in) noexcept -> void
     {
+        std::cerr << "check_update 1\n";
         namespace bcsync = ot::network::p2p;
         const auto base = api_.Factory().BlockchainSyncMessage(in);
+        std::cerr << "check_update 2\n";
 
         try {
             const auto& data = base->asData();
+            std::cerr << "check_update 3\n";
             const auto& state = data.State();
+            std::cerr << "check_update 4\n";
             const auto& blocks = data.Blocks();
+            std::cerr << "check_update 5\n";
             const auto index = updated_++;
             const auto future = cache_.get(index);
             const auto hash = future.get();
@@ -1886,7 +1906,8 @@ struct SyncSubscriber::Imp {
     }
     auto wait_for_counter(const bool hard = true) noexcept -> bool
     {
-        const auto limit = hard ? 300s : 10s;
+        // TODO restor 300s
+        const auto limit = hard ? 1300s : 10s;
         auto start = ot::Clock::now();
         const auto& expected = parent_.expected_;
 

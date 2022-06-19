@@ -28,6 +28,7 @@
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/Reactor.hpp"
 #include "util/Work.hpp"
 #include "util/threadutil.hpp"
 
@@ -50,7 +51,7 @@ class Client;
 namespace opentxs
 {
 template <typename API = api::session::Client>
-class Worker : public ThreadDisplay
+class Worker : public Reactor
 {
 protected:
     virtual auto pipeline(network::zeromq::Message&& in) -> void = 0;
@@ -111,7 +112,8 @@ protected:
         const API& api,
         const std::chrono::milliseconds rateLimit,
         const Vector<network::zeromq::SocketData>& extra = {}) noexcept
-        : api_{api}
+        : Reactor(LogTrace(), "dummy")
+        , api_{api}
         , rate_limit_{rateLimit}
         , running_{true}
         , shutdown_promise_{}
@@ -121,15 +123,7 @@ protected:
         , state_machine_queued_{false}
         , thread_register_once_{}
         , pipeline_{api.Network().ZeroMQ().Internal().Pipeline(
-              [this](auto&& in) {
-                  std::call_once(thread_register_once_, [this]() {
-                      auto thread_handle = ThreadMonitor::add_current_thread(
-                          ThreadMonitor::default_name(get_class()), "");
-                      set_host_thread(thread_handle);
-                  });
-
-                  if (running_) pipeline(std::move(in));
-              },
+              [this](auto&& in) { accept_message(std::move(in)); },
               {},
               {},
               {},
@@ -137,9 +131,10 @@ protected:
     {
         LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(pipeline_.BatchID())
             .Flush();
+        start();
     }
 
-    virtual ~Worker()
+    ~Worker() override
     {
         protect_shutdown([this] { close_pipeline(); });
     }
@@ -165,7 +160,27 @@ protected:
         }
     }
 
+    // Invoked by Reactor.
+    auto handle(network::zeromq::Message&& in) noexcept -> void final
+    {
+        if (running_) pipeline(std::move(in));
+    }
+
 private:
+    auto last_job_str() const noexcept -> std::string override
+    {
+        // Not implementing it in Worker's subclasses as they are
+        // likely to be migrated to Actor rather than debugged.
+        return "";
+    }
+    // Pass message to Reactor.
+    // Introduced for placing diagnostics without having to touch
+    //  Reactor, which is common between Worker and Actor.
+    void accept_message(network::zeromq::Message&& in)
+    {
+        enqueue(std::move(in));
+    }
+
     auto rate_limit_state_machine() const noexcept
     {
         auto outstanding =

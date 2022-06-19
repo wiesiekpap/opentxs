@@ -125,10 +125,10 @@ auto DeterministicStateData::flush_cache(
 
         if (cb) { cb(positions); }
     } else {
-        log(OT_PRETTY_CLASS())(name_)(" no cached transactions").Flush();
+        log(OT_PRETTY_CLASS())(name())(" no cached transactions").Flush();
     }
 
-    log(OT_PRETTY_CLASS())(name_)(" finished flushing cache in ")(
+    log(OT_PRETTY_CLASS())(name())(" finished flushing cache in ")(
         std::chrono::duration_cast<std::chrono::nanoseconds>(
             Clock::now() - start))
         .Flush();
@@ -174,7 +174,7 @@ auto DeterministicStateData::handle_confirmed_matches(
     }
 
     const auto buildTransactionMap = Clock::now();
-    log(OT_PRETTY_CLASS())(name_)(" adding ")(transactions.size())(
+    log(OT_PRETTY_CLASS())(name())(" adding ")(transactions.size())(
         " confirmed transaction(s) to cache")
         .Flush();
     cache_.modify([this, &log, position, matches = std::move(transactions)](
@@ -188,12 +188,12 @@ auto DeterministicStateData::handle_confirmed_matches(
 
             for (auto& [txid, newMatchData] : matches) {
                 if (auto e = existing.find(txid); existing.end() == e) {
-                    log(OT_PRETTY_CLASS())(name_)(" adding transaction ")
+                    log(OT_PRETTY_CLASS())(name())(" adding transaction ")
                         .asHex(txid)(" to cache")
                         .Flush();
                     existing.emplace(std::move(txid), std::move(newMatchData));
                 } else {
-                    log(OT_PRETTY_CLASS())(name_)(" updating transaction ")
+                    log(OT_PRETTY_CLASS())(name())(" updating transaction ")
                         .asHex(txid)(" metadata")
                         .Flush();
                     auto& [eIndices, eTX] = e->second;
@@ -211,13 +211,13 @@ auto DeterministicStateData::handle_confirmed_matches(
         }
     });
     const auto updateCache = Clock::now();
-    log(OT_PRETTY_CLASS())(name_)(" time to process matches: ")(
+    log(OT_PRETTY_CLASS())(name())(" time to process matches: ")(
         std::chrono::nanoseconds{processMatches - start})
         .Flush();
-    log(OT_PRETTY_CLASS())(name_)(" time to build transaction map: ")(
+    log(OT_PRETTY_CLASS())(name())(" time to build transaction map: ")(
         std::chrono::nanoseconds{buildTransactionMap - processMatches})
         .Flush();
-    log(OT_PRETTY_CLASS())(name_)(" time to update cache: ")(
+    log(OT_PRETTY_CLASS())(name())(" time to update cache: ")(
         std::chrono::nanoseconds{updateCache - buildTransactionMap})
         .Flush();
 }
@@ -246,7 +246,7 @@ auto DeterministicStateData::handle_mempool_matches(
     OT_ASSERT(updated);  // TODO handle database errors
 
     element_cache_.lock()->Add(std::move(txoCreated), {});
-    log_(OT_PRETTY_CLASS())(name_)(
+    log_(OT_PRETTY_CLASS())(name())(
         " finished processing unconfirmed transaction ")(tx.ID().asHex())
         .Flush();
 }
@@ -280,7 +280,7 @@ auto DeterministicStateData::process(
                 const auto& key = *pKey;
 
                 if (key.PublicKey() == script.Pubkey().value()) {
-                    log_(OT_PRETTY_CLASS())(name_)(" element ")(
+                    log_(OT_PRETTY_CLASS())(name())(" element ")(
                         index)(": P2PK match found for ")(print(node_.Chain()))(
                         " transaction ")(txid->asHex())(" output ")(i)(" via ")(
                         api_.Factory().DataFromBytes(key.PublicKey())->asHex())
@@ -300,7 +300,7 @@ auto DeterministicStateData::process(
                 OT_ASSERT(script.PubkeyHash().has_value());
 
                 if (hash->Bytes() == script.PubkeyHash().value()) {
-                    log_(OT_PRETTY_CLASS())(name_)(" element ")(
+                    log_(OT_PRETTY_CLASS())(name())(" element ")(
                         index)(": P2PKH match found for ")(
                         print(node_.Chain()))(" transaction ")(txid->asHex())(
                         " output ")(i)(" via ")(hash->asHex())
@@ -320,7 +320,7 @@ auto DeterministicStateData::process(
                 OT_ASSERT(script.PubkeyHash().has_value());
 
                 if (hash->Bytes() == script.PubkeyHash().value()) {
-                    log_(OT_PRETTY_CLASS())(name_)(" element ")(
+                    log_(OT_PRETTY_CLASS())(name())(" element ")(
                         index)(": P2WPKH match found for ")(
                         print(node_.Chain()))(" transaction ")(txid->asHex())(
                         " output ")(i)(" via ")(hash->asHex())
@@ -354,7 +354,7 @@ auto DeterministicStateData::process(
                 const auto& key = *pKey;
 
                 if (key.PublicKey() == script.MultisigPubkey(0).value()) {
-                    log_(OT_PRETTY_CLASS())(name_)(" element ")(index)(": ")(
+                    log_(OT_PRETTY_CLASS())(name())(" element ")(index)(": ")(
                         m.value())(" of ")(n.value())(" P2MS match found for ")(
                         print(node_.Chain()))(" transaction ")(txid->asHex())(
                         " output ")(i)(" via ")(

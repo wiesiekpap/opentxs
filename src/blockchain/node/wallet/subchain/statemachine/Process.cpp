@@ -261,7 +261,7 @@ auto Process::Imp::process_block(block::Hash&& hash) noexcept -> void
 {
     if (auto index = downloading_index_.find(hash);
         downloading_index_.end() != index) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" processing block ")(
+        log_(OT_PRETTY_CLASS())(parent_.name())(" processing block ")(
             hash.asHex())
             .Flush();
         auto& data = index->second;
@@ -310,7 +310,7 @@ auto Process::Imp::process_mempool(Message&& in) noexcept -> void
     // as mempool transactions even if they are erroneously received from peers
     // on a subsequent run of the application
     if (0u < txid_cache_.count(txid)) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" transaction ")(txid->asHex())(
+        log_(OT_PRETTY_CLASS())(parent_.name())(" transaction ")(txid->asHex())(
             " already process as confirmed")
             .Flush();
 
@@ -325,13 +325,13 @@ auto Process::Imp::process_mempool(Message&& in) noexcept -> void
 auto Process::Imp::process_process(block::Position&& pos) noexcept -> void
 {
     if (const auto i = processing_.find(pos); i == processing_.end()) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" block ")(print(pos))(
+        log_(OT_PRETTY_CLASS())(parent_.name())(" block ")(print(pos))(
             " has been removed from the processing list due to reorg")
             .Flush();
     } else {
         --parent_.process_queue_;
         processing_.erase(i);
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" finished processing block ")(
+        log_(OT_PRETTY_CLASS())(parent_.name())(" finished processing block ")(
             print(pos))
             .Flush();
     }
@@ -341,14 +341,14 @@ auto Process::Imp::process_process(block::Position&& pos) noexcept -> void
 
 auto Process::Imp::process_reprocess(Message&& msg) noexcept -> void
 {
-    log_(OT_PRETTY_CLASS())(parent_.name_)(" received re-process request")
+    log_(OT_PRETTY_CLASS())(parent_.name())(" received re-process request")
         .Flush();
     auto dirty = Vector<ScanStatus>{get_allocator()};
     extract_dirty(parent_.api_, msg, dirty);
     parent_.process_queue_ += dirty.size();
 
     for (auto& [type, position] : dirty) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(
+        log_(OT_PRETTY_CLASS())(parent_.name())(
             " scheduling re-processing for block ")(opentxs::print(position))
             .Flush();
         auto future = parent_.node_.BlockOracle().LoadBitcoin(position.second);
@@ -359,13 +359,13 @@ auto Process::Imp::process_reprocess(Message&& msg) noexcept -> void
         // requests from the Scan we expedite them as much as is reasonable.
 
         if (ready == future.wait_for(1s)) {
-            log_(OT_PRETTY_CLASS())(parent_.name_)(" adding block ")(
+            log_(OT_PRETTY_CLASS())(parent_.name())(" adding block ")(
                 opentxs::print(position))(
                 " to front of process queue since it is already downloaded")
                 .Flush();
             ready_.emplace(std::move(position), future.get());
         } else {
-            log_(OT_PRETTY_CLASS())(parent_.name_)(" adding block ")(
+            log_(OT_PRETTY_CLASS())(parent_.name())(" adding block ")(
                 opentxs::print(position))(" to download queue")
                 .Flush();
             download(std::move(position), std::move(future));
@@ -379,7 +379,7 @@ auto Process::Imp::queue_downloads() noexcept -> void
 {
     while ((downloading_.size() < download_limit_) && (0u < waiting_.size())) {
         auto& position = waiting_.front();
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" adding block ")(
+        log_(OT_PRETTY_CLASS())(parent_.name())(" adding block ")(
             opentxs::print(position))(" to download queue")
             .Flush();
         download(std::move(position));
@@ -405,7 +405,7 @@ auto Process::Imp::queue_process() noexcept -> bool
         OT_ASSERT(processing_.end() != i);
 
         auto& [position, block] = *i;
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" adding block ")(
+        log_(OT_PRETTY_CLASS())(parent_.name())(" adding block ")(
             opentxs::print(position))(" to process queue")
             .Flush();
         parent_.api_.Network().Asio().Internal().Post(

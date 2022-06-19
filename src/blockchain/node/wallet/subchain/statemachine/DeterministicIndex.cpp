@@ -61,7 +61,7 @@ DeterministicIndex::DeterministicIndex(
 auto DeterministicIndex::need_index(const std::optional<Bip32Index>& current)
     const noexcept -> std::optional<Bip32Index>
 {
-    const auto& name = parent_.name_;
+    const auto& name = parent_.name();
     const auto generated = subaccount_.LastGenerated(parent_.subchain_);
 
     if (generated.has_value()) {
@@ -95,7 +95,7 @@ auto DeterministicIndex::process(
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
     auto elements = database::Wallet::ElementMap{&alloc};
     auto postcondition = ScopeGuard{[&] { done(std::move(elements)); }};
-    const auto& name = parent_.name_;
+    const auto& name = parent_.name();
     const auto& subchain = parent_.subchain_;
     const auto first =
         current.has_value() ? current.value() + 1u : Bip32Index{0u};

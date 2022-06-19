@@ -23,7 +23,6 @@
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "internal/util/Timer.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -63,18 +62,15 @@ namespace opentxs
 template <typename JobType>
 class Actor : public Reactor, virtual public Allocated
 {
-private:
-    std::atomic<bool> running_;
-
 public:
     using Message = network::zeromq::Message;
-
-    const CString name_;
 
     auto get_allocator() const noexcept -> allocator_type final
     {
         return pipeline_.get_allocator();
     }
+
+    const CString& name() const noexcept { return name_; }
 
 protected:
     // This interface used to be private and accessed through friend
@@ -86,12 +82,18 @@ protected:
     virtual auto work() noexcept -> bool = 0;
 
 protected:
-    using Direction = network::zeromq::socket::Direction;
-    using SocketType = network::zeromq::socket::Type;
-
-    const Log& log_;
-    network::zeromq::Pipeline pipeline_;
-    bool disable_automatic_processing_;
+    auto disable_automatic_processing(bool value) -> void
+    {
+        if (value == disable_automatic_processing_.exchange(value)) {
+            // No change
+            return;
+        }
+        if (value) {
+            // TODO
+        } else {
+            // TODO
+        }
+    }
 
     auto trigger() const noexcept -> void
     {
@@ -118,17 +120,6 @@ protected:
         }
         notify();
     }
-    // Deprecated, messages should no longer be received during reorg.
-    auto defer(Message&& message) noexcept -> void
-    {
-        // TODO investigate any occurrences of defer call,
-        // remove defer, cache_ and flush_cache.
-        cache_.emplace(std::move(message));
-        log_(name_)(" ")(__FUNCTION__)(": unexpected message!!!")(
-            ", investigate")
-            .Flush();
-    }
-
     auto do_init() noexcept -> void
     {
         log_(name_)(" ")(__FUNCTION__)(": initializing").Flush();
@@ -140,50 +131,30 @@ protected:
         state_machine_queued_.store(false);
         trigger_repeat_if(work());
     }
-    auto flush_cache() noexcept -> void
-    {
-        retry_.Cancel();
-
-        const auto count = cache_.size();
-
-        if (0u < count) {
-            log_(name_)(" ")(__FUNCTION__)(": flushing ")(cache_.size())(
-                " cached messages")
-                .Flush();
-        }
-
-        while (0u < cache_.size()) {
-            auto message = Message{std::move(cache_.front())};
-            cache_.pop();
-            handle_message(std::move(message));
-        }
-    }
 
 protected:
     auto shutdown_actor() noexcept -> void
     {
-        tdiag(dname(this), "CLOSE 1  XXXXXXXXXXXXXXXXXXXXXXX");
-        std::ostringstream os;
-        os << this;
-        tdiag(os.str());
+        tdiag(typeid(this), "CLOSE 1  XXXXXX");
+        tdiag("", static_cast<void*>(this));
 
         if (in_reactor_thread()) {
             do_shutdown();
-            tdiag(dname(this), "CLOSE 2A  XXXXXXXXXXXXXXXXXXXXXXX");
-            tdiag(os.str());
+            tdiag(typeid(this), "CLOSE 2R XXXXXX");
+            tdiag("", static_cast<void*>(this));
             pipeline_.Close();
         } else {
             if (auto previous = running_.exchange(false); previous) {
                 if (stop()) {
                     notify();
-                    wait_for_shutdown();
+                    wait_for_loop_exit();
                 }
                 do_shutdown();
-                tdiag(dname(this), "CLOSE 2B  XXXXXXXXXXXXXXXXXXXXXXX");
-                tdiag(os.str());
+                tdiag(typeid(this), "CLOSE 2A XXXXXX");
+                tdiag("", static_cast<void*>(this));
                 pipeline_.Close();
             } else {
-                tdiag(dname(this), "CLOSE 2C  XXXXXXXXXXXXXXXXXXXXXXX");
+                tdiag(typeid(this), "CLOSE 3A XXXXXX");
             }
         }
     }
@@ -217,7 +188,8 @@ protected:
         , last_executed_{Clock::now()}
         , cache_(alloc)
         , state_machine_queued_{false}
-        , retry_{api.Network().Asio().Internal().GetTimer()}
+        , last_job_{}
+
     {
         log_(name_)(" ")(__FUNCTION__)(": using ZMQ batch ")(
             pipeline_.BatchID())
@@ -226,21 +198,7 @@ protected:
         notify();
     }
 
-    ~Actor() override
-    {
-        std::ostringstream os{};
-        os << processing_thread_id();
-        tdiag("Actor::~Actor 1", os.str());
-        retry_.Cancel();
-        tdiag("Actor::~Actor 2", os.str());
-    }
-
-private:
-    const std::chrono::milliseconds rate_limit_;
-    Time last_executed_;
-    std::queue<Message, Deque<Message>> cache_;
-    mutable std::atomic<bool> state_machine_queued_;
-    Timer retry_;
+    ~Actor() override { tdiag("Actor::~Actor", processing_thread_id()); }
 
 private:
     auto rate_limit_state_machine() const noexcept
@@ -255,7 +213,6 @@ private:
             Sleep(wait);
         }
     }
-    // TODO remove when defer() is gone.
     auto decode_message_type(const network::zeromq::Message& in) noexcept(false)
     {
         const auto body = in.Body();
@@ -268,6 +225,7 @@ private:
         Work work{};
         try {
             work = body.at(0).as<Work>();
+            last_job_ = work;
         } catch (const std::out_of_range& e) {  // from FrameSection or
                                                 // deeper from std::vector
             log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
@@ -375,6 +333,38 @@ private:
     }
 
     // All received messages are queued for the reactor.
-    auto worker(Message&& in) noexcept -> void { enqueue(std::move(in)); }
+    auto worker(Message&& in) noexcept -> void
+    {
+        log_(name_)(" ")(__FUNCTION__)(": Message received").Flush();
+        enqueue(std::move(in));
+    }
+
+    virtual auto to_str(Work) const noexcept -> std::string = 0;
+    auto last_job_str() const noexcept -> std::string final
+    {
+        return to_str(last_job_);
+    }
+
+private:
+    std::atomic<bool> running_;
+    CString name_;
+
+protected:
+    using Direction = network::zeromq::socket::Direction;
+    using SocketType = network::zeromq::socket::Type;
+
+    const Log& log_;
+    network::zeromq::Pipeline pipeline_;
+
+private:
+    std::atomic<bool> disable_automatic_processing_;
+
+    const std::chrono::milliseconds rate_limit_;
+    Time last_executed_;
+    std::queue<Message, Deque<Message>> cache_;
+    mutable std::atomic<bool> state_machine_queued_;
+
+    // diagnostic
+    Work last_job_;
 };
 }  // namespace opentxs

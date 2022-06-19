@@ -50,18 +50,17 @@ auto ListenCallback::clone() const -> ListenCallback*
     return new ListenCallback(*callback_.lock());
 }
 
-auto ListenCallback::Deactivate() noexcept -> void
-{
-    //    auto rlock = rLock{execute_lock_};
-    //    *callback_.lock() = nullptr;
-    Replace(nullptr);
-    //    const_cast<ListenCallback&>(*this).Replace(null_);
-}
+auto ListenCallback::Deactivate() noexcept -> void { Replace(nullptr); }
 
 auto ListenCallback::Process(zeromq::Message&& message) const noexcept -> void
 {
     auto rlock = rLock{execute_lock_};
-    auto& cb = *callback_.lock();
+    // TODO this copy may be relatively costly.
+    // It is here to prevent execution of callback with the lock on,
+    // because Worker occasionally returns here asking recursively for the lock
+    // in order to remove the callback.
+    // Remove the copy when everything has been moved to Actor.
+    auto cb = *callback_.lock();
     cb(std::move(message));
 }
 

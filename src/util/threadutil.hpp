@@ -25,24 +25,10 @@
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
+#define TDIAG
 
-struct dstring {
-    explicit dstring(const char* data)
-        : str_{data}
-    {
-    }
-    std::string str_;
-};
-template <typename T>
-
-dstring dname(T*)
-{
-    std::string s = typeid(T).name();
-    return dstring(s.data());
-}
-
-#ifdef __linux
-using handle_type = std::uint64_t;
+#if defined(__linux) && defined(TDIAG)
+using handle_type = std::thread::native_handle_type;
 struct ThreadHandle {
     ThreadHandle();
     ThreadHandle(
@@ -128,18 +114,70 @@ public:
     static void show_all(std::ostream& os);
 
 protected:
-    void tdiag(std::string s1, std::string s2 = "") const noexcept;
-    void tdiag(dstring&& mangled, std::string s2 = "") const noexcept;
+    void tdiag(std::string&& s1) { ssdiag(std::move(s1)); }
+    template <typename S1, typename S2>
+    void tdiag(S1&& s1, S2&& s2, std::string&& tag = "####") const noexcept
+    {
+        if constexpr (std::is_same<
+                          typename std::decay<S1>::type,
+                          std::type_info>::value) {
+            tsdiag(std::move(s1), std::move(s2), std::move(tag));
+        } else {
+            if constexpr (std::is_same<
+                              typename std::decay<S2>::type,
+                              std::string>::value) {
+                ssdiag(std::move(s1), std::move(s2), std::move(tag));
+            } else {
+                std::ostringstream oss;
+                oss << s2;
+                ssdiag(std::move(s1), oss.str(), std::move(tag));
+            }
+        }
+    }
+    void tadiag(
+        std::string&& s1,
+        std::string&& s2 = "",
+        std::string&& tag = "##  ") const noexcept;
+    void tadiag(
+        const std::type_info& type,
+        std::string&& s2 = "",
+        std::string&& tag = "##  ") const noexcept;
     std::string get_class() const noexcept;
+    template <typename Functor>
+    bool time_it(Functor f, std::string tag = "", int max_ms = 5000)
+    {
+        auto tstart = std::chrono::system_clock::now();
+        f();
+        if (auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          std::chrono::system_clock::now() - tstart)
+                          .count();
+            ms > max_ms) {
+            diag_alert_ = true;
+            tdiag(std::move(tag), std::to_string(ms) + " ms");
+            return false;
+        }
+        return true;
+    }
 
     virtual ~ThreadDisplay();
 
 private:
+    void ssdiag(
+        std::string&& s1,
+        std::string&& s2 = "",
+        std::string&& tag = "####") const noexcept;
+    void tsdiag(
+        const std::type_info& type,
+        std::string&& s2 = "",
+        std::string&& tag = "####") const noexcept;
+
+private:
     static std::mutex diagmtx;
     std::optional<ThreadHandle> thread_handle_;
+    mutable std::atomic<bool> diag_alert_;
 };
 
-#else
+#else  // defined(__linux) && defined(TDIAG)
 
 using handle_type std::uint64_t;
 struct ThreadHandle {
@@ -179,11 +217,35 @@ public:
     void show_all(std::ostream& os) {}
 
 protected:
-    void tdiag(std::string, std::string = "") const noexcept {}
-    void tdiag(dstring&&, std::string = "") const noexcept {}
+    void tdiag(std::string&&, std::string&& = "", std::string&& = "")
+        const noexcept
+    {
+    }
+    void tdiag(const std::type_info&, std::string&& = "", std::string&& = "")
+        const noexcept
+    {
+    }
+    template <typename S>
+    void ttdiag(std::string&& s1, S&& s2, std::string&& tag = "####")
+        const noexcept
+    {
+    }
+    void tadiag(std::string&&, std::string&& = "", std::string&& = "")
+        const noexcept
+    {
+    }
+    void tadiag(const std::type_info&, std::string&& = "", std::string&& = "")
+        const noexcept
+    {
+    }
     std::string get_class() const noexcept { return {}; }
+    template <typename Functor>
+    static void time_it(Functor f, std::string = "", int = 5000)
+    {
+        f(a);
+    }
 };
 
-#endif
+#endif  // defined(__linux) && defined(TDIAG)
 
 }  // namespace opentxs

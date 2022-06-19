@@ -314,7 +314,7 @@ auto Regtest_fixture_simple::CreateClient(
     }
 
     std::cerr << "ABOUT TO WAIT 120s\n";
-    const auto status = done.wait_for(std::chrono::seconds(30));
+    const auto status = done.wait_for(std::chrono::minutes(2));
     std::cerr << "BACK AFTER 120s\n";
     const auto future = (std::future_status::ready == status);
 

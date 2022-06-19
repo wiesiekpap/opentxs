@@ -77,6 +77,10 @@ private:
     auto sProcessReorg(
         const Lock& headerOracleLock,
         const block::Position& parent) noexcept -> void;
+    network::zeromq::socket::Raw& to_process_;
+    std::optional<block::Position> last_scanned_;
+    std::optional<block::Position> filter_tip_;
+    bool enabled_;
 
 private:
     auto caught_up() const noexcept -> bool;

@@ -525,9 +525,7 @@ SubchainStateData::SubchainStateData(
       })
     , watchdog_(api_.Network().Asio().Internal().GetTimer())
 {
-    std::ostringstream oss;
-    oss << this;
-    tdiag("constructed 1, object:", oss.str());
+    tdiag("constructed 1, object:", static_cast<void*>(this));
     OT_ASSERT(false == owner_->empty());
     OT_ASSERT(false == id_->empty());
 }
@@ -559,9 +557,7 @@ SubchainStateData::SubchainStateData(
           network::zeromq::MakeArbitraryInproc(alloc.resource()),
           alloc)
 {
-    std::ostringstream oss;
-    oss << this;
-    tdiag("constructed 2, object:", oss.str());
+    tdiag("constructed 2, object:", static_cast<void*>(this));
 }
 
 auto SubchainStateData::ChangeState(
@@ -576,14 +572,12 @@ auto SubchainStateData::sChangeState(
     StateSequence reorg) noexcept -> bool
 {
     if (auto old = pending_state_.exchange(state); old == state) {
-        tdiag("ChangeState already good");
+        tdiag("ChangeState under way");
 
         return true;
     }
 
-    std::ostringstream oss;
-    oss << this;
-    tdiag("nonreentrant_ChangeState, object:", oss.str());
+    tdiag("sChangeState, object:", static_cast<void*>(this));
     auto output{false};
 
     switch (state) {
@@ -608,7 +602,7 @@ auto SubchainStateData::sChangeState(
     }
 
     if (false == output) {
-        LogError()(OT_PRETTY_CLASS())(name_)(" failed to change state from ")(
+        LogError()(OT_PRETTY_CLASS())(name())(" failed to change state from ")(
             print(state_))(" to ")(print(state))
             .Flush();
     }
@@ -659,9 +653,9 @@ auto SubchainStateData::clear_children() noexcept -> void
     tdiag("clear_children, children:", (have_children_ ? "YES" : "NO"));
     if (have_children_) {
         have_children_ = false;
-        std::ostringstream oss;
-        oss << this;
-        tdiag("SubchainStateData clear_children 1, object:", oss.str());
+        tdiag(
+            "SubchainStateData clear_children 1, object:",
+            static_cast<void*>(this));
 
         auto rc = scan_->ChangeState(JobState::shutdown, {});
 
@@ -683,7 +677,9 @@ auto SubchainStateData::clear_children() noexcept -> void
 
         OT_ASSERT(rc);
 
-        tdiag("SubchainStateData clear_children 2, object:", oss.str());
+        tdiag(
+            "SubchainStateData clear_children 2, object:",
+            static_cast<void*>(this));
 
         scan_.reset();
         process_.reset();
@@ -714,7 +710,7 @@ auto SubchainStateData::do_reorg(
     std::atomic_int& errors,
     const block::Position ancestor) noexcept -> void
 {
-    log_(OT_PRETTY_CLASS())(name_)(" processing reorg to ")(print(ancestor))
+    log_(OT_PRETTY_CLASS())(name())(" processing reorg to ")(print(ancestor))
         .Flush();
     const auto tip = db_.SubchainLastScanned(db_key_);
     // TODO use ancestor
@@ -725,13 +721,13 @@ auto SubchainStateData::do_reorg(
             headers.Internal().CalculateReorg(headerOracleLock, tip);
 
         if (0u == reorg.size()) {
-            log_(OT_PRETTY_CLASS())(name_)(
+            log_(OT_PRETTY_CLASS())(name())(
                 " no action required for this subchain")
                 .Flush();
 
             return;
         } else {
-            log_(OT_PRETTY_CLASS())(name_)(" ")(reorg.size())(
+            log_(OT_PRETTY_CLASS())(name())(" ")(reorg.size())(
                 " previously mined blocks have been invalidated")
                 .Flush();
         }
@@ -754,9 +750,8 @@ auto SubchainStateData::do_reorg(
             ++errors;
         }
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS())(
-            name_)(" header oracle claims existing tip ")(print(tip))(
-            " is invalid")
+        LogError()(OT_PRETTY_CLASS())(name())(
+            " header oracle claims existing tip ")(print(tip))(" is invalid")
             .Flush();
         ++errors;
     }
@@ -880,7 +875,7 @@ auto SubchainStateData::IndexElement(
     const Bip32Index index,
     database::Wallet::ElementMap& output) const noexcept -> void
 {
-    log_(OT_PRETTY_CLASS())(name_)(" element ")(
+    log_(OT_PRETTY_CLASS())(name())(" element ")(
         index)(" extracting filter matching patterns")
         .Flush();
     auto& list = output[index];
@@ -911,9 +906,16 @@ auto SubchainStateData::Init(boost::shared_ptr<SubchainStateData> me) noexcept
     signal_startup(me);
 }
 
+auto SubchainStateData::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto SubchainStateData::pipeline(const Work work, Message&& msg) noexcept
     -> void
 {
+    tadiag("pipeline ", std::string{print(work)});
+
     switch (state_) {
         case State::normal: {
             state_normal(work, std::move(msg));
@@ -958,7 +960,6 @@ auto SubchainStateData::ProcessBlock(
     const bitcoin::block::Block& block) const noexcept -> bool
 {
     const auto start = Clock::now();
-    const auto& name = name_;
     const auto& type = filter_type_;
     const auto& node = node_;
     const auto& filters = node.FilterOracleInternal();
@@ -1012,28 +1013,28 @@ auto SubchainStateData::ProcessBlock(
     const auto haveHeader = Clock::now();
     handle_confirmed_matches(block, position, confirmed, log);
     const auto handledMatches = Clock::now();
-    LogConsole()(name)(" processed block ")(print(position))(" in ")(
+    LogConsole()(name())(" processed block ")(print(position))(" in ")(
         std::chrono::nanoseconds{Clock::now() - start})
         .Flush();
-    log(OT_PRETTY_CLASS())(name)(" ")(general.size())(" of ")(
+    log(OT_PRETTY_CLASS())(name())(" ")(general.size())(" of ")(
         keyMatches)(" potential key matches confirmed.")
         .Flush();
-    log(OT_PRETTY_CLASS())(name)(" ")(utxo.size())(" of ")(
+    log(OT_PRETTY_CLASS())(name())(" ")(utxo.size())(" of ")(
         txoMatches)(" potential utxo matches confirmed.")
         .Flush();
-    log(OT_PRETTY_CLASS())(name)(" time to load match targets: ")(
+    log(OT_PRETTY_CLASS())(name())(" time to load match targets: ")(
         std::chrono::nanoseconds{haveTargets - start})
         .Flush();
-    log(OT_PRETTY_CLASS())(name)(" time to load filter: ")(
+    log(OT_PRETTY_CLASS())(name())(" time to load filter: ")(
         std::chrono::nanoseconds{haveFilter - haveTargets})
         .Flush();
-    log(OT_PRETTY_CLASS())(name)(" time to find matches: ")(
+    log(OT_PRETTY_CLASS())(name())(" time to find matches: ")(
         std::chrono::nanoseconds{haveMatches - haveFilter})
         .Flush();
-    log(OT_PRETTY_CLASS())(name)(" time to load block header: ")(
+    log(OT_PRETTY_CLASS())(name())(" time to load block header: ")(
         std::chrono::nanoseconds{haveHeader - haveMatches})
         .Flush();
-    log(OT_PRETTY_CLASS())(name)(" time to handle matches: ")(
+    log(OT_PRETTY_CLASS())(name())(" time to handle matches: ")(
         std::chrono::nanoseconds{handledMatches - haveHeader})
         .Flush();
 
@@ -1094,7 +1095,8 @@ auto SubchainStateData::sProcessReorg(
 auto SubchainStateData::ReportScan(const block::Position& pos) const noexcept
     -> void
 {
-    log_(OT_PRETTY_CLASS())(name_)(" progress updated to ")(print(pos)).Flush();
+    log_(OT_PRETTY_CLASS())(name())(" progress updated to ")(print(pos))
+        .Flush();
     subaccount_.Internal().SetScanProgress(pos, subchain_);
     api_.Crypto().Blockchain().Internal().ReportScan(
         chain_, owner_, account_type_, id_, subchain_, pos);
@@ -1142,7 +1144,6 @@ auto SubchainStateData::scan(
         using namespace std::literals;
         const auto procedure = rescan ? "rescan"sv : "scan"sv;
         const auto& log = log_;
-        const auto& name = name_;
         const auto& node = node_;
         const auto& type = filter_type_;
         const auto& headers = node.HeaderOracle();
@@ -1211,7 +1212,7 @@ auto SubchainStateData::scan(
             const auto scanBatch = std::min(
                 maximum_scan_,
                 GetBatchSize(elementsPerFilter, elementCount) * threads);
-            log(OT_PRETTY_CLASS())(name)(" filter size: ")(
+            log(OT_PRETTY_CLASS())(name())(" filter size: ")(
                 elementsPerFilter)(" wallet size: ")(
                 elementCount)(" batch size: ")(scanBatch)
                 .Flush();
@@ -1221,7 +1222,7 @@ auto SubchainStateData::scan(
                 stop);
 
             if (startHeight > stopHeight) {
-                log(OT_PRETTY_CLASS())(name)(" attempted to ")(
+                log(OT_PRETTY_CLASS())(name())(" attempted to ")(
                     procedure)(" filters from ")(startHeight)(" to ")(
                     stopHeight)(" but this is impossible")
                     .Flush();
@@ -1229,8 +1230,9 @@ auto SubchainStateData::scan(
                 throw std::runtime_error{""};
             }
 
-            log(OT_PRETTY_CLASS())(name)(" ")(procedure)("ning filters from ")(
-                startHeight)(" to ")(stopHeight)
+            log(OT_PRETTY_CLASS())(name())(" ")(
+                procedure)("ning filters from ")(startHeight)(" to ")(
+                stopHeight)
                 .Flush();
             const auto target =
                 static_cast<std::size_t>(stopHeight - startHeight + 1);
@@ -1251,7 +1253,7 @@ auto SubchainStateData::scan(
             auto prehash = PrehashData{
                 api_,
                 selected,
-                name_,
+                name(),
                 results,
                 startHeight,
                 std::min(threads, selected.size()),
@@ -1275,7 +1277,7 @@ auto SubchainStateData::scan(
             }
 
             const auto havePrehash = Clock::now();
-            log_(OT_PRETTY_CLASS())(name)(" ")(
+            log_(OT_PRETTY_CLASS())(name())(" ")(
                 procedure)(" calculated target hashes for ")(blocks.size())(
                 " cfilters in ")(std::chrono::nanoseconds{havePrehash - start})
                 .Flush();
@@ -1293,7 +1295,7 @@ auto SubchainStateData::scan(
                 return out;
             }();
             const auto haveCfilters = Clock::now();
-            log_(OT_PRETTY_CLASS())(name)(" ")(
+            log_(OT_PRETTY_CLASS())(name())(" ")(
                 procedure)(" loaded cfilters in ")(
                 std::chrono::nanoseconds{haveCfilters - havePrehash})
                 .Flush();
@@ -1340,7 +1342,7 @@ auto SubchainStateData::scan(
                 const auto& [clean, dirty, sizes] = *handle;
 
                 if (auto size = dirty.size(); 0 < size) {
-                    log_(OT_PRETTY_CLASS())(name_)(" requesting ")(
+                    log_(OT_PRETTY_CLASS())(name())(" requesting ")(
                         size)(" block hashes from block oracle")
                         .Flush();
                     to_block_oracle_.SendDeferred([&](const auto& dirty) {
@@ -1392,13 +1394,13 @@ auto SubchainStateData::scan(
             }
 
             const auto count = out.size();
-            log(OT_PRETTY_CLASS())(name)(" ")(procedure)(" found ")(
+            log(OT_PRETTY_CLASS())(name())(" ")(procedure)(" found ")(
                 count)(" new potential matches between blocks ")(
                 startHeight)(" and ")(highestTested.first)(" in ")(
                 std::chrono::nanoseconds{Clock::now() - start})
                 .Flush();
         } else {
-            log_(OT_PRETTY_CLASS())(name)(" ")(procedure)(" interrupted")
+            log_(OT_PRETTY_CLASS())(name())(" ")(procedure)(" interrupted")
                 .Flush();
         }
 
@@ -1514,7 +1516,7 @@ auto SubchainStateData::select_matches(
         // ElementCache::Forget, but that should never be called until there is
         // no possibility that blocks at or below that position will be
         // processed.
-        log_(OT_PRETTY_CLASS())(name_)(" existing matches for block ")(
+        log_(OT_PRETTY_CLASS())(name())(" existing matches for block ")(
             print(block))(" not found")
             .Flush();
 
@@ -1726,7 +1728,6 @@ auto SubchainStateData::state_reorg(const Work work, Message&& msg) noexcept
         case Work::prepare_reorg:
         case Work::rescan:
         case Work::statemachine: {
-            tdiag("-------------defer------------");
             defer(std::move(msg));
         } break;
         case Work::watchdog_ack: {
@@ -1794,7 +1795,7 @@ auto SubchainStateData::transition_state_normal() noexcept -> bool
         "transition_state_normal, children:", (have_children_ ? "YES" : "NO"));
     if (!have_children_) { return false; }
 
-    disable_automatic_processing_ = false;
+    disable_automatic_processing(false);
     auto rc = scan_->ChangeState(JobState::normal, {});
 
     OT_ASSERT(rc);
@@ -1816,7 +1817,7 @@ auto SubchainStateData::transition_state_normal() noexcept -> bool
     OT_ASSERT(rc);
 
     state_ = State::normal;
-    log_(OT_PRETTY_CLASS())(name_)(" transitioned to normal state ").Flush();
+    log_(OT_PRETTY_CLASS())(name())(" transitioned to normal state ").Flush();
     trigger();
 
     return true;
@@ -1842,11 +1843,11 @@ auto SubchainStateData::transition_state_reorg(StateSequence id) noexcept
         if (false == output) { return false; }
 
         reorgs_.emplace(id);
-        disable_automatic_processing_ = true;
+        disable_automatic_processing(true);
         state_ = State::reorg;
-        log_(OT_PRETTY_CLASS())(name_)(" ready to process reorg ")(id).Flush();
+        log_(OT_PRETTY_CLASS())(name())(" ready to process reorg ")(id).Flush();
     } else {
-        log_(OT_PRETTY_CLASS())(name_)(" reorg ")(id)(" already handled")
+        log_(OT_PRETTY_CLASS())(name())(" reorg ")(id)(" already handled")
             .Flush();
     }
 
@@ -1860,7 +1861,7 @@ auto SubchainStateData::transition_state_shutdown() noexcept -> bool
         (have_children_ ? "YES" : "NO"));
     clear_children();
     state_ = State::shutdown;
-    log_(OT_PRETTY_CLASS())(name_)(" transitioned to shutdown state ").Flush();
+    log_(OT_PRETTY_CLASS())(name())(" transitioned to shutdown state ").Flush();
     signal_shutdown();
 
     return true;
@@ -1910,7 +1911,7 @@ auto SubchainStateData::work() noexcept -> bool
 
         if (interval > timeout) {
             LogConsole()(interval)(" elapsed since last activity from ")(
-                print(type))(" job for ")(name_)
+                print(type))(" job for ")(name())
                 .Flush();
         }
     }
@@ -1919,7 +1920,7 @@ auto SubchainStateData::work() noexcept -> bool
     watchdog_.Wait([this](const auto& error) {
         if (error) {
             if (boost::system::errc::operation_canceled != error.value()) {
-                LogError()(OT_PRETTY_CLASS())(name_)(" ")(error).Flush();
+                LogError()(OT_PRETTY_CLASS())(name())(" ")(error).Flush();
             }
         } else {
             trigger();

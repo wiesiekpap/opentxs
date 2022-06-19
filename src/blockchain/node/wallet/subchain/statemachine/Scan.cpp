@@ -69,13 +69,7 @@ Scan::Imp::Imp(
 {
 }
 
-Scan::Imp::~Imp()
-{
-    tdiag("Scan::~Imp ENTERED");
-    //    shutdown_actor();
-    tdiag("Scan::Imp DELETED !!!!!!!!!!!!!!!!!!!!!!!!!!");
-    //    *static_cast<char*>(nullptr) = 0;
-}
+Scan::Imp::~Imp() { tdiag("Scan::~Imp"); }
 
 auto Scan::Imp::caught_up() const noexcept -> bool
 {
@@ -95,7 +89,7 @@ auto Scan::Imp::current() const noexcept -> const block::Position&
 
 auto Scan::Imp::do_startup() noexcept -> void
 {
-    disable_automatic_processing_ = true;
+    disable_automatic_processing(true);
     const auto& node = parent_.node_;
     const auto& filters = node.FilterOracleInternal();
     last_scanned_ = parent_.db_.SubchainLastScanned(parent_.db_key_);
@@ -104,15 +98,15 @@ auto Scan::Imp::do_startup() noexcept -> void
     OT_ASSERT(last_scanned_.has_value());
     OT_ASSERT(filter_tip_.has_value());
 
-    log_(OT_PRETTY_CLASS())(parent_.name_)(" loaded last scanned value of ")(
+    log_(OT_PRETTY_CLASS())(parent_.name())(" loaded last scanned value of ")(
         opentxs::print(last_scanned_.value()))(" from database")
         .Flush();
-    log_(OT_PRETTY_CLASS())(parent_.name_)(" loaded filter tip value of ")(
+    log_(OT_PRETTY_CLASS())(parent_.name())(" loaded filter tip value of ")(
         opentxs::print(last_scanned_.value()))(" from filter oracle")
         .Flush();
 
     if (last_scanned_.value() > filter_tip_.value()) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" last scanned reset to ")(
+        log_(OT_PRETTY_CLASS())(parent_.name())(" last scanned reset to ")(
             opentxs::print(filter_tip_.value()))
             .Flush();
         last_scanned_ = filter_tip_;
@@ -143,14 +137,14 @@ auto Scan::Imp::sProcessReorg(
     if (last_scanned_.has_value()) {
         const auto target = parent_.ReorgTarget(
             headerOracleLock, parent, last_scanned_.value());
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" last scanned reset to ")(
+        log_(OT_PRETTY_CLASS())(parent_.name())(" last scanned reset to ")(
             opentxs::print(target))
             .Flush();
         last_scanned_ = target;
     }
 
     if (filter_tip_.has_value() && (filter_tip_.value() > parent)) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" filter tip reset to ")(
+        log_(OT_PRETTY_CLASS())(parent_.name())(" filter tip reset to ")(
             opentxs::print(parent))
             .Flush();
         filter_tip_ = parent;
@@ -168,14 +162,14 @@ auto Scan::Imp::process_filter(Message&& in, block::Position&& tip) noexcept
     -> void
 {
     if (tip < this->tip()) {
-        log_(OT_PRETTY_CLASS())(name_)(" ignoring stale filter tip ")(
+        log_(OT_PRETTY_CLASS())(name())(" ignoring stale filter tip ")(
             opentxs::print(tip))
             .Flush();
 
         return;
     }
 
-    log_(OT_PRETTY_CLASS())(parent_.name_)(" filter tip updated to ")(
+    log_(OT_PRETTY_CLASS())(parent_.name())(" filter tip updated to ")(
         opentxs::print(tip))
         .Flush();
     filter_tip_ = std::move(tip);
@@ -204,7 +198,7 @@ auto Scan::Imp::work() noexcept -> bool
     auto post = ScopeGuard{[&] { Job::work(); }};
 
     if (!filter_tip_.has_value()) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(
+        log_(OT_PRETTY_CLASS())(parent_.name())(
             " scanning not possible until a filter tip value is received ")
             .Flush();
 
@@ -215,20 +209,20 @@ auto Scan::Imp::work() noexcept -> bool
         enabled_ = parent_.node_.IsWalletScanEnabled();
 
         if (!enabled_) {
-            log_(OT_PRETTY_CLASS())(parent_.name_)(
+            log_(OT_PRETTY_CLASS())(parent_.name())(
                 " waiting to begin scan until cfilter sync is complete")
                 .Flush();
 
             return false;
         } else {
-            log_(OT_PRETTY_CLASS())(parent_.name_)(
+            log_(OT_PRETTY_CLASS())(parent_.name())(
                 " starting scan since cfilter sync is complete")
                 .Flush();
         }
     }
 
     if (caught_up()) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(
+        log_(OT_PRETTY_CLASS())(parent_.name())(
             " all available filters have been scanned")
             .Flush();
 
@@ -244,7 +238,7 @@ auto Scan::Imp::work() noexcept -> bool
 
     const auto& threshold = parent_.scan_threshold_;
     if (parent_.scan_dirty_ && ((height - rescan) > threshold)) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(
+        log_(OT_PRETTY_CLASS())(parent_.name())(
             " waiting to continue scan until rescan has caught up to block ")(
             height - threshold)(" from current position of ")(rescan)
             .Flush();
@@ -263,12 +257,12 @@ auto Scan::Imp::work() noexcept -> bool
         highestTested,
         dirty);
     last_scanned_ = std::move(highestTested);
-    log_(OT_PRETTY_CLASS())(parent_.name_)(" last scanned updated to ")(
+    log_(OT_PRETTY_CLASS())(parent_.name())(" last scanned updated to ")(
         opentxs::print(current()))
         .Flush();
 
     if (auto count = dirty.size(); 0u < count) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" ")(
+        log_(OT_PRETTY_CLASS())(parent_.name())(" ")(
             count)(" blocks queued for processing ")
             .Flush();
         to_process_.SendDeferred(make_work(std::move(dirty)));

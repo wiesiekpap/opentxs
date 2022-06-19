@@ -77,8 +77,8 @@ auto Index::Imp::do_process_update(Message&& msg) noexcept -> void
 
     for (const auto& [type, position] : clean) {
         if (ScanState::processed == type) {
-            log_(OT_PRETTY_CLASS())(parent_.name_)(" re-indexing ")(
-                parent_.name_)(" due to processed block ")(
+            log_(OT_PRETTY_CLASS())(parent_.name())(" re-indexing ")(
+                parent_.name())(" due to processed block ")(
                 opentxs::print(position))
                 .Flush();
         }
@@ -92,7 +92,8 @@ auto Index::Imp::do_startup() noexcept -> void
 {
     last_indexed_ = parent_.db_.SubchainLastIndexed(parent_.db_key_);
     do_work();
-    log_(OT_PRETTY_CLASS())(parent_.name_)(" notifying scan task to begin work")
+    log_(OT_PRETTY_CLASS())(parent_.name())(
+        " notifying scan task to begin work")
         .Flush();
 }
 

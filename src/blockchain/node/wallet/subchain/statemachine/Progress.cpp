@@ -80,13 +80,13 @@ auto Progress::Imp::do_process_update(Message&& msg) noexcept -> void
     const auto database = Clock::now();
     parent_.match_cache_.lock()->Forget(best);
     const auto cache = Clock::now();
-    log_(OT_PRETTY_CLASS())(name_)(" time to decode update: ")(
+    log_(OT_PRETTY_CLASS())(name())(" time to decode update: ")(
         std::chrono::nanoseconds{decoded - start})
         .Flush();
-    log_(OT_PRETTY_CLASS())(name_)(" time to update database ")(
+    log_(OT_PRETTY_CLASS())(name())(" time to update database ")(
         std::chrono::nanoseconds{database - decoded})
         .Flush();
-    log_(OT_PRETTY_CLASS())(name_)(" time to update cache: ")(
+    log_(OT_PRETTY_CLASS())(name())(" time to update cache: ")(
         std::chrono::nanoseconds{cache - database})
         .Flush();
 }

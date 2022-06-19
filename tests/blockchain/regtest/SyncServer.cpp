@@ -67,8 +67,11 @@ TEST_F(Regtest_fixture_sync, mine)
     constexpr auto count{10};
     sync_sub_.expected_ += count;
 
+    std::cerr << "MINE 1\n";
     EXPECT_TRUE(Mine(0, count));
+    std::cerr << "MINE 2\n";
     EXPECT_TRUE(sync_sub_.wait());
+    std::cerr << "MINE 3\n";
 
     const auto& chain =
         sync_server_.Network().Blockchain().GetChain(test_chain_);

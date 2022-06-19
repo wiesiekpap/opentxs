@@ -736,7 +736,10 @@ auto Peer::subscribe() noexcept -> void
 
 auto Peer::transmit(zmq::Message&& message) noexcept -> void
 {
-    if (false == running_.load()) { return; }
+    if (false == running_.load()) {
+        std::cerr << " NOT RUNNING\n";
+        return;
+    }
 
     OT_ASSERT(message.Body().size() > 3)
 
