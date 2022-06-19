@@ -14,6 +14,7 @@
 #include "internal/network/zeromq/Handle.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Gatekeeper.hpp"
+#include "util/Reactor.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -56,7 +57,7 @@ class Message;
 
 namespace opentxs::network::p2p
 {
-class Server::Imp
+class Server::Imp : public Reactor
 {
 public:
     using Map = UnallocatedMap<
@@ -88,9 +89,15 @@ public:
 
     Imp(const api::Session& api, const zeromq::Context& zmq) noexcept;
 
-    ~Imp();
+    ~Imp() override;
 
 private:
+    // Reactor interface
+    auto handle(network::zeromq::Message&& in, unsigned idx) noexcept
+        -> void override;
+    auto last_job_str() const noexcept -> std::string final;
+    // end Reactor interface
+
     auto process_external(zeromq::Message&& incoming) noexcept -> void;
     auto process_internal(zeromq::Message&& incoming) noexcept -> void;
     auto process_pushtx(

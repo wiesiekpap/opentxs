@@ -514,6 +514,8 @@ private:
     opentxs::network::zeromq::socket::Raw& p2p_socket_;
     opentxs::network::zeromq::socket::Raw& loopback_;
     mutable GuardedSocket to_loopback_;
+    class WalletReactor;
+    std::unique_ptr<WalletReactor> reactor_;
     opentxs::network::zeromq::internal::Thread* thread_;
 
     static auto reverse_unit_map(const UnitNameMap& map) -> UnitNameReverse;

@@ -420,13 +420,13 @@ auto Process::Imp::queue_process() noexcept -> bool
     return have_items();
 }
 
-auto Process::Imp::work() noexcept -> bool
+auto Process::Imp::work() noexcept -> int
 {
     check_cache();
     queue_downloads();
     Job::work();
 
-    return check_process();
+    return check_process() ? 1 : 400;
 }
 }  // namespace opentxs::blockchain::node::wallet
 

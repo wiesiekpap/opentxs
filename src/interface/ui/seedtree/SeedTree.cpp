@@ -64,7 +64,7 @@ SeedTree::SeedTree(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     : SeedTreeList(api, api.Factory().Identifier(), cb, false)
-    , Worker(api, 100ms)
+    , Worker(api, "SeedTree")
     , callbacks_()
     , default_nym_(api.Factory().NymID())
     , default_seed_(api.Factory().Identifier())
@@ -74,6 +74,7 @@ SeedTree::SeedTree(
         UnallocatedCString{api.Endpoints().NymDownload()},
         UnallocatedCString{api.Endpoints().SeedUpdated()},
     });
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -428,7 +429,7 @@ auto SeedTree::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto SeedTree::state_machine() noexcept -> bool { return false; }
+auto SeedTree::state_machine() noexcept -> int { return -1; }
 
 auto SeedTree::shut_down() noexcept -> void
 {

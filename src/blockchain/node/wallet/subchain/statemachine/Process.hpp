@@ -78,7 +78,7 @@ class Process::Imp final : public statemachine::Job
 public:
     auto ProcessReorg(
         const Lock& headerOracleLock,
-        const block::Position& parent) noexcept -> void;
+        const block::Position& parent) noexcept -> void final;
 
     Imp(const boost::shared_ptr<const SubchainStateData>& parent,
         const network::zeromq::BatchID batch,
@@ -143,6 +143,6 @@ private:
     auto process_reprocess(Message&& msg) noexcept -> void final;
     auto queue_downloads() noexcept -> void;
     auto queue_process() noexcept -> bool;
-    auto work() noexcept -> bool final;
+    auto work() noexcept -> int final;
 };
 }  // namespace opentxs::blockchain::node::wallet

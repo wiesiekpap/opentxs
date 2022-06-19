@@ -55,7 +55,7 @@ BlockchainSelection::BlockchainSelection(
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
     : BlockchainSelectionList(api, Identifier::Factory(), cb, false)
-    , Worker(api, {})
+    , Worker(api, "BlockchainSelection")
     , filter_(filter(type))
     , chain_state_([&] {
         auto out = UnallocatedMap<blockchain::Type, bool>{};
@@ -69,6 +69,7 @@ BlockchainSelection::BlockchainSelection(
 {
     init_executor(
         {UnallocatedCString{api.Endpoints().BlockchainStateChange()}});
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -219,7 +220,7 @@ auto BlockchainSelection::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainSelection::state_machine() noexcept -> bool { return false; }
+auto BlockchainSelection::state_machine() noexcept -> int { return -1; }
 
 auto BlockchainSelection::shut_down() noexcept -> void
 {

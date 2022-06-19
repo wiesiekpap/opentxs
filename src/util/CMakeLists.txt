@@ -67,6 +67,7 @@ target_sources(
     "threadutil.cpp"
     "threadutil.hpp"
     "Time.cpp"
+    "timed.hpp"
     "Timer.cpp"
     "Timer.hpp"
     "Work.hpp"

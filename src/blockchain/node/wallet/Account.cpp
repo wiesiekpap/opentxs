@@ -88,15 +88,7 @@ Account::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          [&] {
-              using namespace std::literals;
-
-              return CString{alloc}
-                  .append(print(chain))
-                  .append(" account for "sv)
-                  .append(account.NymID().str());
-          }(),
-          0ms,
+          std::string(print(chain)) + " account for " + account.NymID().str(),
           batch,
           alloc,
           {
@@ -168,7 +160,6 @@ auto Account::Imp::sChangeState(const State state, StateSequence reorg) noexcept
     -> bool
 {
     if (auto old = pending_state_.exchange(state); old == state) {
-        tdiag("Already good");
         return true;
     }
 
@@ -176,27 +167,21 @@ auto Account::Imp::sChangeState(const State state, StateSequence reorg) noexcept
 
     switch (state) {
         case State::normal: {
-            tdiag("nonreentrant_ChangeState 2");
             if (State::reorg != state_) { break; }
 
             output = transition_state_normal();
         } break;
         case State::reorg: {
-            tdiag("nonreentrant_ChangeState 3");
             if (State::shutdown == state_) { break; }
 
             output = transition_state_reorg(reorg);
         } break;
         case State::shutdown: {
-            tdiag("nonreentrant_ChangeState 4");
             if (State::reorg == state_) { break; }
 
-            tdiag("nonreentrant_ChangeState 5");
             output = transition_state_shutdown();
-            tdiag("nonreentrant_ChangeState 6");
         } break;
         default: {
-            tdiag("nonreentrant_ChangeState 7");
             OT_FAIL;
         }
     }
@@ -274,75 +259,41 @@ auto Account::Imp::check_pc(const crypto::PaymentCode& subaccount) noexcept
 
 auto Account::Imp::clear_children() noexcept -> void
 {
-    //    const auto cb = [this](auto& value) {
-    //        diagTT("clear_children IN");
-    //        auto rc = value.second->ChangeState(Subchain::State::shutdown,
-    //        {}); diagTT("clear_children OUT");
-    //
-    //        OT_ASSERT(rc);
-    //    };
-
-    tdiag("clear_children notification_");
     for (auto [key, sp] : notification_) {
-        tdiag(dname(sp.get()), "IS ABOUT TO BE CLEARED");
         sp->ChangeState(Subchain::State::shutdown, {});
         std::chrono::milliseconds x(100);
         std::this_thread::sleep_for(x);
-        tdiag(dname(this), "DONE");
     }
     //    std::for_each(notification_.begin(), notification_.end(), cb);
-    tdiag("clear_children internal_");
     for (auto [key, sp] : internal_) {
-        tdiag(dname(sp.get()), "IS ABOUT TO BE CLEARED");
         sp->ChangeState(Subchain::State::shutdown, {});
-        tdiag("DONE");
     }
     //    std::for_each(notification_.begin(), internal_.end(), cb);
-    tdiag("clear_children external_");
     for (auto [key, sp] : external_) {
-        tdiag(dname(sp.get()), "IS ABOUT TO BE CLEARED");
         sp->ChangeState(Subchain::State::shutdown, {});
-        tdiag("DONE");
     }
     //    std::for_each(external_.begin(), external_.end(), cb);
-    tdiag("clear_children outgoing_");
     for (auto [key, sp] : outgoing_) {
-        tdiag(dname(sp.get()), "IS ABOUT TO BE CLEARED");
         sp->ChangeState(Subchain::State::shutdown, {});
-        tdiag("DONE");
     }
     //    std::for_each(outgoing_.begin(), outgoing_.end(), cb);
-    tdiag("clear_children incoming_");
     for (auto [key, sp] : incoming_) {
-        tdiag(dname(sp.get()), "IS ABOUT TO BE CLEARED");
         sp->ChangeState(Subchain::State::shutdown, {});
-        tdiag("DONE");
     }
     //    std::for_each(incoming_.begin(), incoming_.end(), cb);
 
     //    for_each(cb);
-    tdiag("clear_children", "notification_.clear");
     notification_.clear();
-    tdiag("clear_children", "internal_.clear");
     internal_.clear();
-    tdiag("clear_children", "external_.clear");
     external_.clear();
-    tdiag("clear_children", "outgoing_.clear");
     outgoing_.clear();
-    tdiag("clear_children", "incoming_.clear");
     incoming_.clear();
-    tdiag("clear_children DONE");
 }
 
-auto Account::Imp::do_shutdown() noexcept -> void
-{
-    tdiag("Account::Imp::do_shutdown");
-    clear_children();
-}
+auto Account::Imp::do_shutdown() noexcept -> void { clear_children(); }
 
 auto Account::Imp::do_startup() noexcept -> void
 {
-    tdiag("Account::Imp::do_startup");
     api_.Wallet().Internal().PublishNym(account_.NymID());
     scan_subchains();
     index_nym(account_.NymID());
@@ -353,7 +304,6 @@ auto Account::Imp::get(
     const crypto::Subchain subchain,
     Subchains& map) noexcept -> Subchain&
 {
-    tdiag("Account::Imp::get");
     auto it = map.find(subaccount.ID());
 
     if (map.end() != it) { return *(it->second); }
@@ -370,7 +320,6 @@ auto Account::Imp::index_nym(const identifier::Nym& id) noexcept -> void
 
 auto Account::Imp::Init(boost::shared_ptr<Imp> me) noexcept -> void
 {
-    tdiag("Account::Imp::Init(");
     signal_startup(me);
 }
 
@@ -379,7 +328,6 @@ auto Account::Imp::instantiate(
     const crypto::Subchain subchain,
     Subchains& map) noexcept -> Subchain&
 {
-    tdiag("Account::Imp::instantiate");
     log_("Instantiating ")(name_)(" subaccount ")(subaccount.ID())(" ")(
         print(subchain))(" subchain for ")(subaccount.Parent().NymID())
         .Flush();
@@ -409,14 +357,15 @@ auto Account::Imp::instantiate(
     return output;
 }
 
+auto Account::Imp::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto Account::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
-    std::cerr << ">>>>>>>>>>>>>>>> " << pthread_self() << "\n";
-    if (work == AccountJobs::prepare_shutdown) {
-        tdiag("Account::Imp::pipeline EXTRA prepare_shutdown");
-    }
-    std::string w{print(work)};
-    tdiag("Account::Imp::pipeline", w);
+    tadiag("pipeline ", std::string(print(work)));
+
     switch (state_) {
         case State::normal: {
             state_normal(work, std::move(msg));
@@ -425,19 +374,16 @@ auto Account::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
             state_reorg(work, std::move(msg));
         } break;
         case State::shutdown: {
-            tdiag("debugging");
             shutdown_actor();
         } break;
         default: {
             OT_FAIL;
         }
     }
-    tdiag("Account::Imp::pipeline", "QQQQQQQ");
 }
 
 auto Account::Imp::process_key(Message&& in) noexcept -> void
 {
-    tdiag("Account::Imp::process_key");
     const auto body = in.Body();
 
     OT_ASSERT(5u < body.size());
@@ -457,7 +403,6 @@ auto Account::Imp::process_key(Message&& in) noexcept -> void
 
 auto Account::Imp::process_prepare_reorg(Message&& in) noexcept -> void
 {
-    tdiag("Account::Imp::process_prepare_reorg");
     const auto body = in.Body();
 
     OT_ASSERT(1u < body.size());
@@ -472,7 +417,6 @@ auto Account::Imp::process_rescan(Message&& in) noexcept -> void
 
 auto Account::Imp::process_subaccount(Message&& in) noexcept -> void
 {
-    tdiag("Account::Imp::process_subaccount");
     const auto body = in.Body();
 
     OT_ASSERT(4 < body.size());
@@ -494,7 +438,6 @@ auto Account::Imp::process_subaccount(
     const Identifier& id,
     const crypto::SubaccountType type) noexcept -> void
 {
-    tdiag("Account::Imp::process_subaccount()");
     switch (type) {
         case crypto::SubaccountType::HD: {
             check_hd(id);
@@ -543,11 +486,8 @@ auto Account::Imp::scan_subchains() noexcept -> void
 
 auto Account::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
 {
-    tdiag("Account::Imp::state_normal");
     switch (work) {
         case Work::shutdown: {
-            tdiag("debugging");
-            *static_cast<char*>(nullptr) = 0;
             shutdown_actor();
         } break;
         case Work::subaccount: {
@@ -583,14 +523,12 @@ auto Account::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
 
 auto Account::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
 {
-    tdiag("Account::Imp::state_reorg");
     switch (work) {
         case Work::subaccount:
         case Work::prepare_reorg:
         case Work::rescan:
         case Work::key:
         case Work::statemachine: {
-            tdiag("-------------defer------------");
             defer(std::move(msg));
         } break;
         case Work::shutdown:
@@ -614,8 +552,7 @@ auto Account::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
 
 auto Account::Imp::transition_state_normal() noexcept -> bool
 {
-    tdiag("Account::Imp::transition_state_normal");
-    disable_automatic_processing_ = false;
+    disable_automatic_processing(false);
     const auto cb = [](auto& value) {
         auto rc = value.second->ChangeState(Subchain::State::normal, {});
 
@@ -631,7 +568,6 @@ auto Account::Imp::transition_state_normal() noexcept -> bool
 
 auto Account::Imp::transition_state_reorg(StateSequence id) noexcept -> bool
 {
-    tdiag("Account::Imp::transition_state_reorgl");
     OT_ASSERT(0u < id);
 
     auto success{true};
@@ -645,7 +581,7 @@ auto Account::Imp::transition_state_reorg(StateSequence id) noexcept -> bool
         if (!success) { return false; }
 
         reorgs_.emplace(id);
-        disable_automatic_processing_ = true;
+        disable_automatic_processing(true);
         state_ = State::reorg;
         log_(OT_PRETTY_CLASS())(name_)(" ready to process reorg ")(id).Flush();
     } else {
@@ -658,18 +594,15 @@ auto Account::Imp::transition_state_reorg(StateSequence id) noexcept -> bool
 
 auto Account::Imp::transition_state_shutdown() noexcept -> bool
 {
-    tdiag("transition_state_shutdown 1");
     clear_children();
-    tdiag("transition_state_shutdown 2");
     state_ = State::shutdown;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to shutdown state ").Flush();
     signal_shutdown();
-    tdiag("transition_state_shutdown 3");
 
     return true;
 }
 
-auto Account::Imp::work() noexcept -> bool { return false; }
+auto Account::Imp::work() noexcept -> int { return -1; }
 }  // namespace opentxs::blockchain::node::wallet
 
 namespace opentxs::blockchain::node::wallet
@@ -731,7 +664,6 @@ auto Account::ChangeState(const State state, StateSequence reorg) noexcept
 
 Account::~Account()
 {
-    std::cerr << "Account::~Account\n";
     if (imp_) { imp_->Shutdown(); }
 }
 }  // namespace opentxs::blockchain::node::wallet

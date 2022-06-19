@@ -189,7 +189,7 @@ public:
 
 protected:
     auto pipeline(network::zeromq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;

@@ -76,7 +76,7 @@ Wallet::Wallet(
     const node::internal::Mempool& mempool,
     const Type chain,
     const std::string_view shutdown) noexcept
-    : Worker(api, 10ms)
+    : Worker(api, "Wallet")
     , parent_(parent)
     , db_(db)
     , chain_(chain)
@@ -87,6 +87,7 @@ Wallet::Wallet(
     init_executor({
         UnallocatedCString{shutdown},
     });
+    start();
 }
 
 auto Wallet::ConstructTransaction(
@@ -243,11 +244,11 @@ auto Wallet::StartRescan() const noexcept -> bool
     return true;
 }
 
-auto Wallet::state_machine() noexcept -> bool
+auto Wallet::state_machine() noexcept -> int
 {
-    if (!running_.load()) { return false; }
+    if (!running_.load()) { return -1; }
 
-    return proposals_.Run();
+    return proposals_.Run() ? 10 : 100;
 }
 
 Wallet::~Wallet()

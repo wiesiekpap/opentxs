@@ -104,7 +104,7 @@ private:
         -> void;
     auto set_last_scanned(std::optional<block::Position>&& value) noexcept
         -> void;
-    auto work() noexcept -> bool final;
+    auto work() noexcept -> int final;
 
 private:
     network::zeromq::socket::Raw& to_process_;

@@ -86,7 +86,7 @@ public:
               "cfilter",
               20000,
               10000)
-        , FilterWorker(api, 20ms)
+        , FilterWorker(api, "FilterDownloader")
         , db_(db)
         , header_(header)
         , node_(node)
@@ -95,6 +95,7 @@ public:
         , notify_(notify)
     {
         init_executor({shutdown});
+        start();
     }
 
     ~FilterDownloader() final
@@ -109,7 +110,7 @@ public:
 
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -233,9 +234,10 @@ auto FilterOracle::FilterDownloader::pipeline(zmq::Message&& in) -> void
     }
 }
 
-auto FilterOracle::FilterDownloader::state_machine() noexcept -> bool
+auto FilterOracle::FilterDownloader::state_machine() noexcept -> int
 {
-    return FilterDM::state_machine();
+    tdiag("FilterDownloader::state_machine");
+    return FilterDM::state_machine() ? 20 : 400;
 }
 
 auto FilterOracle::FilterDownloader::shut_down() noexcept -> void

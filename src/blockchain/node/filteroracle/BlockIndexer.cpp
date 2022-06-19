@@ -56,7 +56,7 @@ FilterOracle::BlockIndexer::BlockIndexer(
           "filter",
           2000,
           1000)
-    , BlockWorkerFilter(api, 20ms)
+    , BlockWorkerFilter(api, "BlockIndexer")
     , db_(db)
     , header_(header)
     , block_(block)
@@ -71,6 +71,7 @@ FilterOracle::BlockIndexer::BlockIndexer(
         {shutdown,
          UnallocatedCString{
              api_.Endpoints().Internal().BlockchainBlockUpdated(chain_)}});
+    start();
 }
 
 auto FilterOracle::BlockIndexer::batch_size(const std::size_t in) const noexcept
@@ -200,9 +201,10 @@ auto FilterOracle::BlockIndexer::pipeline(zmq::Message&& in) -> void
     }
 }
 
-auto FilterOracle::BlockIndexer::state_machine() noexcept -> bool
+auto FilterOracle::BlockIndexer::state_machine() noexcept -> int
 {
-    return BlockDMFilter::state_machine();
+    tdiag("BlockIndexer::state_machine");
+    return BlockDMFilter::state_machine() ? 20 : 500;
 }
 
 auto FilterOracle::BlockIndexer::process_position(

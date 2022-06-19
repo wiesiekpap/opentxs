@@ -91,7 +91,7 @@ public:
               "sync server",
               2000,
               1000)
-        , SyncWorker(api, 20ms)
+        , SyncWorker(api, "SyncServer")
         , db_(db)
         , header_(header)
         , filter_(filter)
@@ -111,6 +111,7 @@ public:
                  api_.Endpoints().Internal().BlockchainFilterUpdated(chain_)}});
         ::zmq_setsockopt(socket_.get(), ZMQ_LINGER, &linger_, sizeof(linger_));
         ::zmq_connect(socket_.get(), endpoint_.c_str());
+        start();
     }
 
     ~SyncServer() final
@@ -125,7 +126,7 @@ public:
 
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -191,6 +192,7 @@ private:
         LogDetail()(print(chain_))(" sync data updated to height ")(
             position.first)
             .Flush();
+        tdiag("update_tip to", position.first);
     }
 
     auto download() noexcept -> void
@@ -255,6 +257,7 @@ private:
                 if (first.first <= current.first) {
                     LogTrace()(OT_PRETTY_CLASS())(__func__)(": reorg detected")
                         .Flush();
+                    tdiag("REORG");
                 }
 
                 LogTrace()(OT_PRETTY_CLASS())(__func__)(
@@ -262,6 +265,7 @@ private:
                     " until block ")(print(last))
                     .Flush();
             }
+            tdiag("process_position");
             update_position(std::move(hashes), type_, std::move(prior));
         } catch (...) {
         }
@@ -305,6 +309,7 @@ private:
 
             auto out = network::zeromq::reply_to_message(incoming);
 
+            tdiag("SyncServer::process_zmq send");
             if (send && reply.Serialize(out)) {
                 OTSocket::send_message(lock, socket_.get(), std::move(out));
             }
@@ -396,6 +401,7 @@ private:
             // function
             auto dummy = std::mutex{};
             auto lock = Lock{dummy};
+            tdiag("SyncServer about to send");
             OTSocket::send_message(lock, socket_.get(), std::move(work));
         }
     }
@@ -474,9 +480,10 @@ auto SyncServer::pipeline(zmq::Message&& in) -> void
     }
 }
 
-auto SyncServer::state_machine() noexcept -> bool
+auto SyncServer::state_machine() noexcept -> int
 {
-    return SyncDM::state_machine();
+    tdiag("SyncServer::state_machine");
+    return SyncDM::state_machine() ? 20 : 400;
 }
 
 auto SyncServer::shut_down() noexcept -> void

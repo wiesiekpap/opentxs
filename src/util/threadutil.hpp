@@ -1,9 +1,5 @@
-// Copyright (c) 2010-2022 The Open-Transactions developers
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-#pragma once
+#ifndef util_threadutil_hpp_
+#define util_threadutil_hpp_
 
 #include <boost/core/demangle.hpp>
 #include <pthread.h>
@@ -22,27 +18,20 @@
 #include <thread>
 #include <vector>
 
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
+using namespace std::literals::chrono_literals;
 
-struct dstring {
-    explicit dstring(const char* data)
-        : str_{data}
-    {
-    }
-    std::string str_;
-};
-template <typename T>
+//#define TDIAG
 
-dstring dname(T*)
-{
-    std::string s = typeid(T).name();
-    return dstring(s.data());
-}
+#if defined(__linux) && defined(TDIAG)
 
-#ifdef __linux
-using handle_type = std::uint64_t;
+using handle_type = std::thread::native_handle_type;
 struct ThreadHandle {
     ThreadHandle();
     ThreadHandle(
@@ -57,18 +46,23 @@ struct ThreadHandle {
 class ThreadMonitor
 {
 public:
+    // Register the thread
     static ThreadHandle add_current_thread(
         std::string&& name,
         std::string&& description);
     static std::string get_name();
     static std::string get_name(const ThreadHandle& handle);
     static std::string get_name(handle_type native);
+    static bool set_name(
+        std::thread::native_handle_type h,
+        std::string_view value);
+    static bool set_name(std::string_view value);
     // Arbitrary maximum thread name length...
     static constexpr std::size_t max_name_length();
     static std::string default_name(std::string&& Class);
     enum class State { Unknown, Idle, Waiting, Blocked, Deadlocked };
     struct ThreadInfo {
-        ThreadInfo(
+        explicit ThreadInfo(
             handle_type = {},
             State state = State{},
             std::string blocking_resource_str = {},
@@ -82,6 +76,7 @@ public:
 
 private:
     static ThreadMonitor* instance();
+    ThreadMonitor();
     ~ThreadMonitor();
     ThreadHandle p_add_current_thread(
         std::string&& name,
@@ -94,9 +89,6 @@ private:
     ThreadInfo get_info(const ThreadHandle& handle);
 
 private:
-    ThreadMonitor();
-
-private:
     static std::mutex mutex_;
     static ThreadMonitor* instance_;
     std::map<handle_type, ThreadHandle> handles_;
@@ -106,10 +98,8 @@ private:
 
 struct Mytime {
     Mytime();
-    inline static auto base =
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now().time_since_epoch())
-            .count();
+    static std::int64_t basecount() noexcept;
+    inline static std::int64_t base = basecount();
     std::string str();
 };
 
@@ -127,21 +117,108 @@ public:
     static void show(const ThreadMonitor::ThreadInfo& thr, std::ostream& os);
     static void show_all(std::ostream& os);
 
+    enum class Tdiag { on, selective, off };
+    static void enable(Tdiag) noexcept;
+    static void thread_enable() noexcept;
+    static void thread_disable() noexcept;
+
 protected:
-    void tdiag(std::string s1, std::string s2 = "") const noexcept;
-    void tdiag(dstring&& mangled, std::string s2 = "") const noexcept;
+    void tdiag(std::string&& s1) const noexcept;
+    template <typename S1, typename S2>
+    void tdiag(S1&& s1, S2&& s2, std::string&& tag = "####") const noexcept
+    {
+        if (!is_enabled()) { return; }
+        if constexpr (std::is_same<
+                          typename std::decay<S1>::type,
+                          std::type_info>::value) {
+            tsdiag(std::move(s1), std::move(s2), std::move(tag));
+        } else {
+            if constexpr (std::is_same<
+                              typename std::decay<S2>::type,
+                              std::string>::value) {
+                ssdiag(std::move(s1), std::move(s2), std::move(tag));
+            } else {
+                std::ostringstream oss;
+                oss << s2;
+                ssdiag(std::move(s1), oss.str(), std::move(tag));
+            }
+        }
+    }
+    void tadiag(
+        std::string&& s1,
+        std::string&& s2 = "",
+        std::string&& tag = "##  ") const noexcept;
+    void tadiag(
+        const std::type_info& type,
+        std::string&& s2 = "",
+        std::string&& tag = "##  ") const noexcept;
     std::string get_class() const noexcept;
+    template <typename Functor>
+    bool time_it(
+        Functor f,
+        std::string tag = "",
+        std::chrono::milliseconds max_ms = 5000ms)
+    {
+        auto tstart = std::chrono::system_clock::now();
+        f();
+        auto tfinish = std::chrono::system_clock::now();
+        if (auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                tfinish - tstart);
+            ms > max_ms) {
+            diag_alert_ = true;
+            tdiag(std::move(tag), std::to_string(ms.count()) + " ms");
+            return false;
+        }
+        return true;
+    }
 
     virtual ~ThreadDisplay();
 
 private:
+    bool is_enabled() const noexcept;
+    void ssdiag(
+        std::string&& s1,
+        std::string&& s2 = "",
+        std::string&& tag = "####") const noexcept;
+    void tsdiag(
+        const std::type_info& type,
+        std::string&& s2 = "",
+        std::string&& tag = "####") const noexcept;
+
+private:
     static std::mutex diagmtx;
     std::optional<ThreadHandle> thread_handle_;
+    mutable std::atomic<bool> diag_alert_;
+    static thread_local bool enabled_for_thread_;
+    static Tdiag enabled_;
 };
 
-#else
+class MessageMarker
+{
+public:
+    explicit MessageMarker(network::zeromq::Message& m, bool remove = true);
+    explicit MessageMarker(
+        std::string_view tag = {},
+        std::string threadname = ThreadMonitor::get_name());
+    std::size_t mark(network::zeromq::Message& m);
+    operator bool() const noexcept;
 
-using handle_type std::uint64_t;
+private:
+    constexpr static std::size_t Text_Size = 16;
+    constexpr static std::uint64_t Marker = 0xDEAD00FF;
+    friend std::ostream& operator<<(std::ostream&, const MessageMarker&);
+    char tag_[Text_Size];
+    std::uint32_t check_;
+    char name_[Text_Size];
+};
+
+std::ostream& operator<<(std::ostream& os, const MessageMarker& m);
+
+std::string to_string(const MessageMarker&);
+
+#else  // defined(__linux) && defined(TDIAG)
+
+using handle_type = std::uint64_t;
 struct ThreadHandle {
     ThreadHandle() {}
     ThreadHandle(std::string&&, std::string&&, handle_type) {}
@@ -150,22 +227,25 @@ struct ThreadHandle {
 class ThreadMonitor
 {
 public:
+    struct ThreadInfo {
+    };
     static ThreadHandle add_current_thread(std::string&&, std::string&&)
     {
         return {};
     }
     static std::string get_name() { return {}; }
     static std::string get_name(const ThreadHandle&) { return {}; }
+    static std::string get_name(handle_type native) { return {}; }
     static std::string default_name() { return {}; }
+    static bool set_name(std::thread::native_handle_type, std::string_view)
+    {
+        return true;
+    }
+    static bool set_name(std::string_view) { return true; }
     // Arbitrary maximum thread name length...
     static constexpr std::size_t max_name_length() noexcept { return 0; }
     static std::string default_name(std::string&& Class) noexcept { return {}; }
     enum class State { Unknown, Idle, Waiting, Blocked, Deadlocked };
-    struct ThreadInfo {
-        State state_;
-        std::string blocking_resource_str_;
-        std::string blocking_comment_str_;
-    };
     static std::vector<ThreadInfo> get_snapshot() { return {}; }
 };
 
@@ -173,17 +253,63 @@ class ThreadDisplay
 {
 public:
     ThreadDisplay() = default;
-    virtual ~ThreadDisplay(){};
+    virtual ~ThreadDisplay() {}
     void set_host_thread(const ThreadHandle&) {}
-    void show(const ThreadInfo& thr, std::ostream& os) {}
-    void show_all(std::ostream& os) {}
+    static void show(const ThreadMonitor::ThreadInfo& thr, std::ostream& os) {}
+    static void show_all(std::ostream& os) {}
+    enum class Tdiag { on, selective, off };
+    static void enable(Tdiag) noexcept {}
+    static void thread_enable() noexcept {}
+    static void thread_disable() noexcept {}
 
 protected:
-    void tdiag(std::string, std::string = "") const noexcept {}
-    void tdiag(dstring&&, std::string = "") const noexcept {}
+    void tdiag(std::string&&) const noexcept {}
+    template <typename S1, typename S2>
+    void tdiag(S1&&, S2&&, std::string&& = "") const noexcept
+    {
+    }
+    void tadiag(std::string&&, std::string&& = "", std::string&& = "")
+        const noexcept
+    {
+    }
+    void tadiag(const std::type_info&, std::string&& = "", std::string&& = "")
+        const noexcept
+    {
+    }
+
     std::string get_class() const noexcept { return {}; }
+    template <typename Functor>
+    static void time_it(
+        Functor f,
+        std::string = {},
+        std::chrono::milliseconds = {})
+    {
+        f();
+    }
 };
 
-#endif
+class MessageMarker
+{
+public:
+    explicit MessageMarker(network::zeromq::Message&, bool = true) {}
+    explicit MessageMarker(
+        std::string_view = {},
+        std::string = ThreadMonitor::get_name())
+    {
+    }
+    std::size_t mark(network::zeromq::Message&) { return 0; }
+    operator bool() const noexcept { return false; }
+};
+
+inline std::ostream& operator<<(std::ostream& os, const MessageMarker&)
+{
+    return os;
+}
+
+inline std::string to_string(const MessageMarker&) { return {}; }
+
+#endif  // defined(__linux) && defined(TDIAG)
 
 }  // namespace opentxs
+
+#endif  // util_threadutil_hpp_

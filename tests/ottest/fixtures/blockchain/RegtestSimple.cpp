@@ -57,7 +57,7 @@ auto Regtest_fixture_simple::CreateNym(
     const ot::api::session::Client& api,
     const ot::UnallocatedCString& name,
     const ot::UnallocatedCString& seed,
-    int index) noexcept -> const User&
+    int index) noexcept -> User&
 {
     const auto reason = api.Factory().PasswordPrompt(__func__);
     auto [it, added] = users_.try_emplace(
@@ -183,7 +183,6 @@ auto Regtest_fixture_simple::MineBlocks(
     unsigned amount) noexcept
     -> std::unique_ptr<opentxs::blockchain::bitcoin::block::Header>
 {
-
     auto target = ancestor + block_number;
     auto blocks = ot::UnallocatedVector<BlockListener::Future>{};
     auto wallets = ot::UnallocatedVector<WalletListener::Future>{};
@@ -195,12 +194,10 @@ auto Regtest_fixture_simple::MineBlocks(
         wallets.emplace_back(
             listeners.second.wallet_listener->GetFuture(target));
     }
-
     Generator gen = [&](Height height) -> Transaction {
         return TransactionGenerator(user, height, transaction_number, amount);
     };
     auto mined_header = MineBlocks(ancestor, block_number, gen, {});
-
     for (auto& future : blocks) {
         EXPECT_TRUE(
             future.wait_for(wait_time_limit_) == std::future_status::ready);
@@ -208,12 +205,10 @@ auto Regtest_fixture_simple::MineBlocks(
         const auto [height, hash] = future.get();
         EXPECT_EQ(hash, mined_header->Hash());
     }
-
     for (auto& future : wallets) {
         EXPECT_TRUE(
             future.wait_for(wait_time_limit_) == std::future_status::ready);
     }
-
     return mined_header;
 }
 
@@ -262,7 +257,7 @@ auto Regtest_fixture_simple::CreateClient(
     int instance,
     const ot::UnallocatedCString& name,
     const ot::UnallocatedCString& words,
-    const b::p2p::Address& address) -> std::pair<const User&, bool>
+    const b::p2p::Address& address) -> std::pair<User&, bool>
 {
     auto& client = ot_.StartClientSession(client_args, instance);
 
@@ -285,8 +280,7 @@ auto Regtest_fixture_simple::CreateClient(
             reason);
     };
 
-    auto& user_no_const = const_cast<User&>(user);
-    user_no_const.init_custom(client, cb);
+    user.init_custom(client, cb);
 
     client.UI().AccountActivity(
         user.nym_id_, GetHDAccount(user).Parent().AccountID(), []() {});
@@ -313,9 +307,7 @@ auto Regtest_fixture_simple::CreateClient(
         throw std::runtime_error("Error connecting to client1 socket");
     }
 
-    std::cerr << "ABOUT TO WAIT 120s\n";
-    const auto status = done.wait_for(std::chrono::seconds(30));
-    std::cerr << "BACK AFTER 120s\n";
+    const auto status = done.wait_for(std::chrono::seconds(120));
     const auto future = (std::future_status::ready == status);
 
     return {user, added && start && future && listener_added};
@@ -324,13 +316,9 @@ auto Regtest_fixture_simple::CreateClient(
 auto Regtest_fixture_simple::CloseClient(const ot::UnallocatedCString& name)
     -> void
 {
-    std::cerr << "==============CloseClient 1\n";
     users_.at(name).api_->Network().Blockchain().Stop(test_chain_);
-    std::cerr << "==============CloseClient 2\n";
     users_.erase(name);
-    std::cerr << "==============CloseClient 3\n";
     user_listeners_.erase(name);
-    std::cerr << "==============CloseClient 4\n";
 }
 
 auto Regtest_fixture_simple::GetBalance(const User& user) const -> const Amount
@@ -392,13 +380,14 @@ auto Regtest_fixture_simple::GetNextBlockchainAddress(const User& user)
 auto Regtest_fixture_simple::WaitForSynchro(
     const User& user,
     const Height target,
-    const Amount expected_balance) -> void
+    const Amount expected_balance,
+    std::chrono::seconds max_duration) -> void
 {
     if (expected_balance == 0) { return; }
 
     auto begin = std::chrono::steady_clock::now();
     auto now = begin;
-    auto end = begin + wait_time_limit_;
+    auto end = begin + (max_duration == 0s ? wait_time_limit_ : max_duration);
 
     while (now < end) {
         now = std::chrono::steady_clock::now();
@@ -410,6 +399,7 @@ auto Regtest_fixture_simple::WaitForSynchro(
 
         ot::LogConsole()(
             "Waiting for synchronization, balance: " + GetDisplayBalance(user) +
+            ", expected balance: " + GetDisplayBalance(expected_balance) +
             ", sync percentage: " + percentage.str() + "%, sync progress [" +
             std::to_string(progress.first) + "," +
             std::to_string(progress.second) + "]" +
@@ -430,7 +420,10 @@ auto Regtest_fixture_simple::WaitForSynchro(
     }
 
     now = std::chrono::steady_clock::now();
-    EXPECT_LT(now, end);
+    auto remaining_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(now - end)
+            .count();
+    EXPECT_LT(remaining_ms, 0);
 }
 auto Regtest_fixture_simple::GetDisplayBalance(
     opentxs::Amount value) const noexcept -> std::string
@@ -472,6 +465,7 @@ void Regtest_fixture_simple::MineTransaction(
     auto send_transaction =
         user.api_->Crypto().Blockchain().LoadTransactionBitcoin(
             transactions_to_confirm);
+    if (!send_transaction) { return; }
     transactions_ptxid_.emplace_back(send_transaction->ID());
     transactions.emplace_back(std::move(send_transaction));
 

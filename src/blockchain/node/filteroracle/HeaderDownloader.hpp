@@ -63,7 +63,7 @@ public:
               "cfheader",
               20000,
               10000)
-        , HeaderWorker(api, 20ms)
+        , HeaderWorker(api, "HeaderDownloader")
         , db_(db)
         , header_(header)
         , node_(node)
@@ -74,6 +74,7 @@ public:
     {
         init_executor(
             {shutdown, UnallocatedCString{api_.Endpoints().BlockchainReorg()}});
+        start();
 
         OT_ASSERT(checkpoint_);
     }
@@ -90,7 +91,7 @@ public:
 
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -260,9 +261,10 @@ auto FilterOracle::HeaderDownloader::pipeline(zmq::Message&& in) -> void
     }
 }
 
-auto FilterOracle::HeaderDownloader::state_machine() noexcept -> bool
+auto FilterOracle::HeaderDownloader::state_machine() noexcept -> int
 {
-    return HeaderDM::state_machine();
+    tdiag("HeaderDownloader::state_machine");
+    return HeaderDM::state_machine() ? 20 : 400;
 }
 
 auto FilterOracle::HeaderDownloader::shut_down() noexcept -> void

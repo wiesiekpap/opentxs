@@ -23,7 +23,6 @@
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "internal/util/Timer.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -63,18 +62,15 @@ namespace opentxs
 template <typename JobType>
 class Actor : public Reactor, virtual public Allocated
 {
-private:
-    std::atomic<bool> running_;
-
 public:
     using Message = network::zeromq::Message;
-
-    const CString name_;
 
     auto get_allocator() const noexcept -> allocator_type final
     {
         return pipeline_.get_allocator();
     }
+
+    const std::string& name() const noexcept { return name_; }
 
 protected:
     // This interface used to be private and accessed through friend
@@ -83,21 +79,27 @@ protected:
     virtual auto do_startup() noexcept -> void = 0;
     virtual auto do_shutdown() noexcept -> void = 0;
     virtual auto pipeline(const Work work, Message&& msg) noexcept -> void = 0;
-    virtual auto work() noexcept -> bool = 0;
+    virtual auto work() noexcept -> int = 0;
 
 protected:
-    using Direction = network::zeromq::socket::Direction;
-    using SocketType = network::zeromq::socket::Type;
-
-    const Log& log_;
-    network::zeromq::Pipeline pipeline_;
-    bool disable_automatic_processing_;
+    auto disable_automatic_processing(bool value) -> void
+    {
+        if (value == disable_automatic_processing_.exchange(value)) {
+            // No change
+            return;
+        }
+        if (value) {
+            // TODO
+        } else {
+            // TODO
+        }
+    }
 
     auto trigger() const noexcept -> void
     {
-        const auto running = state_machine_queued_.exchange(true);
+        auto was_queued = state_machine_queued_.exchange(true);
 
-        if (false == running) {
+        if (!was_queued) {
             pipeline_.Push(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL));
         }
     }
@@ -118,17 +120,6 @@ protected:
         }
         notify();
     }
-    // Deprecated, messages should no longer be received during reorg.
-    auto defer(Message&& message) noexcept -> void
-    {
-        // TODO investigate any occurrences of defer call,
-        // remove defer, cache_ and flush_cache.
-        cache_.emplace(std::move(message));
-        log_(name_)(" ")(__FUNCTION__)(": unexpected message!!!")(
-            ", investigate")
-            .Flush();
-    }
-
     auto do_init() noexcept -> void
     {
         log_(name_)(" ")(__FUNCTION__)(": initializing").Flush();
@@ -136,64 +127,43 @@ protected:
     }
     auto do_work() noexcept -> void
     {
-        rate_limit_state_machine();
-        state_machine_queued_.store(false);
-        trigger_repeat_if(work());
-    }
-    auto flush_cache() noexcept -> void
-    {
-        retry_.Cancel();
-
-        const auto count = cache_.size();
-
-        if (0u < count) {
-            log_(name_)(" ")(__FUNCTION__)(": flushing ")(cache_.size())(
-                " cached messages")
-                .Flush();
-        }
-
-        while (0u < cache_.size()) {
-            auto message = Message{std::move(cache_.front())};
-            cache_.pop();
-            handle_message(std::move(message));
+        state_machine_queued_ = false;
+        int when_next = work();
+        if (when_next == 0) {
+            last_executed_ = Clock::now();
+            trigger();
+        } else if (when_next > 0) {
+            last_executed_ = Clock::now();
+            trigger_at(last_executed_ + std::chrono::milliseconds(when_next));
         }
     }
 
 protected:
     auto shutdown_actor() noexcept -> void
     {
-        tdiag(dname(this), "CLOSE 1  XXXXXXXXXXXXXXXXXXXXXXX");
-        std::ostringstream os;
-        os << this;
-        tdiag(os.str());
+        tdiag(typeid(this), "shutdown_actor.1");
+        tdiag("obj: ", this);
 
-        if (in_reactor_thread()) {
-            do_shutdown();
-            tdiag(dname(this), "CLOSE 2A  XXXXXXXXXXXXXXXXXXXXXXX");
-            tdiag(os.str());
-            pipeline_.Close();
-        } else {
-            if (auto previous = running_.exchange(false); previous) {
-                if (stop()) {
-                    notify();
-                    wait_for_shutdown();
-                }
+        if (auto previous = running_.exchange(false); previous) {
+            synchronize([this]() {
+                stop();
                 do_shutdown();
-                tdiag(dname(this), "CLOSE 2B  XXXXXXXXXXXXXXXXXXXXXXX");
-                tdiag(os.str());
+                tdiag(typeid(this), "shutdown_actor.2S");
+                tdiag("obj: ", this);
                 pipeline_.Close();
-            } else {
-                tdiag(dname(this), "CLOSE 2C  XXXXXXXXXXXXXXXXXXXXXXX");
-            }
+            });
+        } else {
+            tdiag(typeid(this), "shutdown_actor.2X");
+            stop();
         }
+        tdiag(typeid(this), "shutdown_actor.3");
     }
 
 protected:
     Actor(
         const api::Session& api,
         const Log& logger,
-        CString&& name,
-        const std::chrono::milliseconds rateLimit,
+        std::string name,
         const network::zeromq::BatchID batch,
         allocator_type alloc,
         const network::zeromq::EndpointArgs& subscribe = {},
@@ -205,6 +175,7 @@ protected:
         , name_(std::move(name))
         , log_{logger}
         , pipeline_{api.Network().ZeroMQ().Internal().Pipeline(
+              std::string(name_),
               {},
               subscribe,
               pull,
@@ -212,12 +183,13 @@ protected:
               extra,
               batch,
               alloc.resource())}
-        , disable_automatic_processing_{false}
-        , rate_limit_{rateLimit}
+        , disable_automatic_processing_{}
+        , initial_state_machine_delayed_{}
         , last_executed_{Clock::now()}
         , cache_(alloc)
-        , state_machine_queued_{false}
-        , retry_{api.Network().Asio().Internal().GetTimer()}
+        , state_machine_queued_{}
+        , last_job_{}
+
     {
         log_(name_)(" ")(__FUNCTION__)(": using ZMQ batch ")(
             pipeline_.BatchID())
@@ -226,36 +198,20 @@ protected:
         notify();
     }
 
-    ~Actor() override
-    {
-        std::ostringstream os{};
-        os << processing_thread_id();
-        tdiag("Actor::~Actor 1", os.str());
-        retry_.Cancel();
-        tdiag("Actor::~Actor 2", os.str());
-    }
+    ~Actor() override { tdiag("Actor::~Actor", processing_thread_id()); }
 
 private:
-    const std::chrono::milliseconds rate_limit_;
-    Time last_executed_;
-    std::queue<Message, Deque<Message>> cache_;
-    mutable std::atomic<bool> state_machine_queued_;
-    Timer retry_;
-
-private:
-    auto rate_limit_state_machine() const noexcept
+    auto trigger_at(
+        std::chrono::time_point<std::chrono::system_clock> t_at) noexcept
+        -> void
     {
-        const auto wait = std::chrono::duration_cast<std::chrono::microseconds>(
-            rate_limit_ - (Clock::now() - last_executed_));
+        auto was_queued = state_machine_queued_.exchange(true);
 
-        if (0 < wait.count()) {
-            log_(name_)(" ")(__FUNCTION__)(": rate limited for ")(wait.count())(
-                " microseconds")
-                .Flush();
-            Sleep(wait);
+        if (!was_queued) {
+            post_at(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL), t_at);
         }
     }
-    // TODO remove when defer() is gone.
+
     auto decode_message_type(const network::zeromq::Message& in) noexcept(false)
     {
         const auto body = in.Body();
@@ -268,6 +224,7 @@ private:
         Work work{};
         try {
             work = body.at(0).as<Work>();
+            last_job_ = work;
         } catch (const std::out_of_range& e) {  // from FrameSection or
                                                 // deeper from std::vector
             log_(name_)(" ")(__FUNCTION__)(": ")(e.what()).Flush();
@@ -355,15 +312,9 @@ private:
             OT_FAIL;
         }
     }
-    auto trigger_repeat_if(const bool again) noexcept -> void
-    {
-        if (again) { trigger(); }
-
-        last_executed_ = Clock::now();
-    }
 
     // The reactor calls to dispatch unqueued messages.
-    auto handle(Message&& in) noexcept -> void final
+    auto handle(Message&& in, unsigned) noexcept -> void final
     {
         try {
             const auto [work, type, isInit] = decode_message_type(in);
@@ -375,6 +326,42 @@ private:
     }
 
     // All received messages are queued for the reactor.
-    auto worker(Message&& in) noexcept -> void { enqueue(std::move(in)); }
+    auto worker(Message&& in) noexcept -> void
+    {
+        log_(name_)(" ")(__FUNCTION__)(": Message received").Flush();
+        enqueue(std::move(in));
+    }
+
+    virtual auto to_str(Work) const noexcept -> std::string = 0;
+    auto last_job_str() const noexcept -> std::string final
+    {
+        return to_str(last_job_);
+    }
+
+private:
+    std::atomic<bool> running_;
+
+public:
+    // TODO change this to private by making the subclasses
+    // access it via name()
+    std::string name_;
+
+protected:
+    using Direction = network::zeromq::socket::Direction;
+    using SocketType = network::zeromq::socket::Type;
+
+    const Log& log_;
+    network::zeromq::Pipeline pipeline_;
+
+private:
+    std::atomic<bool> disable_automatic_processing_;
+    std::atomic<bool> initial_state_machine_delayed_;
+
+    Time last_executed_;
+    std::queue<Message, Deque<Message>> cache_;
+    mutable std::atomic<bool> state_machine_queued_;
+
+    // diagnostic
+    Work last_job_;
 };
 }  // namespace opentxs

@@ -72,6 +72,7 @@ CustodialAccountActivity::CustodialAccountActivity(
     : AccountActivity(api, nymID, accountID, AccountType::Custodial, cb)
     , alias_()
 {
+    tdiag("CCA constructor 1");
     init({
         UnallocatedCString{api.Endpoints().AccountUpdate()},
         UnallocatedCString{api.Endpoints().ContactUpdate()},
@@ -79,7 +80,9 @@ CustodialAccountActivity::CustodialAccountActivity(
         UnallocatedCString{api.Endpoints().UnitUpdate()},
         UnallocatedCString{api.Endpoints().WorkflowAccountUpdate()},
     });
+    tdiag("CCA constructor 2");
 
+    start();
     // If an Account exists, then the unit definition and notary contracts must
     // exist already.
     OT_ASSERT(0 < Contract().Version());
@@ -417,6 +420,7 @@ auto CustodialAccountActivity::pipeline(Message&& in) noexcept -> void
             process_workflow(in);
         } break;
         case Work::init: {
+            tdiag("processing init msg");
             startup();
             finish_startup();
         } break;
@@ -434,10 +438,7 @@ auto CustodialAccountActivity::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto CustodialAccountActivity::state_machine() noexcept -> bool
-{
-    return false;
-}
+auto CustodialAccountActivity::state_machine() noexcept -> int { return -1; }
 
 auto CustodialAccountActivity::shut_down() noexcept -> void
 {
@@ -613,7 +614,6 @@ auto CustodialAccountActivity::Unit() const noexcept -> UnitType
 
 CustodialAccountActivity::~CustodialAccountActivity()
 {
-    wait_for_startup();
     protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

@@ -84,7 +84,8 @@ protected:
     auto do_startup() noexcept -> void override;
     auto do_shutdown() noexcept -> void override;
     auto pipeline(const Work work, Message&& msg) noexcept -> void override;
-    auto work() noexcept -> bool override;
+    auto work() noexcept -> int override;
+    auto to_str(Work w) const noexcept -> std::string final;
 
     const SubchainStateData& parent_;
 

@@ -84,7 +84,7 @@ ActivityThread::ActivityThread(
     const Identifier& threadID,
     const SimpleCallback& cb) noexcept
     : ActivityThreadList(api, nymID, cb, false)
-    , Worker(api, 100ms)
+    , Worker(api, "ActivityThread")
     , threadID_(threadID)
     , self_contact_(api.Contacts().NymToContact(primary_id_))
     , contacts_()
@@ -104,6 +104,7 @@ ActivityThread::ActivityThread(
         UnallocatedCString{api.Endpoints().MessageLoaded()},
         UnallocatedCString{api.Endpoints().TaskComplete()},
     });
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -860,7 +861,7 @@ auto ActivityThread::startup() noexcept -> void
     trigger();
 }
 
-auto ActivityThread::state_machine() noexcept -> bool
+auto ActivityThread::state_machine() noexcept -> int
 {
     auto again{false};
 
@@ -871,7 +872,7 @@ auto ActivityThread::state_machine() noexcept -> bool
         switch (value) {
             case otx::client::Messagability::READY: {
 
-                return false;
+                return 100;
             }
             case otx::client::Messagability::UNREGISTERED: {
 
@@ -882,7 +883,7 @@ auto ActivityThread::state_machine() noexcept -> bool
         }
     }
 
-    return again;
+    return again ? 100 : 500;
 }
 
 auto ActivityThread::ThreadID() const noexcept -> UnallocatedCString
