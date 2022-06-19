@@ -655,20 +655,28 @@ auto Base::pipeline(zmq::Message&& in) -> void
 
     switch (task) {
         case ManagerJobs::Shutdown: {
+            tdiag("pipeline Shutdown");
             protect_shutdown([this] { shut_down(); });
         } break;
-        case ManagerJobs::SyncReply:
+        case ManagerJobs::SyncReply: {
+            tdiag("pipeline SyncReply");
+            process_sync_data(std::move(in));
+        } break;
         case ManagerJobs::SyncNewBlock: {
+            tdiag("pipeline SyncNewBlock");
             process_sync_data(std::move(in));
         } break;
         case ManagerJobs::SubmitBlockHeader: {
+            tdiag("pipeline SubmitBlockHeader");
             process_header(std::move(in));
             do_work();
         } break;
         case ManagerJobs::SubmitBlock: {
+            tdiag("pipeline SubmitBlock");
             process_block(std::move(in));
         } break;
         case ManagerJobs::Heartbeat: {
+            tdiag("pipeline Heartbeat");
             mempool_.Heartbeat();
             block_.Heartbeat();
             filters_.Heartbeat();
@@ -680,18 +688,23 @@ auto Base::pipeline(zmq::Message&& in) -> void
             reset_heartbeat();
         } break;
         case ManagerJobs::SendToAddress: {
+            tdiag("pipeline SendToAddress");
             process_send_to_address(std::move(in));
         } break;
         case ManagerJobs::SendToPaymentCode: {
+            tdiag("pipeline SendToPaymentCode");
             process_send_to_payment_code(std::move(in));
         } break;
         case ManagerJobs::StartWallet: {
+            tdiag("pipeline init");
             wallet_.Init();
         } break;
         case ManagerJobs::FilterUpdate: {
+            tdiag("pipeline FilterUpdate");
             process_filter_update(std::move(in));
         } break;
         case ManagerJobs::StateMachine: {
+            tdiag("pipeline StateMachine");
             do_work();
         } break;
         default: {
@@ -1126,6 +1139,7 @@ auto Base::shutdown(std::promise<void>& promise) noexcept -> void
         if (sync_server_) { sync_server_->Shutdown(); }
 
         if (p2p_requestor_) {
+            tdiag("about to send Shutdown");
             sync_socket_->Send(MakeWork(WorkType::Shutdown));
         }
 
@@ -1139,6 +1153,7 @@ auto Base::shutdown(std::promise<void>& promise) noexcept -> void
 
 auto Base::shut_down() noexcept -> void
 {
+    tdiag("Base::shut_down");
     close_pipeline();
     shutdown_sender_.Activate();
     wallet_.Shutdown();
@@ -1371,6 +1386,7 @@ auto Base::Wallet() const noexcept -> const node::Wallet& { return wallet_; }
 
 Base::~Base()
 {
+    tdiag("Base::~Base");
     protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::blockchain::node::implementation

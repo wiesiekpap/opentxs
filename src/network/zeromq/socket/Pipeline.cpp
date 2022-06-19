@@ -195,8 +195,9 @@ Pipeline::Imp::Imp(
         auto out = StartArgs{
             {outgoing_.ID(),
              &outgoing_,
-             [id = outgoing_.ID(), socket = &dealer_](auto&& m) {
-                 socket->Send(std::move(m));
+             [this](auto&& m) {
+                 auto closing = gate_.get();
+                 if (!closing) { SendFromThread(std::move(m)); }
              }},
             {internal_.ID(),
              &internal_,

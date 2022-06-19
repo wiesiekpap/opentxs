@@ -20,7 +20,8 @@ TEST_F(Restart_fixture, send_to_client_reboot_confirm_data)
     EXPECT_TRUE(Start());
     EXPECT_TRUE(Connect());
     ot::LogConsole()("send_to_client_reboot_confirm_data start").Flush();
-    ot::Amount receiver_balance_after_send, sender_balance_after_send;
+    ot::Amount receiver_balance_after_send{};
+    ot::Amount sender_balance_after_send{};
 
     // Create wallets
     const auto& user_alice = CreateUser(name_alice_, words_alice_);
@@ -47,8 +48,13 @@ TEST_F(Restart_fixture, send_to_client_reboot_confirm_data)
     EXPECT_EQ(balance_after_mine_, GetBalance(user_alice));
     EXPECT_EQ(balance_after_mine_, GetBalance(user_bob));
 
+    std::cerr << "QQQQ After mine: Alice: " << GetDisplayBalance(user_alice)
+              << ", Bob: " << GetDisplayBalance(user_bob) << std::endl;
+
     // Send coins from alice to bob
     SendCoins(user_bob, user_alice, current_height_);
+    std::cerr << "QQQQ WaitForSynchro Bob after Send coins from alice to bob"
+              << std::endl;
     WaitForSynchro(
         user_bob, current_height_, balance_after_mine_ + coin_to_send_);
 
@@ -60,30 +66,33 @@ TEST_F(Restart_fixture, send_to_client_reboot_confirm_data)
         GetDisplayBalance(receiver_balance_after_send))
         .Flush();
 
-    // Collect outputs
-    std::set<UTXO> bob_outputs;
-    std::set<UTXO> alice_outputs;
-    std::map<ot::blockchain::node::TxoState, std::size_t>
-        bob_number_of_outputs_per_type;
-    std::map<ot::blockchain::node::TxoState, std::size_t>
-        alice_number_of_outputs_per_type;
-
-    CollectOutputs(user_bob, bob_outputs, bob_number_of_outputs_per_type);
-    CollectOutputs(user_alice, alice_outputs, alice_number_of_outputs_per_type);
-
     EXPECT_EQ(balance_after_mine_ + coin_to_send_, receiver_balance_after_send);
+
+    // Collect outputs
+    std::set<UTXO> bob_outputs{};
+    std::map<ot::blockchain::node::TxoState, std::size_t>
+        bob_number_of_outputs_per_type{};
+    CollectOutputs(user_bob, bob_outputs, bob_number_of_outputs_per_type);
+
+    std::set<UTXO> alice_outputs{};
+    std::map<ot::blockchain::node::TxoState, std::size_t>
+        alice_number_of_outputs_per_type{};
+    CollectOutputs(user_alice, alice_outputs, alice_number_of_outputs_per_type);
 
     auto loaded_transactions = CollectTransactionsForFeeCalculations(
         user_alice, send_transactions_, transactions_ptxid_);
     auto fee = CalculateFee(send_transactions_, loaded_transactions);
 
+    std::cerr << "QQQQ WaitForSynchro Alice after Send coins from alice to bob"
+              << std::endl;
     WaitForSynchro(
         user_alice,
         current_height_,
         Amount{balance_after_mine_} - Amount{coin_to_send_} - fee);
     sender_balance_after_send = GetBalance(user_alice);
     ot::LogConsole()(
-        "Alice balance after send " + GetDisplayBalance(GetBalance(user_alice)))
+        "QQQQ Alice balance after send " +
+        GetDisplayBalance(GetBalance(user_alice)))
         .Flush();
     EXPECT_EQ(
         Amount{balance_after_mine_} - Amount{coin_to_send_} - fee,
@@ -97,10 +106,12 @@ TEST_F(Restart_fixture, send_to_client_reboot_confirm_data)
 
     // Restore both wallets
     const auto& user_alice_after_reboot = CreateUser(name_alice_, words_alice_);
+    std::cerr << "QQQQ WaitForSynchro Alice after reboot" << std::endl;
     WaitForSynchro(
         user_alice_after_reboot, current_height_, sender_balance_after_send);
 
     const auto& user_bob_after_reboot = CreateUser(name_bob_, words_bob_);
+    std::cerr << "QQQQ WaitForSynchro Bob after reboot" << std::endl;
     WaitForSynchro(
         user_bob_after_reboot, current_height_, receiver_balance_after_send);
 

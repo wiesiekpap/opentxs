@@ -161,7 +161,8 @@ protected:
     auto WaitForSynchro(
         const User& user,
         const Height target,
-        const Amount expected_balance) -> void;
+        const Amount expected_balance,
+        std::chrono::seconds = 0s) -> void;
 
     auto GetBalance(const User& user) const -> const Amount;
     auto GetDisplayBalance(const User& user) const

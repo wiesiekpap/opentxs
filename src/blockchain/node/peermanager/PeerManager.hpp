@@ -355,6 +355,7 @@ private:
         Jobs() = delete;
     };
 
+    std::atomic<bool> closed_;
     const node::internal::Manager& node_;
     database::Peer& database_;
     const Type chain_;

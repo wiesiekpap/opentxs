@@ -82,6 +82,7 @@ PeerManager::PeerManager(
     const UnallocatedCString& shutdown) noexcept
     : internal::PeerManager()
     , Worker(api, 100ms)
+    , closed_{}
     , node_(node)
     , database_(database)
     , chain_(chain)
@@ -292,6 +293,7 @@ auto PeerManager::pipeline(zmq::Message&& message) -> void
 
     switch (work) {
         case Work::Disconnect: {
+            tdiag("PeerManager::Disconnect");
             OT_ASSERT(1 < body.size());
 
             const auto id = body.at(1).as<int>();
@@ -418,10 +420,13 @@ auto PeerManager::RequestHeaders() const noexcept -> bool
 
 auto PeerManager::shut_down() noexcept -> void
 {
-    close_pipeline();
-    jobs_.Shutdown();
-    peers_.Shutdown();
-    // TODO MT-34 investigate what other actions might be needed
+    if (!closed_.exchange(true)) {
+        close_pipeline();
+        tdiag("jobs Shutdown");
+        jobs_.Shutdown();
+        tdiag("Peers Shutdown");
+        peers_.Shutdown();
+    }
 }
 
 auto PeerManager::state_machine() noexcept -> bool

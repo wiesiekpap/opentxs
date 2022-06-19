@@ -321,10 +321,14 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
     if (false == IsReady(init_)) {
         pipeline_.Push(std::move(message));
 
+        tdiag("Peer::pipeline pushed back, no init");
         return;
     }
 
-    if (false == running_.load()) { return; }
+    if (false == running_.load()) {
+        tdiag("Peer::pipeline ignored, not running");
+        return;
+    }
 
     const auto header = message.Header();
     const auto body = message.Body();
@@ -348,6 +352,7 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
     }();
 
     if (connectionID == untrusted_connection_id_) {
+        tdiag("Peer::pipeline untrusted");
         if (false == connection_->filter(task)) {
             LogError()(OT_PRETTY_CLASS())("Peer ")(address_.Display())(
                 " sent an internal control message instead of a valid protocol "
@@ -361,33 +366,43 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
 
     switch (task) {
         case Task::Shutdown: {
+            tdiag("Peer::pipeline Shutdown");
             protect_shutdown([this] { shut_down(); });
         } break;
         case Task::Mempool: {
+            tdiag("Peer::pipeline Mempool");
             process_mempool(message);
         } break;
         case Task::Register: {
+            tdiag("Peer::pipeline Register");
             connection_->on_register(std::move(message));
         } break;
         case Task::Connect: {
+            tdiag("Peer::pipeline Connect");
             connection_->on_connect(std::move(message));
         } break;
         case Task::Disconnect: {
+            tdiag("Peer::pipeline Disconnect");
             disconnect();
         } break;
         case Task::Getheaders: {
+            tdiag("Peer::pipeline Getheaders");
             if (State::Run == state_.value_.load()) { request_headers(); }
         } break;
         case Task::Getblock: {
+            tdiag("Peer::pipeline Getblock");
             request_block(std::move(message));
         } break;
         case Task::BroadcastTransaction: {
+            tdiag("Peer::pipeline BroadcastTransaction");
             broadcast_transaction(std::move(message));
         } break;
         case Task::BroadcastBlock: {
+            tdiag("Peer::pipeline BroadcastBlock");
             broadcast_block(std::move(message));
         } break;
         case Task::JobAvailableCfheaders: {
+            tdiag("Peer::pipeline JobAvailableCfheaders");
             if (State::Run == state_.value_.load()) {
                 if (cfheader_job_) { break; }
 
@@ -395,6 +410,7 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
             }
         } break;
         case Task::JobAvailableCfilters: {
+            tdiag("Peer::pipeline JobAvailableCfilters");
             if (State::Run == state_.value_.load()) {
                 if (cfilter_job_) { break; }
 
@@ -402,6 +418,7 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
             }
         } break;
         case Task::JobAvailableBlock: {
+            tdiag("Peer::pipeline JobAvailableBlock");
             if (State::Run == state_.value_.load()) {
                 if (block_job_) { break; }
 
@@ -409,32 +426,41 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
             }
         } break;
         case Task::ActivityTimeout: {
+            tdiag("Peer::pipeline ActivityTimeout");
             activity_timeout();
         } break;
         case Task::NeedPing: {
+            tdiag("Peer::pipeline NeedPing");
             if (State::Run == state_.value_.load()) { ping(); }
         } break;
         case Task::Body: {
+            tdiag("Peer::pipeline Body");
             activity_.Bump();
             connection_->on_body(std::move(message));
         } break;
         case Task::Header: {
+            tdiag("Peer::pipeline Header");
             activity_.Bump();
             connection_->on_header(std::move(message));
         } break;
         case Task::P2P:
+            tdiag("Peer::pipeline P2P");
+            [[fallthrough]];
         case Task::ReceiveMessage: {
             activity_.Bump();
             process_message(std::move(message));
         } break;
         case Task::SendMessage: {
+            tdiag("Peer::pipeline SendMessage");
             transmit(std::move(message));
         } break;
         case Task::Init: {
+            tdiag("Peer::pipeline Init");
             connection_->on_init(std::move(message));
         } break;
         case Task::Heartbeat:
         case Task::StateMachine: {
+            tdiag("Peer::pipeline StateMachine or Heartbeat");
             do_work();
         } break;
         default: {
@@ -572,6 +598,7 @@ auto Peer::send(std::pair<zmq::Frame, zmq::Frame>&& frames) noexcept
 
 auto Peer::Shutdown() noexcept -> void
 {
+    tdiag("Shutdown");
     protect_shutdown([this] { shut_down(); });
 }
 

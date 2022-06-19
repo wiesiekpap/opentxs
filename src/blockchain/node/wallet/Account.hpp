@@ -144,6 +144,7 @@ private:
     auto do_shutdown() noexcept -> void override;
     auto pipeline(const Work work, Message&& msg) noexcept -> void override;
     auto work() noexcept -> bool override;
+    auto to_str(Work) const noexcept -> std::string final;
 
 private:
     using Subchains = Map<OTIdentifier, boost::shared_ptr<SubchainStateData>>;

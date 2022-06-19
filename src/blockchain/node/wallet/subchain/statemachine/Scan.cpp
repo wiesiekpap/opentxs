@@ -69,13 +69,7 @@ Scan::Imp::Imp(
 {
 }
 
-Scan::Imp::~Imp()
-{
-    tdiag("Scan::~Imp ENTERED");
-    //    shutdown_actor();
-    tdiag("Scan::Imp DELETED !!!!!!!!!!!!!!!!!!!!!!!!!!");
-    //    *static_cast<char*>(nullptr) = 0;
-}
+Scan::Imp::~Imp() { tdiag("Scan::Imp::~Imp"); }
 
 auto Scan::Imp::caught_up() const noexcept -> bool
 {
@@ -95,7 +89,7 @@ auto Scan::Imp::current() const noexcept -> const block::Position&
 
 auto Scan::Imp::do_startup() noexcept -> void
 {
-    disable_automatic_processing_ = true;
+    disable_automatic_processing(true);
     const auto& node = parent_.node_;
     const auto& filters = node.FilterOracleInternal();
     last_scanned_ = parent_.db_.SubchainLastScanned(parent_.db_key_);

@@ -143,7 +143,7 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::blockchain::node::implementation
 {
-class Base : virtual public node::internal::Manager, public Worker<api::Session>
+class Base : public node::internal::Manager, public Worker<api::Session>
 {
 public:
     enum class Work : OTZMQWorkType {
