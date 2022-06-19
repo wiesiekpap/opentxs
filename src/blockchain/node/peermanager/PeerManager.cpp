@@ -292,6 +292,7 @@ auto PeerManager::pipeline(zmq::Message&& message) -> void
 
     switch (work) {
         case Work::Disconnect: {
+            tdiag("PeerManager::Disconnect");
             OT_ASSERT(1 < body.size());
 
             const auto id = body.at(1).as<int>();
@@ -419,8 +420,11 @@ auto PeerManager::RequestHeaders() const noexcept -> bool
 auto PeerManager::shut_down() noexcept -> void
 {
     close_pipeline();
+    tdiag("jobs Shutdown");
     jobs_.Shutdown();
+    tdiag("Peers Shutdown 1");
     peers_.Shutdown();
+    tdiag("Peers Shutdown 2");
     // TODO MT-34 investigate what other actions might be needed
 }
 

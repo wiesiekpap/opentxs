@@ -314,7 +314,7 @@ auto Regtest_fixture_simple::CreateClient(
     }
 
     std::cerr << "ABOUT TO WAIT 120s\n";
-    const auto status = done.wait_for(std::chrono::seconds(30));
+    const auto status = done.wait_for(std::chrono::seconds(120));
     std::cerr << "BACK AFTER 120s\n";
     const auto future = (std::future_status::ready == status);
 
@@ -392,13 +392,14 @@ auto Regtest_fixture_simple::GetNextBlockchainAddress(const User& user)
 auto Regtest_fixture_simple::WaitForSynchro(
     const User& user,
     const Height target,
-    const Amount expected_balance) -> void
+    const Amount expected_balance,
+    std::chrono::seconds max_duration) -> void
 {
     if (expected_balance == 0) { return; }
 
     auto begin = std::chrono::steady_clock::now();
     auto now = begin;
-    auto end = begin + wait_time_limit_;
+    auto end = begin + (max_duration == 0s ? wait_time_limit_ : max_duration);
 
     while (now < end) {
         now = std::chrono::steady_clock::now();
@@ -410,6 +411,7 @@ auto Regtest_fixture_simple::WaitForSynchro(
 
         ot::LogConsole()(
             "Waiting for synchronization, balance: " + GetDisplayBalance(user) +
+            ", expected balance: " + GetDisplayBalance(expected_balance) +
             ", sync percentage: " + percentage.str() + "%, sync progress [" +
             std::to_string(progress.first) + "," +
             std::to_string(progress.second) + "]" +
@@ -430,6 +432,17 @@ auto Regtest_fixture_simple::WaitForSynchro(
     }
 
     now = std::chrono::steady_clock::now();
+    if ((now > end)) {
+        std::cerr << "QRV max_duration " << max_duration.count() << "s"
+                  << std::endl;
+        std::cerr << "QRV expected balance "
+                  << GetDisplayBalance(expected_balance) << std::endl;
+        std::cerr << "QRV now > end, overrun by "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(
+                         now - end)
+                         .count()
+                  << std::endl;
+    }
     EXPECT_LT(now, end);
 }
 auto Regtest_fixture_simple::GetDisplayBalance(

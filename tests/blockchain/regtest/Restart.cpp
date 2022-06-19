@@ -49,6 +49,8 @@ TEST_F(Restart_fixture, send_to_client_reboot_confirm_data)
 
     // Send coins from alice to bob
     SendCoins(user_bob, user_alice, current_height_);
+    std::cerr << "WaitForSynchro Bob after Send coins from alice to bob"
+              << std::endl;
     WaitForSynchro(
         user_bob, current_height_, balance_after_mine_ + coin_to_send_);
 
@@ -77,6 +79,8 @@ TEST_F(Restart_fixture, send_to_client_reboot_confirm_data)
         user_alice, send_transactions_, transactions_ptxid_);
     auto fee = CalculateFee(send_transactions_, loaded_transactions);
 
+    std::cerr << "WaitForSynchro Alice after Send coins from alice to bob"
+              << std::endl;
     WaitForSynchro(
         user_alice,
         current_height_,
@@ -97,10 +101,12 @@ TEST_F(Restart_fixture, send_to_client_reboot_confirm_data)
 
     // Restore both wallets
     const auto& user_alice_after_reboot = CreateUser(name_alice_, words_alice_);
+    std::cerr << "WaitForSynchro Alice after reboot" << std::endl;
     WaitForSynchro(
         user_alice_after_reboot, current_height_, sender_balance_after_send);
 
     const auto& user_bob_after_reboot = CreateUser(name_bob_, words_bob_);
+    std::cerr << "WaitForSynchro Bob after reboot" << std::endl;
     WaitForSynchro(
         user_bob_after_reboot, current_height_, receiver_balance_after_send);
 

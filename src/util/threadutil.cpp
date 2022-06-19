@@ -1,6 +1,7 @@
 #include <boost/core/demangle.hpp>
 #include <pthread.h>
 #include <atomic>
+#include <cctype>
 #include <chrono>
 #include <cstdint>
 #include <cstring>
@@ -20,7 +21,7 @@
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
-#ifdef __linux
+#if defined(__linux) && defined(TDIAG)
 
 ThreadHandle::ThreadHandle()
     : name_{}
@@ -110,7 +111,7 @@ std::string ThreadMonitor::default_name(std::string&& Class)
         }
     }
     if (Class.find_first_of("::") == 0) { Class.erase(0, 2); }
-    return Class;
+    return std::move(Class);
 }
 
 // static
@@ -129,20 +130,95 @@ ThreadMonitor* ThreadMonitor::instance()
 
 ThreadMonitor::~ThreadMonitor() {}
 
+std::string abbreviate(std::string&& full);
+
+std::string abbreviate(std::string&& full)
+{
+    static auto dict = std::map<std::string, std::string>{
+        {"Account", "Acct"},       {"Accounts", "Acts"},
+        {"Actor", "Actr"},         {"Balance", "Blnc"},
+        {"Bitcoin", "Btco"},       {"Block", "Blck"},
+        {"Blockchain", "Blkc"},    {"Data", "Data"},
+        {"Deterministic", "Dtrm"}, {"Downloader", "Dldr"},
+        {"Filter", "Fltr"},        {"Imp", "Imp"},
+        {"Index", "Indx"},         {"Indexer", "Idxr"},
+        {"Index", "Indx"},         {"Internal", "Intr"},
+        {"Jobs", "Jobs"},          {"Manager", "Mngr"},
+        {"Network", "Ntwk"},       {"Notification", "Nfcn"},
+        {"Oracle", "Orcl"},        {"Process", "Proc"},
+        {"Progress", "Prog"},      {"Reactor", "Reac"},
+        {"Rescan", "Resc"},        {"Scan", "Scan"},
+        {"Server", "Srv"},         {"State", "Stte"},
+        {"Wallet", "Wlt"},         {"account", "acct"},
+        {"accounts", "acts"},      {"actor", "actr"},
+        {"balance", "blnc"},       {"bitcoin", "btco"},
+        {"block", "blck"},         {"blockchain", "blkc"},
+        {"blockoracle", "blor"},   {"data", "data"},
+        {"deterministic", "dtrm"}, {"downloader", "dldr"},
+        {"filter", "fltr"},        {"imp", "imp"},
+        {"index", "indx"},         {"indexer", "idxr"},
+        {"index", "indx"},         {"internal", "intr"},
+        {"jobs", "jobs"},          {"manager", "mngr"},
+        {"network", "ntwk"},       {"notification", "nfcn"},
+        {"oracle", "orcl"},        {"process", "proc"},
+        {"progress", "prog"},      {"reactor", "reac"},
+        {"rescan", "resc"},        {"scan", "scan"},
+        {"server", "srv"},         {"state", "stte"},
+        {"wallet", "wlt"}};
+
+    while (true) {
+        auto idouble_colon = full.find("::");
+        if (idouble_colon == std::string::npos) break;
+        full.replace(idouble_colon, 2, "_");
+    }
+
+    std::vector<std::string> members;
+    members.push_back({});
+    for (auto c : full) {
+        auto& word = members.back();
+        if (islower(c)) { word += c; }
+        if (c == '_') {
+            members.push_back({});
+            continue;
+        }
+        if (isupper(c)) {
+            members.push_back({});
+            auto& word = members.back();
+            word += c;
+        }
+    }
+
+    for (auto& w : members) {
+        if (w.size() > 4) {
+            if (auto i = dict.find(w); i != dict.end()) {
+                w = i->second;
+            } else {
+                w.resize(4);
+            }
+        }
+    }
+
+    std::string result;
+    while (!members.empty()) {
+        result = members.back() + result;
+        members.pop_back();
+        if (result.size() > 13) {
+            result.resize(13);
+            break;
+        }
+    }
+    return result;
+}
+
 ThreadHandle ThreadMonitor::p_add_current_thread(
     std::string&& name,
     std::string&& description)
 {
     constexpr const unsigned max_pthread_name_len = 15;
-    std::string thr_name = name;
-    while (true) {
-        auto idouble_colon = thr_name.find("::");
-        if (idouble_colon == std::string::npos) break;
-        thr_name.replace(idouble_colon, 2, "_");
-    }
-    for (auto idx = 0; idx < 1000; ++idx) {
+    std::string thr_name = abbreviate(std::move(name));
+    for (auto idx = 0; idx < 100; ++idx) {
         std::string scratch_name = thr_name;
-        if (idx) { scratch_name += std::to_string(++idx); }
+        if (idx) { scratch_name += std::to_string(idx); }
 
         if (scratch_name.size() > max_pthread_name_len) {
             scratch_name.erase(0, scratch_name.size() - max_pthread_name_len);
@@ -222,6 +298,7 @@ std::mutex ThreadDisplay::diagmtx{};
 
 ThreadDisplay::ThreadDisplay()
     : thread_handle_{}
+    , diag_alert_{}
 {
 }
 void ThreadDisplay::set_host_thread(const ThreadHandle& value)
@@ -249,43 +326,74 @@ void ThreadDisplay::show_all(std::ostream& os)
     std::cerr << "------\n";
 }
 
-void ThreadDisplay::tdiag(std::string s1, std::string s2) const noexcept
+void ThreadDisplay::ssdiag(
+    std::string&& s1,
+    std::string&& s2,
+    std::string&& tag) const noexcept
 {
     std::unique_lock<std::mutex> l(diagmtx);
     std::string C = get_class();
 
-    std::cerr << "#### " << mytime() << " ";
-    std::cerr << std::left << std::setw(17) << ThreadMonitor::get_name();
-    std::cerr << std::left << std::setw(17);
-    if (thread_handle_.has_value()) {
-        std::cerr << ThreadMonitor::get_name(thread_handle_.value());
-    } else {
-        std::cerr << "----------";
-    }
-    std::cerr << std::left << std::setw(80) << C;
-    std::cerr << s1 << " ";
-    std::cerr << s2 << "\n";
+    constexpr std::size_t ReservedDiagLength = 232;
+    thread_local static std::string line(ReservedDiagLength, ' ');
+    constexpr std::size_t idx0 = 0;
+    line.resize(idx0);
+    line += tag;
+    constexpr std::size_t idx1 = idx0 + 5;
+    line.resize(idx1, ' ');
+    line += mytime();
+    constexpr std::size_t idx2 = idx1 + 7;
+    line.resize(idx2, ' ');
+    line += ThreadMonitor::get_name();
+    constexpr std::size_t idx3 = idx2 + 17;
+    line.resize(idx3, ' ');
+    line += thread_handle_.has_value()
+                ? ThreadMonitor::get_name(thread_handle_.value())
+                : std::string("----------");
+    constexpr std::size_t idx4 = idx3 + 17;
+    line.resize(idx4, ' ');
+    line += C;
+    constexpr std::size_t idx5 = idx4 + 70;
+    line.resize(idx5, ' ');
+    line += s1;
+    line += " ";
+    if (s2.size()) { line += s2; }
+    line += "\n";
+    static_assert(idx5 + 64 < ReservedDiagLength);
+    std::cerr << line;
 }
 
-void ThreadDisplay::tdiag(dstring&& mangled, std::string s2) const noexcept
+void ThreadDisplay::tsdiag(
+    const std::type_info& type,
+    std::string&& s2,
+    std::string&& tag) const noexcept
 {
-    std::unique_lock<std::mutex> l(diagmtx);
-    std::string s = typeid(*this).name();
-    std::string C = boost::core::demangle(s.data());
-
-    std::string s1 = boost::core::demangle(mangled.str_.data());
-
-    std::cerr << "#### " << mytime() << " ";
-    std::cerr << std::left << std::setw(17) << ThreadMonitor::get_name();
-    std::cerr << std::left << std::setw(17);
-    if (thread_handle_.has_value()) {
-        std::cerr << ThreadMonitor::get_name(thread_handle_.value());
-    } else {
-        std::cerr << "----------";
+    thread_local static std::string s1;
+    {
+        std::unique_lock<std::mutex> l(diagmtx);
+        s1 = boost::core::demangle(type.name());
     }
-    std::cerr << std::left << std::setw(80) << C;
-    std::cerr << s1 << " ";
-    std::cerr << s2 << "\n";
+    ssdiag(std::move(s1), std::move(s2), std::move(tag));
+}
+
+void ThreadDisplay::tadiag(
+    std::string&& s1,
+    std::string&& s2,
+    std::string&& tag) const noexcept
+{
+    if (diag_alert_.exchange(false)) {
+        tdiag(std::move(s1), std::move(s2), std::move(tag));
+    }
+}
+
+void ThreadDisplay::tadiag(
+    const std::type_info& type,
+    std::string&& s2,
+    std::string&& tag) const noexcept
+{
+    if (diag_alert_.exchange(false)) {
+        tadiag(type, std::move(s2), std::move(tag));
+    }
 }
 
 std::string ThreadDisplay::get_class() const noexcept
@@ -295,10 +403,8 @@ std::string ThreadDisplay::get_class() const noexcept
     return Class;
 }
 
-ThreadDisplay::~ThreadDisplay(){
+ThreadDisplay::~ThreadDisplay() {}
 
-};
-
-#endif
+#endif  // defined(__linux) && defined(TDIAG)
 
 }  // namespace opentxs

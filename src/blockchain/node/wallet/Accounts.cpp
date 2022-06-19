@@ -179,8 +179,15 @@ auto Accounts::Imp::do_startup() noexcept -> void
     }
 }
 
+auto Accounts::Imp::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto Accounts::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
+    tadiag("pipeline ", std::string{print(work)});
+
     switch (state_) {
         case State::normal: {
             state_normal(work, std::move(msg));
@@ -401,6 +408,7 @@ auto Accounts::Imp::transition_state_reorg() noexcept -> bool
         auto work = MakeWork(AccountJobs::prepare_reorg);
         work.AddFrame(id);
         to_children_.SendDeferred(std::move(work));
+        tdiag("---sending prepare_reorg----");
     }
 
     auto success{true};
@@ -416,6 +424,7 @@ auto Accounts::Imp::transition_state_reorg() noexcept -> bool
 
 auto Accounts::Imp::transition_state_shutdown() noexcept -> void
 {
+    tdiag("about to send Shutdown");
     to_children_.SendDeferred(MakeWork(AccountJobs::prepare_shutdown));
     for_each([](auto& a) {
         auto rc = a.second.ChangeState(Account::State::shutdown);

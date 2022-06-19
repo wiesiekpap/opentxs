@@ -22,16 +22,33 @@ auto Reactor::enqueue(network::zeromq::Message&& in) -> bool
             auto mq = message_queue_.lock();
             mq->push(in);
         }
-        queue_event_flag_.notify_all();
+        queue_event_flag_.notify_one();
         return true;
     }
     return false;
 }
 
-auto Reactor::dequeue_message() -> std::optional<Message>
+auto Reactor::defer(network::zeromq::Message&& in) -> void
 {
-    std::optional<Message> msg{};
+    auto mq = deferred_queue_.lock();
+    mq->push(in);
+}
+
+auto Reactor::dequeue_message() -> std::optional<network::zeromq::Message>
+{
+    std::optional<network::zeromq::Message> msg{};
     auto mq = message_queue_.lock();
+    if (!mq->empty()) {
+        msg = std::move(mq->front());
+        mq->pop();
+    }
+    return msg;
+}
+
+auto Reactor::dequeue_deferred() -> std::optional<network::zeromq::Message>
+{
+    std::optional<network::zeromq::Message> msg{};
+    auto mq = deferred_queue_.lock();
     if (!mq->empty()) {
         msg = std::move(mq->front());
         mq->pop();
@@ -50,11 +67,12 @@ auto Reactor::dequeue_command() noexcept -> std::unique_ptr<Command>
     return {};
 }
 
-auto Reactor::try_post(Message&& m) noexcept -> std::optional<Message>
+auto Reactor::try_post(network::zeromq::Message&& m) noexcept
+    -> std::optional<network::zeromq::Message>
 {
     if (in_reactor_thread()) {
         auto reject(std::move(m));
-        return reject;
+        return std::move(reject);
     }
     {
         auto mq = message_queue_.lock();
@@ -62,6 +80,34 @@ auto Reactor::try_post(Message&& m) noexcept -> std::optional<Message>
     }
     queue_event_flag_.notify_one();
     return {};
+}
+
+auto Reactor::process_deferred() -> void
+{
+    while (active_) {
+        auto m = dequeue_deferred();
+        if (!m.has_value()) { break; }
+        time_it(
+            [&] { handle(std::move(m.value())); },
+            "XX DEFERRED MESSAGE HANDLER",
+            500);
+    }
+}
+
+auto Reactor::flush_cache() -> void
+{
+    if (in_reactor_thread()) {
+        process_deferred();
+    } else {
+        std::promise<void> p{};
+        auto f = p.get_future();
+        {
+            auto deferred_promises_handle = deferred_promises_.lock();
+            deferred_promises_handle->push_back(std::move(p));
+        }
+        notify();
+        f.get();
+    }
 }
 
 bool Reactor::start()
@@ -74,11 +120,20 @@ bool Reactor::start()
     return true;
 }
 
-bool Reactor::stop() { return active_.exchange(false); }
+bool Reactor::stop()
+{
+    auto old = active_.exchange(false);
+    active_ = false;
+    queue_event_flag_.notify_one();
+    if (thread_ && !in_reactor_thread() && thread_->joinable()) {
+        thread_->join();
+    }
+    return old;
+}
 
 auto Reactor::notify() -> void { queue_event_flag_.notify_one(); }
 
-auto Reactor::wait_for_shutdown() const -> void
+auto Reactor::wait_for_loop_exit() const -> void
 {
     try {
         auto f = future_shutdown_;
@@ -97,6 +152,7 @@ bool Reactor::in_reactor_thread() const noexcept
 Reactor::Reactor(const Log& logger, const CString& name) noexcept
     : ThreadDisplay()
     , active_{}
+    , deferred_promises_{}
     , queue_event_mtx_{}
     , queue_event_flag_{}
     , thread_{}
@@ -104,6 +160,7 @@ Reactor::Reactor(const Log& logger, const CString& name) noexcept
     , future_shutdown_{promise_shutdown_.get_future()}
     , command_queue_{}
     , message_queue_{}
+    , deferred_queue_{}
     , log_{logger}
     , name_{name}
     , processing_thread_id_{}
@@ -115,18 +172,18 @@ Reactor::Reactor(const Log& logger, const CString& name) noexcept
 
 Reactor::~Reactor()
 {
-    std::ostringstream os{};
-    os << processing_thread_id_;
-    tdiag("Reactor::~Reactor 1", os.str());
+    tdiag("Reactor::~Reactor 1", processing_thread_id_);
     try {
 
         if (thread_ && !in_reactor_thread() && thread_->joinable()) {
+            active_ = false;
+            queue_event_flag_.notify_one();
             thread_->join();
         }
     } catch (const std::exception&) {
         // deliberately silent
     }
-    tdiag("Reactor::~Reactor 2", os.str());
+    tdiag("Reactor::~Reactor 2", processing_thread_id_);
 }
 
 int Reactor::reactor_loop()
@@ -138,9 +195,7 @@ int Reactor::reactor_loop()
         }
         if (!active_) {
             {
-                std::ostringstream os{};
-                os << processing_thread_id_;
-                tdiag("leaving reactor", os.str());
+                tdiag("leaving reactor", processing_thread_id_);
             }
             break;
         }
@@ -153,32 +208,42 @@ int Reactor::reactor_loop()
         processing_thread_id_ = std::this_thread::get_id();
 
         {
-            std::ostringstream os{};
-            os << processing_thread_id_;
-            tdiag("reactor initialization", os.str());
+            tdiag("reactor initialization", processing_thread_id_);
         }
 
         while (active_) {
+            {
+                auto deferred_promises_handle = deferred_promises_.lock();
+                if (!deferred_promises_handle->empty()) {
+                    process_deferred();
+                    deferred_promises_handle->front().set_value();
+                    deferred_promises_handle->pop_front();
+                }
+            }
+
             while (active_) {
                 auto c = dequeue_command();
                 if (c) {
-                    tdiag(dname(this), "dequeue command");
-                    c->exec();
+                    tdiag(typeid(this), "dequeue command");
+                    time_it([&] { c->exec(); }, "XX COMMAND EXEC", 1200);
                 }
 
                 auto m = dequeue_message();
                 if (!active_ || !m.has_value()) { break; }
-                handle(std::move(m.value()));
+                time_it(
+                    [&] { handle(std::move(m.value())); },
+                    "XX MESSAGE HANDLER",
+                    1200);
+                tadiag("Last job: ", last_job_str());
             }
             if (!active_) { break; }
             std::unique_lock<std::mutex> lck(queue_event_mtx_);
-            queue_event_flag_.wait(lck);
+            time_it(
+                [&] { queue_event_flag_.wait(lck); }, "XX NOTIFICATION", 20000);
         }
         break;
     }
-    std::ostringstream os{};
-    os << processing_thread_id_;
-    tdiag("leaving reactor", os.str());
+    tdiag("leaving reactor", processing_thread_id_);
     promise_shutdown_.set_value();
     return 0;
 }

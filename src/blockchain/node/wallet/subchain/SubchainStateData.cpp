@@ -911,9 +911,16 @@ auto SubchainStateData::Init(boost::shared_ptr<SubchainStateData> me) noexcept
     signal_startup(me);
 }
 
+auto SubchainStateData::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto SubchainStateData::pipeline(const Work work, Message&& msg) noexcept
     -> void
 {
+    tadiag("pipeline ", std::string{print(work)});
+
     switch (state_) {
         case State::normal: {
             state_normal(work, std::move(msg));
@@ -1794,7 +1801,7 @@ auto SubchainStateData::transition_state_normal() noexcept -> bool
         "transition_state_normal, children:", (have_children_ ? "YES" : "NO"));
     if (!have_children_) { return false; }
 
-    disable_automatic_processing_ = false;
+    disable_automatic_processing(false);
     auto rc = scan_->ChangeState(JobState::normal, {});
 
     OT_ASSERT(rc);
@@ -1842,7 +1849,7 @@ auto SubchainStateData::transition_state_reorg(StateSequence id) noexcept
         if (false == output) { return false; }
 
         reorgs_.emplace(id);
-        disable_automatic_processing_ = true;
+        disable_automatic_processing(true);
         state_ = State::reorg;
         log_(OT_PRETTY_CLASS())(name_)(" ready to process reorg ")(id).Flush();
     } else {

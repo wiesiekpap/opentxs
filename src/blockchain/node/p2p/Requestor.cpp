@@ -262,8 +262,15 @@ auto Requestor::Imp::next_position() const noexcept -> const block::Position&
     return (blank() == queue_position_) ? local_position_ : queue_position_;
 }
 
+auto Requestor::Imp::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto Requestor::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
+    tadiag("pipeline ", std::string{print(work)});
+
     switch (state_) {
         case State::init: {
             state_init(work, std::move(msg));

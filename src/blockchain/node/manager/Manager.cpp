@@ -1126,6 +1126,7 @@ auto Base::shutdown(std::promise<void>& promise) noexcept -> void
         if (sync_server_) { sync_server_->Shutdown(); }
 
         if (p2p_requestor_) {
+            tdiag("about to send Shutdown 1");
             sync_socket_->Send(MakeWork(WorkType::Shutdown));
         }
 
@@ -1144,7 +1145,10 @@ auto Base::shut_down() noexcept -> void
     wallet_.Shutdown();
 
     if (sync_server_) { sync_server_->Shutdown(); }
-    if (p2p_requestor_) { sync_socket_->Send(MakeWork(WorkType::Shutdown)); }
+    if (p2p_requestor_) {
+        tdiag("about to send Shutdown 2");
+        sync_socket_->Send(MakeWork(WorkType::Shutdown));
+    }
 
     peer_.Shutdown();
     filters_.Shutdown();
