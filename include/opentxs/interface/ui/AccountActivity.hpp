@@ -48,7 +48,7 @@ public:
     virtual auto Balance() const noexcept -> const Amount = 0;
     /// returns Polarity, since the account balance can be positive or negative.
     virtual auto BalancePolarity() const noexcept -> int = 0;
-    /// returns For off-chain assets, returns the unit definition ID for the
+    /// For off-chain assets, returns the unit definition ID for the
     /// associated asset contract.
     virtual auto ContractID() const noexcept -> UnallocatedCString = 0;
     ///@{
