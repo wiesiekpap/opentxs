@@ -63,11 +63,6 @@ namespace database
 class Cfilter;
 }  // namespace database
 
-namespace internal
-{
-class BlockOracle;
-}  // namespace internal
-
 namespace node
 {
 namespace implementation
@@ -131,7 +126,7 @@ public:
     ~BlockIndexer() final;
 
 protected:
-    auto pipeline(zmq::Message&& in) noexcept -> void final;
+    auto pipeline(zmq::Message&& in) -> void final;
     auto state_machine() noexcept -> bool final;
 
 private:

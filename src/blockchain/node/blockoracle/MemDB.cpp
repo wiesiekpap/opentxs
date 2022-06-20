@@ -35,7 +35,7 @@ auto MemDB::clear() noexcept -> void
 
 auto MemDB::find(const ReadView id) const noexcept -> BitcoinBlockResult
 {
-    if (false == valid(id)) {
+    if (!valid(id)) {
         LogError()(OT_PRETTY_CLASS())("invalid block id").Flush();
 
         return {};
@@ -76,7 +76,7 @@ auto MemDB::push(block::Hash&& id, BitcoinBlockResult&& future) noexcept -> void
     bytes_ += block.Internal().CalculateSize();
     index_.try_emplace(item.first.Bytes(), &item);
 
-    while ((bytes_ > limit_) && (0u < queue_.size())) {
+    while ((bytes_ > limit_) && (!queue_.empty())) {
         const auto& item = queue_.front();
         const auto& id = item.first;
         LogTrace()(OT_PRETTY_CLASS())("dropping oldest block ")(id.asHex())(
