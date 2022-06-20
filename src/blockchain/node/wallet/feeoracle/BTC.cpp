@@ -362,6 +362,16 @@ private:
 
 namespace opentxs::factory
 {
+template <typename T>
+auto createSource(
+    const alloc::Default& alloc,
+    const api::Session& api,
+    const std::string_view endpoint)
+{
+    auto* out = alloc.resource()->allocate(sizeof(T), alignof(T));
+    return new (out) T{api, endpoint, alloc};
+}
+
 auto BTCFeeSources(
     const api::Session& api,
     const std::string_view endpoint,
@@ -369,65 +379,19 @@ auto BTCFeeSources(
     -> ForwardList<blockchain::node::wallet::FeeSource>
 {
     if (nullptr == mr) { mr = alloc::System(); }
+    using namespace blockchain::node::wallet;
+    auto alloc = FeeSource::allocator_type{mr};
+    ForwardList<FeeSource> sources{alloc};
 
-    using ReturnType = blockchain::node::wallet::FeeSource;
-    auto alloc = ReturnType::allocator_type{mr};
-    auto* res = alloc.resource();
-    auto sources = ForwardList<ReturnType>{alloc};
-    sources.emplace_front([&] {
-        using Imp = blockchain::node::wallet::Bitcoiner_live;
-        auto* out = res->allocate(sizeof(Imp), alignof(Imp));
-
-        return new (out) Imp{api, endpoint, alloc};
-    }());
-    sources.emplace_front([&] {
-        using Imp = blockchain::node::wallet::BitGo;
-        auto* out = res->allocate(sizeof(Imp), alignof(Imp));
-
-        return new (out) Imp{api, endpoint, alloc};
-    }());
-    sources.emplace_front([&] {
-        using Imp = blockchain::node::wallet::Bitpay;
-        auto* out = res->allocate(sizeof(Imp), alignof(Imp));
-
-        return new (out) Imp{api, endpoint, alloc};
-    }());
-    sources.emplace_front([&] {
-        using Imp = blockchain::node::wallet::Blockchain_info;
-        auto* out = res->allocate(sizeof(Imp), alignof(Imp));
-
-        return new (out) Imp{api, endpoint, alloc};
-    }());
-    sources.emplace_front([&] {
-        using Imp = blockchain::node::wallet::Blockchair;
-        auto* out = res->allocate(sizeof(Imp), alignof(Imp));
-
-        return new (out) Imp{api, endpoint, alloc};
-    }());
-    sources.emplace_front([&] {
-        using Imp = blockchain::node::wallet::BlockCypher;
-        auto* out = res->allocate(sizeof(Imp), alignof(Imp));
-
-        return new (out) Imp{api, endpoint, alloc};
-    }());
-    sources.emplace_front([&] {
-        using Imp = blockchain::node::wallet::Blockstream;
-        auto* out = res->allocate(sizeof(Imp), alignof(Imp));
-
-        return new (out) Imp{api, endpoint, alloc};
-    }());
-    sources.emplace_front([&] {
-        using Imp = blockchain::node::wallet::BTC_com;
-        auto* out = res->allocate(sizeof(Imp), alignof(Imp));
-
-        return new (out) Imp{api, endpoint, alloc};
-    }());
-    sources.emplace_front([&] {
-        using Imp = blockchain::node::wallet::Earn;
-        auto* out = res->allocate(sizeof(Imp), alignof(Imp));
-
-        return new (out) Imp{api, endpoint, alloc};
-    }());
+    sources.emplace_front(createSource<Bitcoiner_live>(alloc, api, endpoint));
+    sources.emplace_front(createSource<BitGo>(alloc, api, endpoint));
+    sources.emplace_front(createSource<Bitpay>(alloc, api, endpoint));
+    sources.emplace_front(createSource<Blockchain_info>(alloc, api, endpoint));
+    sources.emplace_front(createSource<Blockchair>(alloc, api, endpoint));
+    sources.emplace_front(createSource<BlockCypher>(alloc, api, endpoint));
+    sources.emplace_front(createSource<Blockstream>(alloc, api, endpoint));
+    sources.emplace_front(createSource<BTC_com>(alloc, api, endpoint));
+    sources.emplace_front(createSource<Earn>(alloc, api, endpoint));
 
     return sources;
 }

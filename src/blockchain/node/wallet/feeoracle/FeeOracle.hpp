@@ -86,7 +86,7 @@ public:
     ~Imp() final;
 
 protected:
-    auto pipeline(network::zeromq::Message&&) noexcept -> void final;
+    auto pipeline(network::zeromq::Message&&) -> void final;
     auto state_machine() noexcept -> bool final;
 
 private:

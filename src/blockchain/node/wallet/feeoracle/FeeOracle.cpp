@@ -12,14 +12,9 @@
 
 #include <boost/system/error_code.hpp>
 #include <algorithm>
-#include <atomic>
 #include <chrono>
-#include <cstddef>
 #include <exception>
-#include <memory>
 #include <new>
-#include <numeric>  // IWYU pragma: keep
-#include <ratio>
 
 #include "blockchain/node/wallet/feeoracle/FeeOracle.hpp"
 #include "internal/api/network/Asio.hpp"
@@ -27,13 +22,10 @@
 #include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/display/Scale.hpp"
-#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
@@ -84,9 +76,9 @@ auto FeeOracle::Imp::EstimatedFee() const noexcept -> std::optional<Amount>
     return *output_.lock_shared();
 }
 
-auto FeeOracle::Imp::pipeline(network::zeromq::Message&& in) noexcept -> void
+auto FeeOracle::Imp::pipeline(network::zeromq::Message&& in) -> void
 {
-    if (false == running_.load()) {
+    if (!running_.load()) {
         protect_shutdown([this] { shut_down(); });
 
         return;
@@ -96,15 +88,7 @@ auto FeeOracle::Imp::pipeline(network::zeromq::Message&& in) noexcept -> void
 
     OT_ASSERT(0 < body.size());
 
-    const auto work = [&] {
-        try {
-
-            return body.at(0).as<Work>();
-        } catch (...) {
-
-            OT_FAIL;
-        }
-    }();
+    const auto work = body.at(0).as<Work>();
 
     switch (work) {
         case Work::shutdown: {
@@ -159,23 +143,23 @@ auto FeeOracle::Imp::reset_timer() noexcept -> void
 
 auto FeeOracle::Imp::state_machine() noexcept -> bool
 {
-    const auto sum = [this] {
-        static constexpr auto validity = std::chrono::minutes{20};
-        const auto limit = Clock::now() - validity;
-        auto out = Amount{0};
-        std::remove_if(data_.begin(), data_.end(), [&](const auto& v) {
-            if (v.first < limit) {
+    static constexpr auto validity = std::chrono::minutes{20};
+    const auto limit = Clock::now() - validity;
+    Amount sum{0};
 
+    data_.erase(
+        std::remove_if(
+            data_.begin(),
+            data_.end(),
+            [&](const auto& v) {
+                if (v.first >= limit) {
+                    sum += v.second;
+                    return false;
+                }
                 return true;
-            } else {
-                out += v.second;
+            }),
+        data_.end());
 
-                return false;
-            }
-        });
-
-        return out;
-    }();
     output_.modify_detach([this,
                            average =
                                sum / std::max<std::size_t>(data_.size(), 1u)](

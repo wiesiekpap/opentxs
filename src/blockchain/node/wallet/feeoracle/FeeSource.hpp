@@ -83,17 +83,20 @@ public:
     ~Imp() override;
 
 protected:
-    auto pipeline(network::zeromq::Message&&) noexcept -> void final;
+    auto pipeline(network::zeromq::Message&&) -> void final;
     auto state_machine() noexcept -> bool final;
 
 private:
     auto shut_down() noexcept -> void;
 
 protected:
-    auto process_double(double rate, unsigned long long int scale) noexcept
-        -> std::optional<Amount>;
-    auto process_int(std::int64_t rate, unsigned long long int scale) noexcept
-        -> std::optional<Amount>;
+    template <typename Rate, typename Scale>
+    std::optional<Amount> process_value(Rate rate, Scale scale) const noexcept;
+
+    auto process_double(double rate, unsigned long long int scale)
+        const noexcept -> std::optional<Amount>;
+    auto process_int(std::int64_t rate, unsigned long long int scale)
+        const noexcept -> std::optional<Amount>;
 
     Imp(const api::Session& api,
         CString endpoint,
