@@ -13,12 +13,9 @@
 
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/api/network/Asio.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -42,42 +39,40 @@ public:
     {
         const auto type = address.Type();
         const auto port = address.Port();
-        const auto bytes = [&] {
-            auto out = Space{};
-            const auto data = address.Bytes();
-            copy(data->Bytes(), writer(out));
-
-            return out;
-        }();
+        Space bytes{};
+        copy(address.Bytes()->Bytes(), writer(bytes));
 
         try {
             auto lock = Lock{lock_};
-            const auto& endpoint = [&]() -> auto&
-            {
-                using EndpointType = opentxs::network::asio::Endpoint;
-                auto network = EndpointType::Type{};
 
-                switch (type) {
-                    case blockchain::p2p::Network::ipv4: {
-                        network = EndpointType::Type::ipv4;
-                    } break;
-                    case blockchain::p2p::Network::ipv6: {
-                        network = EndpointType::Type::ipv6;
-                    } break;
-                    default: {
-                        throw std::runtime_error{"invalid address"};
-                    }
+            using EndpointType = opentxs::network::asio::Endpoint;
+            EndpointType::Type network{};
+
+            switch (type) {
+                case blockchain::p2p::Network::ipv4: {
+                    network = EndpointType::Type::ipv4;
+                } break;
+                case blockchain::p2p::Network::ipv6: {
+                    network = EndpointType::Type::ipv6;
+                } break;
+                default: {
+                    throw std::runtime_error{"invalid address"};
                 }
-
-                return listeners_.emplace_back(network, reader(bytes), port);
             }
-            ();
+
+            const auto& endpoint =
+                listeners_.emplace_back(network, reader(bytes), port);
+
             const auto output =
                 api_.Network().Asio().Accept(endpoint, [=](auto&& socket) {
-                    accept(type, port, bytes, std::move(socket));
+                    accept(
+                        type,
+                        port,
+                        bytes,
+                        std::forward<decltype(socket)>(socket));
                 });
 
-            if (false == output) { listeners_.pop_back(); }
+            if (!output) { listeners_.pop_back(); }
 
             return output;
         } catch (const std::exception& e) {
@@ -136,7 +131,7 @@ private:
     auto accept(
         blockchain::p2p::Network type,
         std::uint16_t port,
-        Space bytes,
+        const Space& bytes,
         opentxs::network::asio::Socket&& socket) const noexcept -> void
     {
         auto lock = Lock{lock_};

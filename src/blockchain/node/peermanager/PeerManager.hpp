@@ -215,7 +215,7 @@ public:
             const node::internal::Config& config) noexcept
             -> UnallocatedSet<blockchain::p2p::Service>;
         static auto set_default_peer(
-            const UnallocatedCString node,
+            const UnallocatedCString& node,
             const Data& localhost,
             bool& invalidPeer) noexcept -> OTData;
 
