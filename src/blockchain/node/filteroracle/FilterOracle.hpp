@@ -227,7 +227,7 @@ private:
         const cfilter::Type type,
         const block::Position& position,
         const std::optional<bool> resetHeader = std::nullopt,
-        const std::optional<bool> resetfilter = std::nullopt) const noexcept
+        const std::optional<bool> resetFilter = std::nullopt) const noexcept
         -> bool;
     auto reset_tips_to(
         const cfilter::Type type,
@@ -241,7 +241,7 @@ private:
         const block::Position& filterTip,
         const block::Position& position,
         std::optional<bool> resetHeader = std::nullopt,
-        std::optional<bool> resetfilter = std::nullopt) const noexcept -> bool;
+        std::optional<bool> resetFilter = std::nullopt) const noexcept -> bool;
 
     auto compare_header_to_checkpoint(
         const block::Position& block,
