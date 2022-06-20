@@ -312,7 +312,7 @@ public:
     ~PeerManager() final;
 
 protected:
-    auto pipeline(zmq::Message&& message) noexcept -> void final;
+    auto pipeline(zmq::Message&& message) -> void final;
     auto state_machine() noexcept -> bool final;
 
 private:
@@ -326,7 +326,7 @@ private:
             -> network::zeromq::Message;
 
         auto Dispatch(const PeerManagerJobs type) noexcept -> void;
-        auto Dispatch(zmq::Message&& work) noexcept -> void;
+        auto Dispatch(zmq::Message&& work) -> void;
         auto Shutdown() noexcept -> void;
 
         Jobs(const api::Session& api) noexcept;
