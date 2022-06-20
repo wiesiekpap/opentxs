@@ -124,7 +124,7 @@ public:
     }
 
 protected:
-    auto pipeline(zmq::Message&& in) noexcept -> void final;
+    auto pipeline(zmq::Message&& in) -> void final;
     auto state_machine() noexcept -> bool final;
 
 private:
@@ -151,7 +151,7 @@ private:
     std::thread zmq_thread_;
 
     auto batch_ready() const noexcept -> void { trigger(); }
-    auto batch_size(const std::size_t in) const noexcept -> std::size_t
+    static auto batch_size(const std::size_t in) noexcept -> std::size_t
     {
         if (in < 10) {
 
@@ -230,7 +230,7 @@ private:
                 print(current))
                 .Flush();
 
-            OT_ASSERT(0 < hashes.size());
+            OT_ASSERT(!hashes.empty());
 
             if (1 == hashes.size()) {
                 LogTrace()(OT_PRETTY_CLASS())(__func__)(
@@ -268,12 +268,9 @@ private:
     }
     auto process_zmq(const Lock& lock) noexcept -> void
     {
-        const auto incoming = [&] {
-            auto output = network::zeromq::Message{};
-            OTSocket::receive_message(lock, socket_.get(), output);
+        network::zeromq::Message incoming{};
+        OTSocket::receive_message(lock, socket_.get(), incoming);
 
-            return output;
-        }();
         namespace bcsync = network::p2p;
         const auto base = api_.Factory().BlockchainSyncMessage(incoming);
 
@@ -288,14 +285,16 @@ private:
 
         try {
             const auto& request = base->asRequest();
-            const auto& state = [&]() -> const bcsync::State& {
-                for (const auto& state : request.State()) {
-                    if (state.Chain() == chain_) { return state; }
-                }
-
+            const auto& state = std::find_if(
+                request.State().begin(),
+                request.State().end(),
+                [&chain = chain_](const auto& p2pState) {
+                    return p2pState.Chain() == chain;
+                });
+            if (state == request.State().end())
                 throw std::runtime_error{"No matching chains"};
-            }();
-            const auto& position = state.Position();
+
+            const auto& position = state->Position();
             auto [needSync, parent, data] = hello(lock, position);
             const auto& [height, hash] = parent;
             auto reply = factory::BlockchainSyncData(
@@ -315,7 +314,7 @@ private:
     }
     auto queue_processing(DownloadedData&& data) noexcept -> void
     {
-        if (0 == data.size()) { return; }
+        if (data.empty()) { return; }
 
         const auto& tip = data.back();
         auto items = UnallocatedVector<network::p2p::Block>{};
@@ -326,7 +325,7 @@ private:
                 const auto pHeader = header_.Internal().LoadBitcoinHeader(
                     task->position_.second);
 
-                if (false == bool(pHeader)) {
+                if (!bool(pHeader)) {
                     throw std::runtime_error(
                         UnallocatedCString{"failed to load block header "} +
                         task->position_.second.asHex());
@@ -349,19 +348,16 @@ private:
 
                 const auto& cfilter = task->data_.get();
 
-                if (false == cfilter.IsValid()) {
+                if (!cfilter.IsValid()) {
                     throw std::runtime_error(
                         UnallocatedCString{"failed to load gcs for block "} +
                         task->position_.second.asHex());
                 }
 
                 const auto headerBytes = header.Encode();
-                const auto filterBytes = [&] {
-                    auto out = Space{};
-                    cfilter.Compressed(writer(out));
+                Space filterBytes{};
+                cfilter.Compressed(writer(filterBytes));
 
-                    return out;
-                }();
                 items.emplace_back(
                     chain_,
                     task->position_.first,
@@ -377,7 +373,7 @@ private:
             }
         }
 
-        if (previousFilterHeader->empty() || (0 == items.size())) {
+        if (previousFilterHeader->empty() || (items.empty())) {
             LogError()(OT_PRETTY_CLASS())(__func__)(": missing data").Flush();
 
             return;
@@ -386,7 +382,7 @@ private:
         const auto& pos = tip->position_;
         const auto stored = db_.StoreSync(pos, items);
 
-        if (false == stored) { OT_FAIL; }
+        if (!stored) { OT_FAIL; }
 
         const auto msg = factory::BlockchainSyncData(
             WorkType::P2PBlockchainNewBlock,
@@ -406,17 +402,10 @@ private:
     auto zmq_thread() noexcept -> void
     {
         Signals::Block();
-        auto poll = [&] {
-            auto output = UnallocatedVector<::zmq_pollitem_t>{};
-
-            {
-                auto& item = output.emplace_back();
-                item.socket = socket_.get();
-                item.events = ZMQ_POLLIN;
-            }
-
-            return output;
-        }();
+        UnallocatedVector<::zmq_pollitem_t> poll{};
+        auto& pollItem = poll.emplace_back();
+        pollItem.socket = socket_.get();
+        pollItem.events = ZMQ_POLLIN;
 
         OT_ASSERT(std::numeric_limits<int>::max() >= poll.size());
 
@@ -450,24 +439,16 @@ private:
     }
 };
 
-auto SyncServer::pipeline(zmq::Message&& in) noexcept -> void
+auto SyncServer::pipeline(zmq::Message&& in) -> void
 {
-    if (false == running_.load()) { return; }
+    if (!running_.load()) { return; }
 
     const auto body = in.Body();
 
     OT_ASSERT(1 <= body.size());
 
     using Work = Work;
-    const auto work = [&] {
-        try {
-
-            return body.at(0).as<Work>();
-        } catch (...) {
-
-            OT_FAIL;
-        }
-    }();
+    const auto work = body.at(0).as<Work>();
     auto lock = Lock{zmq_lock_};
 
     switch (work) {

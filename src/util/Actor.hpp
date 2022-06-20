@@ -118,6 +118,7 @@ protected:
     {
         cache_.emplace(std::move(message));
     }
+
     auto do_init() noexcept -> void
     {
         log_(name_)(" ")(__FUNCTION__)(": initializing").Flush();
