@@ -50,7 +50,7 @@ public:
     /// Sets this claim as 'primary' or 'not primary' on the wallet user's
     /// credentials.
     virtual auto SetPrimary(const bool& primary) const noexcept -> bool = 0;
-    // Sets the value of this claim.
+    /// Sets the value of this claim.
     virtual auto SetValue(const UnallocatedCString& value) const noexcept
         -> bool = 0;
     /// Returns the value of this claim.
