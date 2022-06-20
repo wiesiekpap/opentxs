@@ -262,7 +262,7 @@ public:
     ~Base() override;
 
 protected:
-    auto pipeline(zmq::Message&& in) noexcept -> void final;
+    auto pipeline(zmq::Message&& in) -> void final;
     auto state_machine() noexcept -> bool final;
     auto shut_down() noexcept -> void;
 
