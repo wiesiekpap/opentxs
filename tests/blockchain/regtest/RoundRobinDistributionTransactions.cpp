@@ -77,7 +77,6 @@ TEST_F(Regtest_fixture_round_robin, round_robin_distribution_transactions)
         count++;
     }
 
-    ot::Sleep(std::chrono::seconds(20));
     Shutdown();
 }
 

@@ -16,7 +16,7 @@ namespace ottest
 {
 const int number_of_tests = 10;
 
-TEST_F(Restart_fixture, DISABLED_send_multiple_transactions_remove_user_compare)
+TEST_F(Restart_fixture, send_multiple_transactions_remove_user_compare)
 {
     EXPECT_TRUE(Start());
     EXPECT_TRUE(Connect());
@@ -68,7 +68,6 @@ TEST_F(Restart_fixture, DISABLED_send_multiple_transactions_remove_user_compare)
     std::map<ot::blockchain::node::TxoState, std::size_t>
         alice_number_of_outputs_per_type;
 
-    sleep(10);
     CollectOutputs(user_bob, bob_outputs, bob_number_of_outputs_per_type);
 
     CollectOutputs(user_alice, alice_outputs, alice_number_of_outputs_per_type);
@@ -115,7 +114,6 @@ TEST_F(Restart_fixture, DISABLED_send_multiple_transactions_remove_user_compare)
 
     EXPECT_EQ(bob_outputs.size(), alice_outputs.size());
     // Compare outputs
-    sleep(10);
     ValidateOutputs(
         user_bob_after_reboot, bob_outputs, bob_number_of_outputs_per_type);
 

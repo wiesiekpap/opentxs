@@ -16,7 +16,7 @@ namespace ottest
 {
 const int number_of_tests = 10;
 
-TEST_F(Restart_fixture, DISABLED_send_remove_user_compare_repeat)
+TEST_F(Restart_fixture, send_remove_user_compare_repeat)
 {
     EXPECT_TRUE(Start());
     EXPECT_TRUE(Connect());
@@ -58,15 +58,19 @@ TEST_F(Restart_fixture, DISABLED_send_remove_user_compare_repeat)
         WaitForSynchro(
             user_bob,
             current_height_,
-            balance_after_mine_ + (coin_to_send_ * i + 1));
+            balance_after_mine_ + (coin_to_send_ * (i + 1)));
 
         receiver_balance = GetBalance(user_bob);
-
-        EXPECT_LT(GetBalance(user_alice), sender_balance);
 
         auto loaded_transactions = CollectTransactionsForFeeCalculations(
             user_alice, send_transactions_, transactions_ptxid_);
         auto fee = CalculateFee(send_transactions_, loaded_transactions);
+
+        WaitForSynchro(
+            user_alice,
+            current_height_,
+            Amount{balance_after_mine_} - Amount{coin_to_send_ * (i + 1)} -
+                fee);
 
         EXPECT_EQ(
             Amount{balance_after_mine_} - Amount{coin_to_send_ * (i + 1)} - fee,
@@ -92,7 +96,6 @@ TEST_F(Restart_fixture, DISABLED_send_remove_user_compare_repeat)
         std::map<ot::blockchain::node::TxoState, std::size_t>
             alice_number_of_outputs_per_type;
 
-        sleep(10);
         CollectOutputs(user_bob, bob_outputs, bob_number_of_outputs_per_type);
         CollectOutputs(
             user_alice, alice_outputs, alice_number_of_outputs_per_type);
@@ -135,7 +138,6 @@ TEST_F(Restart_fixture, DISABLED_send_remove_user_compare_repeat)
 
         EXPECT_EQ(bob_outputs.size(), alice_outputs.size());
         // Compare outputs
-        sleep(10);
         ValidateOutputs(
             user_bob_after_reboot, bob_outputs, bob_number_of_outputs_per_type);
 

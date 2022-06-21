@@ -269,18 +269,16 @@ auto OpenSSL::HMAC(
     const auto* evp_md = HashTypeToOpenSSLType(hashType);
 
     if (nullptr != evp_md) {
-        void* data = ::HMAC(
+        ::HMAC(
             evp_md,
             key,
             static_cast<int>(keySize),
             input,
             inputSize,
-            nullptr,
+            output,
             &size);
 
-        if (nullptr != data) {
-            std::memcpy(output, data, size);
-
+        if (nullptr != output) {
             return true;
         } else {
             LogError()(OT_PRETTY_CLASS())("Failed to produce a valid HMAC.")

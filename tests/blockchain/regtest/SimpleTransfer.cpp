@@ -89,7 +89,6 @@ TEST_F(Regtest_fixture_simple, send_to_client)
         std::swap(sender, receiver);
     }
 
-    std::this_thread::sleep_for(std::chrono::seconds(20));
     Shutdown();
 }
 
