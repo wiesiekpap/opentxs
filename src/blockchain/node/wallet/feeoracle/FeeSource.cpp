@@ -9,7 +9,6 @@
 #include "internal/blockchain/node/wallet/Factory.hpp"  // IWYU pragma: associated
 
 #include <boost/system/error_code.hpp>
-#include <atomic>
 #include <exception>
 #include <utility>
 
@@ -17,14 +16,12 @@
 #include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/display/Scale.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
@@ -102,9 +99,9 @@ auto FeeSource::Imp::jitter() noexcept -> std::chrono::seconds
     return std::chrono::seconds{dist_(eng_)};
 }
 
-auto FeeSource::Imp::pipeline(network::zeromq::Message&& in) noexcept -> void
+auto FeeSource::Imp::pipeline(network::zeromq::Message&& in) -> void
 {
-    if (false == running_.load()) {
+    if (!running_.load()) {
         protect_shutdown([this] { shut_down(); });
         return;
     }
@@ -113,15 +110,7 @@ auto FeeSource::Imp::pipeline(network::zeromq::Message&& in) noexcept -> void
 
     OT_ASSERT(0 < body.size());
 
-    const auto work = [&] {
-        try {
-
-            return body.at(0).as<Work>();
-        } catch (...) {
-
-            OT_FAIL;
-        }
-    }();
+    const auto work = body.at(0).as<Work>();
 
     switch (work) {
         case Work::shutdown: {
@@ -146,43 +135,29 @@ auto FeeSource::Imp::pipeline(network::zeromq::Message&& in) noexcept -> void
     }
 }
 
-auto FeeSource::Imp::process_double(
-    double rate,
-    unsigned long long int scale) noexcept -> std::optional<Amount>
+template <typename Rate, typename Scale>
+std::optional<Amount> FeeSource::Imp::process_value(Rate rate, Scale scale)
+    const noexcept
 {
-    auto out = std::optional<Amount>{
-        static_cast<std::int64_t>(rate * static_cast<double>(scale))};
-    const auto& value = out.value();
+    auto value{static_cast<std::int64_t>(rate * scale)};
+
     LogTrace()(OT_PRETTY_CLASS())("obtained scaled amount ")(scale_.Format(
         value))(" from raw input ")(rate)(" and scale value ")(scale)
         .Flush();
+    return (0 > value) ? std::nullopt : std::optional<Amount>(value);
+}
 
-    if (0 > value) {
-
-        return std::nullopt;
-    } else {
-
-        return out;
-    }
+auto FeeSource::Imp::process_double(double rate, unsigned long long int scale)
+    const noexcept -> std::optional<Amount>
+{
+    return process_value(rate, static_cast<double>(scale));
 }
 
 auto FeeSource::Imp::process_int(
     std::int64_t rate,
-    unsigned long long int scale) noexcept -> std::optional<Amount>
+    unsigned long long int scale) const noexcept -> std::optional<Amount>
 {
-    auto out = std::optional<Amount>{static_cast<std::int64_t>(rate * scale)};
-    const auto& value = out.value();
-    LogTrace()(OT_PRETTY_CLASS())("obtained scaled amount ")(scale_.Format(
-        value))(" from raw input ")(rate)(" and scale value ")(scale)
-        .Flush();
-
-    if (0 > value) {
-
-        return std::nullopt;
-    } else {
-
-        return out;
-    }
+    return process_value(rate, scale);
 }
 
 auto FeeSource::Imp::query() noexcept -> void
@@ -214,7 +189,7 @@ auto FeeSource::Imp::startup() noexcept -> void
 
 auto FeeSource::Imp::state_machine() noexcept -> bool
 {
-    if (false == future_.has_value()) { return false; }
+    if (!future_.has_value()) { return false; }
 
     auto& future = future_.value();
     static constexpr auto limit = 25ms;
@@ -223,12 +198,9 @@ auto FeeSource::Imp::state_machine() noexcept -> bool
     try {
         if (const auto status = future.wait_for(limit); status == ready) {
             if (const auto data = process(future.get()); data.has_value()) {
-                to_oracle_.Send([&] {
-                    auto out = MakeWork(OT_ZMQ_INTERNAL_SIGNAL);
-                    data->Serialize(out.AppendBytes());
-
-                    return out;
-                }());
+                auto work = MakeWork(OT_ZMQ_INTERNAL_SIGNAL);
+                data->Serialize(work.AppendBytes());
+                to_oracle_.Send(std::move(work));
             }
 
             reset_timer();
