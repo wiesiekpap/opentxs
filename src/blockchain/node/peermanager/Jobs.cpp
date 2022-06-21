@@ -10,16 +10,11 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
-#include "opentxs/network/zeromq/socket/Publish.hpp"
-#include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
@@ -72,21 +67,13 @@ auto PeerManager::Jobs::Dispatch(const PeerManagerJobs type) noexcept -> void
     Dispatch(Work(type));
 }
 
-auto PeerManager::Jobs::Dispatch(zmq::Message&& work) noexcept -> void
+auto PeerManager::Jobs::Dispatch(zmq::Message&& work) -> void
 {
     const auto body = work.Body();
 
     OT_ASSERT(0 < body.size());
 
-    const auto task = [&] {
-        try {
-
-            return body.at(0).as<PeerManagerJobs>();
-        } catch (...) {
-
-            OT_FAIL;
-        }
-    }();
+    const auto task = body.at(0).as<PeerManagerJobs>();
 
     socket_map_.at(task)->Send(std::move(work));
 }
@@ -94,13 +81,16 @@ auto PeerManager::Jobs::Dispatch(zmq::Message&& work) noexcept -> void
 auto PeerManager::Jobs::Endpoint(const PeerManagerJobs type) const noexcept
     -> UnallocatedCString
 {
-    try {
 
-        return endpoint_map_.at(type);
-    } catch (...) {
-
+    if (!endpoint_map_.count(type)) {
+        LogError()(OT_PRETTY_CLASS())(
+            "No endpoint found for type: " +
+            std::to_string(static_cast<int>(type)))
+            .Flush();
         return {};
     }
+
+    return endpoint_map_.at(type);
 }
 
 auto PeerManager::Jobs::listen(
