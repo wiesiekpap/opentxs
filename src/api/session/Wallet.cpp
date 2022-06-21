@@ -525,12 +525,10 @@ auto Wallet::CreateAccount(
 
             OT_ASSERT(saved)
 
-            std::function<void(
-                std::unique_ptr<opentxs::Account>&, eLock&, bool)>
-                callback = [this, id, &reason](
-                               std::unique_ptr<opentxs::Account>& in,
-                               eLock& lock,
-                               bool success) -> void {
+            auto callback = [this, id, &reason](
+                                std::unique_ptr<opentxs::Account>& in,
+                                eLock& lock,
+                                bool success) -> void {
                 this->save(reason, id, in, lock, success);
             };
 
@@ -611,12 +609,10 @@ auto Wallet::mutable_Account(
         const auto id = accountID.str();
 
         if (pAccount) {
-            std::function<void(
-                std::unique_ptr<opentxs::Account>&, eLock&, bool)>
-                save = [this, id, &reason](
-                           std::unique_ptr<opentxs::Account>& in,
-                           eLock& lock,
-                           bool success) -> void {
+            auto save = [this, id, &reason](
+                            std::unique_ptr<opentxs::Account>& in,
+                            eLock& lock,
+                            bool success) -> void {
                 this->save(reason, id, in, lock, success);
             };
 
@@ -737,14 +733,12 @@ auto Wallet::UpdateAccount(
 
         pAccount->SetAlias(alias);
         const auto balance = pAccount->GetBalance();
-        account_publisher_->Send([&] {
-            auto work = opentxs::network::zeromq::tagged_message(
-                WorkType::AccountUpdated);
-            work.AddFrame(accountID);
-            balance.Serialize(work.AppendBytes());
+        auto work =
+            opentxs::network::zeromq::tagged_message(WorkType::AccountUpdated);
+        work.AddFrame(accountID);
+        balance.Serialize(work.AppendBytes());
 
-            return work;
-        }());
+        account_publisher_->Send(std::move(work));
 
         return true;
     } catch (...) {
@@ -1001,8 +995,7 @@ auto Wallet::mutable_Issuer(
 
     OT_ASSERT(pIssuer);
 
-    std::function<void(otx::client::Issuer*, const Lock&)> callback =
-        [=](otx::client::Issuer* in, const Lock& lock) -> void {
+    auto callback = [=](otx::client::Issuer* in, const Lock& lock) -> void {
         this->save(lock, in);
     };
 
@@ -1190,18 +1183,18 @@ auto Wallet::Nym(const proto::Nym& serialized) const -> Nym_p
                 .Flush();
             candidate.WriteCredentials();
             SaveCredentialIDs(candidate);
-            auto mapNym = [&] {
-                auto mapLock = Lock{nym_map_lock_};
-                auto& out = nym_map_[nymID].second;
-                // TODO update existing nym rather than destroying it
-                out.reset(pCandidate.release());
 
-                return out;
-            }();
+            std::shared_ptr<identity::internal::Nym> nym;
+            {
+                auto mapLock = Lock{nym_map_lock_};
+                // TODO update existing nym rather than destroying it
+                nym_map_[nymID].second.reset(pCandidate.release());
+                nym = nym_map_[nymID].second;
+            }
 
             notify_new(nymID);
 
-            return std::move(mapNym);
+            return std::move(nym);
         } else {
             LogError()(OT_PRETTY_CLASS())("Incoming nym is not valid.").Flush();
         }
@@ -1287,13 +1280,12 @@ auto Wallet::Nym(
                 auto mapLock = Lock{nym_map_lock_};
                 auto& pMapNym = nym_map_[id].second;
                 pMapNym = pNym;
-                nym_created_publisher_->Send([&] {
-                    auto work = opentxs::network::zeromq::tagged_message(
-                        WorkType::NymCreated);
-                    work.AddFrame(pNym->ID());
 
-                    return work;
-                }());
+                auto work = opentxs::network::zeromq::tagged_message(
+                    WorkType::NymCreated);
+                work.AddFrame(pNym->ID());
+
+                nym_created_publisher_->Send(std::move(work));
             }
 
             return std::move(pNym);
@@ -1324,8 +1316,7 @@ auto Wallet::mutable_Nym(
 
     if (nym_map_.end() == it) { OT_FAIL }
 
-    std::function<void(NymData*, Lock&)> callback = [&](NymData* nymData,
-                                                        Lock& lock) -> void {
+    auto callback = [&](NymData* nymData, Lock& lock) -> void {
         this->save(nymData, lock);
     };
 
@@ -1385,8 +1376,7 @@ auto Wallet::mutable_nymfile(
     }
 
     using EditorType = Editor<opentxs::NymFile>;
-    EditorType::LockedSave callback = [&](opentxs::NymFile* in,
-                                          Lock& lock) -> void {
+    auto callback = [&](opentxs::NymFile* in, Lock& lock) -> void {
         this->save(reason, in, lock);
     };
     EditorType::OptionalCallback deleter = [](const opentxs::NymFile& in) {
@@ -1399,13 +1389,10 @@ auto Wallet::mutable_nymfile(
 
 auto Wallet::notify_changed(const identifier::Nym& id) const noexcept -> void
 {
-    nym_publisher_->Send([&] {
-        auto work =
-            opentxs::network::zeromq::tagged_message(WorkType::NymUpdated);
-        work.AddFrame(id);
+    auto work = opentxs::network::zeromq::tagged_message(WorkType::NymUpdated);
+    work.AddFrame(id);
 
-        return work;
-    }());
+    nym_publisher_->Send(std::move(work));
 }
 
 auto Wallet::notify_new(const identifier::Nym& id) const noexcept -> void
@@ -2061,42 +2048,44 @@ auto Wallet::process_p2p_publish_contract(
 
         const auto& contract = base->asPublishContract();
         const auto& id = contract.ID();
-        auto payload = [&] {
-            const auto type = contract.ContractType();
+        auto payload{false};
 
-            switch (type) {
-                case contract::Type::nym: {
-                    const auto nym = Nym(contract.Payload());
+        const auto contractType = contract.ContractType();
 
-                    return (nym && nym->ID() == id);
-                }
-                case contract::Type::notary: {
-                    const auto notary = Server(contract.Payload());
+        switch (contractType) {
+            case contract::Type::nym: {
+                const auto nym = Nym(contract.Payload());
 
-                    return (notary->ID() == id);
-                }
-                case contract::Type::unit: {
-                    const auto unit = UnitDefinition(contract.Payload());
-
-                    return (unit->ID() == id);
-                }
-                default: {
-                    throw std::runtime_error{
-                        UnallocatedCString{
-                            "unsupported or unknown contract type: "} +
-                        opentxs::print(type)};
-                }
+                payload = (nym && nym->ID() == id);
+                break;
             }
-        }();
-        p2p_socket_.Send([&] {
-            auto out =
-                opentxs::network::zeromq::reply_to_message(std::move(msg));
-            const auto reply =
-                factory::BlockchainSyncPublishContractReply(id, payload);
-            reply.Serialize(out);
+            case contract::Type::notary: {
+                const auto notary = Server(contract.Payload());
 
-            return out;
-        }());
+                payload = (notary->ID() == id);
+                break;
+            }
+            case contract::Type::unit: {
+                const auto unit = UnitDefinition(contract.Payload());
+
+                payload = (unit->ID() == id);
+                break;
+            }
+            default: {
+                throw std::runtime_error{
+                    UnallocatedCString{
+                        "unsupported or unknown contract type: "} +
+                    opentxs::print(type)};
+            }
+        }
+
+        auto message =
+            opentxs::network::zeromq::reply_to_message(std::move(msg));
+        const auto reply =
+            factory::BlockchainSyncPublishContractReply(id, payload);
+        reply.Serialize(message);
+
+        p2p_socket_.Send(std::move(message));
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
     }
@@ -2123,7 +2112,8 @@ auto Wallet::process_p2p_query_contract(
 
             throw std::runtime_error{error.c_str()};
         }
-
+        // TODO any idea how to rewrite it without chaning QueryContractReply
+        // class?
         auto payload = [&] {
             const auto& id = base->asQueryContract().ID();
             const auto type = translate(id.Type());
@@ -2170,13 +2160,12 @@ auto Wallet::process_p2p_query_contract(
                 return factory::BlockchainSyncQueryContractReply(id);
             }
         }();
-        p2p_socket_.Send([&] {
-            auto out =
-                opentxs::network::zeromq::reply_to_message(std::move(msg));
-            payload.Serialize(out);
 
-            return out;
-        }());
+        auto message =
+            opentxs::network::zeromq::reply_to_message(std::move(msg));
+        payload.Serialize(message);
+
+        p2p_socket_.Send(std::move(message));
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
     }
@@ -2216,46 +2205,58 @@ auto Wallet::process_p2p_response(
                 const auto& contract = base->asQueryContractReply();
                 const auto& id = contract.ID();
                 const auto& log = LogVerbose();
-                const auto success = [&] {
-                    const auto type = contract.ContractType();
+                auto success{false};
 
-                    switch (type) {
-                        case contract::Type::nym: {
-                            log("Nym");
+                const auto contractType = contract.ContractType();
 
-                            if (!valid(contract.Payload())) { return false; }
+                switch (contractType) {
+                    case contract::Type::nym: {
+                        log("Nym");
 
-                            const auto nym = Nym(contract.Payload());
-
-                            return (nym && nym->ID() == id);
+                        if (!valid(contract.Payload())) {
+                            success = false;
+                            break;
                         }
-                        case contract::Type::notary: {
-                            log("Notary contract");
 
-                            if (!valid(contract.Payload())) { return false; }
+                        const auto nym = Nym(contract.Payload());
 
-                            const auto notary = Server(contract.Payload());
-
-                            return (notary->ID() == id);
-                        }
-                        case contract::Type::unit: {
-                            log("Unit definition");
-
-                            if (!valid(contract.Payload())) { return false; }
-
-                            const auto unit =
-                                UnitDefinition(contract.Payload());
-
-                            return (unit->ID() == id);
-                        }
-                        default: {
-                            throw std::runtime_error{
-                                UnallocatedCString{
-                                    "unsupported or unknown contract type: "} +
-                                opentxs::print(type)};
-                        }
+                        success = (nym && nym->ID() == id);
+                        break;
                     }
-                }();
+                    case contract::Type::notary: {
+                        log("Notary contract");
+
+                        if (!valid(contract.Payload())) {
+                            success = false;
+                            break;
+                        }
+
+                        const auto notary = Server(contract.Payload());
+
+                        success = (notary->ID() == id);
+                        break;
+                    }
+                    case contract::Type::unit: {
+                        log("Unit definition");
+
+                        if (!valid(contract.Payload())) {
+                            success = false;
+                            break;
+                        }
+
+                        const auto unit = UnitDefinition(contract.Payload());
+
+                        success = (unit->ID() == id);
+                        break;
+                    }
+                    default: {
+                        throw std::runtime_error{
+                            UnallocatedCString{
+                                "unsupported or unknown contract type: "} +
+                            opentxs::print(type)};
+                    }
+                }
+
                 log(" ")(id)(" ");
 
                 if (success) {
@@ -2284,12 +2285,10 @@ auto Wallet::PublishNotary(const identifier::Notary& id) const noexcept -> bool
         auto notary = Server(id);
         to_loopback_.modify_detach([&notary](auto& socket) {
             const auto command = factory::BlockchainSyncPublishContract(notary);
-            socket.Send([&] {
-                auto out = opentxs::network::zeromq::Message{};
-                command.Serialize(out);
+            opentxs::network::zeromq::Message message{};
+            command.Serialize(message);
 
-                return out;
-            }());
+            socket.Send(std::move(message));
         });
 
         return true;
@@ -2312,12 +2311,10 @@ auto Wallet::PublishNym(const identifier::Nym& id) const noexcept -> bool
 
     to_loopback_.modify_detach([&nym](auto& socket) {
         const auto command = factory::BlockchainSyncPublishContract(*nym);
-        socket.Send([&] {
-            auto out = opentxs::network::zeromq::Message{};
-            command.Serialize(out);
+        opentxs::network::zeromq::Message message{};
+        command.Serialize(message);
 
-            return out;
-        }());
+        socket.Send(std::move(message));
     });
 
     return true;
@@ -2330,12 +2327,10 @@ auto Wallet::PublishUnit(const identifier::UnitDefinition& id) const noexcept
         auto unit = UnitDefinition(id);
         to_loopback_.modify_detach([&unit](auto& socket) {
             const auto command = factory::BlockchainSyncPublishContract(unit);
-            socket.Send([&] {
-                auto out = opentxs::network::zeromq::Message{};
-                command.Serialize(out);
+            opentxs::network::zeromq::Message message{};
+            command.Serialize(message);
 
-                return out;
-            }());
+            socket.Send(std::move(message));
         });
 
         return true;
@@ -2446,25 +2441,19 @@ auto Wallet::RemoveUnitDefinition(const identifier::UnitDefinition& id) const
 
 auto Wallet::publish_server(const identifier::Notary& id) const noexcept -> void
 {
-    server_publisher_->Send([&] {
-        auto work =
-            opentxs::network::zeromq::tagged_message(WorkType::NotaryUpdated);
-        work.AddFrame(id);
-
-        return work;
-    }());
+    auto work =
+        opentxs::network::zeromq::tagged_message(WorkType::NotaryUpdated);
+    work.AddFrame(id);
+    server_publisher_->Send(std::move(work));
 }
 
 auto Wallet::publish_unit(const identifier::UnitDefinition& id) const noexcept
     -> void
 {
-    unit_publisher_->Send([&] {
-        auto work = opentxs::network::zeromq::tagged_message(
-            WorkType::UnitDefinitionUpdated);
-        work.AddFrame(id);
-
-        return work;
-    }());
+    auto work = opentxs::network::zeromq::tagged_message(
+        WorkType::UnitDefinitionUpdated);
+    work.AddFrame(id);
+    unit_publisher_->Send(std::move(work));
 }
 
 auto Wallet::reverse_unit_map(const UnitNameMap& map) -> Wallet::UnitNameReverse
@@ -2571,14 +2560,12 @@ void Wallet::save(const Lock& lock, otx::client::Issuer* in) const
     OT_ASSERT(loaded);
 
     api_.Storage().Store(nymID.str(), serialized);
-    issuer_publisher_->Send([&] {
-        auto work =
-            opentxs::network::zeromq::tagged_message(WorkType::IssuerUpdated);
-        work.AddFrame(nymID);
-        work.AddFrame(issuerID);
+    auto work =
+        opentxs::network::zeromq::tagged_message(WorkType::IssuerUpdated);
+    work.AddFrame(nymID);
+    work.AddFrame(issuerID);
 
-        return work;
-    }());
+    issuer_publisher_->Send(std::move(work));
 }
 
 void Wallet::save(const eLock& lock, const OTNymID nym, otx::blind::Purse* in)
@@ -2591,12 +2578,8 @@ void Wallet::save(const eLock& lock, const OTNymID nym, otx::blind::Purse* in)
 
     if (!purse) { OT_FAIL; }
 
-    const auto serialized = [&] {
-        auto proto = proto::Purse{};
-        purse.Internal().Serialize(proto);
-
-        return proto;
-    }();
+    proto::Purse serialized{};
+    purse.Internal().Serialize(serialized);
 
     OT_ASSERT(proto::Validate(serialized, VERBOSE));
 
@@ -2661,21 +2644,18 @@ auto Wallet::search_notary(const identifier::Notary& id) const noexcept -> void
     LogVerbose()(OT_PRETTY_CLASS())(
         "Searching remote networks for unknown notary ")(id)
         .Flush();
-    dht_server_requester_->Send([&] {
-        auto work = opentxs::network::zeromq::tagged_message(
-            WorkType::DHTRequestServer);
-        work.AddFrame(id);
+    auto work =
+        opentxs::network::zeromq::tagged_message(WorkType::DHTRequestServer);
+    work.AddFrame(id);
 
-        return work;
-    }());
+    dht_server_requester_->Send(std::move(work));
+
     to_loopback_.modify_detach([&id](auto& socket) {
         const auto command = factory::BlockchainSyncQueryContract(id);
-        socket.Send([&] {
-            auto out = opentxs::network::zeromq::Message{};
-            command.Serialize(out);
+        opentxs::network::zeromq::Message message{};
+        command.Serialize(message);
 
-            return out;
-        }());
+        socket.Send(std::move(message));
     });
 }
 
@@ -2684,21 +2664,18 @@ auto Wallet::search_nym(const identifier::Nym& id) const noexcept -> void
     LogVerbose()(OT_PRETTY_CLASS())(
         "Searching remote networks for unknown nym ")(id)
         .Flush();
-    dht_nym_requester_->Send([&] {
-        auto work =
-            opentxs::network::zeromq::tagged_message(WorkType::DHTRequestNym);
-        work.AddFrame(id);
+    auto work =
+        opentxs::network::zeromq::tagged_message(WorkType::DHTRequestNym);
+    work.AddFrame(id);
 
-        return work;
-    }());
+    dht_nym_requester_->Send(std::move(work));
+
     to_loopback_.modify_detach([&id](auto& socket) {
         const auto command = factory::BlockchainSyncQueryContract(id);
-        socket.Send([&] {
-            auto out = opentxs::network::zeromq::Message{};
-            command.Serialize(out);
+        opentxs::network::zeromq::Message message{};
+        command.Serialize(message);
 
-            return out;
-        }());
+        socket.Send(std::move(message));
     });
 }
 
@@ -2708,21 +2685,18 @@ auto Wallet::search_unit(const identifier::UnitDefinition& id) const noexcept
     LogVerbose()(OT_PRETTY_CLASS())(
         "Searching remote networks for unknown unit definition ")(id)
         .Flush();
-    dht_unit_requester_->Send([&] {
-        auto work =
-            opentxs::network::zeromq::tagged_message(WorkType::DHTRequestUnit);
-        work.AddFrame(id);
+    auto work =
+        opentxs::network::zeromq::tagged_message(WorkType::DHTRequestUnit);
+    work.AddFrame(id);
 
-        return work;
-    }());
+    dht_unit_requester_->Send(std::move(work));
+
     to_loopback_.modify_detach([&id](auto& socket) {
         const auto command = factory::BlockchainSyncQueryContract(id);
-        socket.Send([&] {
-            auto out = opentxs::network::zeromq::Message{};
-            command.Serialize(out);
+        opentxs::network::zeromq::Message message{};
+        command.Serialize(message);
 
-            return out;
-        }());
+        socket.Send(std::move(message));
     });
 }
 
@@ -2841,13 +2815,9 @@ auto Wallet::server(std::unique_ptr<contract::Server> contract) const
         throw std::runtime_error("Invalid server contract");
     }
 
-    const auto id = [&] {
-        const auto generic = contract->ID();
-        auto output = api_.Factory().ServerID();
-        output->Assign(generic);
-
-        return output;
-    }();
+    const auto generic = contract->ID();
+    auto id = api_.Factory().ServerID();
+    id->Assign(generic);
 
     OT_ASSERT(false == id->empty());
     OT_ASSERT(contract->Alias() == contract->EffectiveName());
@@ -2894,13 +2864,11 @@ auto Wallet::Server(const proto::ServerContract& contract) const
             "Attempting to load notary contract with empty nym ID");
     }
 
-    find_nym_->Send([&] {
-        auto work =
-            opentxs::network::zeromq::tagged_message(WorkType::OTXSearchNym);
-        work.AddFrame(nymID);
+    auto work =
+        opentxs::network::zeromq::tagged_message(WorkType::OTXSearchNym);
+    work.AddFrame(nymID);
 
-        return work;
-    }());
+    find_nym_->Send(std::move(work));
     auto nym = Nym(nymID);
 
     if (!nym && contract.has_publicnym()) { nym = Nym(contract.publicnym()); }
@@ -3001,11 +2969,8 @@ auto Wallet::server_to_nym(Identifier& input) const -> OTNymID
 {
     auto output = api_.Factory().NymID();
     output->Assign(input);
-    const auto inputIsNymID = [&] {
-        auto nym = Nym(output);
 
-        return nym.operator bool();
-    }();
+    auto inputIsNymID = (Nym(output));
 
     if (inputIsNymID) {
         const auto list = ServerList();
@@ -3030,12 +2995,9 @@ auto Wallet::server_to_nym(Identifier& input) const -> OTNymID
         output->clear();
 
         try {
-            const auto notaryID = [&] {
-                auto out = api_.Factory().ServerID();
-                out->Assign(input);
+            auto notaryID = api_.Factory().ServerID();
+            notaryID->Assign(input);
 
-                return out;
-            }();
             const auto contract = Server(notaryID);
             output = contract->Nym()->ID();
         } catch (...) {
@@ -3181,12 +3143,8 @@ auto Wallet::unit_definition(std::shared_ptr<contract::Unit>&& contract) const
         throw std::runtime_error("Invalid unit definition contract");
     }
 
-    const auto id = [&] {
-        auto out = api_.Factory().UnitID();
-        out->Assign(contract->ID());
-
-        return out;
-    }();
+    auto id = api_.Factory().UnitID();
+    id->Assign(contract->ID());
 
     auto serialized = proto::UnitDefinition{};
 
@@ -3231,14 +3189,12 @@ auto Wallet::UnitDefinition(const proto::UnitDefinition& contract) const
     const auto nymID = api_.Factory().NymID(contract.issuer());
 
     if (nymID->empty()) { throw std::runtime_error("Invalid nym ID"); }
+    auto work =
+        opentxs::network::zeromq::tagged_message(WorkType::OTXSearchNym);
+    work.AddFrame(nymID);
 
-    find_nym_->Send([&] {
-        auto work =
-            opentxs::network::zeromq::tagged_message(WorkType::OTXSearchNym);
-        work.AddFrame(nymID);
+    find_nym_->Send(std::move(work));
 
-        return work;
-    }());
     auto nym = Nym(nymID);
 
     if (!nym && contract.has_issuer_nym()) { nym = Nym(contract.issuer_nym()); }
