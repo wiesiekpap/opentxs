@@ -87,7 +87,8 @@ private:
     auto process_do_rescan(Message&& in) noexcept -> void final;
     auto process_filter(Message&& in, block::Position&& tip) noexcept
         -> void final;
-    auto scan(Vector<ScanStatus>& out) noexcept -> void;
     auto work() noexcept -> bool final;
+
+    network::zeromq::Message make_work(Vector<ScanStatus>&& vec) const noexcept;
 };
 }  // namespace opentxs::blockchain::node::wallet
