@@ -60,7 +60,7 @@ public:
         auto lock = Lock{lock_};
         auto id = api_.Factory().Identifier(tx.id());
 
-        if (false == db_.AddProposal(id, tx)) {
+        if (!db_.AddProposal(id, tx)) {
             LogError()(OT_PRETTY_CLASS())("Database error").Flush();
             static const auto blank = api_.Factory().Data();
             promise.set_value({SendResult::DatabaseError, blank});
@@ -126,7 +126,7 @@ private:
         {
             auto lock = Lock{lock_};
 
-            return 0 < data_.size();
+            return !data_.empty();
         }
 
         auto Add(
@@ -180,7 +180,7 @@ private:
             return std::move(data_.front());
         }
 
-        Pending(const api::Session& api) noexcept
+        explicit Pending(const api::Session& api) noexcept
             : api_(api)
             , lock_()
             , data_()
@@ -235,7 +235,7 @@ private:
             }
         }};
 
-        if (false == builder.CreateOutputs(proposal)) {
+        if (!builder.CreateOutputs(proposal)) {
             LogError()(OT_PRETTY_CLASS())("Failed to create outputs").Flush();
             output = BuildResult::PermanentFailure;
             rc = SendResult::OutputCreationError;
@@ -243,7 +243,7 @@ private:
             return output;
         }
 
-        if (false == builder.AddChange(proposal)) {
+        if (!builder.AddChange(proposal)) {
             LogError()(OT_PRETTY_CLASS())("Failed to allocate change output")
                 .Flush();
             output = BuildResult::PermanentFailure;
@@ -252,11 +252,11 @@ private:
             return output;
         }
 
-        while (false == builder.IsFunded()) {
+        while (!builder.IsFunded()) {
             auto policy = node::internal::SpendPolicy{};
             auto utxo = db_.ReserveUTXO(builder.Spender(), id, policy);
 
-            if (false == utxo.has_value()) {
+            if (!utxo.has_value()) {
                 LogError()(OT_PRETTY_CLASS())("Insufficient funds").Flush();
                 output = BuildResult::PermanentFailure;
                 rc = SendResult::InsufficientFunds;
@@ -264,7 +264,7 @@ private:
                 return output;
             }
 
-            if (false == builder.AddInput(utxo.value())) {
+            if (!builder.AddInput(utxo.value())) {
                 LogError()(OT_PRETTY_CLASS())("Failed to add input").Flush();
                 output = BuildResult::PermanentFailure;
                 rc = SendResult::InputCreationError;
@@ -277,7 +277,7 @@ private:
 
         builder.FinalizeOutputs();
 
-        if (false == builder.SignInputs()) {
+        if (!builder.SignInputs()) {
             LogError()(OT_PRETTY_CLASS())("Transaction signing failure")
                 .Flush();
             output = BuildResult::PermanentFailure;
@@ -288,7 +288,7 @@ private:
 
         auto pTransaction = builder.FinalizeTransaction();
 
-        if (false == bool(pTransaction)) {
+        if (!bool(pTransaction)) {
             LogError()(OT_PRETTY_CLASS())("Failed to instantiate transaction")
                 .Flush();
             output = BuildResult::PermanentFailure;
@@ -301,7 +301,7 @@ private:
         {
             const auto proto = transaction.Serialize();
 
-            if (false == proto.has_value()) {
+            if (!proto.has_value()) {
                 LogError()(OT_PRETTY_CLASS())("Failed to serialize transaction")
                     .Flush();
                 output = BuildResult::PermanentFailure;
@@ -355,15 +355,13 @@ private:
                         notif.sender()),
                     api_.Factory().InternalSession().PaymentCode(
                         notif.recipient()));
-                const auto nymID = [&] {
-                    auto out = api_.Factory().NymID();
-                    const auto& bytes = proposal.initiator();
-                    out->Assign(bytes.data(), bytes.size());
 
-                    OT_ASSERT(false == out->empty());
+                auto nymID = api_.Factory().NymID();
+                const auto& bytes = proposal.initiator();
+                nymID->Assign(bytes.data(), bytes.size());
 
-                    return out;
-                }();
+                OT_ASSERT(!nymID->empty());
+
                 const auto& account =
                     api_.Crypto().Blockchain().PaymentCodeSubaccount(
                         nymID, accountID);
@@ -429,12 +427,12 @@ private:
 
             auto proposal = db_.LoadProposal(id);
 
-            if (false == proposal.has_value()) { continue; }
+            if (!proposal.has_value()) { continue; }
 
             auto pTx =
                 factory::BitcoinTransaction(api_, proposal.value().finished());
 
-            if (false == bool(pTx)) { continue; }
+            if (!pTx) { continue; }
 
             const auto& tx = *pTx;
             node_.BroadcastTransaction(tx, true);
@@ -442,7 +440,7 @@ private:
     }
     auto send(const Lock& lock) noexcept -> void
     {
-        if (false == pending_.HasData()) { return; }
+        if (!pending_.HasData()) { return; }
 
         auto job = pending_.Pop();
         auto& [id, promise] = job;
@@ -456,11 +454,11 @@ private:
                 erase = true;
             }
 
-            if (false == erase) { pending_.Add(std::move(job)); }
+            if (!erase) { pending_.Add(std::move(job)); }
         }};
         auto serialized = db_.LoadProposal(id);
 
-        if (false == serialized.has_value()) { return; }
+        if (!serialized.has_value()) { return; }
 
         auto& data = *serialized;
 

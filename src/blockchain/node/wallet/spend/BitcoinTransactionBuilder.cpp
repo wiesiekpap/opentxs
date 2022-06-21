@@ -107,117 +107,44 @@ struct BitcoinTransactionBuilder::Imp {
             change_keys_.emplace(keyID);
             auto isNotification{false};
 
-            auto pOutput = [&] {
-                auto elements = [&] {
-                    namespace bb = opentxs::blockchain::bitcoin::block;
-                    namespace bi = bb::internal;
-                    auto out = bb::ScriptElements{};
+            using Position = bitcoin::block::Script::Position;
+            auto pScript = factory::BitcoinScript(
+                chain_,
+                create_elements(data, element, isNotification),
+                Position::Output);
 
-                    if (const auto size{data.notification().size()}; 1 < size) {
-                        throw std::runtime_error{
-                            "Multiple notifications not yet supported"};
-                    } else if (1 == size) {
-                        const auto& notif = data.notification(0);
-                        const auto recipient =
-                            api_.Factory().InternalSession().PaymentCode(
-                                notif.recipient());
-                        const auto message =
-                            UnallocatedCString{
-                                "Constructing notification transaction to "} +
-                            recipient.asBase58();
-                        const auto reason =
-                            api_.Factory().PasswordPrompt(message);
-                        const auto pc = [&] {
-                            auto out =
-                                api_.Factory().InternalSession().PaymentCode(
-                                    notif.sender());
-                            const auto& path = notif.path();
-                            auto seed{path.root()};
-                            const auto rc = out.Internal().AddPrivateKeys(
-                                seed, *path.child().rbegin(), reason);
+            if (!pScript) {
+                throw std::runtime_error{"Failed to construct script"};
+            }
 
-                            if (false == rc) {
-                                throw std::runtime_error{
-                                    "Failed to load private keys"};
-                            }
+            if (std::numeric_limits<std::uint32_t>::max() < outputs_.size()) {
+                throw std::runtime_error{"too many outputs"};
+            }
 
-                            return out;
-                        }();
-                        const auto pKey = element.PrivateKey(reason);
+            auto pOutput = factory::BitcoinTransactionOutput(
+                api_,
+                chain_,
+                static_cast<std::uint32_t>(outputs_.size()),
+                Amount{0},
+                std::move(pScript),
+                {keyID});
 
-                        if (!pKey) {
-                            throw std::runtime_error{
-                                "Failed to load private change key"};
-                        }
-
-                        const auto& key = *pKey;
-                        const auto keys = pc.GenerateNotificationElements(
-                            recipient, key, reason);
-
-                        if (3u != keys.size()) {
-                            throw std::runtime_error{
-                                "Failed to obtain notification elements"};
-                        }
-
-                        out.emplace_back(bi::Opcode(bb::OP::ONE));
-                        out.emplace_back(bi::PushData(reader(keys.at(0))));
-                        out.emplace_back(bi::PushData(reader(keys.at(1))));
-                        out.emplace_back(bi::PushData(reader(keys.at(2))));
-                        out.emplace_back(bi::Opcode(bb::OP::THREE));
-                        out.emplace_back(bi::Opcode(bb::OP::CHECKMULTISIG));
-                        isNotification = true;
-                    } else {
-                        const auto pkh = element.PubkeyHash();
-                        out.emplace_back(bi::Opcode(bb::OP::DUP));
-                        out.emplace_back(bi::Opcode(bb::OP::HASH160));
-                        out.emplace_back(bi::PushData(pkh->Bytes()));
-                        out.emplace_back(bi::Opcode(bb::OP::EQUALVERIFY));
-                        out.emplace_back(bi::Opcode(bb::OP::CHECKSIG));
-                    }
-
-                    return out;
-                }();
-                using Position = bitcoin::block::Script::Position;
-                auto pScript = factory::BitcoinScript(
-                    chain_, std::move(elements), Position::Output);
-
-                if (false == bool(pScript)) {
-                    throw std::runtime_error{"Failed to construct script"};
-                }
-
-                if (std::numeric_limits<std::uint32_t>::max() <
-                    outputs_.size()) {
-                    throw std::runtime_error{"too many outputs"};
-                }
-
-                return factory::BitcoinTransactionOutput(
-                    api_,
-                    chain_,
-                    static_cast<std::uint32_t>(outputs_.size()),
-                    Amount{0},
-                    std::move(pScript),
-                    {keyID});
-            }();
-
-            if (false == bool(pOutput)) {
+            if (!pOutput) {
                 throw std::runtime_error{"Failed to construct output"};
             }
 
             if (isNotification) { pOutput->AddTag(TxoTag::Notification); }
 
-            {
-                auto& output = *pOutput;
-                output_value_ += output.Value();
-                output_total_ += output.CalculateSize();
+            output_value_ += pOutput->Value();
+            output_total_ += pOutput->CalculateSize();
 
-                OT_ASSERT(0 < output.Keys().size());
+            OT_ASSERT(!pOutput->Keys().empty());
 
-                output.SetPayee(self_contact_);
-                output.SetPayer(self_contact_);
-                output.AddTag(TxoTag::Change);
+            pOutput->SetPayee(self_contact_);
+            pOutput->SetPayer(self_contact_);
+            pOutput->AddTag(TxoTag::Change);
 
-                if (isNotification) { output.AddTag(TxoTag::Notification); }
-            }
+            if (isNotification) { pOutput->AddTag(TxoTag::Notification); }
 
             change_.emplace_back(std::move(pOutput));
             output_count_ = outputs_.size() + change_.size();
@@ -229,11 +156,12 @@ struct BitcoinTransactionBuilder::Imp {
             return false;
         }
     }
+
     auto AddInput(const UTXO& utxo) noexcept -> bool
     {
         auto pInput = factory::BitcoinTransactionInput(api_, chain_, utxo);
 
-        if (false == bool(pInput)) {
+        if (!bool(pInput)) {
             LogError()(OT_PRETTY_CLASS())("Failed to construct input").Flush();
 
             return false;
@@ -325,7 +253,7 @@ struct BitcoinTransactionBuilder::Imp {
                     chain_, std::move(elements), Position::Output);
             }
 
-            if (false == bool(pScript)) {
+            if (!pScript) {
                 LogError()(OT_PRETTY_CLASS())("Failed to construct script")
                     .Flush();
 
@@ -340,7 +268,7 @@ struct BitcoinTransactionBuilder::Imp {
                 std::move(pScript),
                 {});
 
-            if (false == bool(pOutput)) {
+            if (!pOutput) {
                 LogError()(OT_PRETTY_CLASS())("Failed to construct output")
                     .Flush();
 
@@ -350,13 +278,9 @@ struct BitcoinTransactionBuilder::Imp {
             pOutput->SetPayer(self_contact_);
 
             if (output.has_contact()) {
-                const auto contactID = [&] {
-                    auto out = api_.Factory().Identifier();
-                    out->Assign(
-                        output.contact().data(), output.contact().size());
-
-                    return out;
-                }();
+                auto contactID = api_.Factory().Identifier();
+                contactID->Assign(
+                    output.contact().data(), output.contact().size());
                 pOutput->SetPayee(contactID);
             }
 
@@ -391,20 +315,18 @@ struct BitcoinTransactionBuilder::Imp {
         change_.clear();
         bip_69();
     }
+
     auto FinalizeTransaction() noexcept -> Transaction
     {
-        auto inputs = factory::BitcoinTransactionInputs([&] {
-            auto output = UnallocatedVector<Input>{};
-            output.reserve(inputs_.size());
+        UnallocatedVector<Input> output{};
+        output.reserve(inputs_.size());
 
-            for (auto& [input, value] : inputs_) {
-                output.emplace_back(std::move(input));
-            }
+        for (auto& [input, value] : inputs_) {
+            output.emplace_back(std::move(input));
+        }
+        auto inputs = factory::BitcoinTransactionInputs(std::move(output));
 
-            return output;
-        }());
-
-        if (false == bool(inputs)) {
+        if (!inputs) {
             LogError()(OT_PRETTY_CLASS())("Failed to construct inputs").Flush();
 
             return {};
@@ -412,7 +334,7 @@ struct BitcoinTransactionBuilder::Imp {
 
         auto outputs = factory::BitcoinTransactionOutputs(std::move(outputs_));
 
-        if (false == bool(outputs)) {
+        if (!outputs) {
             LogError()(OT_PRETTY_CLASS())("Failed to construct outputs")
                 .Flush();
 
@@ -429,6 +351,7 @@ struct BitcoinTransactionBuilder::Imp {
             std::move(inputs),
             std::move(outputs));
     }
+
     auto ReleaseKeys() noexcept -> void
     {
         const auto& api = api_.Crypto().Blockchain();
@@ -444,7 +367,7 @@ struct BitcoinTransactionBuilder::Imp {
         auto bip143 = std::optional<bitcoin::Bip143Hashes>{};
 
         for (const auto& [input, value] : inputs_) {
-            if (false == sign_input(++index, *input, txcopy, bip143)) {
+            if (!sign_input(++index, *input, txcopy, bip143)) {
                 LogError()(OT_PRETTY_CLASS())("Failed to sign input ")(index)
                     .Flush();
 
@@ -460,7 +383,7 @@ struct BitcoinTransactionBuilder::Imp {
         const Identifier& id,
         const Proposal& proposal,
         const Type chain,
-        const Amount feeRate) noexcept
+        const Amount& feeRate) noexcept
         : api_(api)
         , sender_([&] {
             const auto id = [&] {
@@ -499,7 +422,7 @@ struct BitcoinTransactionBuilder::Imp {
             auto out = UnallocatedSet<KeyID>{};
 
             for (const auto& output : proposal.output()) {
-                if (false == output.has_paymentcodechannel()) { continue; }
+                if (!output.has_paymentcodechannel()) { continue; }
 
                 using Subchain = blockchain::crypto::Subchain;
                 out.emplace(
@@ -650,7 +573,7 @@ private:
             const auto haveSig =
                 key.SignDER(preimage, hash_type(), sig, reason);
 
-            if (false == haveSig) {
+            if (!haveSig) {
                 LogError()(OT_PRETTY_CLASS())("Failed to obtain signature")
                     .Flush();
 
@@ -659,12 +582,12 @@ private:
 
             sig.emplace_back(sigHash.flags_);
 
-            OT_ASSERT(0 < key.PublicKey().size());
+            OT_ASSERT(!key.PublicKey().empty());
 
             views.emplace_back(reader(sig), ReadView{});
         }
 
-        if (0 == views.size()) {
+        if (views.empty()) {
             LogError()(OT_PRETTY_CLASS())("No keys available for signing ")(
                 input.PreviousOutput().str())
                 .Flush();
@@ -672,7 +595,7 @@ private:
             return false;
         }
 
-        if (false == input.AddMultisigSignatures(views)) {
+        if (!input.AddMultisigSignatures(views)) {
             LogError()(OT_PRETTY_CLASS())("Failed to apply signature").Flush();
 
             return false;
@@ -726,7 +649,7 @@ private:
             const auto haveSig =
                 key.SignDER(preimage, hash_type(), sig, reason);
 
-            if (false == haveSig) {
+            if (!haveSig) {
                 LogError()(OT_PRETTY_CLASS())("Failed to obtain signature")
                     .Flush();
 
@@ -735,12 +658,12 @@ private:
 
             sig.emplace_back(sigHash.flags_);
 
-            OT_ASSERT(0 < key.PublicKey().size());
+            OT_ASSERT(!key.PublicKey().empty());
 
             views.emplace_back(reader(sig), ReadView{});
         }
 
-        if (0 == views.size()) {
+        if (views.empty()) {
             LogError()(OT_PRETTY_CLASS())("No keys available for signing ")(
                 input.PreviousOutput().str())
                 .Flush();
@@ -748,7 +671,7 @@ private:
             return false;
         }
 
-        if (false == input.AddSignatures(views)) {
+        if (!input.AddSignatures(views)) {
             LogError()(OT_PRETTY_CLASS())("Failed to apply signature").Flush();
 
             return false;
@@ -805,7 +728,7 @@ private:
             const auto haveSig =
                 key.SignDER(preimage, hash_type(), sig, reason);
 
-            if (false == haveSig) {
+            if (!haveSig) {
                 LogError()(OT_PRETTY_CLASS())("Failed to obtain signature")
                     .Flush();
 
@@ -814,12 +737,12 @@ private:
 
             sig.emplace_back(sigHash.flags_);
 
-            OT_ASSERT(0 < key.PublicKey().size());
+            OT_ASSERT(!key.PublicKey().empty());
 
             views.emplace_back(reader(sig), pubkey->Bytes());
         }
 
-        if (0 == views.size()) {
+        if (views.empty()) {
             LogError()(OT_PRETTY_CLASS())("No keys available for signing ")(
                 input.PreviousOutput().str())
                 .Flush();
@@ -827,7 +750,7 @@ private:
             return false;
         }
 
-        if (false == input.AddSignatures(views)) {
+        if (!input.AddSignatures(views)) {
             LogError()(OT_PRETTY_CLASS())("Failed to apply signature").Flush();
 
             return false;
@@ -842,7 +765,7 @@ private:
         const auto base = fixed_overhead_ + input_count_.Size() + input_total_ +
                           outputs.Size() + output_total_ + p2pkh_output_bytes_;
 
-        if (false == segwit_) { return base; }
+        if (!segwit_) { return base; }
 
         static constexpr auto markerBytes = std::size_t{2u};
         const auto segwit = markerBytes + witness_total_;
@@ -912,7 +835,7 @@ private:
 
         return pKey;
     }
-    auto hash_type() const noexcept -> opentxs::crypto::HashType
+    static auto hash_type() noexcept -> opentxs::crypto::HashType
     {
         return opentxs::crypto::HashType::Sha256D;
     }
@@ -922,7 +845,7 @@ private:
 
         auto success{false};
         const auto postcondition = ScopeGuard{[&]() {
-            if (false == success) { bip143 = std::nullopt; }
+            if (!success) { bip143 = std::nullopt; }
         }};
         bip143.emplace();
 
@@ -946,7 +869,7 @@ private:
                 std::advance(it, sizeof(outpoint));
             }
 
-            if (false == cb(preimage, output.outpoints_)) {
+            if (!cb(preimage, output.outpoints_)) {
                 LogError()(OT_PRETTY_CLASS())("Failed to hash outpoints")
                     .Flush();
 
@@ -964,7 +887,7 @@ private:
                 std::advance(it, sizeof(sequence));
             }
 
-            if (false == cb(preimage, output.sequences_)) {
+            if (!cb(preimage, output.sequences_)) {
                 LogError()(OT_PRETTY_CLASS())("Failed to hash sequences")
                     .Flush();
 
@@ -979,8 +902,7 @@ private:
             for (const auto& output : outputs_) {
                 const auto size = output->CalculateSize();
 
-                if (false ==
-                    output->Serialize(preallocated(size, it)).has_value()) {
+                if (!output->Serialize(preallocated(size, it)).has_value()) {
                     LogError()(OT_PRETTY_CLASS())("Failed to serialize output")
                         .Flush();
 
@@ -990,7 +912,7 @@ private:
                 std::advance(it, size);
             }
 
-            if (false == cb(preimage, output.outputs_)) {
+            if (!cb(preimage, output.outputs_)) {
                 LogError()(OT_PRETTY_CLASS())("Failed to hash outputs").Flush();
 
                 return false;
@@ -1015,7 +937,7 @@ private:
             });
         auto inputs = factory::BitcoinTransactionInputs(std::move(inputCopy));
 
-        if (false == bool(inputs)) {
+        if (!inputs) {
             LogError()(OT_PRETTY_CLASS())("Failed to construct inputs").Flush();
 
             return {};
@@ -1030,7 +952,7 @@ private:
         auto outputs =
             factory::BitcoinTransactionOutputs(std::move(outputCopy));
 
-        if (false == bool(outputs)) {
+        if (!outputs) {
             LogError()(OT_PRETTY_CLASS())("Failed to construct outputs")
                 .Flush();
 
@@ -1129,7 +1051,7 @@ private:
         bitcoin::block::internal::Input& input,
         Bip143& bip143) const noexcept -> bool
     {
-        if (false == init_bip143(bip143)) {
+        if (!init_bip143(bip143)) {
             LogError()(OT_PRETTY_CLASS())("Error instantiating bip143").Flush();
 
             return false;
@@ -1146,7 +1068,7 @@ private:
         bitcoin::block::internal::Input& input,
         Transaction& txcopy) const noexcept -> bool
     {
-        if (false == init_txcopy(txcopy)) {
+        if (!init_txcopy(txcopy)) {
             LogError()(OT_PRETTY_CLASS())("Error instantiating txcopy").Flush();
 
             return false;
@@ -1155,7 +1077,7 @@ private:
         const auto sigHash = blockchain::bitcoin::SigHash{chain_};
         auto preimage = txcopy->GetPreimageBTC(index, sigHash);
 
-        if (0 == preimage.size()) {
+        if (preimage.empty()) {
             LogError()(OT_PRETTY_CLASS())("Error obtaining signing preimage")
                 .Flush();
 
@@ -1171,7 +1093,7 @@ private:
         bitcoin::block::internal::Input& input,
         Bip143& bip143) const noexcept -> bool
     {
-        if (false == init_bip143(bip143)) {
+        if (!init_bip143(bip143)) {
             LogError()(OT_PRETTY_CLASS())("Error instantiating bip143").Flush();
 
             return false;
@@ -1212,7 +1134,7 @@ private:
         if (Match::ByValue == match) {
             const auto expected = output.Script().Pubkey();
 
-            if (false == expected.has_value()) {
+            if (!expected.has_value()) {
                 LogError()(OT_PRETTY_CLASS())("wrong output script type")
                     .Flush();
 
@@ -1229,7 +1151,7 @@ private:
         } else {
             const auto expected = output.Script().PubkeyHash();
 
-            if (false == expected.has_value()) {
+            if (!expected.has_value()) {
                 LogError()(OT_PRETTY_CLASS())("wrong output script type")
                     .Flush();
 
@@ -1279,6 +1201,72 @@ private:
 
         for (const auto& output : outputs_) { output->SetIndex(++index); }
     }
+
+    opentxs::blockchain::bitcoin::block::ScriptElements create_elements(
+        const Proposal& data,
+        const crypto::Element& element,
+        bool& isNotification)
+    {
+        namespace bb = opentxs::blockchain::bitcoin::block;
+        namespace bi = bb::internal;
+        bb::ScriptElements elements{};
+
+        if (const auto size{data.notification().size()}; 1 < size) {
+            throw std::runtime_error{
+                "Multiple notifications not yet supported"};
+        } else if (1 == size) {
+            const auto& notif = data.notification(0);
+            const auto recipient =
+                api_.Factory().InternalSession().PaymentCode(notif.recipient());
+            const auto message =
+                UnallocatedCString{
+                    "Constructing notification transaction to "} +
+                recipient.asBase58();
+            const auto reason = api_.Factory().PasswordPrompt(message);
+
+            auto pc =
+                api_.Factory().InternalSession().PaymentCode(notif.sender());
+            const auto& path = notif.path();
+            auto seed{path.root()};
+            const auto rc = pc.Internal().AddPrivateKeys(
+                seed, *path.child().rbegin(), reason);
+
+            if (!rc) {
+                throw std::runtime_error{"Failed to load private keys"};
+            }
+
+            const auto pKey = element.PrivateKey(reason);
+
+            if (!pKey) {
+                throw std::runtime_error{"Failed to load private change key"};
+            }
+
+            const auto keys =
+                pc.GenerateNotificationElements(recipient, *pKey, reason);
+
+            if (3u != keys.size()) {
+                throw std::runtime_error{
+                    "Failed to obtain notification elements"};
+            }
+
+            elements.emplace_back(bi::Opcode(bb::OP::ONE));
+            elements.emplace_back(bi::PushData(reader(keys.at(0))));
+            elements.emplace_back(bi::PushData(reader(keys.at(1))));
+            elements.emplace_back(bi::PushData(reader(keys.at(2))));
+            elements.emplace_back(bi::Opcode(bb::OP::THREE));
+            elements.emplace_back(bi::Opcode(bb::OP::CHECKMULTISIG));
+            isNotification = true;
+        } else {
+            const auto pkh = element.PubkeyHash();
+            elements.emplace_back(bi::Opcode(bb::OP::DUP));
+            elements.emplace_back(bi::Opcode(bb::OP::HASH160));
+            elements.emplace_back(bi::PushData(pkh->Bytes()));
+            elements.emplace_back(bi::Opcode(bb::OP::EQUALVERIFY));
+            elements.emplace_back(bi::Opcode(bb::OP::CHECKSIG));
+        }
+
+        return elements;
+    }
 };
 
 BitcoinTransactionBuilder::BitcoinTransactionBuilder(
@@ -1287,7 +1275,7 @@ BitcoinTransactionBuilder::BitcoinTransactionBuilder(
     const Identifier& id,
     const Proposal& proposal,
     const Type chain,
-    const Amount feeRate) noexcept
+    const Amount& feeRate) noexcept
     : imp_(std::make_unique<Imp>(api, db, id, proposal, chain, feeRate))
 {
     OT_ASSERT(imp_);
