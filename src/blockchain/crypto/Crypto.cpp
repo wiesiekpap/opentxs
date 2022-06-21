@@ -34,11 +34,9 @@ auto is_notification(Subchain in) noexcept -> bool
         case Subchain::NotificationV2:
         case Subchain::NotificationV3:
         case Subchain::NotificationV4: {
-
             return true;
         }
         default: {
-
             return false;
         }
     }

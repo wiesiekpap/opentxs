@@ -290,37 +290,37 @@ auto Deterministic::confirm(
     const Subchain type,
     const Bip32Index index) noexcept -> void
 {
-    const auto checkUsed = [&] {
-        try {
-            auto& used = used_.at(type);
-
-            if (index < used) { return; }
-
+    try {
+        auto& used = used_.at(type);
+        if (index >= used) {
             static const auto blank = api_.Factory().Identifier();
+            auto allElementsUsed = [&]() {
+                for (auto i{index}; i > used; --i) {
+                    const auto& element = this->element(lock, type, i - 1u);
 
-            for (auto i{index}; i > used; --i) {
-                const auto& element = this->element(lock, type, i - 1u);
+                    if (Status::Used !=
+                        element.Internal().IsAvailable(blank, "")) {
+                        return false;
+                    }
+                }
+                return true;
+            };
 
-                if (Status::Used != element.Internal().IsAvailable(blank, "")) {
-                    return;
+            if (allElementsUsed()) {
+                for (auto i{index}; i < generated_.at(type); ++i) {
+                    const auto& element = this->element(lock, type, i);
+                    if (Status::Used ==
+                        element.Internal().IsAvailable(blank, ""))
+                        used = std::max(used, i + 1u);
+                    else
+                        break;
                 }
             }
-
-            for (auto i{index}; i < generated_.at(type); ++i) {
-                const auto& element = this->element(lock, type, i);
-
-                if (Status::Used == element.Internal().IsAvailable(blank, "")) {
-                    used = std::max(used, i + 1u);
-                } else {
-
-                    return;
-                }
-            }
-        } catch (...) {
-            LogError()(OT_PRETTY_CLASS())("invalid subchain or index").Flush();
         }
-    };
-    checkUsed();
+    } catch (...) {
+        LogError()(OT_PRETTY_CLASS())("invalid subchain or index").Flush();
+    }
+
     auto generated = Batch{};
     const auto reason = api_.Factory().PasswordPrompt(
         "Generate account keys for wallet scanning.");
@@ -507,7 +507,7 @@ auto Deterministic::get_contact() const noexcept -> OTIdentifier
 auto Deterministic::init() noexcept -> void
 {
     const auto& log = LogTrace();
-    const auto cb = [&](const auto& data) {
+    const auto checkConsistency = [&](const auto& data) {
         const auto type = data.type_;
         const auto nextGenerateIndex = generated_.at(type);
         const auto generatedCount = data.map_.size();
@@ -533,8 +533,8 @@ auto Deterministic::init() noexcept -> void
 
         return false;
     };
-    auto inconsistent = cb(data_.internal_);
-    inconsistent |= cb(data_.external_);
+    auto inconsistent = checkConsistency(data_.internal_);
+    inconsistent |= checkConsistency(data_.external_);
 
     if (inconsistent) {
         LogError()(OT_PRETTY_CLASS())("repairing inconsistent state for ")(
@@ -633,21 +633,13 @@ auto Deterministic::need_lookahead(const rLock& lock, const Subchain type)
 
     if (capacity >= window_) { return 0u; }
 
-    const auto effective = [&] {
-        auto& last = last_allocation_[type];
+    auto& last = last_allocation_[type];
+    if (!last.has_value())
+        last = window_;
+    else
+        last = std::min(max_allocation_, last.value() * 2u);
 
-        if (false == last.has_value()) {
-            last = window_;
-
-            return window_;
-        } else {
-            last = std::min(max_allocation_, last.value() * 2u);
-
-            return last.value();
-        }
-    }();
-
-    return effective - capacity;
+    return last.value() - capacity;
 }
 
 auto Deterministic::Reserve(

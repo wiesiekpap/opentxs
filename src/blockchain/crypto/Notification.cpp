@@ -39,18 +39,10 @@ auto BlockchainNotificationSubaccount(
     -> std::unique_ptr<blockchain::crypto::Notification>
 {
     using ReturnType = blockchain::crypto::implementation::Notification;
+    proto::HDPath out{};
+    nym.Internal().PaymentCodePath(out);
 
-    return std::make_unique<ReturnType>(
-        api,
-        parent,
-        code,
-        [&] {
-            auto out = proto::HDPath{};
-            nym.Internal().PaymentCodePath(out);
-
-            return out;
-        }(),
-        id);
+    return std::make_unique<ReturnType>(api, parent, code, std::move(out), id);
 }
 }  // namespace opentxs::factory
 
