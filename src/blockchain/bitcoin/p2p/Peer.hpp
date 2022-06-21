@@ -13,6 +13,7 @@
 #include <memory>
 #include <type_traits>
 
+#include "blockchain/bitcoin/Inventory.hpp"
 #include "blockchain/bitcoin/p2p/Header.hpp"
 #include "blockchain/bitcoin/p2p/Message.hpp"
 #include "blockchain/p2p/peer/Peer.hpp"
@@ -298,6 +299,8 @@ private:
     auto process_version(
         std::unique_ptr<HeaderType> header,
         const zmq::Frame& payload) -> void;
+
+    auto get_inventory_type() const -> blockchain::bitcoin::Inventory::Type;
 
     Peer() = delete;
     Peer(const Peer&) = delete;

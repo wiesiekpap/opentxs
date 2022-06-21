@@ -15,7 +15,6 @@
 #include <utility>
 
 #include "blockchain/DownloadTask.hpp"
-#include "blockchain/bitcoin/Inventory.hpp"
 #include "blockchain/bitcoin/p2p/Header.hpp"
 #include "blockchain/bitcoin/p2p/message/Cmpctblock.hpp"
 #include "blockchain/bitcoin/p2p/message/Feefilter.hpp"
@@ -143,6 +142,8 @@ auto BitcoinP2PPeerLegacy(
 
 namespace opentxs::blockchain::p2p::bitcoin::implementation
 {
+using Inventory = blockchain::bitcoin::Inventory;
+using Type = Inventory::Type;
 const UnallocatedMap<Command, Peer::CommandFunction> Peer::command_map_{
     {Command::addr, &Peer::process_addr},
     {Command::block, &Peer::process_block},
@@ -234,13 +235,9 @@ auto Peer::broadcast_block(zmq::Message&& in) noexcept -> void
     }
 
     const auto id = api_.Factory().Data(body.at(1));
-    auto payload = [&] {
-        using Inventory = blockchain::bitcoin::Inventory;
-        auto output = UnallocatedVector<Inventory>{};
-        output.emplace_back(Inventory::Type::MsgBlock, id);
+    UnallocatedVector<Inventory> payload{};
+    payload.emplace_back(Inventory::Type::MsgBlock, id);
 
-        return output;
-    }();
     auto pMsg = std::unique_ptr<Message>{
         factory::BitcoinP2PInv(api_, chain_, std::move(payload))};
 
@@ -278,21 +275,9 @@ auto Peer::broadcast_inv(
 
 auto Peer::broadcast_inv_transaction(ReadView txid) noexcept -> void
 {
-    using Inventory = blockchain::bitcoin::Inventory;
-    using Type = Inventory::Type;
-    const auto type = [&] {
-        const auto& segwit = params::Chains().at(chain_).segwit_;
+    UnallocatedVector<Inventory> inv{
+        Inventory{get_inventory_type(), api_.Factory().DataFromBytes(txid)}};
 
-        if (segwit) {
-
-            return Type::MsgWitnessTx;
-        } else {
-
-            return Type::MsgTx;
-        }
-    }();
-    auto inv = UnallocatedVector<Inventory>{};
-    inv.emplace_back(type, api_.Factory().DataFromBytes(txid));
     broadcast_inv(std::move(inv));
 }
 
@@ -531,12 +516,9 @@ auto Peer::process_block_job(const zmq::Frame& payload) noexcept -> void
 
         if (submit) {
             using Task = node::ManagerJobs;
-            network_.Submit([&] {
-                auto work = MakeWork(Task::SubmitBlock);
-                work.AddFrame(payload);
-
-                return work;
-            }());
+            auto work = MakeWork(Task::SubmitBlock);
+            work.AddFrame(payload);
+            network_.Submit(std::move(work));
         }
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
@@ -658,40 +640,35 @@ auto Peer::process_cfheaders(
     } else if (cfheader_job_) {
         try {
             const auto hashCount = message.size();
-            const auto headers = [&] {
-                const auto stop = headers_.LoadHeader(message.Stop());
+            const auto stop = headers_.LoadHeader(message.Stop());
 
-                if (false == bool(stop)) {
-                    throw std::runtime_error("Stop block not found");
-                }
+            if (!bool(stop)) {
+                throw std::runtime_error("Stop block not found");
+            }
 
-                if (0 > stop->Height()) {
-                    throw std::runtime_error("Stop block disconnected");
-                }
+            if (0 > stop->Height()) {
+                throw std::runtime_error("Stop block disconnected");
+            }
 
-                if (hashCount > static_cast<std::size_t>(stop->Height())) {
-                    throw std::runtime_error(
-                        "Too many filter headers returned");
-                }
+            if (hashCount > static_cast<std::size_t>(stop->Height())) {
+                throw std::runtime_error("Too many filter headers returned");
+            }
 
-                const auto startHeight =
-                    stop->Height() - static_cast<block::Height>(hashCount) + 1;
-                const auto start =
-                    headers_.LoadHeader(headers_.BestHash(startHeight));
+            const auto startHeight =
+                stop->Height() - static_cast<block::Height>(hashCount) + 1;
+            const auto start =
+                headers_.LoadHeader(headers_.BestHash(startHeight));
 
-                if (false == bool(start)) {
-                    throw std::runtime_error("Start block not found");
-                }
+            if (!bool(start)) {
+                throw std::runtime_error("Start block not found");
+            }
 
-                auto output =
-                    headers_.Ancestors(start->Position(), stop->Position());
+            auto headers =
+                headers_.Ancestors(start->Position(), stop->Position());
 
-                while (output.size() > hashCount) {
-                    output.erase(output.begin());
-                }
-
-                return output;
-            }();
+            while (headers.size() > hashCount) {
+                headers.erase(headers.begin());
+            }
 
             if (headers.size() != hashCount) {
                 throw std::runtime_error(
@@ -1164,8 +1141,7 @@ auto Peer::process_getdata(
     }
 
     const auto& message = *pMessage;
-    using Type = blockchain::bitcoin::Inventory::Type;
-    auto notFound = UnallocatedVector<blockchain::bitcoin::Inventory>{};
+    UnallocatedVector<Inventory> notFound{};
 
     for (const auto& inv : message) {
         switch (inv.type_) {
@@ -1174,12 +1150,9 @@ auto Peer::process_getdata(
 
                 if (tx) {
                     known_transactions_.emplace(inv.hash_->Bytes());
-                    const auto bytes = [&] {
-                        auto out = Space{};
-                        tx->Internal().Serialize(writer(out));
+                    Space bytes{};
+                    tx->Internal().Serialize(writer(bytes));
 
-                        return out;
-                    }();
                     const auto pMsg = std::unique_ptr<Message>{
                         factory::BitcoinP2PTx(api_, chain_, reader(bytes))};
 
@@ -1208,12 +1181,9 @@ auto Peer::process_getdata(
                     OT_ASSERT(pBlock);
 
                     const auto& block = *pBlock;
-                    const auto serialized = [&] {
-                        auto output = api_.Factory().Data();
-                        block.Serialize(output->WriteInto());
+                    auto serialized = api_.Factory().Data();
+                    block.Serialize(serialized->WriteInto());
 
-                        return output;
-                    }();
                     const auto pMsg = std::unique_ptr<Message>{
                         factory::BitcoinP2PBlock(api_, chain_, serialized)};
 
@@ -1370,16 +1340,14 @@ auto Peer::process_headers(
         check_verify();
     } else {
         get_headers_.Finish();
-        auto future = network_.Track([&] {
-            using Task = node::ManagerJobs;
-            auto work = MakeWork(Task::SubmitBlockHeader);
+        using Task = node::ManagerJobs;
+        auto work = MakeWork(Task::SubmitBlockHeader);
 
-            for (const auto& header : message) {
-                header.Serialize(work.AppendBytes(), false);
-            }
+        for (const auto& header2 : message) {
+            header2.Serialize(work.AppendBytes(), false);
+        }
 
-            return work;
-        }());
+        auto future = network_.Track(std::move(work));
         using Status = std::future_status;
         constexpr auto limit = 10s;
 
@@ -1414,8 +1382,6 @@ auto Peer::process_inv(
         }
 
         const auto& message = *pMessage;
-        using Inventory = blockchain::bitcoin::Inventory;
-        using Type = Inventory::Type;
         auto txReceived = UnallocatedVector<Inventory>{};
         auto txToDownload = UnallocatedVector<Inventory>{};
 
@@ -1441,16 +1407,14 @@ auto Peer::process_inv(
         }
 
         if (0 < txReceived.size()) {
-            const auto hashes = [&] {
-                auto out = UnallocatedVector<ReadView>{};
-                std::transform(
-                    txReceived.begin(),
-                    txReceived.end(),
-                    std::back_inserter(out),
-                    [&](const auto& in) { return in.hash_->Bytes(); });
+            UnallocatedVector<ReadView> hashes{};
+            hashes.reserve(txReceived.size());
+            std::transform(
+                txReceived.begin(),
+                txReceived.end(),
+                std::back_inserter(hashes),
+                [&](const auto& in) { return in.hash_->Bytes(); });
 
-                return out;
-            }();
             const auto result = mempool_.Submit(hashes);
 
             OT_ASSERT(txReceived.size() == result.size());
@@ -1818,44 +1782,23 @@ auto Peer::process_version(
 auto Peer::reconcile_mempool() noexcept -> void
 {
     const auto local = mempool_.Dump();
-    const auto remote = [&] {
-        auto out = UnallocatedSet<UnallocatedCString>{};
-        std::copy(
-            known_transactions_.begin(),
-            known_transactions_.end(),
-            std::inserter(out, out.end()));
+    const auto& remote = known_transactions_;
 
-        return out;
-    }();
-    const auto missing = [&] {
-        auto out = UnallocatedVector<UnallocatedCString>{};
-        out.reserve(local.size());
-        std::set_difference(
-            local.begin(),
-            local.end(),
-            remote.begin(),
-            remote.end(),
-            std::back_inserter(out));
+    UnallocatedVector<UnallocatedCString> missing{};
+    missing.reserve(local.size());
+    std::set_difference(
+        local.begin(),
+        local.end(),
+        remote.begin(),
+        remote.end(),
+        std::back_inserter(missing));
+    missing.shrink_to_fit();
 
-        return out;
-    }();
-    using Inventory = blockchain::bitcoin::Inventory;
-    using Type = Inventory::Type;
-    const auto type = [&] {
-        const auto& segwit = params::Chains().at(chain_).segwit_;
-
-        if (segwit) {
-
-            return Type::MsgWitnessTx;
-        } else {
-
-            return Type::MsgTx;
-        }
-    }();
-    auto inv = UnallocatedVector<Inventory>{};
+    UnallocatedVector<Inventory> inv{};
 
     for (const auto& hash : missing) {
-        inv.emplace_back(type, api_.Factory().DataFromBytes(hash));
+        inv.emplace_back(
+            get_inventory_type(), api_.Factory().DataFromBytes(hash));
     }
 
     broadcast_inv(std::move(inv));
@@ -1891,8 +1834,6 @@ auto Peer::request_block(zmq::Message&& in) noexcept -> void
         log_(OT_PRETTY_CLASS())(count - 1)(" blocks to request").Flush();
     }
 
-    using Inventory = blockchain::bitcoin::Inventory;
-    using Type = Inventory::Type;
     using BlockList = UnallocatedVector<Inventory>;
     auto blocks = UnallocatedVector<BlockList>{};
     blocks.emplace_back();
@@ -1930,8 +1871,6 @@ auto Peer::request_block_batch() noexcept -> void
     const auto& data = job->Get();
 
     try {
-        using Inventory = blockchain::bitcoin::Inventory;
-        using Type = Inventory::Type;
         auto blocks = UnallocatedVector<Inventory>{};
 
         for (const auto& hash : data) {
@@ -1963,8 +1902,6 @@ auto Peer::request_block_job() noexcept -> void
     const auto& data = job.data_;
 
     try {
-        using Inventory = blockchain::bitcoin::Inventory;
-        using Type = Inventory::Type;
         auto blocks = UnallocatedVector<Inventory>{};
 
         for (const auto& task : data) {
@@ -2143,7 +2080,7 @@ auto Peer::request_checkpoint_filter_header() noexcept -> void
                 height,
                 checkpointBlockHash)};
 
-        if (false == bool(pMessage)) {
+        if (!bool(pMessage)) {
             log_(OT_PRETTY_CLASS())("Failed to construct getcfheaders").Flush();
 
             return;
@@ -2174,7 +2111,7 @@ auto Peer::request_headers(const block::Hash& hash) noexcept -> void
     auto pMessage = std::unique_ptr<Message>{factory::BitcoinP2PGetheaders(
         api_, chain_, protocol_.load(), headers_.RecentHashes(), hash)};
 
-    if (false == bool(pMessage)) {
+    if (!bool(pMessage)) {
         LogError()(OT_PRETTY_CLASS())("Failed to construct getheaders").Flush();
 
         return;
@@ -2193,7 +2130,7 @@ auto Peer::request_mempool() noexcept -> void
     auto pMessage =
         std::unique_ptr<Message>{factory::BitcoinP2PMempool(api_, chain_)};
 
-    if (false == bool(pMessage)) {
+    if (!bool(pMessage)) {
         LogError()(OT_PRETTY_CLASS())("Failed to construct mempool").Flush();
 
         return;
@@ -2212,7 +2149,7 @@ auto Peer::request_transactions(
     auto pMessage = std::unique_ptr<Message>{
         factory::BitcoinP2PGetdata(api_, chain_, std::move(inv))};
 
-    if (false == bool(pMessage)) {
+    if (!bool(pMessage)) {
         LogError()(OT_PRETTY_CLASS())("Failed to construct getdata").Flush();
 
         return;
@@ -2279,6 +2216,11 @@ auto Peer::start_handshake() noexcept -> void
             .Flush();
         disconnect();
     }
+}
+blockchain::bitcoin::Inventory::Type Peer::get_inventory_type() const
+{
+    return params::Chains().at(chain_).segwit_ ? Type::MsgWitnessTx
+                                               : Type::MsgTx;
 }
 
 Peer::~Peer() { Shutdown(); }
