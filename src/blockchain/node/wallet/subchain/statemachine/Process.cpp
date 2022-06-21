@@ -11,8 +11,6 @@
 
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
-#include <algorithm>
-#include <atomic>
 #include <chrono>
 #include <future>
 #include <memory>
@@ -29,29 +27,19 @@
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
-#include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/network/Asio.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
-#include "opentxs/network/zeromq/message/FrameSection.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
 
@@ -114,14 +102,11 @@ auto Process::Imp::check_cache() noexcept -> void
             status.emplace_back(ScanState::processed, pos);
         }
 
-        if (0u < status.size()) {
-            const auto sent = to_index_.SendDeferred([&] {
-                auto out = MakeWork(Work::update);
-                add_last_reorg(out);
-                encode(status, out);
-
-                return out;
-            }());
+        if (!status.empty()) {
+            auto work = MakeWork(Work::update);
+            add_last_reorg(work);
+            encode(status, work);
+            const auto sent = to_index_.SendDeferred(std::move(work));
 
             OT_ASSERT(sent);
         }
@@ -139,27 +124,25 @@ auto Process::Imp::do_process(const Ready::value_type& data) noexcept -> void
 }
 
 auto Process::Imp::do_process(
-    const block::Position position,
+    const block::Position& position,
     const std::shared_ptr<const bitcoin::block::Block> block) noexcept -> void
 {
     do_process_common(position, block);
 
-    pipeline_.Push([&] {
-        auto out = MakeWork(Work::process);
-        out.AddFrame(position.first);
-        out.AddFrame(position.second);
+    auto work = MakeWork(Work::process);
+    work.AddFrame(position.first);
+    work.AddFrame(position.second);
 
-        return out;
-    }());
+    pipeline_.Push(std::move(work));
 }
 
 auto Process::Imp::do_process_common(
-    const block::Position position,
+    const block::Position& position,
     const std::shared_ptr<const bitcoin::block::Block>& block) noexcept -> void
 {
     OT_ASSERT(block);
 
-    if (false == parent_.ProcessBlock(position, *block)) { OT_FAIL; }
+    if (!parent_.ProcessBlock(position, *block)) { OT_FAIL; }
 }
 
 auto Process::Imp::do_process_update(Message&& msg) noexcept -> void
@@ -206,7 +189,7 @@ auto Process::Imp::download(block::Position&& position) noexcept -> void
 
 auto Process::Imp::have_items() const noexcept -> bool
 {
-    return 0u < ready_.size();
+    return !ready_.empty();
 }
 
 auto Process::Imp::ProcessReorg(
@@ -403,7 +386,7 @@ auto Process::Imp::queue_process() noexcept -> bool
         ++counter;
 
         return (counter <= limit) && (processing_.size() < download_limit_) &&
-               (false == running_.is_limited());
+               !running_.is_limited();
     };
 
     while (have_items() && CanProcess()) {

@@ -10,31 +10,22 @@
 #include "blockchain/node/wallet/subchain/statemachine/Job.hpp"  // IWYU pragma: associated
 
 #include <boost/system/error_code.hpp>  // IWYU pragma: keep
-#include <algorithm>
 #include <chrono>
-#include <iterator>
 #include <string_view>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
-#include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/node/FilterOracle.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
-#include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/network/Asio.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
-#include "opentxs/network/zeromq/message/FrameSection.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Log.hpp"
@@ -183,7 +174,7 @@ auto Job::ChangeState(const State state, StateSequence reorg) noexcept -> bool
         }
     }
 
-    if (false == output) {
+    if (!output) {
         LogError()(OT_PRETTY_CLASS())(name_)(" failed to change state from ")(
             print(state_))(" to ")(print(state))
             .Flush();
@@ -204,7 +195,7 @@ auto Job::do_startup() noexcept -> void {}
 
 auto Job::last_reorg() const noexcept -> std::optional<StateSequence>
 {
-    if (0u == reorgs_.size()) {
+    if (reorgs_.empty()) {
 
         return std::nullopt;
     } else {
@@ -372,12 +363,10 @@ auto Job::process_update(Message&& msg) noexcept -> void
 
 auto Job::process_watchdog() noexcept -> void
 {
-    to_parent_.Send([&] {
-        auto out = MakeWork(Work::watchdog_ack);
-        out.AddFrame(job_type_);
+    auto work = MakeWork(Work::watchdog_ack);
+    work.AddFrame(job_type_);
 
-        return out;
-    }());
+    to_parent_.Send(std::move(work));
     using namespace std::literals;
     watchdog_.Cancel();
     watchdog_.SetRelative(10s);
