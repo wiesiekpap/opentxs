@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "IncomingConnectionManager.hpp"  // IWYU pragma: associated
 
-#include <cstddef>
 #include <mutex>
 #include <queue>
 #include <stdexcept>
@@ -18,19 +17,15 @@
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/String.hpp"
 #include "opentxs/network/asio/Socket.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -40,8 +35,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/WorkType.hpp"
-#include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -92,10 +85,12 @@ public:
         , peers_()
         , external_index_()
         , internal_index_()
-        , cb_ex_(zmq::ListenCallback::Factory(
-              [=](auto&& in) { this->external(std::move(in)); }))
-        , cb_int_(zmq::ListenCallback::Factory(
-              [=](auto&& in) { this->internal(std::move(in)); }))
+        , cb_ex_(zmq::ListenCallback::Factory([=](auto&& in) {
+            this->external(std::forward<decltype(in)>(in));
+        }))
+        , cb_int_(zmq::ListenCallback::Factory([=](auto&& in) {
+            this->internal(std::forward<decltype(in)>(in));
+        }))
         , external_(api_.Network().ZeroMQ().RouterSocket(
               cb_ex_,
               zmq::socket::Direction::Bind))
@@ -179,7 +174,7 @@ private:
                 {},
                 true);
 
-            if (false == internal_->Start(zmq)) {
+            if (!internal_->Start(zmq)) {
                 LogError()(OT_PRETTY_CLASS())(
                     "Failed to listen to internal endpoint")
                     .Flush();
@@ -211,17 +206,13 @@ private:
         const Data& internalID,
         zmq::Message&& message) noexcept -> void
     {
-        internal_->Send([&] {
-            auto out = network::zeromq::Message{};
-            out.AddFrame(internalID);
-            out.StartBody();
+        network::zeromq::Message out{};
+        out.AddFrame(internalID);
+        out.StartBody();
 
-            for (auto& frame : message.Body()) {
-                out.AddFrame(std::move(frame));
-            }
+        for (auto& frame : message.Body()) { out.AddFrame(std::move(frame)); }
 
-            return out;
-        }());
+        internal_->Send(std::move(out));
     }
     auto internal(zmq::Message&& message) noexcept -> void
     {
@@ -249,7 +240,7 @@ private:
                     internal_->Send(network::zeromq::tagged_reply_to_message(
                         message, Task::Register));
 
-                    while (0u < cached.size()) {
+                    while (!cached.empty()) {
                         forward_message(internalID, std::move(cached.front()));
                         cached.pop();
                     }
@@ -264,24 +255,19 @@ private:
                 OT_ASSERT(2 < body.size());
 
                 try {
-                    const auto externalID = [&] {
+                    ConnectionID* externalID;
+                    {
                         auto lock = Lock{lock_};
-                        auto& [eID, internalID, registered, cached] =
-                            peers_.at(internal_index_.at(incomingID));
+                        externalID = &std::get<0>(
+                            peers_.at(internal_index_.at(incomingID)));
+                    }
+                    network::zeromq::Message out{};
+                    out.AddFrame(*externalID);
+                    out.StartBody();
 
-                        return eID;
-                    }();
-                    external_->Send([&] {
-                        auto out = network::zeromq::Message{};
-                        out.AddFrame(externalID);
-                        out.StartBody();
+                    for (auto& frame : body) { out.AddFrame(std::move(frame)); }
 
-                        for (auto& frame : body) {
-                            out.AddFrame(std::move(frame));
-                        }
-
-                        return out;
-                    }());
+                    external_->Send(std::move(out));
                 } catch (...) {
 
                     return;

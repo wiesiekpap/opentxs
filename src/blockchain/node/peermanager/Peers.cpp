@@ -13,7 +13,6 @@
 #include <array>
 #include <atomic>
 #include <chrono>
-#include <iterator>
 #include <memory>
 #include <random>
 #include <stdexcept>
@@ -30,8 +29,6 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
@@ -41,7 +38,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -157,14 +153,11 @@ auto PeerManager::Peers::adjust_count(int adjustment) noexcept -> void
         count_.store(0);
     }
 
-    connected_peers_.Send([&] {
-        auto work =
-            network::zeromq::tagged_message(WorkType::BlockchainPeerConnected);
-        work.AddFrame(chain_);
-        work.AddFrame(count_.load());
-
-        return work;
-    }());
+    auto work =
+        network::zeromq::tagged_message(WorkType::BlockchainPeerConnected);
+    work.AddFrame(chain_);
+    work.AddFrame(count_.load());
+    connected_peers_.Send(std::move(work));
 }
 
 auto PeerManager::Peers::AddListener(
@@ -175,7 +168,7 @@ auto PeerManager::Peers::AddListener(
         case blockchain::p2p::Network::zmq: {
             auto& manager = incoming_zmq_;
 
-            if (false == bool(manager)) {
+            if (!manager) {
                 manager = IncomingConnectionManager::ZMQ(api_, *this);
             }
 
@@ -187,7 +180,7 @@ auto PeerManager::Peers::AddListener(
         case blockchain::p2p::Network::ipv4: {
             auto& manager = incoming_tcp_;
 
-            if (false == bool(manager)) {
+            if (!manager) {
                 manager = IncomingConnectionManager::TCP(api_, *this);
             }
 
@@ -255,14 +248,11 @@ auto PeerManager::Peers::Disconnect(const int id) noexcept -> void
 
         if (incoming_tcp_) { incoming_tcp_->Disconnect(id); }
 
-        const auto address = [&] {
-            auto& peer = *it->second;
-            auto out = peer.AddressID();
-            peer.Shutdown();
-            peers_.erase(it);
+        auto& peer = *it->second;
+        auto address = peer.AddressID();
+        peer.Shutdown();
+        peers_.erase(it);
 
-            return out;
-        }();
         --active_.at(address);
         adjust_count(-1);
         connected_.erase(address);
@@ -295,7 +285,7 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
         const auto& data = params::Chains().at(chain_);
         const auto& dns = data.dns_seeds_;
 
-        if (0 == dns.size()) {
+        if (dns.empty()) {
             LogVerbose()(OT_PRETTY_CLASS())("No dns seeds available").Flush();
 
             return {};
@@ -310,7 +300,7 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
             count,
             std::mt19937{std::random_device{}()});
 
-        if (0 == seeds.size()) {
+        if (seeds.empty()) {
             LogError()(OT_PRETTY_CLASS())("Failed to select a dns seed")
                 .Flush();
 
@@ -529,7 +519,7 @@ auto PeerManager::Peers::get_types() const noexcept
 
     static auto first{true};
 
-    if (first && (0u == output.size())) {
+    if (first && (output.empty())) {
         LogError()(OT_PRETTY_CLASS())(
             "No outgoing connection methods available")
             .Flush();
@@ -600,11 +590,11 @@ auto PeerManager::Peers::previous_failure_timeout(
 }
 
 auto PeerManager::Peers::set_default_peer(
-    const UnallocatedCString node,
+    const UnallocatedCString& node,
     const Data& localhost,
     bool& invalidPeer) noexcept -> OTData
 {
-    if (false == node.empty()) {
+    if (!node.empty()) {
         try {
             const auto bytes = ip::make_address_v4(node).to_bytes();
 
