@@ -11,10 +11,8 @@
 #include <array>
 #include <cstddef>
 #include <cstring>
-#include <mutex>
 #include <stdexcept>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -22,7 +20,6 @@
 #include "blockchain/database/common/Bulk.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/cfilter/GCS.hpp"
-#include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
@@ -31,7 +28,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainFilterHeader.pb.h"
-#include "serialization/protobuf/GCS.pb.h"
 #include "util/ByteLiterals.hpp"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
@@ -104,12 +100,8 @@ auto BlockFilter::LoadFilter(
     alloc::Default alloc) const noexcept -> opentxs::blockchain::GCS
 {
     try {
-        const auto index = [&] {
-            auto out = util::IndexData{};
-            load_filter_index(type, blockHash, out);
-
-            return out;
-        }();
+        util::IndexData index{};
+        load_filter_index(type, blockHash, index);
 
         return factory::GCS(
             api_, proto::Factory<proto::GCS>(bulk_.ReadView(index)), alloc);
@@ -131,26 +123,23 @@ auto BlockFilter::LoadFilters(
         (1000u * sizeof(util::IndexData)) + sizeof(Vector<util::IndexData>);
     auto buf = std::array<std::byte, allocBytes>{};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
-    const auto indices = [&] {
-        auto out = Vector<util::IndexData>{&alloc};
-        out.reserve(1000u);
+
+    Vector<util::IndexData> indices{&alloc};
+    indices.reserve(1000u);
+    {
         auto tx = lmdb_.TransactionRO();
 
         for (const auto& hash : blocks) {
             try {
-                auto& index = out.emplace_back();
+                auto& index = indices.emplace_back();
                 load_filter_index(type, hash.Bytes(), tx, index);
             } catch (const std::exception& e) {
                 LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
-                out.pop_back();
-
+                indices.pop_back();
                 break;
             }
         }
-
-        return out;
-    }();
-
+    }
     for (const auto& index : indices) {
         try {
             output.emplace_back(factory::GCS(
@@ -159,7 +148,6 @@ auto BlockFilter::LoadFilters(
                 blocks.get_allocator()));
         } catch (const std::exception& e) {
             LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
-
             break;
         }
     }
@@ -237,29 +225,23 @@ auto BlockFilter::store(
     const GCS& filter) const noexcept -> bool
 {
     try {
-        const auto proto = [&] {
-            auto out = proto::GCS{};
+        proto::GCS proto{};
+        if (!filter.Internal().Serialize(proto))
+            throw std::runtime_error{"Failed to serialize gcs"};
 
-            if (false == filter.Internal().Serialize(out)) {
-                throw std::runtime_error{"Failed to serialize gcs"};
-            }
-
-            return out;
-        }();
         const auto bytes = proto.ByteSizeLong();
         const auto table = translate_filter(type);
-        auto index = [&] {
-            auto output = util::IndexData{};
-            auto cb = [&output](const ReadView in) {
-                if (sizeof(output) != in.size()) { return; }
 
-                std::memcpy(static_cast<void*>(&output), in.data(), in.size());
-            };
-            lmdb_.Load(table, blockHash, cb);
+        auto index = util::IndexData{};
+        auto cb = [&index](const ReadView in) {
+            if (sizeof(index) != in.size()) { return; }
 
-            return output;
-        }();
-        auto cb = [&](auto& tx) -> bool {
+            std::memcpy(static_cast<void*>(&index), in.data(), in.size());
+        };
+
+        lmdb_.Load(table, blockHash, cb);
+
+        auto callback = [&](auto& tx) -> bool {
             const auto result = lmdb_.Store(table, blockHash, tsv(index), tx);
 
             if (false == result.first) {
@@ -272,9 +254,10 @@ auto BlockFilter::store(
 
             return true;
         };
-        auto view = bulk_.WriteView(lock, tx, index, std::move(cb), bytes);
+        auto view =
+            bulk_.WriteView(lock, tx, index, std::move(callback), bytes);
 
-        if (false == view.valid(bytes)) {
+        if (!view.valid(bytes)) {
             throw std::runtime_error{
                 "Failed to get write position for cfilter"};
         }
@@ -306,7 +289,7 @@ auto BlockFilter::StoreFilterHeaders(
             const auto stored = lmdb_.Store(
                 translate_header(type), block.Bytes(), reader(bytes), tx);
 
-            if (false == stored.first) { return false; }
+            if (!stored.first) { return false; }
         } catch (const std::exception& e) {
             LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
@@ -327,9 +310,7 @@ auto BlockFilter::StoreFilters(
     for (auto& [block, cfilter] : filters) {
         OT_ASSERT(cfilter.IsValid());
 
-        if (false == store(lock, tx, block.Bytes(), type, cfilter)) {
-            return false;
-        }
+        if (!store(lock, tx, block.Bytes(), type, cfilter)) { return false; }
     }
 
     return tx.Finalize(true);
@@ -338,75 +319,23 @@ auto BlockFilter::StoreFilters(
 auto BlockFilter::StoreFilters(
     const cfilter::Type type,
     const Vector<CFHeaderParams>& headers,
-    const Vector<CFilterParams>& filters) const noexcept -> bool
+    const Vector<CFilterParams>& filters) const -> bool
 {
     try {
         if (headers.size() != filters.size()) {
             throw std::runtime_error{
                 "wrong number of filters compared to headers"};
         }
-
-        using BlockHash = ReadView;
-        using SerializedCfheader = Vector<std::byte>;
-        using SerializedCfilter = proto::GCS*;
-        using CFilterSize = std::size_t;
-        using BulkIndex = util::IndexData;
-        using StorageItem = std::tuple<
-            BlockHash,
-            SerializedCfheader,
-            SerializedCfilter,
-            CFilterSize,
-            BulkIndex>;
-
-        // NOTE do as much work as possible before locking mutexes
-        static const auto options = [] {
-            auto out = google::protobuf::ArenaOptions{};
-            out.start_block_size = 8_MiB;
-            out.max_block_size = 8_MiB;
-
-            return out;
-        }();
-        auto arena = google::protobuf::Arena{options};
         auto upstream = alloc::StandardToBoost(alloc::System());
         auto alloc = alloc::BoostMonotonic{4_MiB, &upstream};
-        auto data = [&] {
-            auto out = Vector<StorageItem>{&alloc};
-            out.reserve(headers.size());
-            auto h = headers.cbegin();
-            auto f = filters.cbegin();
+        // NOTE do as much work as possible before locking mutexes
+        google::protobuf::ArenaOptions options{};
+        options.start_block_size = 8_MiB;
+        options.max_block_size = 8_MiB;
+        google::protobuf::Arena arena{options};
 
-            for (auto end = filters.cend(); end != f; ++f, ++h) {
-                auto& [bHash, cfHeader, cfilter, bytes, index] =
-                    out.emplace_back(
-                        BlockHash{},
-                        SerializedCfheader{&alloc},
-                        google::protobuf::Arena::Create<proto::GCS>(&arena),
-                        0,
-                        BulkIndex{});
-                bHash = std::get<0>(*h).Bytes();
-                const auto* cfheaderProto = [&] {
-                    const auto& [block, header, hash] = *h;
-                    auto* proto = google::protobuf::Arena::Create<
-                        proto::BlockchainFilterHeader>(&arena);
-                    proto->set_version(1);
-                    proto->set_header(header.data(), header.size());
-                    proto->set_hash(hash.data(), hash.size());
+        auto data = load_storage_items(headers, filters, alloc, arena);
 
-                    return proto;
-                }();
-                proto::write(*cfheaderProto, writer(cfHeader));
-
-                if (auto& [b, filter] = *f;
-                    (false == filter.IsValid()) ||
-                    (false == filter.Internal().Serialize(*cfilter))) {
-                    throw std::runtime_error{"Failed to serialize gcs"};
-                }
-
-                bytes = cfilter->ByteSizeLong();
-            }
-
-            return out;
-        }();
         const auto hTable = translate_header(type);
         const auto fTable = translate_filter(type);
         auto tx = lmdb_.TransactionRW();
@@ -439,7 +368,7 @@ auto BlockFilter::StoreFilters(
             auto view =
                 bulk_.WriteView(lock, tx, index, std::move(writeIndex), bytes);
 
-            if (false == view.valid(bytes)) {
+            if (!view.valid(bytes)) {
                 throw std::runtime_error{
                     "Failed to get write position for cfilter"};
             }
@@ -450,7 +379,7 @@ auto BlockFilter::StoreFilters(
 
             const auto stored = lmdb_.Store(hTable, block, reader(header), tx);
 
-            if (false == stored.first) {
+            if (!stored.first) {
                 throw std::runtime_error{"Failed to get write cfheader"};
             }
         }
@@ -502,4 +431,45 @@ auto BlockFilter::translate_header(const cfilter::Type type) noexcept(false)
         }
     }
 }
+
+Vector<BlockFilter::StorageItem> BlockFilter::load_storage_items(
+    const Vector<CFHeaderParams>& headers,
+    const Vector<CFilterParams>& filters,
+    alloc::BoostMonotonic& alloc,
+    google::protobuf::Arena& arena)
+{
+    Vector<StorageItem> data{&alloc};
+    data.reserve(headers.size());
+    auto h = headers.cbegin();
+    auto f = filters.cbegin();
+
+    for (auto end = filters.cend(); end != f; ++f, ++h) {
+        auto& [bHash, cfHeader, cfilter, bytes, index] = data.emplace_back(
+            BlockHash{},
+            SerializedCfheader{&alloc},
+            google::protobuf::Arena::Create<proto::GCS>(&arena),
+            0,
+            BulkIndex{});
+        bHash = std::get<0>(*h).Bytes();
+
+        const auto& [block, header, hash] = *h;
+        auto* cfheaderProto =
+            google::protobuf::Arena::Create<proto::BlockchainFilterHeader>(
+                &arena);
+        cfheaderProto->set_version(1);
+        cfheaderProto->set_header(header.data(), header.size());
+        cfheaderProto->set_hash(hash.data(), hash.size());
+
+        proto::write(*cfheaderProto, writer(cfHeader));
+
+        if (auto& [b, filter] = *f;
+            !filter.IsValid() || !filter.Internal().Serialize(*cfilter)) {
+            throw std::runtime_error{"Failed to serialize gcs"};
+        }
+        bytes = cfilter->ByteSizeLong();
+    }
+
+    return data;
+}
+
 }  // namespace opentxs::blockchain::database::common

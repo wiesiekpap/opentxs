@@ -45,21 +45,15 @@ auto BlockHeader::Exists(
 auto BlockHeader::Load(const opentxs::blockchain::block::Hash& hash) const
     noexcept(false) -> proto::BlockchainBlockHeader
 {
-    const auto index = [&] {
-        auto out = util::IndexData{};
-        auto cb = [&out](const ReadView in) {
-            if (sizeof(out) != in.size()) { return; }
+    util::IndexData index{};
+    auto cb = [&index](const ReadView in) {
+        if (sizeof(index) != in.size()) { return; }
 
-            std::memcpy(static_cast<void*>(&out), in.data(), in.size());
-        };
-        lmdb_.Load(table_, hash.Bytes(), cb);
+        std::memcpy(static_cast<void*>(&index), in.data(), in.size());
+    };
+    lmdb_.Load(table_, hash.Bytes(), cb);
 
-        if (0 == out.size_) {
-            throw std::out_of_range("Block header not found");
-        }
-
-        return out;
-    }();
+    if (0 == index.size_) { throw std::out_of_range("Block header not found"); }
 
     return proto::Factory<proto::BlockchainBlockHeader>(bulk_.ReadView(index));
 }
@@ -70,7 +64,7 @@ auto BlockHeader::Store(
     auto tx = lmdb_.TransactionRW();
     auto lock = Lock{bulk_.Mutex()};
 
-    if (false == store(lock, false, tx, header)) { return false; }
+    if (!store(lock, false, tx, header)) { return false; }
 
     if (tx.Finalize(true)) { return true; }
 
@@ -89,7 +83,7 @@ auto BlockHeader::Store(const UpdatedHeader& headers) const noexcept -> bool
 
         if (newBlock) {
 
-            if (false == store(lock, true, tx, *header)) { return false; }
+            if (!store(lock, true, tx, *header)) { return false; }
         }
     }
 
@@ -109,30 +103,26 @@ auto BlockHeader::store(
     const auto& hash = header.Hash();
 
     try {
-        const auto proto = [&] {
-            auto out = block::internal::Header::SerializedType{};
+        block::internal::Header::SerializedType proto{};
 
-            if (false == header.Internal().Serialize(out)) {
-                throw std::runtime_error{"Failed to serialized header"};
-            }
+        if (!header.Internal().Serialize(proto)) {
+            throw std::runtime_error{"Failed to serialized header"};
+        }
 
-            if (clearLocal) { out.clear_local(); }
+        if (clearLocal) { proto.clear_local(); }
 
-            return out;
-        }();
         const auto bytes = proto.ByteSizeLong();
-        auto index = [&] {
-            auto output = util::IndexData{};
-            auto cb = [&output](const ReadView in) {
-                if (sizeof(output) != in.size()) { return; }
 
-                std::memcpy(static_cast<void*>(&output), in.data(), in.size());
-            };
-            lmdb_.Load(table_, hash.Bytes(), cb);
+        util::IndexData index{};
 
-            return output;
-        }();
-        auto cb = [&](auto& tx) -> bool {
+        auto cb = [&index](const ReadView in) {
+            if (sizeof(index) != in.size()) { return; }
+
+            std::memcpy(static_cast<void*>(&index), in.data(), in.size());
+        };
+        lmdb_.Load(table_, hash.Bytes(), cb);
+
+        auto cb2 = [&](auto& tx) -> bool {
             const auto result =
                 lmdb_.Store(table_, hash.Bytes(), tsv(index), tx);
 
@@ -140,15 +130,13 @@ auto BlockHeader::store(
                 LogError()(OT_PRETTY_CLASS())(
                     "Failed to update index for block header ")(hash.asHex())
                     .Flush();
-
                 return false;
             }
-
             return true;
         };
-        auto view = bulk_.WriteView(lock, pTx, index, std::move(cb), bytes);
+        auto view = bulk_.WriteView(lock, pTx, index, std::move(cb2), bytes);
 
-        if (false == view.valid(bytes)) {
+        if (!view.valid(bytes)) {
             throw std::runtime_error{
                 "Failed to get write position for block header"};
         }

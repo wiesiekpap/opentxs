@@ -10,6 +10,7 @@
 
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
+#include "internal/util/BoostPMR.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
@@ -17,6 +18,7 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
+#include "serialization/protobuf/GCS.pb.h"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 
@@ -97,7 +99,7 @@ public:
     auto StoreFilters(
         const cfilter::Type type,
         const Vector<CFHeaderParams>& headers,
-        const Vector<CFilterParams>& filters) const noexcept -> bool;
+        const Vector<CFilterParams>& filters) const -> bool;
 
     BlockFilter(
         const api::Session& api,
@@ -105,10 +107,17 @@ public:
         Bulk& bulk) noexcept;
 
 private:
-    static const std::uint32_t blockchain_filter_header_version_{1};
-    static const std::uint32_t blockchain_filter_headers_version_{1};
-    static const std::uint32_t blockchain_filter_version_{1};
-    static const std::uint32_t blockchain_filters_version_{1};
+    using BlockHash = ReadView;
+    using SerializedCfheader = Vector<std::byte>;
+    using SerializedCfilter = proto::GCS*;
+    using CFilterSize = std::size_t;
+    using BulkIndex = util::IndexData;
+    using StorageItem = std::tuple<
+        BlockHash,
+        SerializedCfheader,
+        SerializedCfilter,
+        CFilterSize,
+        BulkIndex>;
 
     const api::Session& api_;
     storage::lmdb::LMDB& lmdb_;
@@ -134,5 +143,11 @@ private:
         const ReadView blockHash,
         const cfilter::Type type,
         const GCS& filter) const noexcept -> bool;
+
+    [[nodiscard]] static Vector<StorageItem> load_storage_items(
+        const Vector<CFHeaderParams>& headers,
+        const Vector<CFilterParams>& filters,
+        alloc::BoostMonotonic& alloc,
+        google::protobuf::Arena& arena);
 };
 }  // namespace opentxs::blockchain::database::common

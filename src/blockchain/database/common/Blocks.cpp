@@ -73,18 +73,15 @@ struct Blocks::Imp {
             return {};
         }
 
-        auto index = [&] {
-            auto output = util::IndexData{};
-            auto cb = [&output](const auto in) {
-                if (sizeof(output) != in.size()) { return; }
+        auto index = util::IndexData{};
+        auto cb = [&index](const auto in) {
+            if (sizeof(index) != in.size()) { return; }
 
-                std::memcpy(static_cast<void*>(&output), in.data(), in.size());
-            };
-            lmdb_.Load(table_, block.Bytes(), cb);
+            std::memcpy(static_cast<void*>(&index), in.data(), in.size());
+        };
+        lmdb_.Load(table_, block.Bytes(), cb);
 
-            return output;
-        }();
-        auto cb = [&](auto& tx) -> bool {
+        auto callback = [&](auto& tx) -> bool {
             const auto result =
                 lmdb_.Store(table_, block.Bytes(), tsv(index), tx);
 
@@ -99,7 +96,7 @@ struct Blocks::Imp {
             return true;
         };
         auto tx = lmdb_.TransactionRW();
-        auto view = bulk_.WriteView(tx, index, std::move(cb), bytes);
+        auto view = bulk_.WriteView(tx, index, std::move(callback), bytes);
 
         if (false == view.valid()) {
             LogError()(OT_PRETTY_CLASS())(
