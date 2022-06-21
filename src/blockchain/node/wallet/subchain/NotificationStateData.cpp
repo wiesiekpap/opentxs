@@ -11,11 +11,9 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
-#include <cstdint>
 #include <iosfwd>
 #include <iterator>
 #include <memory>
-#include <optional>
 #include <sstream>
 #include <string_view>
 #include <type_traits>
@@ -38,24 +36,18 @@
 #include "opentxs/blockchain/bitcoin/block/Block.hpp"
 #include "opentxs/blockchain/bitcoin/block/Output.hpp"
 #include "opentxs/blockchain/bitcoin/block/Outputs.hpp"
-#include "opentxs/blockchain/bitcoin/block/Script.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/crypto/Notification.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Contact.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/NymEditor.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -133,7 +125,7 @@ auto NotificationStateData::handle_confirmed_matches(
         pc_display_)(" on ")(print(node_.Chain()))
         .Flush();
 
-    if (0u == general.size()) { return; }
+    if (general.empty()) { return; }
 
     const auto reason = init_keys();
 
@@ -144,7 +136,7 @@ auto NotificationStateData::handle_confirmed_matches(
             .asHex(txid)(" contains a version ")(version)(" notification for ")(
                 pc_display_)
             .Flush();
-        const auto tx = block.at(txid->Bytes());
+        const auto& tx = block.at(txid->Bytes());
 
         OT_ASSERT(tx);
 
@@ -161,7 +153,7 @@ auto NotificationStateData::handle_mempool_matches(
 {
     const auto& [utxo, general] = matches;
 
-    if (0u == general.size()) { return; }
+    if (general.empty()) { return; }
 
     const auto reason = init_keys();
 
@@ -181,19 +173,15 @@ auto NotificationStateData::init_contacts() noexcept -> void
     auto buf = std::array<std::byte, 4096>{};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
     const auto& api = api_.Internal().Contacts();
-    const auto contacts = [&] {
-        auto out = Vector<OTIdentifier>{&alloc};
-        const auto data = api.ContactList();
-        std::transform(
-            data.begin(),
-            data.end(),
-            std::back_inserter(out),
-            [this](const auto& item) {
-                return api_.Factory().Identifier(item.first);
-            });
-
-        return out;
-    }();
+    Vector<OTIdentifier> contacts{&alloc};
+    const auto data = api.ContactList();
+    std::transform(
+        data.begin(),
+        data.end(),
+        std::back_inserter(contacts),
+        [this](const auto& item) {
+            return api_.Factory().Identifier(item.first);
+        });
 
     for (const auto& id : contacts) {
         const auto contact = api.Contact(id);
@@ -201,16 +189,13 @@ auto NotificationStateData::init_contacts() noexcept -> void
         OT_ASSERT(contact);
 
         for (const auto& remote : contact->PaymentCodes(&alloc)) {
-            const auto prompt = [&] {
-                // TODO use allocator when we upgrade to c++20
-                auto out = std::stringstream{};
-                out << "Generate keys for a ";
-                out << print(node_.Chain());
-                out << " payment code account for ";
-                out << api.ContactName(id);
+            // TODO use allocator when we upgrade to c++20
+            std::stringstream prompt{};
+            prompt << "Generate keys for a ";
+            prompt << print(node_.Chain());
+            prompt << " payment code account for ";
+            prompt << api.ContactName(id);
 
-                return out;
-            }();
             const auto reason = api_.Factory().PasswordPrompt(prompt.str());
             process(remote, reason);
         }
@@ -219,17 +204,17 @@ auto NotificationStateData::init_contacts() noexcept -> void
 
 auto NotificationStateData::init_keys() const noexcept -> OTPasswordPrompt
 {
-    const auto reason = api_.Factory().PasswordPrompt(
+    auto reason = api_.Factory().PasswordPrompt(
         "Decoding payment code notification transaction");
     auto handle = code_.lock();
 
     if (auto key{handle->Key()}; key) {
-        if (false == key->HasPrivate()) {
+        if (!key->HasPrivate()) {
             auto seed{path_.root()};
             const auto upgraded = handle->Internal().AddPrivateKeys(
                 seed, *path_.child().rbegin(), reason);
 
-            if (false == upgraded) { OT_FAIL; }
+            if (!upgraded) { OT_FAIL; }
         }
     } else {
         OT_FAIL;
@@ -239,7 +224,7 @@ auto NotificationStateData::init_keys() const noexcept -> OTPasswordPrompt
 }
 
 auto NotificationStateData::process(
-    const block::Match match,
+    const block::Match& match,
     const bitcoin::block::Transaction& tx,
     const PasswordPrompt& reason) const noexcept -> void
 {
@@ -251,23 +236,19 @@ auto NotificationStateData::process(
         const auto& script = output.Script();
 
         if (script.IsNotification(version, *handle)) {
-            const auto elements = [&] {
-                auto out = UnallocatedVector<Space>{};
+            UnallocatedVector<Space> elements{};
 
-                for (auto i{0u}; i < 3u; ++i) {
-                    const auto view = script.MultisigPubkey(i);
+            for (auto i{0u}; i < 3u; ++i) {
+                const auto view = script.MultisigPubkey(i);
 
-                    OT_ASSERT(view.has_value());
+                OT_ASSERT(view.has_value());
 
-                    const auto& value = view.value();
-                    auto* start =
-                        reinterpret_cast<const std::byte*>(value.data());
-                    auto* stop = std::next(start, value.size());
-                    out.emplace_back(start, stop);
-                }
+                const auto& value = view.value();
+                auto* start = reinterpret_cast<const std::byte*>(value.data());
+                auto* stop = std::next(start, value.size());
+                elements.emplace_back(start, stop);
+            }
 
-                return out;
-            }();
             auto sender =
                 handle->DecodeNotificationElements(version, elements, reason);
 

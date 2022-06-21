@@ -160,7 +160,7 @@ private:
         std::unique_ptr<const bitcoin::block::Transaction> tx) const noexcept
         -> void final;
     auto process(
-        const block::Match match,
+        const block::Match& match,
         const bitcoin::block::Transaction& tx,
         database::Wallet::MatchedTransaction& output) const noexcept -> void;
 

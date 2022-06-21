@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/ScriptForm.hpp"  // IWYU pragma: associated
 
-#include <optional>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
@@ -122,35 +121,31 @@ ScriptForm::ScriptForm(
             default: {
             }
         }
-
-        const auto redeem = [&] {
-            switch (secondary_) {
-                case Type::PayToPubkey: {
-                    return api.Factory().BitcoinScriptP2PK(chain, *input.Key());
-                }
-                case Type::PayToPubkeyHash: {
-                    return api.Factory().BitcoinScriptP2PKH(
-                        chain, *input.Key());
-                }
-                default: {
-                    OT_FAIL;
-                }
+        std::unique_ptr<const opentxs::blockchain::bitcoin::block::Script>
+            redeem;
+        switch (secondary_) {
+            case Type::PayToPubkey: {
+                redeem = api.Factory().BitcoinScriptP2PK(chain, *input.Key());
+                break;
             }
-        }();
-        auto out = [&] {
-            if (segwit_) {
-                return api.Factory().BitcoinScriptP2WSH(chain, *redeem);
-            } else {
-                return api.Factory().BitcoinScriptP2SH(chain, *redeem);
+            case Type::PayToPubkeyHash: {
+                redeem = api.Factory().BitcoinScriptP2PKH(chain, *input.Key());
+                break;
             }
-        }();
-        element_.emplace_back(out->ScriptHash().value());
+            default: {
+                OT_FAIL;
+            }
+        }
 
-        return out;
+        auto script = segwit_ ? api.Factory().BitcoinScriptP2WSH(chain, *redeem)
+                              : api.Factory().BitcoinScriptP2SH(chain, *redeem);
+        element_.emplace_back(script->ScriptHash().value());
+
+        return script;
     }())
 {
     OT_ASSERT(script_);
-    OT_ASSERT(0 < element_.size());
+    OT_ASSERT(!element_.empty());
 }
 
 ScriptForm::ScriptForm(

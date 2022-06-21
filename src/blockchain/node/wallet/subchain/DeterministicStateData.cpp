@@ -105,7 +105,7 @@ auto DeterministicStateData::flush_cache(
     const auto start = Clock::now();
     const auto& log = log_;
 
-    if (0u < matches.size()) {
+    if (!matches.empty()) {
         auto txoCreated = TXOs{get_allocator()};
         auto txoConsumed = TXOs{get_allocator()};
         auto positions = Vector<block::Position>{get_allocator()};
@@ -229,7 +229,7 @@ auto DeterministicStateData::handle_mempool_matches(
 {
     const auto& [utxo, general] = matches;
 
-    if (0u == general.size()) { return; }
+    if (general.empty()) { return; }
 
     auto data = database::Wallet::MatchedTransaction{};
     auto& [outputs, pTX] = data;
@@ -252,7 +252,7 @@ auto DeterministicStateData::handle_mempool_matches(
 }
 
 auto DeterministicStateData::process(
-    const block::Match match,
+    const block::Match& match,
     const bitcoin::block::Transaction& transaction,
     database::Wallet::MatchedTransaction& output) const noexcept -> void
 {
