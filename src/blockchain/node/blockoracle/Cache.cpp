@@ -185,9 +185,7 @@ auto Cache::GetBatch(allocator_type alloc) noexcept
 
 auto Cache::get_peer_target() noexcept -> std::size_t
 {
-    if (false == peer_target_.has_value()) {
-        peer_target_ = node_.PeerTarget();
-    }
+    if (!peer_target_.has_value()) { peer_target_ = node_.PeerTarget(); }
 
     return peer_target_.value();
 }
@@ -201,7 +199,7 @@ auto Cache::next_batch_id() noexcept -> BatchID
 
 auto Cache::ProcessBlockRequests(network::zeromq::Message&& in) noexcept -> void
 {
-    if (false == running_) { return; }
+    if (!running_) { return; }
 
     const auto body = in.Body();
     LogTrace()(OT_PRETTY_CLASS())("received a request for ")(body.size() - 1u)(
@@ -222,14 +220,11 @@ auto Cache::ProcessBlockRequests(network::zeromq::Message&& in) noexcept -> void
 
 auto Cache::publish(const block::Hash& block) noexcept -> void
 {
-    block_available_.SendDeferred([&] {
-        auto work =
-            network::zeromq::tagged_message(WorkType::BlockchainBlockAvailable);
-        work.AddFrame(chain_);
-        work.AddFrame(block);
-
-        return work;
-    }());
+    auto work =
+        network::zeromq::tagged_message(WorkType::BlockchainBlockAvailable);
+    work.AddFrame(chain_);
+    work.AddFrame(block);
+    block_available_.SendDeferred(std::move(work));
 }
 
 auto Cache::publish_download_queue() noexcept -> void
@@ -240,14 +235,12 @@ auto Cache::publish_download_queue() noexcept -> void
     LogTrace()(OT_PRETTY_CLASS())(total)(" in download queue: ")(
         waiting)(" waiting / ")(assigned)(" assigned")
         .Flush();
-    cache_size_publisher_.SendDeferred([&] {
-        auto work = network::zeromq::tagged_message(
-            WorkType::BlockchainBlockDownloadQueue);
-        work.AddFrame(chain_);
-        work.AddFrame(total);
 
-        return work;
-    }());
+    auto work =
+        network::zeromq::tagged_message(WorkType::BlockchainBlockDownloadQueue);
+    work.AddFrame(chain_);
+    work.AddFrame(total);
+    cache_size_publisher_.SendDeferred(std::move(work));
 }
 
 auto Cache::queue_hash(const block::Hash& hash) noexcept -> void
@@ -272,7 +265,7 @@ auto Cache::ReceiveBlock(const std::string_view in) noexcept -> void
 auto Cache::ReceiveBlock(
     std::shared_ptr<const bitcoin::block::Block> in) noexcept -> void
 {
-    if (false == bool(in)) {
+    if (!in) {
         LogError()(OT_PRETTY_CLASS())("Invalid block").Flush();
 
         return;
@@ -333,7 +326,7 @@ auto Cache::Request(const Vector<block::Hash>& hashes) noexcept
     auto download =
         UnallocatedMap<block::Hash, BitcoinBlockResults::iterator>{};
 
-    if (false == running_) {
+    if (!running_) {
         std::for_each(hashes.begin(), hashes.end(), [&](const auto&) {
             auto promise = Promise{};
             promise.set_value(nullptr);
@@ -420,7 +413,7 @@ auto Cache::Request(const Vector<block::Hash>& hashes) noexcept
 
     OT_ASSERT(output.size() == hashes.size());
 
-    if (0 < download.size()) {
+    if (!download.empty()) {
         auto blockList = UnallocatedVector<ReadView>{};
         std::transform(
             std::begin(download),
@@ -472,7 +465,7 @@ auto Cache::Shutdown() noexcept -> void
 
 auto Cache::StateMachine() noexcept -> bool
 {
-    if (false == running_) { return false; }
+    if (!running_) { return false; }
 
     LogVerbose()(OT_PRETTY_CLASS())(print(chain_))(" download queue contains ")(
         pending_.size())(" blocks.")
@@ -487,7 +480,7 @@ auto Cache::StateMachine() noexcept -> bool
         const auto elapsed = std::chrono::nanoseconds{now - time};
         const auto timeout = download_timeout_ <= elapsed;
 
-        if (timeout || (false == queued)) {
+        if (timeout || !queued) {
             LogVerbose()(OT_PRETTY_CLASS())("Requesting ")(print(chain_))(
                 " block ")(hash.asHex())(" from peers")
                 .Flush();
@@ -501,8 +494,8 @@ auto Cache::StateMachine() noexcept -> bool
         }
     }
 
-    if (0 < blockList.size()) { node_.RequestBlocks(blockList); }
+    if (!blockList.empty()) { node_.RequestBlocks(blockList); }
 
-    return 0 < pending_.size();
+    return !pending_.empty();
 }
 }  // namespace opentxs::blockchain::node::blockoracle

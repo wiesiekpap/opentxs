@@ -141,8 +141,6 @@ private:
 
     static auto next_batch_id() noexcept -> BatchID;
 
-    auto download(const block::Hash& block) const noexcept -> bool;
-
     auto get_peer_target() noexcept -> std::size_t;
     auto publish(const block::Hash& block) noexcept -> void;
     auto publish_download_queue() noexcept -> void;

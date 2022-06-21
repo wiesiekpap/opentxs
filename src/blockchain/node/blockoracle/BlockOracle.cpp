@@ -19,14 +19,12 @@
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -283,12 +281,9 @@ auto BlockOracle::Imp::StartDownloader() noexcept -> void
 
 auto BlockOracle::Imp::SubmitBlock(const ReadView in) const noexcept -> void
 {
-    pipeline_.Push([&] {
-        auto out = MakeWork(Task::process_block);
-        out.AddFrame(in.data(), in.size());
-
-        return out;
-    }());
+    auto work = MakeWork(Task::process_block);
+    work.AddFrame(in.data(), in.size());
+    pipeline_.Push(std::move(work));
 }
 
 auto BlockOracle::Imp::work() noexcept -> bool
