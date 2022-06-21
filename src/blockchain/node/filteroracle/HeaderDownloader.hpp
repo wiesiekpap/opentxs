@@ -89,7 +89,7 @@ public:
     }
 
 protected:
-    auto pipeline(zmq::Message&& in) noexcept -> void final;
+    auto pipeline(zmq::Message&& in) -> void final;
     auto state_machine() noexcept -> bool final;
 
 private:
@@ -110,7 +110,7 @@ private:
     {
         node_.JobReady(PeerManagerJobs::JobAvailableCfheaders);
     }
-    auto batch_size(const std::size_t in) const noexcept -> std::size_t
+    static auto batch_size(const std::size_t in) noexcept -> std::size_t
     {
         if (in < 10) {
 
@@ -160,7 +160,7 @@ private:
         auto current = known();
         auto hashes = header_.BestChain(current, 20000);
 
-        OT_ASSERT(0 < hashes.size());
+        OT_ASSERT(!hashes.empty());
 
         auto prior = Previous{std::nullopt};
         {
@@ -190,7 +190,7 @@ private:
     }
     auto queue_processing(DownloadedData&& data) noexcept -> void
     {
-        if (0 == data.size()) { return; }
+        if (data.empty()) { return; }
 
         const auto& previous = data.front()->previous_.get();
         auto hashes = Vector<cfilter::Hash>{};
@@ -227,24 +227,15 @@ private:
     }
 };
 
-auto FilterOracle::HeaderDownloader::pipeline(zmq::Message&& in) noexcept
-    -> void
+auto FilterOracle::HeaderDownloader::pipeline(zmq::Message&& in) -> void
 {
-    if (false == running_.load()) { return; }
+    if (!running_.load()) { return; }
 
     const auto body = in.Body();
 
     OT_ASSERT(1 <= body.size());
 
-    const auto work = [&] {
-        try {
-
-            return body.at(0).as<FilterOracle::Work>();
-        } catch (...) {
-
-            OT_FAIL;
-        }
-    }();
+    const auto work = body.at(0).as<FilterOracle::Work>();
 
     switch (work) {
         case FilterOracle::Work::shutdown: {
