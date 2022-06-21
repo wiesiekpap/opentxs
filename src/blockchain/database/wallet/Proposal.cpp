@@ -64,15 +64,10 @@ struct Proposal::Imp {
         const proto::BlockchainTransactionProposal& tx) noexcept -> bool
     {
         try {
-            const auto bytes = [&] {
-                auto out = Space{};
-
-                if (false == proto::write(tx, writer(out))) {
-                    throw std::runtime_error{"failed to serialize proposal"};
-                }
-
-                return out;
-            }();
+            Space bytes{};
+            if (!proto::write(tx, writer(bytes))) {
+                throw std::runtime_error{"failed to serialize proposal"};
+            }
 
             if (lmdb_.Store(table_, id.Bytes(), reader(bytes)).first) {
                 LogVerbose()(OT_PRETTY_CLASS())("proposal ")(id)(" added ")

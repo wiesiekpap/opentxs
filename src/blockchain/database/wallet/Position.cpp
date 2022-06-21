@@ -52,7 +52,7 @@ auto Position::Decode(const api::Session& api) const noexcept
 {
     auto lock = Lock{lock_};
 
-    if (false == position_.has_value()) { position_.emplace(Height(), Hash()); }
+    if (!position_.has_value()) { position_.emplace(Height(), Hash()); }
 
     return position_.value();
 }
