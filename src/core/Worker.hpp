@@ -50,7 +50,7 @@ template <typename API = api::session::Client>
 class Worker
 {
 protected:
-    virtual auto pipeline(network::zeromq::Message&& in) noexcept -> void = 0;
+    virtual auto pipeline(network::zeromq::Message&& in) -> void = 0;
     virtual auto state_machine() noexcept -> bool = 0;
 
 protected:

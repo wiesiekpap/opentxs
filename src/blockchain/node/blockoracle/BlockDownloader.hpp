@@ -106,7 +106,7 @@ public:
     ~BlockDownloader() final;
 
 protected:
-    auto pipeline(network::zeromq::Message&& in) noexcept -> void final;
+    auto pipeline(network::zeromq::Message&& in) -> void final;
     auto state_machine() noexcept -> bool final;
 
 private:

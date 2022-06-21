@@ -7,8 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/blockoracle/BlockDownloader.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
-#include <atomic>
 #include <chrono>
 #include <optional>
 #include <string_view>
@@ -20,18 +18,12 @@
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/block/Block.hpp"
-#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::blockchain::node::blockoracle
@@ -104,23 +96,14 @@ auto BlockDownloader::check_task(TaskType& task) const noexcept -> void
     }
 }
 
-auto BlockDownloader::pipeline(network::zeromq::Message&& in) noexcept -> void
+auto BlockDownloader::pipeline(network::zeromq::Message&& in) -> void
 {
-    if (false == running_.load()) { return; }
+    if (!running_.load()) { return; }
 
     const auto body = in.Body();
 
     OT_ASSERT(1 <= body.size());
-
-    const auto work = [&] {
-        try {
-
-            return body.at(0).as<Work>();
-        } catch (...) {
-
-            OT_FAIL;
-        }
-    }();
+    const auto work = body.at(0).as<Work>();
 
     switch (work) {
         case Work::shutdown: {
@@ -172,7 +155,7 @@ auto BlockDownloader::process_position() noexcept -> void
     auto current = known();
     auto hashes = header_.BestChain(current, 2000);
 
-    OT_ASSERT(0 < hashes.size());
+    OT_ASSERT(!hashes.empty());
 
     auto prior = Previous{std::nullopt};
     {
@@ -190,7 +173,7 @@ auto BlockDownloader::process_position() noexcept -> void
 
 auto BlockDownloader::queue_processing(DownloadedData&& data) noexcept -> void
 {
-    if (0 == data.size()) { return; }
+    if (data.empty()) { return; }
 
     for (const auto& task : data) {
         const auto& pBlock = task->data_.get();
