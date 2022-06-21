@@ -21,11 +21,8 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database
@@ -72,7 +69,7 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
     } else {
         const auto bytes = common_.BlockLoad(block);
 
-        if (false == bytes.valid()) {
+        if (!bytes.valid()) {
             LogDebug()(OT_PRETTY_CLASS())("block ")(block.asHex())(
                 " not found.")
                 .Flush();
@@ -99,15 +96,14 @@ auto Blocks::Store(const block::Block& block) const noexcept -> bool
     const auto size = block.Internal().CalculateSize();
     auto writer = common_.BlockStore(block.ID(), size);
 
-    if (false == writer.get().valid(size)) {
+    if (!writer.get().valid(size)) {
         LogError()(OT_PRETTY_CLASS())("Failed to allocate storage for block")
             .Flush();
 
         return false;
     }
 
-    if (false ==
-        block.Serialize(preallocated(writer.size(), writer.get().data()))) {
+    if (!block.Serialize(preallocated(writer.size(), writer.get().data()))) {
         LogError()(OT_PRETTY_CLASS())("Failed to serialize block").Flush();
 
         return false;

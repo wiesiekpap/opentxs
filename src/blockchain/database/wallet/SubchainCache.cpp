@@ -7,12 +7,10 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/database/wallet/SubchainCache.hpp"  // IWYU pragma: associated
 
-#include <boost/exception/exception.hpp>
 #include <chrono>  // IWYU pragma: keep
 #include <cstring>
 #include <mutex>
 #include <stdexcept>
-#include <utility>
 
 #include "blockchain/database/wallet/Pattern.hpp"
 #include "blockchain/database/wallet/Position.hpp"
@@ -24,7 +22,6 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -66,7 +63,7 @@ auto SubchainCache::AddPattern(
         auto& patterns = patterns_[id];
         auto [it, added] = patterns.emplace(index, data);
 
-        if (false == added) {
+        if (!added) {
             LogTrace()(OT_PRETTY_CLASS())("Pattern already exists").Flush();
 
             return true;
@@ -76,7 +73,7 @@ auto SubchainCache::AddPattern(
             lmdb_.Store(wallet::patterns_, id.Bytes(), reader(it->data_), tx)
                 .first;
 
-        if (false == rc) {
+        if (!rc) {
             patterns.erase(it);
 
             throw std::runtime_error{"failed to write pattern"};
@@ -100,7 +97,7 @@ auto SubchainCache::AddPatternIndex(
         auto& index = pattern_index_[key];
         auto [it, added] = index.emplace(value);
 
-        if (false == added) {
+        if (!added) {
             LogTrace()(OT_PRETTY_CLASS())("Pattern index already exists")
                 .Flush();
 
@@ -111,7 +108,7 @@ auto SubchainCache::AddPatternIndex(
             lmdb_.Store(wallet::pattern_index_, key.Bytes(), value.Bytes(), tx)
                 .first;
 
-        if (false == rc) {
+        if (!rc) {
             index.erase(it);
 
             throw std::runtime_error{"failed to write pattern index"};
@@ -163,19 +160,17 @@ auto SubchainCache::GetIndex(
         auto [it, added] = subchain_id_.try_emplace(
             index, subchain, type, version, subaccount);
 
-        if (false == added) {
-            throw std::runtime_error{"failed to update cache"};
-        }
+        if (!added) { throw std::runtime_error{"failed to update cache"}; }
 
         const auto& decoded = it->second;
         const auto key = index->Bytes();
 
-        if (false == lmdb_.Exists(wallet::id_index_, key)) {
+        if (!lmdb_.Exists(wallet::id_index_, key)) {
             const auto rc =
                 lmdb_.Store(wallet::id_index_, key, reader(decoded.data_), tx)
                     .first;
 
-            if (false == rc) {
+            if (!rc) {
                 throw std::runtime_error{"Failed to write index to database"};
             }
         }
@@ -241,9 +236,7 @@ auto SubchainCache::load_index(const SubchainIndex& key) noexcept(false)
     lmdb_.Load(wallet::id_index_, key.Bytes(), [&](const auto bytes) {
         const auto [i, added] = map.try_emplace(key, bytes);
 
-        if (false == added) {
-            throw std::runtime_error{"Failed to update cache"};
-        }
+        if (!added) { throw std::runtime_error{"Failed to update cache"}; }
 
         it = i;
     });
@@ -350,12 +343,9 @@ auto SubchainCache::load_pattern_index(const SubchainIndex& key) noexcept
         wallet::pattern_index_,
         key.Bytes(),
         [&](const auto bytes) {
-            index.emplace([&] {
-                auto out = api_.Factory().Identifier();
-                out->Assign(bytes);
-
-                return out;
-            }());
+            auto identifier = api_.Factory().Identifier();
+            identifier->Assign(bytes);
+            index.emplace(identifier);
         },
         Mode::Multiple);
 
@@ -375,9 +365,7 @@ auto SubchainCache::SetLastIndexed(
             lmdb_.Store(wallet::last_indexed_, subchain.Bytes(), tsv(value), tx)
                 .first;
 
-        if (false == output) {
-            throw std::runtime_error{"failed to update database"};
-        }
+        if (!output) { throw std::runtime_error{"failed to update database"}; }
 
         return output;
     } catch (const std::exception& e) {
@@ -393,30 +381,25 @@ auto SubchainCache::SetLastScanned(
     MDB_txn* tx) noexcept -> bool
 {
     try {
-        const auto& scanned = [&]() -> auto&
+        const Space* scannedData{nullptr};
         {
             auto lock = boost::unique_lock<Mutex>{last_scanned_lock_};
             last_scanned_.erase(subchain);
             const auto [it, added] = last_scanned_.try_emplace(subchain, value);
 
-            if (false == added) {
-                throw std::runtime_error{"failed to update cache"};
-            }
-
-            return it->second;
+            if (!added) { throw std::runtime_error{"failed to update cache"}; }
+            scannedData = &it->second.data_;
         }
-        ();
+
         const auto output = lmdb_
                                 .Store(
                                     wallet::last_scanned_,
                                     subchain.Bytes(),
-                                    reader(scanned.data_),
+                                    reader(*scannedData),
                                     tx)
                                 .first;
 
-        if (false == output) {
-            throw std::runtime_error{"failed to update database"};
-        }
+        if (!output) { throw std::runtime_error{"failed to update database"}; }
 
         return output;
     } catch (const std::exception& e) {
