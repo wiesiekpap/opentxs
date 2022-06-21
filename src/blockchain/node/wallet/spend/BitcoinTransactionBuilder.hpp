@@ -121,7 +121,7 @@ public:
         const Identifier& id,
         const Proposal& proposal,
         const Type chain,
-        const Amount feeRate) noexcept;
+        const Amount& feeRate) noexcept;
     ~BitcoinTransactionBuilder();
 
 private:
