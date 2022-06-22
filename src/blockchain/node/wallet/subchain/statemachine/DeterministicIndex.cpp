@@ -21,13 +21,8 @@
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/util/Allocator.hpp"
-#include "opentxs/util/Log.hpp"
-#include "opentxs/util/Types.hpp"
 #include "util/ByteLiterals.hpp"
 #include "util/ScopeGuard.hpp"
 
@@ -72,7 +67,7 @@ auto DeterministicIndex::need_index(const std::optional<Bip32Index>& current)
     if (generated.has_value()) {
         const auto target = generated.value();
 
-        if ((false == current.has_value()) || (current.value() != target)) {
+        if (!current.has_value() || (current.value() != target)) {
             const auto actual = current.has_value() ? current.value() + 1u : 0u;
             log_(OT_PRETTY_CLASS())(name)(" has ")(target + 1)(
                 " keys generated, but only ")(actual)(" have been indexed.")

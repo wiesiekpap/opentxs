@@ -9,8 +9,6 @@
 
 #include <algorithm>
 #include <cstring>
-#include <iterator>
-#include <memory>
 #include <type_traits>
 
 #include "internal/util/LogMacros.hpp"

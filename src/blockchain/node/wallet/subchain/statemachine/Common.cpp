@@ -48,21 +48,14 @@ auto decode(
         const auto type =
             static_cast<ScanState>(*reinterpret_cast<const std::uint8_t*>(i));
         std::advance(i, sizeof(ScanState));
-        const auto height = [&] {
-            auto out = block::Height{};
-            std::memcpy(&out, i, sizeof(out));
-            std::advance(i, sizeof(out));
 
-            return out;
-        }();
-        auto hash = [&] {
-            auto out = block::Hash{};
-            const auto rc = out.Assign(i, bytes - fixed);
+        block::Height height{};
+        std::memcpy(&height, i, sizeof(height));
+        std::advance(i, sizeof(height));
 
-            OT_ASSERT(rc);
-
-            return out;
-        }();
+        block::Hash hash{};
+        const auto rc = hash.Assign(i, bytes - fixed);
+        OT_ASSERT(rc);
 
         if (ScanState::dirty == type) {
             dirty.emplace(std::make_pair(height, std::move(hash)));
@@ -125,21 +118,14 @@ auto extract_dirty(
 
         if (ScanState::dirty != type) { continue; }
 
-        const auto height = [&] {
-            auto out = block::Height{};
-            std::memcpy(&out, i, sizeof(out));
-            std::advance(i, sizeof(out));
+        block::Height height{};
+        std::memcpy(&height, i, sizeof(height));
+        std::advance(i, sizeof(height));
 
-            return out;
-        }();
-        auto hash = [&] {
-            auto out = block::Hash{};
-            const auto rc = out.Assign(i, bytes - fixed);
+        block::Hash hash{};
+        const auto rc = hash.Assign(i, bytes - fixed);
+        OT_ASSERT(rc);
 
-            OT_ASSERT(rc);
-
-            return out;
-        }();
         out.emplace_back(type, std::make_pair(height, std::move(hash)));
     }
 }
