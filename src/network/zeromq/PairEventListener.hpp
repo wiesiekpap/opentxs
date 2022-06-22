@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <string_view>
+
 #include "network/zeromq/socket/Subscribe.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

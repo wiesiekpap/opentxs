@@ -7,6 +7,7 @@
 
 #include <atomic>
 #include <mutex>
+#include <string_view>
 
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"

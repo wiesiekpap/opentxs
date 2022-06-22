@@ -12,6 +12,7 @@
 #include <mutex>
 #include <queue>
 #include <shared_mutex>
+#include <string_view>
 #include <thread>
 #include <tuple>
 #include <utility>

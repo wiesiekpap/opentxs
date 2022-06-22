@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <string_view>
+
 #include "internal/util/Mutex.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Receiver.hpp"
