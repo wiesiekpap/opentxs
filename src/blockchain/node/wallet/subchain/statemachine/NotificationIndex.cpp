@@ -13,7 +13,6 @@
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <array>
 #include <cstddef>
-#include <iterator>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
@@ -21,15 +20,9 @@
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Session.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
-#include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"  // IWYU pragma: keep
-#include "opentxs/util/Types.hpp"
 #include "util/ByteLiterals.hpp"
 #include "util/ScopeGuard.hpp"
 

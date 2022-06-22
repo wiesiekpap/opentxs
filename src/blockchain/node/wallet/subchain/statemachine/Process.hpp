@@ -116,11 +116,11 @@ private:
     auto check_process() noexcept -> bool;
     auto do_process(const Ready::value_type& data) noexcept -> void;
     auto do_process(
-        const block::Position position,
+        const block::Position& position,
         const std::shared_ptr<const bitcoin::block::Block> block) noexcept
         -> void;
     auto do_process_common(
-        const block::Position position,
+        const block::Position& position,
         const std::shared_ptr<const bitcoin::block::Block>& block) noexcept
         -> void;
     auto do_process_update(Message&& msg) noexcept -> void final;
