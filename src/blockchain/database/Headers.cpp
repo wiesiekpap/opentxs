@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <cstring>
-#include <iterator>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
@@ -35,8 +34,6 @@
 #include "opentxs/blockchain/bitcoin/block/Header.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/core/FixedByteArray.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -80,7 +77,7 @@ Headers::Headers(
 auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     -> bool
 {
-    if (false == common_.StoreBlockHeaders(update.UpdatedHeaders())) {
+    if (!common_.StoreBlockHeaders(update.UpdatedHeaders())) {
         LogError()(OT_PRETTY_CLASS())("Failed to save block headers").Flush();
 
         return false;
@@ -91,27 +88,26 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     auto parentTxn = lmdb_.TransactionRW();
 
     if (update.HaveCheckpoint()) {
-        if (false ==
-            lmdb_
-                .Store(
-                    ChainData,
-                    tsv(static_cast<std::size_t>(Key::CheckpointHeight)),
-                    tsv(static_cast<std::size_t>(update.Checkpoint().first)),
-                    parentTxn)
-                .first) {
+        if (!lmdb_
+                 .Store(
+                     ChainData,
+                     tsv(static_cast<std::size_t>(Key::CheckpointHeight)),
+                     tsv(static_cast<std::size_t>(update.Checkpoint().first)),
+                     parentTxn)
+                 .first) {
             LogError()(OT_PRETTY_CLASS())("Failed to save checkpoint height")
                 .Flush();
 
             return false;
         }
 
-        if (false == lmdb_
-                         .Store(
-                             ChainData,
-                             tsv(static_cast<std::size_t>(Key::CheckpointHash)),
-                             update.Checkpoint().second.Bytes(),
-                             parentTxn)
-                         .first) {
+        if (!lmdb_
+                 .Store(
+                     ChainData,
+                     tsv(static_cast<std::size_t>(Key::CheckpointHash)),
+                     update.Checkpoint().second.Bytes(),
+                     parentTxn)
+                 .first) {
             LogError()(OT_PRETTY_CLASS())("Failed to save checkpoint hash")
                 .Flush();
 
@@ -120,13 +116,13 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     }
 
     for (const auto& [parent, child] : update.Disconnected()) {
-        if (false == lmdb_
-                         .Store(
-                             BlockHeaderDisconnected,
-                             parent.Bytes(),
-                             child.Bytes(),
-                             parentTxn)
-                         .first) {
+        if (!lmdb_
+                 .Store(
+                     BlockHeaderDisconnected,
+                     parent.Bytes(),
+                     child.Bytes(),
+                     parentTxn)
+                 .first) {
             LogError()(OT_PRETTY_CLASS())("Failed to save disconnected hash")
                 .Flush();
 
@@ -135,11 +131,11 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     }
 
     for (const auto& [parent, child] : update.Connected()) {
-        if (false == lmdb_.Delete(
-                         BlockHeaderDisconnected,
-                         parent.Bytes(),
-                         child.Bytes(),
-                         parentTxn)) {
+        if (!lmdb_.Delete(
+                BlockHeaderDisconnected,
+                parent.Bytes(),
+                child.Bytes(),
+                parentTxn)) {
             LogError()(OT_PRETTY_CLASS())("Failed to delete disconnected hash")
                 .Flush();
 
@@ -148,11 +144,10 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     }
 
     for (const auto& hash : update.SiblingsToAdd()) {
-        if (false ==
-            lmdb_
-                .Store(
-                    BlockHeaderSiblings, hash.Bytes(), hash.Bytes(), parentTxn)
-                .first) {
+        if (!lmdb_
+                 .Store(
+                     BlockHeaderSiblings, hash.Bytes(), hash.Bytes(), parentTxn)
+                 .first) {
             LogError()(OT_PRETTY_CLASS())("Failed to save sibling hash")
                 .Flush();
 
@@ -166,18 +161,16 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
 
     for (const auto& data : update.UpdatedHeaders()) {
         const auto& [hash, pair] = data;
+        block::internal::Header::SerializedType serializedType{};
+        data.second.first->Internal().Serialize(serializedType);
+
         const auto result = lmdb_.Store(
             BlockHeaderMetadata,
             hash.Bytes(),
-            [&] {
-                auto out = block::internal::Header::SerializedType{};
-                data.second.first->Internal().Serialize(out);
-
-                return proto::ToString(out.local());
-            }(),
+            proto::ToString(serializedType.local()),
             parentTxn);
 
-        if (false == result.first) {
+        if (!result.first) {
             LogError()(OT_PRETTY_CLASS())("Failed to save block metadata")
                 .Flush();
 
@@ -187,7 +180,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
 
     if (update.HaveReorg()) {
         for (auto i = initialHeight; i > update.ReorgParent().first; --i) {
-            if (false == pop_best(i, parentTxn)) {
+            if (!pop_best(i, parentTxn)) {
                 LogError()(OT_PRETTY_CLASS())("Failed to delete best hash")
                     .Flush();
 
@@ -200,23 +193,23 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
         push_best(position, false, parentTxn);
     }
 
-    if (0 < update.BestChain().size()) {
+    if (!update.BestChain().empty()) {
         const auto& tip = *update.BestChain().crbegin();
 
-        if (false == lmdb_
-                         .Store(
-                             ChainData,
-                             tsv(static_cast<std::size_t>(Key::TipHeight)),
-                             tsv(static_cast<std::size_t>(tip.first)),
-                             parentTxn)
-                         .first) {
+        if (!lmdb_
+                 .Store(
+                     ChainData,
+                     tsv(static_cast<std::size_t>(Key::TipHeight)),
+                     tsv(static_cast<std::size_t>(tip.first)),
+                     parentTxn)
+                 .first) {
             LogError()(OT_PRETTY_CLASS())("Failed to store best hash").Flush();
 
             return false;
         }
     }
 
-    if (false == parentTxn.Finalize(true)) {
+    if (!parentTxn.Finalize(true)) {
         LogError()(OT_PRETTY_CLASS())("Database error").Flush();
 
         return false;
@@ -292,8 +285,7 @@ auto Headers::best(const Lock& lock) const noexcept -> block::Position
     auto output = make_blank<block::Position>::value(api_);
     auto height = std::size_t{0};
 
-    if (false ==
-        lmdb_.Load(
+    if (!lmdb_.Load(
             ChainData,
             tsv(static_cast<std::size_t>(Key::TipHeight)),
             [&](const auto in) -> void {
@@ -304,8 +296,7 @@ auto Headers::best(const Lock& lock) const noexcept -> block::Position
         return make_blank<block::Position>::value(api_);
     }
 
-    if (false ==
-        lmdb_.Load(BlockHeaderBest, tsv(height), [&](const auto in) -> void {
+    if (!lmdb_.Load(BlockHeaderBest, tsv(height), [&](const auto in) -> void {
             const auto rc = output.second.Assign(in.data(), in.size());
 
             OT_ASSERT(rc);  // TODO exception
@@ -324,8 +315,7 @@ auto Headers::checkpoint(const Lock& lock) const noexcept -> block::Position
     auto output = make_blank<block::Position>::value(api_);
     auto height = std::size_t{0};
 
-    if (false ==
-        lmdb_.Load(
+    if (!lmdb_.Load(
             ChainData,
             tsv(static_cast<std::size_t>(Key::CheckpointHeight)),
             [&](const auto in) -> void {
@@ -335,15 +325,14 @@ auto Headers::checkpoint(const Lock& lock) const noexcept -> block::Position
         return make_blank<block::Position>::value(api_);
     }
 
-    if (false == lmdb_.Load(
-                     ChainData,
-                     tsv(static_cast<std::size_t>(Key::CheckpointHash)),
-                     [&](const auto in) -> void {
-                         const auto rc =
-                             output.second.Assign(in.data(), in.size());
+    if (!lmdb_.Load(
+            ChainData,
+            tsv(static_cast<std::size_t>(Key::CheckpointHash)),
+            [&](const auto in) -> void {
+                const auto rc = output.second.Assign(in.data(), in.size());
 
-                         OT_ASSERT(rc);  // TODO exception
-                     })) {
+                OT_ASSERT(rc);  // TODO exception
+            })) {
 
         return make_blank<block::Position>::value(api_);
     }
@@ -413,19 +402,18 @@ auto Headers::import_genesis(const blockchain::Type type) const noexcept -> void
     try {
         const auto serialized = common_.LoadBlockHeader(hash);
 
-        if (false == lmdb_.Exists(BlockHeaderMetadata, hash.Bytes())) {
+        if (!lmdb_.Exists(BlockHeaderMetadata, hash.Bytes())) {
             auto genesis =
                 api_.Factory().InternalSession().BlockHeader(serialized);
 
             OT_ASSERT(genesis);
+            block::internal::Header::SerializedType proto{};
+            genesis->Internal().Serialize(proto);
 
-            const auto result =
-                lmdb_.Store(BlockHeaderMetadata, hash.Bytes(), [&] {
-                    auto proto = block::internal::Header::SerializedType{};
-                    genesis->Internal().Serialize(proto);
-
-                    return proto::ToString(proto.local());
-                }());
+            const auto result = lmdb_.Store(
+                BlockHeaderMetadata,
+                hash.Bytes(),
+                std::move(proto::ToString(proto.local())));
 
             OT_ASSERT(result.first);
         }
@@ -439,18 +427,14 @@ auto Headers::import_genesis(const blockchain::Type type) const noexcept -> void
         success = common_.StoreBlockHeader(*genesis);
 
         OT_ASSERT(success);
+        block::internal::Header::SerializedType proto{};
+        genesis->Internal().Serialize(proto);
 
         success = lmdb_
                       .Store(
                           BlockHeaderMetadata,
                           hash.Bytes(),
-                          [&] {
-                              auto proto =
-                                  block::internal::Header::SerializedType{};
-                              genesis->Internal().Serialize(proto);
-
-                              return proto::ToString(proto.local());
-                          }())
+                          proto::ToString(proto.local()))
                       .first;
 
         OT_ASSERT(success);
@@ -495,15 +479,13 @@ auto Headers::load_bitcoin_header(const block::Hash& hash) const
                     data.data(), data.size());
         });
 
-    if (false == haveMeta) {
+    if (!haveMeta) {
         throw std::out_of_range("Block header metadata not found");
     }
 
     auto output = factory::BitcoinBlockHeader(api_, proto);
 
-    if (false == bool(output)) {
-        throw std::out_of_range("Wrong header format");
-    }
+    if (!output) { throw std::out_of_range("Wrong header format"); }
 
     return output;
 }
@@ -519,7 +501,7 @@ auto Headers::load_header(const block::Hash& hash) const
                     data.data(), data.size());
         });
 
-    if (false == haveMeta) {
+    if (!haveMeta) {
         throw std::out_of_range("Block header metadata not found");
     }
 
@@ -537,7 +519,7 @@ auto Headers::pop_best(const std::size_t i, MDB_txn* parent) const noexcept
 }
 
 auto Headers::push_best(
-    const block::Position next,
+    const block::Position& next,
     const bool setTip,
     MDB_txn* parent) const noexcept -> bool
 {

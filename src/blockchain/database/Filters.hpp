@@ -110,7 +110,6 @@ public:
         const noexcept -> bool;
     auto StoreHeaders(
         const cfilter::Type type,
-        const ReadView previous,
         const Vector<CFHeaderParams> headers) const noexcept -> bool;
 
     Filters(

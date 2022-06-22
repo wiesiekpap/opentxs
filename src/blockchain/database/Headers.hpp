@@ -145,7 +145,7 @@ private:
         -> std::unique_ptr<block::Header>;
     auto pop_best(const std::size_t i, MDB_txn* parent) const noexcept -> bool;
     auto push_best(
-        const block::Position next,
+        const block::Position& next,
         const bool setTip,
         MDB_txn* parent) const noexcept -> bool;
     auto recent_hashes(const Lock& lock, alloc::Resource* alloc) const noexcept

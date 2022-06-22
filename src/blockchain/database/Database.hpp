@@ -517,10 +517,9 @@ public:
     }
     auto StoreFilterHeaders(
         const cfilter::Type type,
-        const ReadView previous,
         const Vector<CFHeaderParams> headers) noexcept -> bool final
     {
-        return filters_.StoreHeaders(type, previous, std::move(headers));
+        return filters_.StoreHeaders(type, std::move(headers));
     }
     auto StoreSync(const block::Position& tip, const Items& items) noexcept
         -> bool final
