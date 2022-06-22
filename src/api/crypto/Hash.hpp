@@ -71,10 +71,10 @@ public:
         const ReadView data,
         const AllocateOutput destination) const noexcept -> bool final;
     auto HMAC(
-        const opentxs::crypto::HashType hashType,
+        const opentxs::crypto::HashType type,
         const ReadView key,
-        const ReadView& data,
-        const AllocateOutput digest) const noexcept -> bool final;
+        const ReadView data,
+        const AllocateOutput output) const noexcept -> bool final;
     auto MurmurHash3_32(
         const std::uint32_t& key,
         const Data& data,
@@ -131,31 +131,12 @@ private:
     const opentxs::crypto::Ripemd160& ripe_;
     const opentxs::crypto::Scrypt& scrypt_;
 
-    static auto allocate(
-        const opentxs::crypto::HashType hashType,
-        const AllocateOutput destination) noexcept -> WritableView;
-
-    auto bitcoin_hash_160(
-        const void* input,
-        const std::size_t size,
-        void* output) const noexcept -> bool;
-    auto digest(
-        const opentxs::crypto::HashType hashType,
-        const void* input,
-        const std::size_t size,
-        void* output) const noexcept -> bool;
-    auto HMAC(
-        const opentxs::crypto::HashType hashType,
-        const std::uint8_t* input,
-        const std::size_t inputSize,
-        const std::uint8_t* key,
-        const std::size_t keySize,
-        std::uint8_t* output) const noexcept -> bool;
-    auto sha_256_double(const void* input, const std::size_t size, void* output)
+    auto bitcoin_hash_160(const ReadView data, const AllocateOutput destination)
+        const noexcept -> bool;
+    auto sha_256_double(const ReadView data, const AllocateOutput destination)
         const noexcept -> bool;
     auto sha_256_double_checksum(
-        const void* input,
-        const std::size_t size,
-        void* output) const noexcept -> bool;
+        const ReadView data,
+        const AllocateOutput destination) const noexcept -> bool;
 };
 }  // namespace opentxs::api::crypto::imp

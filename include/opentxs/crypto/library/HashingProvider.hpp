@@ -15,28 +15,29 @@
 
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs::crypto
 {
 class OPENTXS_EXPORT HashingProvider
 {
 public:
-    static auto StringToHashType(const String& inputString) -> crypto::HashType;
-    static auto HashTypeToString(const crypto::HashType hashType) -> OTString;
-    static auto HashSize(const crypto::HashType hashType) -> std::size_t;
+    static auto StringToHashType(const String& inputString) noexcept
+        -> crypto::HashType;
+    static auto HashTypeToString(const crypto::HashType hashType) noexcept
+        -> OTString;
+    static auto HashSize(const crypto::HashType hashType) noexcept
+        -> std::size_t;
 
     virtual auto Digest(
         const crypto::HashType hashType,
-        const std::uint8_t* input,
-        const std::size_t inputSize,
-        std::uint8_t* output) const -> bool = 0;
+        const ReadView data,
+        const AllocateOutput output) const noexcept -> bool = 0;
     virtual auto HMAC(
         const crypto::HashType hashType,
-        const std::uint8_t* input,
-        const std::size_t inputSize,
-        const std::uint8_t* key,
-        const std::size_t keySize,
-        std::uint8_t* output) const -> bool = 0;
+        const ReadView key,
+        const ReadView data,
+        const AllocateOutput output) const noexcept -> bool = 0;
 
     HashingProvider(const HashingProvider&) = delete;
     HashingProvider(HashingProvider&&) = delete;

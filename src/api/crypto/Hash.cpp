@@ -10,6 +10,7 @@
 #include <cstring>
 #include <limits>
 #include <memory>
+#include <stdexcept>
 #include <string_view>
 
 #include "internal/api/crypto/Factory.hpp"
@@ -65,32 +66,27 @@ Hash::Hash(
 {
 }
 
-auto Hash::allocate(
-    const opentxs::crypto::HashType type,
-    const AllocateOutput destination) noexcept -> WritableView
-{
-    if (false == bool(destination)) { return {}; }
-
-    return destination(Provider::HashSize(type));
-}
-
 auto Hash::bitcoin_hash_160(
-    const void* input,
-    const std::size_t size,
-    void* output) const noexcept -> bool
+    const ReadView data,
+    const AllocateOutput destination) const noexcept -> bool
 {
-    auto temp = space(Provider::HashSize(opentxs::crypto::HashType::Sha256));
+    try {
+        auto temp = Space{};
+        const auto rc =
+            Digest(opentxs::crypto::HashType::Sha256, data, writer(temp));
 
-    if (false ==
-        digest(opentxs::crypto::HashType::Sha256, input, size, temp.data())) {
-        LogError()(OT_PRETTY_CLASS())("Failed to calculate intermediate hash.")
-            .Flush();
+        if (false == rc) {
+
+            throw std::runtime_error{"failed to calculate intermediate hash"};
+        }
+
+        return Digest(
+            opentxs::crypto::HashType::Ripemd160, reader(temp), destination);
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return false;
     }
-
-    return digest(
-        opentxs::crypto::HashType::Ripemd160, temp.data(), temp.size(), output);
 }
 
 auto Hash::Digest(
@@ -98,16 +94,41 @@ auto Hash::Digest(
     const ReadView data,
     const AllocateOutput destination) const noexcept -> bool
 {
-    auto view = allocate(type, destination);
+    switch (type) {
+        case opentxs::crypto::HashType::Sha1:
+        case opentxs::crypto::HashType::Sha256:
+        case opentxs::crypto::HashType::Sha512: {
 
-    if (false == view.valid()) {
-        LogError()(OT_PRETTY_CLASS())("Unable to allocate output space.")
-            .Flush();
+            return sha_.Digest(type, data, destination);
+        }
+        case opentxs::crypto::HashType::Blake2b160:
+        case opentxs::crypto::HashType::Blake2b256:
+        case opentxs::crypto::HashType::Blake2b512: {
 
-        return false;
+            return blake_.Digest(type, data, destination);
+        }
+        case opentxs::crypto::HashType::Ripemd160: {
+
+            return ripe_.RIPEMD160(data, destination);
+        }
+        case opentxs::crypto::HashType::Sha256D: {
+
+            return sha_256_double(data, destination);
+        }
+        case opentxs::crypto::HashType::Sha256DC: {
+
+            return sha_256_double_checksum(data, destination);
+        }
+        case opentxs::crypto::HashType::Bitcoin: {
+
+            return bitcoin_hash_160(data, destination);
+        }
+        default: {
+            LogError()(OT_PRETTY_CLASS())("Unsupported hash type.").Flush();
+
+            return false;
+        }
     }
-
-    return digest(type, data.data(), data.size(), view);
 }
 
 auto Hash::Digest(
@@ -115,16 +136,7 @@ auto Hash::Digest(
     const opentxs::network::zeromq::Frame& data,
     const AllocateOutput destination) const noexcept -> bool
 {
-    auto view = allocate(type, destination);
-
-    if (false == view.valid()) {
-        LogError()(OT_PRETTY_CLASS())("Unable to allocate output space.")
-            .Flush();
-
-        return false;
-    }
-
-    return digest(type, data.data(), data.size(), view);
+    return Digest(type, data.Bytes(), destination);
 }
 
 auto Hash::Digest(
@@ -132,144 +144,58 @@ auto Hash::Digest(
     const ReadView data,
     const AllocateOutput destination) const noexcept -> bool
 {
-    if (false == bool(destination)) {
-        LogError()(OT_PRETTY_CLASS())("Invalid output allocator").Flush();
-
-        return false;
-    }
-
     const auto type = static_cast<opentxs::crypto::HashType>(hash);
     auto temp =
-        Data::Factory();  // FIXME IdentifierEncode should accept ReadView
-    auto view = allocate(type, temp->WriteInto());
+        Data::Factory();  // TODO IdentifierEncode should accept ReadView
 
-    if (false == view.valid()) {
-        LogError()(OT_PRETTY_CLASS())("Unable to allocate temp space").Flush();
+    try {
+        if (false == Digest(type, data, temp->WriteInto())) {
 
-        return false;
-    }
+            throw std::runtime_error{"failed to calculate hash"};
+        }
 
-    if (digest(type, data.data(), data.size(), view)) {
         const auto encoded = encode_.IdentifierEncode(temp);
         auto output = destination(encoded.size());
 
         if (false == output.valid(encoded.size())) {
-            LogError()(OT_PRETTY_CLASS())(
-                "Unable to allocate encoded output space")
-                .Flush();
-
-            return false;
+            throw std::runtime_error{"unable to allocate encoded output space"};
         }
 
         std::memcpy(output, encoded.data(), output);
 
         return true;
-    } else {
-        LogError()(OT_PRETTY_CLASS())("Failed to calculate digest").Flush();
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return false;
     }
-}
-
-auto Hash::digest(
-    const opentxs::crypto::HashType type,
-    const void* input,
-    const std::size_t size,
-    void* output) const noexcept -> bool
-{
-    switch (type) {
-        case opentxs::crypto::HashType::Sha1:
-        case opentxs::crypto::HashType::Sha256:
-        case opentxs::crypto::HashType::Sha512: {
-            return sha_.Digest(
-                type,
-                static_cast<const std::uint8_t*>(input),
-                size,
-                static_cast<std::uint8_t*>(output));
-        }
-        case opentxs::crypto::HashType::Blake2b160:
-        case opentxs::crypto::HashType::Blake2b256:
-        case opentxs::crypto::HashType::Blake2b512: {
-            return blake_.Digest(
-                type,
-                static_cast<const std::uint8_t*>(input),
-                size,
-                static_cast<std::uint8_t*>(output));
-        }
-        case opentxs::crypto::HashType::Ripemd160: {
-            return ripe_.RIPEMD160(
-                static_cast<const std::uint8_t*>(input),
-                size,
-                static_cast<std::uint8_t*>(output));
-        }
-        case opentxs::crypto::HashType::Sha256D: {
-            return sha_256_double(input, size, output);
-        }
-        case opentxs::crypto::HashType::Sha256DC: {
-            return sha_256_double_checksum(input, size, output);
-        }
-        case opentxs::crypto::HashType::Bitcoin: {
-            return bitcoin_hash_160(input, size, output);
-        }
-        default: {
-        }
-    }
-
-    LogError()(OT_PRETTY_CLASS())("Unsupported hash type.").Flush();
-
-    return false;
 }
 
 auto Hash::HMAC(
     const opentxs::crypto::HashType type,
     const ReadView key,
-    const ReadView& data,
-    const AllocateOutput digest) const noexcept -> bool
-{
-    auto output = allocate(type, digest);
-
-    if (false == output.valid()) {
-        LogError()(OT_PRETTY_CLASS())("Unable to allocate output space.")
-            .Flush();
-
-        return false;
-    }
-
-    return HMAC(
-        type,
-        reinterpret_cast<const std::uint8_t*>(data.data()),
-        data.size(),
-        reinterpret_cast<const std::uint8_t*>(key.data()),
-        key.size(),
-        output.as<std::uint8_t>());
-}
-
-auto Hash::HMAC(
-    const opentxs::crypto::HashType type,
-    const std::uint8_t* input,
-    const std::size_t size,
-    const std::uint8_t* key,
-    const std::size_t keySize,
-    std::uint8_t* output) const noexcept -> bool
+    const ReadView data,
+    const AllocateOutput output) const noexcept -> bool
 {
     switch (type) {
         case opentxs::crypto::HashType::Sha256:
         case opentxs::crypto::HashType::Sha512: {
-            return sha_.HMAC(type, input, size, key, keySize, output);
+
+            return sha_.HMAC(type, key, data, output);
         }
         case opentxs::crypto::HashType::Blake2b160:
         case opentxs::crypto::HashType::Blake2b256:
         case opentxs::crypto::HashType::Blake2b512:
         case opentxs::crypto::HashType::SipHash24: {
-            return blake_.HMAC(type, input, size, key, keySize, output);
+
+            return blake_.HMAC(type, key, data, output);
         }
         default: {
+            LogError()(OT_PRETTY_CLASS())("Unsupported hash type.").Flush();
+
+            return false;
         }
     }
-
-    LogError()(OT_PRETTY_CLASS())("Unsupported hash type.").Flush();
-
-    return false;
 }
 
 auto Hash::MurmurHash3_32(
@@ -361,41 +287,59 @@ auto Hash::Scrypt(
     return scrypt_.Generate(input, salt, N, r, p, bytes, writer);
 }
 
-auto Hash::sha_256_double(
-    const void* input,
-    const std::size_t size,
-    void* output) const noexcept -> bool
+auto Hash::sha_256_double(const ReadView data, const AllocateOutput destination)
+    const noexcept -> bool
 {
-    auto temp = space(Provider::HashSize(opentxs::crypto::HashType::Sha256));
+    try {
+        auto temp = Space{};
+        const auto rc =
+            Digest(opentxs::crypto::HashType::Sha256, data, writer(temp));
 
-    if (false ==
-        digest(opentxs::crypto::HashType::Sha256, input, size, temp.data())) {
-        LogError()(OT_PRETTY_CLASS())("Failed to calculate intermediate hash.")
-            .Flush();
+        if (false == rc) {
+
+            throw std::runtime_error{"failed to calculate intermediate hash"};
+        }
+
+        return Digest(
+            opentxs::crypto::HashType::Sha256, reader(temp), destination);
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return false;
     }
-
-    return digest(
-        opentxs::crypto::HashType::Sha256, temp.data(), temp.size(), output);
 }
 
 auto Hash::sha_256_double_checksum(
-    const void* input,
-    const std::size_t size,
-    void* output) const noexcept -> bool
+    const ReadView data,
+    const AllocateOutput destination) const noexcept -> bool
 {
-    auto temp = space(Provider::HashSize(opentxs::crypto::HashType::Sha256));
+    try {
+        auto temp = Space{};
+        const auto rc = sha_256_double(data, writer(temp));
 
-    if (false == sha_256_double(input, size, temp.data())) {
-        LogError()(OT_PRETTY_CLASS())("Failed to calculate intermediate hash.")
-            .Flush();
+        if (false == rc) {
+
+            throw std::runtime_error{"failed to calculate intermediate hash"};
+        }
+
+        if (false == destination.operator bool()) {
+            throw std::runtime_error{"invalid output"};
+        }
+
+        static constexpr auto size = std::size_t{4};
+        auto buf = destination(size);
+
+        if (false == buf.valid(size)) {
+            throw std::runtime_error{"failed to allocate space for output"};
+        }
+
+        std::memcpy(buf.data(), temp.data(), size);
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return false;
     }
-
-    std::memcpy(output, temp.data(), 4);
-
-    return true;
 }
 }  // namespace opentxs::api::crypto::imp

@@ -70,9 +70,8 @@ class Sodium final : virtual public crypto::Sodium,
 public:
     auto Digest(
         const crypto::HashType hashType,
-        const std::uint8_t* input,
-        const size_t inputSize,
-        std::uint8_t* output) const -> bool final;
+        const ReadView data,
+        const AllocateOutput output) const noexcept -> bool final;
     auto Generate(
         const ReadView input,
         const ReadView salt,
@@ -83,11 +82,9 @@ public:
         AllocateOutput writer) const noexcept -> bool final;
     auto HMAC(
         const crypto::HashType hashType,
-        const std::uint8_t* input,
-        const size_t inputSize,
-        const std::uint8_t* key,
-        const size_t keySize,
-        std::uint8_t* output) const -> bool final;
+        const ReadView key,
+        const ReadView data,
+        const AllocateOutput output) const noexcept -> bool final;
     auto PubkeyAdd(
         const ReadView pubkey,
         const ReadView scalar,
@@ -170,10 +167,7 @@ private:
         -> std::size_t final;
     auto SaltSize(const crypto::key::symmetric::Source type) const
         -> std::size_t final;
-    auto sha1(
-        const std::uint8_t* input,
-        const std::size_t inputSize,
-        std::uint8_t* output) const -> bool;
+    auto sha1(const ReadView data, WritableView& output) const -> bool;
     auto TagSize(const opentxs::crypto::key::symmetric::Algorithm mode) const
         -> std::size_t final;
 };
