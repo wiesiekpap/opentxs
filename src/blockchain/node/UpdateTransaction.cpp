@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                         // IWYU pragma: associated
 #include "blockchain/node/UpdateTransaction.hpp"  // IWYU pragma: associated
 
-#include <iterator>
 #include <tuple>
 #include <utility>
 
@@ -60,13 +59,7 @@ auto UpdateTransaction::AddToBestChain(const block::Position& position) -> void
 
 auto UpdateTransaction::Checkpoint() const -> block::Position
 {
-    if (have_checkpoint_) {
-
-        return checkpoint_;
-    } else {
-
-        return db_.CurrentCheckpoint();
-    }
+    return have_checkpoint_ ? checkpoint_ : db_.CurrentCheckpoint();
 }
 
 auto UpdateTransaction::ClearCheckpoint() -> void
@@ -113,7 +106,7 @@ auto UpdateTransaction::DisconnectBlock(const block::Header& header) -> void
 auto UpdateTransaction::disconnected() const noexcept
     -> database::DisconnectedList&
 {
-    if (false == cached_disconnected_.has_value()) {
+    if (!cached_disconnected_.has_value()) {
         cached_disconnected_ = db_.DisconnectedHashes();
     }
 
@@ -123,11 +116,8 @@ auto UpdateTransaction::disconnected() const noexcept
 auto UpdateTransaction::EffectiveBestBlock(const block::Height height) const
     noexcept(false) -> block::Hash
 {
-    try {
-
-        return best_.at(height);
-    } catch (...) {
-    }
+    if (auto iter = best_.find(height); iter != best_.end())
+        return iter->second;
 
     return db_.BestBlock(height);
 }
@@ -210,7 +200,7 @@ auto UpdateTransaction::SetReorgParent(const block::Position& pos) noexcept
 
 auto UpdateTransaction::siblings() const noexcept -> database::Hashes&
 {
-    if (false == cached_siblings_.has_value()) {
+    if (!cached_siblings_.has_value()) {
         cached_siblings_ = db_.SiblingHashes();
     }
 
@@ -219,7 +209,7 @@ auto UpdateTransaction::siblings() const noexcept -> database::Hashes&
 
 auto UpdateTransaction::Stage() noexcept -> block::Header&
 {
-    if (0 == best_.size()) {
+    if (best_.empty()) {
         auto best = db_.CurrentBest();
 
         OT_ASSERT(best);

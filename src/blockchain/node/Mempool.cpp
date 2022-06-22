@@ -11,7 +11,6 @@
 #include <chrono>
 #include <queue>
 #include <shared_mutex>
-#include <string_view>
 #include <utility>
 
 #include "internal/blockchain/database/Wallet.hpp"
@@ -20,7 +19,6 @@
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
@@ -46,7 +44,6 @@ struct Mempool::Imp {
         -> std::shared_ptr<const bitcoin::block::Transaction>
     {
         auto lock = sLock{lock_};
-
         try {
 
             return transactions_.at(Hash{txid});
@@ -88,12 +85,10 @@ struct Mempool::Imp {
     auto Submit(std::unique_ptr<const bitcoin::block::Transaction> tx)
         const noexcept -> void
     {
-        Submit([&] {
-            auto out = Transactions{};
-            out.emplace_back(std::move(tx));
+        Transactions transactions{};
+        transactions.emplace_back(std::move(tx));
 
-            return out;
-        }());
+        Submit(std::move(transactions));
     }
     auto Submit(Transactions&& txns) const noexcept -> void
     {
@@ -128,21 +123,18 @@ struct Mempool::Imp {
         const auto now = Clock::now();
         auto lock = eLock{lock_};
 
-        while (0 < unexpired_tx_.size()) {
+        while (!unexpired_tx_.empty()) {
             const auto& [time, txid] = unexpired_tx_.front();
 
             if ((now - time) < tx_limit_) { break; }
 
-            try {
-                transactions_.at(txid).reset();
-            } catch (...) {
-            }
+            if (transactions_.count(txid)) transactions_.at(txid).reset();
 
             active_.erase(txid);
             unexpired_tx_.pop();
         }
 
-        while (0 < unexpired_txid_.size()) {
+        while (!unexpired_txid_.empty()) {
             const auto& [time, txid] = unexpired_txid_.front();
 
             if ((now - time) < txid_limit_) { break; }
@@ -193,14 +185,12 @@ private:
 
     auto notify(ReadView txid) const noexcept -> void
     {
-        socket_.Send([&] {
-            auto work = network::zeromq::tagged_message(
-                WorkType::BlockchainMempoolUpdated);
-            work.AddFrame(chain_);
-            work.AddFrame(txid.data(), txid.size());
+        auto work =
+            network::zeromq::tagged_message(WorkType::BlockchainMempoolUpdated);
+        work.AddFrame(chain_);
+        work.AddFrame(txid.data(), txid.size());
 
-            return work;
-        }());
+        socket_.Send(std::move(work));
     }
 
     auto init() noexcept -> void
