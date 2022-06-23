@@ -22,8 +22,6 @@ Address::Address(std::unique_ptr<internal::Address> address) noexcept
     OT_ASSERT(address_);
 }
 
-Address::~Address() {}
-
 auto Address::Bytes() const noexcept -> OTData
 {
     Lock lock(lock_);
@@ -94,4 +92,6 @@ auto Address::UpdateTime(const Time& time) noexcept -> pointer
     address_->SetLastConnected(time);
     return address_->clone_internal();
 }
+
+Address::~Address() {}
 }  // namespace opentxs::blockchain::p2p::peer

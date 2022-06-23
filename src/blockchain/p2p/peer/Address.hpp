@@ -67,7 +67,7 @@ public:
 
     virtual ~Address();
 
-    operator bool() { return address_ != nullptr; }
+    explicit operator bool() { return address_ != nullptr; }
 
 private:
     mutable std::mutex lock_;
