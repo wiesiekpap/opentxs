@@ -41,13 +41,7 @@ struct Blocks::Imp {
     auto Load(const Hash& block) const noexcept -> BlockReader
     {
         auto lock = Lock{lock_};
-        auto index = util::IndexData{};
-        auto cb = [&index](const auto in) {
-            if (sizeof(index) != in.size()) { return; }
-
-            std::memcpy(static_cast<void*>(&index), in.data(), in.size());
-        };
-        lmdb_.Load(table_, block.Bytes(), cb);
+        auto index = LoadDBTransaction(lmdb_, table_, block.Bytes());
 
         if (0 == index.size_) {
             LogTrace()(OT_PRETTY_CLASS())("Block ")(block.asHex())(
@@ -73,13 +67,7 @@ struct Blocks::Imp {
             return {};
         }
 
-        auto index = util::IndexData{};
-        auto cb = [&index](const auto in) {
-            if (sizeof(index) != in.size()) { return; }
-
-            std::memcpy(static_cast<void*>(&index), in.data(), in.size());
-        };
-        lmdb_.Load(table_, block.Bytes(), cb);
+        auto index = LoadDBTransaction(lmdb_, table_, block.Bytes());
 
         auto callback = [&](auto& tx) -> bool {
             const auto result =

@@ -60,19 +60,14 @@ struct Sync::Imp final : private util::MappedFileStorage {
                 (sizeof(std::size_t) != key.size())) {
                 throw std::runtime_error("Invalid key");
             }
-
-            const auto height = [&] {
-                auto out = std::size_t{};
-                std::memcpy(&out, key.data(), key.size());
-
-                return out;
-            }();
+            std::size_t height{};
+            std::memcpy(&height, key.data(), key.size());
 
             try {
                 const auto data = Data{value};
                 const auto view = get_read_view(data.index_);
 
-                if ((nullptr == view.data()) || (0 == view.size())) {
+                if ((nullptr == view.data()) || (view.empty())) {
                     throw std::runtime_error("Failed to load sync packet");
                 }
 
@@ -95,7 +90,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
                     throw std::runtime_error("checksum failure");
                 }
 
-                if (false == output.Add(view)) { return false; }
+                if (!output.Add(view)) { return false; }
 
                 haveOne = true;
                 total += view.size();
@@ -127,7 +122,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
 
     auto Store(const Chain chain, const Items& items) const noexcept -> bool
     {
-        if (0 == items.size()) { return true; }
+        if (items.empty()) { return true; }
 
         auto lock = ExclusiveLock{lock_};
 
@@ -135,7 +130,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
             first.Height() <= tips_.at(chain)) {
             const auto parent = std::max<Height>(first.Height() - 1, 0);
 
-            if (false == reorg(chain, parent)) {
+            if (!reorg(chain, parent)) {
                 LogError()(OT_PRETTY_CLASS())("Reorg error").Flush();
 
                 return false;
@@ -165,7 +160,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
             auto data = Data{};
             auto raw = Space{};
 
-            if (false == item.Serialize(writer(raw))) {
+            if (!item.Serialize(writer(raw))) {
                 LogError()(OT_PRETTY_CLASS())("Failed to serialize item")
                     .Flush();
 
@@ -175,7 +170,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
             const auto size = raw.size();
             auto write = get_write_view(txn, data.index_, size);
 
-            if (false == write.valid(size)) {
+            if (!write.valid(size)) {
                 LogError()(OT_PRETTY_CLASS())(
                     "Failed to allocate space for writing")
                     .Flush();
@@ -201,7 +196,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
             const auto result =
                 lmdb_.Store(ChainToSyncTable(chain), dbKey, data, txn);
 
-            if (false == result.first) {
+            if (!result.first) {
                 LogError()(OT_PRETTY_CLASS())("Failed to update index").Flush();
 
                 return false;
@@ -211,7 +206,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
         const auto dbKey = static_cast<std::size_t>(chain);
         const auto tip = static_cast<Height>(items.back().Height());
 
-        if (false == lmdb_.Store(tip_table_, dbKey, tsv(tip), txn).first) {
+        if (!lmdb_.Store(tip_table_, dbKey, tsv(tip), txn).first) {
             LogError()(OT_PRETTY_CLASS())("Failed to update tip").Flush();
 
             return false;
@@ -219,7 +214,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
 
         tips_.at(chain) = tip;
 
-        if (false == txn.Finalize(true)) {
+        if (!txn.Finalize(true)) {
             LogError()(OT_PRETTY_CLASS())("Finalize error").Flush();
 
             return false;
@@ -343,46 +338,39 @@ private:
     {
         if (0 <= tips_.at(chain)) { return; }
 
-        const auto items = [&] {
-            namespace params = opentxs::blockchain::params;
-            const auto& data = params::Chains().at(chain);
-            constexpr auto filterType = opentxs::blockchain::cfilter::Type::ES;
-            auto gcs = [&] {
-                const auto& filter = params::Filters().at(chain).at(filterType);
-                const auto bytes = api_.Factory().DataFromHex(filter.second);
-                const auto blockHash =
-                    api_.Factory().DataFromHex(data.genesis_hash_hex_);
-                auto output = factory::GCS(
-                    api_,
-                    filterType,
-                    opentxs::blockchain::internal::BlockHashToFilterKey(
-                        blockHash->Bytes()),
-                    bytes->Bytes(),
-                    {});  // TODO allocator
+        namespace params = opentxs::blockchain::params;
+        const auto& data = params::Chains().at(chain);
+        constexpr auto filterType = opentxs::blockchain::cfilter::Type::ES;
 
-                OT_ASSERT(output.IsValid());
+        const auto bytes = api_.Factory().DataFromHex(
+            params::Filters().at(chain).at(filterType).second);
+        const auto blockHash =
+            api_.Factory().DataFromHex(data.genesis_hash_hex_);
+        auto gcs = factory::GCS(
+            api_,
+            filterType,
+            opentxs::blockchain::internal::BlockHashToFilterKey(
+                blockHash->Bytes()),
+            bytes->Bytes(),
+            {});  // TODO allocator
 
-                return output;
-            }();
-            auto output = Items{};
-            const auto header =
-                api_.Factory().DataFromHex(data.genesis_header_hex_);
-            const auto filter = [&] {
-                auto out = Space{};
-                gcs.Compressed(writer(out));
+        OT_ASSERT(gcs.IsValid());
 
-                return out;
-            }();
-            output.emplace_back(
-                chain,
-                0,
-                filterType,
-                gcs.ElementCount(),
-                header->Bytes(),
-                reader(filter));
+        auto items = Items{};
+        const auto header =
+            api_.Factory().DataFromHex(data.genesis_header_hex_);
 
-            return output;
-        }();
+        Space filter{};
+        gcs.Compressed(writer(filter));
+
+        items.emplace_back(
+            chain,
+            0,
+            filterType,
+            gcs.ElementCount(),
+            header->Bytes(),
+            reader(filter));
+
         Store(chain, items);
     }
     // WARNING make sure an exclusive lock is held
@@ -390,7 +378,6 @@ private:
     {
         if (0 > height) {
             LogError()(OT_PRETTY_CLASS())("Invalid height").Flush();
-
             return false;
         }
 
@@ -399,30 +386,25 @@ private:
         const auto table = ChainToSyncTable(chain);
 
         for (auto key = Height{height + 1}; key <= tip; ++key) {
-            if (false ==
-                lmdb_.Delete(table, static_cast<std::size_t>(key), txn)) {
+            if (!lmdb_.Delete(table, static_cast<std::size_t>(key), txn)) {
                 LogError()(OT_PRETTY_CLASS())("Delete error").Flush();
-
                 return false;
             }
         }
 
         const auto key = static_cast<std::size_t>(chain);
 
-        if (false == lmdb_.Store(tip_table_, key, tsv(height), txn).first) {
+        if (!lmdb_.Store(tip_table_, key, tsv(height), txn).first) {
             LogError()(OT_PRETTY_CLASS())("Failed to update tip").Flush();
-
             return false;
         }
 
-        if (false == txn.Finalize(true)) {
+        if (!txn.Finalize(true)) {
             LogError()(OT_PRETTY_CLASS())("Finalize error").Flush();
-
             return false;
         }
 
         tip = height;
-
         return true;
     }
 };

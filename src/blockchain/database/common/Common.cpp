@@ -8,7 +8,6 @@
 #include "internal/blockchain/database/common/Common.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
-#include <string_view>
 
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/util/Container.hpp"
@@ -49,4 +48,5 @@ auto SyncTables() noexcept -> const UnallocatedVector<SyncTableData>&
 
     return map;
 }
+
 }  // namespace opentxs::blockchain::database::common
