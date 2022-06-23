@@ -450,8 +450,8 @@ TEST_F(Regtest_payment_code, send_to_bob)
         ASSERT_TRUE(pTX);
 
         const auto& tx = *pTX;
-        EXPECT_TRUE(
-            txos_alice_.SpendUnconfirmed({transactions_ptxid_.at(0)->Bytes(), 0}));
+        EXPECT_TRUE(txos_alice_.SpendUnconfirmed(
+            {transactions_ptxid_.at(0)->Bytes(), 0}));
         EXPECT_TRUE(txos_alice_.AddUnconfirmed(tx, 1, SendHD()));
         // NOTE do not update Bob's txos since the recipient payment code
         // subaccount does not exist yet.
@@ -1392,8 +1392,8 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
         ASSERT_TRUE(pTX);
 
         const auto& tx = *pTX;
-        EXPECT_TRUE(
-            txos_alice_.SpendUnconfirmed({transactions_ptxid_.at(1)->Bytes(), 1}));
+        EXPECT_TRUE(txos_alice_.SpendUnconfirmed(
+            {transactions_ptxid_.at(1)->Bytes(), 1}));
         EXPECT_TRUE(txos_bob_.AddUnconfirmed(tx, 0, ReceivePC()));
         EXPECT_TRUE(txos_alice_.AddUnconfirmed(tx, 1, SendHD()));
     }

@@ -11,14 +11,10 @@
 
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
-#include <algorithm>
-#include <atomic>
-#include <iterator>
 #include <limits>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
-#include "internal/blockchain/database/Wallet.hpp"
 #include "internal/blockchain/node/FilterOracle.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
@@ -28,15 +24,9 @@
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
-#include "opentxs/network/zeromq/message/FrameSection.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
@@ -113,17 +103,12 @@ auto Rescan::Imp::before(const block::Position& position) const noexcept
 
 auto Rescan::Imp::can_advance() const noexcept -> bool
 {
-    const auto target = [this] {
-        if (0u == dirty_.size()) {
+    const auto target =
+        dirty_.empty()
+            ? filter_tip_.value_or(parent_.null_position_)
+            : parent_.node_.HeaderOracle().GetPosition(
+                  std::max<block::Height>(dirty_.cbegin()->first - 1, 0));
 
-            return filter_tip_.value_or(parent_.null_position_);
-        } else {
-            const auto& lowestDirty = *dirty_.cbegin();
-
-            return parent_.node_.HeaderOracle().GetPosition(
-                std::max<block::Height>(lowestDirty.first - 1, 0));
-        }
-    }();
     const auto position = current();
     log_(OT_PRETTY_CLASS())(name_)(
         " the highest position available for rescanning is ")(print(target))
@@ -155,27 +140,25 @@ auto Rescan::Imp::do_process_update(Message&& msg) noexcept -> void
     auto clean = Set<ScanStatus>{get_allocator()};
     auto dirty = Set<block::Position>{get_allocator()};
     decode(parent_.api_, msg, clean, dirty);
-    const auto highestClean = highest_clean([&] {
-        auto out = Set<block::Position>{};
-        std::transform(
-            clean.begin(),
-            clean.end(),
-            std::inserter(out, out.end()),
-            [&](const auto& in) {
-                auto& [type, pos] = in;
 
-                return pos;
-            });
+    Set<block::Position> positions{};
+    std::transform(
+        clean.begin(),
+        clean.end(),
+        std::inserter(positions, positions.end()),
+        [&](const auto& in) {
+            auto& [type, pos] = in;
 
-        return out;
-    }());
-    adjust_last_scanned(highestClean);
+            return pos;
+        });
+
+    adjust_last_scanned(highest_clean(positions));
     process_dirty(dirty);
     process_clean(clean);
 
     if (parent_.scan_dirty_) {
         do_work();
-    } else if (0u < clean.size()) {
+    } else if (!clean.empty()) {
         to_progress_.SendDeferred(std::move(msg));
     }
 }
@@ -259,8 +242,8 @@ auto Rescan::Imp::process_clean(const Set<ScanStatus>& clean) noexcept -> void
 auto Rescan::Imp::process_dirty(const Set<block::Position>& dirty) noexcept
     -> void
 {
-    if (0u < dirty.size()) {
-        if (auto val = parent_.scan_dirty_.exchange(true); false == val) {
+    if (!dirty.empty()) {
+        if (auto val = parent_.scan_dirty_.exchange(true); !val) {
             log_(OT_PRETTY_CLASS())(name_)(
                 " enabling rescan since update contains dirty blocks")
                 .Flush();
@@ -270,11 +253,11 @@ auto Rescan::Imp::process_dirty(const Set<block::Position>& dirty) noexcept
             log_(OT_PRETTY_CLASS())(name_)(" block ")(opentxs::print(position))(
                 " must be processed due to cfilter matches")
                 .Flush();
-            dirty_.emplace(std::move(position));
+            dirty_.emplace(position);
         }
     }
 
-    if (0u < dirty_.size()) {
+    if (!dirty_.empty()) {
         const auto& lowestDirty = *dirty_.cbegin();
         const auto& highestDirty = *dirty_.crbegin();
         const auto limit = before(lowestDirty);
@@ -358,7 +341,7 @@ auto Rescan::Imp::rescan_finished() const noexcept -> bool
 
     if (caught_up()) { return true; }
 
-    if (0u < dirty_.size()) { return false; }
+    if (!dirty_.empty()) { return false; }
 
     const auto& clean = last_scanned_.value().first;
     const auto& dirty = highest_dirty_.first;
@@ -396,7 +379,7 @@ auto Rescan::Imp::set_last_scanned(
 
 auto Rescan::Imp::stop() const noexcept -> block::Height
 {
-    if (0u == dirty_.size()) {
+    if (dirty_.empty()) {
         log_(OT_PRETTY_CLASS())(name_)(" dirty list is empty so rescan "
                                        "may proceed to the end of the "
                                        "chain")
@@ -423,21 +406,18 @@ auto Rescan::Imp::work() noexcept -> bool
                 opentxs::print(last_scanned_.value()))
                 .Flush();
             auto clean = Vector<ScanStatus>{get_allocator()};
-            to_progress_.SendDeferred([&] {
-                clean.emplace_back(
-                    ScanState::rescan_clean, last_scanned_.value());
-                auto out = MakeWork(Work::update);
-                add_last_reorg(out);
-                encode(clean, out);
+            clean.emplace_back(ScanState::rescan_clean, last_scanned_.value());
+            auto work = MakeWork(Work::update);
+            add_last_reorg(work);
+            encode(clean, work);
 
-                return out;
-            }());
+            to_progress_.SendDeferred(std::move(work));
         }
 
         Job::work();
     }};
 
-    if (false == parent_.scan_dirty_) {
+    if (!parent_.scan_dirty_) {
         log_(OT_PRETTY_CLASS())(name_)(" rescan is not necessary").Flush();
 
         return false;

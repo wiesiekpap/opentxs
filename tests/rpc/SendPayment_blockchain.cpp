@@ -21,7 +21,8 @@ protected:
     using Subchain = ot::blockchain::crypto::Subchain;
 
     static ot::Nym_p alex_p_;
-    static ot::UnallocatedDeque<ot::blockchain::block::pTxid> transactions_ptxid_;
+    static ot::UnallocatedDeque<ot::blockchain::block::pTxid>
+        transactions_ptxid_;
     static std::unique_ptr<ScanListener> listener_p_;
 
     const ot::identity::Nym& alex_;
@@ -117,7 +118,8 @@ protected:
 };
 
 ot::Nym_p RPC_BC::alex_p_{};
-ot::UnallocatedDeque<ot::blockchain::block::pTxid> RPC_BC::transactions_ptxid_{};
+ot::UnallocatedDeque<ot::blockchain::block::pTxid>
+    RPC_BC::transactions_ptxid_{};
 std::unique_ptr<ScanListener> RPC_BC::listener_p_{};
 
 TEST_F(RPC_BC, preconditions)
