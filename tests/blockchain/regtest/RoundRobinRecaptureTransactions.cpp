@@ -3,14 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
-
 #include <gtest/gtest.h>
-#include "opentxs/util/Log.hpp"
-
 #include <chrono>
 #include <thread>
+
+#include "opentxs/util/Log.hpp"
+#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 namespace ottest
 {
