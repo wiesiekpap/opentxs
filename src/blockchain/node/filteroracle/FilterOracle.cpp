@@ -566,7 +566,7 @@ auto FilterOracle::ProcessSyncData(
         OT_ASSERT(0 < count);
         cfilter::Header previous{};
         if (!prior.empty()) {
-
+            previous = LoadFilterHeader(filterType, prior);
             if (previous.IsNull()) {
                 LogError()(OT_PRETTY_CLASS())("cfheader for ")(print(chain_))(
                     " block ")(prior.asHex())(" not found")
