@@ -76,10 +76,6 @@ class Transaction;
 
 namespace crypto
 {
-namespace implementation
-{
-class Notification;
-}  // namespace implementation
 
 class Account;
 class Notification;
@@ -177,7 +173,7 @@ private:
         -> void final;
     auto init_keys() const noexcept -> OTPasswordPrompt;
     auto process(
-        const block::Match match,
+        const block::Match& match,
         const bitcoin::block::Transaction& tx,
         const PasswordPrompt& reason) const noexcept -> void;
     auto process(
