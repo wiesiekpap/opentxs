@@ -207,19 +207,19 @@ public:
     auto ProcessTransaction(
         const bitcoin::block::Transaction& tx,
         const Log& log) const noexcept -> void;
-    auto ReorgTarget(
+    static auto ReorgTarget(
         const Lock& headerOracleLock,
         const block::Position& reorg,
-        const block::Position& current) const noexcept -> block::Position;
+        const block::Position& current) noexcept -> block::Position;
     auto ReportScan(const block::Position& pos) const noexcept -> void;
     auto Rescan(
-        const block::Position best,
+        const block::Position& best,
         const block::Height stop,
         block::Position& highestTested,
         Vector<ScanStatus>& out) const noexcept
         -> std::optional<block::Position>;
     auto Scan(
-        const block::Position best,
+        const block::Position& best,
         const block::Height stop,
         block::Position& highestTested,
         Vector<ScanStatus>& out) const noexcept
@@ -233,6 +233,7 @@ public:
         const block::Position& ancestor) noexcept -> void final;
 
     ~SubchainStateData() override;
+    wallet::MatchCache::Results result_map() const;
 
 protected:
     auto do_startup() noexcept -> void override;
@@ -314,7 +315,7 @@ private:
         block::Position& highestTested) noexcept
         -> std::optional<block::Position>;
 
-    auto choose_thread_count(std::size_t elements) const noexcept
+    static auto choose_thread_count(std::size_t elements) noexcept
         -> std::size_t;
     auto clear_children() noexcept -> void;
     auto get_account_targets(const Elements& elements, alloc::Resource* alloc)
@@ -373,7 +374,7 @@ private:
         const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         std::atomic_int& errors,
-        const block::Position ancestor) noexcept -> void;
+        const block::Position& ancestor) noexcept -> void;
     auto process_prepare_reorg(Message&& in) noexcept -> void;
     auto process_rescan(Message&& in) noexcept -> void;
     auto process_watchdog_ack(Message&& in) noexcept -> void;
