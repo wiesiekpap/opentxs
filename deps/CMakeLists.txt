@@ -11,6 +11,24 @@ if(PACKETCRYPT_EXPORT)
   add_subdirectory(packetcrypt)
 endif()
 
+if(${CMAKE_CXX_COMPILER_ID}
+        MATCHES
+        GNU
+        )
+  target_compile_options(
+          irrxml PRIVATE -Wno-suggest-override
+  )
+endif()
+
+if(${CMAKE_CXX_COMPILER_ID}
+        MATCHES
+        Clang
+        )
+  target_compile_options(
+          irrxml PRIVATE -Wno-inconsistent-missing-override
+  )
+endif()
+
 if(CASH_LUCRE_EXPORT)
   add_library(lucre OBJECT "lucre/src/bankimp.cpp")
   target_link_libraries(lucre PRIVATE OpenSSL::Crypto)
