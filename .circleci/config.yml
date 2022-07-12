@@ -1,24 +1,34 @@
 version: 2.1
 
-parameters:
-  docker-image-android-tag:
-    default: "14"
-    type: string
-  docker-image-ci-tag:
-    default: "35-1"
-    type: string
+configuration:
+  - ubuntu_version: &ubuntu_version ubuntu-2004:current
 
+parameters:
+  docker-image-android:
+    default: "opentransactions/android:14"
+    type: string
+  docker-image-ci:
+    default: "polishcode/matterfi-ci-fedora:35-2"
+    type: string
+  ctest-config:
+    default: "-j 8 --output-on-failure --repeat until-pass:3 --timeout 300 --schedule-random"
+    type: string
+  ctest-disabled-tests:
+    default: "(ottest-blockchain-regtest-)(basic|reorg|sync-client|restart|restart-end|restart-inloop|simple-transfer|round-robin-distribution-transactions|round-robin-recapture-transactions|sync-server)"
+    type: string
+  ctest-disabled-tests-ccov:
+    default: "(ottest-blockchain-)(headeroracle-|regtest-)(add_checkpoint_already_in_best_chain|add_checkpoint_disconnected|basic_reorg|basic_reorg-batch|basic_sequence|basic_sequence-batch|checkpoint_prevents_reorg|checkpoint_prevents_reorg-batch|checkpoint_prevents_update|checkpoint_prevents_update-batch|delete_checkpoint|receive_headers_out_of_order|receive_headers_out_of_order-batch|basic|sync-client|restart|restart-end|restart-inloop|restart-early|simple-transfer|round-robin-distribution-transactions|round-robin-recapture-transactions|reorg)"
+    type: string
 
 executors:
-  host_executor:
+  executor_ubuntu_large:
     machine:
-      image: ubuntu-2004:current
-      #docker_layer_caching: true
-    resource_class: large
+      image: *ubuntu_version
+    resource_class: xlarge
       
 commands:
-  prepare_env_build:
-    description: "command to prepare all build dependencies: code deps, gems, tools"
+  cmd_prepare_env_build:
+    description: "command to prepare all build dependencies: code, submodules, tools"
     parameters:
       docker-image:
         type: string
@@ -31,12 +41,6 @@ commands:
       - run:
           name: "pull docker image"
           command: docker pull <<parameters.docker-image>>
-      #TODO check if that does anything at all (ssh into running image)
-      - run:
-          name: "get more disk space"
-          command: |
-            sudo rm -rf /usr/local/lib/android
-            sudo rm -rf /usr/share/dotnet
       - checkout
       - run:
           name: "checkout submodules (circleci doesn't do that by default)"
@@ -49,7 +53,7 @@ commands:
           working_directory: "~/"
           command: |
             mkdir -p <<parameters.temp-path>>
-  prepare_env_test:
+  cmd_prepare_env_test:
     description: "command to prepare light env for running tests"
     parameters:
       docker-image:
@@ -58,7 +62,87 @@ commands:
       - run:
           name: "pull docker image"
           command: docker pull <<parameters.docker-image>>
-
+  cmd_build_android:
+    description: "command to build opentxs for android in docker"
+    parameters:
+      docker-image:
+        type: string
+      arch:
+        type: string
+    steps:
+      - run:
+          name: "pull docker image"
+          command: |
+            docker run \
+              --mount type=bind,src=/home/circleci/project,dst=/home/src,readonly \
+              --mount type=bind,src=/home/circleci/opentxs-for-android/<<parameters.arch>>,dst=/home/output \
+              -i <<parameters.docker-image>> <<parameters.arch>> all
+  cmd_build_linux:
+    description: "command to build opentxs for linux in docker"
+    parameters:
+      docker-image:
+        type: string
+      compiler:
+        type: string
+      flavor:
+        type: string
+      ccov:
+        type: string
+    steps:
+      - run:
+          name: "build"
+          command: |
+            docker run \
+              --mount type=bind,src=/home/circleci/project,dst=/home/src,readonly \
+              --mount type=bind,src=/tmp/opentxs,dst=/home/output \
+              -i --entrypoint /usr/bin/build-opentxs-<<parameters.compiler>>.sh \
+              <<parameters.docker-image>> <<parameters.flavor>> <<parameters.ccov>>
+  cmd_test_linux:
+    description: "command to test opentxs for linux in docker"
+    parameters:
+      docker-image:
+        type: string
+      ctest-params:
+        type: string
+    steps:
+      - run:
+          name: "test"
+          command: |
+            docker run \
+              --mount type=bind,src=/home/circleci/project,dst=/home/src,readonly \
+              --mount type=bind,src=/tmp/opentxs,dst=/home/output \
+              -i --entrypoint /usr/bin/test-opentxs.sh \
+              <<parameters.docker-image>> "<<parameters.ctest-params>>"
+  cmd_calc_ccov_linux:
+    description: "command to calculate ccov report"
+    parameters:
+      docker-image:
+        type: string
+    steps:
+      - run:
+          name: "create temp dirs"
+          command: |
+            mkdir -p /tmp/coverage
+            mkdir -p /tmp/coverage-artifact
+      - run:
+          name: "calculate ccov"
+          command: |
+            docker run \
+              --mount type=bind,src=/home/circleci/project,dst=/home/src,readonly \
+              --mount type=bind,src=/tmp/opentxs,dst=/home/output \
+              --mount type=bind,src=/tmp/coverage,dst=/home/coverage \
+              -i --entrypoint /usr/bin/ccov-opentxs-gcc.sh \
+              <<parameters.docker-image>>
+      - run:
+          name: "pack ccov report"
+          command: |
+            cd /tmp
+            tar -czf /tmp/coverage-artifact/ccov-report-$(date +%Y%m%d-%H%M%S)-cci-${CIRCLE_WORKFLOW_JOB_ID}.tar.gz coverage/
+      - store_artifacts:
+          name: "store artifacts to circleci"
+          path: /tmp/coverage-artifact/
+          destination: ccov-report
+            
 jobs:
   build-android:
     parameters:
@@ -66,18 +150,15 @@ jobs:
         type: string
       arch:
         type: string
-    executor: host_executor
+    executor: executor_ubuntu_large
     steps:
-      - prepare_env_build:
+      - cmd_prepare_env_build:
           docker-image: <<parameters.docker-image>>
           temp-path: opentxs-for-android/<<parameters.arch>>
-      - run:
-          name: "build"
-          command: |
-            docker run \
-              --mount type=bind,src=/home/circleci/project,dst=/home/src,readonly \
-              --mount type=bind,src=/home/circleci/opentxs-for-android/<<parameters.arch>>,dst=/home/output \
-              -i <<parameters.docker-image>> <<parameters.arch>> all
+      - cmd_build_android:
+          docker-image: <<parameters.docker-image>>
+          arch: <<parameters.arch>>
+
   build-linux:
     parameters:
       docker-image:
@@ -86,19 +167,18 @@ jobs:
         type: string
       flavor:
         type: string
-    executor: host_executor
+      ccov:
+        type: string
+    executor: executor_ubuntu_large
     steps:
-      - prepare_env_build:
+      - cmd_prepare_env_build:
           docker-image: <<parameters.docker-image>>
           temp-path: "/tmp/opentxs"
-      - run:
-          name: "build"
-          command: |
-            docker run \
-              --mount type=bind,src=/home/circleci/project,dst=/home/src,readonly \
-              --mount type=bind,src=/tmp/opentxs,dst=/home/output \
-              -i --entrypoint /usr/bin/build-opentxs-<<parameters.compiler>>.sh \
-              <<parameters.docker-image>> <<parameters.flavor>> 
+      - cmd_build_linux:
+          docker-image: <<parameters.docker-image>>
+          compiler: <<parameters.compiler>>
+          flavor: <<parameters.flavor>>
+          ccov: <<parameters.ccov>>
       - run:
           name: "persist task identifier (CI debugging)"
           command: |
@@ -119,9 +199,9 @@ jobs:
         type: string
       flavor:
         type: string
-    executor: host_executor
+    executor: executor_ubuntu_large
     steps:
-      - prepare_env_test:
+      - cmd_prepare_env_test:
           docker-image: <<parameters.docker-image>>
       - attach_workspace:
           at: /
@@ -129,42 +209,68 @@ jobs:
           name: "read task identifier (CI debugging)"
           command: |
             cat /tmp/opentxs/job-id
-      - run:
-          name: "test"
-          command: |
-            docker run \
-              --mount type=bind,src=/home/circleci/project,dst=/home/src,readonly \
-              --mount type=bind,src=/tmp/opentxs,dst=/home/output \
-              -i --entrypoint /usr/bin/test-opentxs.sh <<parameters.docker-image>> "<<parameters.ctest-params>>"
+      - cmd_test_linux:
+          docker-image: <<parameters.docker-image>>
+          ctest-params: <<parameters.ctest-params>>
+
+  #ccov workflow needs to be run in a single job in order to avoid packing/unpacking
+  #built binaries - ccov instrumentation bloats them 2-3 times
+  ccov-linux:
+    parameters:
+      docker-image:
+        type: string
+      ctest-params:
+        type: string
+    executor: executor_ubuntu_large
+    steps:
+      - cmd_prepare_env_build:
+          docker-image: <<parameters.docker-image>>
+          temp-path: "/tmp/opentxs"
+      - cmd_build_linux:
+          docker-image: <<parameters.docker-image>>
+          compiler: gcc
+          flavor: full
+          ccov: ccov
+      - cmd_test_linux:
+          docker-image: <<parameters.docker-image>>
+          ctest-params: <<parameters.ctest-params>>
+      - cmd_calc_ccov_linux:
+          docker-image: <<parameters.docker-image>>
 
 workflows:
   opentxs-android:
+    when: true
     jobs:
       - build-android:
-          docker-image: opentransactions/android:<<pipeline.parameters.docker-image-android-tag>>
+          docker-image: <<pipeline.parameters.docker-image-android>>
           matrix:
             parameters:
               arch: [arm64, arm, x64, x86]
   opentxs-linux:
+    when: true
     jobs:
       - build-linux:
           name: build-linux-<<matrix.compiler>>-<<matrix.flavor>>
-          docker-image: polishcode/matterfi-ci-fedora:<<pipeline.parameters.docker-image-ci-tag>>
+          docker-image: <<pipeline.parameters.docker-image-ci>>
+          ccov: no-ccov
           matrix:
             parameters:
               compiler: [gcc, clang]
               flavor: [test01, test02, test03, test04, test05, test06, test07, test08, nopch, full]
       - test-linux:
           name: test-linux-<<matrix.compiler>>-<<matrix.flavor>>
-          docker-image: polishcode/matterfi-ci-fedora:<<pipeline.parameters.docker-image-ci-tag>>
-          #currently (2022-04-25) failing tests:
-            # ottest-blockchain-regtest-basic
-            # ottest-blockchain-regtest-reorg
-          ctest-params: -j 8 --output-on-failure --repeat until-pass:3 --timeout 300 --schedule-random -E (ottest-blockchain-regtest-)(basic|reorg|sync-client|restart|restart-end|restart-inloop|simple-transfer|round-robin-distribution-transactions|round-robin-recapture-transactions)
+          docker-image: <<pipeline.parameters.docker-image-ci>>
+          ctest-params: <<pipeline.parameters.ctest-config>> -E <<pipeline.parameters.ctest-disabled-tests>>
           matrix:
             parameters:
               compiler: [gcc, clang]
               flavor: [nopch, full]
-              #flavor: [test01, test02, test03, test04, test05, test06, test07, test08, nopch, full]
           requires:
             - build-linux-<<matrix.compiler>>-<<matrix.flavor>>
+  opentxs-ccov:
+    when: true
+    jobs:
+      - ccov-linux:
+          name: code-coverage-gcc-full-test
+          docker-image: <<pipeline.parameters.docker-image-ci>>
+          ctest-params: <<pipeline.parameters.ctest-config>> -E <<pipeline.parameters.ctest-disabled-tests-ccov>>
