@@ -208,6 +208,8 @@ public:
     // Verify whether the CURRENT date is WITHIN the VALID FROM / TO dates.
     auto VerifyCurrentDate(bool& bVerified) -> bool;
 
+    OTPayment() = delete;
+
     ~OTPayment() override;
 
 protected:
@@ -270,7 +272,5 @@ private:
 
     OTPayment(const api::Session& api);
     OTPayment(const api::Session& api, const String& strPayment);
-
-    OTPayment() = delete;
 };
 }  // namespace opentxs

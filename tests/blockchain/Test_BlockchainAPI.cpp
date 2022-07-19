@@ -184,10 +184,12 @@ public:
         const auto& api = ot::Context().StartClientSession(0);
 
         if (false == init_) {
-            reason_p_.reset(new ot::OTPasswordPrompt{
-                api.Factory().PasswordPrompt(__func__)});
-            invalid_nym_p_.reset(new ot::OTNymID{api.Factory().NymID("junk")});
-            nym_not_in_wallet_p_.reset(new ot::OTNymID{api.Factory().NymID(
+            reason_p_ = std::make_unique<ot::OTPasswordPrompt>(
+                ot::OTPasswordPrompt{api.Factory().PasswordPrompt(__func__)});
+            invalid_nym_p_ = std::make_unique<ot::OTNymID>(
+                ot::OTNymID{api.Factory().NymID("junk")});
+            nym_not_in_wallet_p_ = std::make_unique<
+                ot::OTNymID>(ot::OTNymID{api.Factory().NymID(
                 "ot2xuVYn8io5LpjK7itnUT7ujx8n5Rt3GKs5xXeh9nfZja2SwB5jEq6")});
             const_cast<ot::UnallocatedCString&>(fingerprint_a_) =
                 api.InternalClient().Exec().Wallet_ImportSeed(
@@ -204,52 +206,54 @@ public:
                     "predict cinnamon gauge spoon media food nurse improve "
                     "employ similar own kid genius seed ghost",
                     "");
-            alex_p_.reset(new ot::OTNymID{
+            alex_p_ = std::make_unique<ot::OTNymID>(
                 api.Wallet()
                     .Nym({fingerprint_a_, 0}, individual_, *reason_p_, "Alex")
-                    ->ID()});
-            bob_p_.reset(new ot::OTNymID{
+                    ->ID());
+            bob_p_ = std::make_unique<ot::OTNymID>(
                 api.Wallet()
                     .Nym({fingerprint_b_, 0}, individual_, *reason_p_, "Bob")
-                    ->ID()});
-            chris_p_.reset(new ot::OTNymID{
+                    ->ID());
+            chris_p_ = std::make_unique<ot::OTNymID>(
                 api.Wallet()
                     .Nym({fingerprint_c_, 0}, individual_, *reason_p_, "Chris")
-                    ->ID()});
-            daniel_p_.reset(new ot::OTNymID{
+                    ->ID());
+            daniel_p_ = std::make_unique<ot::OTNymID>(
                 api.Wallet()
                     .Nym({fingerprint_a_, 1}, individual_, *reason_p_, "Daniel")
-                    ->ID()});
+                    ->ID());
 
-            address_1_p_.reset(new ot::OTData{api.Factory().DataFromHex(
-                "0xf54a5851e9372b87810a8e60cdd2e7cfd80b6e31")});
-            empty_p_.reset(new ot::OTIdentifier{api.Factory().Identifier()});
-            contact_alex_p_.reset(
-                new ot::OTIdentifier{api.Contacts().ContactID(*alex_p_)});
-            contact_bob_p_.reset(
-                new ot::OTIdentifier{api.Contacts().ContactID(*bob_p_)});
-            contact_chris_p_.reset(
-                new ot::OTIdentifier{api.Contacts().ContactID(*chris_p_)});
-            contact_daniel_p_.reset(
-                new ot::OTIdentifier{api.Contacts().ContactID(*daniel_p_)});
-            account_1_id_p_.reset(
-                new ot::OTIdentifier{api.Factory().Identifier()});
-            account_2_id_p_.reset(
-                new ot::OTIdentifier{api.Factory().Identifier()});
-            account_3_id_p_.reset(
-                new ot::OTIdentifier{api.Factory().Identifier()});
-            account_4_id_p_.reset(
-                new ot::OTIdentifier{api.Factory().Identifier()});
-            account_5_id_p_.reset(
-                new ot::OTIdentifier{api.Factory().Identifier()});
-            account_6_id_p_.reset(
-                new ot::OTIdentifier{api.Factory().Identifier()});
-            account_7_id_p_.reset(
-                new ot::OTIdentifier{api.Factory().Identifier()});
-            account_8_id_p_.reset(
-                new ot::OTIdentifier{api.Factory().Identifier()});
-            account_9_id_p_.reset(
-                new ot::OTIdentifier{api.Factory().Identifier()});
+            address_1_p_ = std::make_unique<ot::OTData>(
+                ot::OTData{api.Factory().DataFromHex(
+                    "0xf54a5851e9372b87810a8e60cdd2e7cfd80b6e31")});
+            empty_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Factory().Identifier()});
+            contact_alex_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Contacts().ContactID(*alex_p_)});
+            contact_bob_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Contacts().ContactID(*bob_p_)});
+            contact_chris_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Contacts().ContactID(*chris_p_)});
+            contact_daniel_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Contacts().ContactID(*daniel_p_)});
+            account_1_id_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Factory().Identifier()});
+            account_2_id_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Factory().Identifier()});
+            account_3_id_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Factory().Identifier()});
+            account_4_id_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Factory().Identifier()});
+            account_5_id_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Factory().Identifier()});
+            account_6_id_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Factory().Identifier()});
+            account_7_id_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Factory().Identifier()});
+            account_8_id_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Factory().Identifier()});
+            account_9_id_p_ = std::make_unique<ot::OTIdentifier>(
+                ot::OTIdentifier{api.Factory().Identifier()});
             init_ = true;
         }
 

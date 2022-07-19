@@ -86,6 +86,12 @@ public:
 
     auto get() -> Socket& { return *this; }
 
+    Socket() = delete;
+    Socket(const Socket&) = delete;
+    Socket(Socket&&) = delete;
+    auto operator=(const Socket&) -> Socket& = delete;
+    auto operator=(Socket&&) -> Socket& = delete;
+
     ~Socket() override;
 
 protected:
@@ -146,11 +152,5 @@ protected:
 
 private:
     const socket::Type type_;
-
-    Socket() = delete;
-    Socket(const Socket&) = delete;
-    Socket(Socket&&) = delete;
-    auto operator=(const Socket&) -> Socket& = delete;
-    auto operator=(Socket&&) -> Socket& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

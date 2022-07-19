@@ -44,6 +44,11 @@ public:
 
     static auto Factory(ReceiveCallback callback) -> OTZMQPairEventCallback;
 
+    PairEventCallback(const PairEventCallback&) = delete;
+    PairEventCallback(PairEventCallback&&) = delete;
+    auto operator=(const PairEventCallback&) -> PairEventCallback& = delete;
+    auto operator=(PairEventCallback&&) -> PairEventCallback& = delete;
+
     ~PairEventCallback() override = default;
 
 protected:
@@ -55,10 +60,5 @@ private:
 #ifndef _WIN32
     auto clone() const -> PairEventCallback* override = 0;
 #endif
-
-    PairEventCallback(const PairEventCallback&) = delete;
-    PairEventCallback(PairEventCallback&&) = delete;
-    auto operator=(const PairEventCallback&) -> PairEventCallback& = delete;
-    auto operator=(PairEventCallback&&) -> PairEventCallback& = delete;
 };
 }  // namespace opentxs::network::zeromq

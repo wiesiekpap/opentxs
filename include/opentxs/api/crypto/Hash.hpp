@@ -107,15 +107,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto InternalHash() noexcept
         -> internal::Hash& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Hash() = default;
-
-protected:
-    Hash() noexcept = default;
-
-private:
     Hash(const Hash&) = delete;
     Hash(Hash&&) = delete;
     auto operator=(const Hash&) -> Hash& = delete;
     auto operator=(Hash&&) -> Hash& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Hash() = default;
+
+protected:
+    Hash() noexcept = default;
 };
 }  // namespace opentxs::api::crypto

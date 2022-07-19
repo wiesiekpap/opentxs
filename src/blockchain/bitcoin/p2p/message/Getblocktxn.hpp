@@ -66,6 +66,10 @@ public:
         std::unique_ptr<Header> header,
         const Data& block_hash,
         const UnallocatedVector<std::size_t>& txn_indices) noexcept(false);
+    Getblocktxn(const Getblocktxn&) = delete;
+    Getblocktxn(Getblocktxn&&) = delete;
+    auto operator=(const Getblocktxn&) -> Getblocktxn& = delete;
+    auto operator=(Getblocktxn&&) -> Getblocktxn& = delete;
 
     ~Getblocktxn() final = default;
 
@@ -75,10 +79,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Getblocktxn(const Getblocktxn&) = delete;
-    Getblocktxn(Getblocktxn&&) = delete;
-    auto operator=(const Getblocktxn&) -> Getblocktxn& = delete;
-    auto operator=(Getblocktxn&&) -> Getblocktxn& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

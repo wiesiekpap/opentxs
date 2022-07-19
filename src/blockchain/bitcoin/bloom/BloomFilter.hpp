@@ -67,6 +67,11 @@ public:
         const BloomUpdateFlag update,
         const std::size_t functionCount,
         const Data& data) noexcept;
+    BloomFilter() = delete;
+    BloomFilter(const BloomFilter& rhs) noexcept;
+    BloomFilter(BloomFilter&&) = delete;
+    auto operator=(const BloomFilter&) -> BloomFilter& = delete;
+    auto operator=(BloomFilter&&) -> BloomFilter& = delete;
 
     ~BloomFilter() final = default;
 
@@ -87,11 +92,5 @@ private:
     }
     auto hash(const Data& input, std::size_t hash_index) const noexcept
         -> std::uint32_t;
-
-    BloomFilter() = delete;
-    BloomFilter(const BloomFilter& rhs) noexcept;
-    BloomFilter(BloomFilter&&) = delete;
-    auto operator=(const BloomFilter&) -> BloomFilter& = delete;
-    auto operator=(BloomFilter&&) -> BloomFilter& = delete;
 };
 }  // namespace opentxs::blockchain::implementation

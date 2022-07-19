@@ -119,6 +119,11 @@ public:
         const opentxs::blockchain::Type currency) const -> OTIdentifier final;
 
     Contacts(const api::session::Client& api);
+    Contacts() = delete;
+    Contacts(const Contacts&) = delete;
+    Contacts(Contacts&&) = delete;
+    auto operator=(const Contacts&) -> Contacts& = delete;
+    auto operator=(Contacts&&) -> Contacts& = delete;
 
     ~Contacts() final;
 
@@ -198,11 +203,5 @@ private:
         const identifier::Nym& nymID,
         opentxs::Contact& contact,
         const bool replace = false) const;
-
-    Contacts() = delete;
-    Contacts(const Contacts&) = delete;
-    Contacts(Contacts&&) = delete;
-    auto operator=(const Contacts&) -> Contacts& = delete;
-    auto operator=(Contacts&&) -> Contacts& = delete;
 };
 }  // namespace opentxs::api::session::imp

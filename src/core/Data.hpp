@@ -37,29 +37,17 @@ public:
     {
         return reinterpret_cast<const std::byte&>(data_.at(position));
     }
-    auto begin() const -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto begin() const -> const_iterator final { return {this, 0}; }
     auto Bytes() const noexcept -> ReadView final
     {
         return ReadView{
             reinterpret_cast<const char*>(data_.data()), data_.size()};
     }
-    auto cbegin() const -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
-    auto cend() const -> const_iterator final
-    {
-        return const_iterator(this, data_.size());
-    }
+    auto cbegin() const -> const_iterator final { return {this, 0}; }
+    auto cend() const -> const_iterator final { return {this, data_.size()}; }
     auto empty() const -> bool final { return data_.empty(); }
     auto data() const -> const void* final { return data_.data(); }
-    auto end() const -> const_iterator final
-    {
-        return const_iterator(this, data_.size());
-    }
+    auto end() const -> const_iterator final { return {this, data_.size()}; }
     auto Extract(
         const std::size_t amount,
         opentxs::Data& output,
@@ -98,7 +86,7 @@ public:
     {
         return reinterpret_cast<std::byte&>(data_.at(position));
     }
-    auto begin() -> iterator final { return iterator(this, 0); }
+    auto begin() -> iterator final { return {this, 0}; }
     auto clear() noexcept -> void final { data_.clear(); }
     auto Concatenate(const ReadView data) noexcept -> bool final
     {
@@ -108,7 +96,7 @@ public:
         -> bool override;
     auto data() -> void* final { return data_.data(); }
     auto DecodeHex(const std::string_view hex) -> bool final;
-    auto end() -> iterator final { return iterator(this, data_.size()); }
+    auto end() -> iterator final { return {this, data_.size()}; }
     auto operator+=(const opentxs::Data& rhs) noexcept(false) -> Data& final;
     auto operator+=(const ReadView rhs) noexcept(false) -> Data& final;
     auto operator+=(const std::uint8_t rhs) noexcept(false) -> Data& final;
@@ -122,6 +110,11 @@ public:
     auto str(alloc::Resource* alloc) const -> CString override;
     auto WriteInto() noexcept -> AllocateOutput final;
     auto zeroMemory() -> void final;
+
+    Data(const Data& rhs) = delete;
+    Data(Data&& rhs) = delete;
+    auto operator=(const Data& rhs) -> Data& = delete;
+    auto operator=(Data&& rhs) -> Data& = delete;
 
     ~Data() override = default;
 
@@ -146,10 +139,5 @@ private:
         -> bool;
     auto concatenate(const Vector& data) -> void;
     auto spaceship(const opentxs::Data& rhs) const noexcept -> int;
-
-    Data(const Data& rhs) = delete;
-    Data(Data&& rhs) = delete;
-    auto operator=(const Data& rhs) -> Data& = delete;
-    auto operator=(Data&& rhs) -> Data& = delete;
 };
 }  // namespace opentxs::implementation

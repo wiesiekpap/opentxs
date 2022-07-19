@@ -40,6 +40,11 @@ class Push final : public Sender<zeromq::socket::Push>,
 {
 public:
     Push(const zeromq::Context& context, const Direction direction) noexcept;
+    Push() = delete;
+    Push(const Push&) = delete;
+    Push(Push&&) = delete;
+    auto operator=(const Push&) -> Push& = delete;
+    auto operator=(Push&&) -> Push& = delete;
 
     ~Push() final;
 
@@ -48,11 +53,5 @@ private:
     {
         return new Push(context_, direction_);
     }
-
-    Push() = delete;
-    Push(const Push&) = delete;
-    Push(Push&&) = delete;
-    auto operator=(const Push&) -> Push& = delete;
-    auto operator=(Push&&) -> Push& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

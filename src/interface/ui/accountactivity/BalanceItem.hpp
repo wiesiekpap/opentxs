@@ -91,6 +91,11 @@ public:
         return type_;
     }
 
+    BalanceItem(const BalanceItem&) = delete;
+    BalanceItem(BalanceItem&&) = delete;
+    auto operator=(const BalanceItem&) -> BalanceItem& = delete;
+    auto operator=(BalanceItem&&) -> BalanceItem& = delete;
+
     ~BalanceItem() override;
 
 protected:
@@ -132,11 +137,6 @@ private:
     virtual auto effective_amount() const noexcept -> opentxs::Amount = 0;
     auto qt_data(const int column, const int role, QVariant& out) const noexcept
         -> void final;
-
-    BalanceItem(const BalanceItem&) = delete;
-    BalanceItem(BalanceItem&&) = delete;
-    auto operator=(const BalanceItem&) -> BalanceItem& = delete;
-    auto operator=(BalanceItem&&) -> BalanceItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

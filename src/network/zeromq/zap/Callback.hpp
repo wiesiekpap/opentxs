@@ -46,6 +46,11 @@ public:
         const ReceiveCallback& callback) const -> bool final;
     auto SetPolicy(const Policy policy) const -> bool final;
 
+    Callback(const Callback&) = delete;
+    Callback(Callback&&) = delete;
+    auto operator=(const Callback&) -> Callback& = delete;
+    auto operator=(Callback&&) -> Callback& = delete;
+
     ~Callback() final = default;
 
 private:
@@ -61,9 +66,5 @@ private:
     auto get_domain(const ReadView domain) const -> const Lambda&;
 
     Callback();
-    Callback(const Callback&) = delete;
-    Callback(Callback&&) = delete;
-    auto operator=(const Callback&) -> Callback& = delete;
-    auto operator=(Callback&&) -> Callback& = delete;
 };
 }  // namespace opentxs::network::zeromq::zap::implementation

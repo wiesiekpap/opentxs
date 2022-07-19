@@ -58,6 +58,10 @@ public:
         -> bool;
 
     Proposal(const storage::lmdb::LMDB& lmdb) noexcept;
+    Proposal() = delete;
+    Proposal(const Proposal&) = delete;
+    auto operator=(const Proposal&) -> Proposal& = delete;
+    auto operator=(Proposal&&) -> Proposal& = delete;
 
     ~Proposal();
 
@@ -65,10 +69,5 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    Proposal() = delete;
-    Proposal(const Proposal&) = delete;
-    auto operator=(const Proposal&) -> Proposal& = delete;
-    auto operator=(Proposal&&) -> Proposal& = delete;
 };
 }  // namespace opentxs::blockchain::database::wallet

@@ -67,6 +67,12 @@ public:
         const proto::PaymentWorkflow& data,
         UnallocatedCString& plaintext) -> bool;
 
+    PaymentWorkflows() = delete;
+    PaymentWorkflows(const PaymentWorkflows&) = delete;
+    PaymentWorkflows(PaymentWorkflows&&) = delete;
+    auto operator=(const PaymentWorkflows&) -> PaymentWorkflows = delete;
+    auto operator=(PaymentWorkflows&&) -> PaymentWorkflows = delete;
+
     ~PaymentWorkflows() final = default;
 
 private:
@@ -104,10 +110,5 @@ private:
         otx::client::PaymentWorkflowState& state);
 
     PaymentWorkflows(const Driver& storage, const UnallocatedCString& key);
-    PaymentWorkflows() = delete;
-    PaymentWorkflows(const PaymentWorkflows&) = delete;
-    PaymentWorkflows(PaymentWorkflows&&) = delete;
-    auto operator=(const PaymentWorkflows&) -> PaymentWorkflows = delete;
-    auto operator=(PaymentWorkflows&&) -> PaymentWorkflows = delete;
 };
 }  // namespace opentxs::storage

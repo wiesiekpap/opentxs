@@ -42,6 +42,11 @@ public:
         const zeromq::Context& context,
         const Callback& callback) -> OTZMQZAPHandler;
 
+    Handler(const Handler&) = delete;
+    Handler(Handler&&) = delete;
+    auto operator=(const Handler&) -> Handler& = delete;
+    auto operator=(Handler&&) -> Handler& = delete;
+
     ~Handler() override = default;
 
 protected:
@@ -53,10 +58,5 @@ private:
 #ifndef _WIN32
     auto clone() const noexcept -> Handler* override = 0;
 #endif
-
-    Handler(const Handler&) = delete;
-    Handler(Handler&&) = delete;
-    auto operator=(const Handler&) -> Handler& = delete;
-    auto operator=(Handler&&) -> Handler& = delete;
 };
 }  // namespace opentxs::network::zeromq::zap

@@ -57,6 +57,11 @@ public:
     }
     auto Start() noexcept { enabled_ = true; }
 
+    Manager(const Manager& rhs) = delete;
+    Manager(Manager&& rhs) = delete;
+    auto operator=(const Manager& rhs) -> Manager& = delete;
+    auto operator=(Manager&& rhs) -> Manager& = delete;
+
 protected:
     using DownloadedData = typename BatchType::Vector;
     using TaskType = typename BatchType::TaskType;
@@ -458,10 +463,5 @@ private:
         dm_done_ = std::move(pos);
         dm_previous_ = std::move(data);
     }
-
-    Manager(const Manager& rhs) = delete;
-    Manager(Manager&& rhs) = delete;
-    auto operator=(const Manager& rhs) -> Manager& = delete;
-    auto operator=(Manager&& rhs) -> Manager& = delete;
 };
 }  // namespace opentxs::blockchain::download

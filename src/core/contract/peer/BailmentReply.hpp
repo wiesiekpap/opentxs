@@ -42,6 +42,11 @@ class Bailment final : public reply::Bailment,
                        public peer::implementation::Reply
 {
 public:
+    auto asBailment() const noexcept -> const reply::Bailment& final
+    {
+        return *this;
+    }
+
     Bailment(
         const api::Session& api,
         const Nym_p& nym,
@@ -55,11 +60,11 @@ public:
         const UnallocatedCString& terms);
 
     ~Bailment() final = default;
-
-    auto asBailment() const noexcept -> const reply::Bailment& final
-    {
-        return *this;
-    }
+    Bailment() = delete;
+    Bailment(const Bailment&);
+    Bailment(Bailment&&) = delete;
+    auto operator=(const Bailment&) -> Bailment& = delete;
+    auto operator=(Bailment&&) -> Bailment& = delete;
 
 private:
     friend opentxs::Factory;
@@ -71,11 +76,5 @@ private:
         return new Bailment(*this);
     }
     auto IDVersion(const Lock& lock) const -> SerializedType final;
-
-    Bailment() = delete;
-    Bailment(const Bailment&);
-    Bailment(Bailment&&) = delete;
-    auto operator=(const Bailment&) -> Bailment& = delete;
-    auto operator=(Bailment&&) -> Bailment& = delete;
 };
 }  // namespace opentxs::contract::peer::reply::implementation

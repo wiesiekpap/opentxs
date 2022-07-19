@@ -108,6 +108,12 @@ public:
         const ContactRowID& rowID,
         const ContactSortKey& key,
         CustomData& custom) noexcept;
+    ContactSection() = delete;
+    ContactSection(const ContactSection&) = delete;
+    ContactSection(ContactSection&&) = delete;
+    auto operator=(const ContactSection&) -> ContactSection& = delete;
+    auto operator=(ContactSection&&) -> ContactSection& = delete;
+
     ~ContactSection() final = default;
 
 private:
@@ -138,12 +144,6 @@ private:
         const implementation::ContactSortKey& key,
         implementation::CustomData& custom) noexcept -> bool final;
     auto startup(const identity::wot::claim::Section section) noexcept -> void;
-
-    ContactSection() = delete;
-    ContactSection(const ContactSection&) = delete;
-    ContactSection(ContactSection&&) = delete;
-    auto operator=(const ContactSection&) -> ContactSection& = delete;
-    auto operator=(ContactSection&&) -> ContactSection& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

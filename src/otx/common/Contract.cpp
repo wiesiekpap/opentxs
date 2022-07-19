@@ -8,8 +8,8 @@
 #include "internal/otx/common/Contract.hpp"  // IWYU pragma: associated
 
 #include <irrxml/irrXML.hpp>
+#include <array>
 #include <cstdint>
-#include <cstring>
 #include <fstream>  // IWYU pragma: keep
 #include <memory>
 #include <utility>
@@ -956,7 +956,8 @@ auto Contract::LoadContractFromString(const String& theStr) -> bool
 
 auto Contract::ParseRawFile() -> bool
 {
-    char buffer1[2100];  // a bit bigger than 2048, just for safety reasons.
+    auto buffer1 = std::array<char, 2100>{};  // a bit bigger than 2048, just
+                                              // for safety reasons.
     Signature* pSig{nullptr};
     UnallocatedCString line;
     bool bSignatureMode = false;           // "currently in signature mode"
@@ -982,16 +983,10 @@ auto Contract::ParseRawFile() -> bool
     m_strRawFile->reset();
 
     do {
-        // Just a fresh start at the top of the loop block... probably
-        // unnecessary.
-        memset(buffer1, 0, 2100);  // todo remove this in optimization. (might
-                                   // be removed already...)
-
         // the call returns true if there's more to read, and false if there
         // isn't.
-        bIsEOF = !(m_strRawFile->sgets(buffer1, 2048));
-
-        line = buffer1;
+        bIsEOF = !(m_strRawFile->sgets(buffer1.data(), 2048));
+        line = buffer1.data();
 
         if (line.length() < 2) {
             if (bSignatureMode) continue;
@@ -1068,7 +1063,8 @@ auto Contract::ParseRawFile() -> bool
                         LogDebug()(OT_PRETTY_CLASS())("Skipping short line...")
                             .Flush();
 
-                        if (bIsEOF || !m_strRawFile->sgets(buffer1, 2048)) {
+                        if (bIsEOF ||
+                            !m_strRawFile->sgets(buffer1.data(), 2048)) {
                             LogConsole()(OT_PRETTY_CLASS())(
                                 "Error in signature for "
                                 "contract ")(m_strFilename)(": Unexpected EOF "
@@ -1083,7 +1079,8 @@ auto Contract::ParseRawFile() -> bool
                             "Skipping version section...")
                             .Flush();
 
-                        if (bIsEOF || !m_strRawFile->sgets(buffer1, 2048)) {
+                        if (bIsEOF ||
+                            !m_strRawFile->sgets(buffer1.data(), 2048)) {
                             LogConsole()(OT_PRETTY_CLASS())(
                                 "Error in signature for "
                                 "contract ")(m_strFilename)(": Unexpected EOF "
@@ -1098,7 +1095,8 @@ auto Contract::ParseRawFile() -> bool
                             "Skipping comment section..")
                             .Flush();
 
-                        if (bIsEOF || !m_strRawFile->sgets(buffer1, 2048)) {
+                        if (bIsEOF ||
+                            !m_strRawFile->sgets(buffer1.data(), 2048)) {
                             LogConsole()(OT_PRETTY_CLASS())(
                                 "Error in signature for "
                                 "contract ")(m_strFilename)(": Unexpected EOF "
@@ -1159,7 +1157,8 @@ auto Contract::ParseRawFile() -> bool
                             return false;
                         }
 
-                        if (bIsEOF || !m_strRawFile->sgets(buffer1, 2048)) {
+                        if (bIsEOF ||
+                            !m_strRawFile->sgets(buffer1.data(), 2048)) {
                             LogConsole()(OT_PRETTY_CLASS())(
                                 "Error in signature for "
                                 "contract ")(m_strFilename)(": Unexpected EOF "
@@ -1186,7 +1185,8 @@ auto Contract::ParseRawFile() -> bool
                             crypto::HashingProvider::StringToHashType(
                                 strHashType);
 
-                        if (bIsEOF || !m_strRawFile->sgets(buffer1, 2048)) {
+                        if (bIsEOF ||
+                            !m_strRawFile->sgets(buffer1.data(), 2048)) {
                             LogConsole()(OT_PRETTY_CLASS())(
                                 "Error in contract ")(m_strFilename)(": "
                                                                      "Unexpec"

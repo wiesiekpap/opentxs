@@ -45,7 +45,7 @@ namespace opentxs::network::zeromq::zap::implementation
 {
 Callback::Callback()
     : default_callback_(
-          std::bind(&Callback::default_callback, this, std::placeholders::_1))
+          [this](const auto& PH1) { return default_callback(PH1); })
     , domains_()
     , domain_lock_()
     , policy_(Policy::Accept)

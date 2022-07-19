@@ -80,6 +80,11 @@ struct Acceptor::Imp {
         acceptor_.bind(endpoint_.GetInternal().data_);
         acceptor_.listen(backlog_size_);
     }
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() { Stop(); }
 
@@ -138,12 +143,6 @@ private:
             next_socket_, [this](const auto& ec) { handler(ec); });
         running_ = true;
     }
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 
 Acceptor::Acceptor(

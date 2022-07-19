@@ -89,6 +89,10 @@ struct Outstanding::Imp {
         , position_(position)
     {
     }
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp();
 
@@ -107,11 +111,6 @@ private:
     auto limited() const noexcept -> bool { return limited(value()); }
     auto limited(int count) const noexcept -> bool { return count >= limit_; }
     auto value() const noexcept -> int { return position_->second; }
-
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 
 struct JobCounter::Imp {
@@ -137,6 +136,10 @@ struct JobCounter::Imp {
         , map_()
     {
     }
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() = default;
 
@@ -144,11 +147,6 @@ private:
     mutable std::mutex lock_;
     int counter_;
     OutstandingMap map_;
-
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 
 JobCounter::JobCounter() noexcept

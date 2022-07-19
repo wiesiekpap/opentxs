@@ -52,15 +52,14 @@ public:
         const ReadView identity,
         const ReadView version) noexcept;
     Imp(const Imp& rhs) noexcept;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() final = default;
 
 private:
     static auto mechanism_to_string(const zap::Mechanism in)
         -> UnallocatedCString;
-
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs::network::zeromq::zap

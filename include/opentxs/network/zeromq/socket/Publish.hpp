@@ -38,6 +38,11 @@ class OPENTXS_EXPORT Publish : virtual public curve::Server,
                                virtual public Sender
 {
 public:
+    Publish(const Publish&) = delete;
+    Publish(Publish&&) = delete;
+    auto operator=(const Publish&) -> Publish& = delete;
+    auto operator=(Publish&&) -> Publish& = delete;
+
     ~Publish() override = default;
 
 protected:
@@ -47,10 +52,5 @@ private:
     friend OTZMQPublishSocket;
 
     virtual auto clone() const noexcept -> Publish* = 0;
-
-    Publish(const Publish&) = delete;
-    Publish(Publish&&) = delete;
-    auto operator=(const Publish&) -> Publish& = delete;
-    auto operator=(Publish&&) -> Publish& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket

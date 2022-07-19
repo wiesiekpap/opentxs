@@ -18,15 +18,14 @@ public:
     virtual auto Last() const noexcept -> bool = 0;
     virtual auto Valid() const noexcept -> bool = 0;
 
-    ~ListRow() override = default;
-
-protected:
-    ListRow() noexcept = default;
-
-private:
     ListRow(const ListRow&) = delete;
     ListRow(ListRow&&) = delete;
     auto operator=(const ListRow&) -> ListRow& = delete;
     auto operator=(ListRow&&) -> ListRow& = delete;
+
+    ~ListRow() override = default;
+
+protected:
+    ListRow() noexcept = default;
 };
 }  // namespace opentxs::ui

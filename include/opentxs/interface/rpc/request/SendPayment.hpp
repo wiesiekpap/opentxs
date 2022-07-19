@@ -74,13 +74,11 @@ public:
     OPENTXS_NO_EXPORT SendPayment(const proto::RPCCommand& serialized) noexcept(
         false);
     SendPayment() noexcept;
-
-    ~SendPayment() final;
-
-private:
     SendPayment(const SendPayment&) = delete;
     SendPayment(SendPayment&&) = delete;
     auto operator=(const SendPayment&) -> SendPayment& = delete;
     auto operator=(SendPayment&&) -> SendPayment& = delete;
+
+    ~SendPayment() final;
 };
 }  // namespace opentxs::rpc::request

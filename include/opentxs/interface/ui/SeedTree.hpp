@@ -52,15 +52,14 @@ public:
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<SeedTreeItem> = 0;
 
-    ~SeedTree() override = default;
-
-protected:
-    SeedTree() noexcept = default;
-
-private:
     SeedTree(const SeedTree&) = delete;
     SeedTree(SeedTree&&) = delete;
     auto operator=(const SeedTree&) -> SeedTree& = delete;
     auto operator=(SeedTree&&) -> SeedTree& = delete;
+
+    ~SeedTree() override = default;
+
+protected:
+    SeedTree() noexcept = default;
 };
 }  // namespace opentxs::ui

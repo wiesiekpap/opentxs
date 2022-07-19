@@ -220,6 +220,12 @@ public:
                    // serialization, this is where the
                    // ledger saves its contents
 
+    OTTrade() = delete;
+    OTTrade(const OTTrade&) = delete;
+    OTTrade(OTTrade&&) = delete;
+    auto operator=(const OTTrade&) -> OTTrade& = delete;
+    auto operator=(OTTrade&&) -> OTTrade& = delete;
+
     ~OTTrade() override;
 
 protected:
@@ -270,11 +276,5 @@ private:
         const identifier::Nym& nymID,
         const identifier::UnitDefinition& currencyId,
         const Identifier& currencyAcctId);
-    OTTrade(const OTTrade&) = delete;
-    OTTrade(OTTrade&&) = delete;
-    auto operator=(const OTTrade&) -> OTTrade& = delete;
-    auto operator=(OTTrade&&) -> OTTrade& = delete;
-
-    OTTrade() = delete;
 };
 }  // namespace opentxs

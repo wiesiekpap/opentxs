@@ -86,6 +86,11 @@ public:
         const IssuerItemRowID& rowID,
         const IssuerItemSortKey& sortKey,
         CustomData& custom) noexcept;
+    AccountSummaryItem() = delete;
+    AccountSummaryItem(const AccountSummaryItem&) = delete;
+    AccountSummaryItem(AccountSummaryItem&&) = delete;
+    auto operator=(const AccountSummaryItem&) -> AccountSummaryItem& = delete;
+    auto operator=(AccountSummaryItem&&) -> AccountSummaryItem& = delete;
 
     ~AccountSummaryItem() final = default;
 
@@ -104,12 +109,6 @@ private:
 
     auto reindex(const IssuerItemSortKey& key, CustomData& custom) noexcept
         -> bool final;
-
-    AccountSummaryItem() = delete;
-    AccountSummaryItem(const AccountSummaryItem&) = delete;
-    AccountSummaryItem(AccountSummaryItem&&) = delete;
-    auto operator=(const AccountSummaryItem&) -> AccountSummaryItem& = delete;
-    auto operator=(AccountSummaryItem&&) -> AccountSummaryItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

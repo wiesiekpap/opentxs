@@ -42,6 +42,10 @@ public:
     auto operator=(const opentxs::String& rhs) -> StringXML& final;
     auto operator=(const opentxs::StringXML& rhs) -> StringXML& final;
 
+    StringXML(StringXML&&) = delete;
+    auto operator=(const StringXML&) -> StringXML& = delete;
+    auto operator=(StringXML&&) -> StringXML& = delete;
+
     ~StringXML() final;
 
 private:
@@ -54,8 +58,5 @@ private:
     StringXML(const opentxs::String& value);
     StringXML();
     StringXML(const StringXML& value);
-    StringXML(StringXML&&) = delete;
-    auto operator=(const StringXML&) -> StringXML& = delete;
-    auto operator=(StringXML&&) -> StringXML& = delete;
 };
 }  // namespace opentxs::implementation

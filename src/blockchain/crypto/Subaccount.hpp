@@ -143,6 +143,12 @@ public:
     auto UpdateElement(UnallocatedVector<ReadView>& pubkeyHashes) const noexcept
         -> void final;
 
+    Subaccount() = delete;
+    Subaccount(const Subaccount&) = delete;
+    Subaccount(Subaccount&&) = delete;
+    auto operator=(const Subaccount&) -> Subaccount& = delete;
+    auto operator=(Subaccount&&) -> Subaccount& = delete;
+
     ~Subaccount() override = default;
 
 protected:
@@ -258,10 +264,5 @@ private:
         const UnallocatedVector<Activity>& unspent,
         const UnallocatedVector<Activity>& spent,
         Identifier& out) noexcept;
-    Subaccount() = delete;
-    Subaccount(const Subaccount&) = delete;
-    Subaccount(Subaccount&&) = delete;
-    auto operator=(const Subaccount&) -> Subaccount& = delete;
-    auto operator=(Subaccount&&) -> Subaccount& = delete;
 };
 }  // namespace opentxs::blockchain::crypto::implementation

@@ -51,15 +51,14 @@ public:
         Secret& seed,
         const Secret& passphrase) const noexcept -> bool = 0;
 
-    virtual ~Bip39() = default;
-
-protected:
-    Bip39() = default;
-
-private:
     Bip39(const Bip39&) = delete;
     Bip39(Bip39&&) = delete;
     auto operator=(const Bip39&) -> Bip39& = delete;
     auto operator=(Bip39&&) -> Bip39& = delete;
+
+    virtual ~Bip39() = default;
+
+protected:
+    Bip39() = default;
 };
 }  // namespace opentxs::crypto

@@ -105,6 +105,11 @@ public:
         -> std::unique_ptr<response::Base> final;
 
     RPC(const api::Context& native);
+    RPC() = delete;
+    RPC(const RPC&) = delete;
+    RPC(RPC&&) = delete;
+    auto operator=(const RPC&) -> RPC& = delete;
+    auto operator=(RPC&&) -> RPC& = delete;
 
     ~RPC() final;
 
@@ -319,11 +324,5 @@ private:
         -> ResponseCode;
 
     void task_handler(const zmq::Message& message);
-
-    RPC() = delete;
-    RPC(const RPC&) = delete;
-    RPC(RPC&&) = delete;
-    auto operator=(const RPC&) -> RPC& = delete;
-    auto operator=(RPC&&) -> RPC& = delete;
 };
 }  // namespace opentxs::rpc::implementation

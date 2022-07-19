@@ -39,27 +39,6 @@ namespace opentxs::storage
 {
 class Seeds final : public Node
 {
-private:
-    friend Tree;
-
-    static constexpr auto current_version_ = VersionNumber{2};
-
-    UnallocatedCString default_seed_;
-
-    auto init(const UnallocatedCString& hash) -> void final;
-    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
-    auto set_default(
-        const std::unique_lock<std::mutex>& lock,
-        const UnallocatedCString& id) -> void;
-    auto serialize() const -> proto::StorageSeeds;
-
-    Seeds(const Driver& storage, const UnallocatedCString& hash);
-    Seeds() = delete;
-    Seeds(const Seeds&) = delete;
-    Seeds(Seeds&&) = delete;
-    auto operator=(const Seeds&) -> Seeds = delete;
-    auto operator=(Seeds&&) -> Seeds = delete;
-
 public:
     auto Alias(const UnallocatedCString& id) const -> UnallocatedCString;
     auto Default() const -> UnallocatedCString;
@@ -75,6 +54,28 @@ public:
     auto SetDefault(const UnallocatedCString& id) -> bool;
     auto Store(const proto::Seed& data) -> bool;
 
+    Seeds() = delete;
+    Seeds(const Seeds&) = delete;
+    Seeds(Seeds&&) = delete;
+    auto operator=(const Seeds&) -> Seeds = delete;
+    auto operator=(Seeds&&) -> Seeds = delete;
+
     ~Seeds() final = default;
+
+private:
+    friend Tree;
+
+    static constexpr auto current_version_ = VersionNumber{2};
+
+    UnallocatedCString default_seed_;
+
+    auto init(const UnallocatedCString& hash) -> void final;
+    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
+    auto set_default(
+        const std::unique_lock<std::mutex>& lock,
+        const UnallocatedCString& id) -> void;
+    auto serialize() const -> proto::StorageSeeds;
+
+    Seeds(const Driver& storage, const UnallocatedCString& hash);
 };
 }  // namespace opentxs::storage

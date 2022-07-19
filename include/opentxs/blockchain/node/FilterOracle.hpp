@@ -55,15 +55,14 @@ public:
         const cfilter::Type type,
         const block::Hash& block) const noexcept -> cfilter::Header = 0;
 
-    virtual ~FilterOracle() = default;
-
-protected:
-    FilterOracle() noexcept = default;
-
-private:
     FilterOracle(const FilterOracle&) = delete;
     FilterOracle(FilterOracle&&) = delete;
     auto operator=(const FilterOracle&) -> FilterOracle& = delete;
     auto operator=(FilterOracle&&) -> FilterOracle& = delete;
+
+    virtual ~FilterOracle() = default;
+
+protected:
+    FilterOracle() noexcept = default;
 };
 }  // namespace opentxs::blockchain::node

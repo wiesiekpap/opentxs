@@ -117,6 +117,11 @@ public:
         const Vector<SocketData>& extra,
         const std::optional<zeromq::BatchID>& preallocated,
         allocator_type pmr) noexcept;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() final;
 
@@ -154,11 +159,5 @@ private:
         const std::string_view endpoint,
         std::function<Message(bool)> notify = {}) const noexcept
         -> std::pair<bool, std::future<bool>>;
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs::network::zeromq

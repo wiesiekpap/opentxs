@@ -150,6 +150,8 @@ public:
         stashTransNum_ = transNum;
     }
 
+    Account() = delete;
+
     ~Account() override;
 
 private:
@@ -244,6 +246,5 @@ private:
         const identifier::Nym& nymID,
         const identifier::Notary& notaryID);
     Account(const api::Session& api);
-    Account() = delete;
 };
 }  // namespace opentxs

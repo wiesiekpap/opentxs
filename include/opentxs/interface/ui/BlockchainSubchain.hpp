@@ -23,15 +23,14 @@ public:
     virtual auto Progress() const noexcept -> UnallocatedCString = 0;
     virtual auto Type() const noexcept -> blockchain::crypto::Subchain = 0;
 
-    ~BlockchainSubchain() override = default;
-
-protected:
-    BlockchainSubchain() noexcept = default;
-
-private:
     BlockchainSubchain(const BlockchainSubchain&) = delete;
     BlockchainSubchain(BlockchainSubchain&&) = delete;
     auto operator=(const BlockchainSubchain&) -> BlockchainSubchain& = delete;
     auto operator=(BlockchainSubchain&&) -> BlockchainSubchain& = delete;
+
+    ~BlockchainSubchain() override = default;
+
+protected:
+    BlockchainSubchain() noexcept = default;
 };
 }  // namespace opentxs::ui

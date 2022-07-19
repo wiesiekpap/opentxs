@@ -107,6 +107,11 @@ public:
     void Init() final;
 
     Secp256k1(const api::Crypto& crypto, const api::crypto::Util& ssl) noexcept;
+    Secp256k1() = delete;
+    Secp256k1(const Secp256k1&) = delete;
+    Secp256k1(Secp256k1&&) = delete;
+    auto operator=(const Secp256k1&) -> Secp256k1& = delete;
+    auto operator=(Secp256k1&&) -> Secp256k1& = delete;
 
     ~Secp256k1() final;
 
@@ -126,11 +131,5 @@ private:
         -> ::secp256k1_pubkey;
     auto parsed_signature(const ReadView bytes) const noexcept(false)
         -> ::secp256k1_ecdsa_signature;
-
-    Secp256k1() = delete;
-    Secp256k1(const Secp256k1&) = delete;
-    Secp256k1(Secp256k1&&) = delete;
-    auto operator=(const Secp256k1&) -> Secp256k1& = delete;
-    auto operator=(Secp256k1&&) -> Secp256k1& = delete;
 };
 }  // namespace opentxs::crypto::implementation

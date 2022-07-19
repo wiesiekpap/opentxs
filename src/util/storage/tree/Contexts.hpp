@@ -29,20 +29,6 @@ class Nym;
 
 class Contexts final : public Node
 {
-private:
-    friend Nym;
-
-    void init(const UnallocatedCString& hash) final;
-    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
-    auto serialize() const -> proto::StorageNymList;
-
-    Contexts(const Driver& storage, const UnallocatedCString& hash);
-    Contexts() = delete;
-    Contexts(const Contexts&) = delete;
-    Contexts(Contexts&&) = delete;
-    auto operator=(const Contexts&) -> Contexts = delete;
-    auto operator=(Contexts&&) -> Contexts = delete;
-
 public:
     auto Load(
         const UnallocatedCString& id,
@@ -54,7 +40,22 @@ public:
     auto Store(const proto::Context& data, const UnallocatedCString& alias)
         -> bool;
 
+    Contexts() = delete;
+    Contexts(const Contexts&) = delete;
+    Contexts(Contexts&&) = delete;
+    auto operator=(const Contexts&) -> Contexts = delete;
+    auto operator=(Contexts&&) -> Contexts = delete;
+
     ~Contexts() final = default;
+
+private:
+    friend Nym;
+
+    void init(const UnallocatedCString& hash) final;
+    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
+    auto serialize() const -> proto::StorageNymList;
+
+    Contexts(const Driver& storage, const UnallocatedCString& hash);
 };
 }  // namespace storage
 }  // namespace opentxs

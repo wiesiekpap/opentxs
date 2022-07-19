@@ -68,15 +68,14 @@ public:
         -> internal::Wallet& = 0;
     virtual auto Parent() const noexcept -> const api::crypto::Blockchain& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Wallet() = default;
-
-protected:
-    Wallet() noexcept = default;
-
-private:
     Wallet(const Wallet&) = delete;
     Wallet(Wallet&&) = delete;
     auto operator=(const Wallet&) -> Wallet& = delete;
     auto operator=(Wallet&&) -> Wallet& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Wallet() = default;
+
+protected:
+    Wallet() noexcept = default;
 };
 }  // namespace opentxs::blockchain::crypto

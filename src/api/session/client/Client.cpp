@@ -8,7 +8,6 @@
 #include "api/session/client/Client.hpp"  // IWYU pragma: associated
 
 #include <exception>
-#include <functional>
 #include <memory>
 #include <mutex>
 #include <utility>
@@ -133,21 +132,21 @@ Client::Client(
           *contacts_,
           *workflow_,
           *zeromq_,
-          std::bind(&Client::get_lock, this, std::placeholders::_1)))
+          [this](const auto& id) -> auto& { return get_lock(id); }))
     , otapi_exec_(new OTAPI_Exec(
           *this,
           *activity_,
           *contacts_,
           *zeromq_,
           *ot_api_,
-          std::bind(&Client::get_lock, this, std::placeholders::_1)))
+          [this](const auto& id) -> auto& { return get_lock(id); }))
     , server_action_(factory::ServerAction(
           *this,
-          std::bind(&Client::get_lock, this, std::placeholders::_1)))
+          [this](const auto& id) -> auto& { return get_lock(id); }))
     , otx_(factory::OTX(
           running_,
           *this,
-          std::bind(&Client::get_lock, this, std::placeholders::_1)))
+          [this](const auto& id) -> auto& { return get_lock(id); }))
     , pair_(factory::PairAPI(running_, *this))
     , ui_(factory::UI(*this, *blockchain_, running_))
     , map_lock_()

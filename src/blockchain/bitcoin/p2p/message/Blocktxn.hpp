@@ -53,6 +53,10 @@ public:
         const api::Session& api,
         std::unique_ptr<Header> header,
         const Data& raw_Blocktxn) noexcept;
+    Blocktxn(const Blocktxn&) = delete;
+    Blocktxn(Blocktxn&&) = delete;
+    auto operator=(const Blocktxn&) -> Blocktxn& = delete;
+    auto operator=(Blocktxn&&) -> Blocktxn& = delete;
 
     ~Blocktxn() final = default;
 
@@ -61,10 +65,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Blocktxn(const Blocktxn&) = delete;
-    Blocktxn(Blocktxn&&) = delete;
-    auto operator=(const Blocktxn&) -> Blocktxn& = delete;
-    auto operator=(Blocktxn&&) -> Blocktxn& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

@@ -39,6 +39,12 @@ namespace opentxs::network::zeromq::implementation
 class Proxy final : virtual public network::zeromq::Proxy
 {
 public:
+    Proxy() = delete;
+    Proxy(const Proxy&) = delete;
+    Proxy(Proxy&&) = delete;
+    auto operator=(const Proxy&) -> Proxy& = delete;
+    auto operator=(Proxy&&) -> Proxy& = delete;
+
     ~Proxy() final;
 
 private:
@@ -59,10 +65,5 @@ private:
         const zeromq::Context& context,
         zeromq::socket::Socket& frontend,
         zeromq::socket::Socket& backend);
-    Proxy() = delete;
-    Proxy(const Proxy&) = delete;
-    Proxy(Proxy&&) = delete;
-    auto operator=(const Proxy&) -> Proxy& = delete;
-    auto operator=(Proxy&&) -> Proxy& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

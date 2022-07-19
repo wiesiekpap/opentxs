@@ -83,6 +83,11 @@ public:
         database::Wallet& db,
         const network::zeromq::socket::Publish& socket,
         const Type chain) noexcept;
+    Mempool() = delete;
+    Mempool(const Mempool&) = delete;
+    Mempool(Mempool&&) = delete;
+    auto operator=(const Mempool&) -> Mempool& = delete;
+    auto operator=(Mempool&&) -> Mempool& = delete;
 
     ~Mempool() final;
 
@@ -90,11 +95,5 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    Mempool() = delete;
-    Mempool(const Mempool&) = delete;
-    Mempool(Mempool&&) = delete;
-    auto operator=(const Mempool&) -> Mempool& = delete;
-    auto operator=(Mempool&&) -> Mempool& = delete;
 };
 }  // namespace opentxs::blockchain::node

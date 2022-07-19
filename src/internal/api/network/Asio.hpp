@@ -72,15 +72,14 @@ public:
         const std::size_t bytes,
         Socket& socket) noexcept -> bool = 0;
 
+    Asio(const Asio&) = delete;
+    Asio(Asio&&) = delete;
+    auto operator=(const Asio&) -> Asio& = delete;
+    auto operator=(Asio&&) -> Asio& = delete;
+
     virtual ~Asio() = default;
 
 protected:
     Asio() = default;
-
-private:
-    Asio(const Asio&) = delete;
-    Asio(Asio&&) = delete;
-    Asio& operator=(const Asio&) = delete;
-    Asio& operator=(Asio&&) = delete;
 };
 }  // namespace opentxs::api::network::internal

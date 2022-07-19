@@ -87,6 +87,11 @@ public:
         const opentxs::network::zeromq::Context& zeromq,
         const api::session::Endpoints& endpoints,
         opentxs::network::DhtConfig&& config) noexcept;
+    Dht() = delete;
+    Dht(const Dht&) = delete;
+    Dht(Dht&&) = delete;
+    auto operator=(const Dht&) -> Dht& = delete;
+    auto operator=(Dht&&) -> Dht& = delete;
 
     ~Dht() final = default;
 
@@ -123,11 +128,5 @@ private:
         const opentxs::network::zeromq::Message& incoming,
         void (Dht::*get)(const UnallocatedCString&) const) const noexcept
         -> opentxs::network::zeromq::Message;
-
-    Dht() = delete;
-    Dht(const Dht&) = delete;
-    Dht(Dht&&) = delete;
-    auto operator=(const Dht&) -> Dht& = delete;
-    auto operator=(Dht&&) -> Dht& = delete;
 };
 }  // namespace opentxs::api::network::imp

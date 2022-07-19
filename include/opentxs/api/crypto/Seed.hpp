@@ -169,15 +169,14 @@ public:
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Seed& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Seed() = default;
-
-protected:
-    Seed() = default;
-
-private:
     Seed(const Seed&) = delete;
     Seed(Seed&&) = delete;
     auto operator=(const Seed&) -> Seed& = delete;
     auto operator=(Seed&&) -> Seed& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Seed() = default;
+
+protected:
+    Seed() = default;
 };
 }  // namespace opentxs::api::crypto

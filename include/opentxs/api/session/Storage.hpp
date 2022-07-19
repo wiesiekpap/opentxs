@@ -459,15 +459,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Storage& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Storage() = default;
-
-protected:
-    Storage() = default;
-
-private:
     Storage(const Storage&) = delete;
     Storage(Storage&&) = delete;
     auto operator=(const Storage&) -> Storage& = delete;
     auto operator=(Storage&&) -> Storage& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Storage() = default;
+
+protected:
+    Storage() = default;
 };
 }  // namespace opentxs::api::session

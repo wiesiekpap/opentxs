@@ -110,14 +110,14 @@ public:
 
     OPENTXS_NO_EXPORT Bip32(std::unique_ptr<Imp> imp) noexcept;
     OPENTXS_NO_EXPORT Bip32(Bip32&& rhs) noexcept;
-    OPENTXS_NO_EXPORT ~Bip32();
-
-private:
-    std::unique_ptr<Imp> imp_;
-
     Bip32() = delete;
     Bip32(const Bip32&) = delete;
     auto operator=(const Bip32&) -> Bip32& = delete;
     auto operator=(Bip32&&) -> Bip32& = delete;
+
+    OPENTXS_NO_EXPORT ~Bip32();
+
+private:
+    std::unique_ptr<Imp> imp_;
 };
 }  // namespace opentxs::crypto

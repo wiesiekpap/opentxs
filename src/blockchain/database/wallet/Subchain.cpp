@@ -238,6 +238,10 @@ struct SubchainData::Imp {
         api_.Network().Asio().Internal().Post(
             ThreadPool::General, [this] { upgrade(); });
     }
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
 private:
     const api::Session& api_;
@@ -308,11 +312,6 @@ private:
 
         upgrade_promise_.set_value();
     }
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 
 SubchainData::SubchainData(

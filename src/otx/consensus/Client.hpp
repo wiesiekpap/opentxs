@@ -98,6 +98,13 @@ public:
         const Nym_p& local,
         const Nym_p& remote,
         const identifier::Notary& server);
+    ClientContext() = delete;
+    ClientContext(const otx::context::Client&) = delete;
+    ClientContext(otx::context::Client&&) = delete;
+    auto operator=(const otx::context::Client&)
+        -> otx::context::Client& = delete;
+    auto operator=(ClientContext&&) -> otx::context::Client& = delete;
+
     ~ClientContext() final = default;
 
 private:
@@ -110,12 +117,5 @@ private:
     auto serialize(const Lock& lock) const -> proto::Context final;
     auto server_nym_id(const Lock& lock) const -> const identifier::Nym& final;
     auto type() const -> UnallocatedCString final { return "client"; }
-
-    ClientContext() = delete;
-    ClientContext(const otx::context::Client&) = delete;
-    ClientContext(otx::context::Client&&) = delete;
-    auto operator=(const otx::context::Client&)
-        -> otx::context::Client& = delete;
-    auto operator=(ClientContext&&) -> otx::context::Client& = delete;
 };
 }  // namespace opentxs::otx::context::implementation

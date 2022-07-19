@@ -85,6 +85,13 @@ public:
         const BlockchainAccountStatusPrimaryID& id,
         const blockchain::Type chain,
         const SimpleCallback& cb) noexcept;
+    BlockchainAccountStatus() = delete;
+    BlockchainAccountStatus(const BlockchainAccountStatus&) = delete;
+    BlockchainAccountStatus(BlockchainAccountStatus&&) = delete;
+    auto operator=(const BlockchainAccountStatus&)
+        -> BlockchainAccountStatus& = delete;
+    auto operator=(BlockchainAccountStatus&&)
+        -> BlockchainAccountStatus& = delete;
 
     ~BlockchainAccountStatus() final;
 
@@ -147,13 +154,5 @@ private:
     auto process_progress(const Message& in) noexcept -> void;
     auto process_reorg(const Message& in) noexcept -> void;
     auto startup() noexcept -> void;
-
-    BlockchainAccountStatus() = delete;
-    BlockchainAccountStatus(const BlockchainAccountStatus&) = delete;
-    BlockchainAccountStatus(BlockchainAccountStatus&&) = delete;
-    auto operator=(const BlockchainAccountStatus&)
-        -> BlockchainAccountStatus& = delete;
-    auto operator=(BlockchainAccountStatus&&)
-        -> BlockchainAccountStatus& = delete;
 };
 }  // namespace opentxs::ui::implementation

@@ -38,6 +38,12 @@ public:
 
     auto Replace(ReceiveCallback callback) noexcept -> void final;
 
+    ListenCallback() = delete;
+    ListenCallback(const ListenCallback&) = delete;
+    ListenCallback(ListenCallback&&) = delete;
+    auto operator=(const ListenCallback&) -> ListenCallback& = delete;
+    auto operator=(ListenCallback&&) -> ListenCallback& = delete;
+
     ~ListenCallback() final;
 
 private:
@@ -54,10 +60,5 @@ private:
     auto clone() const -> ListenCallback* final;
 
     ListenCallback(zeromq::ListenCallback::ReceiveCallback callback);
-    ListenCallback() = delete;
-    ListenCallback(const ListenCallback&) = delete;
-    ListenCallback(ListenCallback&&) = delete;
-    auto operator=(const ListenCallback&) -> ListenCallback& = delete;
-    auto operator=(ListenCallback&&) -> ListenCallback& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

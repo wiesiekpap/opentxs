@@ -69,6 +69,11 @@ public:
         const zeromq::Context& context,
         const zeromq::ListenCallback& callback,
         const std::string_view endpoint) noexcept;
+    Pair() = delete;
+    Pair(const Pair&) = delete;
+    Pair(Pair&&) = delete;
+    auto operator=(const Pair&) -> Pair& = delete;
+    auto operator=(Pair&&) -> Pair& = delete;
 
     ~Pair() final;
 
@@ -81,11 +86,5 @@ private:
     void process_incoming(const Lock& lock, Message&& message) noexcept final;
 
     void init() noexcept final;
-
-    Pair() = delete;
-    Pair(const Pair&) = delete;
-    Pair(Pair&&) = delete;
-    auto operator=(const Pair&) -> Pair& = delete;
-    auto operator=(Pair&&) -> Pair& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

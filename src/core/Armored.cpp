@@ -10,6 +10,7 @@
 #include <zconf.h>
 #include <zlib.h>
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -196,19 +197,19 @@ auto Armored::compress_string(
     zs.avail_in = static_cast<uInt>(str.size());  // set the z_stream's input
 
     std::int32_t ret;
-    char outbuffer[32768];
+    auto outbuffer = std::array<char, 32768>{};
     UnallocatedCString outstring;
 
     // retrieve the compressed bytes blockwise
     do {
-        zs.next_out = reinterpret_cast<Bytef*>(outbuffer);
+        zs.next_out = reinterpret_cast<Bytef*>(outbuffer.data());
         zs.avail_out = sizeof(outbuffer);
 
         ret = deflate(&zs, Z_FINISH);
 
         if (outstring.size() < zs.total_out) {
             // append the block to the output string
-            outstring.append(outbuffer, zs.total_out - outstring.size());
+            outstring.append(outbuffer.data(), zs.total_out - outstring.size());
         }
     } while (ret == Z_OK);
 
@@ -237,18 +238,18 @@ auto Armored::decompress_string(const UnallocatedCString& str) const
     zs.avail_in = static_cast<uInt>(str.size());
 
     std::int32_t ret;
-    char outbuffer[32768];
+    auto outbuffer = std::array<char, 32768>{};
     UnallocatedCString outstring;
 
     // get the decompressed bytes blockwise using repeated calls to inflate
     do {
-        zs.next_out = reinterpret_cast<Bytef*>(outbuffer);
+        zs.next_out = reinterpret_cast<Bytef*>(outbuffer.data());
         zs.avail_out = sizeof(outbuffer);
 
         ret = inflate(&zs, 0);
 
         if (outstring.size() < zs.total_out) {
-            outstring.append(outbuffer, zs.total_out - outstring.size());
+            outstring.append(outbuffer.data(), zs.total_out - outstring.size());
         }
 
     } while (ret == Z_OK);
@@ -360,7 +361,7 @@ auto Armored::LoadFromString(
     const std::int32_t nBufSize = 2100;   // todo: hardcoding
     const std::int32_t nBufSize2 = 2048;  // todo: hardcoding
 
-    char buffer1[2100];  // todo: hardcoding
+    auto buffer1 = std::array<char, 2100>{};  // todo: hardcoding
 
     std::fill(&buffer1[0], &buffer1[(nBufSize - 1)], 0);  // Initializing to 0.
 
@@ -379,9 +380,9 @@ auto Armored::LoadFromString(
                      // start of string.
 
     do {
-        bIsEOF = !(theStr.sgets(buffer1, nBufSize2));  // 2048
+        bIsEOF = !(theStr.sgets(buffer1.data(), nBufSize2));  // 2048
 
-        UnallocatedCString line = buffer1;
+        UnallocatedCString line = buffer1.data();
 
         // It's not a blank line.
         if (line.length() < 2) {

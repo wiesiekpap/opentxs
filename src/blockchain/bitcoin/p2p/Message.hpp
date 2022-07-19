@@ -61,6 +61,12 @@ public:
 
     auto header() noexcept -> Header& { return *header_; }
 
+    Message() = delete;
+    Message(const Message&) = delete;
+    Message(Message&&) = delete;
+    auto operator=(const Message&) -> Message& = delete;
+    auto operator=(Message&&) -> Message& = delete;
+
     ~Message() override = default;
 
 protected:
@@ -84,11 +90,5 @@ protected:
 
 private:
     auto calculate_checksum(const Data& payload) const noexcept -> OTData;
-
-    Message() = delete;
-    Message(const Message&) = delete;
-    Message(Message&&) = delete;
-    auto operator=(const Message&) -> Message& = delete;
-    auto operator=(Message&&) -> Message& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

@@ -35,6 +35,10 @@ public:
         : bio_(nullptr)
     {
     }
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp()
     {
@@ -46,11 +50,6 @@ public:
 
 private:
     ::BIO* bio_;
-
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 
 LucreDumper::LucreDumper()

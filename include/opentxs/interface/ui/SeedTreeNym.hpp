@@ -29,15 +29,14 @@ public:
     /// Returns the NymID for this Nym.
     virtual auto NymID() const noexcept -> UnallocatedCString = 0;
 
-    ~SeedTreeNym() override = default;
-
-protected:
-    SeedTreeNym() noexcept = default;
-
-private:
     SeedTreeNym(const SeedTreeNym&) = delete;
     SeedTreeNym(SeedTreeNym&&) = delete;
     auto operator=(const SeedTreeNym&) -> SeedTreeNym& = delete;
     auto operator=(SeedTreeNym&&) -> SeedTreeNym& = delete;
+
+    ~SeedTreeNym() override = default;
+
+protected:
+    SeedTreeNym() noexcept = default;
 };
 }  // namespace opentxs::ui

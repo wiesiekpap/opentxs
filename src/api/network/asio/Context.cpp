@@ -8,7 +8,6 @@
 #include "api/network/asio/Context.hpp"  // IWYU pragma: associated
 
 #include <boost/asio.hpp>
-#include <boost/bind/bind.hpp>
 #include <boost/thread/thread.hpp>
 #include <memory>
 #include <mutex>
@@ -32,7 +31,7 @@ struct Context::Imp {
 
             for (unsigned int i{0}; i < threads; ++i) {
                 auto* thread = thread_pool_.create_thread(
-                    boost::bind(&Imp::run, this, priority));
+                    [this, priority] { run(priority); });
 
                 if (nullptr == thread) { OT_FAIL; }
             }
@@ -63,6 +62,10 @@ struct Context::Imp {
         , thread_pool_()
     {
     }
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() { Stop(); }
 
@@ -79,11 +82,6 @@ private:
         Signals::Block();
         context_.run();
     }
-
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 
 Context::Context() noexcept

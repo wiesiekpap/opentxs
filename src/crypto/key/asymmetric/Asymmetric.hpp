@@ -151,6 +151,11 @@ public:
     operator bool() const noexcept override;
     auto operator==(const proto::AsymmetricKey&) const noexcept -> bool final;
 
+    Asymmetric() = delete;
+    Asymmetric(Asymmetric&&) = delete;
+    auto operator=(const Asymmetric&) -> Asymmetric& = delete;
+    auto operator=(Asymmetric&&) -> Asymmetric& = delete;
+
     ~Asymmetric() override;
 
 protected:
@@ -284,10 +289,5 @@ private:
         const Identifier& credential,
         const PasswordPrompt& reason,
         std::uint32_t& tag) const noexcept -> bool;
-
-    Asymmetric() = delete;
-    Asymmetric(Asymmetric&&) = delete;
-    auto operator=(const Asymmetric&) -> Asymmetric& = delete;
-    auto operator=(Asymmetric&&) -> Asymmetric& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

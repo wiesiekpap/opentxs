@@ -53,17 +53,16 @@ public:
     /// Returns the NymID of the owner of this account.
     virtual auto Owner() const noexcept -> const identifier::Nym& = 0;
 
-    ~BlockchainAccountStatus() override = default;
-
-protected:
-    BlockchainAccountStatus() noexcept = default;
-
-private:
     BlockchainAccountStatus(const BlockchainAccountStatus&) = delete;
     BlockchainAccountStatus(BlockchainAccountStatus&&) = delete;
     auto operator=(const BlockchainAccountStatus&)
         -> BlockchainAccountStatus& = delete;
     auto operator=(BlockchainAccountStatus&&)
         -> BlockchainAccountStatus& = delete;
+
+    ~BlockchainAccountStatus() override = default;
+
+protected:
+    BlockchainAccountStatus() noexcept = default;
 };
 }  // namespace opentxs::ui

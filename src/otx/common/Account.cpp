@@ -43,8 +43,8 @@
 
 namespace opentxs
 {
-
-char const* const __TypeStringsAccount[] = {
+// NOLINTNEXTLINE(modernize-avoid-c-arrays)
+char const* const TypeStringsAccount[] = {
     "user",       // used by users
     "issuer",     // used by issuers    (these can only go negative.)
     "basket",     // issuer acct used by basket currencies (these can only go
@@ -137,7 +137,7 @@ Account::Account(
 auto Account::GetTypeString(AccountType accountType) -> char const*
 {
     auto index = static_cast<std::int32_t>(accountType);
-    return __TypeStringsAccount[index];
+    return TypeStringsAccount[index];
 }
 
 auto Account::Alias() const -> UnallocatedCString { return alias_; }
@@ -149,14 +149,14 @@ auto Account::ConsensusHash(
 {
     auto preimage = Data::Factory();
 
-    auto& nymid = GetNymID();
+    const auto& nymid = GetNymID();
     if (false == nymid.empty()) {
         preimage->Concatenate(nymid.data(), nymid.size());
     } else {
         LogError()(OT_PRETTY_CLASS())("Missing nym id.").Flush();
     }
 
-    auto& serverid = context.Notary();
+    const auto& serverid = context.Notary();
     if (false == serverid.empty()) {
         preimage->Concatenate(serverid.data(), serverid.size());
     } else {
@@ -501,8 +501,9 @@ auto Account::Debit(const Amount& amount) -> bool
 
     // fail if integer overflow
     if ((amount > 0 && oldBalance < Amount{INT64_MIN} + amount) ||
-        (amount < 0 && oldBalance > Amount{INT64_MAX} + amount))
+        (amount < 0 && oldBalance > Amount{INT64_MAX} + amount)) {
         return false;
+    }
 
     // This is where issuer accounts get a pass. They just go negative.
     //
@@ -534,8 +535,9 @@ auto Account::Credit(const Amount& amount) -> bool
 
     // fail if integer overflow
     if ((amount > 0 && oldBalance > Amount{INT64_MAX} - amount) ||
-        (amount < 0 && oldBalance < Amount{INT64_MIN} - amount))
+        (amount < 0 && oldBalance < Amount{INT64_MIN} - amount)) {
         return false;
+    }
 
     // If the balance gets too big, it may flip to negative due to us using
     // std::int64_t std::int32_t.

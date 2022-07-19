@@ -176,6 +176,10 @@ public:
         const blockchain::Type chain,
         const wallet::SubchainData& subchains,
         wallet::Proposal& proposals) noexcept;
+    Output() = delete;
+    Output(const Output&) = delete;
+    auto operator=(const Output&) -> Output& = delete;
+    auto operator=(Output&&) -> Output& = delete;
 
     ~Output();
 
@@ -183,10 +187,5 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    Output() = delete;
-    Output(const Output&) = delete;
-    auto operator=(const Output&) -> Output& = delete;
-    auto operator=(Output&&) -> Output& = delete;
 };
 }  // namespace opentxs::blockchain::database::wallet

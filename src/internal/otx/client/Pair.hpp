@@ -52,15 +52,14 @@ public:
 
     virtual auto init() noexcept -> void = 0;
 
-    virtual ~Pair() = default;
-
-protected:
-    Pair() noexcept = default;
-
-private:
     Pair(const Pair&) = delete;
     Pair(Pair&&) = delete;
     auto operator=(const Pair&) -> Pair& = delete;
     auto operator=(Pair&&) -> Pair& = delete;
+
+    virtual ~Pair() = default;
+
+protected:
+    Pair() noexcept = default;
 };
 }  // namespace opentxs::otx::client

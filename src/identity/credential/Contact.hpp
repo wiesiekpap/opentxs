@@ -59,6 +59,12 @@ class Contact final : virtual public credential::internal::Contact,
 public:
     auto GetContactData(proto::ContactData& contactData) const -> bool final;
 
+    Contact() = delete;
+    Contact(const Contact&) = delete;
+    Contact(Contact&&) = delete;
+    auto operator=(const Contact&) -> Contact& = delete;
+    auto operator=(Contact&&) -> Contact& = delete;
+
     ~Contact() final = default;
 
 private:
@@ -86,10 +92,5 @@ private:
         const identity::Source& source,
         const internal::Primary& master,
         const proto::Credential& credential) noexcept(false);
-    Contact() = delete;
-    Contact(const Contact&) = delete;
-    Contact(Contact&&) = delete;
-    auto operator=(const Contact&) -> Contact& = delete;
-    auto operator=(Contact&&) -> Contact& = delete;
 };
 }  // namespace opentxs::identity::credential::implementation

@@ -41,6 +41,11 @@ public:
     virtual auto SetSocksProxy(const UnallocatedCString& proxy) const noexcept
         -> bool = 0;
 
+    Dealer(const Dealer&) = delete;
+    Dealer(Dealer&&) = delete;
+    auto operator=(const Dealer&) -> Dealer& = delete;
+    auto operator=(Dealer&&) -> Dealer& = delete;
+
     ~Dealer() override = default;
 
 protected:
@@ -50,10 +55,5 @@ private:
     friend OTZMQDealerSocket;
 
     virtual auto clone() const noexcept -> Dealer* = 0;
-
-    Dealer(const Dealer&) = delete;
-    Dealer(Dealer&&) = delete;
-    auto operator=(const Dealer&) -> Dealer& = delete;
-    auto operator=(Dealer&&) -> Dealer& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket

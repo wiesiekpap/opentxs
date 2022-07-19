@@ -75,6 +75,10 @@ public:
         const block::Hash& hash,
         const std::uint32_t count,
         Space&& compressed) noexcept;
+    Cfilter(const Cfilter&) = delete;
+    Cfilter(Cfilter&&) = delete;
+    auto operator=(const Cfilter&) -> Cfilter& = delete;
+    auto operator=(Cfilter&&) -> Cfilter& = delete;
 
     ~Cfilter() final = default;
 
@@ -87,10 +91,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Cfilter(const Cfilter&) = delete;
-    Cfilter(Cfilter&&) = delete;
-    auto operator=(const Cfilter&) -> Cfilter& = delete;
-    auto operator=(Cfilter&&) -> Cfilter& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

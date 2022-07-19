@@ -153,6 +153,8 @@ public:
         const crypto::Subchain subchain,
         const SerializedType& address,
         OTIdentifier&& contact) noexcept(false);
+    Element() = delete;
+
     ~Element() final = default;
 
 private:
@@ -198,6 +200,5 @@ private:
         const Time time,
         Transactions&& unconfirmed,
         Transactions&& confirmed) noexcept(false);
-    Element() = delete;
 };
 }  // namespace opentxs::blockchain::crypto::implementation

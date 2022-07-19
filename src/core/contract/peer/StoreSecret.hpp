@@ -49,6 +49,11 @@ class StoreSecret final : public request::StoreSecret,
                           public peer::implementation::Request
 {
 public:
+    auto asStoreSecret() const noexcept -> const request::StoreSecret& final
+    {
+        return *this;
+    }
+
     StoreSecret(
         const api::Session& api,
         const Nym_p& nym,
@@ -61,13 +66,13 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const proto::PeerRequest& serialized);
+    StoreSecret() = delete;
+    StoreSecret(const StoreSecret&);
+    StoreSecret(StoreSecret&&) = delete;
+    auto operator=(const StoreSecret&) -> StoreSecret& = delete;
+    auto operator=(StoreSecret&&) -> StoreSecret& = delete;
 
     ~StoreSecret() final = default;
-
-    auto asStoreSecret() const noexcept -> const request::StoreSecret& final
-    {
-        return *this;
-    }
 
 private:
     friend opentxs::Factory;
@@ -83,11 +88,5 @@ private:
         return new StoreSecret(*this);
     }
     auto IDVersion(const Lock& lock) const -> SerializedType final;
-
-    StoreSecret() = delete;
-    StoreSecret(const StoreSecret&);
-    StoreSecret(StoreSecret&&) = delete;
-    auto operator=(const StoreSecret&) -> StoreSecret& = delete;
-    auto operator=(StoreSecret&&) -> StoreSecret& = delete;
 };
 }  // namespace opentxs::contract::peer::request::implementation

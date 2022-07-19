@@ -43,15 +43,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto InternalNotification() noexcept
         -> internal::Notification& = 0;
 
-    OPENTXS_NO_EXPORT ~Notification() override = default;
-
-protected:
-    Notification() noexcept = default;
-
-private:
     Notification(const Notification&) = delete;
     Notification(Notification&&) = delete;
     auto operator=(const Notification&) -> Notification& = delete;
     auto operator=(Notification&&) -> Notification& = delete;
+
+    OPENTXS_NO_EXPORT ~Notification() override = default;
+
+protected:
+    Notification() noexcept = default;
 };
 }  // namespace opentxs::blockchain::crypto

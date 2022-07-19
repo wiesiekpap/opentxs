@@ -37,6 +37,12 @@ public:
     auto Last() const noexcept -> bool final { return parent_.last(row_id_); }
     auto Valid() const noexcept -> bool final { return valid_; }
 
+    RowType() = delete;
+    RowType(const RowType&) = delete;
+    RowType(RowType&&) = delete;
+    auto operator=(const RowType&) -> RowType& = delete;
+    auto operator=(RowType&&) -> RowType& = delete;
+
 protected:
     const ParentType& parent_;
     const IdentifierType row_id_;
@@ -55,12 +61,5 @@ protected:
     }
 
     ~RowType() override = default;
-
-private:
-    RowType() = delete;
-    RowType(const RowType&) = delete;
-    RowType(RowType&&) = delete;
-    auto operator=(const RowType&) -> RowType& = delete;
-    auto operator=(RowType&&) -> RowType& = delete;
 };
 }  // namespace opentxs::ui::implementation

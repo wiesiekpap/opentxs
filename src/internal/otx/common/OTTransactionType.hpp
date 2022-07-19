@@ -152,6 +152,8 @@ public:
     void GetReferenceString(String& theStr) const;
     void SetReferenceString(const String& theStr);
 
+    OTTransactionType() = delete;
+
     ~OTTransactionType() override;
 
 protected:
@@ -734,7 +736,5 @@ protected:
 
 private:
     using ot_super = Contract;
-
-    OTTransactionType() = delete;
 };
 }  // namespace opentxs

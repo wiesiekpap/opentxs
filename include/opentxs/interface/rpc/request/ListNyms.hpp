@@ -36,13 +36,11 @@ public:
     OPENTXS_NO_EXPORT ListNyms(const proto::RPCCommand& serialized) noexcept(
         false);
     ListNyms() noexcept;
-
-    ~ListNyms() final;
-
-private:
     ListNyms(const ListNyms&) = delete;
     ListNyms(ListNyms&&) = delete;
     auto operator=(const ListNyms&) -> ListNyms& = delete;
     auto operator=(ListNyms&&) -> ListNyms& = delete;
+
+    ~ListNyms() final;
 };
 }  // namespace opentxs::rpc::request

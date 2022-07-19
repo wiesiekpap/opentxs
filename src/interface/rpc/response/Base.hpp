@@ -78,6 +78,11 @@ struct Base::Imp {
         Responses&& response,
         Tasks&& tasks) noexcept;
     Imp(const Base* parent, const proto::RPCResponse& serialized) noexcept;
+    Imp() noexcept = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     virtual ~Imp() = default;
 
@@ -97,11 +102,5 @@ private:
         SessionIndex session,
         Identifiers&& identifiers,
         Tasks&& tasks) noexcept;
-    Imp() noexcept = delete;
-
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs::rpc::response

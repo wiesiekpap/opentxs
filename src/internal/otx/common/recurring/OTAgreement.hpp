@@ -450,8 +450,6 @@ public:
         const identifier::Nym& actualNymID,
         const PasswordPrompt& reason) -> bool;
 
-    ~OTAgreement() override;
-
     void InitAgreement();
 
     void Release() override;
@@ -469,6 +467,10 @@ public:
                    // this
                    // is where the ledger saves its contents
 
+    OTAgreement() = delete;
+
+    ~OTAgreement() override;
+
 protected:
     OTAgreement(const api::Session& api);
     OTAgreement(
@@ -483,7 +485,5 @@ protected:
         const identifier::Nym& SENDER_NYM_ID,
         const Identifier& RECIPIENT_ACCT_ID,
         const identifier::Nym& RECIPIENT_NYM_ID);
-
-    OTAgreement() = delete;
 };
 }  // namespace opentxs

@@ -118,6 +118,10 @@ public:
     virtual void reset() = 0;
     virtual auto WriteInto() noexcept -> AllocateOutput = 0;
 
+    String(String&& rhs) = delete;
+    auto operator=(const String& rhs) -> String& = delete;
+    auto operator=(String&& rhs) -> String& = delete;
+
     virtual ~String() = default;
 
 protected:
@@ -132,12 +136,5 @@ private:
 public:
 #endif
     virtual auto clone() const -> String* = 0;
-#ifdef _WIN32
-private:
-#endif
-
-    String(String&& rhs) = delete;
-    auto operator=(const String& rhs) -> String& = delete;
-    auto operator=(String&& rhs) -> String& = delete;
 };
 }  // namespace opentxs

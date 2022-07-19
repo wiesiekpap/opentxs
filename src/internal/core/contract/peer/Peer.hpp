@@ -48,6 +48,11 @@ struct PairEvent {
     UnallocatedCString issuer_;
 
     PairEvent(const ReadView);
+    PairEvent() = delete;
+    PairEvent(const PairEvent&) = delete;
+    PairEvent(PairEvent&&) = delete;
+    auto operator=(const PairEvent&) -> PairEvent& = delete;
+    auto operator=(PairEvent&&) -> PairEvent& = delete;
 
 private:
     PairEvent(
@@ -55,12 +60,6 @@ private:
         const PairEventType,
         const UnallocatedCString&);
     PairEvent(const proto::PairEvent&);
-
-    PairEvent() = delete;
-    PairEvent(const PairEvent&) = delete;
-    PairEvent(PairEvent&&) = delete;
-    auto operator=(const PairEvent&) -> PairEvent& = delete;
-    auto operator=(PairEvent&&) -> PairEvent& = delete;
 };
 }  // namespace opentxs::contract::peer::internal
 

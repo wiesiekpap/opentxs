@@ -62,13 +62,10 @@ public:
     }
     auto begin() const noexcept -> const_iterator final { return cbegin(); }
     auto CalculateSize() const noexcept -> std::size_t final;
-    auto cbegin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto cbegin() const noexcept -> const_iterator final { return {this, 0}; }
     auto cend() const noexcept -> const_iterator final
     {
-        return const_iterator(this, outputs_.size());
+        return {this, outputs_.size()};
     }
     auto clone() const noexcept -> std::unique_ptr<internal::Outputs> final
     {
@@ -112,7 +109,11 @@ public:
     Outputs(
         OutputList&& outputs,
         std::optional<std::size_t> size = {}) noexcept(false);
+    Outputs() = delete;
     Outputs(const Outputs&) noexcept;
+    Outputs(Outputs&&) = delete;
+    auto operator=(const Outputs&) -> Outputs& = delete;
+    auto operator=(Outputs&&) -> Outputs& = delete;
 
     ~Outputs() final = default;
 
@@ -153,10 +154,5 @@ private:
     mutable Cache cache_;
 
     static auto clone(const OutputList& rhs) noexcept -> OutputList;
-
-    Outputs() = delete;
-    Outputs(Outputs&&) = delete;
-    auto operator=(const Outputs&) -> Outputs& = delete;
-    auto operator=(Outputs&&) -> Outputs& = delete;
 };
 }  // namespace opentxs::blockchain::bitcoin::block::implementation

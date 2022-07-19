@@ -80,15 +80,14 @@ public:
         const Identifier& theInput) -> bool = 0;  // client-side
     virtual void SetUsageCredits(const std::int64_t& lUsage) = 0;
 
-    virtual ~NymFile() = default;
-
-protected:
-    NymFile() = default;
-
-private:
     NymFile(const NymFile&) = delete;
     NymFile(NymFile&&) = delete;
     auto operator=(const NymFile&) -> NymFile& = delete;
     auto operator=(NymFile&&) -> NymFile& = delete;
+
+    virtual ~NymFile() = default;
+
+protected:
+    NymFile() = default;
 };
 }  // namespace opentxs

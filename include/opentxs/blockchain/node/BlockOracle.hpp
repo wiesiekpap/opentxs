@@ -61,15 +61,14 @@ public:
     virtual auto Validate(const bitcoin::block::Block& block) const noexcept
         -> bool = 0;
 
-    OPENTXS_NO_EXPORT virtual ~BlockOracle() = default;
-
-protected:
-    BlockOracle() noexcept = default;
-
-private:
     BlockOracle(const BlockOracle&) = delete;
     BlockOracle(BlockOracle&&) = delete;
     auto operator=(const BlockOracle&) -> BlockOracle& = delete;
     auto operator=(BlockOracle&&) -> BlockOracle& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~BlockOracle() = default;
+
+protected:
+    BlockOracle() noexcept = default;
 };
 }  // namespace opentxs::blockchain::node

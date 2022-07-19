@@ -69,6 +69,15 @@ namespace opentxs::api::session::base
 {
 class Storage
 {
+public:
+    Storage() = delete;
+    Storage(const Storage&) = delete;
+    Storage(Storage&&) = delete;
+    auto operator=(const Storage&) -> Storage& = delete;
+    auto operator=(Storage&&) -> Storage& = delete;
+
+    virtual ~Storage();
+
 protected:
     const api::Settings& config_;
     const Options args_;
@@ -107,14 +116,5 @@ protected:
         const opentxs::network::zeromq::Context& zmq,
         const UnallocatedCString& dataFolder,
         std::unique_ptr<api::session::Factory> factory);
-
-    virtual ~Storage();
-
-private:
-    Storage() = delete;
-    Storage(const Storage&) = delete;
-    Storage(Storage&&) = delete;
-    auto operator=(const Storage&) -> Storage& = delete;
-    auto operator=(Storage&&) -> Storage& = delete;
 };
 }  // namespace opentxs::api::session::base

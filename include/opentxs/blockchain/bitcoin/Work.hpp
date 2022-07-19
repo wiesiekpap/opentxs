@@ -65,6 +65,11 @@ public:
     virtual auto asHex() const noexcept -> UnallocatedCString = 0;
     virtual auto Decimal() const noexcept -> UnallocatedCString = 0;
 
+    Work(const Work& rhs) = delete;
+    Work(Work&& rhs) = delete;
+    auto operator=(const Work& rhs) -> Work& = delete;
+    auto operator=(Work&& rhs) -> Work& = delete;
+
     virtual ~Work() = default;
 
 protected:
@@ -74,10 +79,5 @@ private:
     friend OTWork;
 
     virtual auto clone() const noexcept -> Work* = 0;
-
-    Work(const Work& rhs) = delete;
-    Work(Work&& rhs) = delete;
-    auto operator=(const Work& rhs) -> Work& = delete;
-    auto operator=(Work&& rhs) -> Work& = delete;
 };
 }  // namespace opentxs::blockchain

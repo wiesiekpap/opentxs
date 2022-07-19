@@ -44,15 +44,14 @@ public:
      */
     virtual auto SetDefaultPolicy(const Policy policy) const -> bool = 0;
 
-    OPENTXS_NO_EXPORT virtual ~ZAP() = default;
-
-protected:
-    ZAP() = default;
-
-private:
     ZAP(const ZAP&) = delete;
     ZAP(ZAP&&) = delete;
     auto operator=(const ZAP&) -> ZAP& = delete;
     auto operator=(ZAP&&) -> ZAP& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~ZAP() = default;
+
+protected:
+    ZAP() = default;
 };
 }  // namespace opentxs::api::network

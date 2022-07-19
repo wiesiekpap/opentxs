@@ -321,7 +321,12 @@ public:
 
     OTX(const Flag& running,
         const api::session::Client& client,
-        const ContextLockCallback& lockCallback);
+        ContextLockCallback lockCallback);
+    OTX() = delete;
+    OTX(const OTX&) = delete;
+    OTX(OTX&&) = delete;
+    auto operator=(const OTX&) -> OTX& = delete;
+    auto operator=(OTX&&) -> OTX& = delete;
 
     ~OTX() final;
 
@@ -467,11 +472,5 @@ private:
         const OTPayment& payment,
         const identifier::Nym& specifiedNymID,
         const identifier::Nym& recipient) const -> otx::client::Depositability;
-
-    OTX() = delete;
-    OTX(const OTX&) = delete;
-    OTX(OTX&&) = delete;
-    auto operator=(const OTX&) -> OTX& = delete;
-    auto operator=(OTX&&) -> OTX& = delete;
 };
 }  // namespace opentxs::api::session::imp

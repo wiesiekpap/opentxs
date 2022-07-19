@@ -42,15 +42,14 @@ public:
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::AccountListItem> = 0;
 
-    ~AccountList() override = default;
-
-protected:
-    AccountList() noexcept = default;
-
-private:
     AccountList(const AccountList&) = delete;
     AccountList(AccountList&&) = delete;
     auto operator=(const AccountList&) -> AccountList& = delete;
     auto operator=(AccountList&&) -> AccountList& = delete;
+
+    ~AccountList() override = default;
+
+protected:
+    AccountList() noexcept = default;
 };
 }  // namespace opentxs::ui

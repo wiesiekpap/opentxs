@@ -37,6 +37,12 @@ public:
     {
     }
 
+    Row() = delete;
+    Row(const Row&) = delete;
+    Row(Row&&) = delete;
+    auto operator=(const Row&) -> Row& = delete;
+    auto operator=(Row&&) -> Row& = delete;
+
 protected:
     Row(const ParentType& parent,
         const api::session::Client& api,
@@ -46,11 +52,6 @@ protected:
         , Widget(api, parent.WidgetID())
     {
     }
-    Row() = delete;
-    Row(const Row&) = delete;
-    Row(Row&&) = delete;
-    auto operator=(const Row&) -> Row& = delete;
-    auto operator=(Row&&) -> Row& = delete;
 
     ~Row() override = default;
 };

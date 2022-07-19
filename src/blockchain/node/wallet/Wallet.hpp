@@ -85,6 +85,8 @@ namespace internal
 class Manager;
 class Mempool;
 }  // namespace internal
+
+class Mempool;
 }  // namespace node
 }  // namespace blockchain
 
@@ -184,6 +186,11 @@ public:
         const node::internal::Mempool& mempool,
         const Type chain,
         const std::string_view shutdown) noexcept;
+    Wallet() = delete;
+    Wallet(const Wallet&) = delete;
+    Wallet(Wallet&&) = delete;
+    auto operator=(const Wallet&) -> Wallet& = delete;
+    auto operator=(Wallet&&) -> Wallet& = delete;
 
     ~Wallet() final;
 
@@ -203,10 +210,7 @@ private:
     wallet::Accounts accounts_;
     wallet::Proposals proposals_;
 
-    Wallet() = delete;
-    Wallet(const Wallet&) = delete;
-    Wallet(Wallet&&) = delete;
-    auto operator=(const Wallet&) -> Wallet& = delete;
-    auto operator=(Wallet&&) -> Wallet& = delete;
+    auto pipeline(const network::zeromq::Message& in) noexcept -> void;
+    auto shutdown(std::promise<void>& promise) noexcept -> void;
 };
 }  // namespace opentxs::blockchain::node::implementation

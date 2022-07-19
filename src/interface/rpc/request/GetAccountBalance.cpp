@@ -55,15 +55,13 @@ struct GetAccountBalance final : public Base::Imp {
         check_session();
         check_identifiers();
     }
-
-    ~GetAccountBalance() final = default;
-
-private:
     GetAccountBalance() = delete;
     GetAccountBalance(const GetAccountBalance&) = delete;
     GetAccountBalance(GetAccountBalance&&) = delete;
     auto operator=(const GetAccountBalance&) -> GetAccountBalance& = delete;
     auto operator=(GetAccountBalance&&) -> GetAccountBalance& = delete;
+
+    ~GetAccountBalance() final = default;
 };
 }  // namespace opentxs::rpc::request::implementation
 

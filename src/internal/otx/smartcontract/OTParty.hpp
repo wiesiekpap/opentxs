@@ -333,6 +333,9 @@ public:
         Account* pAccount = nullptr,
         const UnallocatedCString* pstr_account_name = nullptr,
         std::int64_t lClosingTransNo = 0);
+    OTParty() = delete;
+    OTParty(const OTParty&) = delete;
+    auto operator=(const OTParty&) -> OTParty& = delete;
 
     virtual ~OTParty();
 
@@ -376,9 +379,5 @@ private:
     void recover_opening_number(
         OTAgent& theAgent,
         otx::context::Server& context) const;
-
-    OTParty() = delete;
-    OTParty(const OTParty&) = delete;
-    auto operator=(const OTParty&) -> OTParty& = delete;
 };
 }  // namespace opentxs

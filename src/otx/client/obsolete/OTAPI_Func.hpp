@@ -107,6 +107,11 @@ typedef enum {
 class OTAPI_Func final : virtual public opentxs::client::ServerAction, Lockable
 {
 public:
+    auto LastSendResult() const -> otx::client::SendResult final { return {}; }
+    auto Reply() const -> const std::shared_ptr<Message> final { return {}; }
+
+    auto Run(const std::size_t totalRetries = 2) -> UnallocatedCString final;
+
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
@@ -242,11 +247,7 @@ public:
         const Time lifetime,
         const Amount& activationPrice,
         const UnallocatedCString& stopSign);
-
-    auto LastSendResult() const -> otx::client::SendResult final { return {}; }
-    auto Reply() const -> const std::shared_ptr<Message> final { return {}; }
-
-    auto Run(const std::size_t totalRetries = 2) -> UnallocatedCString final;
+    OTAPI_Func() = delete;
 
     ~OTAPI_Func() final;
 
@@ -324,6 +325,5 @@ private:
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
         const OTAPI_Func_Type type);
-    OTAPI_Func() = delete;
 };
 }  // namespace opentxs

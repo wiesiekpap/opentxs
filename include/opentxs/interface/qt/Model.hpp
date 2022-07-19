@@ -56,13 +56,13 @@ public:
     RowWrapper() noexcept;
     RowWrapper(std::shared_ptr<opentxs::ui::internal::Row>) noexcept;
     RowWrapper(const RowWrapper&) noexcept;
+    RowWrapper(RowWrapper&&) = delete;
     auto operator=(const RowWrapper&) noexcept -> RowWrapper&;
+    auto operator=(RowWrapper&&) noexcept -> RowWrapper& = delete;
 
     ~RowWrapper() final;
 
 private:
-    RowWrapper(RowWrapper&&) = delete;
-    auto operator=(RowWrapper&&) noexcept -> RowWrapper& = delete;
 };
 
 Q_DECLARE_OPAQUE_POINTER(opentxs::ui::internal::Row*)
@@ -103,15 +103,13 @@ public slots:
 
 public:
     ModelHelper(Model* model) noexcept;
-
-    ~ModelHelper() final;
-
-private:
     ModelHelper() = delete;
     ModelHelper(const ModelHelper&) = delete;
     ModelHelper(ModelHelper&&) = delete;
-    ModelHelper& operator=(const ModelHelper&) = delete;
-    ModelHelper& operator=(ModelHelper&&) = delete;
+    auto operator=(const ModelHelper&) -> ModelHelper& = delete;
+    auto operator=(ModelHelper&&) -> ModelHelper& = delete;
+
+    ~ModelHelper() final;
 };
 
 class OPENTXS_EXPORT Model : public QAbstractItemModel
@@ -134,6 +132,12 @@ public:
     auto parent(const QModelIndex& index) const noexcept -> QModelIndex final;
     auto roleNames() const noexcept -> QHash<int, QByteArray> final;
     auto rowCount(const QModelIndex& parent = {}) const noexcept -> int final;
+
+    Model() = delete;
+    Model(const Model&) = delete;
+    Model(Model&&) = delete;
+    auto operator=(const Model&) -> Model& = delete;
+    auto operator=(Model&&) -> Model& = delete;
 
     ~Model() override;
 
@@ -158,11 +162,5 @@ private:
     friend ModelHelper;
 
     auto make_index(const internal::Index& index) const noexcept -> QModelIndex;
-
-    Model() = delete;
-    Model(const Model&) = delete;
-    Model(Model&&) = delete;
-    Model& operator=(const Model&) = delete;
-    Model& operator=(Model&&) = delete;
 };
 }  // namespace opentxs::ui::qt

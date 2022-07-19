@@ -549,15 +549,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> session::internal::Endpoints& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Endpoints() = default;
-
-protected:
-    Endpoints() = default;
-
-private:
     Endpoints(const Endpoints&) = delete;
     Endpoints(Endpoints&&) = delete;
     auto operator=(const Endpoints&) -> Endpoints& = delete;
     auto operator=(Endpoints&&) -> Endpoints& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Endpoints() = default;
+
+protected:
+    Endpoints() = default;
 };
 }  // namespace opentxs::api::session

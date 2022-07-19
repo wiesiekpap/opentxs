@@ -169,7 +169,11 @@ public:
         const std::uint8_t bitmessageVersion,
         const std::uint8_t bitmessageStream,
         std::unique_ptr<crypto::key::Secp256k1> key) noexcept;
+    PaymentCode() = delete;
     PaymentCode(const PaymentCode& rhs) noexcept;
+    PaymentCode(PaymentCode&&) = delete;
+    auto operator=(const PaymentCode&) -> PaymentCode& = delete;
+    auto operator=(PaymentCode&&) -> PaymentCode& = delete;
 
     ~PaymentCode() final = default;
 
@@ -260,10 +264,5 @@ private:
         const Mask& mask,
         const crypto::EcdsaProvider& ecdsa,
         const PasswordPrompt& reason) const -> opentxs::PaymentCode;
-
-    PaymentCode() = delete;
-    PaymentCode(PaymentCode&&) = delete;
-    auto operator=(const PaymentCode&) -> PaymentCode&;
-    auto operator=(PaymentCode&&) -> PaymentCode&;
 };
 }  // namespace opentxs::implementation

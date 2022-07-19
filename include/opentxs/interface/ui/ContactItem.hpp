@@ -44,15 +44,14 @@ public:
     /// Returns the actual contains of the claim as a string.
     virtual auto Value() const noexcept -> UnallocatedCString = 0;
 
-    ~ContactItem() override = default;
-
-protected:
-    ContactItem() noexcept = default;
-
-private:
     ContactItem(const ContactItem&) = delete;
     ContactItem(ContactItem&&) = delete;
     auto operator=(const ContactItem&) -> ContactItem& = delete;
     auto operator=(ContactItem&&) -> ContactItem& = delete;
+
+    ~ContactItem() override = default;
+
+protected:
+    ContactItem() noexcept = default;
 };
 }  // namespace opentxs::ui

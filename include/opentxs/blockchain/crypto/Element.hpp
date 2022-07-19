@@ -61,15 +61,14 @@ public:
     virtual auto Subchain() const noexcept -> crypto::Subchain = 0;
     virtual auto Unconfirmed() const noexcept -> Txids = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Element() = default;
-
-protected:
-    Element() noexcept = default;
-
-private:
     Element(const Element&) = delete;
     Element(Element&&) = delete;
     auto operator=(const Element&) -> Element& = delete;
     auto operator=(Element&&) -> Element& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Element() = default;
+
+protected:
+    Element() noexcept = default;
 };
 }  // namespace opentxs::blockchain::crypto

@@ -33,6 +33,11 @@ namespace opentxs::contract::unit
 class OPENTXS_EXPORT Security : virtual public contract::Unit
 {
 public:
+    Security(const Security&) = delete;
+    Security(Security&&) = delete;
+    auto operator=(const Security&) -> Security& = delete;
+    auto operator=(Security&&) -> Security& = delete;
+
     ~Security() override = default;
 
 protected:
@@ -44,10 +49,5 @@ private:
 #ifndef _WIN32
     auto clone() const noexcept -> Security* override = 0;
 #endif
-
-    Security(const Security&) = delete;
-    Security(Security&&) = delete;
-    auto operator=(const Security&) -> Security& = delete;
-    auto operator=(Security&&) -> Security& = delete;
 };
 }  // namespace opentxs::contract::unit

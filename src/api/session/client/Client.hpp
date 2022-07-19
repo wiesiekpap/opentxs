@@ -118,6 +118,11 @@ public:
         const opentxs::network::zeromq::Context& context,
         const UnallocatedCString& dataFolder,
         const int instance);
+    Client() = delete;
+    Client(const Client&) = delete;
+    Client(Client&&) = delete;
+    auto operator=(const Client&) -> Client& = delete;
+    auto operator=(Client&&) -> Client& = delete;
 
     ~Client() final;
 
@@ -139,11 +144,5 @@ private:
     auto get_lock(const ContextID context) const -> std::recursive_mutex&;
 
     auto Cleanup() -> void;
-
-    Client() = delete;
-    Client(const Client&) = delete;
-    Client(Client&&) = delete;
-    auto operator=(const Client&) -> Client& = delete;
-    auto operator=(Client&&) -> Client& = delete;
 };
 }  // namespace opentxs::api::session::imp

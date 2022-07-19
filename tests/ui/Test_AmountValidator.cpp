@@ -40,7 +40,7 @@ public:
             invalid_amounts_;
     };
 
-    Test_AmountValidator() noexcept {}
+    Test_AmountValidator() noexcept = default;
 };
 
 TEST_F(Test_AmountValidator, preconditions)

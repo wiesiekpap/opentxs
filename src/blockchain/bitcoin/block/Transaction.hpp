@@ -224,7 +224,11 @@ public:
         UnallocatedVector<blockchain::Type>&& chains,
         blockchain::block::Position&& minedPosition,
         std::optional<std::size_t>&& position = std::nullopt) noexcept(false);
+    Transaction() = delete;
     Transaction(const Transaction&) noexcept;
+    Transaction(Transaction&&) = delete;
+    auto operator=(const Transaction&) -> Transaction& = delete;
+    auto operator=(Transaction&&) -> Transaction& = delete;
 
     ~Transaction() final = default;
 
@@ -271,7 +275,9 @@ private:
             const UnallocatedCString& memo,
             UnallocatedVector<blockchain::Type>&& chains,
             blockchain::block::Position&& minedPosition) noexcept(false);
+        Cache() = delete;
         Cache(const Cache& rhs) noexcept;
+        Cache(Cache&&) = delete;
 
     private:
         mutable std::recursive_mutex lock_;
@@ -281,9 +287,6 @@ private:
         UnallocatedCString memo_;
         UnallocatedVector<blockchain::Type> chains_;
         blockchain::block::Position mined_position_;
-
-        Cache() = delete;
-        Cache(Cache&&) = delete;
     };
 
     const api::Session& api_;
@@ -310,10 +313,5 @@ private:
     auto calculate_witness_size() const noexcept -> std::size_t;
     auto serialize(const AllocateOutput destination, const bool normalize)
         const noexcept -> std::optional<std::size_t>;
-
-    Transaction() = delete;
-    Transaction(Transaction&&) = delete;
-    auto operator=(const Transaction&) -> Transaction& = delete;
-    auto operator=(Transaction&&) -> Transaction& = delete;
 };
 }  // namespace opentxs::blockchain::bitcoin::block::implementation

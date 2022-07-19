@@ -54,6 +54,10 @@ public:
     };
 
     AccountTreeQt(internal::AccountTree& parent) noexcept;
+    AccountTreeQt(const AccountTreeQt&) = delete;
+    AccountTreeQt(AccountTreeQt&&) = delete;
+    auto operator=(const AccountTreeQt&) -> AccountTreeQt& = delete;
+    auto operator=(AccountTreeQt&&) -> AccountTreeQt& = delete;
 
     ~AccountTreeQt() final;
 
@@ -61,9 +65,4 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    AccountTreeQt(const AccountTreeQt&) = delete;
-    AccountTreeQt(AccountTreeQt&&) = delete;
-    AccountTreeQt& operator=(const AccountTreeQt&) = delete;
-    AccountTreeQt& operator=(AccountTreeQt&&) = delete;
 };

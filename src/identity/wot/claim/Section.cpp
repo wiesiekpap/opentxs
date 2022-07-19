@@ -111,7 +111,7 @@ struct Section::Imp {
         auto version = proto::RequiredVersion(
             translate(section_), translate(item->Type()), version_);
 
-        return Section(api_, nym_, version, version, section_, groups);
+        return {api_, nym_, version, version, section_, groups};
     }
 
     Imp(const api::Session& api,
@@ -128,14 +128,7 @@ struct Section::Imp {
     {
     }
 
-    Imp(const Imp& rhs) noexcept
-        : api_(rhs.api_)
-        , version_(rhs.version_)
-        , nym_(rhs.nym_)
-        , section_(rhs.section_)
-        , groups_(rhs.groups_)
-    {
-    }
+    Imp(const Imp& rhs) noexcept = default;
 
     Imp(Imp&& rhs) noexcept
         : api_(rhs.api_)
@@ -252,8 +245,7 @@ auto Section::operator+(const Section& rhs) const -> Section
 
     const auto version = std::max(imp_->version_, rhs.Version());
 
-    return Section(
-        imp_->api_, imp_->nym_, version, version, imp_->section_, map);
+    return {imp_->api_, imp_->nym_, version, version, imp_->section_, map};
 }
 
 auto Section::AddItem(const std::shared_ptr<Item>& item) const -> Section
@@ -281,8 +273,7 @@ auto Section::AddItem(const std::shared_ptr<Item>& item) const -> Section
     auto version = proto::RequiredVersion(
         translate(imp_->section_), translate(item->Type()), imp_->version_);
 
-    return Section(
-        imp_->api_, imp_->nym_, version, version, imp_->section_, map);
+    return {imp_->api_, imp_->nym_, version, version, imp_->section_, map};
 }
 
 auto Section::begin() const -> Section::GroupMap::const_iterator
@@ -325,13 +316,13 @@ auto Section::Delete(const Identifier& id) const -> Section
 
     if (false == deleted) { return *this; }
 
-    return Section(
+    return {
         imp_->api_,
         imp_->nym_,
         imp_->version_,
         imp_->version_,
         imp_->section_,
-        map);
+        map};
 }
 
 auto Section::end() const -> Section::GroupMap::const_iterator

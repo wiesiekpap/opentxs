@@ -42,17 +42,16 @@ public:
     virtual auto Type() const noexcept
         -> blockchain::crypto::SubaccountType = 0;
 
-    ~BlockchainSubaccountSource() override = default;
-
-protected:
-    BlockchainSubaccountSource() noexcept = default;
-
-private:
     BlockchainSubaccountSource(const BlockchainSubaccountSource&) = delete;
     BlockchainSubaccountSource(BlockchainSubaccountSource&&) = delete;
     auto operator=(const BlockchainSubaccountSource&)
         -> BlockchainSubaccountSource& = delete;
     auto operator=(BlockchainSubaccountSource&&)
         -> BlockchainSubaccountSource& = delete;
+
+    ~BlockchainSubaccountSource() override = default;
+
+protected:
+    BlockchainSubaccountSource() noexcept = default;
 };
 }  // namespace opentxs::ui

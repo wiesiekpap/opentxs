@@ -48,9 +48,9 @@ class IStorablePB : public IStorable
 public:
     ~IStorablePB() override = default;
 
-    virtual ::google::protobuf::MessageLite* getPBMessage();
-    virtual bool onPack(PackedBuffer& theBuffer, Storable& inObj) override;
-    virtual bool onUnpack(PackedBuffer& theBuffer, Storable& outObj) override;
+    virtual auto getPBMessage() -> ::google::protobuf::MessageLite*;
+    auto onPack(PackedBuffer& theBuffer, Storable& inObj) -> bool override;
+    auto onUnpack(PackedBuffer& theBuffer, Storable& outObj) -> bool override;
     OT_USING_ISTORABLE_HOOKS;
 };
 
@@ -71,15 +71,15 @@ public:
     {
     }
     ~BufferPB() override = default;
-    bool PackString(const UnallocatedCString& theString) override;
-    bool UnpackString(UnallocatedCString& theString) override;
-    bool ReadFromIStream(std::istream& inStream, std::int64_t lFilesize)
-        override;
-    bool WriteToOStream(std::ostream& outStream) override;
-    const std::uint8_t* GetData() override;
-    size_t GetSize() override;
+    auto PackString(const UnallocatedCString& theString) -> bool override;
+    auto UnpackString(UnallocatedCString& theString) -> bool override;
+    auto ReadFromIStream(std::istream& inStream, std::int64_t lFilesize)
+        -> bool override;
+    auto WriteToOStream(std::ostream& outStream) -> bool override;
+    auto GetData() -> const std::uint8_t* override;
+    auto GetSize() -> size_t override;
     void SetData(const std::uint8_t* pData, size_t theSize) override;
-    UnallocatedCString& GetBuffer() { return m_buffer; }
+    auto GetBuffer() -> UnallocatedCString& { return m_buffer; }
 };
 
 // Protocol Buffers packer.
@@ -99,7 +99,7 @@ private:
     UnallocatedCString m_Type;
 
 public:
-    static Storable* Instantiate()
+    static auto Instantiate() -> Storable*
     {
         return dynamic_cast<Storable*>(
             new ProtobufSubclass<theBaseType, theInternalType, theObjectType>);
@@ -127,9 +127,10 @@ public:
         rhs.CopyToObject(*this);
     }
 
-    ProtobufSubclass<theBaseType, theInternalType, theObjectType>& operator=(
+    auto operator=(
         const ProtobufSubclass<theBaseType, theInternalType, theObjectType>&
             rhs)
+        -> ProtobufSubclass<theBaseType, theInternalType, theObjectType>&
     {
         rhs.CopyToObject(*this);
         return *this;
@@ -153,14 +154,14 @@ public:
         if (!pPacker->Unpack(*pBuffer, theNewStorable)) { OT_FAIL; }
     }
 
-    ::google::protobuf::MessageLite* getPBMessage() override;
+    auto getPBMessage() -> ::google::protobuf::MessageLite* override;
 
-    theBaseType* clone(void) const override
+    auto clone() const -> theBaseType* override
     {
         return dynamic_cast<theBaseType*>(do_clone());
     }
 
-    IStorable* do_clone(void) const
+    auto do_clone() const -> IStorable*
     {
         Storable* pNewStorable =
             Storable::Create(theObjectType, PACK_PROTOCOL_BUFFERS);

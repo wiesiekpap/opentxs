@@ -506,6 +506,10 @@ public:
         const session::Factory& factory,
         const Flag& running,
         const opentxs::storage::Config& config);
+    Storage(const Storage&) = delete;
+    Storage(Storage&&) = delete;
+    auto operator=(const Storage&) -> Storage& = delete;
+    auto operator=(Storage&&) -> Storage& = delete;
 
     ~Storage() final;
 
@@ -543,10 +547,5 @@ private:
     void RunMapUnits(UnitLambda lambda) const;
     void save(opentxs::storage::Root* in, const Lock& lock) const;
     void start() final;
-
-    Storage(const Storage&) = delete;
-    Storage(Storage&&) = delete;
-    auto operator=(const Storage&) -> Storage& = delete;
-    auto operator=(Storage&&) -> Storage& = delete;
 };
 }  // namespace opentxs::api::session::imp

@@ -108,15 +108,14 @@ public:
     virtual auto Connect() noexcept -> bool = 0;
     virtual auto Disconnect() noexcept -> bool = 0;
 
-    virtual ~Manager() = default;
-
-protected:
-    Manager() noexcept = default;
-
-private:
     Manager(const Manager&) = delete;
     Manager(Manager&&) = delete;
     auto operator=(const Manager&) -> Manager& = delete;
     auto operator=(Manager&&) -> Manager& = delete;
+
+    virtual ~Manager() = default;
+
+protected:
+    Manager() noexcept = default;
 };
 }  // namespace opentxs::blockchain::node

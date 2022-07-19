@@ -43,16 +43,15 @@ public:
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::BlockchainStatisticsItem> = 0;
 
-    ~BlockchainStatistics() override = default;
-
-protected:
-    BlockchainStatistics() noexcept = default;
-
-private:
     BlockchainStatistics(const BlockchainStatistics&) = delete;
     BlockchainStatistics(BlockchainStatistics&&) = delete;
     auto operator=(const BlockchainStatistics&)
         -> BlockchainStatistics& = delete;
     auto operator=(BlockchainStatistics&&) -> BlockchainStatistics& = delete;
+
+    ~BlockchainStatistics() override = default;
+
+protected:
+    BlockchainStatistics() noexcept = default;
 };
 }  // namespace opentxs::ui

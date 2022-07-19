@@ -51,13 +51,11 @@ public:
     OPENTXS_NO_EXPORT GetAccountBalance(
         const proto::RPCResponse& serialized) noexcept(false);
     GetAccountBalance() noexcept;
-
-    ~GetAccountBalance() final;
-
-private:
     GetAccountBalance(const GetAccountBalance&) = delete;
     GetAccountBalance(GetAccountBalance&&) = delete;
     auto operator=(const GetAccountBalance&) -> GetAccountBalance& = delete;
     auto operator=(GetAccountBalance&&) -> GetAccountBalance& = delete;
+
+    ~GetAccountBalance() final;
 };
 }  // namespace opentxs::rpc::response

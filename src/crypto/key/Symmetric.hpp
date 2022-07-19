@@ -108,6 +108,8 @@ public:
         const std::uint64_t parallel,
         const crypto::key::symmetric::Source type =
             crypto::key::symmetric::Source::Argon2i);
+    Symmetric() = delete;
+    auto operator=(const Symmetric&) -> Symmetric& = delete;
 
     ~Symmetric() final = default;
 
@@ -211,8 +213,6 @@ private:
         const std::uint64_t parallel,
         std::optional<OTSecret> plaintextKey,
         proto::Ciphertext* encryptedKey);
-    Symmetric() = delete;
     Symmetric(const Symmetric&);
-    auto operator=(const Symmetric&) -> Symmetric& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

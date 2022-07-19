@@ -55,6 +55,11 @@ public:
         const ReceiveCallback& callback) const -> bool = 0;
     virtual auto SetPolicy(const Policy policy) const -> bool = 0;
 
+    Callback(const Callback&) = delete;
+    Callback(Callback&&) = default;
+    auto operator=(const Callback&) -> Callback& = delete;
+    auto operator=(Callback&&) -> Callback& = default;
+
     virtual ~Callback() = default;
 
 protected:
@@ -64,10 +69,5 @@ private:
     friend OTZMQZAPCallback;
 
     virtual auto clone() const -> Callback* = 0;
-
-    Callback(const Callback&) = delete;
-    Callback(Callback&&) = default;
-    auto operator=(const Callback&) -> Callback& = delete;
-    auto operator=(Callback&&) -> Callback& = default;
 };
 }  // namespace opentxs::network::zeromq::zap

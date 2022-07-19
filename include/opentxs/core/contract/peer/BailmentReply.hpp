@@ -36,6 +36,11 @@ namespace opentxs::contract::peer::reply
 class OPENTXS_EXPORT Bailment : virtual public peer::Reply
 {
 public:
+    Bailment(const Bailment&) = delete;
+    Bailment(Bailment&&) = delete;
+    auto operator=(const Bailment&) -> Bailment& = delete;
+    auto operator=(Bailment&&) -> Bailment& = delete;
+
     ~Bailment() override = default;
 
 protected:
@@ -47,10 +52,5 @@ private:
 #ifndef _WIN32
     auto clone() const noexcept -> Bailment* override = 0;
 #endif
-
-    Bailment(const Bailment&) = delete;
-    Bailment(Bailment&&) = delete;
-    auto operator=(const Bailment&) -> Bailment& = delete;
-    auto operator=(Bailment&&) -> Bailment& = delete;
 };
 }  // namespace opentxs::contract::peer::reply

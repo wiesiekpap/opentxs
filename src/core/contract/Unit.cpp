@@ -445,9 +445,9 @@ auto Unit::get_displayscales(const SerializedType& serialized) const
         }
 
         if (0 < scales.size()) {
-            return std::optional<display::Definition>(display::Definition(
+            return {display::Definition(
                 display::Definition::Name(params.short_name()),
-                std::move(scales)));
+                std::move(scales))};
         }
     }
     return {};

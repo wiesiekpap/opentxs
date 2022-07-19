@@ -69,6 +69,11 @@ public:
         const api::session::Storage& storage,
         const storage::Config& config,
         const Flag& bucket);
+    MemDB() = delete;
+    MemDB(const MemDB&) = delete;
+    MemDB(MemDB&&) = delete;
+    auto operator=(const MemDB&) -> MemDB& = delete;
+    auto operator=(MemDB&&) -> MemDB& = delete;
 
     ~MemDB() final = default;
 
@@ -85,11 +90,5 @@ private:
         const UnallocatedCString& value,
         const bool bucket,
         std::promise<bool>* promise) const final;
-
-    MemDB() = delete;
-    MemDB(const MemDB&) = delete;
-    MemDB(MemDB&&) = delete;
-    auto operator=(const MemDB&) -> MemDB& = delete;
-    auto operator=(MemDB&&) -> MemDB& = delete;
 };
 }  // namespace opentxs::storage::driver

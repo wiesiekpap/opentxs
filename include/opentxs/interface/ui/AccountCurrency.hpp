@@ -47,15 +47,14 @@ public:
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
     virtual auto Next() const noexcept -> SharedPimpl<AccountTreeItem> = 0;
 
-    ~AccountCurrency() override = default;
-
-protected:
-    AccountCurrency() noexcept = default;
-
-private:
     AccountCurrency(const AccountCurrency&) = delete;
     AccountCurrency(AccountCurrency&&) = delete;
     auto operator=(const AccountCurrency&) -> AccountCurrency& = delete;
     auto operator=(AccountCurrency&&) -> AccountCurrency& = delete;
+
+    ~AccountCurrency() override = default;
+
+protected:
+    AccountCurrency() noexcept = default;
 };
 }  // namespace opentxs::ui

@@ -8,6 +8,7 @@
 #include "network/zeromq/socket/Bidirectional.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>
+#include <array>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -243,7 +244,7 @@ void Bidirectional<InterfaceType, MessageType>::thread() noexcept
         std::this_thread::yield();
         auto newEndpoints = this->endpoint_queue_.pop();
         Lock lock(this->lock_, std::try_to_lock);
-        zmq_pollitem_t poll[2]{};
+        auto poll = std::array<::zmq_pollitem_t, 2>{};
         poll[0].socket = this->socket_;
         poll[0].events = ZMQ_POLLIN;
         poll[1].socket = pull_socket_.get();
@@ -256,7 +257,7 @@ void Bidirectional<InterfaceType, MessageType>::thread() noexcept
         }
 
         this->run_tasks(lock);
-        const auto events = zmq_poll(poll, 2, poll_milliseconds_);
+        const auto events = ::zmq_poll(poll.data(), 2, poll_milliseconds_);
 
         if (0 == events) {
             LogInsane()(OT_PRETTY_CLASS())("No messages.").Flush();

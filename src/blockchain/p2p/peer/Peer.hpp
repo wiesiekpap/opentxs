@@ -147,6 +147,12 @@ public:
     virtual auto process_message(zmq::Message&& message) noexcept -> void = 0;
     auto Shutdown() noexcept -> void final;
 
+    Peer() = delete;
+    Peer(const Peer&) = delete;
+    Peer(Peer&&) = delete;
+    auto operator=(const Peer&) -> Peer& = delete;
+    auto operator=(Peer&&) -> Peer& = delete;
+
     ~Peer() override;
 
 protected:
@@ -394,11 +400,5 @@ private:
     auto transmit(zmq::Message&& message) noexcept -> void;
     auto update_address_activity() noexcept -> void;
     auto verify() noexcept -> void;
-
-    Peer() = delete;
-    Peer(const Peer&) = delete;
-    Peer(Peer&&) = delete;
-    auto operator=(const Peer&) -> Peer& = delete;
-    auto operator=(Peer&&) -> Peer& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::implementation

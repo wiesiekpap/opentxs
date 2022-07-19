@@ -35,6 +35,7 @@ namespace
 {
 // NOTE: The below strings correspond to the transaction types
 // listed near the top of OTTransaction.hpp as enum transactionType.
+// NOLINTNEXTLINE(modernize-avoid-c-arrays)
 char const* const TypeStrings[] = {
     "blank",    // freshly issued, not used yet  // comes from server, stored on
                 // Nym. (Nymbox.)
@@ -99,6 +100,7 @@ char const* const TypeStrings[] = {
     "incomingCash",
     "error_state"};
 
+// NOLINTNEXTLINE(modernize-avoid-c-arrays)
 char const* const OriginTypeStrings[] = {
     "not_applicable",
     "origin_market_offer",    // finalReceipt

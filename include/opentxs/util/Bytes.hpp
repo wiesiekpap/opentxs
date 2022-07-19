@@ -130,15 +130,14 @@ public:
         , size_(std::move(rhs.size_))
     {
     }
+    WritableView(const WritableView&) = delete;
+    auto operator=(WritableView&&) -> WritableView& = delete;
 
     ~WritableView() = default;
 
 private:
     void* data_;
     std::size_t size_;
-
-    WritableView(const WritableView&) = delete;
-    auto operator=(WritableView&&) -> WritableView& = delete;
 };
 
 using AllocateOutput = std::function<WritableView(const std::size_t)>;

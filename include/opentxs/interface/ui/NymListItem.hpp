@@ -37,15 +37,14 @@ public:
     /// Returns the NymID for this Nym.
     virtual auto NymID() const noexcept -> UnallocatedCString = 0;
 
-    ~NymListItem() override = default;
-
-protected:
-    NymListItem() noexcept = default;
-
-private:
     NymListItem(const NymListItem&) = delete;
     NymListItem(NymListItem&&) = delete;
     auto operator=(const NymListItem&) -> NymListItem& = delete;
     auto operator=(NymListItem&&) -> NymListItem& = delete;
+
+    ~NymListItem() override = default;
+
+protected:
+    NymListItem() noexcept = default;
 };
 }  // namespace opentxs::ui

@@ -209,13 +209,11 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     auto Shutdown() noexcept -> void override {}
 
     Imp() = default;
-
-    ~Imp() override = default;
-
-private:
     Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
+
+    ~Imp() override = default;
 };
 }  // namespace opentxs::api::network

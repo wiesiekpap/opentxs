@@ -89,16 +89,15 @@ public:
         -> OTSymmetricKey final;
 
     Symmetric(const api::Session& api) noexcept;
-
-    ~Symmetric() final = default;
-
-private:
-    const api::Session& api_;
-
     Symmetric() = delete;
     Symmetric(const Symmetric&) = delete;
     Symmetric(Symmetric&&) = delete;
     auto operator=(const Symmetric&) -> Symmetric& = delete;
     auto operator=(Symmetric&&) -> Symmetric& = delete;
+
+    ~Symmetric() final = default;
+
+private:
+    const api::Session& api_;
 };
 }  // namespace opentxs::api::crypto::imp

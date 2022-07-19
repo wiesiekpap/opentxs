@@ -83,13 +83,11 @@ public:
         UnallocatedVector<Block> blocks) noexcept;
     Imp(const MessageType type) noexcept;
     Imp() noexcept;
-
-    virtual ~Imp() = default;
-
-private:
     Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
+
+    virtual ~Imp() = default;
 };
 }  // namespace opentxs::network::p2p

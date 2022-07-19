@@ -24,16 +24,15 @@ public:
     auto shutdown() noexcept -> void;
 
     Gatekeeper() noexcept;
+    Gatekeeper(const Gatekeeper&) = delete;
+    Gatekeeper(Gatekeeper&&) = delete;
+    auto operator=(const Gatekeeper&) -> Gatekeeper& = delete;
+    auto operator=(Gatekeeper&&) -> Gatekeeper& = delete;
 
     ~Gatekeeper();
 
 private:
     std::unique_ptr<Imp> imp_;
-
-    Gatekeeper(const Gatekeeper&) = delete;
-    Gatekeeper(Gatekeeper&&) = delete;
-    auto operator=(const Gatekeeper&) -> Gatekeeper& = delete;
-    auto operator=(Gatekeeper&&) -> Gatekeeper& = delete;
 };
 
 class Ticket
@@ -47,15 +46,15 @@ public:
     operator bool() const noexcept;
 
     Ticket(Gatekeeper::Imp&) noexcept;
+    Ticket() = delete;
+    Ticket(const Ticket&) = delete;
     Ticket(Ticket&&) noexcept;
+    auto operator=(const Ticket&) -> Ticket& = delete;
+    auto operator=(Ticket&&) -> Ticket& = delete;
 
     ~Ticket();
 
 private:
     std::unique_ptr<Imp> imp_;
-
-    Ticket(const Ticket&) = delete;
-    auto operator=(const Ticket&) -> Ticket& = delete;
-    auto operator=(Ticket&&) -> Ticket& = delete;
 };
 }  // namespace opentxs

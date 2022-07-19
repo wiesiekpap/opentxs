@@ -42,6 +42,11 @@ public:
     virtual auto SetSocksProxy(const UnallocatedCString& proxy) const noexcept
         -> bool = 0;
 
+    Request(const Request&) = delete;
+    Request(Request&&) = delete;
+    auto operator=(const Request&) -> Request& = delete;
+    auto operator=(Request&&) -> Request& = delete;
+
     ~Request() override = default;
 
 protected:
@@ -51,10 +56,5 @@ private:
     friend OTZMQRequestSocket;
 
     virtual auto clone() const noexcept -> Request* = 0;
-
-    Request(const Request&) = delete;
-    Request(Request&&) = delete;
-    auto operator=(const Request&) -> Request& = delete;
-    auto operator=(Request&&) -> Request& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket

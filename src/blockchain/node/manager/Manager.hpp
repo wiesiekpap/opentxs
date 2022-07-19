@@ -259,6 +259,12 @@ public:
     auto StartWallet() noexcept -> void final;
     auto Wallet() const noexcept -> const node::Wallet& final;
 
+    Base() = delete;
+    Base(const Base&) = delete;
+    Base(Base&&) = delete;
+    auto operator=(const Base&) -> Base& = delete;
+    auto operator=(Base&&) -> Base& = delete;
+
     ~Base() override;
 
 protected:
@@ -406,11 +412,5 @@ private:
     auto state_transition_filters() noexcept -> void;
     auto state_transition_normal() noexcept -> void;
     auto state_transition_sync() noexcept -> void;
-
-    Base() = delete;
-    Base(const Base&) = delete;
-    Base(Base&&) = delete;
-    auto operator=(const Base&) -> Base& = delete;
-    auto operator=(Base&&) -> Base& = delete;
 };
 }  // namespace opentxs::blockchain::node::implementation

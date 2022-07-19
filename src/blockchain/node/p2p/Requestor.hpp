@@ -82,6 +82,11 @@ public:
         const Type chain,
         const std::string_view toParent,
         allocator_type alloc) noexcept;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() final;
 
@@ -160,11 +165,5 @@ private:
         -> void;
     auto update_remote_position(const network::p2p::State& state) noexcept
         -> void;
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs::blockchain::node::p2p

@@ -63,6 +63,10 @@ public:
     Tx(const api::Session& api,
        std::unique_ptr<Header> header,
        const ReadView transaction) noexcept(false);
+    Tx(const Tx&) = delete;
+    Tx(Tx&&) = delete;
+    auto operator=(const Tx&) -> Tx& = delete;
+    auto operator=(Tx&&) -> Tx& = delete;
 
     ~Tx() final = default;
 
@@ -71,10 +75,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Tx(const Tx&) = delete;
-    Tx(Tx&&) = delete;
-    auto operator=(const Tx&) -> Tx& = delete;
-    auto operator=(Tx&&) -> Tx& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

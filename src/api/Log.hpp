@@ -36,6 +36,11 @@ class Log final : virtual public api::internal::Log
 public:
     Log(const opentxs::network::zeromq::Context& zmq,
         const UnallocatedCString endpoint);
+    Log() = delete;
+    Log(const Log&) = delete;
+    Log(Log&&) = delete;
+    auto operator=(const Log&) -> Log& = delete;
+    auto operator=(Log&&) -> Log& = delete;
 
     ~Log() final = default;
 
@@ -46,21 +51,9 @@ private:
     const bool publish_;
 
     auto callback(opentxs::network::zeromq::Message&& message) noexcept -> void;
-    void print(
+    auto print(
         const int level,
         const UnallocatedCString& text,
-        const UnallocatedCString& thread);
-#ifdef ANDROID
-    void print_android(
-        const int level,
-        const UnallocatedCString& text,
-        const UnallocatedCString& thread);
-#endif
-
-    Log() = delete;
-    Log(const Log&) = delete;
-    Log(Log&&) = delete;
-    auto operator=(const Log&) -> Log& = delete;
-    auto operator=(Log&&) -> Log& = delete;
+        const UnallocatedCString& thread) noexcept -> void;
 };
 }  // namespace opentxs::api::imp

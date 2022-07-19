@@ -55,17 +55,17 @@ public:
         Chain chain) const noexcept -> void;
 
     AccountIndex(const api::Session& api) noexcept;
+    AccountIndex() = delete;
+    AccountIndex(const AccountIndex&) = delete;
+    AccountIndex(AccountIndex&&) = delete;
+    auto operator=(const AccountIndex&) -> AccountIndex& = delete;
+    auto operator=(AccountIndex&&) -> AccountIndex& = delete;
+
     ~AccountIndex();
 
 private:
     struct Imp;
 
     Imp* imp_;
-
-    AccountIndex() = delete;
-    AccountIndex(const AccountIndex&) = delete;
-    AccountIndex(AccountIndex&&) = delete;
-    auto operator=(const AccountIndex&) -> AccountIndex& = delete;
-    auto operator=(AccountIndex&&) -> AccountIndex& = delete;
 };
 }  // namespace opentxs::blockchain::crypto

@@ -180,6 +180,11 @@ public:
         const Accounts& hd,
         const Accounts& imported,
         const Accounts& paymentCode) noexcept;
+    Account() = delete;
+    Account(const Account&) = delete;
+    Account(Account&&) = delete;
+    auto operator=(const Account&) -> Account& = delete;
+    auto operator=(Account&&) -> Account& = delete;
 
     ~Account() final = default;
 
@@ -366,11 +371,5 @@ private:
         const Identifier& contact,
         const UnallocatedCString& label,
         const PasswordPrompt& reason) const noexcept(false) -> const Element&;
-
-    Account() = delete;
-    Account(const Account&) = delete;
-    Account(Account&&) = delete;
-    auto operator=(const Account&) -> Account& = delete;
-    auto operator=(Account&&) -> Account& = delete;
 };
 }  // namespace opentxs::blockchain::crypto::implementation

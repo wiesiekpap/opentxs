@@ -133,6 +133,10 @@ public:
         const crypto::HashType hashType) const -> bool final;
 
     OpenSSL() noexcept;
+    OpenSSL(const OpenSSL&) = delete;
+    OpenSSL(OpenSSL&&) = delete;
+    auto operator=(const OpenSSL&) -> OpenSSL& = delete;
+    auto operator=(OpenSSL&&) -> OpenSSL& = delete;
 
     ~OpenSSL() final = default;
 
@@ -172,8 +176,6 @@ private:
         auto init_keys(const ReadView prv, const ReadView pub) noexcept -> bool;
 
         DH() noexcept;
-
-    private:
         DH(const DH&) = delete;
         DH(DH&&) = delete;
         auto operator=(const DH&) -> DH& = delete;
@@ -201,8 +203,6 @@ private:
             const ReadView key) noexcept -> bool;
 
         MD() noexcept;
-
-    private:
         MD(const MD&) = delete;
         MD(MD&&) = delete;
         auto operator=(const MD&) -> MD& = delete;
@@ -242,10 +242,5 @@ private:
         const AllocateOutput privateKey,
         const AllocateOutput publicKey,
         ::EVP_PKEY* evp) const noexcept -> bool;
-
-    OpenSSL(const OpenSSL&) = delete;
-    OpenSSL(OpenSSL&&) = delete;
-    auto operator=(const OpenSSL&) -> OpenSSL& = delete;
-    auto operator=(OpenSSL&&) -> OpenSSL& = delete;
 };
 }  // namespace opentxs::crypto::implementation

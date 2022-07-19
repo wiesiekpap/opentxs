@@ -114,6 +114,11 @@ public:
     Server(
         const opentxs::api::session::Notary& manager,
         const PasswordPrompt& reason);
+    Server() = delete;
+    Server(const Server&) = delete;
+    Server(Server&&) = delete;
+    auto operator=(const Server&) -> Server& = delete;
+    auto operator=(Server&&) -> Server& = delete;
 
     ~Server();
 
@@ -181,11 +186,5 @@ private:
         const identifier::Nym& senderNymID,
         const identifier::Nym& recipientNymID,
         const Message& msg) -> bool;
-
-    Server() = delete;
-    Server(const Server&) = delete;
-    Server(Server&&) = delete;
-    auto operator=(const Server&) -> Server& = delete;
-    auto operator=(Server&&) -> Server& = delete;
 };
 }  // namespace opentxs::server

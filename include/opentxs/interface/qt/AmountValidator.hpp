@@ -52,13 +52,18 @@ public:
     Q_INVOKABLE QString revise(QString& input, int previousValue) const;
 
 public:
-    int getMaxDecimals() const;
-    int getMinDecimals() const;
-    int getScale() const;
-    void fixup(QString& input) const final;
-    State validate(QString& input, int& pos) const final;
+    auto getMaxDecimals() const -> int;
+    auto getMinDecimals() const -> int;
+    auto getScale() const -> int;
+    auto fixup(QString& input) const -> void final;
+    auto validate(QString& input, int& pos) const -> State final;
 
     AmountValidator(implementation::AccountActivity& parent) noexcept;
+    AmountValidator() = delete;
+    AmountValidator(const AmountValidator&) = delete;
+    AmountValidator(AmountValidator&&) = delete;
+    auto operator=(const AmountValidator&) -> AmountValidator& = delete;
+    auto operator=(AmountValidator&&) -> AmountValidator& = delete;
 
     ~AmountValidator() final;
 
@@ -66,10 +71,4 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    AmountValidator() = delete;
-    AmountValidator(const AmountValidator&) = delete;
-    AmountValidator(AmountValidator&&) = delete;
-    AmountValidator& operator=(const AmountValidator&) = delete;
-    AmountValidator& operator=(AmountValidator&&) = delete;
 };

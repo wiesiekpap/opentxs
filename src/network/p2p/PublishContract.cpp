@@ -216,8 +216,6 @@ public:
               space(payload))
     {
     }
-
-private:
     Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;

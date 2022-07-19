@@ -42,6 +42,11 @@ class Connection final : public reply::Connection,
                          public peer::implementation::Reply
 {
 public:
+    auto asConnection() const noexcept -> const reply::Connection& final
+    {
+        return *this;
+    }
+
     Connection(
         const api::Session& api,
         const Nym_p& nym,
@@ -57,13 +62,13 @@ public:
         const UnallocatedCString& login,
         const UnallocatedCString& password,
         const UnallocatedCString& key);
+    Connection() = delete;
+    Connection(const Connection&);
+    Connection(Connection&&) = delete;
+    auto operator=(const Connection&) -> Connection& = delete;
+    auto operator=(Connection&&) -> Connection& = delete;
 
     ~Connection() final = default;
-
-    auto asConnection() const noexcept -> const reply::Connection& final
-    {
-        return *this;
-    }
 
 private:
     friend opentxs::Factory;
@@ -81,11 +86,5 @@ private:
         return new Connection(*this);
     }
     auto IDVersion(const Lock& lock) const -> SerializedType final;
-
-    Connection() = delete;
-    Connection(const Connection&);
-    Connection(Connection&&) = delete;
-    auto operator=(const Connection&) -> Connection& = delete;
-    auto operator=(Connection&&) -> Connection& = delete;
 };
 }  // namespace opentxs::contract::peer::reply::implementation

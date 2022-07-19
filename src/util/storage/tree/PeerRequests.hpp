@@ -37,20 +37,6 @@ namespace opentxs::storage
 {
 class PeerRequests final : public Node
 {
-private:
-    friend Nym;
-
-    void init(const UnallocatedCString& hash) final;
-    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
-    auto serialize() const -> proto::StorageNymList;
-
-    PeerRequests(const Driver& storage, const UnallocatedCString& hash);
-    PeerRequests() = delete;
-    PeerRequests(const PeerRequests&) = delete;
-    PeerRequests(PeerRequests&&) = delete;
-    auto operator=(const PeerRequests&) -> PeerRequests = delete;
-    auto operator=(PeerRequests&&) -> PeerRequests = delete;
-
 public:
     auto Load(
         const UnallocatedCString& id,
@@ -64,6 +50,21 @@ public:
     auto Store(const proto::PeerRequest& data, const UnallocatedCString& alias)
         -> bool;
 
+    PeerRequests() = delete;
+    PeerRequests(const PeerRequests&) = delete;
+    PeerRequests(PeerRequests&&) = delete;
+    auto operator=(const PeerRequests&) -> PeerRequests = delete;
+    auto operator=(PeerRequests&&) -> PeerRequests = delete;
+
     ~PeerRequests() final = default;
+
+private:
+    friend Nym;
+
+    void init(const UnallocatedCString& hash) final;
+    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
+    auto serialize() const -> proto::StorageNymList;
+
+    PeerRequests(const Driver& storage, const UnallocatedCString& hash);
 };
 }  // namespace opentxs::storage

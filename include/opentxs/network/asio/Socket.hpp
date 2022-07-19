@@ -95,16 +95,15 @@ public:
     auto Transmit(const ReadView data, Notification notifier) noexcept -> bool;
 
     OPENTXS_NO_EXPORT Socket(Imp* imp) noexcept;
+    Socket() noexcept = delete;
+    Socket(const Socket&) = delete;
     Socket(Socket&&) noexcept;
+    auto operator=(const Socket&) -> Socket& = delete;
+    auto operator=(Socket&&) -> Socket& = delete;
 
     ~Socket();
 
 private:
     Imp* imp_;
-
-    Socket() noexcept = delete;
-    Socket(const Socket&) = delete;
-    auto operator=(const Socket&) -> Socket& = delete;
-    auto operator=(Socket&&) -> Socket& = delete;
 };
 }  // namespace opentxs::network::asio

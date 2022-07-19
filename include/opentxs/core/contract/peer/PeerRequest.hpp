@@ -93,6 +93,11 @@ public:
     virtual auto Server() const -> const identifier::Notary& = 0;
     virtual auto Type() const -> PeerRequestType = 0;
 
+    Request(const Request&) = delete;
+    Request(Request&&) = delete;
+    auto operator=(const Request&) -> Request& = delete;
+    auto operator=(Request&&) -> Request& = delete;
+
     ~Request() override = default;
 
 protected:
@@ -104,10 +109,5 @@ private:
 #ifndef _WIN32
     auto clone() const noexcept -> Request* override = 0;
 #endif
-
-    Request(const Request&) = delete;
-    Request(Request&&) = delete;
-    auto operator=(const Request&) -> Request& = delete;
-    auto operator=(Request&&) -> Request& = delete;
 };
 }  // namespace opentxs::contract::peer

@@ -289,7 +289,9 @@ auto Server::Imp::process_sync(
                     const auto& [endpoint, enabled, socket] =
                         map_.at(state.Chain());
 
-                    if (enabled) { socket.get().Send(std::move(incoming)); }
+                    if (enabled) {
+                        socket.get().Send(zeromq::Message{incoming});
+                    }
                 } catch (...) {
                 }
             }

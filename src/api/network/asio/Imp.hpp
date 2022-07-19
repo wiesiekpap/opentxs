@@ -144,6 +144,11 @@ struct Asio::Imp final : public api::network::internal::Asio,
     auto Shutdown() noexcept -> void;
 
     Imp(const zmq::Context& zmq) noexcept;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() final;
 
@@ -216,11 +221,5 @@ private:
         std::shared_ptr<std::promise<OTData>> promise) -> void;
 
     auto state_machine() noexcept -> bool;
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    Imp& operator=(const Imp&) = delete;
-    Imp& operator=(Imp&&) = delete;
 };
 }  // namespace opentxs::api::network

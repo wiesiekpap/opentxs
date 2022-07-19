@@ -117,12 +117,6 @@ private:
     OTString m_strGroupName;  // If agent is a voting group in an Entity, this
                               // is group's Name (inside Entity.)
 
-    OTAgent() = delete;
-    OTAgent(const OTAgent&) = delete;
-    OTAgent(OTAgent&&) = delete;
-    auto operator=(const OTAgent&) -> OTAgent& = delete;
-    auto operator=(OTAgent&&) -> OTAgent& = delete;
-
 public:
     OTAgent(const api::session::Wallet& wallet);
     OTAgent(
@@ -143,6 +137,11 @@ public:
         const String& strNymID,
         const String& strRoleID,
         const String& strGroupName);
+    OTAgent() = delete;
+    OTAgent(const OTAgent&) = delete;
+    OTAgent(OTAgent&&) = delete;
+    auto operator=(const OTAgent&) -> OTAgent& = delete;
+    auto operator=(OTAgent&&) -> OTAgent& = delete;
 
     virtual ~OTAgent();
 

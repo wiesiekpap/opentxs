@@ -38,6 +38,10 @@ public:
     auto State() const noexcept -> const StateData&;
 
     OPENTXS_NO_EXPORT Request(Imp* imp) noexcept;
+    Request(const Request&) = delete;
+    Request(Request&&) = delete;
+    auto operator=(const Request&) -> Request& = delete;
+    auto operator=(Request&&) -> Request& = delete;
 
     ~Request() final;
 
@@ -46,10 +50,5 @@ private:
 #pragma GCC diagnostic ignored "-Wshadow-field"
     Imp* imp_;
 #pragma GCC diagnostic pop
-
-    Request(const Request&) = delete;
-    Request(Request&&) = delete;
-    auto operator=(const Request&) -> Request& = delete;
-    auto operator=(Request&&) -> Request& = delete;
 };
 }  // namespace opentxs::network::p2p

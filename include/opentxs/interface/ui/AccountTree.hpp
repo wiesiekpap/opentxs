@@ -60,15 +60,14 @@ public:
     /// returns the NymID of the wallet owner as an identifier::Nym object.
     virtual auto Owner() const noexcept -> const identifier::Nym& = 0;
 
-    ~AccountTree() override = default;
-
-protected:
-    AccountTree() noexcept = default;
-
-private:
     AccountTree(const AccountTree&) = delete;
     AccountTree(AccountTree&&) = delete;
     auto operator=(const AccountTree&) -> AccountTree& = delete;
     auto operator=(AccountTree&&) -> AccountTree& = delete;
+
+    ~AccountTree() override = default;
+
+protected:
+    AccountTree() noexcept = default;
 };
 }  // namespace opentxs::ui

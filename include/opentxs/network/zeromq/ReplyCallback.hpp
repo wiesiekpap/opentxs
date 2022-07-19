@@ -45,6 +45,11 @@ public:
     virtual auto Deactivate() const noexcept -> void = 0;
     virtual auto Process(Message&& message) const noexcept -> Message = 0;
 
+    ReplyCallback(const ReplyCallback&) = delete;
+    ReplyCallback(ReplyCallback&&) = default;
+    auto operator=(const ReplyCallback&) -> ReplyCallback& = delete;
+    auto operator=(ReplyCallback&&) -> ReplyCallback& = default;
+
     virtual ~ReplyCallback() = default;
 
 protected:
@@ -54,10 +59,5 @@ private:
     friend OTZMQReplyCallback;
 
     virtual auto clone() const -> ReplyCallback* = 0;
-
-    ReplyCallback(const ReplyCallback&) = delete;
-    ReplyCallback(ReplyCallback&&) = default;
-    auto operator=(const ReplyCallback&) -> ReplyCallback& = delete;
-    auto operator=(ReplyCallback&&) -> ReplyCallback& = default;
 };
 }  // namespace opentxs::network::zeromq

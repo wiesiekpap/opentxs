@@ -211,15 +211,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Activity& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Activity() = default;
-
-protected:
-    Activity() = default;
-
-private:
     Activity(const Activity&) = delete;
     Activity(Activity&&) = delete;
     auto operator=(const Activity&) -> Activity& = delete;
     auto operator=(Activity&&) -> Activity& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Activity() = default;
+
+protected:
+    Activity() = default;
 };
 }  // namespace opentxs::api::session

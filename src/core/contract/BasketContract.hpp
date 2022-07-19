@@ -73,6 +73,9 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const proto::UnitDefinition serialized);
+    Basket(Basket&&) = delete;
+    auto operator=(const Basket&) -> Basket& = delete;
+    auto operator=(Basket&&) -> Basket& = delete;
 
     ~Basket() final = default;
 
@@ -87,8 +90,5 @@ private:
     auto IDVersion(const Lock& lock) const -> proto::UnitDefinition final;
 
     Basket(const Basket&);
-    Basket(Basket&&) = delete;
-    auto operator=(const Basket&) -> Basket& = delete;
-    auto operator=(Basket&&) -> Basket& = delete;
 };
 }  // namespace opentxs::contract::unit::implementation

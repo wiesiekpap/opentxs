@@ -88,6 +88,13 @@ public:
 
     auto ProcessUserCommand(const Message& msgIn, Message& msgOut) -> bool;
 
+    UserCommandProcessor() = delete;
+    UserCommandProcessor(const UserCommandProcessor&) = delete;
+    UserCommandProcessor(UserCommandProcessor&&) = delete;
+    auto operator=(const UserCommandProcessor&)
+        -> UserCommandProcessor& = delete;
+    auto operator=(UserCommandProcessor&&) -> UserCommandProcessor& = delete;
+
 private:
     friend Server;
 
@@ -219,11 +226,5 @@ private:
         Server& server,
         const PasswordPrompt& reason,
         const opentxs::api::session::Notary& manager);
-    UserCommandProcessor() = delete;
-    UserCommandProcessor(const UserCommandProcessor&) = delete;
-    UserCommandProcessor(UserCommandProcessor&&) = delete;
-    auto operator=(const UserCommandProcessor&)
-        -> UserCommandProcessor& = delete;
-    auto operator=(UserCommandProcessor&&) -> UserCommandProcessor& = delete;
 };
 }  // namespace opentxs::server

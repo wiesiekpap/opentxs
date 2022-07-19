@@ -70,6 +70,10 @@ public:
     auto ClearPassword() -> bool;
     auto SetPassword(const Secret& password) -> bool;
 
+    PasswordPrompt(const PasswordPrompt&&) = delete;
+    auto operator=(const PasswordPrompt&) -> const PasswordPrompt& = delete;
+    auto operator=(const PasswordPrompt&&) -> const PasswordPrompt& = delete;
+
     ~PasswordPrompt();
 
 private:
@@ -90,8 +94,5 @@ private:
         const api::Session& api,
         const UnallocatedCString& display) noexcept;
     PasswordPrompt(const PasswordPrompt&) noexcept;
-    PasswordPrompt(const PasswordPrompt&&) = delete;
-    auto operator=(const PasswordPrompt&) -> const PasswordPrompt& = delete;
-    auto operator=(const PasswordPrompt&&) -> const PasswordPrompt& = delete;
 };
 }  // namespace opentxs

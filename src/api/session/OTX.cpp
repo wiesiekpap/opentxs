@@ -155,12 +155,13 @@ namespace opentxs::factory
 auto OTX(
     const Flag& running,
     const api::session::Client& client,
-    const ContextLockCallback& lockCallback) noexcept
+    ContextLockCallback lockCallback) noexcept
     -> std::unique_ptr<api::session::OTX>
 {
     using ReturnType = api::session::imp::OTX;
 
-    return std::make_unique<ReturnType>(running, client, lockCallback);
+    return std::make_unique<ReturnType>(
+        running, client, std::move(lockCallback));
 }
 }  // namespace opentxs::factory
 
@@ -169,8 +170,8 @@ namespace opentxs::api::session::imp
 OTX::OTX(
     const Flag& running,
     const api::session::Client& client,
-    const ContextLockCallback& lockCallback)
-    : lock_callback_(lockCallback)
+    ContextLockCallback lockCallback)
+    : lock_callback_(std::move(lockCallback))
     , running_(running)
     , api_(client)
     , introduction_server_lock_()

@@ -49,6 +49,12 @@ public:
     auto SetPrivateKey(const UnallocatedCString& z85) const noexcept
         -> bool final;
 
+    Server() = delete;
+    Server(const Server&) = delete;
+    Server(Server&&) = delete;
+    auto operator=(const Server&) -> Server& = delete;
+    auto operator=(Server&&) -> Server& = delete;
+
 protected:
     auto set_private_key(const void* key, const std::size_t keySize)
         const noexcept -> bool;
@@ -59,11 +65,5 @@ protected:
 
 private:
     zeromq::socket::implementation::Socket& parent_;
-
-    Server() = delete;
-    Server(const Server&) = delete;
-    Server(Server&&) = delete;
-    auto operator=(const Server&) -> Server& = delete;
-    auto operator=(Server&&) -> Server& = delete;
 };
 }  // namespace opentxs::network::zeromq::curve::implementation

@@ -71,6 +71,11 @@ public:
         TransactionMap&& transactions,
         std::optional<std::size_t>&& proofBytes = {},
         std::optional<CalculatedSize>&& size = {}) noexcept(false);
+    Block() = delete;
+    Block(const Block&) = delete;
+    Block(Block&&) = delete;
+    auto operator=(const Block&) -> Block& = delete;
+    auto operator=(Block&&) -> Block& = delete;
 
     ~Block() final;
 
@@ -83,11 +88,5 @@ private:
     auto extra_bytes() const noexcept -> std::size_t final;
     auto serialize_post_header(ByteIterator& it, std::size_t& remaining)
         const noexcept -> bool final;
-
-    Block() = delete;
-    Block(const Block&) = delete;
-    Block(Block&&) = delete;
-    auto operator=(const Block&) -> Block& = delete;
-    auto operator=(Block&&) -> Block& = delete;
 };
 }  // namespace opentxs::blockchain::pkt::block

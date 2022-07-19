@@ -39,15 +39,14 @@ public:
     void SetCallback(PasswordCallback* callback);
 
     PasswordCaller();
+    PasswordCaller(const PasswordCaller&) = delete;
+    PasswordCaller(PasswordCaller&&) = delete;
+    auto operator=(const PasswordCaller&) -> PasswordCaller& = delete;
+    auto operator=(PasswordCaller&&) -> PasswordCaller& = delete;
 
     ~PasswordCaller();
 
 private:
     PasswordCallback* callback_;
-
-    PasswordCaller(const PasswordCaller&) = delete;
-    PasswordCaller(PasswordCaller&&) = delete;
-    auto operator=(const PasswordCaller&) -> PasswordCaller& = delete;
-    auto operator=(PasswordCaller&&) -> PasswordCaller& = delete;
 };
 }  // namespace opentxs

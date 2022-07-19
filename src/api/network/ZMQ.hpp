@@ -61,6 +61,12 @@ public:
     auto Status(const UnallocatedCString& server) const
         -> opentxs::network::ConnectionState final;
 
+    ZMQ() = delete;
+    ZMQ(const ZMQ&) = delete;
+    ZMQ(ZMQ&&) = delete;
+    auto operator=(const ZMQ&) -> ZMQ& = delete;
+    auto operator=(const ZMQ&&) -> ZMQ& = delete;
+
     ~ZMQ() final;
 
 private:
@@ -85,10 +91,5 @@ private:
     void init(const Lock& lock) const;
 
     ZMQ(const api::Session& api, const Flag& running);
-    ZMQ() = delete;
-    ZMQ(const ZMQ&) = delete;
-    ZMQ(ZMQ&&) = delete;
-    auto operator=(const ZMQ&) -> ZMQ& = delete;
-    auto operator=(const ZMQ&&) -> ZMQ& = delete;
 };
 }  // namespace opentxs::api::network::imp

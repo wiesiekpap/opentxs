@@ -36,6 +36,11 @@ namespace opentxs::contract::peer::request
 class OPENTXS_EXPORT StoreSecret : virtual public peer::Request
 {
 public:
+    StoreSecret(const StoreSecret&) = delete;
+    StoreSecret(StoreSecret&&) = delete;
+    auto operator=(const StoreSecret&) -> StoreSecret& = delete;
+    auto operator=(StoreSecret&&) -> StoreSecret& = delete;
+
     ~StoreSecret() override = default;
 
 protected:
@@ -47,10 +52,5 @@ private:
 #ifndef _WIN32
     auto clone() const noexcept -> StoreSecret* override = 0;
 #endif
-
-    StoreSecret(const StoreSecret&) = delete;
-    StoreSecret(StoreSecret&&) = delete;
-    auto operator=(const StoreSecret&) -> StoreSecret& = delete;
-    auto operator=(StoreSecret&&) -> StoreSecret& = delete;
 };
 }  // namespace opentxs::contract::peer::request

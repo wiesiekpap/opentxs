@@ -90,6 +90,12 @@ public:
 
     virtual void Cleanup() = 0;
 
+    Plugin() = delete;
+    Plugin(const Plugin&) = delete;
+    Plugin(Plugin&&) = delete;
+    auto operator=(const Plugin&) -> Plugin& = delete;
+    auto operator=(Plugin&&) -> Plugin& = delete;
+
     ~Plugin() override = default;
 
 protected:
@@ -103,7 +109,6 @@ protected:
         const api::session::Storage& storage,
         const storage::Config& config,
         const Flag& bucket);
-    Plugin() = delete;
 
     virtual void store(
         const bool isTransaction,
@@ -115,11 +120,6 @@ protected:
 private:
     const api::session::Storage& storage_;
     const Flag& current_bucket_;
-
-    Plugin(const Plugin&) = delete;
-    Plugin(Plugin&&) = delete;
-    auto operator=(const Plugin&) -> Plugin& = delete;
-    auto operator=(Plugin&&) -> Plugin& = delete;
 };
 }  // namespace opentxs::storage::implementation
 

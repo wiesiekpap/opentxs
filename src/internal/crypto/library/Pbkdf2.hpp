@@ -25,15 +25,14 @@ public:
         const std::size_t bytes,
         void* output) const noexcept -> bool = 0;
 
-    virtual ~Pbkdf2() = default;
-
-protected:
-    Pbkdf2() = default;
-
-private:
     Pbkdf2(const Pbkdf2&) = delete;
     Pbkdf2(Pbkdf2&&) = delete;
     auto operator=(const Pbkdf2&) -> Pbkdf2& = delete;
     auto operator=(Pbkdf2&&) -> Pbkdf2& = delete;
+
+    virtual ~Pbkdf2() = default;
+
+protected:
+    Pbkdf2() = default;
 };
 }  // namespace opentxs::crypto

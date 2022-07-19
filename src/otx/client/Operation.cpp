@@ -365,7 +365,7 @@ Operation::Operation(
     const identifier::Nym& nym,
     const identifier::Notary& server,
     const opentxs::PasswordPrompt& reason)
-    : StateMachine(std::bind(&Operation::state_machine, this))
+    : StateMachine([this] { return state_machine(); })
     , api_(api)
     , reason_(reason)
     , nym_id_(nym)

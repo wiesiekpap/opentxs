@@ -49,9 +49,6 @@ namespace opentxs::server
 class Transactor
 {
 public:
-    Transactor(Server& server, const PasswordPrompt& reason);
-    ~Transactor() = default;
-
     auto issueNextTransactionNumber(TransactionNumber& txNumber) -> bool;
     auto issueNextTransactionNumberToNym(
         otx::context::Client& context,
@@ -95,6 +92,11 @@ public:
         const identifier::UnitDefinition& instrumentDefinitionID)
         -> ExclusiveAccount;
 
+    Transactor(Server& server, const PasswordPrompt& reason);
+    Transactor() = delete;
+
+    ~Transactor() = default;
+
 private:
     friend MainFile;
 
@@ -112,7 +114,5 @@ private:
     BasketsMap contractIdToBasketAccountId_;
     // The list of voucher accounts (see GetVoucherAccount below for details)
     otx::internal::AccountList voucherAccounts_;
-
-    Transactor() = delete;
 };
 }  // namespace opentxs::server

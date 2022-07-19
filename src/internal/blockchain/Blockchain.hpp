@@ -97,6 +97,11 @@ public:
     auto read(std::size_t nbits) -> std::uint64_t;
 
     BitReader(const Vector<std::byte>& data);
+    BitReader() = delete;
+    BitReader(const BitReader&) = delete;
+    BitReader(BitReader&&) = delete;
+    auto operator=(const BitReader&) -> BitReader& = delete;
+    auto operator=(BitReader&&) -> BitReader& = delete;
 
 private:
     const Vector<std::byte>& raw_data_;
@@ -104,12 +109,6 @@ private:
     std::size_t len_;
     std::uint64_t accum_;
     std::size_t n_;
-
-    BitReader() = delete;
-    BitReader(const BitReader&) = delete;
-    BitReader(BitReader&&) = delete;
-    auto operator=(const BitReader&) -> BitReader& = delete;
-    auto operator=(BitReader&&) -> BitReader& = delete;
 };
 
 // Source of BitWriter class:
@@ -123,6 +122,7 @@ public:
     void write(std::size_t nbits, std::uint64_t value);
 
     BitWriter(Vector<std::byte>& output);
+    BitWriter() = delete;
 
 private:
     static constexpr auto ACCUM_BITS = std::size_t{sizeof(std::uint64_t) * 8u};
@@ -130,8 +130,6 @@ private:
     Vector<std::byte>& output_;
     std::uint64_t accum_;
     std::size_t n_;
-
-    BitWriter() = delete;
 };
 
 struct SerializedBloomFilter {

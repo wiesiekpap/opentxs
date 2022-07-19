@@ -33,6 +33,11 @@ namespace opentxs::contract::unit
 class OPENTXS_EXPORT Currency : virtual public contract::Unit
 {
 public:
+    Currency(const Currency&) = delete;
+    Currency(Currency&&) = delete;
+    auto operator=(const Currency&) -> Currency& = delete;
+    auto operator=(Currency&&) -> Currency& = delete;
+
     ~Currency() override = default;
 
 protected:
@@ -44,10 +49,5 @@ private:
 #ifndef _WIN32
     auto clone() const noexcept -> Currency* override = 0;
 #endif
-
-    Currency(const Currency&) = delete;
-    Currency(Currency&&) = delete;
-    auto operator=(const Currency&) -> Currency& = delete;
-    auto operator=(Currency&&) -> Currency& = delete;
 };
 }  // namespace opentxs::contract::unit

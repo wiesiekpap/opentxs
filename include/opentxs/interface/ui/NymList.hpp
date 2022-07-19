@@ -42,15 +42,14 @@ public:
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::NymListItem> = 0;
 
-    ~NymList() override = default;
-
-protected:
-    NymList() noexcept = default;
-
-private:
     NymList(const NymList&) = delete;
     NymList(NymList&&) = delete;
     auto operator=(const NymList&) -> NymList& = delete;
     auto operator=(NymList&&) -> NymList& = delete;
+
+    ~NymList() override = default;
+
+protected:
+    NymList() noexcept = default;
 };
 }  // namespace opentxs::ui

@@ -48,6 +48,10 @@ public:
 
     auto SetAlias(const UnallocatedCString& alias) noexcept -> bool override;
 
+    Signable(Signable&&) = delete;
+    auto operator=(const Signable&) -> Signable& = delete;
+    auto operator=(Signable&&) -> Signable& = delete;
+
     ~Signable() override = default;
 
 protected:
@@ -104,8 +108,5 @@ protected:
         const Identifier& id,
         Signatures&& signatures) noexcept;
     Signable(const Signable&) noexcept;
-    Signable(Signable&&) = delete;
-    auto operator=(const Signable&) -> Signable& = delete;
-    auto operator=(Signable&&) -> Signable& = delete;
 };
 }  // namespace opentxs::contract::implementation

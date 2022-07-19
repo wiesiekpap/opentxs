@@ -41,10 +41,15 @@ namespace opentxs::contract::peer::request
 class OPENTXS_EXPORT Bailment : virtual public peer::Request
 {
 public:
-    ~Bailment() override = default;
-
     virtual auto ServerID() const -> const identifier::Notary& = 0;
     virtual auto UnitID() const -> const identifier::UnitDefinition& = 0;
+
+    Bailment(const Bailment&) = delete;
+    Bailment(Bailment&&) = delete;
+    auto operator=(const Bailment&) -> Bailment& = delete;
+    auto operator=(Bailment&&) -> Bailment& = delete;
+
+    ~Bailment() override = default;
 
 protected:
     Bailment() noexcept = default;
@@ -55,10 +60,5 @@ private:
 #ifndef _WIN32
     auto clone() const noexcept -> Bailment* override = 0;
 #endif
-
-    Bailment(const Bailment&) = delete;
-    Bailment(Bailment&&) = delete;
-    auto operator=(const Bailment&) -> Bailment& = delete;
-    auto operator=(Bailment&&) -> Bailment& = delete;
 };
 }  // namespace opentxs::contract::peer::request

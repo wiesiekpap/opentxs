@@ -70,7 +70,12 @@ public:
         const bool success,
         std::shared_ptr<const proto::OTXPush>&& push);
     Imp(const api::Session& api, const proto::ServerReply serialized);
+    Imp() = delete;
     Imp(const Imp& rhs) noexcept;
+    Imp(Imp&& rhs) = delete;
+    auto operator=(const Imp& rhs) -> Imp& = delete;
+    auto operator=(Imp&& rhs) -> Imp& = delete;
+
     ~Imp() final = default;
 
 private:
@@ -99,10 +104,5 @@ private:
     auto validate(const Lock& lock) const -> bool final;
     auto verify_signature(const Lock& lock, const proto::Signature& signature)
         const -> bool final;
-
-    Imp() = delete;
-    Imp(Imp&& rhs) = delete;
-    auto operator=(const Imp& rhs) -> Imp& = delete;
-    auto operator=(Imp&& rhs) -> Imp& = delete;
 };
 }  // namespace opentxs::otx

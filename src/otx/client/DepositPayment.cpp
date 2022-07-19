@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "otx/client/DepositPayment.hpp"  // IWYU pragma: associated
 
-#include <functional>
 #include <future>
 #include <memory>
 #include <tuple>
@@ -36,7 +35,7 @@ DepositPayment::DepositPayment(
     const TaskID taskID,
     const DepositPaymentTask& payment,
     PaymentTasks& paymenttasks)
-    : StateMachine(std::bind(&DepositPayment::deposit, this))
+    : StateMachine([this] { return deposit(); })
     , parent_(parent)
     , task_id_(taskID)
     , payment_(payment)

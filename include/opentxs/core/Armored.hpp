@@ -122,6 +122,11 @@ public:
     virtual auto SetString(const String& theData, bool bLineBreaks = true)
         -> bool = 0;
 
+    Armored(const Armored&) = delete;
+    Armored(Armored&&) = delete;
+    auto operator=(const Armored&) -> Armored& = delete;
+    auto operator=(Armored&&) -> Armored& = delete;
+
     ~Armored() override = default;
 
 protected:
@@ -132,11 +137,5 @@ protected:
 #endif
 
     Armored() = default;
-
-private:
-    Armored(const Armored&) = delete;
-    Armored(Armored&&) = delete;
-    auto operator=(const Armored&) -> Armored& = delete;
-    auto operator=(Armored&&) -> Armored& = delete;
 };
 }  // namespace opentxs

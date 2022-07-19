@@ -36,6 +36,11 @@ namespace opentxs::network::zeromq::socket
 class OPENTXS_EXPORT Pull : virtual public curve::Server
 {
 public:
+    Pull(const Pull&) = delete;
+    Pull(Pull&&) = delete;
+    auto operator=(const Pull&) -> Pull& = delete;
+    auto operator=(Pull&&) -> Pull& = delete;
+
     ~Pull() override = default;
 
 protected:
@@ -45,10 +50,5 @@ private:
     friend OTZMQPullSocket;
 
     virtual auto clone() const noexcept -> Pull* = 0;
-
-    Pull(const Pull&) = delete;
-    Pull(Pull&&) = delete;
-    auto operator=(const Pull&) -> Pull& = delete;
-    auto operator=(Pull&&) -> Pull& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket

@@ -110,6 +110,12 @@ public:
         m_lUsageCredits = lUsage;
     }
 
+    NymFile() = delete;
+    NymFile(const NymFile&) = delete;
+    NymFile(NymFile&&) = delete;
+    auto operator=(const NymFile&) -> NymFile& = delete;
+    auto operator=(NymFile&&) -> NymFile& = delete;
+
     ~NymFile() final;
 
 private:
@@ -179,10 +185,5 @@ private:
         const opentxs::Identifier& theInput) -> bool;
 
     NymFile(const api::Session& api, Nym_p targetNym, Nym_p signerNym);
-    NymFile() = delete;
-    NymFile(const NymFile&) = delete;
-    NymFile(NymFile&&) = delete;
-    auto operator=(const NymFile&) -> NymFile& = delete;
-    auto operator=(NymFile&&) -> NymFile& = delete;
 };
 }  // namespace opentxs::implementation

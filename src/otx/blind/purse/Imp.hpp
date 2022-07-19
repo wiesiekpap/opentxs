@@ -164,7 +164,11 @@ public:
         std::optional<OTSecret> secondaryKeyPassword) noexcept;
     Purse(const api::Session& api, const Purse& owner) noexcept;
     Purse(const api::Session& api, const proto::Purse& serialized) noexcept;
+    Purse() = delete;
     Purse(const Purse&) noexcept;
+    Purse(Purse&&) = delete;
+    auto operator=(const Purse&) -> Purse& = delete;
+    auto operator=(Purse&&) -> Purse& = delete;
 
     ~Purse() final = default;
 
@@ -204,10 +208,5 @@ private:
 
     auto apply_times(const Token& token) -> void;
     auto recalculate_times() -> void;
-
-    Purse() = delete;
-    Purse(Purse&&) = delete;
-    auto operator=(const Purse&) -> Purse& = delete;
-    auto operator=(Purse&&) -> Purse& = delete;
 };
 }  // namespace opentxs::otx::blind::purse

@@ -62,6 +62,11 @@ public:
         -> UnallocatedCString = 0;
     virtual auto Decimal() const noexcept -> UnallocatedCString = 0;
 
+    NumericHash(const NumericHash& rhs) = delete;
+    NumericHash(NumericHash&& rhs) = delete;
+    auto operator=(const NumericHash& rhs) -> NumericHash& = delete;
+    auto operator=(NumericHash&& rhs) -> NumericHash& = delete;
+
     virtual ~NumericHash() = default;
 
 protected:
@@ -71,10 +76,5 @@ private:
     friend OTNumericHash;
 
     virtual auto clone() const noexcept -> NumericHash* = 0;
-
-    NumericHash(const NumericHash& rhs) = delete;
-    NumericHash(NumericHash&& rhs) = delete;
-    auto operator=(const NumericHash& rhs) -> NumericHash& = delete;
-    auto operator=(NumericHash&& rhs) -> NumericHash& = delete;
 };
 }  // namespace opentxs::blockchain

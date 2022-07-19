@@ -27,6 +27,10 @@ public:
     auto watch(Future&& future, Callback&& cb) noexcept -> int;
 
     SendMonitor() noexcept;
+    SendMonitor(const SendMonitor&) = delete;
+    SendMonitor(SendMonitor&&) = delete;
+    auto operator=(const SendMonitor&) -> SendMonitor& = delete;
+    auto operator=(SendMonitor&&) -> SendMonitor& = delete;
 
     ~SendMonitor();
 
@@ -34,10 +38,5 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    SendMonitor(const SendMonitor&) = delete;
-    SendMonitor(SendMonitor&&) = delete;
-    auto operator=(const SendMonitor&) -> SendMonitor& = delete;
-    auto operator=(SendMonitor&&) -> SendMonitor& = delete;
 };
 }  // namespace opentxs::ui::implementation

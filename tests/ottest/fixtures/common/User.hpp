@@ -83,6 +83,10 @@ public:
         std::string_view words,
         std::string_view name,
         std::string_view passphrase = {}) noexcept;
+    User(const User&) = delete;
+    User(User&&) = delete;
+    auto operator=(const User&) -> User& = delete;
+    auto operator=(User&&) -> User& = delete;
 
 private:
     mutable std::mutex lock_;
@@ -94,10 +98,5 @@ private:
         const ot::identity::Type type,
         const std::uint32_t index,
         const ot::crypto::SeedStyle seed) noexcept -> bool;
-
-    User(const User&) = delete;
-    User(User&&) = delete;
-    User& operator=(const User&) = delete;
-    User& operator=(User&&) = delete;
 };
 }  // namespace ottest

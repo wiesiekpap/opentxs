@@ -48,6 +48,14 @@ public:
         -> opentxs::network::asio::Socket = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 
+    IncomingConnectionManager() = delete;
+    IncomingConnectionManager(const IncomingConnectionManager&) = delete;
+    IncomingConnectionManager(IncomingConnectionManager&&) = delete;
+    auto operator=(const IncomingConnectionManager&)
+        -> IncomingConnectionManager& = delete;
+    auto operator=(IncomingConnectionManager&&)
+        -> IncomingConnectionManager& = delete;
+
     virtual ~IncomingConnectionManager() = default;
 
 protected:
@@ -57,14 +65,5 @@ protected:
         : parent_(parent)
     {
     }
-
-private:
-    IncomingConnectionManager() = delete;
-    IncomingConnectionManager(const IncomingConnectionManager&) = delete;
-    IncomingConnectionManager(IncomingConnectionManager&&) = delete;
-    auto operator=(const IncomingConnectionManager&)
-        -> IncomingConnectionManager& = delete;
-    auto operator=(IncomingConnectionManager&&)
-        -> IncomingConnectionManager& = delete;
 };
 }  // namespace opentxs::blockchain::node::implementation

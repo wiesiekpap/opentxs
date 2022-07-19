@@ -117,9 +117,8 @@ public:
         const api::Session& api,
         const identifier::UnitDefinition& unit) noexcept;
 
-    ~Mint() override = default;
-
-private:
     Mint() = delete;
+
+    ~Mint() override = default;
 };
 }  // namespace opentxs::otx::blind::internal

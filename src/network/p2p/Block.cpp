@@ -51,9 +51,7 @@ struct Block::Imp {
 
         if (0 == filter_.size()) { throw std::runtime_error{"invalid filter"}; }
     }
-
-private:
-    Imp() noexcept;
+    Imp() noexcept = delete;
     Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;

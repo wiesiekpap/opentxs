@@ -45,15 +45,13 @@ struct SendPayment final : public Base::Imp {
         : Imp(parent, in)
     {
     }
-
-    ~SendPayment() final = default;
-
-private:
     SendPayment() = delete;
     SendPayment(const SendPayment&) = delete;
     SendPayment(SendPayment&&) = delete;
     auto operator=(const SendPayment&) -> SendPayment& = delete;
     auto operator=(SendPayment&&) -> SendPayment& = delete;
+
+    ~SendPayment() final = default;
 };
 }  // namespace opentxs::rpc::response::implementation
 

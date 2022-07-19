@@ -86,6 +86,12 @@ public:
         const AccountListRowID& rowID,
         const AccountListSortKey& sortKey,
         CustomData& custom) noexcept;
+    AccountListItem() = delete;
+    AccountListItem(const AccountListItem&) = delete;
+    AccountListItem(AccountListItem&&) = delete;
+    auto operator=(const AccountListItem&) -> AccountListItem& = delete;
+    auto operator=(AccountListItem&&) -> AccountListItem& = delete;
+
     ~AccountListItem() override;
 
 protected:
@@ -104,12 +110,6 @@ private:
         -> void final;
 
     auto reindex(const AccountListSortKey&, CustomData&) noexcept -> bool final;
-
-    AccountListItem() = delete;
-    AccountListItem(const AccountListItem&) = delete;
-    AccountListItem(AccountListItem&&) = delete;
-    auto operator=(const AccountListItem&) -> AccountListItem& = delete;
-    auto operator=(AccountListItem&&) -> AccountListItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

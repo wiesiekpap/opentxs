@@ -49,6 +49,11 @@ public:
         const zeromq::Context& context,
         const Direction direction,
         const ReplyCallback& callback) noexcept;
+    Reply() = delete;
+    Reply(const Reply&) = delete;
+    Reply(Reply&&) = delete;
+    auto operator=(const Reply&) -> Reply& = delete;
+    auto operator=(Reply&&) -> Reply& = delete;
 
     ~Reply() final;
 
@@ -59,11 +64,5 @@ private:
     auto have_callback() const noexcept -> bool final;
 
     void process_incoming(const Lock& lock, Message&& message) noexcept final;
-
-    Reply() = delete;
-    Reply(const Reply&) = delete;
-    Reply(Reply&&) = delete;
-    auto operator=(const Reply&) -> Reply& = delete;
-    auto operator=(Reply&&) -> Reply& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

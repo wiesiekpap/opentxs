@@ -38,15 +38,14 @@ public:
         const std::size_t keySize,
         std::uint8_t* output) const -> bool = 0;
 
-    virtual ~HashingProvider() = default;
-
-protected:
-    HashingProvider() = default;
-
-private:
     HashingProvider(const HashingProvider&) = delete;
     HashingProvider(HashingProvider&&) = delete;
     auto operator=(const HashingProvider&) -> HashingProvider& = delete;
     auto operator=(HashingProvider&&) -> HashingProvider& = delete;
+
+    virtual ~HashingProvider() = default;
+
+protected:
+    HashingProvider() = default;
 };
 }  // namespace opentxs::crypto

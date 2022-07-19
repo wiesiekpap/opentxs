@@ -139,7 +139,7 @@ TEST_F(Test_Messages, pushReply)
         server_id_,
         type,
         true,
-        1,
+        true,
         reason_s_,
         ot::otx::OTXPushType::Nymbox,
         payload);

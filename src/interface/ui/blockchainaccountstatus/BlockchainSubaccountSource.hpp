@@ -91,6 +91,14 @@ public:
         const BlockchainAccountStatusRowID& rowID,
         const BlockchainAccountStatusSortKey& key,
         CustomData& custom) noexcept;
+    BlockchainSubaccountSource() = delete;
+    BlockchainSubaccountSource(const BlockchainSubaccountSource&) = delete;
+    BlockchainSubaccountSource(BlockchainSubaccountSource&&) = delete;
+    auto operator=(const BlockchainSubaccountSource&)
+        -> BlockchainSubaccountSource& = delete;
+    auto operator=(BlockchainSubaccountSource&&)
+        -> BlockchainSubaccountSource& = delete;
+
     ~BlockchainSubaccountSource() final;
 
 private:
@@ -110,14 +118,6 @@ private:
     auto reindex(
         const implementation::BlockchainAccountStatusSortKey& key,
         implementation::CustomData& custom) noexcept -> bool final;
-
-    BlockchainSubaccountSource() = delete;
-    BlockchainSubaccountSource(const BlockchainSubaccountSource&) = delete;
-    BlockchainSubaccountSource(BlockchainSubaccountSource&&) = delete;
-    auto operator=(const BlockchainSubaccountSource&)
-        -> BlockchainSubaccountSource& = delete;
-    auto operator=(BlockchainSubaccountSource&&)
-        -> BlockchainSubaccountSource& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

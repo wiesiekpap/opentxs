@@ -39,6 +39,11 @@ public:
     /** Returns previous state */
     virtual auto Toggle() -> bool = 0;
 
+    Flag(const Flag&) = delete;
+    Flag(Flag&&) = delete;
+    auto operator=(const Flag&) -> Flag& = delete;
+    auto operator=(Flag&&) -> Flag& = delete;
+
     virtual ~Flag() = default;
 
 protected:
@@ -48,10 +53,5 @@ private:
     friend OTFlag;
 
     virtual auto clone() const -> Flag* = 0;
-
-    Flag(const Flag&) = delete;
-    Flag(Flag&&) = delete;
-    auto operator=(const Flag&) -> Flag& = delete;
-    auto operator=(Flag&&) -> Flag& = delete;
 };
 }  // namespace opentxs

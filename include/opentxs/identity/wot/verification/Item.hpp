@@ -49,15 +49,14 @@ public:
     virtual auto Value() const noexcept -> Type = 0;
     virtual auto Version() const noexcept -> VersionNumber = 0;
 
-    virtual ~Item() = default;
-
-protected:
-    Item() = default;
-
-private:
     Item(const Item&) = delete;
     Item(Item&&) = delete;
     auto operator=(const Item&) -> Item& = delete;
     auto operator=(Item&&) -> Item& = delete;
+
+    virtual ~Item() = default;
+
+protected:
+    Item() = default;
 };
 }  // namespace opentxs::identity::wot::verification

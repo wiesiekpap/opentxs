@@ -67,6 +67,11 @@ public:
         -> UnallocatedCString final;
 
     Encode(const api::Crypto& crypto) noexcept;
+    Encode() = delete;
+    Encode(const Encode&) = delete;
+    Encode(Encode&&) = delete;
+    auto operator=(const Encode&) -> Encode& = delete;
+    auto operator=(Encode&&) -> Encode& = delete;
 
     ~Encode() final = default;
 
@@ -85,9 +90,5 @@ private:
     auto IdentifierEncode(const Secret& input) const -> UnallocatedCString;
     auto IdentifierEncode(const void* data, const std::size_t size) const
         -> UnallocatedCString;
-
-    Encode() = delete;
-    Encode(const Encode&) = delete;
-    auto operator=(const Encode&) -> Encode& = delete;
 };
 }  // namespace opentxs::api::crypto::imp

@@ -71,15 +71,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto InternalEncode() noexcept
         -> internal::Encode& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Encode() = default;
-
-protected:
-    Encode() = default;
-
-private:
     Encode(const Encode&) = delete;
     Encode(Encode&&) = delete;
     auto operator=(const Encode&) -> Encode& = delete;
     auto operator=(Encode&&) -> Encode& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Encode() = default;
+
+protected:
+    Encode() = default;
 };
 }  // namespace opentxs::api::crypto

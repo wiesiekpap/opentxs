@@ -30,7 +30,7 @@ class AccountListQt;
 }  // namespace ui
 // }  // namespace v1
 }  // namespace opentxs
-// NOLINTEND(modernize-concat-nested-namespaces
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class OPENTXS_EXPORT opentxs::ui::AccountListQt final : public qt::Model
 {
@@ -57,6 +57,10 @@ public:
     };
 
     AccountListQt(internal::AccountList& parent) noexcept;
+    AccountListQt(const AccountListQt&) = delete;
+    AccountListQt(AccountListQt&&) = delete;
+    auto operator=(const AccountListQt&) -> AccountListQt& = delete;
+    auto operator=(AccountListQt&&) -> AccountListQt& = delete;
 
     ~AccountListQt() final;
 
@@ -64,9 +68,4 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    AccountListQt(const AccountListQt&) = delete;
-    AccountListQt(AccountListQt&&) = delete;
-    AccountListQt& operator=(const AccountListQt&) = delete;
-    AccountListQt& operator=(AccountListQt&&) = delete;
 };

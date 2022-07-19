@@ -123,7 +123,7 @@ auto Root::mutable_Tree() -> Editor<storage::Tree>
     std::function<void(storage::Tree*, Lock&)> callback =
         [&](storage::Tree* in, Lock& lock) -> void { this->save(in, lock); };
 
-    return Editor<storage::Tree>(write_lock_, tree(), callback);
+    return {write_lock_, tree(), callback};
 }
 
 auto Root::save(const Lock& lock, const Driver& to) const -> bool

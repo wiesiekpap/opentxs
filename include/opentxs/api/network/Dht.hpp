@@ -52,15 +52,14 @@ public:
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Dht& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Dht() = default;
-
-protected:
-    Dht() = default;
-
-private:
     Dht(const Dht&) = delete;
     Dht(Dht&&) = delete;
     auto operator=(const Dht&) -> Dht& = delete;
     auto operator=(Dht&&) -> Dht& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Dht() = default;
+
+protected:
+    Dht() = default;
 };
 }  // namespace opentxs::api::network

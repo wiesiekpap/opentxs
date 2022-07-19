@@ -121,6 +121,11 @@ public:
         const api::session::Wallet& wallet,
         const identifier::Nym& nymID,
         const identifier::Nym& issuerID);
+    Issuer() = delete;
+    Issuer(const Issuer&) = delete;
+    Issuer(Issuer&&) = delete;
+    auto operator=(const Issuer&) -> Issuer& = delete;
+    auto operator=(Issuer&&) -> Issuer& = delete;
 
     ~Issuer() final;
 
@@ -157,11 +162,5 @@ private:
         const contract::peer::PeerRequestType type,
         const Identifier& requestID,
         const Identifier& replyID) -> bool;
-
-    Issuer() = delete;
-    Issuer(const Issuer&) = delete;
-    Issuer(Issuer&&) = delete;
-    auto operator=(const Issuer&) -> Issuer& = delete;
-    auto operator=(Issuer&&) -> Issuer& = delete;
 };
 }  // namespace opentxs::otx::client::implementation

@@ -97,15 +97,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Transaction& = 0;
 
-    virtual ~Transaction() = default;
-
-protected:
-    Transaction() noexcept = default;
-
-private:
     Transaction(const Transaction&) = delete;
     Transaction(Transaction&&) = delete;
     auto operator=(const Transaction&) -> Transaction& = delete;
     auto operator=(Transaction&&) -> Transaction& = delete;
+
+    virtual ~Transaction() = default;
+
+protected:
+    Transaction() noexcept = default;
 };
 }  // namespace opentxs::blockchain::bitcoin::block

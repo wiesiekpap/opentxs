@@ -196,6 +196,12 @@ public:
                    // serialization, this is where the
                    // ledger saves its contents
 
+    OTMarket() = delete;
+    OTMarket(const OTMarket&) = delete;
+    OTMarket(OTMarket&&) = delete;
+    auto operator=(const OTMarket&) -> OTMarket& = delete;
+    auto operator=(OTMarket&&) -> OTMarket& = delete;
+
     ~OTMarket() override;
 
 private:
@@ -267,11 +273,5 @@ private:
         Account& p4,
         bool b4,
         const Amount& a4);
-
-    OTMarket() = delete;
-    OTMarket(const OTMarket&) = delete;
-    OTMarket(OTMarket&&) = delete;
-    auto operator=(const OTMarket&) -> OTMarket& = delete;
-    auto operator=(OTMarket&&) -> OTMarket& = delete;
 };
 }  // namespace opentxs

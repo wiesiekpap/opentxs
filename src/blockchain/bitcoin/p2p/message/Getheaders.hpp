@@ -55,13 +55,10 @@ public:
     {
         return payload_.at(position);
     }
-    auto begin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto begin() const noexcept -> const_iterator final { return {this, 0}; }
     auto end() const noexcept -> const_iterator final
     {
-        return const_iterator(this, payload_.size());
+        return {this, payload_.size()};
     }
     auto StopHash() const noexcept -> block::Hash final { return stop_; }
     auto size() const noexcept -> std::size_t final { return payload_.size(); }
@@ -82,6 +79,10 @@ public:
         const bitcoin::ProtocolVersionUnsigned version,
         Vector<block::Hash>&& hashes,
         const block::Hash& stop) noexcept;
+    Getheaders(const Getheaders&) = delete;
+    Getheaders(Getheaders&&) = delete;
+    auto operator=(const Getheaders&) -> Getheaders& = delete;
+    auto operator=(Getheaders&&) -> Getheaders& = delete;
 
     ~Getheaders() final = default;
 
@@ -92,10 +93,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Getheaders(const Getheaders&) = delete;
-    Getheaders(Getheaders&&) = delete;
-    auto operator=(const Getheaders&) -> Getheaders& = delete;
-    auto operator=(Getheaders&&) -> Getheaders& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

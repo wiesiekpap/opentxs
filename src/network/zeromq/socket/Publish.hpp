@@ -37,6 +37,11 @@ class Publish final : public Sender<zeromq::socket::Publish>,
 {
 public:
     Publish(const zeromq::Context& context) noexcept;
+    Publish() = delete;
+    Publish(const Publish&) = delete;
+    Publish(Publish&&) = delete;
+    auto operator=(const Publish&) -> Publish& = delete;
+    auto operator=(Publish&&) -> Publish& = delete;
 
     ~Publish() final;
 
@@ -45,11 +50,5 @@ private:
     {
         return new Publish(context_);
     }
-
-    Publish() = delete;
-    Publish(const Publish&) = delete;
-    Publish(Publish&&) = delete;
-    auto operator=(const Publish&) -> Publish& = delete;
-    auto operator=(Publish&&) -> Publish& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

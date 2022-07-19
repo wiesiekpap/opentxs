@@ -36,6 +36,11 @@ namespace opentxs::contract::peer::reply
 class OPENTXS_EXPORT Acknowledgement : virtual public peer::Reply
 {
 public:
+    Acknowledgement(const Acknowledgement&) = delete;
+    Acknowledgement(Acknowledgement&&) = delete;
+    auto operator=(const Acknowledgement&) -> Acknowledgement& = delete;
+    auto operator=(Acknowledgement&&) -> Acknowledgement& = delete;
+
     ~Acknowledgement() override = default;
 
 protected:
@@ -47,10 +52,5 @@ private:
 #ifndef _WIN32
     auto clone() const noexcept -> Acknowledgement* override = 0;
 #endif
-
-    Acknowledgement(const Acknowledgement&) = delete;
-    Acknowledgement(Acknowledgement&&) = delete;
-    auto operator=(const Acknowledgement&) -> Acknowledgement& = delete;
-    auto operator=(Acknowledgement&&) -> Acknowledgement& = delete;
 };
 }  // namespace opentxs::contract::peer::reply

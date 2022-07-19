@@ -56,14 +56,12 @@ public:
         const ActivityThreadRowID& rowID,
         const ActivityThreadSortKey& sortKey,
         CustomData& custom) noexcept;
-
-    ~MailItem() final;
-
-private:
     MailItem() = delete;
     MailItem(const MailItem&) = delete;
     MailItem(MailItem&&) = delete;
     auto operator=(const MailItem&) -> MailItem& = delete;
     auto operator=(MailItem&&) -> MailItem& = delete;
+
+    ~MailItem() final;
 };
 }  // namespace opentxs::ui::implementation

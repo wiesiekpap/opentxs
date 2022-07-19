@@ -81,6 +81,10 @@ public:
         const TxnCount txn_count,
         const UnallocatedVector<OTData>& hashes,
         const UnallocatedVector<std::byte>& flags) noexcept(false);
+    Merkleblock(const Merkleblock&) = delete;
+    Merkleblock(Merkleblock&&) = delete;
+    auto operator=(const Merkleblock&) -> Merkleblock& = delete;
+    auto operator=(Merkleblock&&) -> Merkleblock& = delete;
 
     ~Merkleblock() final = default;
 
@@ -92,10 +96,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Merkleblock(const Merkleblock&) = delete;
-    Merkleblock(Merkleblock&&) = delete;
-    auto operator=(const Merkleblock&) -> Merkleblock& = delete;
-    auto operator=(Merkleblock&&) -> Merkleblock& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

@@ -64,13 +64,12 @@ public:
         const OptionalInt defaultMaxDecimals = std::nullopt) noexcept;
     Scale(const Scale&) noexcept;
     Scale(Scale&&) noexcept;
+    auto operator=(const Scale&) -> Scale& = delete;
+    auto operator=(Scale&&) -> Scale& = delete;
 
     virtual ~Scale();
 
 private:
     Imp* imp_;
-
-    auto operator=(const Scale&) -> Scale& = delete;
-    auto operator=(Scale&&) -> Scale& = delete;
 };
 }  // namespace opentxs::display

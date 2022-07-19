@@ -37,21 +37,6 @@ namespace opentxs::storage
 {
 class Credentials final : public Node
 {
-private:
-    friend Tree;
-
-    auto check_existing(const bool incoming, Metadata& metadata) const -> bool;
-    void init(const UnallocatedCString& hash) final;
-    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
-    auto serialize() const -> proto::StorageCredentials;
-
-    Credentials(const Driver& storage, const UnallocatedCString& hash);
-    Credentials() = delete;
-    Credentials(const Credentials&) = delete;
-    Credentials(Credentials&&) = delete;
-    auto operator=(const Credentials&) -> Credentials = delete;
-    auto operator=(Credentials&&) -> Credentials = delete;
-
 public:
     auto Alias(const UnallocatedCString& id) const -> UnallocatedCString;
     auto Load(
@@ -65,6 +50,22 @@ public:
     auto Store(const proto::Credential& data, const UnallocatedCString& alias)
         -> bool;
 
+    Credentials() = delete;
+    Credentials(const Credentials&) = delete;
+    Credentials(Credentials&&) = delete;
+    auto operator=(const Credentials&) -> Credentials = delete;
+    auto operator=(Credentials&&) -> Credentials = delete;
+
     ~Credentials() final = default;
+
+private:
+    friend Tree;
+
+    auto check_existing(const bool incoming, Metadata& metadata) const -> bool;
+    void init(const UnallocatedCString& hash) final;
+    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
+    auto serialize() const -> proto::StorageCredentials;
+
+    Credentials(const Driver& storage, const UnallocatedCString& hash);
 };
 }  // namespace opentxs::storage

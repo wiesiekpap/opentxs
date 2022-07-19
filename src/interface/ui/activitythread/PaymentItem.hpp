@@ -81,6 +81,12 @@ public:
         UnallocatedCString&& display,
         UnallocatedCString&& memo,
         std::shared_ptr<const OTPayment>&& contract) noexcept;
+    PaymentItem() = delete;
+    PaymentItem(const PaymentItem&) = delete;
+    PaymentItem(PaymentItem&&) = delete;
+    auto operator=(const PaymentItem&) -> PaymentItem& = delete;
+    auto operator=(PaymentItem&&) -> PaymentItem& = delete;
+
     ~PaymentItem() final;
 
 private:
@@ -91,11 +97,5 @@ private:
 
     auto reindex(const ActivityThreadSortKey& key, CustomData& custom) noexcept
         -> bool final;
-
-    PaymentItem() = delete;
-    PaymentItem(const PaymentItem&) = delete;
-    PaymentItem(PaymentItem&&) = delete;
-    auto operator=(const PaymentItem&) -> PaymentItem& = delete;
-    auto operator=(PaymentItem&&) -> PaymentItem& = delete;
 };
 }  // namespace opentxs::ui::implementation

@@ -56,6 +56,12 @@ class Secondary final : virtual public credential::internal::Secondary,
                         credential::implementation::Key
 {
 public:
+    Secondary() = delete;
+    Secondary(const Secondary&) = delete;
+    Secondary(Secondary&&) = delete;
+    auto operator=(const Secondary&) -> Secondary& = delete;
+    auto operator=(Secondary&&) -> Secondary& = delete;
+
     ~Secondary() override = default;
 
 private:
@@ -81,10 +87,5 @@ private:
         const identity::Source& source,
         const internal::Primary& master,
         const proto::Credential& serializedCred) noexcept(false);
-    Secondary() = delete;
-    Secondary(const Secondary&) = delete;
-    Secondary(Secondary&&) = delete;
-    auto operator=(const Secondary&) -> Secondary& = delete;
-    auto operator=(Secondary&&) -> Secondary& = delete;
 };
 }  // namespace opentxs::identity::credential::implementation

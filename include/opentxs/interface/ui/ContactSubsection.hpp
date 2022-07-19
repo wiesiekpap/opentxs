@@ -51,15 +51,14 @@ public:
     /// Returns the claim type as a ClaimType enum.
     virtual auto Type() const noexcept -> identity::wot::claim::ClaimType = 0;
 
-    ~ContactSubsection() override = default;
-
-protected:
-    ContactSubsection() noexcept = default;
-
-private:
     ContactSubsection(const ContactSubsection&) = delete;
     ContactSubsection(ContactSubsection&&) = delete;
     auto operator=(const ContactSubsection&) -> ContactSubsection& = delete;
     auto operator=(ContactSubsection&&) -> ContactSubsection& = delete;
+
+    ~ContactSubsection() override = default;
+
+protected:
+    ContactSubsection() noexcept = default;
 };
 }  // namespace opentxs::ui

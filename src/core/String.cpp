@@ -531,12 +531,12 @@ auto String::DecodeIfArmored(bool bEscapedIsAllowed) -> bool
     return Exists();
 }
 
-auto String::empty(void) const -> bool
+auto String::empty() const -> bool
 {
     return (internal_.empty()) ? true : false;
 }
 
-auto String::Exists(void) const -> bool { return !empty(); }
+auto String::Exists() const -> bool { return !empty(); }
 
 auto String::Get() const -> const char*
 {
@@ -549,7 +549,7 @@ auto String::Get() const -> const char*
     }
 }
 
-auto String::GetLength(void) const -> std::uint32_t { return length_; }
+auto String::GetLength() const -> std::uint32_t { return length_; }
 
 void String::Initialize()
 {
@@ -675,9 +675,9 @@ auto String::MemSet(const char* pMem, std::uint32_t theSize)
     return true;
 }
 
-void String::Release(void) { Release_String(); }
+void String::Release() { Release_String(); }
 
-void String::Release_String(void)
+void String::Release_String()
 {
     if (false == internal_.empty()) {
         zeroMemory();
@@ -687,7 +687,7 @@ void String::Release_String(void)
     Initialize();
 }
 
-void String::reset(void) { position_ = 0; }
+void String::reset() { position_ = 0; }
 
 // new_string MUST be at least nEnforcedMaxLength in size if nEnforcedMaxLength
 // is passed in at all. That's because this function forces the null terminator
@@ -778,7 +778,7 @@ auto String::sgets(char* szBuffer, std::uint32_t nBufSize) -> bool
     return true;
 }
 
-auto String::sgetc(void) -> char
+auto String::sgetc() -> char
 {
     char answer;
 

@@ -76,15 +76,14 @@ public:
         const Signature& theSignature,
         const crypto::HashType hashType) const -> bool override;
 
-    ~AsymmetricProvider() override = default;
-
-protected:
-    AsymmetricProvider() noexcept;
-
-private:
     AsymmetricProvider(const AsymmetricProvider&) = delete;
     AsymmetricProvider(AsymmetricProvider&&) = delete;
     auto operator=(const AsymmetricProvider&) -> AsymmetricProvider& = delete;
     auto operator=(AsymmetricProvider&&) -> AsymmetricProvider& = delete;
+
+    ~AsymmetricProvider() override = default;
+
+protected:
+    AsymmetricProvider() noexcept;
 };
 }  // namespace opentxs::crypto::implementation

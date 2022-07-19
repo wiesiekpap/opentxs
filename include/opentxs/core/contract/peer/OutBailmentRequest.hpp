@@ -36,6 +36,11 @@ namespace opentxs::contract::peer::request
 class OPENTXS_EXPORT Outbailment : virtual public peer::Request
 {
 public:
+    Outbailment(const Outbailment&) = delete;
+    Outbailment(Outbailment&&) = delete;
+    auto operator=(const Outbailment&) -> Outbailment& = delete;
+    auto operator=(Outbailment&&) -> Outbailment& = delete;
+
     ~Outbailment() override = default;
 
 protected:
@@ -47,10 +52,5 @@ private:
 #ifndef _WIN32
     auto clone() const noexcept -> Outbailment* override = 0;
 #endif
-
-    Outbailment(const Outbailment&) = delete;
-    Outbailment(Outbailment&&) = delete;
-    auto operator=(const Outbailment&) -> Outbailment& = delete;
-    auto operator=(Outbailment&&) -> Outbailment& = delete;
 };
 }  // namespace opentxs::contract::peer::request
