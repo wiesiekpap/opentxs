@@ -24,66 +24,66 @@
 
 namespace opentxs::blockchain::node::implementation
 {
-    using HeaderDM = download::Manager<
-            FilterOracle::HeaderDownloader,
-            cfilter::Hash,
-            cfilter::Header,
-            cfilter::Type>;
-    using HeaderWorker = Worker<api::Session>;
+using HeaderDM = download::Manager<
+    FilterOracle::HeaderDownloader,
+    cfilter::Hash,
+    cfilter::Header,
+    cfilter::Type>;
+using HeaderWorker = Worker<api::Session>;
 
-    class FilterOracle::HeaderDownloader final : public HeaderDM,
-                                                 public HeaderWorker
-    {
-    public:
-        using Callback =
+class FilterOracle::HeaderDownloader final : public HeaderDM,
+                                             public HeaderWorker
+{
+public:
+    using Callback =
         std::function<Position(const Position&, const cfilter::Header&)>;
 
-        auto NextBatch() noexcept -> BatchType;
+    auto NextBatch() noexcept -> BatchType;
 
-        HeaderDownloader(
-                const api::Session& api,
-                database::Cfilter& db,
-                const HeaderOracle& header,
-                const internal::Manager& node,
-                FilterOracle::FilterDownloader& filter,
-                const blockchain::Type chain,
-                const cfilter::Type type,
-                const UnallocatedCString& shutdown,
-                Callback&& cb) noexcept;
+    HeaderDownloader(
+        const api::Session& api,
+        database::Cfilter& db,
+        const HeaderOracle& header,
+        const internal::Manager& node,
+        FilterOracle::FilterDownloader& filter,
+        const blockchain::Type chain,
+        const cfilter::Type type,
+        const UnallocatedCString& shutdown,
+        Callback&& cb) noexcept;
 
-        ~HeaderDownloader() final;
+    ~HeaderDownloader() final;
 
-    protected:
-        auto pipeline(zmq::Message&& in) -> void final;
-        auto state_machine() noexcept -> bool final;
+protected:
+    auto pipeline(zmq::Message&& in) -> void final;
+    auto state_machine() noexcept -> bool final;
 
-    private:
-        auto shut_down() noexcept -> void;
+private:
+    auto shut_down() noexcept -> void;
 
-    private:
-        friend HeaderDM;
+private:
+    friend HeaderDM;
 
-        database::Cfilter& db_;
-        const HeaderOracle& header_;
-        const internal::Manager& node_;
-        FilterOracle::FilterDownloader& filter_;
-        const blockchain::Type chain_;
-        const cfilter::Type type_;
-        const Callback checkpoint_;
+    database::Cfilter& db_;
+    const HeaderOracle& header_;
+    const internal::Manager& node_;
+    FilterOracle::FilterDownloader& filter_;
+    const blockchain::Type chain_;
+    const cfilter::Type type_;
+    const Callback checkpoint_;
 
-        auto batch_ready() const noexcept -> void;
-        static auto batch_size(const std::size_t in) noexcept -> std::size_t;
+    auto batch_ready() const noexcept -> void;
+    static auto batch_size(const std::size_t in) noexcept -> std::size_t;
 
-        auto check_task(TaskType&) const noexcept -> void;
-        auto trigger_state_machine() const noexcept -> void;
-        auto update_tip(const Position& position, const cfilter::Header&)
+    auto check_task(TaskType&) const noexcept -> void;
+    auto trigger_state_machine() const noexcept -> void;
+    auto update_tip(const Position& position, const cfilter::Header&)
         const noexcept -> void;
 
-        auto process_position(const zmq::Message& in) noexcept -> void;
-        auto process_position() noexcept -> void;
-        auto process_reset(const zmq::Message& in) noexcept -> void;
+    auto process_position(const zmq::Message& in) noexcept -> void;
+    auto process_position() noexcept -> void;
+    auto process_reset(const zmq::Message& in) noexcept -> void;
 
-        auto queue_processing(DownloadedData&& data) noexcept -> void;
-    };
+    auto queue_processing(DownloadedData&& data) noexcept -> void;
+};
 
 }  // namespace opentxs::blockchain::node::implementation

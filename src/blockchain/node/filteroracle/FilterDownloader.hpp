@@ -75,10 +75,8 @@ private:
     auto update_tip(const Position& position, const cfilter::Header&)
         const noexcept -> void;
 
-
     auto process_reset(const zmq::Message& in) noexcept -> void;
     auto queue_processing(DownloadedData&& data) noexcept -> void;
-
 };
 
 }  // namespace opentxs::blockchain::node::implementation
