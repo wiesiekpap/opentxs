@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {

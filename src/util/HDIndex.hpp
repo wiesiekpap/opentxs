@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "opentxs/crypto/Types.hpp"
+
 namespace opentxs
 {
 template <typename I>

@@ -9,6 +9,7 @@ target_sources(
     "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/Manager.hpp"
     "Manager.cpp"
     "Manager.hpp"
+    "SyncServer.cpp"
     "SyncServer.hpp"
 )
 target_link_libraries(opentxs-common PRIVATE "${OT_ZMQ_TARGET}")

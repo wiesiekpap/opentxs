@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 

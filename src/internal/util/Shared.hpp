@@ -10,6 +10,8 @@
 #include <shared_mutex>
 #include <stdexcept>
 
+#include "internal/util/Mutex.hpp"
+
 namespace opentxs
 {
 template <class C>

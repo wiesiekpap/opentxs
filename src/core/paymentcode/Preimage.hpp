@@ -10,6 +10,7 @@
 #include <cstring>
 
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs::paymentcode
 {

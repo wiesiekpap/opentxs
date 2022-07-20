@@ -9,7 +9,7 @@
 
 namespace opentxs::blockchain::bitcoin::block::internal
 {
-class Block : virtual public bitcoin::Block
+class Block : virtual public bitcoin::block::Block
 {
 public:
     ~Block() override = default;
