@@ -293,7 +293,7 @@ void UserCommandProcessor::check_acknowledgements(ReplyMessage& reply) const
         nymbox->VerifySignature(server_.GetServerNym())) {
         bool bIsDirtyNymbox = false;
 
-        for (auto& it : numlist_ack_reply) {
+        for (const auto& it : numlist_ack_reply) {
             const std::int64_t lRequestNum = it;
             // If the # already appears on its internal list, then it does
             // nothing. (It must have already done
@@ -407,7 +407,7 @@ auto UserCommandProcessor::check_message_notary(
 
 auto UserCommandProcessor::check_ping_notary(const Message& msgIn) const -> bool
 {
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_check_notary_id);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_check_notary_id);
 
     const auto serialized =
         proto::StringToProto<proto::AsymmetricKey>(msgIn.m_strNymPublicKey);
@@ -460,7 +460,7 @@ auto UserCommandProcessor::check_request_number(
 auto UserCommandProcessor::check_server_lock(const identifier::Nym& nymID)
     -> bool
 {
-    if (false == ServerSettings::__admin_server_locked) { return true; }
+    if (false == ServerSettings::_admin_server_locked) { return true; }
 
     if (isAdmin(nymID)) { return true; }
 
@@ -479,7 +479,7 @@ auto UserCommandProcessor::check_usage_credits(ReplyMessage& reply) const
 
     OT_ASSERT(nymfile);
 
-    const bool creditsRequired = ServerSettings::__admin_usage_credits;
+    const bool creditsRequired = ServerSettings::_admin_usage_credits;
     const bool needsCredits = nymfile->GetUsageCredits() >= 0;
     const bool checkCredits =
         creditsRequired && needsCredits && (false == isAdmin(nymfile->ID()));
@@ -506,7 +506,7 @@ auto UserCommandProcessor::cmd_add_claim(ReplyMessage& reply) const -> bool
 {
     const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_request_admin);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_request_admin);
 
     reply.SetSuccess(true);
     const auto& context = reply.Context();
@@ -551,7 +551,7 @@ auto UserCommandProcessor::cmd_check_nym(ReplyMessage& reply) const -> bool
     const auto& targetNym = msgIn.m_strNymID2;
     reply.SetTargetNym(targetNym);
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_check_nym);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_check_nym);
 
     reply.SetSuccess(true);
     auto nym = server_.API().Wallet().Nym(identifier::Nym::Factory(targetNym));
@@ -585,7 +585,7 @@ auto UserCommandProcessor::cmd_delete_asset_account(ReplyMessage& reply) const
     const auto& msgIn = reply.Original();
     reply.SetAccount(msgIn.m_strAcctID);
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_del_asset_acct);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_del_asset_acct);
 
     const auto accountID = Identifier::Factory(msgIn.m_strAcctID);
     const auto& context = reply.Context();
@@ -698,7 +698,7 @@ auto UserCommandProcessor::cmd_delete_user(ReplyMessage& reply) const -> bool
     const auto& msgIn = reply.Original();
     auto& context = reply.Context();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_del_user_acct);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_del_user_acct);
 
     const auto& nymID = context.RemoteNym().ID();
     const auto& server = context.Notary();
@@ -765,9 +765,9 @@ auto UserCommandProcessor::cmd_get_account_data(ReplyMessage& reply) const
     const auto& msgIn = reply.Original();
     reply.SetAccount(msgIn.m_strAcctID);
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_inbox);
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_outbox);
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_acct);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_inbox);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_outbox);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_acct);
 
     const auto& context = reply.Context();
     const auto& nymID = context.RemoteNym().ID();
@@ -848,13 +848,13 @@ auto UserCommandProcessor::cmd_get_box_receipt(ReplyMessage& reply) const
 
     switch (boxType) {
         case NYMBOX_DEPTH: {
-            OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_nymbox)
+            OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_nymbox)
         } break;
         case INBOX_DEPTH: {
-            OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_inbox)
+            OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_inbox)
         } break;
         case OUTBOX_DEPTH: {
-            OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_outbox)
+            OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_outbox)
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())("Invalid box type.").Flush();
@@ -930,7 +930,7 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
     const auto& msgIn = reply.Original();
     reply.SetInstrumentDefinitionID(msgIn.m_strInstrumentDefinitionID);
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_contract);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_contract);
 
     reply.SetSuccess(true);
     reply.SetBool(false);
@@ -1017,7 +1017,7 @@ auto UserCommandProcessor::cmd_get_market_list(ReplyMessage& reply) const
 {
     const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_market_list);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_market_list);
 
     auto output = Armored::Factory();
     std::int32_t count{0};
@@ -1042,7 +1042,7 @@ auto UserCommandProcessor::cmd_get_market_offers(ReplyMessage& reply) const
     const auto& msgIn = reply.Original();
     reply.SetTargetNym(msgIn.m_strNymID2);
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_market_offers);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_market_offers);
 
     auto depth = msgIn.m_lDepth;
 
@@ -1076,7 +1076,7 @@ auto UserCommandProcessor::cmd_get_market_recent_trades(
     const auto& msgIn = reply.Original();
     reply.SetTargetNym(msgIn.m_strNymID2);
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_market_recent_trades);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_market_recent_trades);
 
     const auto market =
         server_.Cron().GetMarket(identifier::Nym::Factory(msgIn.m_strNymID2));
@@ -1104,7 +1104,7 @@ auto UserCommandProcessor::cmd_get_mint(ReplyMessage& reply) const -> bool
     const auto& msgIn = reply.Original();
     reply.SetInstrumentDefinitionID(msgIn.m_strInstrumentDefinitionID);
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_mint);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_mint);
 
     reply.SetSuccess(true);
     reply.SetBool(false);
@@ -1126,7 +1126,7 @@ auto UserCommandProcessor::cmd_get_nym_market_offers(ReplyMessage& reply) const
 {
     const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_nym_market_offers);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_nym_market_offers);
 
     const auto& nymID = reply.Context().RemoteNym().ID();
 
@@ -1150,7 +1150,7 @@ auto UserCommandProcessor::cmd_get_nymbox(ReplyMessage& reply) const -> bool
 {
     const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_nymbox);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_nymbox);
 
     auto& context = reply.Context();
     const auto& nymID = context.RemoteNym().ID();
@@ -1183,9 +1183,9 @@ auto UserCommandProcessor::cmd_get_request_number(ReplyMessage& reply) const
     -> bool
 {
     auto& context = reply.Context();
-    auto& msgIn = reply.Original();
+    const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_requestnumber);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_requestnumber);
 
     const auto& serverNym = *context.Nym();
     auto number = context.Request();
@@ -1223,7 +1223,7 @@ auto UserCommandProcessor::cmd_get_transaction_numbers(
     auto& context = reply.Context();
     const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_trans_nums);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_trans_nums);
 
     // A few client requests, and a few server replies (not exactly matched up)
     // will include a copy of the NymboxHash.  The server may reject certain
@@ -1320,7 +1320,7 @@ auto UserCommandProcessor::cmd_issue_basket(ReplyMessage& reply) const -> bool
 {
     const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_issue_basket);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_issue_basket);
 
     auto serialized = proto::Factory<proto::UnitDefinition>(
         Data::Factory(msgIn.m_ascPayload));
@@ -1365,7 +1365,7 @@ auto UserCommandProcessor::cmd_issue_basket(ReplyMessage& reply) const -> bool
     // issued -- you HAVE to use issueBasket for creating any basket currency.
     // Taken in tandem, this insures that the only possible way to have a basket
     // currency as a sub-currency is if it's already issued on this server.
-    for (auto& it : serialized.basket().item()) {
+    for (const auto& it : serialized.basket().item()) {
         const auto& subcontractID = it.unit();
 
         try {
@@ -1498,7 +1498,7 @@ auto UserCommandProcessor::cmd_notarize_transaction(ReplyMessage& reply) const
     const auto& msgIn = reply.Original();
     reply.SetAccount(msgIn.m_strAcctID);
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_notarize_transaction);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_notarize_transaction);
 
     auto& context = reply.Context();
     const auto& nymID = context.RemoteNym().ID();
@@ -1604,7 +1604,7 @@ auto UserCommandProcessor::cmd_process_inbox(ReplyMessage& reply) const -> bool
     const auto& msgIn = reply.Original();
     reply.SetAccount(msgIn.m_strAcctID);
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_process_inbox);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_process_inbox);
 
     auto& context = reply.Context();
     const auto& clientNym = context.RemoteNym();
@@ -1778,7 +1778,7 @@ auto UserCommandProcessor::cmd_process_nymbox(ReplyMessage& reply) const -> bool
 {
     const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_process_nymbox);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_process_nymbox);
 
     auto& context = reply.Context();
     const auto& nymID = context.RemoteNym().ID();
@@ -1868,11 +1868,11 @@ auto UserCommandProcessor::cmd_query_instrument_definitions(
 {
     const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_contract);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_contract);
 
     std::unique_ptr<OTDB::Storable> pStorable(OTDB::DecodeObject(
         OTDB::STORED_OBJ_STRING_MAP, msgIn.m_ascPayload->Get()));
-    auto inputMap = dynamic_cast<OTDB::StringMap*>(pStorable.get());
+    auto* inputMap = dynamic_cast<OTDB::StringMap*>(pStorable.get());
 
     if (nullptr == inputMap) { return false; }
 
@@ -1919,7 +1919,7 @@ auto UserCommandProcessor::cmd_register_account(ReplyMessage& reply) const
 {
     const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_create_asset_acct);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_create_asset_acct);
 
     const auto& context = reply.Context();
     const auto& nymID = context.RemoteNym().ID();
@@ -2047,7 +2047,7 @@ auto UserCommandProcessor::cmd_register_contract(ReplyMessage& reply) const
 {
     const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_register_contract);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_register_contract);
 
     const auto type = static_cast<contract::Type>(msgIn.enum_);
 
@@ -2098,7 +2098,7 @@ auto UserCommandProcessor::cmd_register_instrument_definition(
     const auto contractID =
         identifier::UnitDefinition::Factory(msgIn.m_strInstrumentDefinitionID);
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_issue_asset);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_issue_asset);
 
     // Make sure the contract isn't already available on this server.
     try {
@@ -2182,7 +2182,7 @@ auto UserCommandProcessor::cmd_register_nym(ReplyMessage& reply) const -> bool
 {
     const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_create_user_acct);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_create_user_acct);
 
     auto serialized = proto::Factory<proto::Nym>(
         Data::Factory(reply.Original().m_ascPayload));
@@ -2240,7 +2240,7 @@ auto UserCommandProcessor::cmd_request_admin(ReplyMessage& reply) const -> bool
 {
     const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_request_admin);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_request_admin);
 
     const String& requestingNym = msgIn.m_strNymID;
     const UnallocatedCString candidate = requestingNym.Get();
@@ -2311,7 +2311,7 @@ auto UserCommandProcessor::cmd_send_nym_message(ReplyMessage& reply) const
     const auto recipient = identifier::Nym::Factory(targetNym);
     reply.SetTargetNym(targetNym);
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_send_message);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_send_message);
 
     reply.SetSuccess(send_message_to_nym(server, sender, recipient, msgIn));
 
@@ -2344,7 +2344,7 @@ auto UserCommandProcessor::cmd_trigger_clause(ReplyMessage& reply) const -> bool
 {
     const auto& msgIn = reply.Original();
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_trigger_clause);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_trigger_clause);
 
     const auto& number = msgIn.m_lTransactionNum;
     const auto& context = reply.Context();
@@ -2402,7 +2402,7 @@ auto UserCommandProcessor::cmd_trigger_clause(ReplyMessage& reply) const -> bool
     if (smartContract->CanExecuteClause(party->GetPartyName(), clauseID)) {
         // Execute the clause.
         mapOfClauses theMatchingClauses{};
-        auto clause = smartContract->GetClause(clauseID);
+        auto* clause = smartContract->GetClause(clauseID);
 
         if (nullptr == clause) {
             LogError()(OT_PRETTY_CLASS())("Clause ")(
@@ -2453,7 +2453,7 @@ auto UserCommandProcessor::cmd_usage_credits(ReplyMessage& reply) const -> bool
     reply.SetTargetNym(msgIn.m_strNymID2);
     reply.SetDepth(0);
 
-    OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_usage_credits);
+    OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_usage_credits);
 
     const auto& adminContext = reply.Context();
     const auto& serverID = adminContext.Notary();
@@ -2506,7 +2506,7 @@ auto UserCommandProcessor::cmd_usage_credits(ReplyMessage& reply) const -> bool
     if (0 != adjustment) { nymfile.get().SetUsageCredits(newCredits); }
     reply.SetSuccess(true);
 
-    if (ServerSettings::__admin_usage_credits) {
+    if (ServerSettings::_admin_usage_credits) {
         reply.SetDepth(newCredits);
     } else {
         reply.SetDepth(-1);

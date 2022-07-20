@@ -38,8 +38,9 @@ constexpr auto ulonglong_min =
 TEST(Amount, limits)
 {
     try {
-        const auto max_backend = u8"115792089237316195423570985008687907853"
-                                 u8"269984665640564039457584007913129639935";
+        const auto* const max_backend =
+            u8"115792089237316195423570985008687907853"
+            u8"269984665640564039457584007913129639935";
         const auto backend_amount = ot::factory::Amount(max_backend, true);
         EXPECT_TRUE(true);
     } catch (std::overflow_error&) {
@@ -49,7 +50,7 @@ TEST(Amount, limits)
     }
 
     try {
-        const auto max_backend_plus_one =
+        const auto* const max_backend_plus_one =
             u8"115792089237316195423570985008687907853"
             u8"269984665640564039457584007913129639936";
         const auto backend_amount =
@@ -66,7 +67,7 @@ TEST(Amount, default_constructor)
 {
     const auto amount = ot::Amount();
 
-    ASSERT_TRUE(amount == 0ll);
+    ASSERT_TRUE(amount == 0LL);
 }
 
 TEST(Amount, int_constructor)
@@ -554,17 +555,17 @@ TEST(Amount, multiply)
 
     const ot::Amount long_amount{long_max / 2};
 
-    auto long_result = long_amount * 2l;
+    auto long_result = long_amount * 2L;
 
     ASSERT_TRUE(long_result == ((long_max / 2) * 2));
 
     const ot::Amount longlong_amount{longlong_max / 2};
 
-    auto longlong_result = longlong_amount * 2ll;
+    auto longlong_result = longlong_amount * 2LL;
 
     ASSERT_TRUE(longlong_result == ((longlong_max / 2) * 2));
 
-    longlong_result = 2ll * longlong_amount;
+    longlong_result = 2LL * longlong_amount;
 
     ASSERT_TRUE(longlong_result == ((longlong_max / 2) * 2));
 
@@ -622,7 +623,7 @@ TEST(Amount, multiply)
     try {
         const auto max = std::numeric_limits<ot::amount::Integer>::max();
         const auto amount = ot::factory::Amount(max.str());
-        const auto overflow = amount * 2l;
+        const auto overflow = amount * 2L;
         EXPECT_TRUE(false);
     } catch (std::overflow_error&) {
         EXPECT_TRUE(true);
@@ -633,7 +634,7 @@ TEST(Amount, multiply)
     try {
         const auto max = std::numeric_limits<ot::amount::Integer>::max();
         const auto amount = ot::factory::Amount(max.str());
-        const auto overflow = amount * 2ll;
+        const auto overflow = amount * 2LL;
         EXPECT_TRUE(false);
     } catch (std::overflow_error&) {
         EXPECT_TRUE(true);
@@ -644,7 +645,7 @@ TEST(Amount, multiply)
     try {
         const auto max = std::numeric_limits<ot::amount::Integer>::max();
         const auto amount = ot::factory::Amount(max.str());
-        const auto overflow = 2ll * amount;
+        const auto overflow = 2LL * amount;
         EXPECT_TRUE(false);
     } catch (std::overflow_error&) {
         EXPECT_TRUE(true);
@@ -707,7 +708,7 @@ TEST(Amount, divide)
 
     const ot::Amount longlong_amount{longlong_max - 1};
 
-    const auto longlong_result = longlong_amount / 2ll;
+    const auto longlong_result = longlong_amount / 2LL;
 
     ASSERT_TRUE(longlong_result == longlong_max / 2);
 
@@ -729,7 +730,7 @@ TEST(Amount, divide)
     }
 
     try {
-        const auto result = longlong_amount / 0ll;
+        const auto result = longlong_amount / 0LL;
         EXPECT_TRUE(false);
     } catch (std::exception&) {
         EXPECT_TRUE(true);
@@ -764,11 +765,11 @@ TEST(Amount, modulo)
 
     ASSERT_TRUE(int_result == 1);
 
-    const ot::Amount longlong_amount{3ll};
+    const ot::Amount longlong_amount{3LL};
 
-    const auto longlong_result = longlong_amount % 2ll;
+    const auto longlong_result = longlong_amount % 2LL;
 
-    ASSERT_TRUE(longlong_result == 1ll);
+    ASSERT_TRUE(longlong_result == 1LL);
 
     const ot::Amount ulonglong_amount{3ull};
 

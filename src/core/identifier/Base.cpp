@@ -683,7 +683,7 @@ auto Identifier::decode(ReadView in) noexcept -> Decoded
 
         const auto bytes = [&] {
             constexpr auto prefix = std::size_t{2u};
-            auto* i = in.data();
+            const auto* i = in.data();
 
             if (0u != std::memcmp(i, prefix_, prefix)) {
                 throw std::runtime_error{"invalid prefix"};
@@ -708,7 +708,7 @@ auto Identifier::decode(ReadView in) noexcept -> Decoded
             throw std::runtime_error{"unsupported algorithm"};
         }
 
-        auto* i = reinterpret_cast<const std::uint8_t*>(bytes.data());
+        const auto* i = reinterpret_cast<const std::uint8_t*>(bytes.data());
         std::advance(i, sizeof(algorithm_));
         const auto serializedType = [&] {
             auto out = boost::endian::little_uint16_buf_t{};

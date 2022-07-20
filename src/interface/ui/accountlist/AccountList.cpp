@@ -137,7 +137,7 @@ auto AccountList::load_blockchain_account(
     LogInsane()(OT_PRETTY_CLASS())("processing blockchain account ")(id)
         .Flush();
     const auto type = BlockchainToUnit(chain);
-    auto& api = Widget::api_;
+    const auto& api = Widget::api_;
     const auto index = AccountListSortKey{type, account_name_blockchain(chain)};
     auto custom = [&] {
         auto out = CustomData{};
@@ -166,7 +166,7 @@ auto AccountList::load_custodial() noexcept -> void
 {
     const auto& storage = Widget::api_.Storage();
 
-    for (auto& account : storage.AccountsByOwner(primary_id_)) {
+    for (const auto& account : storage.AccountsByOwner(primary_id_)) {
         load_custodial_account(std::move(const_cast<OTIdentifier&>(account)));
     }
 }
@@ -209,7 +209,7 @@ auto AccountList::load_custodial_account(
     UnallocatedCString&& name) noexcept -> void
 {
     LogInsane()(OT_PRETTY_CLASS())("processing custodial account ")(id).Flush();
-    auto& api = Widget::api_;
+    const auto& api = Widget::api_;
     auto notaryID = api.Storage().AccountServer(id);
     const auto index = AccountListSortKey{
         type, account_name_custodial(api, notaryID, contract, std::move(name))};

@@ -124,7 +124,8 @@ private:
             bytes = Space{it, std::next(it, bytesArray.size())};
         } else {
             const auto bytesArray = address.to_v6().to_bytes();
-            auto* it = reinterpret_cast<const std::byte*>(bytesArray.data());
+            const auto* it =
+                reinterpret_cast<const std::byte*>(bytesArray.data());
 
             bytes = Space{it, std::next(it, bytesArray.size())};
         }

@@ -84,35 +84,6 @@ class Contact;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace std
-{
-using STORAGEID = std::tuple<
-    opentxs::OTIdentifier,
-    opentxs::otx::client::StorageBox,
-    opentxs::OTIdentifier>;
-
-template <>
-struct less<STORAGEID> {
-    auto operator()(const STORAGEID& lhs, const STORAGEID& rhs) const -> bool
-    {
-        const auto& [lID, lBox, lAccount] = lhs;
-        const auto& [rID, rBox, rAccount] = rhs;
-
-        if (lID->str() < rID->str()) { return true; }
-
-        if (rID->str() < lID->str()) { return false; }
-
-        if (lBox < rBox) { return true; }
-
-        if (rBox < lBox) { return false; }
-
-        if (lAccount->str() < rAccount->str()) { return true; }
-
-        return false;
-    }
-};
-}  // namespace std
-
 namespace opentxs
 {
 template <>

@@ -98,7 +98,7 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
 
     for (auto& data : cache) {
         auto& [blockHashView, cfilter] = data.filter_data_;
-        auto& task = data.incoming_data_;
+        const auto& task = data.incoming_data_;
         const auto& [height, block] = task.position_;
 
         try {
@@ -106,7 +106,7 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
                 print(chain_))(" block at height ")(height)
                 .Flush();
             auto& [blockHash, cfheader, filterHashView] = data.header_data_;
-            auto& previous = task.previous_;
+            const auto& previous = task.previous_;
             static constexpr auto zero = 0s;
             using State = std::future_status;
 

@@ -327,7 +327,7 @@ private:
                 throw std::out_of_range("Invalid input data");
             }
 
-            auto it = in.data();
+            const auto* it = in.data();
             std::memcpy(&index_, it, sizeof(index_));
             std::advance(it, sizeof(index_));
             std::memcpy(&checksum_, it, sizeof(checksum_));

@@ -71,8 +71,9 @@ public:
         {
         }
 
-        bool operator()(
+        auto operator()(
             const std::pair<ot::UnallocatedCString, ot::UnallocatedCString>& id)
+            -> bool
         {
             return id.first == id_;
         }
@@ -142,18 +143,18 @@ public:
         if (false == init_) { init(); }
     }
 
-    static bool find_id(
+    static auto find_id(
         const ot::UnallocatedCString& id,
-        const ot::ObjectList& list)
+        const ot::ObjectList& list) -> bool
     {
         matchID matchid(id);
 
         return std::find_if(list.begin(), list.end(), matchid) != list.end();
     }
 
-    static ot::OTUnitDefinition load_unit(
+    static auto load_unit(
         const ot::api::Session& api,
-        const ot::UnallocatedCString& id) noexcept
+        const ot::UnallocatedCString& id) noexcept -> ot::OTUnitDefinition
     {
         try {
             return api.Wallet().UnitDefinition(api.Factory().UnitID(id));
@@ -162,8 +163,8 @@ public:
         }
     }
 
-    static ot::otx::client::SendResult translate_result(
-        const ot::otx::LastReplyStatus status)
+    static auto translate_result(const ot::otx::LastReplyStatus status)
+        -> ot::otx::client::SendResult
     {
         switch (status) {
             case ot::otx::LastReplyStatus::MessageSuccess:
@@ -292,7 +293,7 @@ public:
             asset_contract_2_->ID()->str();
     }
 
-    ot::OTIdentifier find_issuer_account()
+    auto find_issuer_account() -> ot::OTIdentifier
     {
         const auto accounts =
             client_1_.Storage().AccountsByOwner(alice_nym_id_);
@@ -302,7 +303,7 @@ public:
         return *accounts.begin();
     }
 
-    ot::OTUnitID find_unit_definition_id_1()
+    auto find_unit_definition_id_1() -> ot::OTUnitID
     {
         const auto accountID = find_issuer_account();
 
@@ -315,19 +316,19 @@ public:
         return output;
     }
 
-    ot::OTUnitID find_unit_definition_id_2()
+    auto find_unit_definition_id_2() -> ot::OTUnitID
     {
         // TODO conversion
         return ot::identifier::UnitDefinition::Factory(
             asset_contract_2_->ID()->str());
     }
 
-    ot::OTIdentifier find_user_account()
+    auto find_user_account() -> ot::OTIdentifier
     {
         return ot::Identifier::Factory(bob_account_1_id_);
     }
 
-    ot::OTIdentifier find_second_user_account()
+    auto find_second_user_account() -> ot::OTIdentifier
     {
         return ot::Identifier::Factory(bob_account_2_id_);
     }
@@ -3856,7 +3857,7 @@ TEST_F(Test_Basic, depositCash)
     // TODO conversion
     const auto unitID =
         ot::identifier::UnitDefinition::Factory(asset_contract_1_->ID()->str());
-    auto& walletPurse = context.Purse(unitID);
+    const auto& walletPurse = context.Purse(unitID);
 
     ASSERT_TRUE(walletPurse);
 
@@ -3923,7 +3924,7 @@ TEST_F(Test_Basic, depositCash)
     EXPECT_EQ(
         serverAccount.get().GetBalance(), clientAccount.get().GetBalance());
 
-    auto& pWalletPurse = context.Purse(unitID);
+    const auto& pWalletPurse = context.Purse(unitID);
 
     ASSERT_TRUE(pWalletPurse);
     EXPECT_EQ(pWalletPurse.Value(), 0);

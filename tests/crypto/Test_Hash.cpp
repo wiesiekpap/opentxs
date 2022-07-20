@@ -661,8 +661,8 @@ TEST_F(Test_Hash, nist_gigabyte_string)
     constexpr auto size = std::size_t{1073741824u};
     auto preimage = ot::UnallocatedVector<char>{};
     preimage.reserve(size);
-    const auto start = input.data();
-    const auto end = input.data() + input.size();
+    const auto* const start = input.data();
+    const auto* const end = input.data() + input.size();
 
     ASSERT_EQ(size, copies * input.size());
 

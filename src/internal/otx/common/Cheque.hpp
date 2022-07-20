@@ -17,8 +17,11 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Time.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
 {
+// inline namespace v1
+// {
 namespace api
 {
 namespace session
@@ -39,7 +42,12 @@ class UnitDefinition;
 }  // namespace identifier
 
 class PasswordPrompt;
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
+namespace opentxs
+{
 class Cheque : public OTTrackable
 {
 public:

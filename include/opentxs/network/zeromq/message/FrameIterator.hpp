@@ -89,10 +89,11 @@ public:
     virtual ~FrameIterator();
 
 private:
-    friend bool zeromq::operator<(const FrameIterator&, const FrameIterator&);
-    friend bool zeromq::operator==(
+    friend auto zeromq::operator<(const FrameIterator&, const FrameIterator&)
+        -> bool;
+    friend auto zeromq::operator==(
         const FrameIterator&,
-        const FrameIterator&) noexcept;
+        const FrameIterator&) noexcept -> bool;
 
     Imp* imp_;
 };

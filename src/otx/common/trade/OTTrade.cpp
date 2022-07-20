@@ -1088,7 +1088,7 @@ auto OTTrade::ProcessCron(const PasswordPrompt& reason) -> bool
     // the offer on the market and then sets the pointer and returns. If it
     // can't find it, IT TRIES TO ADD IT TO THE MARKET and sets the pointer and
     // returns it.
-    auto offer = GetOffer(OFFER_MARKET_ID, reason, &market);
+    auto* offer = GetOffer(OFFER_MARKET_ID, reason, &market);
 
     // In this case, the offer is NOT on the market.
     // Perhaps it wasn't ready to activate yet.

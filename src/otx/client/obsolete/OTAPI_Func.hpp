@@ -76,6 +76,7 @@ namespace opentxs
 {
 auto VerifyStringVal(const UnallocatedCString&) -> bool;
 
+// NOLINTBEGIN(modernize-use-using)
 typedef enum {
     NO_FUNC = 0,
     // TODO
@@ -103,6 +104,7 @@ typedef enum {
     ACTIVATE_SMART_CONTRACT,
     TRIGGER_CLAUSE,
 } OTAPI_Func_Type;
+// NOLINTEND(modernize-use-using)
 
 class OTAPI_Func final : virtual public opentxs::client::ServerAction, Lockable
 {

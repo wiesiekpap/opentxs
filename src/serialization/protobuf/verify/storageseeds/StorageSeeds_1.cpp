@@ -28,7 +28,7 @@ auto CheckProto_1(const StorageSeeds& input, const bool silent) -> bool
         FAIL_1("invalid default seed")
     }
 
-    for (auto& hash : input.seed()) {
+    for (const auto& hash : input.seed()) {
         try {
             const bool valid = Check(
                 hash,

@@ -152,7 +152,7 @@ auto Data::operator+(const Data& rhs) const -> Data
 {
     auto map{imp_->sections_};
 
-    for (auto& it : rhs.imp_->sections_) {
+    for (const auto& it : rhs.imp_->sections_) {
         const auto& rhsID = it.first;
         const auto& rhsSection = it.second;
 

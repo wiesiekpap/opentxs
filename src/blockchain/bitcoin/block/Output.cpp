@@ -513,7 +513,7 @@ auto Output::Serialize(const AllocateOutput destination) const noexcept
     const auto scriptCS =
         blockchain::bitcoin::CompactSize(script_->CalculateSize());
     const auto csData = scriptCS.Encode();
-    auto it = static_cast<std::byte*>(output.data());
+    auto* it = static_cast<std::byte*>(output.data());
     value_.Internal().SerializeBitcoin(destination);
     std::advance(it, opentxs::internal::Amount::SerializeBitcoinSize());
     std::memcpy(static_cast<void*>(it), csData.data(), csData.size());

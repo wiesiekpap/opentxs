@@ -22,17 +22,17 @@
 
 namespace opentxs::proto
 {
-UnallocatedCString ToString(const ProtobufType& input);
+auto ToString(const ProtobufType& input) -> UnallocatedCString;
 
 template <typename Output>
-Output Factory(const void* input, const std::size_t size);
+auto Factory(const void* input, const std::size_t size) -> Output;
 template <typename Output, typename Input>
-Output Factory(const Pimpl<Input>& input);
+auto Factory(const Pimpl<Input>& input) -> Output;
 template <typename Output, typename Input>
-Output Factory(const Input& input);
+auto Factory(const Input& input) -> Output;
 
 template <typename Output>
-Output Factory(const void* input, const std::size_t size)
+auto Factory(const void* input, const std::size_t size) -> Output
 {
     static_assert(sizeof(int) <= sizeof(std::size_t));
     assert(size <= static_cast<std::size_t>(std::numeric_limits<int>::max()));
@@ -44,21 +44,20 @@ Output Factory(const void* input, const std::size_t size)
 }
 
 template <typename Output, typename Input>
-Output Factory(const Pimpl<Input>& input)
+auto Factory(const Pimpl<Input>& input) -> Output
 {
     return Factory<Output>(input.get());
 }
 
 template <typename Output, typename Input>
-Output Factory(const Input& input)
+auto Factory(const Input& input) -> Output
 {
     return Factory<Output>(input.data(), input.size());
 }
 
 template <typename Output>
-std::unique_ptr<Output> DynamicFactory(
-    const void* input,
-    const std::size_t size)
+auto DynamicFactory(const void* input, const std::size_t size)
+    -> std::unique_ptr<Output>
 {
     if (std::numeric_limits<int>::max() < size) {
         std::cerr << __func__ << ": input too large\n";
@@ -74,19 +73,19 @@ std::unique_ptr<Output> DynamicFactory(
 }
 
 template <typename Output, typename Input>
-std::unique_ptr<Output> DynamicFactory(const Pimpl<Input>& input)
+auto DynamicFactory(const Pimpl<Input>& input) -> std::unique_ptr<Output>
 {
     return DynamicFactory<Output>(input.get());
 }
 
 template <typename Output, typename Input>
-std::unique_ptr<Output> DynamicFactory(const Input& input)
+auto DynamicFactory(const Input& input) -> std::unique_ptr<Output>
 {
     return DynamicFactory<Output>(input.data(), input.size());
 }
 
 template <typename Output>
-Output StringToProto(const String& input)
+auto StringToProto(const String& input) -> Output
 {
     auto armored = Armored::Factory();
     OTString unconstInput = String::Factory(input.Get());

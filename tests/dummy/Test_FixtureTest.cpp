@@ -17,9 +17,9 @@ public:
         : mBool(false)
     {
     }
-    virtual ~FixtureClassAtGlobalNameSpace() override = default;
+    ~FixtureClassAtGlobalNameSpace() override = default;
 
-    virtual bool getBool() const { return mBool; }
+    virtual auto getBool() const -> bool { return mBool; }
 
     void SetUp() override { mBool = true; }
 
@@ -42,9 +42,9 @@ public:
         : mBool(false)
     {
     }
-    virtual ~FixtureClassAtUnnamedNamespace() override = default;
+    ~FixtureClassAtUnnamedNamespace() override = default;
 
-    virtual bool getBool() const { return mBool; }
+    virtual auto getBool() const -> bool { return mBool; }
 
     void SetUp() override { mBool = true; }
 
@@ -58,9 +58,7 @@ TEST_F(FixtureClassAtUnnamedNamespace, simpleFixture)
 }  // namespace
 
 // fixture at named namespace
-namespace ottest
-{
-namespace DummyTest
+namespace ottest::DummyTest
 {
 class FixtureClassInsideNamedNamespace : public ::testing::Test
 {
@@ -72,9 +70,9 @@ public:
         : mBool(false)
     {
     }
-    virtual ~FixtureClassInsideNamedNamespace() override = default;
+    ~FixtureClassInsideNamedNamespace() override = default;
 
-    virtual bool getBool() const { return mBool; }
+    virtual auto getBool() const -> bool { return mBool; }
 
     void SetUp() override { mBool = true; }
 
@@ -85,5 +83,4 @@ TEST_F(FixtureClassInsideNamedNamespace, simpleFixture)
 {
     EXPECT_TRUE(this->getBool());
 }
-}  // namespace DummyTest
-}  // namespace ottest
+}  // namespace ottest::DummyTest

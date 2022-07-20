@@ -68,30 +68,6 @@ class Message;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace std
-{
-using BLOCKCHAINSELECTIONKEY = std::pair<opentxs::UnallocatedCString, bool>;
-
-template <>
-struct less<BLOCKCHAINSELECTIONKEY> {
-    auto operator()(
-        const BLOCKCHAINSELECTIONKEY& lhs,
-        const BLOCKCHAINSELECTIONKEY& rhs) const -> bool
-    {
-        const auto& [lName, lTestnet] = lhs;
-        const auto& [rName, rTestnet] = rhs;
-
-        if ((!lTestnet) && (rTestnet)) { return true; }
-
-        if (lTestnet && (!rTestnet)) { return false; }
-
-        if (lName < rName) { return true; }
-
-        return false;
-    }
-};
-}  // namespace std
-
 namespace opentxs::ui::implementation
 {
 using BlockchainSelectionList = List<

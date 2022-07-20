@@ -114,27 +114,27 @@ public:
     ~Symmetric() final = default;
 
 private:
-    friend std::unique_ptr<crypto::key::Symmetric> opentxs::factory::
-        SymmetricKey(
-            const api::Session&,
-            const crypto::SymmetricProvider&,
-            const opentxs::PasswordPrompt&,
-            const crypto::key::symmetric::Algorithm) noexcept;
-    friend std::unique_ptr<crypto::key::Symmetric> opentxs::factory::
-        SymmetricKey(
-            const api::Session&,
-            const crypto::SymmetricProvider&,
-            const opentxs::Secret&,
-            const std::uint64_t,
-            const std::uint64_t,
-            const std::size_t,
-            const crypto::key::symmetric::Source) noexcept;
-    friend std::unique_ptr<crypto::key::Symmetric> opentxs::factory::
-        SymmetricKey(
-            const api::Session&,
-            const crypto::SymmetricProvider&,
-            const opentxs::Secret&,
-            const opentxs::PasswordPrompt&) noexcept;
+    friend auto opentxs::factory::SymmetricKey(
+        const api::Session&,
+        const crypto::SymmetricProvider&,
+        const opentxs::PasswordPrompt&,
+        const crypto::key::symmetric::Algorithm) noexcept
+        -> std::unique_ptr<crypto::key::Symmetric>;
+    friend auto opentxs::factory::SymmetricKey(
+        const api::Session&,
+        const crypto::SymmetricProvider&,
+        const opentxs::Secret&,
+        const std::uint64_t,
+        const std::uint64_t,
+        const std::size_t,
+        const crypto::key::symmetric::Source) noexcept
+        -> std::unique_ptr<crypto::key::Symmetric>;
+    friend auto opentxs::factory::SymmetricKey(
+        const api::Session&,
+        const crypto::SymmetricProvider&,
+        const opentxs::Secret&,
+        const opentxs::PasswordPrompt&) noexcept
+        -> std::unique_ptr<crypto::key::Symmetric>;
     friend key::Symmetric;
 
     static constexpr auto default_version_ = VersionNumber{1u};

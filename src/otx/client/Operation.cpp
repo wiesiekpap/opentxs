@@ -582,7 +582,7 @@ auto Operation::construct_convey_payment() -> std::shared_ptr<Message>
         return {};
     }
 
-    auto& payment = *payment_;
+    const auto& payment = *payment_;
     const auto recipientNym = api_.Wallet().Nym(target_nym_id_);
 
     if (false == bool(recipientNym)) {
@@ -1471,7 +1471,7 @@ auto Operation::DepositCash(
         return false;
     }
 
-    auto& context = *pContext;
+    const auto& context = *pContext;
     const auto& nym = *context.Nym();
     const auto& serverNym = context.RemoteNym();
 
@@ -1737,7 +1737,7 @@ auto Operation::evaluate_transaction_reply(
         return false;
     }
 
-    for (auto& [number, pTransaction] : response->GetTransactionMap()) {
+    for (const auto& [number, pTransaction] : response->GetTransactionMap()) {
         if (1 > number) {
             LogError()(OT_PRETTY_CLASS())("Invalid transaction number ")(number)
                 .Flush();

@@ -72,7 +72,7 @@ void OTStash::Serialize(Tag& parent) const
     pTag->add_attribute("name", m_str_stash_name);
     pTag->add_attribute("count", std::to_string(sizeMapStashItems));
 
-    for (auto& it : m_mapStashItems) {
+    for (const auto& it : m_mapStashItems) {
         const UnallocatedCString str_instrument_definition_id = it.first;
         OTStashItem* pStashItem = it.second;
         OT_ASSERT(
@@ -110,6 +110,7 @@ auto OTStash::ReadFromXMLNode(
     //
     // Load up the stash items.
     //
+    // NOLINTNEXTLINE(cert-err34-c)
     std::int32_t nCount = strItemCount.Exists() ? atoi(strItemCount.Get()) : 0;
     if (nCount > 0) {
         while (nCount-- > 0) {

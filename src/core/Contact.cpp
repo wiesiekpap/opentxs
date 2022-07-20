@@ -133,7 +133,7 @@ struct Contact::Imp {
 
     static auto generate_id(const api::Session& api) -> OTIdentifier
     {
-        auto& encode = api.Crypto().Encode();
+        const auto& encode = api.Crypto().Encode();
         auto random = Data::Factory();
         encode.Nonce(ID_BYTES, random);
 
@@ -387,7 +387,7 @@ struct Contact::Imp {
 
         if (false == primary_nym_->empty()) {
             try {
-                auto& primary = nyms_.at(primary_nym_);
+                const auto& primary = nyms_.at(primary_nym_);
 
                 if (primary) {
                     output.reset(new identity::wot::claim::Data(

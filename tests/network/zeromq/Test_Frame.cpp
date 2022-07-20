@@ -46,7 +46,7 @@ TEST_F(Frame, operator_string)
 TEST_F(Frame, data)
 {
     auto& frame = message_.AddFrame();
-    auto* data = frame.data();
+    const auto* data = frame.data();
 
     EXPECT_NE(data, nullptr);
     EXPECT_EQ(data, ::zmq_msg_data(frame));

@@ -90,7 +90,7 @@ class Identifier;
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 extern "C" {
-typedef struct MDB_txn MDB_txn;
+using MDB_txn = struct MDB_txn;
 }
 
 namespace opentxs::blockchain::database::wallet

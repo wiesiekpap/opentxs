@@ -53,7 +53,7 @@ auto BitcoinP2PGetheaders(
         return nullptr;
     }
 
-    auto* it{static_cast<const std::byte*>(payload)};
+    const auto* it{static_cast<const std::byte*>(payload)};
     std::memcpy(reinterpret_cast<std::byte*>(&version), it, sizeof(version));
     it += sizeof(version);
     expectedSize += sizeof(std::byte);

@@ -20,9 +20,9 @@
 #include "opentxs/util/Container.hpp"
 
 extern "C" {
-typedef struct MDB_env MDB_env;
-typedef struct MDB_txn MDB_txn;
-typedef unsigned int MDB_dbi;
+using MDB_env = struct MDB_env;
+using MDB_txn = struct MDB_txn;
+using MDB_dbi = unsigned int;
 }
 
 namespace opentxs::storage::lmdb

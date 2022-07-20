@@ -11,10 +11,7 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
-
-namespace ottest
-{
-namespace mock
+namespace ottest::mock
 {
 class Interface : public ::ottest::Interface
 {
@@ -23,6 +20,7 @@ public:
         : ::ottest::Interface()
     {
     }
+    // NOLINTBEGIN(modernize-use-trailing-return-type)
     MOCK_METHOD(bool, someFunction, (const int& input), (override));
     MOCK_METHOD(bool, someConstFunction, (const int& input), (override));
     MOCK_METHOD(
@@ -35,9 +33,7 @@ public:
         someConstFunctionWithNoExcept,
         (const int& input),
         (const, noexcept, override));
+    // NOLINTEND(modernize-use-trailing-return-type)
 };
-
-}  // namespace mock
-}  // namespace ottest
-
+}  // namespace ottest::mock
 #pragma GCC diagnostic pop

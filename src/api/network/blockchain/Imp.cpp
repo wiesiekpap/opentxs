@@ -343,8 +343,8 @@ auto BlockchainImp::Init(
 
     OT_ASSERT(db_);
 
-    auto sync = (0 < options.RemoteBlockchainSyncServers().size()) ||
-                options.ProvideBlockchainSyncServer();
+    const auto sync = (0 < options.RemoteBlockchainSyncServers().size()) ||
+                      options.ProvideBlockchainSyncServer();
 
     using Policy = opentxs::blockchain::database::BlockStorage;
     base_config_ = std::make_unique<Config>();
@@ -468,7 +468,7 @@ auto BlockchainImp::Shutdown() noexcept -> void
         LogVerbose()("Shutting down ")(networks_.size())(" blockchain clients")
             .Flush();
 
-        for (auto& [chain, network] : networks_) { network->Shutdown(); }
+        for (auto& [chain, network] : networks_) { network->Shutdown().get(); }
 
         networks_.clear();
     }
@@ -582,7 +582,7 @@ auto BlockchainImp::stop(const Lock& lock, const Chain type) const noexcept
     OT_ASSERT(it->second);
 
     sync_server_.Disable(type);
-    it->second->Shutdown();
+    it->second->Shutdown().get();
     networks_.erase(it);
     LogVerbose()(OT_PRETTY_CLASS())("stopped chain ")(print(type)).Flush();
     publish_chain_state(type, false);

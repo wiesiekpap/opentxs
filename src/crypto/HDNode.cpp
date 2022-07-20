@@ -91,7 +91,7 @@ auto HDNode::child() noexcept -> Secret&
 
 auto HDNode::ChildCode() noexcept -> WritableView
 {
-    auto start = child().data();
+    auto* start = child().data();
     std::advance(start, 32);
 
     return WritableView{start, 32};
@@ -99,14 +99,14 @@ auto HDNode::ChildCode() noexcept -> WritableView
 
 auto HDNode::ChildPrivate() noexcept -> AllocateOutput
 {
-    auto start = child().data();
+    auto* start = child().data();
 
     return [start](const auto) { return WritableView{start, 32}; };
 }
 
 auto HDNode::ChildPublic() noexcept -> AllocateOutput
 {
-    auto start = child().data();
+    auto* start = child().data();
     std::advance(start, 32 + 32);
 
     return [start](const auto) { return WritableView{start, 33}; };
@@ -119,7 +119,7 @@ auto HDNode::Fingerprint() const noexcept -> Bip32Fingerprint
 
 auto HDNode::InitCode() noexcept -> AllocateOutput
 {
-    auto start = parent().data();
+    auto* start = parent().data();
     std::advance(start, 32);
 
     return [start](const auto) { return WritableView{start, 32}; };
@@ -127,14 +127,14 @@ auto HDNode::InitCode() noexcept -> AllocateOutput
 
 auto HDNode::InitPrivate() noexcept -> AllocateOutput
 {
-    auto start = parent().data();
+    auto* start = parent().data();
 
     return [start](const auto) { return WritableView{start, 32}; };
 }
 
 auto HDNode::InitPublic() noexcept -> AllocateOutput
 {
-    auto start = parent().data();
+    auto* start = parent().data();
     std::advance(start, 32 + 32);
 
     return [start](const auto) { return WritableView{start, 33}; };
@@ -154,7 +154,7 @@ auto HDNode::parent() noexcept -> Secret&
 
 auto HDNode::ParentCode() const noexcept -> ReadView
 {
-    auto start{parent().Bytes().data()};
+    const auto* start{parent().Bytes().data()};
     std::advance(start, 32);
 
     return ReadView{start, 32};
@@ -162,14 +162,14 @@ auto HDNode::ParentCode() const noexcept -> ReadView
 
 auto HDNode::ParentPrivate() const noexcept -> ReadView
 {
-    auto start{parent().Bytes().data()};
+    const auto* start{parent().Bytes().data()};
 
     return ReadView{start, 32};
 }
 
 auto HDNode::ParentPublic() const noexcept -> ReadView
 {
-    auto start{parent().Bytes().data()};
+    const auto* start{parent().Bytes().data()};
     std::advance(start, 32 + 32);
 
     return ReadView{start, 33};

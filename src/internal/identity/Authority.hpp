@@ -81,10 +81,7 @@ public:
     virtual auto AddContactCredential(
         const proto::ContactData& contactData,
         const PasswordPrompt& reason) -> bool = 0;
-    virtual auto Internal() noexcept -> internal::Authority& final
-    {
-        return *this;
-    }
+    auto Internal() noexcept -> internal::Authority& final { return *this; }
 
     ~Authority() override = default;
 };

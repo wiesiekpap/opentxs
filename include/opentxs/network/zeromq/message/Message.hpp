@@ -137,8 +137,10 @@ public:
     virtual ~Message();
 
 protected:
-    friend bool zeromq::operator<(const Message&, const Message&) noexcept;
-    friend bool zeromq::operator==(const Message&, const Message&) noexcept;
+    friend auto zeromq::operator<(const Message&, const Message&) noexcept
+        -> bool;
+    friend auto zeromq::operator==(const Message&, const Message&) noexcept
+        -> bool;
 
     Imp* imp_;
 };

@@ -22,6 +22,7 @@ namespace opentxs::identity::credential
 class PrimaryMock : public Primary
 {
 public:
+    // NOLINTBEGIN(modernize-use-trailing-return-type)
     MOCK_METHOD(UnallocatedCString, Path, (), (const, override));
     MOCK_METHOD(bool, Path, (proto::HDPath & output), (const, override));
     MOCK_METHOD(UnallocatedCString, Alias, (), (const, noexcept, override));
@@ -116,5 +117,6 @@ public:
         (),
         (noexcept, const, override));
     MOCK_METHOD(internal::Base&, Internal, (), (noexcept, override));
+    // NOLINTEND(modernize-use-trailing-return-type)
 };
 }  // namespace opentxs::identity::credential

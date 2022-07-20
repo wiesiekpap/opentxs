@@ -190,7 +190,7 @@ auto Wallet::mutable_ClientContext(
 
     OT_ASSERT(base);
 
-    auto child = dynamic_cast<otx::context::Client*>(base.get());
+    auto* child = dynamic_cast<otx::context::Client*>(base.get());
 
     OT_ASSERT(nullptr != child);
 

@@ -35,11 +35,11 @@ public:
 #endif  // OT_STORAGE_LMDB
     const ot::OTPasswordPrompt reason_;
 
-    bool test_nym(
+    auto test_nym(
         const ot::crypto::ParameterType type,
         const ot::identity::CredentialType cred,
         const ot::identity::SourceType source,
-        const ot::UnallocatedCString& name = "Nym")
+        const ot::UnallocatedCString& name = "Nym") -> bool
     {
         const auto params = ot::crypto::Parameters{type, cred, source};
         const auto pNym = client_.Wallet().Nym(params, reason_, name);
@@ -98,7 +98,7 @@ public:
         return true;
     }
 
-    bool test_storage(const ot::api::session::Client& api)
+    auto test_storage(const ot::api::session::Client& api) -> bool
     {
         const auto reason = api.Factory().PasswordPrompt(__func__);
         const auto alias = ot::UnallocatedCString{"alias"};

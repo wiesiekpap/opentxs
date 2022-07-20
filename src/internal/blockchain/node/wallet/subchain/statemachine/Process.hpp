@@ -45,8 +45,8 @@ public:
     Process() = delete;
     Process(const Process&) = delete;
     Process(Process&&) = delete;
-    Process& operator=(const Process&) = delete;
-    Process& operator=(Process&&) = delete;
+    auto operator=(const Process&) -> Process& = delete;
+    auto operator=(Process&&) -> Process& = delete;
 
     ~Process() final;
 

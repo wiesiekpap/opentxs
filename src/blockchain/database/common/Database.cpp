@@ -17,6 +17,7 @@ extern "C" {
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <fstream>  // IWYU pragma: keep
 #include <iosfwd>
 #include <iterator>
 #include <optional>
@@ -457,7 +458,7 @@ auto Database::Enable(const Chain type, const UnallocatedCString& seednode)
     const auto value = [&] {
         auto output = space(sizeof(true_byte_) + seednode.size());
         output.at(0) = true_byte_;
-        auto it = std::next(output.data(), sizeof(true_byte_));
+        auto* it = std::next(output.data(), sizeof(true_byte_));
         std::memcpy(it, seednode.data(), seednode.size());
 
         return output;

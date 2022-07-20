@@ -255,7 +255,7 @@ auto Contract::VerifyContractID() const -> bool
 
 auto Contract::GetContractPublicNym() const -> Nym_p
 {
-    for (auto& it : m_mapNyms) {
+    for (const auto& it : m_mapNyms) {
         Nym_p pNym = it.second;
         OT_ASSERT_MSG(
             nullptr != pNym,
@@ -561,7 +561,7 @@ auto Contract::VerifySigAuthent(
     if (nCount > 0)  // Found some (potentially) matching keys...
     {
         for (auto& it : listOutput) {
-            auto pKey = it;
+            const auto* pKey = it;
             OT_ASSERT(nullptr != pKey);
 
             if (VerifySignature(*pKey, theSignature, m_strSigHashType)) {
@@ -604,7 +604,7 @@ auto Contract::VerifySignature(
     if (nCount > 0)  // Found some (potentially) matching keys...
     {
         for (auto& it : listOutput) {
-            auto pKey = it;
+            const auto* pKey = it;
             OT_ASSERT(nullptr != pKey);
 
             if (VerifySignature(*pKey, theSignature, m_strSigHashType)) {

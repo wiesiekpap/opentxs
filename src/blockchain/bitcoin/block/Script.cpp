@@ -59,7 +59,7 @@ auto BitcoinScript(
     }
 
     elements.reserve(bytes.size());
-    auto it = reinterpret_cast<const std::byte*>(bytes.data());
+    const auto* it = reinterpret_cast<const std::byte*>(bytes.data());
     auto read = std::size_t{0};
     const auto target = bytes.size();
     const auto& logger = mute ? LogTrace() : LogVerbose();
@@ -647,7 +647,7 @@ auto Script::ExtractElements(const cfilter::Type style) const noexcept
             for (const auto& element : *this) {
                 if (is_data_push(element)) {
                     const auto& data = element.data_.value();
-                    auto it{data.data()};
+                    const auto* it{data.data()};
 
                     switch (data.size()) {
                         case 65: {
@@ -727,7 +727,7 @@ auto Script::first_opcode(const ScriptElements& script) noexcept -> OP
 auto Script::get_data(const std::size_t position) const noexcept(false)
     -> ReadView
 {
-    auto& data = elements_.at(position).data_;
+    const auto& data = elements_.at(position).data_;
 
     if (false == data.has_value()) {
         throw std::out_of_range("No data at specified script position");
@@ -1129,7 +1129,7 @@ auto Script::Serialize(const AllocateOutput destination) const noexcept -> bool
         return false;
     }
 
-    auto it = static_cast<std::byte*>(output.data());
+    auto* it = static_cast<std::byte*>(output.data());
 
     for (const auto& element : elements_) {
         const auto& [opcode, invalid, bytes, data] = element;

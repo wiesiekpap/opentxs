@@ -11,20 +11,25 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace irr
 {
 namespace io
 {
 class IFileReadCallBack;
-}
+}  // namespace io
 }  // namespace irr
 
-namespace opentxs
+namespace opentxs  // NOLINT
 {
+// inline namespace v1
+// {
 class StringXML;
 
 using OTStringXML = Pimpl<StringXML>;
+// }  // namespace v1
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

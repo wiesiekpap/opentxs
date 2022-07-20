@@ -199,7 +199,7 @@ auto ProfileSection::Delete(const int type, const UnallocatedCString& claimID)
     rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
         row_id_, static_cast<identity::wot::claim::ClaimType>(type)};
-    auto& group = lookup(lock, key);
+    const auto& group = lookup(lock, key);
 
     if (false == group.Valid()) { return false; }
 
@@ -259,7 +259,7 @@ auto ProfileSection::SetActive(
     rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
         row_id_, static_cast<identity::wot::claim::ClaimType>(type)};
-    auto& group = lookup(lock, key);
+    const auto& group = lookup(lock, key);
 
     if (false == group.Valid()) { return false; }
 
@@ -274,7 +274,7 @@ auto ProfileSection::SetPrimary(
     rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
         row_id_, static_cast<identity::wot::claim::ClaimType>(type)};
-    auto& group = lookup(lock, key);
+    const auto& group = lookup(lock, key);
 
     if (false == group.Valid()) { return false; }
 
@@ -289,7 +289,7 @@ auto ProfileSection::SetValue(
     rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
         row_id_, static_cast<identity::wot::claim::ClaimType>(type)};
-    auto& group = lookup(lock, key);
+    const auto& group = lookup(lock, key);
 
     if (false == group.Valid()) { return false; }
 

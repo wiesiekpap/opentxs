@@ -671,7 +671,7 @@ auto NymFile::serialize_nymfile(const T& lock, opentxs::String& strNym) const
     // (That's why you don't see the server ID saved here.)
     //
     if (!(m_setAccounts.empty())) {
-        for (auto& it : m_setAccounts) {
+        for (const auto& it : m_setAccounts) {
             UnallocatedCString strID(it);
             TagPtr pTag(new Tag("ownsAssetAcct"));
             pTag->add_attribute("ID", strID);
@@ -680,7 +680,7 @@ auto NymFile::serialize_nymfile(const T& lock, opentxs::String& strNym) const
     }
 
     // client-side
-    for (auto& it : m_mapInboxHash) {
+    for (const auto& it : m_mapInboxHash) {
         UnallocatedCString strAcctID = it.first;
         const opentxs::Identifier& theID = it.second;
 
@@ -694,7 +694,7 @@ auto NymFile::serialize_nymfile(const T& lock, opentxs::String& strNym) const
     }  // for
 
     // client-side
-    for (auto& it : m_mapOutboxHash) {
+    for (const auto& it : m_mapOutboxHash) {
         UnallocatedCString strAcctID = it.first;
         const opentxs::Identifier& theID = it.second;
 

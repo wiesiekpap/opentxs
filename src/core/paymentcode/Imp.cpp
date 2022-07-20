@@ -166,7 +166,7 @@ auto PaymentCode::apply_mask(const Mask& mask, paymentcode::BinaryPreimage& pre)
 {
     static_assert(80 == sizeof(pre));
 
-    auto i = reinterpret_cast<std::byte*>(&pre);
+    auto* i = reinterpret_cast<std::byte*>(&pre);
     std::advance(i, 3);
 
     for (const auto& m : mask) {
@@ -182,8 +182,8 @@ auto PaymentCode::apply_mask(
 {
     static_assert(34 == sizeof(pre));
 
-    auto i = std::next(pre.key_.begin());
-    const auto end = pre.key_.end();
+    auto* i = std::next(pre.key_.begin());
+    auto* const end = pre.key_.end();
 
     for (const auto& m : mask) {
         auto& byte = *i;
@@ -475,13 +475,13 @@ auto PaymentCode::DecodeNotificationElements(
                 auto out = space(sizeof(paymentcode::BinaryPreimage));
                 auto* o = out.data();
                 {
-                    auto* f = F.data();
+                    const auto* f = F.data();
                     std::advance(f, 33);
                     std::memcpy(o, f, 32);
                     std::advance(o, 32);
                 }
                 {
-                    auto* g = G.data();
+                    const auto* g = G.data();
                     std::advance(g, 1);
                     std::memcpy(o, g, 48);
                 }
@@ -623,7 +623,7 @@ auto PaymentCode::generate_elements_v1(
 
     OT_ASSERT(blind.size() == sizeof(paymentcode::BinaryPreimage));
 
-    auto* b = blind.data();
+    const auto* b = blind.data();
     {
         auto& F = output.emplace_back(space(size));
         auto* i = F.data();
@@ -1098,7 +1098,7 @@ auto PaymentCode::unblind_v1(
             throw std::runtime_error{"Invalid blinded payment code (v1)"};
         }
 
-        auto i = reinterpret_cast<char*>(reinterpret_cast<void*>(&out));
+        auto* i = reinterpret_cast<char*>(reinterpret_cast<void*>(&out));
         std::memcpy(i, in.data(), in.size());
         apply_mask(mask, out);
 
@@ -1142,7 +1142,7 @@ auto PaymentCode::unblind_v3(
             throw std::runtime_error{"Invalid blinded payment code (v3)"};
         }
 
-        auto i = reinterpret_cast<char*>(reinterpret_cast<void*>(&out));
+        auto* i = reinterpret_cast<char*>(reinterpret_cast<void*>(&out));
         std::memcpy(std::next(i), in.data(), in.size());
         apply_mask(mask, out);
 

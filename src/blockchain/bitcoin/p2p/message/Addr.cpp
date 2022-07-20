@@ -57,7 +57,7 @@ auto BitcoinP2PAddr(
         return nullptr;
     }
 
-    auto* it{static_cast<const std::byte*>(payload)};
+    const auto* it{static_cast<const std::byte*>(payload)};
     std::size_t count{0};
     const bool haveCount =
         network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);

@@ -184,7 +184,7 @@ auto Key::addKeytoSerializedKeyCredential(
 
     key.set_role(role);
 
-    auto newKey = credential.add_key();
+    auto* newKey = credential.add_key();
     *newKey = key;
 
     return true;

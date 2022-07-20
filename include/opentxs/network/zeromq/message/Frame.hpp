@@ -101,8 +101,8 @@ public:
     virtual ~Frame();
 
 private:
-    friend bool zeromq::operator<(const Frame&, const Frame&) noexcept;
-    friend bool zeromq::operator==(const Frame&, const Frame&) noexcept;
+    friend auto zeromq::operator<(const Frame&, const Frame&) noexcept -> bool;
+    friend auto zeromq::operator==(const Frame&, const Frame&) noexcept -> bool;
 
     Imp* imp_;
 };

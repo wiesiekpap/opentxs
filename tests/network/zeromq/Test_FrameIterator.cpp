@@ -62,7 +62,7 @@ TEST(FrameIterator, operator_asterisk_const)
     multipartMessage.AddFrame(ot::UnallocatedCString{"msg1"});
 
     const auto frameIterator = multipartMessage.begin();
-    auto& message = *frameIterator;
+    const auto& message = *frameIterator;
     auto messageString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("msg1", messageString.c_str());
 }

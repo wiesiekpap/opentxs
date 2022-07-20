@@ -8,11 +8,13 @@
 #include "internal/blockchain/crypto/Crypto.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
+#include <cstddef>
 #include <cstring>
 #include <iosfwd>
 #include <iterator>
 #include <sstream>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
 
 #include "internal/util/LogMacros.hpp"
@@ -185,7 +187,7 @@ auto deserialize(const ReadView in) noexcept -> blockchain::crypto::Key
 
     const auto idbytes = in.size() - sizeof(subchain) - sizeof(index);
 
-    auto* i = in.data();
+    const auto* i = in.data();
     id.assign(ReadView{i, idbytes});
     std::advance(i, idbytes);
     std::memcpy(&subchain, i, sizeof(subchain));

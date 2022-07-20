@@ -50,7 +50,7 @@ auto BitcoinP2PPong(
         // then we'll read the nonce. Otherwise we just assume there's no nonce
         // and return. We can't determine here if that's an error or not, since
         // we don't know the expected protocol version in this spot.
-        auto* it{static_cast<const std::byte*>(payload)};
+        const auto* it{static_cast<const std::byte*>(payload)};
         ReturnType::BitcoinFormat_60001 raw{};
         std::memcpy(reinterpret_cast<std::byte*>(&raw), it, sizeof(raw));
         std::advance(it, sizeof(raw));

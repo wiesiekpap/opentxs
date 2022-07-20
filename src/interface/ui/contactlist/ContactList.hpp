@@ -61,29 +61,6 @@ class Identifier;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace std
-{
-using CONTACTLISTID = std::pair<bool, opentxs::UnallocatedCString>;
-
-template <>
-struct less<CONTACTLISTID> {
-    auto operator()(const CONTACTLISTID& lhs, const CONTACTLISTID& rhs) const
-        -> bool
-    {
-        const auto& [lSelf, lText] = lhs;
-        const auto& [rSelf, rText] = rhs;
-
-        if (lSelf && (!rSelf)) { return true; }
-
-        if (rSelf && (!lSelf)) { return false; }
-
-        if (lText < rText) { return true; }
-
-        return false;
-    }
-};
-}  // namespace std
-
 namespace opentxs::ui::implementation
 {
 using ContactListList = List<

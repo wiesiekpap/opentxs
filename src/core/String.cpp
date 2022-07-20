@@ -302,7 +302,7 @@ auto String::operator=(const String& rhs) -> String&
 
 auto String::operator>(const opentxs::String& s2) const -> bool
 {
-    auto& rhs = dynamic_cast<const String&>(s2);
+    const auto& rhs = dynamic_cast<const String&>(s2);
 
     if (rhs.length_ == 0) { return (true); }
     if (length_ == 0) { return (false); }
@@ -312,7 +312,7 @@ auto String::operator>(const opentxs::String& s2) const -> bool
 
 auto String::operator<(const opentxs::String& s2) const -> bool
 {
-    auto& rhs = dynamic_cast<const String&>(s2);
+    const auto& rhs = dynamic_cast<const String&>(s2);
 
     if (length_ == 0) { return (true); }
     if (rhs.length_ == 0) { return (false); }
@@ -322,7 +322,7 @@ auto String::operator<(const opentxs::String& s2) const -> bool
 
 auto String::operator<=(const opentxs::String& s2) const -> bool
 {
-    auto& rhs = dynamic_cast<const String&>(s2);
+    const auto& rhs = dynamic_cast<const String&>(s2);
 
     if (length_ == 0) { return (true); }
     if (rhs.length_ == 0) { return (false); }
@@ -332,7 +332,7 @@ auto String::operator<=(const opentxs::String& s2) const -> bool
 
 auto String::operator>=(const opentxs::String& s2) const -> bool
 {
-    auto& rhs = dynamic_cast<const String&>(s2);
+    const auto& rhs = dynamic_cast<const String&>(s2);
 
     if (rhs.length_ == 0) { return (true); }
     if (length_ == 0) { return (false); }
@@ -342,7 +342,7 @@ auto String::operator>=(const opentxs::String& s2) const -> bool
 
 auto String::operator==(const opentxs::String& s2) const -> bool
 {
-    auto& rhs = dynamic_cast<const String&>(s2);
+    const auto& rhs = dynamic_cast<const String&>(s2);
 
     // If they are not the same length, return false
     if (length_ != rhs.length_) { return (false); }
@@ -636,7 +636,7 @@ auto String::make_string(const char* str, std::uint32_t length)
     UnallocatedVector<char> output{};
 
     if ((nullptr != str) && (0 < length)) {
-        auto* it = str;
+        const auto* it = str;
 
         for (std::size_t i = 0; i < length; ++i, ++it) {
             output.emplace_back(*it);

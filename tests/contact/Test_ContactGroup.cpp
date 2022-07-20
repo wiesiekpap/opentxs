@@ -243,8 +243,7 @@ TEST_F(Test_ContactGroup, AddPrimary)
 
 TEST_F(Test_ContactGroup, begin)
 {
-    ot::identity::wot::claim::Group::ItemMap::const_iterator it =
-        contactGroup_.begin();
+    auto it = contactGroup_.begin();
     ASSERT_EQ(contactGroup_.end(), it);
     ASSERT_EQ(std::distance(it, contactGroup_.end()), 0);
 
@@ -321,8 +320,7 @@ TEST_F(Test_ContactGroup, Claim_notfound)
 
 TEST_F(Test_ContactGroup, end)
 {
-    ot::identity::wot::claim::Group::ItemMap::const_iterator it =
-        contactGroup_.end();
+    auto it = contactGroup_.end();
     ASSERT_EQ(contactGroup_.begin(), it);
     ASSERT_EQ(std::distance(contactGroup_.begin(), it), 0);
 

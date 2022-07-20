@@ -1511,7 +1511,7 @@ TEST_F(Integration, pay_bob)
     activity_thread_alex_bob_.expected_ += 4;
     activity_summary_bob_.expected_ += 2;
 
-    auto& thread =
+    const auto& thread =
         api_alex_.UI().ActivityThread(alex_.nym_id_, alex_.Contact(bob_.name_));
     idle();
     const auto sent = thread.Pay(

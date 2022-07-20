@@ -45,8 +45,8 @@ public:
     Scan() = delete;
     Scan(const Scan&) = delete;
     Scan(Scan&&) = delete;
-    Scan& operator=(const Scan&) = delete;
-    Scan& operator=(Scan&&) = delete;
+    auto operator=(const Scan&) -> Scan& = delete;
+    auto operator=(Scan&&) -> Scan& = delete;
 
     ~Scan() final;
 

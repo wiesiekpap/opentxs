@@ -148,7 +148,7 @@ auto Session::get_api(const PasswordPrompt& reason) noexcept
     return reason.api_;
 }
 
-INTERNAL_PASSWORD_CALLBACK* Session::GetInternalPasswordCallback() const
+auto Session::GetInternalPasswordCallback() const -> INTERNAL_PASSWORD_CALLBACK*
 {
     return &internal_password_cb;
 }

@@ -260,7 +260,7 @@ auto AccountTree::load_blockchain_account(
     }
     ();
     auto& accountMap = std::get<3>(currencyData);
-    auto& api = Widget::api_;
+    const auto& api = Widget::api_;
     // TODO set sort index
     auto [it, added] = accountMap.try_emplace(
         std::move(id),
@@ -295,7 +295,7 @@ auto AccountTree::load_custodial(ChildMap& out) const noexcept -> void
 {
     const auto& storage = Widget::api_.Storage();
 
-    for (auto& account : storage.AccountsByOwner(primary_id_)) {
+    for (const auto& account : storage.AccountsByOwner(primary_id_)) {
         load_custodial_account(
             std::move(const_cast<OTIdentifier&>(account)), out);
     }
@@ -358,7 +358,7 @@ auto AccountTree::load_custodial_account(
     }
     ();
     auto& accountMap = std::get<3>(currencyData);
-    auto& api = Widget::api_;
+    const auto& api = Widget::api_;
     auto notaryID = api.Storage().AccountServer(id);
     // TODO set sort index
     auto [it, added] = accountMap.try_emplace(

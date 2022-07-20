@@ -408,8 +408,8 @@ auto BlockchainImp::ProcessTransactions(
     const auto& log = LogTrace();
     auto lock = Lock{lock_};
 
-    for (auto& pTX : in) {  // TODO: MT-82
-        OT_ASSERT(pTX);     // TODO: MT-81
+    for (const auto& pTX : in) {  // TODO: MT-82
+        OT_ASSERT(pTX);           // TODO: MT-81
 
         const auto& tx = *pTX;
         const auto& id = tx.ID();

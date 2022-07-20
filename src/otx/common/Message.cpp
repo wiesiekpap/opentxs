@@ -340,7 +340,7 @@ auto Message::HarvestTransactionNumbers(
 
     // Let's iterate through the transactions inside, and harvest whatever
     // we can...
-    for (auto& it : theLedger->GetTransactionMap()) {
+    for (const auto& it : theLedger->GetTransactionMap()) {
         auto pTransaction = it.second;
         OT_ASSERT(false != bool(pTransaction));
 

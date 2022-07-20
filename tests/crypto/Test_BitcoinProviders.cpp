@@ -379,7 +379,7 @@ public:
     {
     }
 
-    bool test_base58_encode()
+    auto test_base58_encode() -> bool
     {
         for (const auto& [key, value] : base_58_) {
             auto input = client_.Factory().Data();
@@ -392,7 +392,7 @@ public:
         return true;
     }
 
-    bool test_base58_decode()
+    auto test_base58_decode() -> bool
     {
         for (const auto& [key, value] : base_58_) {
             auto expected = client_.Factory().Data();
@@ -406,7 +406,7 @@ public:
         return true;
     }
 
-    bool test_ripemd160()
+    auto test_ripemd160() -> bool
     {
         for (const auto& [preimage, hash] : ripemd160_) {
             auto input = client_.Factory().Data();
@@ -432,7 +432,7 @@ public:
         return output;
     }
 
-    bool test_bip32_seed(const ot::crypto::Bip32& library)
+    auto test_bip32_seed(const ot::crypto::Bip32& library) -> bool
     {
         for (const auto& [hex, value] : bip_39_) {
             [[maybe_unused]] const auto& [words, node, xprv] = value;
@@ -469,10 +469,10 @@ public:
         return true;
     }
 
-    bool compare_private(
+    auto compare_private(
         const ot::crypto::Bip32& library,
         const ot::UnallocatedCString& lhs,
-        const ot::UnallocatedCString& rhs) const
+        const ot::UnallocatedCString& rhs) const -> bool
     {
         bool output{true};
         ot::Bip32Network lNetwork{}, rNetwork{};
@@ -511,10 +511,10 @@ public:
         return output;
     }
 
-    bool compare_public(
+    auto compare_public(
         const ot::crypto::Bip32& library,
         const ot::UnallocatedCString& lhs,
-        const ot::UnallocatedCString& rhs) const
+        const ot::UnallocatedCString& rhs) const -> bool
     {
         bool output{true};
         ot::Bip32Network lNetwork{}, rNetwork{};
@@ -552,7 +552,7 @@ public:
         return output;
     }
 
-    bool test_bip32_child_key(const ot::crypto::Bip32& library)
+    auto test_bip32_child_key(const ot::crypto::Bip32& library) -> bool
     {
         for (const auto& testVector : bip_32_) {
             const auto& [hex, cases] = testVector;
@@ -593,7 +593,7 @@ public:
         return true;
     }
 
-    bool test_bip39(const ot::crypto::Bip32& library)
+    auto test_bip39(const ot::crypto::Bip32& library) -> bool
     {
         for (const auto& [hex, value] : bip_39_) {
             const auto& [words, seed, xprv] = value;

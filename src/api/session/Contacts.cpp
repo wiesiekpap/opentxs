@@ -292,7 +292,7 @@ auto Contacts::ContactName(const Identifier& id, UnitType currencyHint) const
 
     if (!contact) { return fallback(lock); }
 
-    if (auto& label = contact->Label(); false == label.empty()) {
+    if (const auto& label = contact->Label(); false == label.empty()) {
         auto& output = contact_name_map_[id];
         output = std::move(label);
 
@@ -922,7 +922,7 @@ void Contacts::start()
 auto Contacts::update(const identity::Nym& nym) const
     -> std::shared_ptr<const opentxs::Contact>
 {
-    auto& data = nym.Claims();
+    const auto& data = nym.Claims();
 
     switch (data.Type()) {
         case identity::wot::claim::ClaimType::Individual:

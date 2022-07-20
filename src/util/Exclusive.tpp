@@ -39,11 +39,13 @@ Exclusive<C>::Exclusive(
 
 template <class C>
 Exclusive<C>::Exclusive(Exclusive&& rhs) noexcept
+    // NOLINTBEGIN(cert-oop11-cpp)
     : p_{rhs.p_}
     , lock_{rhs.lock_.release()}
     , save_{rhs.save_}
     , success_{rhs.success_.load()}
     , callback_{rhs.callback_}
+// NOLINTEND(cert-oop11-cpp)
 {
     rhs.p_ = nullptr;
     rhs.save_ = Save{nullptr};

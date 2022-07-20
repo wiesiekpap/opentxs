@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cs_ordered_guarded.h>
+#include <iosfwd>
 #include <mutex>
 #include <shared_mutex>
 

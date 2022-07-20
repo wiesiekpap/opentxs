@@ -169,7 +169,7 @@ auto Envelope::attach_session_keys(
         const auto type = solution.at(nym.ID()).at(authority.GetMasterCredID());
         auto tag = Tag{};
         auto password = api_.Factory().Secret(0);
-        auto& dhKey = get_dh_key(type, authority, reason);
+        const auto& dhKey = get_dh_key(type, authority, reason);
         const auto haveTag =
             dhKey.CalculateTag(authority, type, reason, tag, password);
 

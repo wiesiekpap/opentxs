@@ -61,7 +61,7 @@ auto Position::Hash() const noexcept -> ReadView
 {
     static constexpr auto offset = sizeof(block::Height);
     static constexpr auto size = fixed_ - offset;
-    const auto start = std::next(data_.data(), offset);
+    const auto* const start = std::next(data_.data(), offset);
 
     return {reinterpret_cast<const char*>(start), size};
 }
@@ -71,7 +71,7 @@ auto Position::Height() const noexcept -> block::Height
     auto out = block::Height{};
     static constexpr auto offset = std::size_t{0};
     static constexpr auto size = sizeof(out);
-    const auto start = std::next(data_.data(), offset);
+    const auto* const start = std::next(data_.data(), offset);
     std::memcpy(&out, start, size);
 
     return out;

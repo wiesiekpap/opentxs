@@ -66,8 +66,8 @@ public:
     Imp() = delete;
     Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;
-    Imp& operator=(const Imp&) = delete;
-    Imp& operator=(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() final = default;
 

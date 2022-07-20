@@ -279,7 +279,8 @@ auto Blockchain::Imp::AssignContact(
     OT_ASSERT(opentxs::blockchain::Type::Unknown != chain);
 
     try {
-        auto& node = wallets_.Get(chain).Account(nymID).Subaccount(accountID);
+        const auto& node =
+            wallets_.Get(chain).Account(nymID).Subaccount(accountID);
 
         try {
             const auto& element = node.BalanceElement(subchain, index);
@@ -318,7 +319,8 @@ auto Blockchain::Imp::AssignLabel(
     OT_ASSERT(opentxs::blockchain::Type::Unknown != chain);
 
     try {
-        auto& node = wallets_.Get(chain).Account(nymID).Subaccount(accountID);
+        const auto& node =
+            wallets_.Get(chain).Account(nymID).Subaccount(accountID);
 
         try {
             const auto& element = node.BalanceElement(subchain, index);

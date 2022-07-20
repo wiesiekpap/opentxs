@@ -82,7 +82,8 @@
 namespace opentxs
 {
 // https://baptiste-wicht.com/posts/2014/07/compile-integer-square-roots-at-compile-time-in-cpp.html
-static constexpr std::size_t isqrt(std::size_t x, std::size_t r, std::size_t i)
+static constexpr auto isqrt(std::size_t x, std::size_t r, std::size_t i)
+    -> std::size_t
 {
     return i == 0 ? r
                   : isqrt(
@@ -91,12 +92,12 @@ static constexpr std::size_t isqrt(std::size_t x, std::size_t r, std::size_t i)
                         i >> 2);
 }
 
-static constexpr std::size_t isqrt_i(std::size_t x, std::size_t i)
+static constexpr auto isqrt_i(std::size_t x, std::size_t i) -> std::size_t
 {
     return i <= x ? i : isqrt_i(x, i >> 2);
 }
 
-static constexpr std::size_t isqrt(std::size_t x)
+static constexpr auto isqrt(std::size_t x) -> std::size_t
 {
     return isqrt(x, 0, isqrt_i(x, 1ull << ((sizeof(x) * 8) - 2)));
 }

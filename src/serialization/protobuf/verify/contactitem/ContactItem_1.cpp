@@ -33,7 +33,7 @@ auto CheckProto_1(
 
     CHECK_EXISTS(value);
 
-    for (auto& it : input.attribute()) {
+    for (const auto& it : input.attribute()) {
         if (!ValidContactItemAttribute(
                 input.version(), static_cast<ContactItemAttribute>(it))) {
             FAIL_1("invalid attribute")

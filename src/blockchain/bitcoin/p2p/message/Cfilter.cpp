@@ -59,7 +59,7 @@ auto BitcoinP2PCfilter(
         return nullptr;
     }
 
-    auto* it{static_cast<const std::byte*>(payload)};
+    const auto* it{static_cast<const std::byte*>(payload)};
     std::memcpy(reinterpret_cast<std::byte*>(&raw), it, sizeof(raw));
     std::advance(it, sizeof(raw));
     expectedSize += 1;
@@ -96,9 +96,9 @@ auto BitcoinP2PCfilter(
         const auto [elementCount, filterBytes] =
             blockchain::internal::DecodeSerializedCfilter(
                 ReadView{reinterpret_cast<const char*>(it), filterSize});
-        const auto start =
+        const auto* const start =
             reinterpret_cast<const std::byte*>(filterBytes.data());
-        const auto end = start + filterBytes.size();
+        const auto* const end = start + filterBytes.size();
 
         return new ReturnType(
             api,

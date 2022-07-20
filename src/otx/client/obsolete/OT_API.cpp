@@ -2458,7 +2458,7 @@ auto OT_API::AddBasketCreationItem(
     const String& currencyID,
     const std::uint64_t weight) const -> bool
 {
-    auto item = basketTemplate.mutable_basket()->add_item();
+    auto* item = basketTemplate.mutable_basket()->add_item();
 
     if (nullptr == item) { return false; }
 
@@ -2909,7 +2909,7 @@ auto OT_API::exchangeBasket(
     UnallocatedSet<otx::context::ManagedNumber> managed{};
     managed.emplace(context.InternalServer().NextTransactionNumber(
         MessageType::notarizeTransaction));
-    auto& managedNumber = *managed.rbegin();
+    const auto& managedNumber = *managed.rbegin();
 
     if (false == managedNumber.Valid()) {
         LogError()(OT_PRETTY_CLASS())(
@@ -2942,7 +2942,7 @@ auto OT_API::exchangeBasket(
 
     managed.insert(context.InternalServer().NextTransactionNumber(
         MessageType::notarizeTransaction));
-    auto& closingNumber = *managed.rbegin();
+    const auto& closingNumber = *managed.rbegin();
 
     if (false == closingNumber.Valid()) {
         LogError()(OT_PRETTY_CLASS())(
@@ -3167,7 +3167,7 @@ auto OT_API::payDividend(
     UnallocatedSet<otx::context::ManagedNumber> managed{};
     managed.insert(context.InternalServer().NextTransactionNumber(
         MessageType::notarizeTransaction));
-    auto& managedNumber = *managed.rbegin();
+    const auto& managedNumber = *managed.rbegin();
 
     if (false == managedNumber.Valid()) {
         LogError()(OT_PRETTY_CLASS())(
@@ -3874,7 +3874,7 @@ auto OT_API::activateSmartContract(
     // --- THE ACTIVATING NYM *MUST* ALSO BE THE AUTHORIZED AGENT FOR AT
     // LEAST ONE ASSET ACCOUNT, FOR THAT PARTY. ---
 
-    auto account = party->GetAccountByAgent(agent->GetName().Get());
+    auto* account = party->GetAccountByAgent(agent->GetName().Get());
 
     if (nullptr == account) {
         LogError()(OT_PRETTY_CLASS())(
@@ -4106,7 +4106,7 @@ auto OT_API::cancelCronItem(
     UnallocatedSet<otx::context::ManagedNumber> managed{};
     managed.insert(context.InternalServer().NextTransactionNumber(
         MessageType::notarizeTransaction));
-    auto& managedNumber = *managed.rbegin();
+    const auto& managedNumber = *managed.rbegin();
 
     if (false == managedNumber.Valid()) {
         LogError()(OT_PRETTY_CLASS())(
@@ -4272,7 +4272,7 @@ auto OT_API::issueMarketOffer(
     UnallocatedSet<otx::context::ManagedNumber> managed{};
     managed.insert(context.InternalServer().NextTransactionNumber(
         MessageType::notarizeTransaction));
-    auto& openingNumber = *managed.rbegin();
+    const auto& openingNumber = *managed.rbegin();
 
     if (false == openingNumber.Valid()) {
         LogError()(OT_PRETTY_CLASS())(
@@ -4289,7 +4289,7 @@ auto OT_API::issueMarketOffer(
     transactionNum = openingNumber.Value();
     managed.insert(context.InternalServer().NextTransactionNumber(
         MessageType::notarizeTransaction));
-    auto& assetClosingNumber = *managed.rbegin();
+    const auto& assetClosingNumber = *managed.rbegin();
 
     if (false == openingNumber.Valid()) {
         LogError()(OT_PRETTY_CLASS())(
@@ -4305,7 +4305,7 @@ auto OT_API::issueMarketOffer(
         .Flush();
     managed.insert(context.InternalServer().NextTransactionNumber(
         MessageType::notarizeTransaction));
-    auto& currencyClosingNumber = *managed.rbegin();
+    const auto& currencyClosingNumber = *managed.rbegin();
 
     if (false == currencyClosingNumber.Valid()) {
         LogError()(OT_PRETTY_CLASS())(
@@ -4924,7 +4924,7 @@ auto OT_API::CreateProcessInbox(
         return {};
     }
 
-    auto transaction =
+    auto* transaction =
         get_or_create_process_inbox(accountID, context, *processInbox);
 
     if (nullptr == transaction) {
@@ -4973,8 +4973,8 @@ auto OT_API::IncludeResponse(
         }
     }
 
-    auto& nym = *context.Nym();
-    auto& serverNym = context.RemoteNym();
+    const auto& nym = *context.Nym();
+    const auto& serverNym = context.RemoteNym();
     const bool validSource = source.VerifyAccount(serverNym);
 
     if (!validSource) {
@@ -4984,7 +4984,7 @@ auto OT_API::IncludeResponse(
         return false;
     }
 
-    auto processInbox =
+    auto* processInbox =
         get_or_create_process_inbox(accountID, context, response);
 
     if (nullptr == processInbox) {

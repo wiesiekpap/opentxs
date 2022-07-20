@@ -53,8 +53,8 @@ public:
     }
     Test_RouterDealer(const Test_RouterDealer&) = delete;
     Test_RouterDealer(Test_RouterDealer&&) = delete;
-    Test_RouterDealer& operator=(const Test_RouterDealer&) = delete;
-    Test_RouterDealer& operator=(Test_RouterDealer&&) = delete;
+    auto operator=(const Test_RouterDealer&) -> Test_RouterDealer& = delete;
+    auto operator=(Test_RouterDealer&&) -> Test_RouterDealer& = delete;
 };
 
 void Test_RouterDealer::requestSocketThread(

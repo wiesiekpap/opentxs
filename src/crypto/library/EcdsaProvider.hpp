@@ -37,11 +37,11 @@ namespace opentxs::crypto::implementation
 class EcdsaProvider : virtual public crypto::EcdsaProvider
 {
 public:
-    bool SignDER(
+    auto SignDER(
         [[maybe_unused]] const ReadView plaintext,
         [[maybe_unused]] const ReadView key,
         [[maybe_unused]] const crypto::HashType hash,
-        [[maybe_unused]] Space& signature) const noexcept override
+        [[maybe_unused]] Space& signature) const noexcept -> bool override
     {
         return false;
     }

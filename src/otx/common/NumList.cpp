@@ -244,7 +244,7 @@ auto NumList::Verify(const NumList& rhs) const -> bool
         return false;
     }
 
-    for (auto& it : m_setData) {
+    for (const auto& it : m_setData) {
         if (false == rhs.Verify(it)) {
             LogError()(OT_PRETTY_CLASS())("Number ")(it)(" missing").Flush();
 
@@ -347,7 +347,7 @@ auto NumList::Output(String& strOutput) const -> bool  // returns false if the
 {
     std::int32_t nIterationCount = 0;
 
-    for (auto& it : m_setData) {
+    for (const auto& it : m_setData) {
         nIterationCount++;
         auto sx = String::Factory(
             (1 == nIterationCount ? "" : ",") + std::to_string(it));

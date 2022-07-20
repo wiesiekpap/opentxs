@@ -571,7 +571,7 @@ auto GCS::Encode(AllocateOutput cb) const noexcept -> bool
         return false;
     }
 
-    auto i = out.as<std::byte>();
+    auto* i = out.as<std::byte>();
     std::memcpy(i, bytes.data(), bytes.size());
     std::advance(i, bytes.size());
 

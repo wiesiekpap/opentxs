@@ -187,7 +187,7 @@ Basket::Basket(
             weight_ = serialized.basket().weight();
         }
 
-        for (auto& item : serialized.basket().item()) {
+        for (const auto& item : serialized.basket().item()) {
             subcontracts_.insert(
                 {item.unit(), {item.account(), item.weight()}});
         }
@@ -212,13 +212,13 @@ auto Basket::IDVersion(const Lock& lock) const -> SerializedType
 {
     auto contract = Unit::IDVersion(lock);
 
-    auto basket = contract.mutable_basket();
+    auto* basket = contract.mutable_basket();
     basket->set_version(1);
     basket->set_weight(weight_);
 
     // determinism here depends on the defined ordering of UnallocatedMap
-    for (auto& item : subcontracts_) {
-        auto serialized = basket->add_item();
+    for (const auto& item : subcontracts_) {
+        auto* serialized = basket->add_item();
         serialized->set_version(1);
         serialized->set_unit(item.first);
         serialized->set_account(item.second.first);

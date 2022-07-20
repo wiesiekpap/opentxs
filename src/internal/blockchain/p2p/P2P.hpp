@@ -50,7 +50,7 @@ struct Peer : virtual public p2p::Peer {
     virtual auto AddressID() const noexcept -> OTIdentifier = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 
-    virtual ~Peer() override = default;
+    ~Peer() override = default;
 };
 }  // namespace opentxs::blockchain::p2p::internal
 

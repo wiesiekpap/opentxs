@@ -182,6 +182,6 @@ void ActivitySummary::startup() noexcept
 
 ActivitySummary::~ActivitySummary()
 {
-    for (auto& it : listeners_) { delete it.second; }
+    for (const auto& it : listeners_) { delete it.second; }
 }
 }  // namespace opentxs::ui::implementation

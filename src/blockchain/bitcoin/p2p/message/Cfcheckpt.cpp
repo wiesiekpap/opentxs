@@ -57,7 +57,7 @@ auto BitcoinP2PCfcheckpt(
         return nullptr;
     }
 
-    auto* it{static_cast<const std::byte*>(payload)};
+    const auto* it{static_cast<const std::byte*>(payload)};
     std::memcpy(reinterpret_cast<std::byte*>(&raw), it, sizeof(raw));
     it += sizeof(raw);
     expectedSize += sizeof(std::byte);

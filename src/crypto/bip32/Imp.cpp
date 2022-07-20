@@ -44,7 +44,7 @@ auto Bip32::Imp::ckd_hardened(
     const WritableView& data) const noexcept -> void
 {
     static const auto padding = std::byte{0};
-    auto out{data.as<std::byte>()};
+    auto* out{data.as<std::byte>()};
     std::memcpy(out, &padding, sizeof(padding));
     std::advance(out, 1);
     std::memcpy(out, node.ParentPrivate().data(), 32);
@@ -57,7 +57,7 @@ auto Bip32::Imp::ckd_normal(
     const be::big_uint32_buf_t i,
     const WritableView& data) const noexcept -> void
 {
-    auto out{data.as<std::byte>()};
+    auto* out{data.as<std::byte>()};
     std::memcpy(out, node.ParentPublic().data(), 33);
     std::advance(out, 33);
     std::memcpy(out, &i, sizeof(i));
@@ -125,7 +125,7 @@ auto Bip32::Imp::derive_private(
         return false;
     }
 
-    auto code = hash.as<std::byte>();
+    auto* code = hash.as<std::byte>();
     std::advance(code, 32);
     std::memcpy(node.ChildCode().data(), code, 32);
     node.Next();
@@ -182,7 +182,7 @@ auto Bip32::Imp::derive_public(
         return false;
     }
 
-    auto code = hash.as<std::byte>();
+    auto* code = hash.as<std::byte>();
     std::advance(code, 32);
     std::memcpy(node.ChildCode().data(), code, 32);
     node.Next();

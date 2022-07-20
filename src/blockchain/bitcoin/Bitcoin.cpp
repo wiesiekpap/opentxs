@@ -158,7 +158,7 @@ auto Bip143Hashes::Preimage(
         sizeof(sigHash)
     );
     // clang-format on
-    auto it = preimage.data();
+    auto* it = preimage.data();
     std::memcpy(it, &version, sizeof(version));
     std::advance(it, sizeof(version));
     std::memcpy(it, outpoints.data(), outpoints.size());
@@ -273,8 +273,8 @@ auto EncodedTransaction::Deserialize(
     auto output = EncodedTransaction{};
     auto& [version, segwit, inCount, inputs, outCount, outputs, witnesses, locktime, wtxid, txid] =
         output;
-    auto it = reinterpret_cast<ByteIterator>(in.data());
-    const auto start{it};
+    const auto* it = reinterpret_cast<ByteIterator>(in.data());
+    const auto* const start{it};
     auto expectedSize = sizeof(version);
 
     if (in.size() < expectedSize) {
@@ -479,7 +479,7 @@ auto EncodedTransaction::Deserialize(
 auto EncodedTransaction::wtxid_preimage() const noexcept -> Space
 {
     auto output = space(size());
-    auto it = reinterpret_cast<std::byte*>(output.data());
+    auto* it = reinterpret_cast<std::byte*>(output.data());
     std::memcpy(it, static_cast<const void*>(&version_), sizeof(version_));
     std::advance(it, sizeof(version_));
 
@@ -565,7 +565,7 @@ auto EncodedTransaction::wtxid_preimage() const noexcept -> Space
 auto EncodedTransaction::txid_preimage() const noexcept -> Space
 {
     auto output = space(txid_size());
-    auto it = reinterpret_cast<std::byte*>(output.data());
+    auto* it = reinterpret_cast<std::byte*>(output.data());
     std::memcpy(it, static_cast<const void*>(&version_), sizeof(version_));
     std::advance(it, sizeof(version_));
 

@@ -45,8 +45,8 @@ public:
     Progress() = delete;
     Progress(const Progress&) = delete;
     Progress(Progress&&) = delete;
-    Progress& operator=(const Progress&) = delete;
-    Progress& operator=(Progress&&) = delete;
+    auto operator=(const Progress&) -> Progress& = delete;
+    auto operator=(Progress&&) -> Progress& = delete;
 
     ~Progress() final;
 

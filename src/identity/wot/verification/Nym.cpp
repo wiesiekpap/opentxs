@@ -173,7 +173,7 @@ auto Nym::add_item(Child pCandidate) noexcept -> bool
     }
 
     for (auto i{items_.cbegin()}; i != items_.cend();) {
-        auto& pItem = *i;
+        const auto& pItem = *i;
 
         OT_ASSERT(pItem);
 
@@ -207,7 +207,7 @@ auto Nym::DeleteItem(const Identifier& id) noexcept -> bool
     auto output{false};
 
     for (auto i{items_.cbegin()}; i != items_.cend(); ++i) {
-        auto& pItem = *i;
+        const auto& pItem = *i;
 
         OT_ASSERT(pItem);
 

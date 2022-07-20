@@ -50,8 +50,8 @@ public:
     NotificationIndex() = delete;
     NotificationIndex(const Imp&) = delete;
     NotificationIndex(NotificationIndex&&) = delete;
-    NotificationIndex& operator=(const NotificationIndex&) = delete;
-    NotificationIndex& operator=(NotificationIndex&&) = delete;
+    auto operator=(const NotificationIndex&) -> NotificationIndex& = delete;
+    auto operator=(NotificationIndex&&) -> NotificationIndex& = delete;
 
     ~NotificationIndex() final = default;
 

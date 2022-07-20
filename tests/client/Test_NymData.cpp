@@ -26,8 +26,8 @@ public:
     ot::OTPasswordPrompt reason_;
     ot::NymData nymData_;
 
-    static ot::UnallocatedCString ExpectedStringOutput(
-        const std::uint32_t version)
+    static auto ExpectedStringOutput(const std::uint32_t version)
+        -> ot::UnallocatedCString
     {
         return ot::UnallocatedCString{"Version "} + std::to_string(version) +
                ot::UnallocatedCString(

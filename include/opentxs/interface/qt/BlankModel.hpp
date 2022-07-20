@@ -15,22 +15,27 @@ struct OPENTXS_EXPORT BlankModel final : public QAbstractItemModel {
     Q_OBJECT
 
 public:
-    int columnCount(const QModelIndex& = QModelIndex()) const noexcept final
+    auto columnCount(const QModelIndex& = QModelIndex()) const noexcept
+        -> int final
     {
         return static_cast<int>(columns_);
     }
-    QVariant data(const QModelIndex&, int = Qt::DisplayRole)
-        const noexcept final
+    auto data(const QModelIndex&, int = Qt::DisplayRole) const noexcept
+        -> QVariant final
     {
         return {};
     }
-    QModelIndex index(int, int, const QModelIndex& = QModelIndex())
-        const noexcept final
+    auto index(int, int, const QModelIndex& = QModelIndex()) const noexcept
+        -> QModelIndex final
     {
         return {};
     }
-    QModelIndex parent(const QModelIndex&) const noexcept final { return {}; }
-    int rowCount(const QModelIndex& = QModelIndex()) const noexcept final
+    auto parent(const QModelIndex&) const noexcept -> QModelIndex final
+    {
+        return {};
+    }
+    auto rowCount(const QModelIndex& = QModelIndex()) const noexcept
+        -> int final
     {
         return 0;
     }

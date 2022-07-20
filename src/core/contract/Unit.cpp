@@ -427,10 +427,10 @@ auto Unit::get_displayscales(const SerializedType& serialized) const
     -> std::optional<display::Definition>
 {
     if (serialized.has_params()) {
-        auto& params = serialized.params();
+        const auto& params = serialized.params();
         auto scales = display::Definition::Scales{};
 
-        for (auto& scale : params.scales()) {
+        for (const auto& scale : params.scales()) {
             scales.emplace_back(std::pair(
                 scale.name(),
                 display::Scale{
@@ -439,7 +439,7 @@ auto Unit::get_displayscales(const SerializedType& serialized) const
                     [&] {
                         auto out = Vector<display::Scale::Ratio>{};
 
-                        for (auto& ratio : scale.ratios()) {
+                        for (const auto& ratio : scale.ratios()) {
                             out.emplace_back(
                                 std::pair{ratio.base(), ratio.power()});
                         }
@@ -520,7 +520,7 @@ auto Unit::IDVersion(const Lock& lock) const -> SerializedType
                 scale.DefaultMinDecimals().value_or(0));
             serialized.set_default_maximum_decimals(
                 scale.DefaultMaxDecimals().value_or(0));
-            for (auto& ratio : scale.Ratios()) {
+            for (const auto& ratio : scale.Ratios()) {
                 auto& ratios = *serialized.add_ratios();
                 ratios.set_version(1);
                 ratios.set_base(ratio.first);
@@ -622,7 +622,7 @@ auto Unit::validate(const Lock& lock) const -> bool
     }
 
     bool validSig = false;
-    auto& signature = *signatures_.cbegin();
+    const auto& signature = *signatures_.cbegin();
 
     if (signature) { validSig = verify_signature(lock, *signature); }
 

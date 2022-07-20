@@ -170,6 +170,6 @@ auto UnitList::startup() noexcept -> void
 
 UnitList::~UnitList()
 {
-    for (auto& it : listeners_) { delete it.second; }
+    for (const auto& it : listeners_) { delete it.second; }
 }
 }  // namespace opentxs::ui::implementation

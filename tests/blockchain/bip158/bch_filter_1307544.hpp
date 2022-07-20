@@ -6,7 +6,7 @@
 #include <array>
 #include <cstdint>
 
-namespace
+namespace ottest
 {
 [[maybe_unused]] const std::array<std::uint8_t, 381319> bch_filter_1307544_{
     254, 12,  54,  2,   0,   177, 242, 185, 134, 215, 133, 174, 63,  43,  184,
@@ -25432,4 +25432,4 @@ namespace
     151, 48,  217, 17,  232, 100, 169, 226, 118, 173, 220, 235, 184, 31,  97,
     232, 91,  140, 64,
 };
-}  // namespace
+}  // namespace ottest

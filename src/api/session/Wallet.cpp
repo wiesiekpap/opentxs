@@ -1429,7 +1429,7 @@ auto Wallet::NymNameByIndex(const std::size_t index, String& name) const -> bool
 
     if (index < nymNames.size()) {
         std::size_t idx{0};
-        for (auto& nymName : nymNames) {
+        for (const auto& nymName : nymNames) {
             if (idx == index) {
                 name.Set(String::Factory(nymName));
 

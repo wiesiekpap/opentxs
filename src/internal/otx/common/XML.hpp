@@ -14,6 +14,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace irr
 {
 namespace io
@@ -27,11 +28,15 @@ using IrrXMLReader = IIrrXMLReader<char, IXMLBase>;
 }  // namespace io
 }  // namespace irr
 
-namespace opentxs
+namespace opentxs  // NOLINT
 {
+// inline namespace v1
+// {
 class Armored;
 class String;
+// }  // namespace v1
 }  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

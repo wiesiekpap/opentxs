@@ -55,7 +55,7 @@ auto TokenLucre(
     otx::blind::internal::Purse& purse) noexcept -> otx::blind::Token
 {
     using ReturnType = otx::blind::token::Lucre;
-    auto* lucre = dynamic_cast<const ReturnType*>(&(token.Internal()));
+    const auto* lucre = dynamic_cast<const ReturnType*>(&(token.Internal()));
 
     if (nullptr == lucre) {
         LogError()("opentxs::factory::")(__func__)(": wrong token type")
@@ -592,7 +592,7 @@ auto Lucre::Process(
 
     try {
         auto password = api_.Factory().PasswordPrompt(reason);
-        auto& key = purse_.SecondaryKey(owner, password);
+        const auto& key = purse_.SecondaryKey(owner, password);
         const auto decrypted =
             key.Decrypt(*private_, password, prototoken->WriteInto());
 

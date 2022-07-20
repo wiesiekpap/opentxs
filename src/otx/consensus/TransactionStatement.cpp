@@ -40,7 +40,7 @@ TransactionStatement::TransactionStatement(const String& serialized)
     , available_()
     , issued_()
 {
-    auto raw =
+    auto* raw =
         irr::io::createIrrXMLReader(StringXML::Factory(serialized).get());
     std::unique_ptr<irr::io::IrrXMLReader> xml(raw);
 

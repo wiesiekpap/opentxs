@@ -10,7 +10,7 @@
 #include "ottest/Cli.hpp"
 #include "ottest/env/OTTestEnvironment.hpp"
 
-int main(int argc, char** argv)
+auto main(int argc, char** argv) -> int
 {
     const auto& args = ottest::Args(false, argc, argv);
     auto parser = ottest::ArgumentParser{};

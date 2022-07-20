@@ -320,7 +320,7 @@ auto CheckProto_1(
         uint32_t masterPublicCount = 0;
         uint32_t sourcePublicCount = 0;
 
-        for (auto& it : input.signature()) {
+        for (const auto& it : input.signature()) {
             try {
                 bool validSig = Check(
                     it,

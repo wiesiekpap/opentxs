@@ -153,7 +153,7 @@ auto TranslateSectionName(
 {
     EnumLang langPair{enumValue, lang};
 
-    for (auto& it : ContactSectionNames()) {
+    for (const auto& it : ContactSectionNames()) {
         if (langPair == it.first) { return it.second; }
     }
 
@@ -165,7 +165,7 @@ auto TranslateItemType(
 {
     EnumLang langPair{enumValue, lang};
 
-    for (auto& it : ContactItemTypes()) {
+    for (const auto& it : ContactItemTypes()) {
         if (langPair == it.first) { return it.second; }
     }
 
@@ -177,7 +177,7 @@ auto TranslateItemAttributes(
 {
     EnumLang langPair{enumValue, lang};
 
-    for (auto& it : ContactItemAttributes()) {
+    for (const auto& it : ContactItemAttributes()) {
         if (langPair == it.first) { return it.second; }
     }
 

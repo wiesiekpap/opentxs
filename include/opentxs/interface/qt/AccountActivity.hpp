@@ -11,7 +11,7 @@
 #include <QString>
 #include <QVariant>
 
-#include "opentxs/interface/qt/AmountValidator.hpp"  // IWYU pragma: keep
+#include "opentxs/interface/qt/AmountValidator.hpp"       // IWYU pragma: keep
 #include "opentxs/interface/qt/BlockchainAccountStatus.hpp"
 #include "opentxs/interface/qt/DestinationValidator.hpp"  // IWYU pragma: keep
 #include "opentxs/interface/qt/DisplayScale.hpp"          // IWYU pragma: keep
@@ -80,7 +80,7 @@ public:
     Q_INVOKABLE bool validateAddress(const QString& address) const noexcept;
     // NOLINTNEXTLINE(modernize-use-trailing-return-type)
     Q_INVOKABLE QString validateAmount(const QString& amount) const noexcept;
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    // NOLINTEND(modernize-use-trailing-return-type)
     Q_INVOKABLE QString
     dumpData(const BlockchainAccountStatusQt* accountStatus) const noexcept;
 

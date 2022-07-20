@@ -233,7 +233,7 @@ auto Inputs::MergeMetadata(const internal::Inputs& rhs, const Log& log) noexcept
 
     for (auto i = std::size_t{0}; i < count; ++i) {
         auto& l = *inputs_.at(i);
-        auto& r = rhs.at(i).Internal();
+        const auto& r = rhs.at(i).Internal();
 
         if (false == l.MergeMetadata(r, i, log)) {
             LogError()(OT_PRETTY_CLASS())("Failed to merge input ")(i).Flush();
@@ -293,7 +293,7 @@ auto Inputs::serialize(const AllocateOutput destination, const bool normalize)
 
     auto remaining{output.size()};
     const auto cs = blockchain::bitcoin::CompactSize(this->size()).Encode();
-    auto it = static_cast<std::byte*>(output.data());
+    auto* it = static_cast<std::byte*>(output.data());
     std::memcpy(static_cast<void*>(it), cs.data(), cs.size());
     std::advance(it, cs.size());
     remaining -= cs.size();
@@ -350,6 +350,6 @@ auto Inputs::SerializeNormalized(const AllocateOutput destination)
 
 auto Inputs::SetKeyData(const blockchain::block::KeyData& data) noexcept -> void
 {
-    for (auto& input : inputs_) { input->SetKeyData(data); }
+    for (const auto& input : inputs_) { input->SetKeyData(data); }
 }
 }  // namespace opentxs::blockchain::bitcoin::block::implementation

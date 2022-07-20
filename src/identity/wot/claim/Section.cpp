@@ -218,9 +218,9 @@ auto Section::operator+(const Section& rhs) const -> Section
 {
     auto map{imp_->groups_};
 
-    for (auto& it : rhs.imp_->groups_) {
-        auto& rhsID = it.first;
-        auto& rhsGroup = it.second;
+    for (const auto& it : rhs.imp_->groups_) {
+        const auto& rhsID = it.first;
+        const auto& rhsGroup = it.second;
 
         OT_ASSERT(rhsGroup);
 

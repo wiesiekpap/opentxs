@@ -26,7 +26,7 @@ class BlockchainSubaccount;
 }  // namespace ui
 // }  // namespace v1
 }  // namespace opentxs
-// NOLINTEND(modernize-concat-nested-namespaces
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui
 {

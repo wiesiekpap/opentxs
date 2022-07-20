@@ -67,7 +67,7 @@ auto Archiving::calculate_path(
     UnallocatedCString& directory) const -> UnallocatedCString
 {
     directory = folder_;
-    auto& level1 = folder_;
+    const auto& level1 = folder_;
     UnallocatedCString level2{};
 
     if (4 < key.size()) {

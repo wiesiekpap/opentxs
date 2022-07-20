@@ -201,8 +201,8 @@ auto Verification::verify_internally(const Lock& lock) const -> bool
     // Perform common Credential verifications
     if (!Base::verify_internally(lock)) { return false; }
 
-    for (auto& nym : data_.internal().identity()) {
-        for (auto& claim : nym.verification()) {
+    for (const auto& nym : data_.internal().identity()) {
+        for (const auto& claim : nym.verification()) {
             bool valid = parent_.Verify(claim);
 
             if (!valid) {

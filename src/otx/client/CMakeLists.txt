@@ -16,6 +16,7 @@ target_sources(
     "${opentxs_SOURCE_DIR}/src/internal/otx/client/Pair.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/otx/client/ServerAction.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/otx/client/Types.hpp"
+    "Common.cpp"
     "DepositPayment.cpp"
     "DepositPayment.hpp"
     "Issuer.cpp"

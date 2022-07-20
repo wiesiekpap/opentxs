@@ -18,7 +18,7 @@ auto CheckProto_1(const DisplayScale& input, const bool silent) -> bool
 {
     if (!input.has_name()) { FAIL_1("missing name") }
 
-    for (auto& it : input.ratios()) {
+    for (const auto& it : input.ratios()) {
         if (!Check(
                 it,
                 DisplayScaleAllowedScaleRatios().at(input.version()).first,

@@ -37,19 +37,22 @@ public:
     const ot::OTPasswordPrompt reason_r_;
     const ot::OTString plaintext_;
 
-    static bool can_seal(const std::size_t row)
+    static auto can_seal(const std::size_t row) -> bool
     {
         return expected_.at(row).first;
     }
-    static bool can_open(const std::size_t row, const std::size_t column)
+    static auto can_open(const std::size_t row, const std::size_t column)
+        -> bool
     {
         return can_seal(row) && should_seal(row, column);
     }
-    static bool is_active(const std::size_t row, const std::size_t column)
+    static auto is_active(const std::size_t row, const std::size_t column)
+        -> bool
     {
         return 0 != (row & (std::size_t{1} << column));
     }
-    static bool should_seal(const std::size_t row, const std::size_t column)
+    static auto should_seal(const std::size_t row, const std::size_t column)
+        -> bool
     {
         return expected_.at(row).second.at(column);
     }

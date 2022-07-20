@@ -170,7 +170,7 @@ struct TCPConnectionManager : virtual public ConnectionManager {
 
         OT_ASSERT(0 < id.size());
 
-        const auto start = static_cast<const std::byte*>(id.data());
+        const auto* const start = static_cast<const std::byte*>(id.data());
         const_cast<Space&>(connection_id_).assign(start, start + id.size());
 
         OT_ASSERT(0 < connection_id_.size());

@@ -8,19 +8,57 @@
 #include <functional>
 #include <future>
 #include <memory>
+#include <tuple>
+#include <utility>
 
 #include "internal/core/identifier/Identifier.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/otx/Types.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/Blank.hpp"
+
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+// inline namespace v1
+// {
+namespace otx
+{
+namespace blind
+{
+class Purse;
+}  // namespace blind
+}  // namespace otx
+
+namespace proto
+{
+class UnitDefinition;
+}  // namespace proto
+// }  // namespace v1
+
+class Cheque;
+class OTPayment;
+class String;
+template <typename T>
+struct make_blank;
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {
@@ -29,42 +67,14 @@ struct OT_DownloadNymboxType {
 struct OT_GetTransactionNumbersType {
 };
 
-static auto operator<(
+auto operator<(
     const OT_DownloadNymboxType&,
-    const OT_DownloadNymboxType&) noexcept -> bool
-{
-    return false;
-}
+    const OT_DownloadNymboxType&) noexcept -> bool;
 
-static auto operator<(
+auto operator<(
     const OT_GetTransactionNumbersType&,
-    const OT_GetTransactionNumbersType&) noexcept -> bool
-{
-    return false;
-}
+    const OT_GetTransactionNumbersType&) noexcept -> bool;
 }  // namespace opentxs
-
-namespace std
-{
-template <>
-struct less<opentxs::OT_DownloadNymboxType> {
-    auto operator()(
-        const opentxs::OT_DownloadNymboxType& lhs,
-        const opentxs::OT_DownloadNymboxType& rhs) const -> bool
-    {
-        return lhs < rhs;
-    }
-};
-template <>
-struct less<opentxs::OT_GetTransactionNumbersType> {
-    auto operator()(
-        const opentxs::OT_GetTransactionNumbersType& lhs,
-        const opentxs::OT_GetTransactionNumbersType& rhs) const -> bool
-    {
-        return lhs < rhs;
-    }
-};
-}  // namespace std
 
 namespace opentxs::otx::client
 {
@@ -108,6 +118,48 @@ using SendTransferTask =
 /** WithdrawCashTask: Account ID, amount*/
 using WithdrawCashTask = std::pair<OTIdentifier, Amount>;
 }  // namespace opentxs::otx::client
+
+namespace std
+{
+template <>
+struct less<opentxs::otx::client::MessageTask> {
+    auto operator()(
+        const opentxs::otx::client::MessageTask& lhs,
+        const opentxs::otx::client::MessageTask& rhs) const noexcept -> bool;
+};
+template <>
+struct less<opentxs::otx::client::PaymentTask> {
+    auto operator()(
+        const opentxs::otx::client::PaymentTask& lhs,
+        const opentxs::otx::client::PaymentTask& rhs) const noexcept -> bool;
+};
+template <>
+struct less<opentxs::otx::client::PeerReplyTask> {
+    auto operator()(
+        const opentxs::otx::client::PeerReplyTask& lhs,
+        const opentxs::otx::client::PeerReplyTask& rhs) const noexcept -> bool;
+};
+template <>
+struct less<opentxs::otx::client::PeerRequestTask> {
+    auto operator()(
+        const opentxs::otx::client::PeerRequestTask& lhs,
+        const opentxs::otx::client::PeerRequestTask& rhs) const noexcept
+        -> bool;
+};
+template <>
+struct less<opentxs::OT_DownloadNymboxType> {
+    auto operator()(
+        const opentxs::OT_DownloadNymboxType& lhs,
+        const opentxs::OT_DownloadNymboxType& rhs) const noexcept -> bool;
+};
+template <>
+struct less<opentxs::OT_GetTransactionNumbersType> {
+    auto operator()(
+        const opentxs::OT_GetTransactionNumbersType& lhs,
+        const opentxs::OT_GetTransactionNumbersType& rhs) const noexcept
+        -> bool;
+};
+}  // namespace std
 
 namespace opentxs
 {

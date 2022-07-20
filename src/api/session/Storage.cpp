@@ -2316,7 +2316,7 @@ auto Storage::UnreadCount(
     const UnallocatedCString& nymId,
     const UnallocatedCString& threadId) const -> std::size_t
 {
-    auto& nyms = Root().Tree().Nyms();
+    const auto& nyms = Root().Tree().Nyms();
 
     if (false == nyms.Exists(nymId)) {
         LogError()(OT_PRETTY_CLASS())("Nym ")(nymId)(" does not exist.")
@@ -2325,7 +2325,7 @@ auto Storage::UnreadCount(
         return 0;
     }
 
-    auto& threads = nyms.Nym(nymId).Threads();
+    const auto& threads = nyms.Nym(nymId).Threads();
 
     if (false == threads.Exists(threadId)) {
         LogError()(OT_PRETTY_CLASS())("Thread ")(threadId)(" does not exist.")
