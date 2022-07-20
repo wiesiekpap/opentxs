@@ -58,17 +58,16 @@ public:
     /// Returns the display name for this blockchain.
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
 
-    ~BlockchainStatisticsItem() override = default;
-
-protected:
-    BlockchainStatisticsItem() noexcept = default;
-
-private:
     BlockchainStatisticsItem(const BlockchainStatisticsItem&) = delete;
     BlockchainStatisticsItem(BlockchainStatisticsItem&&) = delete;
     auto operator=(const BlockchainStatisticsItem&)
         -> BlockchainStatisticsItem& = delete;
     auto operator=(BlockchainStatisticsItem&&)
         -> BlockchainStatisticsItem& = delete;
+
+    ~BlockchainStatisticsItem() override = default;
+
+protected:
+    BlockchainStatisticsItem() noexcept = default;
 };
 }  // namespace opentxs::ui

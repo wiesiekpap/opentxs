@@ -63,15 +63,14 @@ public:
     virtual auto TagSize(const opentxs::crypto::key::symmetric::Algorithm mode)
         const -> std::size_t = 0;
 
-    OPENTXS_NO_EXPORT virtual ~SymmetricProvider() = default;
-
-protected:
-    SymmetricProvider() = default;
-
-private:
     SymmetricProvider(const SymmetricProvider&) = delete;
     SymmetricProvider(SymmetricProvider&&) = delete;
     auto operator=(const SymmetricProvider&) -> SymmetricProvider& = delete;
     auto operator=(SymmetricProvider&&) -> SymmetricProvider& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~SymmetricProvider() = default;
+
+protected:
+    SymmetricProvider() = default;
 };
 }  // namespace opentxs::crypto

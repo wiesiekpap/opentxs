@@ -55,6 +55,12 @@ public:
         -> bool final;
     auto SetServerPubkey(const Data& key) const noexcept -> bool final;
 
+    Client() = delete;
+    Client(const Client&) = delete;
+    Client(Client&&) = delete;
+    auto operator=(const Client&) -> Client& = delete;
+    auto operator=(Client&&) -> Client& = delete;
+
 protected:
     auto set_public_key(const contract::Server& contract) const noexcept
         -> bool;
@@ -78,11 +84,5 @@ private:
         const std::size_t publicKeySize) const noexcept -> bool;
     auto set_remote_key(const void* key, const std::size_t size) const noexcept
         -> bool;
-
-    Client() = delete;
-    Client(const Client&) = delete;
-    Client(Client&&) = delete;
-    auto operator=(const Client&) -> Client& = delete;
-    auto operator=(Client&&) -> Client& = delete;
 };
 }  // namespace opentxs::network::zeromq::curve::implementation

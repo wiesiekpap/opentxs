@@ -45,6 +45,12 @@ class Acknowledgement final : public reply::Acknowledgement,
                               public peer::implementation::Reply
 {
 public:
+    auto asAcknowledgement() const noexcept
+        -> const reply::Acknowledgement& final
+    {
+        return *this;
+    }
+
     Acknowledgement(
         const api::Session& api,
         const Nym_p& nym,
@@ -57,14 +63,13 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const SerializedType& serialized);
+    Acknowledgement() = delete;
+    Acknowledgement(const Acknowledgement&);
+    Acknowledgement(Acknowledgement&&) = delete;
+    auto operator=(const Acknowledgement&) -> Acknowledgement& = delete;
+    auto operator=(Acknowledgement&&) -> Acknowledgement& = delete;
 
     ~Acknowledgement() final = default;
-
-    auto asAcknowledgement() const noexcept
-        -> const reply::Acknowledgement& final
-    {
-        return *this;
-    }
 
 private:
     friend opentxs::Factory;
@@ -78,11 +83,5 @@ private:
         return new Acknowledgement(*this);
     }
     auto IDVersion(const Lock& lock) const -> SerializedType final;
-
-    Acknowledgement() = delete;
-    Acknowledgement(const Acknowledgement&);
-    Acknowledgement(Acknowledgement&&) = delete;
-    auto operator=(const Acknowledgement&) -> Acknowledgement& = delete;
-    auto operator=(Acknowledgement&&) -> Acknowledgement& = delete;
 };
 }  // namespace opentxs::contract::peer::reply::implementation

@@ -259,8 +259,8 @@ TEST_F(Test_DealerRouter, Dealer_2_Router_1)
     std::thread dealerSocketThread2(
         &Test_DealerRouter::dealerSocketThread, this, testMessage3_);
 
-    auto& replyMessage1 = replyMessages.at(testMessage2_);
-    auto& replyMessage2 = replyMessages.at(testMessage3_);
+    const auto& replyMessage1 = replyMessages.at(testMessage2_);
+    const auto& replyMessage2 = replyMessages.at(testMessage3_);
 
     auto end = std::time(nullptr) + 15;
     while (!callbackFinishedCount_ && std::time(nullptr) < end)
@@ -268,10 +268,10 @@ TEST_F(Test_DealerRouter, Dealer_2_Router_1)
 
     bool message1Sent{false};
     if (0 != replyMessage1.size()) {
-        routerSocket->Send(std::move(replyMessage1));
+        routerSocket->Send(ot::network::zeromq::Message{replyMessage1});
         message1Sent = true;
     } else {
-        routerSocket->Send(std::move(replyMessage2));
+        routerSocket->Send(ot::network::zeromq::Message{replyMessage2});
     }
 
     end = std::time(nullptr) + 15;
@@ -279,9 +279,9 @@ TEST_F(Test_DealerRouter, Dealer_2_Router_1)
         std::this_thread::sleep_for(100ms);
 
     if (false == message1Sent) {
-        routerSocket->Send(std::move(replyMessage1));
+        routerSocket->Send(ot::network::zeromq::Message{replyMessage1});
     } else {
-        routerSocket->Send(std::move(replyMessage2));
+        routerSocket->Send(ot::network::zeromq::Message{replyMessage2});
     }
 
     ASSERT_EQ(callbackCount_, callbackFinishedCount_);

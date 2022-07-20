@@ -79,6 +79,11 @@ public:
         proto::Signature& sig,
         const PasswordPrompt& reason) const noexcept -> bool final;
 
+    Source() = delete;
+    Source(Source&&) = delete;
+    auto operator=(const Source&) -> Source& = delete;
+    auto operator=(Source&&) -> Source& = delete;
+
 private:
     friend opentxs::Factory;
 
@@ -125,9 +130,5 @@ private:
         const api::session::Factory& factory,
         const PaymentCode& source) noexcept;
     Source(const Source& rhs) noexcept;
-    Source() = delete;
-    Source(Source&&) = delete;
-    auto operator=(const Source&) -> Source&;
-    auto operator=(Source&&) -> Source&;
 };
 }  // namespace opentxs::identity::implementation

@@ -119,6 +119,10 @@ public:
         const bitcoin::ProtocolVersionUnsigned version,
         const UnallocatedVector<OTData>& header_hashes,
         const Data& stop_hash) noexcept(false);
+    Getblocks(const Getblocks&) = delete;
+    Getblocks(Getblocks&&) = delete;
+    auto operator=(const Getblocks&) -> Getblocks& = delete;
+    auto operator=(Getblocks&&) -> Getblocks& = delete;
 
     ~Getblocks() final = default;
 
@@ -126,10 +130,5 @@ private:
     const bitcoin::ProtocolVersionUnsigned version_;
     const UnallocatedVector<OTData> header_hashes_;
     const OTData stop_hash_;
-
-    Getblocks(const Getblocks&) = delete;
-    Getblocks(Getblocks&&) = delete;
-    auto operator=(const Getblocks&) -> Getblocks& = delete;
-    auto operator=(Getblocks&&) -> Getblocks& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

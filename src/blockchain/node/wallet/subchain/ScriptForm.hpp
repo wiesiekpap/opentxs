@@ -58,12 +58,10 @@ public:
         const crypto::Element& input,
         blockchain::Type chain,
         Type primary) noexcept;
-    ScriptForm(ScriptForm&& rhs) noexcept;
-    auto operator=(ScriptForm&& rhs) noexcept -> ScriptForm&;
-
-private:
     ScriptForm() = delete;
     ScriptForm(const ScriptForm&) = delete;
+    ScriptForm(ScriptForm&& rhs) noexcept;
+    auto operator=(ScriptForm&& rhs) noexcept -> ScriptForm&;
     auto operator=(const ScriptForm&) -> ScriptForm& = delete;
 };
 }  // namespace opentxs::blockchain::node::wallet

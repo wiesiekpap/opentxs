@@ -63,17 +63,6 @@ namespace opentxs::server
 class ReplyMessage
 {
 public:
-    ReplyMessage(
-        const UserCommandProcessor& parent,
-        const opentxs::api::session::Wallet& wallet,
-        const identifier::Notary& notaryID,
-        const identity::Nym& signer,
-        const Message& input,
-        Server& server,
-        const MessageType& type,
-        Message& output,
-        const PasswordPrompt& reason);
-
     auto Acknowledged() const -> UnallocatedSet<RequestNumber>;
     auto HaveContext() const -> bool;
     auto Init() const -> const bool&;
@@ -104,6 +93,22 @@ public:
     void SetTargetNym(const String& nymID);
     void SetTransactionNumber(const TransactionNumber& number);
 
+    ReplyMessage(
+        const UserCommandProcessor& parent,
+        const opentxs::api::session::Wallet& wallet,
+        const identifier::Notary& notaryID,
+        const identity::Nym& signer,
+        const Message& input,
+        Server& server,
+        const MessageType& type,
+        Message& output,
+        const PasswordPrompt& reason);
+    ReplyMessage() = delete;
+    ReplyMessage(const ReplyMessage&) = delete;
+    ReplyMessage(ReplyMessage&&) = delete;
+    auto operator=(const ReplyMessage&) -> ReplyMessage& = delete;
+    auto operator=(ReplyMessage&&) -> ReplyMessage& = delete;
+
     ~ReplyMessage();
 
 private:
@@ -125,11 +130,5 @@ private:
     void clear_request();
     auto init() -> bool;
     auto init_nym() -> bool;
-
-    ReplyMessage() = delete;
-    ReplyMessage(const ReplyMessage&) = delete;
-    ReplyMessage(ReplyMessage&&) = delete;
-    auto operator=(const ReplyMessage&) -> ReplyMessage& = delete;
-    auto operator=(ReplyMessage&&) -> ReplyMessage& = delete;
 };
 }  // namespace opentxs::server

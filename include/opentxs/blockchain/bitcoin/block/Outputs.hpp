@@ -60,15 +60,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Outputs& = 0;
 
-    virtual ~Outputs() = default;
-
-protected:
-    Outputs() noexcept = default;
-
-private:
     Outputs(const Outputs&) = delete;
     Outputs(Outputs&&) = delete;
     auto operator=(const Outputs&) -> Outputs& = delete;
     auto operator=(Outputs&&) -> Outputs& = delete;
+
+    virtual ~Outputs() = default;
+
+protected:
+    Outputs() noexcept = default;
 };
 }  // namespace opentxs::blockchain::bitcoin::block

@@ -65,6 +65,9 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const proto::UnitDefinition serialized);
+    Security(Security&&) = delete;
+    auto operator=(const Security&) -> Security& = delete;
+    auto operator=(Security&&) -> Security& = delete;
 
     ~Security() final = default;
 
@@ -78,8 +81,5 @@ private:
     auto IDVersion(const Lock& lock) const -> proto::UnitDefinition final;
 
     Security(const Security&);
-    Security(Security&&) = delete;
-    auto operator=(const Security&) -> Security& = delete;
-    auto operator=(Security&&) -> Security& = delete;
 };
 }  // namespace opentxs::contract::unit::implementation

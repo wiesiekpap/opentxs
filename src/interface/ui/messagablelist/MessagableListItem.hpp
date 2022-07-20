@@ -56,6 +56,12 @@ public:
         const api::session::Client& api,
         const ContactListRowID& rowID,
         const ContactListSortKey& key) noexcept;
+    MessagableListItem() = delete;
+    MessagableListItem(const MessagableListItem&) = delete;
+    MessagableListItem(MessagableListItem&&) = delete;
+    auto operator=(const MessagableListItem&) -> MessagableListItem& = delete;
+    auto operator=(MessagableListItem&&) -> MessagableListItem& = delete;
+
     ~MessagableListItem() final = default;
 
 private:
@@ -66,12 +72,6 @@ private:
     {
         return translate_section(lock);
     }
-
-    MessagableListItem() = delete;
-    MessagableListItem(const MessagableListItem&) = delete;
-    MessagableListItem(MessagableListItem&&) = delete;
-    auto operator=(const MessagableListItem&) -> MessagableListItem& = delete;
-    auto operator=(MessagableListItem&&) -> MessagableListItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

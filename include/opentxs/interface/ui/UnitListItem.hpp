@@ -40,15 +40,14 @@ public:
     /// The appropriate UnitType enum value for this unit type.
     virtual auto Unit() const noexcept -> UnitType = 0;
 
-    ~UnitListItem() override = default;
-
-protected:
-    UnitListItem() noexcept = default;
-
-private:
     UnitListItem(const UnitListItem&) = delete;
     UnitListItem(UnitListItem&&) = delete;
     auto operator=(const UnitListItem&) -> UnitListItem& = delete;
     auto operator=(UnitListItem&&) -> UnitListItem& = delete;
+
+    ~UnitListItem() override = default;
+
+protected:
+    UnitListItem() noexcept = default;
 };
 }  // namespace opentxs::ui

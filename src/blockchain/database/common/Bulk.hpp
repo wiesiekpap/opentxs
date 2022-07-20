@@ -63,6 +63,11 @@ public:
 
     Bulk(storage::lmdb::LMDB& lmdb, const UnallocatedCString& path) noexcept(
         false);
+    Bulk() = delete;
+    Bulk(const Bulk&) = delete;
+    Bulk(Bulk&&) = delete;
+    auto operator=(const Bulk&) -> Bulk& = delete;
+    auto operator=(Bulk&&) -> Bulk& = delete;
 
     ~Bulk();
 
@@ -70,11 +75,5 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    Bulk() = delete;
-    Bulk(const Bulk&) = delete;
-    Bulk(Bulk&&) = delete;
-    Bulk& operator=(const Bulk&) = delete;
-    Bulk& operator=(Bulk&&) = delete;
 };
 }  // namespace opentxs::blockchain::database::common

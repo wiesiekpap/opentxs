@@ -47,6 +47,9 @@ public:
     Work(Type&& data) noexcept;
     Work() noexcept;
     Work(const Work& rhs) noexcept;
+    Work(Work&& rhs) = delete;
+    auto operator=(const Work& rhs) -> Work& = delete;
+    auto operator=(Work&& rhs) -> Work& = delete;
 
     ~Work() final = default;
 
@@ -56,9 +59,5 @@ private:
     Type data_;
 
     auto clone() const noexcept -> Work* final { return new Work(*this); }
-
-    Work(Work&& rhs) = delete;
-    auto operator=(const Work& rhs) -> Work& = delete;
-    auto operator=(Work&& rhs) -> Work& = delete;
 };
 }  // namespace opentxs::blockchain::implementation

@@ -88,6 +88,12 @@ public:
 
     auto Store(const proto::Ciphertext& serialized) -> bool;
 
+    Tree() = delete;
+    Tree(const Tree&);
+    Tree(Tree&&) = delete;
+    auto operator=(const Tree&) -> Tree = delete;
+    auto operator=(Tree&&) -> Tree = delete;
+
     ~Tree() final;
 
 private:
@@ -160,10 +166,5 @@ private:
         const api::session::Factory& factory,
         const Driver& storage,
         const UnallocatedCString& key);
-    Tree() = delete;
-    Tree(const Tree&);
-    Tree(Tree&&) = delete;
-    auto operator=(const Tree&) -> Tree = delete;
-    auto operator=(Tree&&) -> Tree = delete;
 };
 }  // namespace opentxs::storage

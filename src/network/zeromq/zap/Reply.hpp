@@ -60,6 +60,9 @@ public:
         const ReadView metadata,
         const ReadView version) noexcept;
     Imp(const Imp& rhs) noexcept;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() final = default;
 
@@ -80,8 +83,5 @@ private:
         const ReadView userID,
         const ReadView metadata,
         const ReadView version) noexcept;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs::network::zeromq::zap

@@ -101,8 +101,6 @@ struct AccountEvent::Imp {
               rhs.state_)
     {
     }
-
-private:
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;

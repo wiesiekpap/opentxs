@@ -30,6 +30,11 @@ public:
     auto Success() const noexcept -> bool;
 
     OPENTXS_NO_EXPORT PublishContractReply(Imp* imp) noexcept;
+    PublishContractReply(const PublishContractReply&) = delete;
+    PublishContractReply(PublishContractReply&&) = delete;
+    auto operator=(const PublishContractReply&)
+        -> PublishContractReply& = delete;
+    auto operator=(PublishContractReply&&) -> PublishContractReply& = delete;
 
     ~PublishContractReply() final;
 
@@ -38,11 +43,5 @@ private:
 #pragma GCC diagnostic ignored "-Wshadow-field"
     Imp* imp_;
 #pragma GCC diagnostic pop
-
-    PublishContractReply(const PublishContractReply&) = delete;
-    PublishContractReply(PublishContractReply&&) = delete;
-    auto operator=(const PublishContractReply&)
-        -> PublishContractReply& = delete;
-    auto operator=(PublishContractReply&&) -> PublishContractReply& = delete;
 };
 }  // namespace opentxs::network::p2p

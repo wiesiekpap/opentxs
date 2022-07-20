@@ -50,8 +50,8 @@
 
 namespace opentxs
 {
-
-char const* const __TypeStringsLedger[] = {
+// NOLINTNEXTLINE(modernize-avoid-c-arrays)
+char const* const TypeStringsLedger[] = {
     "nymbox",  // the nymbox is per user account (versus per asset account) and
                // is used to receive new transaction numbers (and messages.)
     "inbox",  // each asset account has an inbox, with pending transfers as well
@@ -119,7 +119,7 @@ Ledger::Ledger(const api::Session& api)
 auto Ledger::GetTypeString(ledgerType theType) -> char const*
 {
     auto nType = static_cast<std::int32_t>(theType);
-    return __TypeStringsLedger[nType];
+    return TypeStringsLedger[nType];
 }
 
 // This calls OTTransactionType::VerifyAccount(), which calls
@@ -182,10 +182,11 @@ auto Ledger::SaveBoxReceipts()
         // abbreviated versions.
         // (If it's not abbreviated, therefore it's the full version.)
         //
-        if (!pTransaction->IsAbbreviated())  // This way we won't see an
-                                             // error if it's not
-                                             // abbreviated.
+        if (!pTransaction->IsAbbreviated()) {  // This way we won't see an
+                                               // error if it's not
+                                               // abbreviated.
             bRetVal = pTransaction->SaveBoxReceipt(*this);
+        }
 
         if (!bRetVal) {
             LogError()(OT_PRETTY_CLASS())("Failed calling SaveBoxReceipt "
@@ -257,7 +258,7 @@ auto Ledger::LoadBoxReceipts(UnallocatedSet<std::int64_t>* psetUnloaded) -> bool
     //
     bool bRetVal = true;
 
-    for (auto& it : the_set) {
+    for (const auto& it : the_set) {
         std::int64_t lSetNum = it;
 
         const auto pTransaction = GetTransaction(lSetNum);
@@ -288,7 +289,7 @@ auto Ledger::LoadBoxReceipts(UnallocatedSet<std::int64_t>* psetUnloaded) -> bool
             // (If not building a list of all failures, then we can return at
             // first sign of failure.)
             //
-            if (nullptr == psetUnloaded) break;
+            if (nullptr == psetUnloaded) { break; }
         }
         // else (success), no need for a block in that case.
     }
@@ -472,7 +473,7 @@ auto Ledger::LoadExpiredBoxFromString(const String& strBox) -> bool
  */
 auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
 {
-    const auto pszType = GetTypeString();
+    const auto* const pszType = GetTypeString();
     const auto [valid, path1, path2, path3] = make_filename(theType);
 
     if (false == valid) {
@@ -548,7 +549,7 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
 
 auto Ledger::SaveGeneric(ledgerType theType) -> bool
 {
-    const auto pszType = GetTypeString();
+    const auto* const pszType = GetTypeString();
     const auto [valid, path1, path2, path3] = make_filename(theType);
 
     if (false == valid) {
@@ -593,10 +594,11 @@ auto Ledger::SaveGeneric(ledgerType theType) -> bool
             path1)(api::Legacy::PathSeparator())(m_strFilename)
             .Flush();
         return false;
-    } else
+    } else {
         LogVerbose()(OT_PRETTY_CLASS())("Successfully saved ")(pszType)(": ")(
             path1)(api::Legacy::PathSeparator())(m_strFilename)
             .Flush();
+    }
 
     return bSaved;
 }
@@ -1096,7 +1098,7 @@ auto Ledger::GetTransaction(transactionType theType)
         auto pTransaction = it.second;
         OT_ASSERT(pTransaction);
 
-        if (theType == pTransaction->GetType()) return pTransaction;
+        if (theType == pTransaction->GetType()) { return pTransaction; }
     }
 
     return nullptr;
@@ -1149,11 +1151,11 @@ auto Ledger::GetTransactionCountInRefTo(std::int64_t lReferenceNum) const
 {
     std::int32_t nCount{0};
 
-    for (auto& it : m_mapTransactions) {
+    for (const auto& it : m_mapTransactions) {
         const auto pTransaction = it.second;
         OT_ASSERT(pTransaction);
 
-        if (pTransaction->GetReferenceToNum() == lReferenceNum) nCount++;
+        if (pTransaction->GetReferenceToNum() == lReferenceNum) { nCount++; }
     }
 
     return nCount;
@@ -1166,17 +1168,17 @@ auto Ledger::GetTransactionByIndex(std::int32_t nIndex) const
     -> std::shared_ptr<OTTransaction>
 {
     // Out of bounds.
-    if ((nIndex < 0) || (nIndex >= GetTransactionCount())) return nullptr;
+    if ((nIndex < 0) || (nIndex >= GetTransactionCount())) { return nullptr; }
 
     std::int32_t nIndexCount = -1;
 
-    for (auto& it : m_mapTransactions) {
+    for (const auto& it : m_mapTransactions) {
         nIndexCount++;  // On first iteration, this is now 0, same as nIndex.
         auto pTransaction = it.second;
         OT_ASSERT(pTransaction);  // Should always be good.
 
         // If this transaction is the one at the requested index
-        if (nIndexCount == nIndex) return pTransaction;
+        if (nIndexCount == nIndex) { return pTransaction; }
     }
 
     return nullptr;  // Should never reach this point, since bounds are checked
@@ -1195,10 +1197,13 @@ auto Ledger::GetReplyNotice(const std::int64_t& lRequestNum)
         OT_ASSERT(pTransaction);
 
         if (transactionType::replyNotice !=
-            pTransaction->GetType())  // <=======
+            pTransaction->GetType()) {  // <=======
             continue;
+        }
 
-        if (pTransaction->GetRequestNum() == lRequestNum) return pTransaction;
+        if (pTransaction->GetRequestNum() == lRequestNum) {
+            return pTransaction;
+        }
     }
 
     return nullptr;
@@ -1251,10 +1256,11 @@ auto Ledger::GetTransferReceipt(std::int64_t lNumberOfOrigin)
                 // NumberOfOrigin,
                 // and compare it to the NumberOfOrigin, to find the match.
                 //
-                if (pOriginalItem->GetNumberOfOrigin() == lNumberOfOrigin)
+                if (pOriginalItem->GetNumberOfOrigin() == lNumberOfOrigin) {
                     //              if (pOriginalItem->GetReferenceToNum() ==
                     // lTransactionNum)
                     return pTransaction;  // FOUND IT!
+                }
             }
         }
     }
@@ -1288,8 +1294,9 @@ auto Ledger::GetChequeReceipt(std::int64_t lChequeNum)
         OT_ASSERT(nullptr != pCurrentReceipt);
 
         if ((pCurrentReceipt->GetType() != transactionType::chequeReceipt) &&
-            (pCurrentReceipt->GetType() != transactionType::voucherReceipt))
+            (pCurrentReceipt->GetType() != transactionType::voucherReceipt)) {
             continue;
+        }
 
         auto strDepositChequeMsg = String::Factory();
         pCurrentReceipt->GetReferenceString(strDepositChequeMsg);
@@ -1379,11 +1386,13 @@ auto Ledger::GetFinalReceipt(std::int64_t lReferenceNum)
         OT_ASSERT(pTransaction);
 
         if (transactionType::finalReceipt !=
-            pTransaction->GetType())  // <=======
+            pTransaction->GetType()) {  // <=======
             continue;
+        }
 
-        if (pTransaction->GetReferenceToNum() == lReferenceNum)
+        if (pTransaction->GetReferenceToNum() == lReferenceNum) {
             return pTransaction;
+        }
     }
 
     return nullptr;
@@ -1466,7 +1475,7 @@ auto Ledger::GenerateBalanceStatement(
                                   // transaction ID.
 
     // The above has an ASSERT, so this this will never actually happen.
-    if (false == bool(pBalanceItem)) return nullptr;
+    if (false == bool(pBalanceItem)) { return nullptr; }
 
     UnallocatedCString itemType;
     const auto number = theOwner.GetTransactionNum();
@@ -1560,7 +1569,7 @@ auto Ledger::GenerateBalanceStatement(
         "each one... ")
         .Flush();
 
-    for (auto& it : m_mapTransactions) {
+    for (const auto& it : m_mapTransactions) {
         auto pTransaction = it.second;
 
         OT_ASSERT(pTransaction);
@@ -1598,9 +1607,10 @@ auto Ledger::GetTotalPendingValue(const PasswordPrompt& reason) -> Amount
         const auto pTransaction = it.second;
         OT_ASSERT(pTransaction);
 
-        if (pTransaction->GetType() == transactionType::pending)
+        if (pTransaction->GetType() == transactionType::pending) {
             lTotalPendingValue += pTransaction->GetReceiptAmount(
                 reason);  // this actually loads up the
+        }
         // original item and reads the
         // amount.
     }
@@ -1651,19 +1661,19 @@ auto Ledger::LoadLedgerFromString(const String& theStr) -> bool
     // Todo security: Look how this is done...
     // Any vulnerabilities?
     //
-    if (theStr.Contains("type=\"nymbox\""))
+    if (theStr.Contains("type=\"nymbox\"")) {
         bLoaded = LoadNymboxFromString(theStr);
-    else if (theStr.Contains("type=\"inbox\""))
+    } else if (theStr.Contains("type=\"inbox\"")) {
         bLoaded = LoadInboxFromString(theStr);
-    else if (theStr.Contains("type=\"outbox\""))
+    } else if (theStr.Contains("type=\"outbox\"")) {
         bLoaded = LoadOutboxFromString(theStr);
-    else if (theStr.Contains("type=\"paymentInbox\""))
+    } else if (theStr.Contains("type=\"paymentInbox\"")) {
         bLoaded = LoadPaymentInboxFromString(theStr);
-    else if (theStr.Contains("type=\"recordBox\""))
+    } else if (theStr.Contains("type=\"recordBox\"")) {
         bLoaded = LoadRecordBoxFromString(theStr);
-    else if (theStr.Contains("type=\"expiredBox\""))
+    } else if (theStr.Contains("type=\"expiredBox\"")) {
         bLoaded = LoadExpiredBoxFromString(theStr);
-    else if (theStr.Contains("type=\"message\"")) {
+    } else if (theStr.Contains("type=\"message\"")) {
         m_Type = ledgerType::message;
         bLoaded = LoadContractFromString(theStr);
     }
@@ -1821,35 +1831,40 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         strType = String::Factory(xml->getAttributeValue("type"));
         m_strVersion = String::Factory(xml->getAttributeValue("version"));
 
-        if (strType->Compare("message"))  // These are used for sending
+        if (strType->Compare("message")) {  // These are used for sending
             // transactions in messages. (Withdrawal
             // request, etc.)
             m_Type = ledgerType::message;
-        else if (strType->Compare("nymbox"))  // Used for receiving new
-                                              // transaction numbers, and for
-                                              // receiving notices.
+        } else if (strType->Compare("nymbox")) {  // Used for receiving new
+            // transaction numbers, and for
+            // receiving notices.
             m_Type = ledgerType::nymbox;
-        else if (strType->Compare("inbox"))  // These are used for storing the
-                                             // receipts in your inbox. (That
-                                             // server must store until
-                                             // signed-off.)
+        } else if (strType->Compare("inbox")) {  // These are used for storing
+                                                 // the
+            // receipts in your inbox. (That
+            // server must store until
+            // signed-off.)
             m_Type = ledgerType::inbox;
-        else if (strType->Compare("outbox"))  // Outgoing, pending transfers.
+        } else if (strType->Compare("outbox")) {  // Outgoing, pending
+                                                  // transfers.
             m_Type = ledgerType::outbox;
-        else if (strType->Compare("paymentInbox"))  // Receiving invoices, etc.
+        } else if (strType->Compare("paymentInbox")) {  // Receiving invoices,
+                                                        // etc.
             m_Type = ledgerType::paymentInbox;
-        else if (strType->Compare("recordBox"))  // Where receipts go to die
-                                                 // (awaiting user deletion,
-                                                 // completed from other boxes
-                                                 // already.)
+        } else if (strType->Compare("recordBox")) {  // Where receipts go to die
+                                                     // (awaiting user deletion,
+            // completed from other boxes
+            // already.)
             m_Type = ledgerType::recordBox;
-        else if (strType->Compare("expiredBox"))  // Where expired payments go
-                                                  // to die (awaiting user
-                                                  // deletion, completed from
-                                                  // other boxes already.)
+        } else if (strType->Compare("expiredBox")) {  // Where expired payments
+                                                      // go
+                                                      // to die (awaiting user
+            // deletion, completed from
+            // other boxes already.)
             m_Type = ledgerType::expiredBox;
-        else
+        } else {
             m_Type = ledgerType::error_state;  // Danger, Will Robinson.
+        }
 
         strLedgerAcctID = String::Factory(xml->getAttributeValue("accountID"));
         strLedgerAcctNotaryID =
@@ -2007,9 +2022,10 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                         pNumList);  // This is for "transactionType::blank" and
                                     // "transactionType::successNotice",
                                     // otherwise nullptr.
-                    if ((-1) == nAbbrevRetVal)
+                    if ((-1) == nAbbrevRetVal) {
                         return (-1);  // The function already logs
-                                      // appropriately.
+                    }
+                    // appropriately.
 
                     //
                     // See if the same-ID transaction already exists in the
@@ -2191,10 +2207,11 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             // Each transaction is initially stored as an Armored string.
             const auto strLoopNodeData = String::Factory(xml->getNodeData());
 
-            if (strLoopNodeData->Exists())
+            if (strLoopNodeData->Exists()) {
                 ascTransaction->Set(strLoopNodeData);  // Put the ascii-armored
-                                                       // node data into the
-                                                       // ascii-armor object
+            }
+            // node data into the
+            // ascii-armor object
 
             // Decode that into strTransaction, so we can load the transaction
             // object from that string.
@@ -2238,7 +2255,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
             // Need this set before the LoadContractFromString().
             //
-            if (!m_bLoadSecurely) pTransaction->SetLoadInsecure();
+            if (!m_bLoadSecurely) { pTransaction->SetLoadInsecure(); }
 
             // If we're able to successfully base64-decode the string and load
             // it up as
@@ -2329,12 +2346,13 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 static_cast<std::int64_t>(nBoxType);
 
                             if (false == transaction->SaveBoxReceipt(
-                                             lBoxType))  //  <======== SAVE BOX
-                                                         //  RECEIPT
+                                             lBoxType)) {  //  <======== SAVE
+                                                           //  BOX RECEIPT
                                 LogError()(OT_PRETTY_CLASS())(
                                     "--- FAILED trying to save BoxReceipt "
                                     "from legacy data to local storage!")
                                     .Flush();
+                            }
                         }
                     } break;
                     default:

@@ -27,14 +27,12 @@ namespace opentxs::rpc::response
 {
 struct Invalid final : Base {
     Invalid(const request::Base& request) noexcept;
-
-    ~Invalid() final;
-
-private:
     Invalid() = delete;
     Invalid(const Invalid&) = delete;
     Invalid(Invalid&&) = delete;
     auto operator=(const Invalid&) -> Invalid& = delete;
     auto operator=(Invalid&&) -> Invalid& = delete;
+
+    ~Invalid() final;
 };
 }  // namespace opentxs::rpc::response

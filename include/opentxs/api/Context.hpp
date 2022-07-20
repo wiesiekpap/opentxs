@@ -156,13 +156,11 @@ public:
         -> internal::Context& = 0;
 
     OPENTXS_NO_EXPORT ~Context() override = default;
-
-protected:
-    Context() = default;
-
-private:
     Context(const Context&) = delete;
     Context(Context&&) = delete;
     auto operator=(const Context&) -> Context& = delete;
     auto operator=(Context&&) -> Context& = delete;
+
+protected:
+    Context() = default;
 };

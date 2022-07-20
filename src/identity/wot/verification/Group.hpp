@@ -58,13 +58,10 @@ public:
         return *nyms_.at(position);
     }
     auto begin() const noexcept -> const_iterator final { return cbegin(); }
-    auto cbegin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto cbegin() const noexcept -> const_iterator final { return {this, 0}; }
     auto cend() const noexcept -> const_iterator final
     {
-        return const_iterator(this, nyms_.size());
+        return {this, nyms_.size()};
     }
     auto end() const noexcept -> const_iterator final { return cend(); }
     auto External() const noexcept -> bool final { return external_; }
@@ -93,15 +90,18 @@ public:
     {
         return *nyms_.at(position);
     }
-    auto begin() noexcept -> iterator final { return iterator(this, 0); }
+    auto begin() noexcept -> iterator final { return {this, 0}; }
     auto DeleteItem(const Identifier& item) noexcept -> bool final;
-    auto end() noexcept -> iterator final
-    {
-        return iterator(this, nyms_.size());
-    }
+    auto end() noexcept -> iterator final { return {this, nyms_.size()}; }
     void Register(const Identifier& id, const identifier::Nym& nym) noexcept
         final;
     void Unregister(const Identifier& id) noexcept final;
+
+    Group() = delete;
+    Group(const Group&) = delete;
+    Group(Group&&) = delete;
+    auto operator=(const Group&) -> Group& = delete;
+    auto operator=(Group&&) -> Group& = delete;
 
     ~Group() final = default;
 
@@ -130,10 +130,5 @@ private:
         internal::Set& parent,
         const SerializedType& serialized,
         bool external) noexcept;
-    Group() = delete;
-    Group(const Group&) = delete;
-    Group(Group&&) = delete;
-    auto operator=(const Group&) -> Group& = delete;
-    auto operator=(Group&&) -> Group& = delete;
 };
 }  // namespace opentxs::identity::wot::verification::implementation

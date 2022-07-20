@@ -236,6 +236,10 @@ public:
         const storage::lmdb::LMDB& lmdb,
         const blockchain::Type chain,
         const blockchain::cfilter::Type filter) noexcept;
+    Wallet() = delete;
+    Wallet(const Wallet&) = delete;
+    auto operator=(const Wallet&) -> Wallet& = delete;
+    auto operator=(Wallet&&) -> Wallet& = delete;
 
 private:
     const api::Session& api_;
@@ -244,10 +248,5 @@ private:
     mutable wallet::SubchainData subchains_;
     mutable wallet::Proposal proposals_;
     mutable wallet::Output outputs_;
-
-    Wallet() = delete;
-    Wallet(const Wallet&) = delete;
-    auto operator=(const Wallet&) -> Wallet& = delete;
-    auto operator=(Wallet&&) -> Wallet& = delete;
 };
 }  // namespace opentxs::blockchain::database::implemenation

@@ -49,15 +49,14 @@ public:
         Space& output,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
 
-    ~EllipticCurve() override = default;
-
-protected:
-    EllipticCurve() = default;
-
-private:
     EllipticCurve(const EllipticCurve&) = delete;
     EllipticCurve(EllipticCurve&&) = delete;
     auto operator=(const EllipticCurve&) -> EllipticCurve& = delete;
     auto operator=(EllipticCurve&&) -> EllipticCurve& = delete;
+
+    ~EllipticCurve() override = default;
+
+protected:
+    EllipticCurve() = default;
 };
 }  // namespace opentxs::crypto::key

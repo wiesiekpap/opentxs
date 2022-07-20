@@ -65,15 +65,15 @@ public:
         const internal::Config& config,
         const UnallocatedCString& seednode,
         const UnallocatedCString& syncEndpoint);
-    ~Bitcoin() final;
-
-private:
-    using ot_super = node::implementation::Base;
-
     Bitcoin() = delete;
     Bitcoin(const Bitcoin&) = delete;
     Bitcoin(Bitcoin&&) = delete;
     auto operator=(const Bitcoin&) -> Bitcoin& = delete;
     auto operator=(Bitcoin&&) -> Bitcoin& = delete;
+
+    ~Bitcoin() final;
+
+private:
+    using ot_super = node::implementation::Base;
 };
 }  // namespace opentxs::blockchain::node::base

@@ -78,13 +78,10 @@ public:
     auto begin() const noexcept -> const_iterator final { return cbegin(); }
     auto CalculateSize(const bool normalized) const noexcept
         -> std::size_t final;
-    auto cbegin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto cbegin() const noexcept -> const_iterator final { return {this, 0}; }
     auto cend() const noexcept -> const_iterator final
     {
-        return const_iterator(this, inputs_.size());
+        return {this, inputs_.size()};
     }
     auto clone() const noexcept -> std::unique_ptr<internal::Inputs> final
     {
@@ -132,7 +129,11 @@ public:
 
     Inputs(InputList&& inputs, std::optional<std::size_t> size = {}) noexcept(
         false);
+    Inputs() = delete;
     Inputs(const Inputs&) noexcept;
+    Inputs(Inputs&&) = delete;
+    auto operator=(const Inputs&) -> Inputs& = delete;
+    auto operator=(Inputs&&) -> Inputs& = delete;
 
     ~Inputs() final = default;
 
@@ -180,10 +181,5 @@ private:
 
     auto serialize(const AllocateOutput destination, const bool normalize)
         const noexcept -> std::optional<std::size_t>;
-
-    Inputs() = delete;
-    Inputs(Inputs&&) = delete;
-    auto operator=(const Inputs&) -> Inputs& = delete;
-    auto operator=(Inputs&&) -> Inputs& = delete;
 };
 }  // namespace opentxs::blockchain::bitcoin::block::implementation

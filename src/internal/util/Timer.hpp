@@ -65,16 +65,15 @@ public:
 
     Timer() noexcept;
     Timer(Imp* imp) noexcept;
+    Timer(const Timer&) = delete;
     Timer(Timer&& rhs) noexcept;
+    auto operator=(const Timer&) -> Timer& = delete;
     auto operator=(Timer&& rhs) noexcept -> Timer&;
 
     ~Timer();
 
 private:
     Imp* imp_;
-
-    Timer(const Timer&) = delete;
-    auto operator=(const Timer&) -> Timer& = delete;
 };
 }  // namespace opentxs
 

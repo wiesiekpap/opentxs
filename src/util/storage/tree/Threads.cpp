@@ -275,7 +275,7 @@ auto Threads::mutable_Thread(const UnallocatedCString& id)
         this->save(in, lock, id);
     };
 
-    return Editor<storage::Thread>(write_lock_, thread(id), callback);
+    return {write_lock_, thread(id), callback};
 }
 
 auto Threads::thread(const UnallocatedCString& id) const -> storage::Thread*

@@ -245,16 +245,15 @@ public:
     auto Shutdown() noexcept -> void final;
 
     UI(std::unique_ptr<Imp> imp) noexcept;
-
-    ~UI() final;
-
-private:
-    std::unique_ptr<Imp> imp_;
-
     UI() = delete;
     UI(const UI&) = delete;
     UI(UI&&) = delete;
     auto operator=(const UI&) -> UI& = delete;
     auto operator=(UI&&) -> UI& = delete;
+
+    ~UI() final;
+
+private:
+    std::unique_ptr<Imp> imp_;
 };
 }  // namespace opentxs::api::session::imp

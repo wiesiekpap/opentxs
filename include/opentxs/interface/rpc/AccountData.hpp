@@ -57,8 +57,11 @@ public:
         Amount balance,
         Amount pending,
         AccountType type) noexcept(false);
+    AccountData() noexcept = delete;
     OPENTXS_NO_EXPORT AccountData(const AccountData&) noexcept;
     OPENTXS_NO_EXPORT AccountData(AccountData&&) noexcept;
+    auto operator=(const AccountData&) -> AccountData& = delete;
+    auto operator=(AccountData&&) -> AccountData& = delete;
 
     OPENTXS_NO_EXPORT ~AccountData();
 
@@ -66,9 +69,5 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    AccountData() noexcept;
-    auto operator=(const AccountData&) -> AccountData& = delete;
-    auto operator=(AccountData&&) -> AccountData& = delete;
 };
 }  // namespace opentxs::rpc

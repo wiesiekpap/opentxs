@@ -77,6 +77,11 @@ public:
         const UnitListRowID& rowID,
         const UnitListSortKey& sortKey,
         CustomData& custom) noexcept;
+    UnitListItem() = delete;
+    UnitListItem(const UnitListItem&) = delete;
+    UnitListItem(UnitListItem&&) = delete;
+    auto operator=(const UnitListItem&) -> UnitListItem& = delete;
+    auto operator=(UnitListItem&&) -> UnitListItem& = delete;
 
     ~UnitListItem() final = default;
 
@@ -90,12 +95,6 @@ private:
     {
         return false;
     }
-
-    UnitListItem() = delete;
-    UnitListItem(const UnitListItem&) = delete;
-    UnitListItem(UnitListItem&&) = delete;
-    auto operator=(const UnitListItem&) -> UnitListItem& = delete;
-    auto operator=(UnitListItem&&) -> UnitListItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

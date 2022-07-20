@@ -50,6 +50,11 @@ public:
         DhtDoneCallback dcb = {}) const noexcept -> void final;
 
     OpenDHT(const DhtConfig& config) noexcept;
+    OpenDHT() = delete;
+    OpenDHT(const OpenDHT&) = delete;
+    OpenDHT(OpenDHT&&) = delete;
+    auto operator=(const OpenDHT&) -> OpenDHT& = delete;
+    auto operator=(OpenDHT&&) -> OpenDHT& = delete;
 
     ~OpenDHT() final;
 
@@ -63,11 +68,5 @@ private:
     mutable std::mutex init_;
 
     auto Init() const -> bool;
-
-    OpenDHT() = delete;
-    OpenDHT(const OpenDHT&) = delete;
-    OpenDHT(OpenDHT&&) = delete;
-    auto operator=(const OpenDHT&) -> OpenDHT& = delete;
-    auto operator=(OpenDHT&&) -> OpenDHT& = delete;
 };
 }  // namespace opentxs::network::implementation

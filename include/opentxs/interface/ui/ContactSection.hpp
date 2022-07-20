@@ -51,15 +51,14 @@ public:
     /// Returns the section type as an enum.
     virtual auto Type() const noexcept -> identity::wot::claim::SectionType = 0;
 
-    ~ContactSection() override = default;
-
-protected:
-    ContactSection() noexcept = default;
-
-private:
     ContactSection(const ContactSection&) = delete;
     ContactSection(ContactSection&&) = delete;
     auto operator=(const ContactSection&) -> ContactSection& = delete;
     auto operator=(ContactSection&&) -> ContactSection& = delete;
+
+    ~ContactSection() override = default;
+
+protected:
+    ContactSection() noexcept = default;
 };
 }  // namespace opentxs::ui

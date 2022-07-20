@@ -42,15 +42,14 @@ public:
         -> opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem> = 0;
     virtual auto Trusted() const noexcept -> bool = 0;
 
-    ~IssuerItem() override = default;
-
-protected:
-    IssuerItem() noexcept = default;
-
-private:
     IssuerItem(const IssuerItem&) = delete;
     IssuerItem(IssuerItem&&) = delete;
     auto operator=(const IssuerItem&) -> IssuerItem& = delete;
     auto operator=(IssuerItem&&) -> IssuerItem& = delete;
+
+    ~IssuerItem() override = default;
+
+protected:
+    IssuerItem() noexcept = default;
 };
 }  // namespace opentxs::ui

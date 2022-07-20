@@ -8,7 +8,7 @@ parameters:
     default: "opentransactions/android:14"
     type: string
   docker-image-ci:
-    default: "polishcode/matterfi-ci-fedora:35-2"
+    default: "polishcode/matterfi-ci-fedora:35-3"
     type: string
   ctest-config:
     default: "-j 8 --output-on-failure --repeat until-pass:3 --timeout 300 --schedule-random"
@@ -86,7 +86,7 @@ commands:
         type: string
       flavor:
         type: string
-      ccov:
+      mode:
         type: string
     steps:
       - run:
@@ -96,7 +96,7 @@ commands:
               --mount type=bind,src=/home/circleci/project,dst=/home/src,readonly \
               --mount type=bind,src=/tmp/opentxs,dst=/home/output \
               -i --entrypoint /usr/bin/build-opentxs-<<parameters.compiler>>.sh \
-              <<parameters.docker-image>> <<parameters.flavor>> <<parameters.ccov>>
+              <<parameters.docker-image>> <<parameters.flavor>> <<parameters.mode>>
   cmd_test_linux:
     description: "command to test opentxs for linux in docker"
     parameters:
@@ -158,7 +158,6 @@ jobs:
       - cmd_build_android:
           docker-image: <<parameters.docker-image>>
           arch: <<parameters.arch>>
-
   build-linux:
     parameters:
       docker-image:
@@ -167,7 +166,7 @@ jobs:
         type: string
       flavor:
         type: string
-      ccov:
+      mode:
         type: string
     executor: executor_ubuntu_large
     steps:
@@ -178,7 +177,7 @@ jobs:
           docker-image: <<parameters.docker-image>>
           compiler: <<parameters.compiler>>
           flavor: <<parameters.flavor>>
-          ccov: <<parameters.ccov>>
+          mode: <<parameters.mode>>
       - run:
           name: "persist task identifier (CI debugging)"
           command: |
@@ -212,7 +211,6 @@ jobs:
       - cmd_test_linux:
           docker-image: <<parameters.docker-image>>
           ctest-params: <<parameters.ctest-params>>
-
   #ccov workflow needs to be run in a single job in order to avoid packing/unpacking
   #built binaries - ccov instrumentation bloats them 2-3 times
   ccov-linux:
@@ -230,13 +228,26 @@ jobs:
           docker-image: <<parameters.docker-image>>
           compiler: gcc
           flavor: full
-          ccov: ccov
+          mode: ccov
       - cmd_test_linux:
           docker-image: <<parameters.docker-image>>
           ctest-params: <<parameters.ctest-params>>
       - cmd_calc_ccov_linux:
           docker-image: <<parameters.docker-image>>
-
+  sanitizer-linux:
+    parameters:
+      docker-image:
+        type: string
+    executor: executor_ubuntu_large
+    steps:
+      - cmd_prepare_env_build:
+          docker-image: <<parameters.docker-image>>
+          temp-path: "/tmp/opentxs"
+      - cmd_build_linux:
+          docker-image: <<parameters.docker-image>>
+          compiler: clang
+          flavor: full
+          mode: sanitizer
 workflows:
   opentxs-android:
     when: true
@@ -252,7 +263,7 @@ workflows:
       - build-linux:
           name: build-linux-<<matrix.compiler>>-<<matrix.flavor>>
           docker-image: <<pipeline.parameters.docker-image-ci>>
-          ccov: no-ccov
+          mode: standard
           matrix:
             parameters:
               compiler: [gcc, clang]
@@ -274,3 +285,10 @@ workflows:
           name: code-coverage-gcc-full-test
           docker-image: <<pipeline.parameters.docker-image-ci>>
           ctest-params: <<pipeline.parameters.ctest-config>> -E <<pipeline.parameters.ctest-disabled-tests-ccov>>
+  #just a reference build, no actual sanitization/tests
+  opentxs-sanitizer:
+    when: true
+    jobs:
+      - sanitizer-linux:
+          name: memory-sanitizer-clang-full
+          docker-image: <<pipeline.parameters.docker-image-ci>>

@@ -68,6 +68,12 @@ public:
         const PayableListSortKey& key,
         const UnallocatedCString& paymentcode,
         const UnitType& currency) noexcept;
+    PayableListItem() = delete;
+    PayableListItem(const PayableListItem&) = delete;
+    PayableListItem(PayableListItem&&) = delete;
+    auto operator=(const PayableListItem&) -> PayableListItem& = delete;
+    auto operator=(PayableListItem&&) -> PayableListItem& = delete;
+
     ~PayableListItem() final = default;
 
 private:
@@ -89,12 +95,6 @@ private:
         const Lock&,
         const PayableListSortKey& key,
         CustomData& custom) noexcept -> bool final;
-
-    PayableListItem() = delete;
-    PayableListItem(const PayableListItem&) = delete;
-    PayableListItem(PayableListItem&&) = delete;
-    auto operator=(const PayableListItem&) -> PayableListItem& = delete;
-    auto operator=(PayableListItem&&) -> PayableListItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

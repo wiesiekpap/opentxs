@@ -34,14 +34,6 @@ namespace opentxs
 class OTScriptChai final : public OTScript
 {
 public:
-    OTScriptChai();
-    OTScriptChai(const String& strValue);
-    OTScriptChai(const char* new_string);
-    OTScriptChai(const char* new_string, size_t sizeLength);
-    OTScriptChai(const UnallocatedCString& new_string);
-
-    ~OTScriptChai() final;
-
     auto ExecuteScript(OTVariable* pReturnVar = nullptr) -> bool final;
     auto RegisterNativeScriptableCalls(OTScriptable& parent) noexcept
         -> void final;
@@ -49,10 +41,16 @@ public:
         -> void final;
     chaiscript::ChaiScript* const chai_{nullptr};
 
-private:
+    OTScriptChai();
+    OTScriptChai(const String& strValue);
+    OTScriptChai(const char* new_string);
+    OTScriptChai(const char* new_string, size_t sizeLength);
+    OTScriptChai(const UnallocatedCString& new_string);
     OTScriptChai(const OTScriptChai&) = delete;
     OTScriptChai(OTScriptChai&&) = delete;
     auto operator=(const OTScriptChai&) -> OTScriptChai& = delete;
     auto operator=(OTScriptChai&&) -> OTScriptChai& = delete;
+
+    ~OTScriptChai() final;
 };
 }  // namespace opentxs

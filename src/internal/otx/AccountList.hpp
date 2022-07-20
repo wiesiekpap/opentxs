@@ -80,6 +80,8 @@ public:
         const api::Session& api,
         Account::AccountType acctType);
 
+    AccountList() = delete;
+
     ~AccountList();
 
 private:
@@ -91,7 +93,5 @@ private:
 
     /** AcctIDs as second mapped by ASSET TYPE ID as first. */
     String::Map mapAcctIDs_;
-
-    AccountList() = delete;
 };
 }  // namespace opentxs::otx::internal

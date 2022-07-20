@@ -97,6 +97,10 @@ public:
        const SerializedType& serialized,
        Identifier& id)
     noexcept(false);
+    HD(const HD&) = delete;
+    HD(HD&&) = delete;
+    auto operator=(const HD&) -> HD& = delete;
+    auto operator=(HD&&) -> HD& = delete;
 
     ~HD() final = default;
 
@@ -114,10 +118,5 @@ private:
 
     auto account_already_exists(const rLock& lock) const noexcept -> bool final;
     auto save(const rLock& lock) const noexcept -> bool final;
-
-    HD(const HD&) = delete;
-    HD(HD&&) = delete;
-    auto operator=(const HD&) -> HD& = delete;
-    auto operator=(HD&&) -> HD& = delete;
 };
 }  // namespace opentxs::blockchain::crypto::implementation

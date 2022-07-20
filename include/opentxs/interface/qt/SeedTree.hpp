@@ -65,6 +65,10 @@ public:
     auto defaultSeed() const noexcept -> QString;
 
     SeedTreeQt(internal::SeedTree& parent) noexcept;
+    SeedTreeQt(const SeedTreeQt&) = delete;
+    SeedTreeQt(SeedTreeQt&&) = delete;
+    auto operator=(const SeedTreeQt&) -> SeedTreeQt& = delete;
+    auto operator=(SeedTreeQt&&) -> SeedTreeQt& = delete;
 
     ~SeedTreeQt() final;
 
@@ -72,9 +76,4 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    SeedTreeQt(const SeedTreeQt&) = delete;
-    SeedTreeQt(SeedTreeQt&&) = delete;
-    SeedTreeQt& operator=(const SeedTreeQt&) = delete;
-    SeedTreeQt& operator=(SeedTreeQt&&) = delete;
 };

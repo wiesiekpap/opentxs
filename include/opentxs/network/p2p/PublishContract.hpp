@@ -35,6 +35,10 @@ public:
     auto ContractType() const noexcept -> contract::Type;
 
     OPENTXS_NO_EXPORT PublishContract(Imp* imp) noexcept;
+    PublishContract(const PublishContract&) = delete;
+    PublishContract(PublishContract&&) = delete;
+    auto operator=(const PublishContract&) -> PublishContract& = delete;
+    auto operator=(PublishContract&&) -> PublishContract& = delete;
 
     ~PublishContract() final;
 
@@ -43,10 +47,5 @@ private:
 #pragma GCC diagnostic ignored "-Wshadow-field"
     Imp* imp_;
 #pragma GCC diagnostic pop
-
-    PublishContract(const PublishContract&) = delete;
-    PublishContract(PublishContract&&) = delete;
-    auto operator=(const PublishContract&) -> PublishContract& = delete;
-    auto operator=(PublishContract&&) -> PublishContract& = delete;
 };
 }  // namespace opentxs::network::p2p

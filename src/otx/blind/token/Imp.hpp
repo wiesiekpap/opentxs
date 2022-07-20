@@ -105,6 +105,11 @@ public:
         const Mint& mint,
         const PasswordPrompt& reason) -> bool = 0;
 
+    Token() = delete;
+    Token(Token&&) = delete;
+    auto operator=(const Token&) -> Token& = delete;
+    auto operator=(Token&&) -> Token& = delete;
+
     ~Token() override = default;
 
 protected:
@@ -160,9 +165,5 @@ private:
         const Time validFrom,
         const Time validTo,
         const VersionNumber version);
-    Token() = delete;
-    Token(Token&&) = delete;
-    auto operator=(const Token&) -> Token& = delete;
-    auto operator=(Token&&) -> Token& = delete;
 };
 }  // namespace opentxs::otx::blind::token

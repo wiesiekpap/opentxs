@@ -48,14 +48,12 @@ public:
     virtual auto end() noexcept -> zeromq::FrameIterator = 0;
 
     Imp() = default;
-
-    ~Imp() override = default;
-
-private:
     Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&) -> Imp& = delete;
+
+    ~Imp() override = default;
 };
 }  // namespace opentxs::network::zeromq
 
@@ -78,6 +76,11 @@ public:
         const Message* parent,
         std::size_t position,
         std::size_t size) noexcept;
+    FrameSection() = delete;
+    FrameSection(const FrameSection&) = delete;
+    FrameSection(FrameSection&&) = delete;
+    auto operator=(const FrameSection&) -> FrameSection& = delete;
+    auto operator=(FrameSection&) -> FrameSection& = delete;
 
     ~FrameSection() final = default;
 
@@ -85,11 +88,5 @@ private:
     const Message* parent_;
     const std::size_t position_;
     const std::size_t size_;
-
-    FrameSection() = delete;
-    FrameSection(const FrameSection&) = delete;
-    FrameSection(FrameSection&&) = delete;
-    auto operator=(const FrameSection&) -> FrameSection& = delete;
-    auto operator=(FrameSection&) -> FrameSection& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

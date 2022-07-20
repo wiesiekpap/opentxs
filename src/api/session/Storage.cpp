@@ -1037,7 +1037,7 @@ auto Storage::mutable_Root() const -> Editor<opentxs::storage::Root>
         this->save(in, lock);
     };
 
-    return Editor<opentxs::storage::Root>(write_lock_, root(), callback);
+    return {write_lock_, root(), callback};
 }
 
 auto Storage::NymBoxList(

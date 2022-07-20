@@ -48,6 +48,31 @@ namespace opentxs::identity::wot::claim
 class OPENTXS_EXPORT Item
 {
 public:
+    auto operator==(const Item& rhs) const -> bool;
+
+    auto End() const -> const std::time_t&;
+    auto ID() const -> const Identifier&;
+    auto isActive() const -> bool;
+    auto isLocal() const -> bool;
+    auto isPrimary() const -> bool;
+    auto Section() const -> const claim::SectionType&;
+    auto Serialize(AllocateOutput destination, const bool withID = false) const
+        -> bool;
+    OPENTXS_NO_EXPORT auto Serialize(
+        proto::ContactItem& out,
+        const bool withID = false) const -> bool;
+    auto SetActive(const bool active) const -> Item;
+    auto SetEnd(const std::time_t end) const -> Item;
+    auto SetLocal(const bool local) const -> Item;
+    auto SetPrimary(const bool primary) const -> Item;
+    auto SetStart(const std::time_t start) const -> Item;
+    auto SetValue(const UnallocatedCString& value) const -> Item;
+    auto Start() const -> const std::time_t&;
+    auto Subtype() const -> const UnallocatedCString&;
+    auto Type() const -> const claim::ClaimType&;
+    auto Value() const -> const UnallocatedCString&;
+    auto Version() const -> VersionNumber;
+
     Item(
         const api::Session& api,
         const UnallocatedCString& nym,
@@ -78,33 +103,11 @@ public:
         const VersionNumber parentVersion,
         const claim::SectionType section,
         const ReadView& serialized);
+    Item() = delete;
     Item(const Item&) noexcept;
     Item(Item&&) noexcept;
-
-    auto operator==(const Item& rhs) const -> bool;
-
-    auto End() const -> const std::time_t&;
-    auto ID() const -> const Identifier&;
-    auto isActive() const -> bool;
-    auto isLocal() const -> bool;
-    auto isPrimary() const -> bool;
-    auto Section() const -> const claim::SectionType&;
-    auto Serialize(AllocateOutput destination, const bool withID = false) const
-        -> bool;
-    OPENTXS_NO_EXPORT auto Serialize(
-        proto::ContactItem& out,
-        const bool withID = false) const -> bool;
-    auto SetActive(const bool active) const -> Item;
-    auto SetEnd(const std::time_t end) const -> Item;
-    auto SetLocal(const bool local) const -> Item;
-    auto SetPrimary(const bool primary) const -> Item;
-    auto SetStart(const std::time_t start) const -> Item;
-    auto SetValue(const UnallocatedCString& value) const -> Item;
-    auto Start() const -> const std::time_t&;
-    auto Subtype() const -> const UnallocatedCString&;
-    auto Type() const -> const claim::ClaimType&;
-    auto Value() const -> const UnallocatedCString&;
-    auto Version() const -> VersionNumber;
+    auto operator=(const Item&) -> Item& = delete;
+    auto operator=(Item&&) -> Item& = delete;
 
     ~Item();
 
@@ -112,9 +115,5 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    Item() = delete;
-    auto operator=(const Item&) -> Item& = delete;
-    auto operator=(Item&&) -> Item& = delete;
 };
 }  // namespace opentxs::identity::wot::claim

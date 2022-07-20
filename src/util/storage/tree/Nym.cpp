@@ -594,7 +594,7 @@ auto Nym::mutable_Threads(
         _save(in, lock, threads_lock_, threads_root_);
     };
 
-    return Editor<storage::Threads>(write_lock_, threads, cb);
+    return {write_lock_, threads, cb};
 }
 
 auto Nym::mutable_Contexts() -> Editor<storage::Contexts>

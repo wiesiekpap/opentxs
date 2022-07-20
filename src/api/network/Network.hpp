@@ -84,8 +84,6 @@ struct Network::Imp {
         , blockchain_(blockchain)
     {
     }
-
-private:
     Imp() = delete;
     Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;

@@ -302,15 +302,14 @@ public:
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::OTX& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~OTX() = default;
-
-protected:
-    OTX() = default;
-
-private:
     OTX(const OTX&) = delete;
     OTX(OTX&&) = delete;
     auto operator=(const OTX&) -> OTX& = delete;
     auto operator=(OTX&&) -> OTX& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~OTX() = default;
+
+protected:
+    OTX() = default;
 };
 }  // namespace opentxs::api::session

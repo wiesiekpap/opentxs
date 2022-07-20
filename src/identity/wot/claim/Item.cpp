@@ -104,20 +104,7 @@ struct Item::Imp {
         }
     }
 
-    Imp(const Imp& rhs)
-        : api_(rhs.api_)
-        , version_(rhs.version_)
-        , nym_(rhs.nym_)
-        , section_(rhs.section_)
-        , type_(rhs.type_)
-        , value_(rhs.value_)
-        , start_(rhs.start_)
-        , end_(rhs.end_)
-        , attributes_(rhs.attributes_)
-        , id_(rhs.id_)
-        , subtype_(rhs.subtype_)
-    {
-    }
+    Imp(const Imp& rhs) = default;
 
     Imp(Imp&& rhs)
         : api_(rhs.api_)
@@ -150,7 +137,7 @@ struct Item::Imp {
             attributes.erase(attribute);
         }
 
-        return Item(
+        return {
             api_,
             nym_,
             version_,
@@ -161,7 +148,7 @@ struct Item::Imp {
             attributes,
             start_,
             end_,
-            subtype_);
+            subtype_};
     }
 };
 
@@ -355,7 +342,7 @@ auto Item::SetEnd(const std::time_t end) const -> Item
 {
     if (imp_->end_ == end) { return *this; }
 
-    return Item(
+    return {
         imp_->api_,
         imp_->nym_,
         imp_->version_,
@@ -366,7 +353,7 @@ auto Item::SetEnd(const std::time_t end) const -> Item
         imp_->attributes_,
         imp_->start_,
         end,
-        imp_->subtype_);
+        imp_->subtype_};
 }
 
 auto Item::SetLocal(const bool local) const -> Item
@@ -393,7 +380,7 @@ auto Item::SetStart(const std::time_t start) const -> Item
 {
     if (imp_->start_ == start) { return *this; }
 
-    return Item(
+    return {
         imp_->api_,
         imp_->nym_,
         imp_->version_,
@@ -404,14 +391,14 @@ auto Item::SetStart(const std::time_t start) const -> Item
         imp_->attributes_,
         start,
         imp_->end_,
-        imp_->subtype_);
+        imp_->subtype_};
 }
 
 auto Item::SetValue(const UnallocatedCString& value) const -> Item
 {
     if (imp_->value_ == value) { return *this; }
 
-    return Item(
+    return {
         imp_->api_,
         imp_->nym_,
         imp_->version_,
@@ -422,7 +409,7 @@ auto Item::SetValue(const UnallocatedCString& value) const -> Item
         imp_->attributes_,
         imp_->start_,
         imp_->end_,
-        imp_->subtype_);
+        imp_->subtype_};
 }
 
 auto Item::Start() const -> const std::time_t& { return imp_->start_; }

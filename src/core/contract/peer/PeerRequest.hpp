@@ -100,6 +100,8 @@ public:
         return false;
     }
 
+    Request() = delete;
+
     ~Request() override = default;
 
 protected:
@@ -144,7 +146,5 @@ private:
 
     auto update_signature(const Lock& lock, const PasswordPrompt& reason)
         -> bool final;
-
-    Request() = delete;
 };
 }  // namespace opentxs::contract::peer::implementation

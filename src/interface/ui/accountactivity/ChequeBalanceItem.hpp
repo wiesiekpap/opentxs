@@ -78,6 +78,12 @@ public:
         CustomData& custom,
         const identifier::Nym& nymID,
         const Identifier& accountID) noexcept;
+    ChequeBalanceItem() = delete;
+    ChequeBalanceItem(const ChequeBalanceItem&) = delete;
+    ChequeBalanceItem(ChequeBalanceItem&&) = delete;
+    auto operator=(const ChequeBalanceItem&) -> ChequeBalanceItem& = delete;
+    auto operator=(ChequeBalanceItem&&) -> ChequeBalanceItem& = delete;
+
     ~ChequeBalanceItem() final = default;
 
 private:
@@ -91,11 +97,5 @@ private:
     auto startup(
         const proto::PaymentWorkflow workflow,
         const proto::PaymentEvent event) noexcept -> bool;
-
-    ChequeBalanceItem() = delete;
-    ChequeBalanceItem(const ChequeBalanceItem&) = delete;
-    ChequeBalanceItem(ChequeBalanceItem&&) = delete;
-    auto operator=(const ChequeBalanceItem&) -> ChequeBalanceItem& = delete;
-    auto operator=(ChequeBalanceItem&&) -> ChequeBalanceItem& = delete;
 };
 }  // namespace opentxs::ui::implementation

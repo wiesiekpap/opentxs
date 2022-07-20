@@ -64,6 +64,10 @@ public:
         std::unique_ptr<Header> header,
         const cfilter::Type type,
         block::Hash&& stop) noexcept;
+    Getcfcheckpt(const Getcfcheckpt&) = delete;
+    Getcfcheckpt(Getcfcheckpt&&) = delete;
+    auto operator=(const Getcfcheckpt&) -> Getcfcheckpt& = delete;
+    auto operator=(Getcfcheckpt&&) -> Getcfcheckpt& = delete;
 
     ~Getcfcheckpt() final = default;
 
@@ -73,10 +77,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Getcfcheckpt(const Getcfcheckpt&) = delete;
-    Getcfcheckpt(Getcfcheckpt&&) = delete;
-    auto operator=(const Getcfcheckpt&) -> Getcfcheckpt& = delete;
-    auto operator=(Getcfcheckpt&&) -> Getcfcheckpt& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

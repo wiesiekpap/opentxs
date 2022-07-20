@@ -65,14 +65,12 @@ struct Socket::Imp {
 
     Imp(const Endpoint& endpoint, Asio& asio) noexcept;
     Imp(Asio& asio, Endpoint&& endpoint, tcp::socket&& socket) noexcept;
-
-    ~Imp();
-
-private:
     Imp() noexcept = delete;
     Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;
-    Imp& operator=(const Imp&) = delete;
-    Imp& operator=(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
+
+    ~Imp();
 };
 }  // namespace opentxs::network::asio

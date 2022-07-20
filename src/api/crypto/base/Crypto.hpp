@@ -106,6 +106,11 @@ public:
     auto Init(const api::Factory& factory) noexcept -> void final;
 
     Crypto(const api::Settings& settings) noexcept;
+    Crypto() = delete;
+    Crypto(const Crypto&) = delete;
+    Crypto(Crypto&&) = delete;
+    auto operator=(const Crypto&) -> Crypto& = delete;
+    auto operator=(Crypto&&) -> Crypto& = delete;
 
     ~Crypto() final;
 
@@ -140,11 +145,5 @@ private:
     auto Init_OpenSSL() noexcept -> void;
     auto Init_Sodium() noexcept -> void;
     auto Cleanup() noexcept -> void;
-
-    Crypto() = delete;
-    Crypto(const Crypto&) = delete;
-    Crypto(Crypto&&) = delete;
-    auto operator=(const Crypto&) -> Crypto& = delete;
-    auto operator=(Crypto&&) -> Crypto& = delete;
 };
 }  // namespace opentxs::api::imp

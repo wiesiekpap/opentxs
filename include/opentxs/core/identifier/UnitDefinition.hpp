@@ -73,6 +73,11 @@ public:
     static auto Factory(const UnallocatedCString& rhs) -> OTUnitID;
     static auto Factory(const String& rhs) -> OTUnitID;
 
+    UnitDefinition(const UnitDefinition&) = delete;
+    UnitDefinition(UnitDefinition&&) = delete;
+    auto operator=(const UnitDefinition&) -> UnitDefinition& = delete;
+    auto operator=(UnitDefinition&&) -> UnitDefinition& = delete;
+
     ~UnitDefinition() override = default;
 
 protected:
@@ -84,10 +89,5 @@ private:
 #ifndef _WIN32
     auto clone() const -> UnitDefinition* override = 0;
 #endif
-
-    UnitDefinition(const UnitDefinition&) = delete;
-    UnitDefinition(UnitDefinition&&) = delete;
-    auto operator=(const UnitDefinition&) -> UnitDefinition& = delete;
-    auto operator=(UnitDefinition&&) -> UnitDefinition& = delete;
 };
 }  // namespace opentxs::identifier

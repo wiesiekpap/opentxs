@@ -22,6 +22,12 @@ public:
     auto Value() const -> TransactionNumber;
 
     Imp(const TransactionNumber, otx::context::Server&);
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
+
     virtual ~Imp();
 
 private:
@@ -29,11 +35,5 @@ private:
     const TransactionNumber number_;
     mutable OTFlag success_;
     bool managed_{true};
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs::otx::context

@@ -63,6 +63,10 @@ public:
         : Message(api, std::move(header))
     {
     }
+    Nopayload(const Nopayload&) = delete;
+    Nopayload(Nopayload&&) = delete;
+    auto operator=(const Nopayload&) -> Nopayload& = delete;
+    auto operator=(Nopayload&&) -> Nopayload& = delete;
 
     ~Nopayload() final = default;
 
@@ -82,10 +86,5 @@ private:
             return false;
         }
     }
-
-    Nopayload(const Nopayload&) = delete;
-    Nopayload(Nopayload&&) = delete;
-    auto operator=(const Nopayload&) -> Nopayload& = delete;
-    auto operator=(Nopayload&&) -> Nopayload& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

@@ -51,15 +51,14 @@ public:
     virtual auto end() const noexcept -> const_iterator = 0;
     virtual auto size() const noexcept -> std::size_t = 0;
 
-    ~Block() override = default;
-
-protected:
-    Block() noexcept = default;
-
-private:
     Block(const Block&) = delete;
     Block(Block&&) = delete;
     auto operator=(const Block&) -> Block& = delete;
     auto operator=(Block&&) -> Block& = delete;
+
+    ~Block() override = default;
+
+protected:
+    Block() noexcept = default;
 };
 }  // namespace opentxs::blockchain::bitcoin::block

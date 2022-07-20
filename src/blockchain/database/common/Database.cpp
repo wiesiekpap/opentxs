@@ -219,8 +219,6 @@ struct Database::Imp {
             throw std::runtime_error("Failed to construct path");
         }
 
-        std::ofstream{v1.string()};
-
         return output;
     }
     static auto siphash_key(storage::lmdb::LMDB& db) noexcept -> SiphashKey

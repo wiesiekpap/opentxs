@@ -44,10 +44,6 @@ public:
         const AccountCurrencyRowID& rowID,
         const AccountCurrencySortKey& sortKey,
         CustomData& custom) noexcept;
-
-    ~CustodialAccountTreeItem() final;
-
-private:
     CustodialAccountTreeItem() = delete;
     CustodialAccountTreeItem(const CustodialAccountTreeItem&) = delete;
     CustodialAccountTreeItem(CustodialAccountTreeItem&&) = delete;
@@ -55,5 +51,7 @@ private:
         -> CustodialAccountTreeItem& = delete;
     auto operator=(CustodialAccountTreeItem&&)
         -> CustodialAccountTreeItem& = delete;
+
+    ~CustodialAccountTreeItem() final;
 };
 }  // namespace opentxs::ui::implementation

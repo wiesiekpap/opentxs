@@ -63,13 +63,10 @@ public:
     {
         return payload_.at(position);
     }
-    auto begin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto begin() const noexcept -> const_iterator final { return {this, 0}; }
     auto end() const noexcept -> const_iterator final
     {
-        return const_iterator(this, payload_.size());
+        return {this, payload_.size()};
     }
     auto size() const noexcept -> std::size_t final { return payload_.size(); }
     auto Stop() const noexcept -> const block::Hash& final { return stop_; }
@@ -87,6 +84,10 @@ public:
         const cfilter::Type type,
         const block::Hash& stop,
         Vector<cfilter::Header>&& headers) noexcept;
+    Cfcheckpt(const Cfcheckpt&) = delete;
+    Cfcheckpt(Cfcheckpt&&) = delete;
+    auto operator=(const Cfcheckpt&) -> Cfcheckpt& = delete;
+    auto operator=(Cfcheckpt&&) -> Cfcheckpt& = delete;
 
     ~Cfcheckpt() final = default;
 
@@ -97,10 +98,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Cfcheckpt(const Cfcheckpt&) = delete;
-    Cfcheckpt(Cfcheckpt&&) = delete;
-    auto operator=(const Cfcheckpt&) -> Cfcheckpt& = delete;
-    auto operator=(Cfcheckpt&&) -> Cfcheckpt& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

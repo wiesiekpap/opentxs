@@ -90,7 +90,7 @@ struct Model::Imp {
 
             const auto pos = static_cast<std::size_t>(index);
             auto lock = Lock{data_lock_};
-            auto& data = map_.at(ID(parent));
+            const auto& data = map_.at(ID(parent));
 
             if (pos >= data.children_.size()) {
                 throw std::out_of_range{"child does not exist"};
@@ -243,6 +243,11 @@ struct Model::Imp {
     {
         map_[ID(nullptr)];
     }
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
 private:
     struct RowData {
@@ -324,12 +329,10 @@ private:
             : RowData(nullptr, std::shared_ptr<ui::internal::Row>{})
         {
         }
-
-    private:
         RowData(const RowData&) = delete;
         RowData(RowData&&) = delete;
-        RowData& operator=(const RowData&) = delete;
-        RowData& operator=(RowData&&) = delete;
+        auto operator=(const RowData&) -> RowData& = delete;
+        auto operator=(RowData&&) -> RowData& = delete;
     };
 
     static constexpr auto root_row_id_ = RowID{-1};
@@ -449,12 +452,6 @@ private:
 
         return it->second;
     }
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    Imp& operator=(const Imp&) = delete;
-    Imp& operator=(Imp&&) = delete;
 };
 
 Model::Model(QObject* parent) noexcept
@@ -710,7 +707,7 @@ auto Model::data(const QModelIndex& index, int role) const noexcept -> QVariant
     auto output = QVariant{};
 
     if (index.isValid()) {
-        auto row = static_cast<ui::internal::Row*>(index.internalPointer());
+        auto* row = static_cast<ui::internal::Row*>(index.internalPointer());
 
         OT_ASSERT(nullptr != row);
 
@@ -814,7 +811,7 @@ auto Model::index(int row, int column, const QModelIndex& ancestor)
     if (nullptr != internal_) {
         auto* parent =
             static_cast<ui::internal::Row*>(ancestor.internalPointer());
-        auto child = internal_->GetChild(parent, row);
+        auto* child = internal_->GetChild(parent, row);
 
         if (nullptr != child) {
             if (internal_->GetColumnCount(child) > column) {

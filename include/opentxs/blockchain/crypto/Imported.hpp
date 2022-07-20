@@ -37,15 +37,14 @@ public:
         -> internal::Imported& = 0;
     virtual auto Key() const -> ECKey = 0;
 
-    OPENTXS_NO_EXPORT ~Imported() override = default;
-
-protected:
-    Imported() noexcept = default;
-
-private:
     Imported(const Imported&) = delete;
     Imported(Imported&&) = delete;
     auto operator=(const Imported&) -> Imported& = delete;
     auto operator=(Imported&&) -> Imported& = delete;
+
+    OPENTXS_NO_EXPORT ~Imported() override = default;
+
+protected:
+    Imported() noexcept = default;
 };
 }  // namespace opentxs::blockchain::crypto

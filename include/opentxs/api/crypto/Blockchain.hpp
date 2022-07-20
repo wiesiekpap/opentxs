@@ -216,15 +216,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> crypto::internal::Blockchain& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Blockchain() = default;
-
-protected:
-    Blockchain() noexcept = default;
-
-private:
     Blockchain(const Blockchain&) = delete;
     Blockchain(Blockchain&&) = delete;
     auto operator=(const Blockchain&) -> Blockchain& = delete;
     auto operator=(Blockchain&&) -> Blockchain& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Blockchain() = default;
+
+protected:
+    Blockchain() noexcept = default;
 };
 }  // namespace opentxs::api::crypto

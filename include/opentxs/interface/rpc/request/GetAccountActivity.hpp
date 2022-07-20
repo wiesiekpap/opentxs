@@ -41,13 +41,11 @@ public:
     OPENTXS_NO_EXPORT GetAccountActivity(
         const proto::RPCCommand& serialized) noexcept(false);
     GetAccountActivity() noexcept;
-
-    ~GetAccountActivity() final;
-
-private:
     GetAccountActivity(const GetAccountActivity&) = delete;
     GetAccountActivity(GetAccountActivity&&) = delete;
     auto operator=(const GetAccountActivity&) -> GetAccountActivity& = delete;
     auto operator=(GetAccountActivity&&) -> GetAccountActivity& = delete;
+
+    ~GetAccountActivity() final;
 };
 }  // namespace opentxs::rpc::request

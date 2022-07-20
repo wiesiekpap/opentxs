@@ -11,13 +11,13 @@
 
 extern "C" {
 #include <sys/resource.h>
+#include <unistd.h>
 }
 
-#include <errno.h>
 #include <robin_hood.h>
-#include <string.h>
-#include <unistd.h>
 #include <array>
+#include <cerrno>
+#include <cstring>
 
 #include "opentxs/util/Log.hpp"
 

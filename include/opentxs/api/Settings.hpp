@@ -197,15 +197,14 @@ public:
 
     virtual auto Reset() -> bool = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Settings() = default;
-
-protected:
-    Settings() = default;
-
-private:
     Settings(const Settings&) = delete;
     Settings(Settings&&) = delete;
     auto operator=(const Settings&) -> Settings& = delete;
     auto operator=(Settings&&) -> Settings& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Settings() = default;
+
+protected:
+    Settings() = default;
 };
 }  // namespace opentxs::api

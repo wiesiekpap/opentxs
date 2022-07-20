@@ -57,16 +57,16 @@ public:
         ReadView filter) noexcept(false);
     OPENTXS_NO_EXPORT Block(Block&&) noexcept;
 
+    Block() noexcept = delete;
+    Block(const Block&) = delete;
+    auto operator=(const Block&) -> Block& = delete;
+    auto operator=(Block&&) -> Block& = delete;
+
     OPENTXS_NO_EXPORT ~Block();
 
 private:
     struct Imp;
 
     Imp* imp_;
-
-    Block() noexcept;
-    Block(const Block&) = delete;
-    auto operator=(const Block&) -> Block& = delete;
-    auto operator=(Block&&) -> Block& = delete;
 };
 }  // namespace opentxs::network::p2p

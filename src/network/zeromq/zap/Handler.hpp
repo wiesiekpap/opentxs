@@ -49,6 +49,12 @@ public:
         return false;
     }
 
+    Handler() = delete;
+    Handler(const Handler&) = delete;
+    Handler(Handler&&) = delete;
+    auto operator=(const Handler&) -> Handler& = delete;
+    auto operator=(Handler&&) -> Handler& = delete;
+
     ~Handler() final;
 
 private:
@@ -69,10 +75,5 @@ private:
     Handler(
         const zeromq::Context& context,
         const zap::Callback& callback) noexcept;
-    Handler() = delete;
-    Handler(const Handler&) = delete;
-    Handler(Handler&&) = delete;
-    auto operator=(const Handler&) -> Handler& = delete;
-    auto operator=(Handler&&) -> Handler& = delete;
 };
 }  // namespace opentxs::network::zeromq::zap::implementation

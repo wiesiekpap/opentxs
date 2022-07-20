@@ -127,6 +127,12 @@ public:
 
     void ReleaseSignatures(const bool onlyPrivate) final;
 
+    Base() = delete;
+    Base(const Base&) = delete;
+    Base(Base&&) = delete;
+    auto operator=(const Base&) -> Base& = delete;
+    auto operator=(Base&&) -> Base& = delete;
+
     ~Base() override = default;
 
 protected:
@@ -196,11 +202,5 @@ private:
         const Lock& lock,
         const identity::credential::internal::Primary& master,
         const PasswordPrompt& reason) noexcept(false);
-
-    Base() = delete;
-    Base(const Base&) = delete;
-    Base(Base&&) = delete;
-    auto operator=(const Base&) -> Base& = delete;
-    auto operator=(Base&&) -> Base& = delete;
 };
 }  // namespace opentxs::identity::credential::implementation

@@ -45,15 +45,13 @@ struct ListNyms final : public Base::Imp {
         : Imp(parent, in)
     {
     }
-
-    ~ListNyms() final = default;
-
-private:
     ListNyms() = delete;
     ListNyms(const ListNyms&) = delete;
     ListNyms(ListNyms&&) = delete;
     auto operator=(const ListNyms&) -> ListNyms& = delete;
     auto operator=(ListNyms&&) -> ListNyms& = delete;
+
+    ~ListNyms() final = default;
 };
 }  // namespace opentxs::rpc::response::implementation
 

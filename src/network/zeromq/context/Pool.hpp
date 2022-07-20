@@ -95,6 +95,11 @@ public:
     auto UpdateIndex(BatchID id) noexcept -> void final;
 
     Pool(const Context& parent) noexcept;
+    Pool() = delete;
+    Pool(const Pool&) = delete;
+    Pool(Pool&&) = delete;
+    auto operator=(const Pool&) -> Pool& = delete;
+    auto operator=(Pool&&) -> Pool& = delete;
 
     ~Pool() final;
 
@@ -112,11 +117,5 @@ private:
 
     auto get(BatchID id) noexcept -> context::Thread&;
     auto stop() noexcept -> void;
-
-    Pool() = delete;
-    Pool(const Pool&) = delete;
-    Pool(Pool&&) = delete;
-    auto operator=(const Pool&) -> Pool& = delete;
-    auto operator=(Pool&&) -> Pool& = delete;
 };
 }  // namespace opentxs::network::zeromq::context

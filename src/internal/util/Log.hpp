@@ -28,13 +28,11 @@ public:
     static auto Start() noexcept -> void;
 
     Log() = default;
-
-    virtual ~Log() = default;
-
-private:
     Log(const Log&) = delete;
     Log(Log&&) = delete;
     auto operator=(const Log&) -> Log& = delete;
     auto operator=(Log&&) -> Log& = delete;
+
+    virtual ~Log() = default;
 };
 }  // namespace opentxs::internal

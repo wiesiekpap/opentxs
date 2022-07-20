@@ -137,6 +137,9 @@ public:
     Identifier(identifier::Type type) noexcept;
     Identifier(const Identifier& rhs) noexcept;
     Identifier() noexcept;
+    Identifier(Identifier&& rhs) = delete;
+    auto operator=(const Identifier& rhs) -> Identifier& = delete;
+    auto operator=(Identifier&& rhs) -> Identifier& = delete;
 
     ~Identifier() final = default;
 
@@ -176,9 +179,5 @@ private:
 
     auto clone() const -> Identifier* final;
     auto to_string() const noexcept -> UnallocatedCString;
-
-    Identifier(Identifier&& rhs) = delete;
-    auto operator=(const Identifier& rhs) -> Identifier& = delete;
-    auto operator=(Identifier&& rhs) -> Identifier& = delete;
 };
 }  // namespace opentxs::implementation

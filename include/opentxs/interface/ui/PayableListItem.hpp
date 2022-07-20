@@ -40,15 +40,14 @@ public:
     /// Returns the payment code for this contact.
     virtual auto PaymentCode() const noexcept -> UnallocatedCString = 0;
 
-    ~PayableListItem() override = default;
-
-protected:
-    PayableListItem() noexcept = default;
-
-private:
     PayableListItem(const PayableListItem&) = delete;
     PayableListItem(PayableListItem&&) = delete;
     auto operator=(const PayableListItem&) -> PayableListItem& = delete;
     auto operator=(PayableListItem&&) -> PayableListItem& = delete;
+
+    ~PayableListItem() override = default;
+
+protected:
+    PayableListItem() noexcept = default;
 };
 }  // namespace opentxs::ui

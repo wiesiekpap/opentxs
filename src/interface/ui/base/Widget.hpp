@@ -104,16 +104,15 @@ public:
         virtual void operator()(Widget* object, const Message&)
             const noexcept = 0;
 
-        virtual ~MessageFunctor() = default;
-
-    protected:
-        MessageFunctor() noexcept = default;
-
-    private:
         MessageFunctor(const MessageFunctor&) = delete;
         MessageFunctor(MessageFunctor&&) = delete;
         auto operator=(const MessageFunctor&) -> MessageFunctor& = delete;
         auto operator=(MessageFunctor&&) -> MessageFunctor& = delete;
+
+        virtual ~MessageFunctor() = default;
+
+    protected:
+        MessageFunctor() noexcept = default;
     };
 
     template <typename T>
@@ -136,20 +135,25 @@ public:
             : callback_(callback)
         {
         }
+        MessageProcessor() = delete;
+        MessageProcessor(const MessageProcessor&) = delete;
         MessageProcessor(MessageProcessor&&) = default;
+        auto operator=(const MessageProcessor&) -> MessageProcessor& = delete;
         auto operator=(MessageProcessor&&) -> MessageProcessor& = default;
 
     private:
         Function callback_;
-
-        MessageProcessor() = delete;
-        MessageProcessor(const MessageProcessor&) = delete;
-        auto operator=(const MessageProcessor&) -> MessageProcessor& = delete;
     };
 
     auto ClearCallbacks() const noexcept -> void override;
     auto SetCallback(SimpleCallback cb) const noexcept -> void final;
     auto WidgetID() const noexcept -> OTIdentifier final { return widget_id_; }
+
+    Widget() = delete;
+    Widget(const Widget&) = delete;
+    Widget(Widget&&) = delete;
+    auto operator=(const Widget&) -> Widget& = delete;
+    auto operator=(Widget&&) -> Widget& = delete;
 
     ~Widget() override;
 
@@ -172,11 +176,5 @@ private:
     const api::session::UI& ui_;
     UnallocatedVector<OTZMQListenCallback> callbacks_;
     UnallocatedVector<OTZMQSubscribeSocket> listeners_;
-
-    Widget() = delete;
-    Widget(const Widget&) = delete;
-    Widget(Widget&&) = delete;
-    auto operator=(const Widget&) -> Widget& = delete;
-    auto operator=(Widget&&) -> Widget& = delete;
-};  // namespace opentxs::ui::implementation
+};
 }  // namespace opentxs::ui::implementation

@@ -68,14 +68,12 @@ struct GetAccountBalance final : public Base::Imp {
         }())
     {
     }
-
-    ~GetAccountBalance() final = default;
-
-private:
     GetAccountBalance() = delete;
     GetAccountBalance(GetAccountBalance&&) = delete;
     auto operator=(const GetAccountBalance&) -> GetAccountBalance& = delete;
     auto operator=(GetAccountBalance&&) -> GetAccountBalance& = delete;
+
+    ~GetAccountBalance() final = default;
 };
 }  // namespace opentxs::rpc::response::implementation
 

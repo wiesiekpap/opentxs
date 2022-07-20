@@ -61,6 +61,11 @@ public:
         const api::session::Storage& storage,
         const storage::Config& config,
         const Flag& bucket);
+    GarbageCollected() = delete;
+    GarbageCollected(const GarbageCollected&) = delete;
+    GarbageCollected(GarbageCollected&&) = delete;
+    auto operator=(const GarbageCollected&) -> GarbageCollected& = delete;
+    auto operator=(GarbageCollected&&) -> GarbageCollected& = delete;
 
     ~GarbageCollected() final;
 
@@ -75,11 +80,5 @@ private:
 
     void Cleanup_GarbageCollected();
     void Init_GarbageCollected();
-
-    GarbageCollected() = delete;
-    GarbageCollected(const GarbageCollected&) = delete;
-    GarbageCollected(GarbageCollected&&) = delete;
-    auto operator=(const GarbageCollected&) -> GarbageCollected& = delete;
-    auto operator=(GarbageCollected&&) -> GarbageCollected& = delete;
 };
 }  // namespace opentxs::storage::driver::filesystem

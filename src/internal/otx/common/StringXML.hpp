@@ -43,13 +43,12 @@ public:
     virtual auto operator=(const String& rhs) -> StringXML& = 0;
     virtual auto operator=(const StringXML& rhs) -> StringXML& = 0;
 
+    StringXML(StringXML&&) = delete;
+    auto operator=(StringXML&&) -> StringXML& = delete;
+
     ~StringXML() override = default;
 
 protected:
     StringXML() = default;
-
-private:
-    StringXML(StringXML&&) = delete;
-    auto operator=(StringXML&&) -> StringXML& = delete;
 };
 }  // namespace opentxs

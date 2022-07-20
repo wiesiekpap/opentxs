@@ -37,6 +37,11 @@ public:
 
     virtual auto AddElement(const Data& element) noexcept -> void = 0;
 
+    BloomFilter(const BloomFilter& rhs) = delete;
+    BloomFilter(BloomFilter&& rhs) = delete;
+    auto operator=(const BloomFilter& rhs) -> BloomFilter& = delete;
+    auto operator=(BloomFilter&& rhs) -> BloomFilter& = delete;
+
     virtual ~BloomFilter() = default;
 
 protected:
@@ -46,10 +51,5 @@ private:
     friend OTBloomFilter;
 
     virtual auto clone() const noexcept -> BloomFilter* = 0;
-
-    BloomFilter(const BloomFilter& rhs) = delete;
-    BloomFilter(BloomFilter&& rhs) = delete;
-    auto operator=(const BloomFilter& rhs) -> BloomFilter& = delete;
-    auto operator=(BloomFilter&& rhs) -> BloomFilter& = delete;
 };
 }  // namespace opentxs::blockchain

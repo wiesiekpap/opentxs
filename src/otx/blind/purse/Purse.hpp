@@ -143,12 +143,10 @@ public:
         : parent_(rhs.parent_)
     {
     }
-
-    ~Imp() override = default;
-
-private:
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&& rhs) -> Imp& = delete;
+
+    ~Imp() override = default;
 };
 }  // namespace opentxs::otx::blind

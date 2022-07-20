@@ -47,6 +47,11 @@ public:
         const api::Session& api,
         const Type chain,
         const std::string_view toParent) noexcept;
+    Requestor() = delete;
+    Requestor(const Requestor&) = delete;
+    Requestor(Requestor&&) = delete;
+    auto operator=(const Requestor&) -> Requestor& = delete;
+    auto operator=(Requestor&&) -> Requestor& = delete;
 
     ~Requestor();
 
@@ -56,11 +61,5 @@ private:
     // TODO switch to std::shared_ptr once the android ndk ships a version of
     // libc++ with unfucked pmr / allocate_shared support
     boost::shared_ptr<Imp> imp_;
-
-    Requestor() = delete;
-    Requestor(const Requestor&) = delete;
-    Requestor(Requestor&&) = delete;
-    auto operator=(const Requestor&) -> Requestor& = delete;
-    auto operator=(Requestor&&) -> Requestor& = delete;
 };
 }  // namespace opentxs::blockchain::node::p2p

@@ -60,6 +60,12 @@ public:
         const BlockchainSubaccountRowID& rowID,
         const BlockchainSubaccountSortKey& sortKey,
         CustomData& custom) noexcept;
+    BlockchainSubchain() = delete;
+    BlockchainSubchain(const BlockchainSubchain&) = delete;
+    BlockchainSubchain(BlockchainSubchain&&) = delete;
+    auto operator=(const BlockchainSubchain&) -> BlockchainSubchain& = delete;
+    auto operator=(BlockchainSubchain&&) -> BlockchainSubchain& = delete;
+
     ~BlockchainSubchain() final;
 
 private:
@@ -71,12 +77,6 @@ private:
 
     auto reindex(const BlockchainSubaccountSortKey&, CustomData&) noexcept
         -> bool final;
-
-    BlockchainSubchain() = delete;
-    BlockchainSubchain(const BlockchainSubchain&) = delete;
-    BlockchainSubchain(BlockchainSubchain&&) = delete;
-    auto operator=(const BlockchainSubchain&) -> BlockchainSubchain& = delete;
-    auto operator=(BlockchainSubchain&&) -> BlockchainSubchain& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

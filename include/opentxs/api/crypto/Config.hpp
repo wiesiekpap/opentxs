@@ -63,15 +63,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto InternalConfig() noexcept
         -> internal::Config& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Config() = default;
-
-protected:
-    Config() = default;
-
-private:
     Config(const Config&) = delete;
     Config(Config&&) = delete;
     auto operator=(const Config&) -> Config& = delete;
     auto operator=(Config&&) -> Config& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Config() = default;
+
+protected:
+    Config() = default;
 };
 }  // namespace opentxs::api::crypto

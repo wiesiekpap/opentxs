@@ -87,6 +87,11 @@ public:
     mutable Gatekeeper gate_;
 
     Imp(const api::Session& api, const zeromq::Context& zmq) noexcept;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp();
 
@@ -99,11 +104,5 @@ private:
     auto process_sync(
         zeromq::Message&& incoming,
         const p2p::Base& base) noexcept -> void;
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs::network::p2p

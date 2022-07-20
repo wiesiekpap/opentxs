@@ -352,6 +352,11 @@ public:
     Imp(const api::session::Client& api,
         const api::crypto::Blockchain& blockchain,
         const Flag& running) noexcept;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() override;
 
@@ -531,12 +536,5 @@ protected:
 
     auto ShutdownCallbacks() noexcept -> void;
     virtual auto ShutdownModels() noexcept -> void;
-
-private:
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs::api::session::imp

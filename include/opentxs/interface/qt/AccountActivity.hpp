@@ -36,7 +36,7 @@ class DisplayScaleQt;
 }  // namespace ui
 // }  // namespace v1
 }  // namespace opentxs
-// NOLINTEND(modernize-concat-nested-namespaces
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 class OPENTXS_EXPORT opentxs::ui::AccountActivityQt final : public qt::Model
 {
@@ -62,7 +62,7 @@ signals:
     void syncProgressUpdated(int, int) const;
 
 public:
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    // NOLINTBEGIN(modernize-use-trailing-return-type)
     Q_INVOKABLE int sendToAddress(
         const QString& address,
         const QString& amount,
@@ -106,23 +106,28 @@ public:
         ConfirmationsColumn = 5,
     };
 
-    QString accountID() const noexcept;
-    int balancePolarity() const noexcept;
+    auto accountID() const noexcept -> QString;
+    auto balancePolarity() const noexcept -> int;
     // Each item in the list is an opentxs::blockchain::Type enum value cast to
     // an int
-    QVariantList depositChains() const noexcept;
-    QString displayBalance() const noexcept;
-    AmountValidator* getAmountValidator() const noexcept;
-    DestinationValidator* getDestValidator() const noexcept;
-    DisplayScaleQt* getScaleModel() const noexcept;
+    auto depositChains() const noexcept -> QVariantList;
+    auto displayBalance() const noexcept -> QString;
+    auto getAmountValidator() const noexcept -> AmountValidator*;
+    auto getDestValidator() const noexcept -> DestinationValidator*;
+    auto getScaleModel() const noexcept -> DisplayScaleQt*;
     auto headerData(
         int section,
         Qt::Orientation orientation,
         int role = Qt::DisplayRole) const noexcept -> QVariant final;
-    double syncPercentage() const noexcept;
-    QVariantList syncProgress() const noexcept;
+    auto syncPercentage() const noexcept -> double;
+    auto syncProgress() const noexcept -> QVariantList;
 
     AccountActivityQt(internal::AccountActivity& parent) noexcept;
+    AccountActivityQt() = delete;
+    AccountActivityQt(const AccountActivityQt&) = delete;
+    AccountActivityQt(AccountActivityQt&&) = delete;
+    auto operator=(const AccountActivityQt&) -> AccountActivityQt& = delete;
+    auto operator=(AccountActivityQt&&) -> AccountActivityQt& = delete;
 
     ~AccountActivityQt() final;
 
@@ -130,10 +135,4 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    AccountActivityQt() = delete;
-    AccountActivityQt(const AccountActivityQt&) = delete;
-    AccountActivityQt(AccountActivityQt&&) = delete;
-    AccountActivityQt& operator=(const AccountActivityQt&) = delete;
-    AccountActivityQt& operator=(AccountActivityQt&&) = delete;
 };

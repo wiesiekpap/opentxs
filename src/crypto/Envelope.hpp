@@ -78,6 +78,11 @@ public:
         const SerializedType& serialized) noexcept(false);
     Envelope(const api::Session& api, const ReadView& serialized) noexcept(
         false);
+    Envelope() = delete;
+    Envelope(const Envelope&) noexcept;
+    Envelope(Envelope&&) = delete;
+    auto operator=(const Envelope&) -> Envelope& = delete;
+    auto operator=(Envelope&&) -> Envelope& = delete;
 
     ~Envelope() final = default;
 
@@ -160,11 +165,5 @@ private:
         const Nyms recipients,
         const ReadView plaintext,
         const PasswordPrompt& reason) noexcept -> bool;
-
-    Envelope() = delete;
-    Envelope(const Envelope&) noexcept;
-    Envelope(Envelope&&) = delete;
-    auto operator=(const Envelope&) -> Envelope& = delete;
-    auto operator=(Envelope&&) -> Envelope& = delete;
 };
 }  // namespace opentxs::crypto::implementation

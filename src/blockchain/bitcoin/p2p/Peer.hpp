@@ -112,6 +112,11 @@ public:
         const ProtocolVersion protocol = 0,
         const bool relay = true,
         const UnallocatedSet<p2p::Service>& localServices = {}) noexcept;
+    Peer() = delete;
+    Peer(const Peer&) = delete;
+    Peer(Peer&&) = delete;
+    auto operator=(const Peer&) -> Peer& = delete;
+    auto operator=(Peer&&) -> Peer& = delete;
 
     ~Peer() final;
 
@@ -300,12 +305,6 @@ private:
         std::unique_ptr<HeaderType> header,
         const zmq::Frame& payload) -> void;
 
-    auto get_inventory_type() const -> blockchain::bitcoin::Inventory::Type;
-
-    Peer() = delete;
-    Peer(const Peer&) = delete;
-    Peer(Peer&&) = delete;
-    auto operator=(const Peer&) -> Peer& = delete;
-    auto operator=(Peer&&) -> Peer& = delete;
+    blockchain::bitcoin::Inventory::Type get_inventory_type() const;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::implementation

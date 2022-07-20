@@ -65,6 +65,9 @@ public:
 
     Imp() noexcept;
     Imp(const Imp& rhs) noexcept;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() override = default;
 
@@ -78,9 +81,5 @@ protected:
 private:
     auto hasDivider() const noexcept -> bool;
     auto findDivider() const noexcept -> std::size_t;
-
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs::network::zeromq

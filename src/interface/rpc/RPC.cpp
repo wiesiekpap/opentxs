@@ -218,8 +218,9 @@ RPC::RPC(const api::Context& native)
     , ot_(native)
     , task_lock_()
     , queued_tasks_()
-    , task_callback_(zmq::ListenCallback::Factory(
-          std::bind(&RPC::task_handler, this, std::placeholders::_1)))
+    , task_callback_(zmq::ListenCallback::Factory([this](auto&& PH1) {
+        task_handler(std::forward<decltype(PH1)>(PH1));
+    }))
     , push_callback_(zmq::ListenCallback::Factory([&](const zmq::Message& in) {
         rpc_publisher_->Send(network::zeromq::Message{in});
     }))

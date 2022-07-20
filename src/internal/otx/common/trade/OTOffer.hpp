@@ -159,6 +159,12 @@ public:
                    // serialization, this is where the
                    // ledger saves its contents
 
+    OTOffer() = delete;
+    OTOffer(const OTOffer&) = delete;
+    OTOffer(OTOffer&&) = delete;
+    auto operator=(const OTOffer&) -> OTOffer& = delete;
+    auto operator=(OTOffer&&) -> OTOffer& = delete;
+
     ~OTOffer() override;
 
 protected:
@@ -238,11 +244,5 @@ private:
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_ID,
         const Amount& MARKET_SCALE);
-    OTOffer(const OTOffer&) = delete;
-    OTOffer(OTOffer&&) = delete;
-    auto operator=(const OTOffer&) -> OTOffer& = delete;
-    auto operator=(OTOffer&&) -> OTOffer& = delete;
-
-    OTOffer() = delete;
 };
 }  // namespace opentxs

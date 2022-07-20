@@ -78,7 +78,11 @@ public:
         const crypto::AsymmetricProvider& engine,
         const proto::AsymmetricKey& serialized)
     noexcept(false);
+    RSA() = delete;
     RSA(const RSA&) noexcept;
+    RSA(RSA&&) = delete;
+    auto operator=(const RSA&) -> RSA& = delete;
+    auto operator=(RSA&&) -> RSA& = delete;
 
     ~RSA() final = default;
 
@@ -95,10 +99,5 @@ private:
     auto clone() const noexcept -> RSA* final { return new RSA{*this}; }
     auto serialize(const Lock& lock, Serialized& serialized) const noexcept
         -> bool final;
-
-    RSA() = delete;
-    RSA(RSA&&) = delete;
-    auto operator=(const RSA&) -> RSA& = delete;
-    auto operator=(RSA&&) -> RSA& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

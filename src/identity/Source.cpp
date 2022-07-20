@@ -425,7 +425,7 @@ auto Source::Sign(
 
 auto Source::asString() const noexcept -> OTString
 {
-    return OTString(factory_.Armored(asData()));
+    return {factory_.Armored(asData())};
 }
 
 auto Source::Description() const noexcept -> OTString

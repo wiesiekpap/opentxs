@@ -402,7 +402,6 @@ private:
                     retry_.Wait([this](const auto& e) {
                         if (!e) { trigger(); }
                     });
-                    defer(std::move(in));
                 };
 
                 if (false == initFinished) {

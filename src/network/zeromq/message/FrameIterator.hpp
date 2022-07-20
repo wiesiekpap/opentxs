@@ -43,12 +43,10 @@ public:
     Imp() noexcept;
     Imp(Message* parent, std::size_t position = 0) noexcept;
     Imp(const Imp&) noexcept;
-
-    ~Imp() final;
-
-private:
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&) -> Imp& = delete;
+
+    ~Imp() final;
 };
 }  // namespace opentxs::network::zeromq

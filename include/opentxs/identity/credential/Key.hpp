@@ -52,15 +52,14 @@ public:
         const crypto::HashType hash = crypto::HashType::Error) const
         -> bool = 0;
 
-    ~Key() override = default;
-
-protected:
-    Key() noexcept {}  // TODO Signable
-
-private:
     Key(const Key&) = delete;
     Key(Key&&) = delete;
     auto operator=(const Key&) -> Key& = delete;
     auto operator=(Key&&) -> Key& = delete;
+
+    ~Key() override = default;
+
+protected:
+    Key() noexcept = default;  // TODO Signable
 };
 }  // namespace opentxs::identity::credential

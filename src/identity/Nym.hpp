@@ -99,13 +99,10 @@ public:
     auto BestPhoneNumber() const -> UnallocatedCString final;
     auto BestSocialMediaProfile(const wot::claim::ClaimType type) const
         -> UnallocatedCString final;
-    auto cbegin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto cbegin() const noexcept -> const_iterator final { return {this, 0}; }
     auto cend() const noexcept -> const_iterator final
     {
-        return const_iterator(this, size());
+        return {this, size()};
     }
     auto Claims() const -> const wot::claim::Data& final;
     auto CompareID(const identity::Nym& RHS) const -> bool final;
@@ -253,6 +250,12 @@ public:
     auto Verify(const ProtobufType& input, proto::Signature& signature) const
         -> bool final;
 
+    Nym() = delete;
+    Nym(const Nym&) = delete;
+    Nym(Nym&&) = delete;
+    auto operator=(const Nym&) -> Nym& = delete;
+    auto operator=(Nym&&) -> Nym& = delete;
+
     ~Nym() final = default;
 
 private:
@@ -352,10 +355,5 @@ private:
     Nym(const api::Session& api,
         const proto::Nym& serialized,
         const UnallocatedCString& alias) noexcept(false);
-    Nym() = delete;
-    Nym(const Nym&) = delete;
-    Nym(Nym&&) = delete;
-    auto operator=(const Nym&) -> Nym& = delete;
-    auto operator=(Nym&&) -> Nym& = delete;
 };
 }  // namespace opentxs::identity::implementation

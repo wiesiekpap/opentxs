@@ -56,6 +56,11 @@ public:
         const zeromq::Context& context,
         const Direction direction,
         const zeromq::ListenCallback& callback) noexcept;
+    Dealer() = delete;
+    Dealer(const Dealer&) = delete;
+    Dealer(Dealer&&) = delete;
+    auto operator=(const Dealer&) -> Dealer& = delete;
+    auto operator=(Dealer&&) -> Dealer& = delete;
 
     ~Dealer() final;
 
@@ -66,11 +71,5 @@ private:
     auto have_callback() const noexcept -> bool final { return true; }
 
     void process_incoming(const Lock& lock, Message&& message) noexcept final;
-
-    Dealer() = delete;
-    Dealer(const Dealer&) = delete;
-    Dealer(Dealer&&) = delete;
-    auto operator=(const Dealer&) -> Dealer& = delete;
-    auto operator=(Dealer&&) -> Dealer& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

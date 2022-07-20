@@ -345,14 +345,14 @@ public:
     operator bool() const final { return false; }
 
     Symmetric() = default;
-    ~Symmetric() final = default;
-
-private:
-    auto clone() const -> Symmetric* final { return new Symmetric; }
-
     Symmetric(const Symmetric&) = delete;
     Symmetric(Symmetric&&) = delete;
     auto operator=(const Symmetric&) -> Symmetric& = delete;
     auto operator=(Symmetric&&) -> Symmetric& = delete;
+
+    ~Symmetric() final = default;
+
+private:
+    auto clone() const -> Symmetric* final { return new Symmetric; }
 };
 }  // namespace opentxs::crypto::key::blank

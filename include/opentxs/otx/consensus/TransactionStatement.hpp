@@ -17,28 +17,7 @@ namespace opentxs::otx::context
 {
 class TransactionStatement
 {
-private:
-    UnallocatedCString version_;
-    UnallocatedCString nym_id_;
-    UnallocatedCString notary_;
-    UnallocatedSet<TransactionNumber> available_;
-    UnallocatedSet<TransactionNumber> issued_;
-
-    TransactionStatement() = delete;
-    TransactionStatement(const TransactionStatement& rhs) = delete;
-    auto operator=(const TransactionStatement& rhs)
-        -> TransactionStatement& = delete;
-    auto operator=(TransactionStatement&& rhs)
-        -> TransactionStatement& = delete;
-
 public:
-    TransactionStatement(
-        const UnallocatedCString& notary,
-        const UnallocatedSet<TransactionNumber>& issued,
-        const UnallocatedSet<TransactionNumber>& available);
-    TransactionStatement(const String& serialized);
-    TransactionStatement(TransactionStatement&& rhs) = default;
-
     explicit operator OTString() const;
 
     auto Issued() const -> const UnallocatedSet<TransactionNumber>&;
@@ -46,6 +25,26 @@ public:
 
     void Remove(const TransactionNumber& number);
 
+    TransactionStatement(
+        const UnallocatedCString& notary,
+        const UnallocatedSet<TransactionNumber>& issued,
+        const UnallocatedSet<TransactionNumber>& available);
+    TransactionStatement(const String& serialized);
+    TransactionStatement(TransactionStatement&& rhs) = default;
+    TransactionStatement() = delete;
+    TransactionStatement(const TransactionStatement& rhs) = delete;
+    auto operator=(const TransactionStatement& rhs)
+        -> TransactionStatement& = delete;
+    auto operator=(TransactionStatement&& rhs)
+        -> TransactionStatement& = delete;
+
     ~TransactionStatement() = default;
+
+private:
+    UnallocatedCString version_;
+    UnallocatedCString nym_id_;
+    UnallocatedCString notary_;
+    UnallocatedSet<TransactionNumber> available_;
+    UnallocatedSet<TransactionNumber> issued_;
 };
 }  // namespace opentxs::otx::context

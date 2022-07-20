@@ -72,6 +72,10 @@ public:
         const bitcoin::RejectCode code,
         const UnallocatedCString& reason,
         const Data& extra) noexcept(false);
+    Reject(const Reject&) = delete;
+    Reject(Reject&&) = delete;
+    auto operator=(const Reject&) -> Reject& = delete;
+    auto operator=(Reject&&) -> Reject& = delete;
 
     ~Reject() final = default;
 
@@ -83,10 +87,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Reject(const Reject&) = delete;
-    Reject(Reject&&) = delete;
-    auto operator=(const Reject&) -> Reject& = delete;
-    auto operator=(Reject&&) -> Reject& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

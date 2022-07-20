@@ -117,6 +117,11 @@ public:
         const api::session::Client& api,
         const ui::Blockchains type,
         const SimpleCallback& cb) noexcept;
+    BlockchainSelection() = delete;
+    BlockchainSelection(const BlockchainSelection&) = delete;
+    BlockchainSelection(BlockchainSelection&&) = delete;
+    auto operator=(const BlockchainSelection&) -> BlockchainSelection& = delete;
+    auto operator=(BlockchainSelection&&) -> BlockchainSelection& = delete;
 
     ~BlockchainSelection() final;
 
@@ -174,11 +179,5 @@ private:
     auto enable(const Message& in) noexcept -> void;
     auto process_state(const Message& in) noexcept -> void;
     auto startup() noexcept -> void;
-
-    BlockchainSelection() = delete;
-    BlockchainSelection(const BlockchainSelection&) = delete;
-    BlockchainSelection(BlockchainSelection&&) = delete;
-    auto operator=(const BlockchainSelection&) -> BlockchainSelection& = delete;
-    auto operator=(BlockchainSelection&&) -> BlockchainSelection& = delete;
 };
 }  // namespace opentxs::ui::implementation

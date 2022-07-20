@@ -98,6 +98,11 @@ public:
         const proto::AsymmetricKey& serializedKey) noexcept(false);
     Ed25519(const Ed25519& rhs, const ReadView newPublic) noexcept;
     Ed25519(const Ed25519& rhs, OTSecret&& newSecretKey) noexcept;
+    Ed25519() = delete;
+    Ed25519(const Ed25519&) noexcept;
+    Ed25519(Ed25519&&) = delete;
+    auto operator=(const Ed25519&) -> Ed25519& = delete;
+    auto operator=(Ed25519&&) -> Ed25519& = delete;
 
     ~Ed25519() final = default;
 
@@ -121,11 +126,5 @@ private:
     {
         return std::make_unique<Ed25519>(*this, std::move(newSecretKey));
     }
-
-    Ed25519() = delete;
-    Ed25519(const Ed25519&) noexcept;
-    Ed25519(Ed25519&&) = delete;
-    auto operator=(const Ed25519&) -> Ed25519& = delete;
-    auto operator=(Ed25519&&) -> Ed25519& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

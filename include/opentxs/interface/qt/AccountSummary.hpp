@@ -52,6 +52,10 @@ public:
     };
 
     AccountSummaryQt(internal::AccountSummary& parent) noexcept;
+    AccountSummaryQt(const AccountSummaryQt&) = delete;
+    AccountSummaryQt(AccountSummaryQt&&) = delete;
+    auto operator=(const AccountSummaryQt&) -> AccountSummaryQt& = delete;
+    auto operator=(AccountSummaryQt&&) -> AccountSummaryQt& = delete;
 
     ~AccountSummaryQt() final;
 
@@ -59,9 +63,4 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    AccountSummaryQt(const AccountSummaryQt&) = delete;
-    AccountSummaryQt(AccountSummaryQt&&) = delete;
-    AccountSummaryQt& operator=(const AccountSummaryQt&) = delete;
-    AccountSummaryQt& operator=(AccountSummaryQt&&) = delete;
 };

@@ -49,15 +49,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Factory& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Factory() = default;
-
-protected:
-    Factory() noexcept = default;
-
-private:
     Factory(const Factory&) = delete;
     Factory(Factory&&) = delete;
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Factory() = default;
+
+protected:
+    Factory() noexcept = default;
 };
 }  // namespace opentxs::api

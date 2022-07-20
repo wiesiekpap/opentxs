@@ -96,6 +96,13 @@ public:
         const opentxs::Amount amount,
         const UnallocatedCString memo,
         const UnallocatedCString text) noexcept;
+    BlockchainBalanceItem() = delete;
+    BlockchainBalanceItem(const BlockchainBalanceItem&) = delete;
+    BlockchainBalanceItem(BlockchainBalanceItem&&) = delete;
+    auto operator=(const BlockchainBalanceItem&)
+        -> BlockchainBalanceItem& = delete;
+    auto operator=(BlockchainBalanceItem&&) -> BlockchainBalanceItem& = delete;
+
     ~BlockchainBalanceItem() final = default;
 
 private:
@@ -114,12 +121,5 @@ private:
     auto reindex(
         const implementation::AccountActivitySortKey& key,
         implementation::CustomData& custom) noexcept -> bool final;
-
-    BlockchainBalanceItem() = delete;
-    BlockchainBalanceItem(const BlockchainBalanceItem&) = delete;
-    BlockchainBalanceItem(BlockchainBalanceItem&&) = delete;
-    auto operator=(const BlockchainBalanceItem&)
-        -> BlockchainBalanceItem& = delete;
-    auto operator=(BlockchainBalanceItem&&) -> BlockchainBalanceItem& = delete;
 };
 }  // namespace opentxs::ui::implementation

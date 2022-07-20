@@ -214,6 +214,8 @@ public:
     }
     void InitItem();
 
+    Item() = delete;
+
     ~Item() override;
 
 protected:
@@ -279,7 +281,5 @@ private:  // Private prevents erroneous use by other classes.
         const OTTransaction& theOwner,
         itemType theType,
         const Identifier& pDestinationAcctID);
-
-    Item() = delete;
 };
 }  // namespace opentxs

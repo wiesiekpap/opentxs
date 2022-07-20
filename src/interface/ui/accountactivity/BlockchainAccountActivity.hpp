@@ -178,6 +178,13 @@ public:
         const identifier::Nym& nymID,
         const Identifier& accountID,
         const SimpleCallback& cb) noexcept;
+    BlockchainAccountActivity() = delete;
+    BlockchainAccountActivity(const BlockchainAccountActivity&) = delete;
+    BlockchainAccountActivity(BlockchainAccountActivity&&) = delete;
+    auto operator=(const BlockchainAccountActivity&)
+        -> BlockchainAccountActivity& = delete;
+    auto operator=(BlockchainAccountActivity&&)
+        -> BlockchainAccountActivity& = delete;
 
     ~BlockchainAccountActivity() final;
 
@@ -263,13 +270,5 @@ private:
         std::unique_ptr<const blockchain::bitcoin::block::Transaction>
             tx) noexcept -> std::optional<AccountActivityRowID>;
     auto startup() noexcept -> void final;
-
-    BlockchainAccountActivity() = delete;
-    BlockchainAccountActivity(const BlockchainAccountActivity&) = delete;
-    BlockchainAccountActivity(BlockchainAccountActivity&&) = delete;
-    auto operator=(const BlockchainAccountActivity&)
-        -> BlockchainAccountActivity& = delete;
-    auto operator=(BlockchainAccountActivity&&)
-        -> BlockchainAccountActivity& = delete;
 };
 }  // namespace opentxs::ui::implementation

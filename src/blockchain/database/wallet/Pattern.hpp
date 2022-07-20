@@ -58,16 +58,15 @@ struct Pattern {
 
     Pattern(const Bip32Index index, const ReadView data) noexcept;
     Pattern(const ReadView bytes) noexcept(false);
+    Pattern() = delete;
+    Pattern(const Pattern&) = delete;
     Pattern(Pattern&& rhs) noexcept;
+    auto operator=(const Pattern&) -> Pattern& = delete;
+    auto operator=(Pattern&&) -> Pattern& = delete;
 
     ~Pattern() = default;
 
 private:
     static constexpr auto fixed_ = sizeof(Bip32Index);
-
-    Pattern() = delete;
-    Pattern(const Pattern&) = delete;
-    auto operator=(const Pattern&) -> Pattern& = delete;
-    auto operator=(Pattern&&) -> Pattern& = delete;
 };
 }  // namespace opentxs::blockchain::database::wallet::db

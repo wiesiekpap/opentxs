@@ -61,14 +61,13 @@ public:
         -> Height;
     auto SetStalled() noexcept -> void;
 
-    Server() noexcept;
     Server(const std::string_view endpoint) noexcept;
-
-private:
-    Map<Chain, opentxs::blockchain::block::Position> chains_;
-
+    Server() noexcept;
     Server(const Server&) = delete;
     Server(Server&&) = delete;
     auto operator=(const Server&) -> Server& = delete;
     auto operator=(Server&&) -> Server& = delete;
+
+private:
+    Map<Chain, opentxs::blockchain::block::Position> chains_;
 };

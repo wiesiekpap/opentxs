@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"               // IWYU pragma: associated
 #include "otx/client/ServerAction.hpp"  // IWYU pragma: associated
 
+#include <utility>
+
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/client/Factory.hpp"
 #include "internal/otx/client/ServerAction.hpp"
@@ -23,10 +25,11 @@ namespace opentxs::factory
 {
 auto ServerAction(
     const api::session::Client& api,
-    const ContextLockCallback& lockCallback)
+    ContextLockCallback lockCallback)
     -> std::unique_ptr<otx::client::ServerAction>
 {
-    return std::make_unique<otx::client::imp::ServerAction>(api, lockCallback);
+    return std::make_unique<otx::client::imp::ServerAction>(
+        api, std::move(lockCallback));
 }
 }  // namespace opentxs::factory
 
@@ -34,9 +37,9 @@ namespace opentxs::otx::client::imp
 {
 ServerAction::ServerAction(
     const api::session::Client& api,
-    const ContextLockCallback& lockCallback)
+    ContextLockCallback lockCallback)
     : api_(api)
-    , lock_callback_(lockCallback)
+    , lock_callback_(std::move(lockCallback))
 {
     // WARNING: do not access api_.Wallet() during construction
 }

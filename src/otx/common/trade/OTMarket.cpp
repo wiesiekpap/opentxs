@@ -51,6 +51,7 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
 
+// NOLINTBEGIN(cert-err33-c)
 namespace opentxs
 {
 OTMarket::OTMarket(const api::Session& api, const char* szFilename)
@@ -2878,3 +2879,4 @@ void OTMarket::Release()
 
 OTMarket::~OTMarket() { Release_Market(); }
 }  // namespace opentxs
+// NOLINTEND(cert-err33-c)

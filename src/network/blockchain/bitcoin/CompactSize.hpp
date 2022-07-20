@@ -39,10 +39,8 @@ struct CompactSize::Imp {
         static_assert(sizeof(data_) >= sizeof(std::size_t));
     }
     Imp(const Imp&) = default;
-    auto operator=(const Imp& rhs) -> Imp& = default;
-
-private:
     Imp(Imp&&) = delete;
+    auto operator=(const Imp& rhs) -> Imp& = default;
     auto operator=(Imp&&) noexcept -> Imp& = delete;
 };
 }  // namespace opentxs::network::blockchain::bitcoin

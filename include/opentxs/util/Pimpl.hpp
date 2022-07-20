@@ -117,13 +117,11 @@ public:
 
 #if defined _WIN32
     Pimpl() = default;
+#else
+    Pimpl() = delete;
 #endif
 
 private:
     std::unique_ptr<C> pimpl_{nullptr};
-
-#if !defined _WIN32
-    Pimpl() = delete;
-#endif
 };  // class Pimpl
 }  // namespace opentxs

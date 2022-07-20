@@ -36,6 +36,11 @@ namespace opentxs::network::zeromq::socket
 class OPENTXS_EXPORT Reply : virtual public curve::Server
 {
 public:
+    Reply(const Reply&) = delete;
+    Reply(Reply&&) = delete;
+    auto operator=(const Reply&) -> Reply& = delete;
+    auto operator=(Reply&&) -> Reply& = delete;
+
     ~Reply() override = default;
 
 protected:
@@ -48,13 +53,5 @@ private:
 public:
 #endif
     virtual auto clone() const noexcept -> Reply* = 0;
-#ifdef _WIN32
-private:
-#endif
-
-    Reply(const Reply&) = delete;
-    Reply(Reply&&) = delete;
-    auto operator=(const Reply&) -> Reply& = delete;
-    auto operator=(Reply&&) -> Reply& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket

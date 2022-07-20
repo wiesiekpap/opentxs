@@ -122,6 +122,12 @@ public:
         const api::session::Client& api,
         const identifier::Nym& nymID,
         const SimpleCallback& cb) noexcept;
+    Profile() = delete;
+    Profile(const Profile&) = delete;
+    Profile(Profile&&) = delete;
+    auto operator=(const Profile&) -> Profile& = delete;
+    auto operator=(Profile&&) -> Profile& = delete;
+
     ~Profile() final;
 
 private:
@@ -161,11 +167,5 @@ private:
     auto process_nym(const identity::Nym& nym) noexcept -> void;
     auto process_nym(const Message& message) noexcept -> void;
     auto startup() noexcept -> void;
-
-    Profile() = delete;
-    Profile(const Profile&) = delete;
-    Profile(Profile&&) = delete;
-    auto operator=(const Profile&) -> Profile& = delete;
-    auto operator=(Profile&&) -> Profile& = delete;
 };
 }  // namespace opentxs::ui::implementation

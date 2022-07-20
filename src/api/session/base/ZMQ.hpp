@@ -41,6 +41,12 @@ namespace opentxs::api::session
 class ZMQ
 {
 public:
+    ZMQ() = delete;
+    ZMQ(const ZMQ&) = delete;
+    ZMQ(ZMQ&&) = delete;
+    auto operator=(const ZMQ&) -> ZMQ& = delete;
+    auto operator=(ZMQ&&) -> ZMQ& = delete;
+
     virtual ~ZMQ() = default;
 
 protected:
@@ -56,12 +62,5 @@ protected:
 
     ZMQ(const opentxs::network::zeromq::Context& zmq, const int instance)
     noexcept;
-
-private:
-    ZMQ() = delete;
-    ZMQ(const ZMQ&) = delete;
-    ZMQ(ZMQ&&) = delete;
-    auto operator=(const ZMQ&) -> ZMQ& = delete;
-    auto operator=(ZMQ&&) -> ZMQ& = delete;
 };
 }  // namespace opentxs::api::session

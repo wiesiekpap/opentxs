@@ -88,6 +88,10 @@ public:
     auto shutdown() noexcept -> void;
 
     RPCPushCounter(const ot::api::Context& ot) noexcept;
+    RPCPushCounter(const RPCPushCounter&) = delete;
+    RPCPushCounter(RPCPushCounter&&) = delete;
+    auto operator=(const RPCPushCounter&) -> RPCPushCounter& = delete;
+    auto operator=(RPCPushCounter&&) -> RPCPushCounter& = delete;
 
     ~RPCPushCounter();
 
@@ -95,11 +99,6 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    RPCPushCounter(const RPCPushCounter&) = delete;
-    RPCPushCounter(RPCPushCounter&&) = delete;
-    auto operator=(const RPCPushCounter&) -> RPCPushCounter& = delete;
-    auto operator=(RPCPushCounter&&) -> RPCPushCounter& = delete;
 };
 
 class RPC_fixture : virtual public ::testing::Test

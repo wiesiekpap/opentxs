@@ -36,6 +36,10 @@ public:
     auto Payload() const noexcept -> ReadView;
 
     OPENTXS_NO_EXPORT PushTransaction(Imp* imp) noexcept;
+    PushTransaction(const PushTransaction&) = delete;
+    PushTransaction(PushTransaction&&) = delete;
+    auto operator=(const PushTransaction&) -> PushTransaction& = delete;
+    auto operator=(PushTransaction&&) -> PushTransaction& = delete;
 
     ~PushTransaction() final;
 
@@ -44,10 +48,5 @@ private:
 #pragma GCC diagnostic ignored "-Wshadow-field"
     Imp* imp_;
 #pragma GCC diagnostic pop
-
-    PushTransaction(const PushTransaction&) = delete;
-    PushTransaction(PushTransaction&&) = delete;
-    auto operator=(const PushTransaction&) -> PushTransaction& = delete;
-    auto operator=(PushTransaction&&) -> PushTransaction& = delete;
 };
 }  // namespace opentxs::network::p2p

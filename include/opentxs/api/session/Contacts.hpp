@@ -90,15 +90,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Contacts& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Contacts() = default;
-
-protected:
-    Contacts() = default;
-
-private:
     Contacts(const Contacts&) = delete;
     Contacts(Contacts&&) = delete;
     auto operator=(const Contacts&) -> Contacts& = delete;
     auto operator=(Contacts&&) -> Contacts& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Contacts() = default;
+
+protected:
+    Contacts() = default;
 };
 }  // namespace opentxs::api::session

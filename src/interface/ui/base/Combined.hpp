@@ -35,6 +35,14 @@ public:
         ListTemplate::AddChildrenToList(std::move(data));
     }
 
+    Combined() = delete;
+    Combined(const Combined&) = delete;
+    Combined(Combined&&) = delete;
+    auto operator=(const Combined&) -> Combined& = delete;
+    auto operator=(Combined&&) -> Combined& = delete;
+
+    ~Combined() override = default;
+
 protected:
     SortKey key_;
 
@@ -59,15 +67,7 @@ protected:
     {
     }
 
-    ~Combined() override = default;
-
 private:
     auto qt_parent() noexcept -> internal::Row* final { return this; }
-
-    Combined() = delete;
-    Combined(const Combined&) = delete;
-    Combined(Combined&&) = delete;
-    auto operator=(const Combined&) -> Combined& = delete;
-    auto operator=(Combined&&) -> Combined& = delete;
 };
 }  // namespace opentxs::ui::implementation

@@ -95,6 +95,10 @@ public:
     }
     auto SetAlias(const UnallocatedCString& alias) noexcept -> bool override;
 
+    Unit(Unit&&) = delete;
+    auto operator=(const Unit&) -> Unit& = delete;
+    auto operator=(Unit&&) -> Unit& = delete;
+
     ~Unit() override = default;
 
 protected:
@@ -141,9 +145,5 @@ private:
     auto get_unitofaccount(const SerializedType&) const -> opentxs::UnitType;
     auto verify_signature(const Lock& lock, const proto::Signature& signature)
         const -> bool override;
-
-    Unit(Unit&&) = delete;
-    auto operator=(const Unit&) -> Unit& = delete;
-    auto operator=(Unit&&) -> Unit& = delete;
 };
 }  // namespace opentxs::contract::implementation

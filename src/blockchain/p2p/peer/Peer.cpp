@@ -757,6 +757,7 @@ auto Peer::transmit(zmq::Message&& message) noexcept -> void
 
     OT_ASSERT(promise);
 
+    const auto payloadBytes = payload.size();
     auto future = promise->get_future();
     connection_->transmit(
         std::move(header), std::move(payload), std::move(promise));
@@ -791,7 +792,7 @@ auto Peer::transmit(zmq::Message&& message) noexcept -> void
     }
 
     if (result) {
-        log_(OT_PRETTY_CLASS())("Sent ")(payload.size())(" bytes").Flush();
+        log_(OT_PRETTY_CLASS())("Sent ")(payloadBytes)(" bytes").Flush();
         success = true;
     } else {
         log_("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(

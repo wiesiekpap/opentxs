@@ -50,10 +50,6 @@ class OTBylaw
 
     OTScriptable* m_pOwnerAgreement;  // This Bylaw is owned by an agreement
                                       // (OTScriptable-derived.)
-    OTBylaw(const OTBylaw&) = delete;
-    OTBylaw(OTBylaw&&) = delete;
-    auto operator=(const OTBylaw&) -> OTBylaw& = delete;
-    auto operator=(OTBylaw&&) -> OTBylaw& = delete;
 
 public:
     auto GetName() const -> const String& { return m_strName; }
@@ -167,13 +163,18 @@ public:
     {
         m_pOwnerAgreement = &theOwner;
     }
-    OTBylaw();
-    OTBylaw(const char* szName, const char* szLanguage);
-    virtual ~OTBylaw();
 
     auto Compare(OTBylaw& rhs) -> bool;
 
     void Serialize(Tag& parent, bool bCalculatingID = false) const;
-};
 
+    OTBylaw();
+    OTBylaw(const char* szName, const char* szLanguage);
+    OTBylaw(const OTBylaw&) = delete;
+    OTBylaw(OTBylaw&&) = delete;
+    auto operator=(const OTBylaw&) -> OTBylaw& = delete;
+    auto operator=(OTBylaw&&) -> OTBylaw& = delete;
+
+    virtual ~OTBylaw();
+};
 }  // namespace opentxs

@@ -40,6 +40,13 @@ class Bidirectional
     : virtual public Receiver<InterfaceType, MessageType>,
       virtual public Sender<InterfaceType, Receiver<InterfaceType, MessageType>>
 {
+public:
+    Bidirectional() = delete;
+    Bidirectional(const Bidirectional&) = delete;
+    Bidirectional(Bidirectional&&) = delete;
+    auto operator=(const Bidirectional&) -> Bidirectional& = delete;
+    auto operator=(Bidirectional&&) -> Bidirectional& = delete;
+
 protected:
     Bidirectional(
         const zeromq::Context& context,
@@ -81,11 +88,5 @@ private:
     auto Send(zeromq::Message&& message) const noexcept -> bool final;
     auto send(const Lock& lock, zeromq::Message&& message) noexcept -> bool;
     auto thread() noexcept -> void final;
-
-    Bidirectional() = delete;
-    Bidirectional(const Bidirectional&) = delete;
-    Bidirectional(Bidirectional&&) = delete;
-    auto operator=(const Bidirectional&) -> Bidirectional& = delete;
-    auto operator=(Bidirectional&&) -> Bidirectional& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

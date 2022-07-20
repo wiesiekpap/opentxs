@@ -216,7 +216,7 @@ public:
         WithdrawCashTask withdraw_cash_;
 
         Params() { memset(static_cast<void*>(this), 0, sizeof(Params)); }
-        ~Params() {}
+        ~Params();
     };
 
     otx::client::implementation::PaymentTasks payment_tasks_;
@@ -258,6 +258,8 @@ public:
         const UniqueQueue<OTNotaryID>& missingServers,
         const UniqueQueue<OTUnitID>& missingUnitDefinitions,
         const PasswordPrompt& reason);
+    StateMachine() = delete;
+
     ~StateMachine() override = default;
 
 private:
@@ -443,7 +445,5 @@ private:
     template <typename T>
     auto run_task(std::function<bool(const TaskID, const T&)> func) -> bool;
     auto state_machine() noexcept -> bool;
-
-    StateMachine() = delete;
 };
 }  // namespace opentxs::otx::client::implementation

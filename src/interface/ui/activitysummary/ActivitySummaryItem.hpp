@@ -98,6 +98,10 @@ public:
         CustomData& custom,
         const Flag& running,
         UnallocatedCString text) noexcept;
+    ActivitySummaryItem(const ActivitySummaryItem&) = delete;
+    ActivitySummaryItem(ActivitySummaryItem&&) = delete;
+    auto operator=(const ActivitySummaryItem&) -> ActivitySummaryItem& = delete;
+    auto operator=(ActivitySummaryItem&&) -> ActivitySummaryItem& = delete;
 
     ~ActivitySummaryItem() final;
 
@@ -130,11 +134,6 @@ private:
     auto reindex(const ActivitySummarySortKey& key, CustomData& custom) noexcept
         -> bool final;
     auto startup(CustomData& custom) noexcept -> void;
-
-    ActivitySummaryItem(const ActivitySummaryItem&) = delete;
-    ActivitySummaryItem(ActivitySummaryItem&&) = delete;
-    auto operator=(const ActivitySummaryItem&) -> ActivitySummaryItem& = delete;
-    auto operator=(ActivitySummaryItem&&) -> ActivitySummaryItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

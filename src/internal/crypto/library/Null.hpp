@@ -97,14 +97,12 @@ public:
     }
 
     AsymmetricProvider() = default;
-
-    ~AsymmetricProvider() override = default;
-
-private:
     AsymmetricProvider(const AsymmetricProvider&) = delete;
     AsymmetricProvider(AsymmetricProvider&&) = delete;
     auto operator=(const AsymmetricProvider&) -> AsymmetricProvider& = delete;
     auto operator=(AsymmetricProvider&&) -> AsymmetricProvider& = delete;
+
+    ~AsymmetricProvider() override = default;
 };
 
 class EcdsaProvider final : public crypto::EcdsaProvider,
@@ -133,14 +131,12 @@ public:
     }
 
     EcdsaProvider() = default;
-
-    ~EcdsaProvider() final = default;
-
-private:
     EcdsaProvider(const EcdsaProvider&) = delete;
     EcdsaProvider(EcdsaProvider&&) = delete;
     auto operator=(const EcdsaProvider&) -> EcdsaProvider& = delete;
     auto operator=(EcdsaProvider&&) -> EcdsaProvider& = delete;
+
+    ~EcdsaProvider() final = default;
 };
 
 class SymmetricProvider final : public crypto::SymmetricProvider
@@ -203,13 +199,11 @@ public:
     }
 
     SymmetricProvider() = default;
-
-    ~SymmetricProvider() final = default;
-
-private:
     SymmetricProvider(const SymmetricProvider&) = delete;
     SymmetricProvider(SymmetricProvider&&) = delete;
     auto operator=(const SymmetricProvider&) -> SymmetricProvider& = delete;
     auto operator=(SymmetricProvider&&) -> SymmetricProvider& = delete;
+
+    ~SymmetricProvider() final = default;
 };
 }  // namespace opentxs::crypto::blank

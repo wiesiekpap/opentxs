@@ -54,6 +54,10 @@ public:
     OPENTXS_NO_EXPORT auto Add(ReadView data) noexcept -> bool;
 
     OPENTXS_NO_EXPORT Data(Imp* imp) noexcept;
+    Data(const Data&) = delete;
+    Data(Data&&) = delete;
+    auto operator=(const Data&) -> Data& = delete;
+    auto operator=(Data&&) -> Data& = delete;
 
     ~Data() final;
 
@@ -62,10 +66,5 @@ private:
 #pragma GCC diagnostic ignored "-Wshadow-field"
     Imp* imp_;
 #pragma GCC diagnostic pop
-
-    Data(const Data&) = delete;
-    Data(Data&&) = delete;
-    auto operator=(const Data&) -> Data& = delete;
-    auto operator=(Data&&) -> Data& = delete;
 };
 }  // namespace opentxs::network::p2p

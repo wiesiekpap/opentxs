@@ -76,6 +76,11 @@ public:
         const api::session::Client& api,
         const identifier::Nym& nymID,
         const SimpleCallback& cb) noexcept;
+    UnitList() = delete;
+    UnitList(const UnitList&) = delete;
+    UnitList(UnitList&&) = delete;
+    auto operator=(const UnitList&) -> UnitList& = delete;
+    auto operator=(UnitList&&) -> UnitList& = delete;
 
     ~UnitList() final;
 
@@ -96,11 +101,5 @@ private:
     auto setup_listeners(const ListenerDefinitions& definitions) noexcept
         -> void final;
     auto startup() noexcept -> void;
-
-    UnitList() = delete;
-    UnitList(const UnitList&) = delete;
-    UnitList(UnitList&&) = delete;
-    auto operator=(const UnitList&) -> UnitList& = delete;
-    auto operator=(UnitList&&) -> UnitList& = delete;
 };
 }  // namespace opentxs::ui::implementation

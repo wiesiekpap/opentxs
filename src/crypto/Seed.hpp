@@ -116,6 +116,9 @@ public:
         const proto::Seed& proto,
         const PasswordPrompt& reason) noexcept(false);
     Imp(const Imp& rhs) noexcept;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() final = default;
 
@@ -160,8 +163,4 @@ private:
 
     auto save() const noexcept -> bool;
     auto save(const MutableData& data) const noexcept -> bool;
-
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };

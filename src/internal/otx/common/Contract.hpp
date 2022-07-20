@@ -94,6 +94,8 @@ public:
         const crypto::key::Asymmetric& theKey,
         const PasswordPrompt& reason) -> bool;
 
+    Contract() = delete;
+
     virtual ~Contract();
 
 protected:
@@ -296,8 +298,6 @@ protected:
     explicit Contract(const api::Session& api, const String& strID);
 
 private:
-    Contract() = delete;
-
     auto SetIdentifier(const Identifier& theID) -> void;
 };
 }  // namespace opentxs

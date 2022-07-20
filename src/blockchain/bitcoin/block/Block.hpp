@@ -102,13 +102,10 @@ public:
     {
         return get_or_calculate_size().first;
     }
-    auto cbegin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto cbegin() const noexcept -> const_iterator final { return {this, 0}; }
     auto cend() const noexcept -> const_iterator final
     {
-        return const_iterator(this, index_.size());
+        return {this, index_.size()};
     }
     auto end() const noexcept -> const_iterator final { return cend(); }
     auto ExtractElements(const cfilter::Type style) const noexcept
@@ -129,6 +126,12 @@ public:
         TxidIndex&& index,
         TransactionMap&& transactions,
         std::optional<CalculatedSize>&& size = {}) noexcept(false);
+    Block() = delete;
+    Block(const Block&) = delete;
+    Block(Block&&) = delete;
+    auto operator=(const Block&) -> Block& = delete;
+    auto operator=(Block&&) -> Block& = delete;
+
     ~Block() override;
 
 protected:
@@ -148,11 +151,5 @@ private:
     auto get_or_calculate_size() const noexcept -> CalculatedSize;
     virtual auto serialize_post_header(ByteIterator& it, std::size_t& remaining)
         const noexcept -> bool;
-
-    Block() = delete;
-    Block(const Block&) = delete;
-    Block(Block&&) = delete;
-    auto operator=(const Block&) -> Block& = delete;
-    auto operator=(Block&&) -> Block& = delete;
 };
 }  // namespace opentxs::blockchain::bitcoin::block::implementation

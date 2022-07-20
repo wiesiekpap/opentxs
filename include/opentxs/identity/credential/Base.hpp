@@ -63,15 +63,14 @@ public:
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Base& = 0;
 
-    ~Base() override = default;
-
-protected:
-    Base() noexcept {}  // TODO Signable
-
-private:
     Base(const Base&) = delete;
     Base(Base&&) = delete;
     auto operator=(const Base&) -> Base& = delete;
     auto operator=(Base&&) -> Base& = delete;
+
+    ~Base() override = default;
+
+protected:
+    Base() noexcept = default;  // TODO Signable
 };
 }  // namespace opentxs::identity::credential

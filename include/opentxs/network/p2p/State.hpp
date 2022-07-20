@@ -48,7 +48,11 @@ public:
     State(
         opentxs::blockchain::Type chain,
         opentxs::blockchain::block::Position position) noexcept(false);
+    State() = delete;
+    State(const State&) = delete;
     State(State&&) noexcept;
+    auto operator=(const State&) -> State& = delete;
+    auto operator=(State&&) -> State& = delete;
 
     ~State();
 
@@ -56,10 +60,5 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    State() = delete;
-    State(const State&) = delete;
-    auto operator=(const State&) -> State& = delete;
-    auto operator=(State&&) -> State& = delete;
 };
 }  // namespace opentxs::network::p2p

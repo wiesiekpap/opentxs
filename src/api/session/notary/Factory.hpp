@@ -36,16 +36,15 @@ public:
     auto Cron() const -> std::unique_ptr<OTCron> final;
 
     Factory(const api::session::Notary& parent);
-
-    ~Factory() final = default;
-
-private:
-    const api::session::Notary& server_;
-
     Factory() = delete;
     Factory(const Factory&) = delete;
     Factory(Factory&&) = delete;
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
+
+    ~Factory() final = default;
+
+private:
+    const api::session::Notary& server_;
 };
 }  // namespace opentxs::api::session::server

@@ -57,15 +57,14 @@ public:
         proto::Signature& sig,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
 
+    Source(const Source&) = delete;
+    Source(Source&&) = delete;
+    auto operator=(const Source&) -> Source& = delete;
+    auto operator=(Source&&) -> Source& = delete;
+
     virtual ~Source() = default;
 
 protected:
     Source() = default;
-
-private:
-    Source(const Source&) = delete;
-    Source(Source&&) = delete;
-    auto operator=(const Source&) -> Source&;
-    auto operator=(Source&&) -> Source&;
 };
 }  // namespace opentxs::identity

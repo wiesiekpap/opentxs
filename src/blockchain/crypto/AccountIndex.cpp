@@ -85,6 +85,11 @@ struct AccountIndex::Imp {
         , all_()
     {
     }
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
 private:
     using Map = UnallocatedMap<OTIdentifier, Data>;
@@ -97,12 +102,6 @@ private:
     mutable ChainIndex chain_index_;
     mutable NymIndex nym_index_;
     mutable Accounts all_;
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 
 AccountIndex::AccountIndex(const api::Session& api) noexcept

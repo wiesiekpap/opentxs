@@ -89,6 +89,11 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const proto::ServerContract& serialized);
+    Server() = delete;
+    Server(const Server&);
+    Server(Server&&) = delete;
+    auto operator=(const Server&) -> Server& = delete;
+    auto operator=(Server&&) -> Server& = delete;
 
     ~Server() final = default;
 
@@ -114,11 +119,5 @@ private:
 
     auto update_signature(const Lock& lock, const PasswordPrompt& reason)
         -> bool final;
-
-    Server() = delete;
-    Server(const Server&);
-    Server(Server&&) = delete;
-    auto operator=(const Server&) -> Server& = delete;
-    auto operator=(Server&&) -> Server& = delete;
 };
 }  // namespace opentxs::contract::implementation

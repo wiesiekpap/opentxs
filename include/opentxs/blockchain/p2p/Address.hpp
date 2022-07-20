@@ -64,6 +64,11 @@ public:
     virtual void SetServices(
         const UnallocatedSet<Service>& services) noexcept = 0;
 
+    Address(const Address&) = delete;
+    Address(Address&&) = delete;
+    auto operator=(const Address&) -> Address& = delete;
+    auto operator=(Address&&) -> Address& = delete;
+
     virtual ~Address() = default;
 
 protected:
@@ -73,10 +78,5 @@ private:
     friend OTBlockchainAddress;
 
     virtual auto clone() const noexcept -> Address* = 0;
-
-    Address(const Address&) = delete;
-    Address(Address&&) = delete;
-    auto operator=(const Address&) -> Address& = delete;
-    auto operator=(Address&&) -> Address& = delete;
 };
 }  // namespace opentxs::blockchain::p2p

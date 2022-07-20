@@ -72,6 +72,11 @@ public:
     auto Shutdown() noexcept -> void final;
 
     Thread(zeromq::internal::Pool& parent) noexcept;
+    Thread() = delete;
+    Thread(const Thread&) = delete;
+    Thread(Thread&&) = delete;
+    auto operator=(const Thread&) -> Thread& = delete;
+    auto operator=(Thread&&) -> Thread& = delete;
 
     ~Thread() final;
 
@@ -113,11 +118,5 @@ private:
     auto run() noexcept -> void;
     auto start() noexcept -> void;
     auto wait() noexcept -> void;
-
-    Thread() = delete;
-    Thread(const Thread&) = delete;
-    Thread(Thread&&) = delete;
-    auto operator=(const Thread&) -> Thread& = delete;
-    auto operator=(Thread&&) -> Thread& = delete;
 };
 }  // namespace opentxs::network::zeromq::context

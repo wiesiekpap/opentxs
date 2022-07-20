@@ -17,15 +17,14 @@ namespace opentxs::ui
 class OPENTXS_EXPORT List : virtual public Widget
 {
 public:
-    ~List() override = default;
-
-protected:
-    List() noexcept = default;
-
-private:
     List(const List&) = delete;
     List(List&&) = delete;
     auto operator=(const List&) -> List& = delete;
     auto operator=(List&&) -> List& = delete;
+
+    ~List() override = default;
+
+protected:
+    List() noexcept = default;
 };
 }  // namespace opentxs::ui

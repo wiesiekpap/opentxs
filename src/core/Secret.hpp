@@ -97,6 +97,11 @@ public:
 
     Secret(const std::size_t bytes) noexcept;
     Secret(const ReadView bytes, const Mode mode) noexcept;
+    Secret() = delete;
+    Secret(Secret&& rhs) = delete;
+    auto operator=(const Secret& rhs) -> Secret& = delete;
+    auto operator=(Secret&& rhs) -> Secret& = delete;
+
     ~Secret() final = default;
 
 private:
@@ -113,10 +118,6 @@ private:
     auto mem() const noexcept -> bool { return Mode::Mem == mode_; }
     auto spaceship(const ReadView rhs) const noexcept -> int;
 
-    Secret() = delete;
     Secret(const Secret& rhs) noexcept;
-    Secret(Secret&& rhs) = delete;
-    auto operator=(const Secret& rhs) -> Secret& = delete;
-    auto operator=(Secret&& rhs) -> Secret& = delete;
 };
 }  // namespace opentxs::implementation

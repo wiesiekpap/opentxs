@@ -14,15 +14,14 @@ namespace opentxs::crypto::key
 class OPENTXS_EXPORT RSA : virtual public Asymmetric
 {
 public:
-    ~RSA() override = default;
-
-protected:
-    RSA() = default;
-
-private:
     RSA(const RSA&) = delete;
     RSA(RSA&&) = delete;
     auto operator=(const RSA&) -> RSA& = delete;
     auto operator=(RSA&&) -> RSA& = delete;
+
+    ~RSA() override = default;
+
+protected:
+    RSA() = default;
 };
 }  // namespace opentxs::crypto::key

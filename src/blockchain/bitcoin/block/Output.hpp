@@ -196,7 +196,11 @@ public:
         blockchain::block::Position minedPosition,
         node::TxoState state,
         UnallocatedSet<node::TxoTag> tags) noexcept(false);
+    Output() = delete;
     Output(const Output&) noexcept;
+    Output(Output&&) = delete;
+    auto operator=(const Output&) -> Output& = delete;
+    auto operator=(Output&&) -> Output& = delete;
 
     ~Output() final = default;
 
@@ -247,6 +251,7 @@ private:
             blockchain::block::Position&& minedPosition,
             node::TxoState state,
             UnallocatedSet<node::TxoTag>&& tags) noexcept;
+        Cache() noexcept = delete;
         Cache(const Cache& rhs) noexcept;
 
     private:
@@ -261,8 +266,6 @@ private:
 
         auto set_payee(OTIdentifier&& contact) noexcept -> void;
         auto set_payer(OTIdentifier&& contact) noexcept -> void;
-
-        Cache() noexcept = delete;
     };
 
     static const VersionNumber default_version_;
@@ -279,10 +282,5 @@ private:
     mutable Cache cache_;
 
     auto index_elements() noexcept -> void;
-
-    Output() = delete;
-    Output(Output&&) = delete;
-    auto operator=(const Output&) -> Output& = delete;
-    auto operator=(Output&&) -> Output& = delete;
 };
 }  // namespace opentxs::blockchain::bitcoin::block::implementation

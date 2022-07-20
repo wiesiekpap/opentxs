@@ -43,6 +43,11 @@ public:
 
     virtual auto SetAlias(const UnallocatedCString& alias) noexcept -> bool = 0;
 
+    Signable(const Signable&) = delete;
+    Signable(Signable&&) = delete;
+    auto operator=(const Signable&) -> Signable& = delete;
+    auto operator=(Signable&&) -> Signable& = delete;
+
     virtual ~Signable() = default;
 
 protected:
@@ -55,13 +60,5 @@ public:
     // tmp solution this function is toremove once all classes which inherites
     // by it will be rewritten
     virtual auto clone() const noexcept -> Signable* { return nullptr; }
-#ifdef _WIN32
-private:
-#endif
-
-    Signable(const Signable&) = delete;
-    Signable(Signable&&) = delete;
-    auto operator=(const Signable&) -> Signable& = delete;
-    auto operator=(Signable&&) -> Signable& = delete;
 };
 }  // namespace opentxs::contract

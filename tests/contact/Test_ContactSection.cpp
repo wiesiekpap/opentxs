@@ -55,19 +55,18 @@ public:
 
 TEST_F(Test_ContactSection, first_constructor)
 {
-    const auto& group1 = std::shared_ptr<ot::identity::wot::claim::Group>(
-        new ot::identity::wot::claim::Group(
-            contactGroup_->AddItem(activeContactItem_)));
-    ot::identity::wot::claim::Section::GroupMap groupMap{
+    const auto& group1 = std::make_shared<ot::identity::wot::claim::Group>(
+        contactGroup_->AddItem(activeContactItem_));
+    auto groupMap = ot::identity::wot::claim::Section::GroupMap{
         {ot::identity::wot::claim::ClaimType::Employee, group1}};
-
-    const ot::identity::wot::claim::Section section1(
+    const auto section1 = ot::identity::wot::claim::Section{
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testContactSectionNym1",
         opentxs::CONTACT_CONTACT_DATA_VERSION,
         opentxs::CONTACT_CONTACT_DATA_VERSION,
         ot::identity::wot::claim::SectionType::Identifier,
-        groupMap);
+        groupMap};
+
     ASSERT_EQ(
         ot::identity::wot::claim::SectionType::Identifier, section1.Type());
     ASSERT_EQ(opentxs::CONTACT_CONTACT_DATA_VERSION, section1.Version());

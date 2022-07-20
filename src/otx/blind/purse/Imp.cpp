@@ -427,14 +427,14 @@ auto Purse::begin() noexcept -> iterator
 {
     OT_ASSERT(nullptr != parent_);
 
-    return iterator(parent_, 0);
+    return {parent_, 0};
 }
 
 auto Purse::cbegin() const noexcept -> const_iterator
 {
     OT_ASSERT(nullptr != parent_);
 
-    return const_iterator(parent_, 0);
+    return {parent_, 0};
 }
 
 auto Purse::DeserializeTokens(const proto::Purse& in) noexcept -> void
@@ -448,7 +448,7 @@ auto Purse::cend() const noexcept -> const_iterator
 {
     OT_ASSERT(nullptr != parent_);
 
-    return const_iterator(parent_, tokens_.size());
+    return {parent_, tokens_.size()};
 }
 
 auto Purse::deserialize_secondary_key(
@@ -524,7 +524,7 @@ auto Purse::end() noexcept -> iterator
 {
     OT_ASSERT(nullptr != parent_);
 
-    return iterator(parent_, tokens_.size());
+    return {parent_, tokens_.size()};
 }
 
 auto Purse::generate_key(Secret& password) const -> OTSymmetricKey

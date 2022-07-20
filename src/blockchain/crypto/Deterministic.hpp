@@ -111,6 +111,12 @@ public:
         const block::Position& progress,
         Subchain type) noexcept -> void final;
 
+    Deterministic() = delete;
+    Deterministic(const Deterministic&) = delete;
+    Deterministic(Deterministic&&) = delete;
+    auto operator=(const Deterministic&) -> Deterministic& = delete;
+    auto operator=(Deterministic&&) -> Deterministic& = delete;
+
     ~Deterministic() override = default;
 
 protected:
@@ -286,11 +292,5 @@ private:
         const rLock& lock,
         const Subchain type,
         const Bip32Index index) noexcept -> void final;
-
-    Deterministic() = delete;
-    Deterministic(const Deterministic&) = delete;
-    Deterministic(Deterministic&&) = delete;
-    auto operator=(const Deterministic&) -> Deterministic& = delete;
-    auto operator=(Deterministic&&) -> Deterministic& = delete;
 };
 }  // namespace opentxs::blockchain::crypto::implementation

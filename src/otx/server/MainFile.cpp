@@ -199,7 +199,7 @@ auto MainFile::CreateMainFile(
             nym_id.c_str(),
             _trans_num);
 
-        return UnallocatedCString(tmp.begin(), tmp.begin() + size);
+        return {tmp.begin(), tmp.begin() + size};
     };
 
     auto notary{concatenation_lambda(fmt, strNotaryID, strNymID, lTransNum)};

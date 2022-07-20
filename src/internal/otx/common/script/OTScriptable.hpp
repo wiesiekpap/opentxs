@@ -295,6 +295,8 @@ public:
     void Release_Scriptable();
     void UpdateContents(const PasswordPrompt& reason) override;
 
+    OTScriptable() = delete;
+
     ~OTScriptable() override;
 
 protected:
@@ -404,7 +406,5 @@ private:
     using ot_super = Contract;
 
     static auto is_ot_namechar_invalid(char c) -> bool;
-
-    OTScriptable() = delete;
 };
 }  // namespace opentxs

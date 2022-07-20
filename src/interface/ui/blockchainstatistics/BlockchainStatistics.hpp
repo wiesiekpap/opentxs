@@ -94,6 +94,12 @@ public:
     BlockchainStatistics(
         const api::session::Client& api,
         const SimpleCallback& cb) noexcept;
+    BlockchainStatistics() = delete;
+    BlockchainStatistics(const BlockchainStatistics&) = delete;
+    BlockchainStatistics(BlockchainStatistics&&) = delete;
+    auto operator=(const BlockchainStatistics&)
+        -> BlockchainStatistics& = delete;
+    auto operator=(BlockchainStatistics&&) -> BlockchainStatistics& = delete;
 
     ~BlockchainStatistics() final;
 
@@ -150,12 +156,5 @@ private:
     auto process_work(const Message& in) noexcept -> void;
     auto reset_timer() noexcept -> void;
     auto startup() noexcept -> void;
-
-    BlockchainStatistics() = delete;
-    BlockchainStatistics(const BlockchainStatistics&) = delete;
-    BlockchainStatistics(BlockchainStatistics&&) = delete;
-    auto operator=(const BlockchainStatistics&)
-        -> BlockchainStatistics& = delete;
-    auto operator=(BlockchainStatistics&&) -> BlockchainStatistics& = delete;
 };
 }  // namespace opentxs::ui::implementation

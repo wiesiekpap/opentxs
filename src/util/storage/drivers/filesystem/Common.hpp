@@ -72,6 +72,12 @@ public:
 
     void Cleanup() override;
 
+    Common() = delete;
+    Common(const Common&) = delete;
+    Common(Common&&) = delete;
+    auto operator=(const Common&) -> Common& = delete;
+    auto operator=(Common&&) -> Common& = delete;
+
     ~Common() override;
 
 protected:
@@ -119,11 +125,5 @@ private:
 
     void Cleanup_Common();
     void Init_Common();
-
-    Common() = delete;
-    Common(const Common&) = delete;
-    Common(Common&&) = delete;
-    auto operator=(const Common&) -> Common& = delete;
-    auto operator=(Common&&) -> Common& = delete;
 };
 }  // namespace opentxs::storage::driver::filesystem

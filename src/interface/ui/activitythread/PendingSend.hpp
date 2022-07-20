@@ -68,6 +68,12 @@ public:
         opentxs::Amount amount,
         UnallocatedCString&& display,
         UnallocatedCString&& memo) noexcept;
+    PendingSend() = delete;
+    PendingSend(const PendingSend&) = delete;
+    PendingSend(PendingSend&&) = delete;
+    auto operator=(const PendingSend&) -> PendingSend& = delete;
+    auto operator=(PendingSend&&) -> PendingSend& = delete;
+
     ~PendingSend() final = default;
 
 private:
@@ -77,11 +83,5 @@ private:
 
     auto reindex(const ActivityThreadSortKey& key, CustomData& custom) noexcept
         -> bool final;
-
-    PendingSend() = delete;
-    PendingSend(const PendingSend&) = delete;
-    PendingSend(PendingSend&&) = delete;
-    auto operator=(const PendingSend&) -> PendingSend& = delete;
-    auto operator=(PendingSend&&) -> PendingSend& = delete;
 };
 }  // namespace opentxs::ui::implementation

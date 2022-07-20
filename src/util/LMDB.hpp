@@ -56,17 +56,16 @@ public:
             const bool rw,
             std::unique_ptr<Lock> lock,
             MDB_txn* parent = nullptr) noexcept(false);
+        Transaction(const Transaction&) = delete;
         Transaction(Transaction&&) noexcept;
+        auto operator=(const Transaction&) -> Transaction& = delete;
+        auto operator=(Transaction&&) -> Transaction& = delete;
 
         ~Transaction();
 
     private:
         std::unique_ptr<Lock> lock_;
         MDB_txn* ptr_;
-
-        Transaction(const Transaction&) = delete;
-        auto operator=(const Transaction&) -> Transaction& = delete;
-        auto operator=(Transaction&&) -> Transaction& = delete;
     };
 
     auto Commit() const noexcept -> bool;
@@ -172,9 +171,14 @@ public:
         const Flags flags = 0,
         const std::size_t extraTables = 0)
     noexcept;
+    LMDB() = delete;
+    LMDB(const LMDB&) = delete;
     // NOTE: move constructor is only defined to allow copy elision. It
     // should not be used for any other purpose.
     LMDB(LMDB&&) noexcept;
+    auto operator=(const LMDB&) -> LMDB& = delete;
+    auto operator=(LMDB&&) -> LMDB& = delete;
+
     ~LMDB();
 
 private:
@@ -184,10 +188,5 @@ private:
 
     auto read(const MDB_dbi dbi, const ReadCallback cb, const Dir dir)
         const noexcept -> bool;
-
-    LMDB() = delete;
-    LMDB(const LMDB&) = delete;
-    auto operator=(const LMDB&) -> LMDB& = delete;
-    auto operator=(LMDB&&) -> LMDB& = delete;
 };
 }  // namespace opentxs::storage::lmdb

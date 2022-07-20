@@ -15,15 +15,14 @@ class Secp256k1 : virtual public EcdsaProvider
 public:
     virtual void Init() = 0;
 
-    ~Secp256k1() override = default;
-
-protected:
-    Secp256k1() = default;
-
-private:
     Secp256k1(const Secp256k1&) = delete;
     Secp256k1(Secp256k1&&) = delete;
     auto operator=(const Secp256k1&) -> Secp256k1& = delete;
     auto operator=(Secp256k1&&) -> Secp256k1& = delete;
+
+    ~Secp256k1() override = default;
+
+protected:
+    Secp256k1() = default;
 };
 }  // namespace opentxs::crypto

@@ -155,17 +155,17 @@ public:
     void SetLabel(const UnallocatedCString& label);
     OPENTXS_NO_EXPORT void Update(const proto::Nym& nym);
 
+    Contact() = delete;
+    Contact(const Contact&) = delete;
+    Contact(Contact&&) = delete;
+    auto operator=(const Contact&) -> Contact& = delete;
+    auto operator=(Contact&&) -> Contact& = delete;
+
     ~Contact();
 
 private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    Contact() = delete;
-    Contact(const Contact&) = delete;
-    Contact(Contact&&) = delete;
-    auto operator=(const Contact&) -> Contact& = delete;
-    auto operator=(Contact&&) -> Contact& = delete;
 };
 }  // namespace opentxs

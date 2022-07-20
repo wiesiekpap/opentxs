@@ -52,13 +52,10 @@ public:
     {
         return payload_.at(position);
     }
-    auto begin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto begin() const noexcept -> const_iterator final { return {this, 0}; }
     auto end() const noexcept -> const_iterator final
     {
-        return const_iterator(this, payload_.size());
+        return {this, payload_.size()};
     }
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
@@ -72,15 +69,14 @@ public:
         const api::Session& api,
         std::unique_ptr<Header> header,
         UnallocatedVector<value_type>&& payload) noexcept;
+    Getdata(const Getdata&) = delete;
+    Getdata(Getdata&&) = delete;
+    auto operator=(const Getdata&) -> Getdata& = delete;
+    auto operator=(Getdata&&) -> Getdata& = delete;
 
     ~Getdata() final = default;
 
 private:
     const UnallocatedVector<value_type> payload_;
-
-    Getdata(const Getdata&) = delete;
-    Getdata(Getdata&&) = delete;
-    auto operator=(const Getdata&) -> Getdata& = delete;
-    auto operator=(Getdata&&) -> Getdata& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

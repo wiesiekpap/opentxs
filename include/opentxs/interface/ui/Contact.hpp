@@ -47,15 +47,14 @@ public:
     /// Returns the payment code for this contact.
     virtual auto PaymentCode() const noexcept -> UnallocatedCString = 0;
 
-    ~Contact() override = default;
-
-protected:
-    Contact() noexcept = default;
-
-private:
     Contact(const Contact&) = delete;
     Contact(Contact&&) = delete;
     auto operator=(const Contact&) -> Contact& = delete;
     auto operator=(Contact&&) -> Contact& = delete;
+
+    ~Contact() override = default;
+
+protected:
+    Contact() noexcept = default;
 };
 }  // namespace opentxs::ui

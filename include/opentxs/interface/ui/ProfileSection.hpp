@@ -95,15 +95,14 @@ public:
     /// Returns the SectionType for this ProfileSection.
     virtual auto Type() const noexcept -> identity::wot::claim::SectionType = 0;
 
-    ~ProfileSection() override = default;
-
-protected:
-    ProfileSection() noexcept = default;
-
-private:
     ProfileSection(const ProfileSection&) = delete;
     ProfileSection(ProfileSection&&) = delete;
     auto operator=(const ProfileSection&) -> ProfileSection& = delete;
     auto operator=(ProfileSection&&) -> ProfileSection& = delete;
+
+    ~ProfileSection() override = default;
+
+protected:
+    ProfileSection() noexcept = default;
 };
 }  // namespace opentxs::ui

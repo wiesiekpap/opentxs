@@ -47,6 +47,11 @@ public:
     };
 
     NymListQt(internal::NymList& parent) noexcept;
+    NymListQt() = delete;
+    NymListQt(const NymListQt&) = delete;
+    NymListQt(NymListQt&&) = delete;
+    auto operator=(const NymListQt&) -> NymListQt& = delete;
+    auto operator=(NymListQt&&) -> NymListQt& = delete;
 
     ~NymListQt() final;
 
@@ -54,10 +59,4 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    NymListQt() = delete;
-    NymListQt(const NymListQt&) = delete;
-    NymListQt(NymListQt&&) = delete;
-    NymListQt& operator=(const NymListQt&) = delete;
-    NymListQt& operator=(NymListQt&&) = delete;
 };

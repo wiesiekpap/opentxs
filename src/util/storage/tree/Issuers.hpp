@@ -49,6 +49,12 @@ public:
     auto Store(const proto::Issuer& data, const UnallocatedCString& alias)
         -> bool;
 
+    Issuers() = delete;
+    Issuers(const Issuers&) = delete;
+    Issuers(Issuers&&) = delete;
+    auto operator=(const Issuers&) -> Issuers = delete;
+    auto operator=(Issuers&&) -> Issuers = delete;
+
     ~Issuers() final = default;
 
 private:
@@ -61,10 +67,5 @@ private:
     auto serialize() const -> proto::StorageIssuers;
 
     Issuers(const Driver& storage, const UnallocatedCString& hash);
-    Issuers() = delete;
-    Issuers(const Issuers&) = delete;
-    Issuers(Issuers&&) = delete;
-    auto operator=(const Issuers&) -> Issuers = delete;
-    auto operator=(Issuers&&) -> Issuers = delete;
 };
 }  // namespace opentxs::storage

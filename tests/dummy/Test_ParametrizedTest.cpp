@@ -7,14 +7,15 @@
 #include <ostream>
 #include <string>
 
+// NOLINTBEGIN(modernize-avoid-c-arrays)
 // parametrized test at global namespace
 struct ParametrizedTestAtGlobalNamespaceStruct {
     ::std::string mName;
     bool mExpectedValue;
 
-    friend ::std::ostream& operator<<(
+    friend auto operator<<(
         ::std::ostream& os,
-        const ParametrizedTestAtGlobalNamespaceStruct& obj)
+        const ParametrizedTestAtGlobalNamespaceStruct& obj) -> ::std::ostream&
     {
         return os << "Test name: '" << obj.mName << "'";
     }
@@ -32,7 +33,7 @@ public:
     {
     }
 
-    bool getBool() const { return mBool; }
+    auto getBool() const -> bool { return mBool; }
 
     void SetUp() override { mBool = GetParam().mExpectedValue; }
 
@@ -62,9 +63,9 @@ struct ParametrizedTestAtUnnamedNamespaceStruct {
     ::std::string mName;
     bool mExpectedValue;
 
-    friend ::std::ostream& operator<<(
+    friend auto operator<<(
         ::std::ostream& os,
-        const ParametrizedTestAtUnnamedNamespaceStruct& obj)
+        const ParametrizedTestAtUnnamedNamespaceStruct& obj) -> ::std::ostream&
     {
         return os << "Test name: '" << obj.mName << "'";
     }
@@ -82,7 +83,7 @@ public:
     {
     }
 
-    bool getBool() const { return mBool; }
+    auto getBool() const -> bool { return mBool; }
 
     void SetUp() override { mBool = GetParam().mExpectedValue; }
 
@@ -107,17 +108,15 @@ TEST_P(ParametrizedTestAtUnnamedNamespaceClass, simpleParametrizedTest)
 }  // namespace
 
 // parametrized test at named namespace
-namespace ottest
-{
-namespace DummyTest
+namespace ottest::DummyTest
 {
 struct ParametrizedTestAtNamedNamespaceStruct {
     ::std::string mName;
     bool mExpectedValue;
 
-    friend ::std::ostream& operator<<(
+    friend auto operator<<(
         ::std::ostream& os,
-        const ParametrizedTestAtNamedNamespaceStruct& obj)
+        const ParametrizedTestAtNamedNamespaceStruct& obj) -> ::std::ostream&
     {
         return os << "Test name: '" << obj.mName << "'";
     }
@@ -135,7 +134,7 @@ public:
     {
     }
 
-    bool getBool() const { return mBool; }
+    auto getBool() const -> bool { return mBool; }
 
     void SetUp() override { mBool = GetParam().mExpectedValue; }
 
@@ -158,5 +157,5 @@ TEST_P(ParametrizedTestAtNamedNamespaceClass, simpleParametrizedTest)
     EXPECT_EQ(getBool(), GetParam().mExpectedValue);
 }
 
-}  // namespace DummyTest
-}  // namespace ottest
+}  // namespace ottest::DummyTest
+// NOLINTEND(modernize-avoid-c-arrays)

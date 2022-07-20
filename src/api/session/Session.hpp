@@ -154,6 +154,12 @@ public:
     auto Storage() const noexcept -> const api::session::Storage& final;
     auto Wallet() const noexcept -> const session::Wallet& final;
 
+    Session() = delete;
+    Session(const Session&) = delete;
+    Session(Session&&) = delete;
+    auto operator=(const Session&) -> Session& = delete;
+    auto operator=(Session&&) -> Session& = delete;
+
     ~Session() override;
 
 protected:
@@ -202,11 +208,5 @@ private:
     // TODO void password_timeout() const;
 
     void storage_gc_hook() final;
-
-    Session() = delete;
-    Session(const Session&) = delete;
-    Session(Session&&) = delete;
-    auto operator=(const Session&) -> Session& = delete;
-    auto operator=(Session&&) -> Session& = delete;
 };
 }  // namespace opentxs::api::session::imp

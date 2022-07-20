@@ -59,15 +59,14 @@ public:
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Inputs& = 0;
 
-    virtual ~Inputs() = default;
-
-protected:
-    Inputs() noexcept = default;
-
-private:
     Inputs(const Inputs&) = delete;
     Inputs(Inputs&&) = delete;
     auto operator=(const Inputs&) -> Inputs& = delete;
     auto operator=(Inputs&&) -> Inputs& = delete;
+
+    virtual ~Inputs() = default;
+
+protected:
+    Inputs() noexcept = default;
 };
 }  // namespace opentxs::blockchain::bitcoin::block

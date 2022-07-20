@@ -31,20 +31,6 @@ namespace opentxs::storage
 {
 class Mailbox final : public Node
 {
-private:
-    friend Nym;
-
-    void init(const UnallocatedCString& hash) final;
-    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
-    auto serialize() const -> proto::StorageNymList;
-
-    Mailbox(const Driver& storage, const UnallocatedCString& hash);
-    Mailbox() = delete;
-    Mailbox(const Mailbox&) = delete;
-    Mailbox(Mailbox&&) = delete;
-    auto operator=(const Mailbox&) -> Mailbox = delete;
-    auto operator=(Mailbox&&) -> Mailbox = delete;
-
 public:
     auto Load(
         const UnallocatedCString& id,
@@ -58,6 +44,21 @@ public:
         const UnallocatedCString& data,
         const UnallocatedCString& alias) -> bool;
 
+    Mailbox() = delete;
+    Mailbox(const Mailbox&) = delete;
+    Mailbox(Mailbox&&) = delete;
+    auto operator=(const Mailbox&) -> Mailbox = delete;
+    auto operator=(Mailbox&&) -> Mailbox = delete;
+
     ~Mailbox() final = default;
+
+private:
+    friend Nym;
+
+    void init(const UnallocatedCString& hash) final;
+    auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
+    auto serialize() const -> proto::StorageNymList;
+
+    Mailbox(const Driver& storage, const UnallocatedCString& hash);
 };
 }  // namespace opentxs::storage

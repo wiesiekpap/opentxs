@@ -47,6 +47,11 @@ struct Ticket::Imp {
         }())
     {
     }
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp()
     {
@@ -54,13 +59,6 @@ struct Ticket::Imp {
 
         --count_;
     }
-
-private:
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 
 Gatekeeper::Gatekeeper() noexcept

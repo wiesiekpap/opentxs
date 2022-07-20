@@ -19,11 +19,6 @@ class OTClause
     OTString m_strCode;  // script code.
     OTBylaw* m_pBylaw;   // the Bylaw that this clause belongs to.
 
-    OTClause(const OTClause&) = delete;
-    OTClause(OTClause&&) = delete;
-    auto operator=(const OTClause&) -> OTClause& = delete;
-    auto operator=(OTClause&&) -> OTClause& = delete;
-
 public:
     void SetBylaw(OTBylaw& theBylaw) { m_pBylaw = &theBylaw; }
 
@@ -37,10 +32,15 @@ public:
 
     auto Compare(const OTClause& rhs) const -> bool;
 
+    void Serialize(Tag& parent) const;
+
     OTClause();
     OTClause(const char* szName, const char* szCode);
-    virtual ~OTClause();
+    OTClause(const OTClause&) = delete;
+    OTClause(OTClause&&) = delete;
+    auto operator=(const OTClause&) -> OTClause& = delete;
+    auto operator=(OTClause&&) -> OTClause& = delete;
 
-    void Serialize(Tag& parent) const;
+    virtual ~OTClause();
 };
 }  // namespace opentxs

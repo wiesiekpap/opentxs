@@ -66,6 +66,9 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const proto::UnitDefinition serialized);
+    Currency(Currency&&) = delete;
+    auto operator=(const Currency&) -> Currency& = delete;
+    auto operator=(Currency&&) -> Currency& = delete;
 
     ~Currency() final = default;
 
@@ -77,8 +80,5 @@ private:
     auto IDVersion(const Lock& lock) const -> proto::UnitDefinition final;
 
     Currency(const Currency&);
-    Currency(Currency&&) = delete;
-    auto operator=(const Currency&) -> Currency& = delete;
-    auto operator=(Currency&&) -> Currency& = delete;
 };
 }  // namespace opentxs::contract::unit::implementation

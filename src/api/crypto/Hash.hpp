@@ -116,6 +116,10 @@ public:
         const opentxs::crypto::Pbkdf2& pbkdf2,
         const opentxs::crypto::Ripemd160& ripe,
         const opentxs::crypto::Scrypt& scrypt) noexcept;
+    Hash(const Hash&) = delete;
+    Hash(Hash&&) = delete;
+    auto operator=(const Hash&) -> Hash& = delete;
+    auto operator=(Hash&&) -> Hash& = delete;
 
     ~Hash() final = default;
 
@@ -153,10 +157,5 @@ private:
         const void* input,
         const std::size_t size,
         void* output) const noexcept -> bool;
-
-    Hash(const Hash&) = delete;
-    Hash(Hash&&) = delete;
-    auto operator=(const Hash&) -> Hash& = delete;
-    auto operator=(Hash&&) -> Hash& = delete;
 };
 }  // namespace opentxs::api::crypto::imp

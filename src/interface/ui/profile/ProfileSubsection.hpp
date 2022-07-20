@@ -127,6 +127,12 @@ public:
         const ProfileSectionRowID& rowID,
         const ProfileSectionSortKey& key,
         CustomData& custom) noexcept;
+    ProfileSubsection() = delete;
+    ProfileSubsection(const ProfileSubsection&) = delete;
+    ProfileSubsection(ProfileSubsection&&) = delete;
+    auto operator=(const ProfileSubsection&) -> ProfileSubsection& = delete;
+    auto operator=(ProfileSubsection&&) -> ProfileSubsection& = delete;
+
     ~ProfileSubsection() final = default;
 
 private:
@@ -148,12 +154,6 @@ private:
     auto reindex(const ProfileSectionSortKey& key, CustomData& custom) noexcept
         -> bool final;
     auto startup(const identity::wot::claim::Group group) noexcept -> void;
-
-    ProfileSubsection() = delete;
-    ProfileSubsection(const ProfileSubsection&) = delete;
-    ProfileSubsection(ProfileSubsection&&) = delete;
-    auto operator=(const ProfileSubsection&) -> ProfileSubsection& = delete;
-    auto operator=(ProfileSubsection&&) -> ProfileSubsection& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

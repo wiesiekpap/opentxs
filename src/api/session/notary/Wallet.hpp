@@ -82,6 +82,11 @@ public:
         const PasswordPrompt& reason) const -> Editor<otx::context::Base> final;
 
     Wallet(const api::session::Notary& parent);
+    Wallet() = delete;
+    Wallet(const Wallet&) = delete;
+    Wallet(Wallet&&) = delete;
+    auto operator=(const Wallet&) -> Wallet& = delete;
+    auto operator=(Wallet&&) -> Wallet& = delete;
 
     ~Wallet() final = default;
 
@@ -100,11 +105,5 @@ private:
         const eLock& lock,
         AccountLock& row) const -> bool final;
     auto signer_nym(const identifier::Nym& id) const -> Nym_p final;
-
-    Wallet() = delete;
-    Wallet(const Wallet&) = delete;
-    Wallet(Wallet&&) = delete;
-    auto operator=(const Wallet&) -> Wallet& = delete;
-    auto operator=(Wallet&&) -> Wallet& = delete;
 };
 }  // namespace opentxs::api::session::server

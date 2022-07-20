@@ -59,18 +59,7 @@ class PayDividendVisitor final : public AccountVisitor
     Amount m_lAmountReturned{0};  // as we pay each voucher out, we keep a
                                   // running count.
 
-    PayDividendVisitor() = delete;
-
 public:
-    PayDividendVisitor(
-        server::Server& theServer,
-        const identifier::Notary& theNotaryID,
-        const identifier::Nym& theNymID,
-        const identifier::UnitDefinition& thePayoutUnitTypeId,
-        const Identifier& theVoucherAcctID,
-        const String& strMemo,
-        const Amount& lPayoutPerShare);
-
     auto GetNymID() -> const identifier::Nym& { return nymId_; }
     auto GetPayoutUnitTypeId() -> const identifier::UnitDefinition&
     {
@@ -85,6 +74,16 @@ public:
 
     auto Trigger(const Account& theAccount, const PasswordPrompt& reason)
         -> bool final;
+
+    PayDividendVisitor(
+        server::Server& theServer,
+        const identifier::Notary& theNotaryID,
+        const identifier::Nym& theNymID,
+        const identifier::UnitDefinition& thePayoutUnitTypeId,
+        const Identifier& theVoucherAcctID,
+        const String& strMemo,
+        const Amount& lPayoutPerShare);
+    PayDividendVisitor() = delete;
 
     ~PayDividendVisitor() final;
 };

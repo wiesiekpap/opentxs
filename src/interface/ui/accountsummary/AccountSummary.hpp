@@ -80,6 +80,11 @@ public:
         const identifier::Nym& nymID,
         const UnitType currency,
         const SimpleCallback& cb) noexcept;
+    AccountSummary() = delete;
+    AccountSummary(const AccountSummary&) = delete;
+    AccountSummary(AccountSummary&&) = delete;
+    auto operator=(const AccountSummary&) -> AccountSummary& = delete;
+    auto operator=(AccountSummary&&) -> AccountSummary& = delete;
 
     ~AccountSummary() final;
 
@@ -105,11 +110,5 @@ private:
     void process_server(const Message& message) noexcept;
     void process_server(const identifier::Notary& serverID) noexcept;
     void startup() noexcept;
-
-    AccountSummary() = delete;
-    AccountSummary(const AccountSummary&) = delete;
-    AccountSummary(AccountSummary&&) = delete;
-    auto operator=(const AccountSummary&) -> AccountSummary& = delete;
-    auto operator=(AccountSummary&&) -> AccountSummary& = delete;
 };
 }  // namespace opentxs::ui::implementation

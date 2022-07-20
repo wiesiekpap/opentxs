@@ -115,7 +115,7 @@ auto Wallet::mutable_Context(
 
     OT_ASSERT(base);
 
-    return Editor<otx::context::Base>(base.get(), callback);
+    return {base.get(), callback};
 }
 
 auto Wallet::mutable_ServerContext(
@@ -169,7 +169,7 @@ auto Wallet::mutable_ServerContext(
 
     OT_ASSERT(nullptr != child);
 
-    return Editor<otx::context::Server>(child, callback);
+    return {child, callback};
 }
 
 void Wallet::nym_to_contact(

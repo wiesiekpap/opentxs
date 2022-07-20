@@ -70,6 +70,12 @@ public:
         int role = Qt::DisplayRole) const noexcept -> QVariant final;
 
     BlockchainStatisticsQt(internal::BlockchainStatistics& parent) noexcept;
+    BlockchainStatisticsQt(const BlockchainStatisticsQt&) = delete;
+    BlockchainStatisticsQt(BlockchainStatisticsQt&&) = delete;
+    auto operator=(const BlockchainStatisticsQt&)
+        -> BlockchainStatisticsQt& = delete;
+    auto operator=(BlockchainStatisticsQt&&)
+        -> BlockchainStatisticsQt& = delete;
 
     ~BlockchainStatisticsQt() final;
 
@@ -77,9 +83,4 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    BlockchainStatisticsQt(const BlockchainStatisticsQt&) = delete;
-    BlockchainStatisticsQt(BlockchainStatisticsQt&&) = delete;
-    BlockchainStatisticsQt& operator=(const BlockchainStatisticsQt&) = delete;
-    BlockchainStatisticsQt& operator=(BlockchainStatisticsQt&&) = delete;
 };

@@ -29,6 +29,10 @@ public:
     auto ID() const noexcept -> const Identifier&;
 
     OPENTXS_NO_EXPORT QueryContract(Imp* imp) noexcept;
+    QueryContract(const QueryContract&) = delete;
+    QueryContract(QueryContract&&) = delete;
+    auto operator=(const QueryContract&) -> QueryContract& = delete;
+    auto operator=(QueryContract&&) -> QueryContract& = delete;
 
     ~QueryContract() final;
 
@@ -37,10 +41,5 @@ private:
 #pragma GCC diagnostic ignored "-Wshadow-field"
     Imp* imp_;
 #pragma GCC diagnostic pop
-
-    QueryContract(const QueryContract&) = delete;
-    QueryContract(QueryContract&&) = delete;
-    auto operator=(const QueryContract&) -> QueryContract& = delete;
-    auto operator=(QueryContract&&) -> QueryContract& = delete;
 };
 }  // namespace opentxs::network::p2p

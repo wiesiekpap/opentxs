@@ -40,6 +40,12 @@ public:
         const PeriodicTask& task,
         const std::chrono::seconds& last) const -> int final;
 
+    Periodic() = delete;
+    Periodic(const Periodic&) = delete;
+    Periodic(Periodic&&) = delete;
+    auto operator=(const Periodic&) -> Periodic& = delete;
+    auto operator=(Periodic&&) -> Periodic& = delete;
+
     ~Periodic() override;
 
 protected:
@@ -58,12 +64,6 @@ private:
     mutable std::mutex periodic_lock_;
     mutable TaskList periodic_task_list_;
     std::thread periodic_;
-
-    Periodic() = delete;
-    Periodic(const Periodic&) = delete;
-    Periodic(Periodic&&) = delete;
-    auto operator=(const Periodic&) -> Periodic& = delete;
-    auto operator=(Periodic&&) -> Periodic& = delete;
 
     void thread();
 };

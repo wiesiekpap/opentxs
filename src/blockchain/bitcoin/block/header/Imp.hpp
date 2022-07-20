@@ -158,7 +158,11 @@ public:
         const blockchain::block::Height height) noexcept(false);
     Header(const api::Session& api, const SerializedType& serialized) noexcept(
         false);
+    Header() = delete;
     Header(const Header& rhs) noexcept;
+    Header(Header&&) = delete;
+    auto operator=(const Header&) -> Header& = delete;
+    auto operator=(Header&&) -> Header& = delete;
 
     ~Header() final = default;
 
@@ -206,9 +210,5 @@ private:
         const std::uint32_t nbits,
         const std::uint32_t nonce,
         const bool validate) noexcept(false);
-    Header() = delete;
-    Header(Header&&) = delete;
-    auto operator=(const Header&) -> Header& = delete;
-    auto operator=(Header&&) -> Header& = delete;
 };
 }  // namespace opentxs::blockchain::bitcoin::block::implementation

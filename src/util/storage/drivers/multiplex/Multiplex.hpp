@@ -100,6 +100,11 @@ public:
         const api::session::Storage& storage,
         const Flag& primaryBucket,
         const storage::Config& config);
+    Multiplex() = delete;
+    Multiplex(const Multiplex&) = delete;
+    Multiplex(Multiplex&&) = delete;
+    auto operator=(const Multiplex&) -> Multiplex& = delete;
+    auto operator=(Multiplex&&) -> Multiplex& = delete;
 
     ~Multiplex() final;
 
@@ -128,11 +133,5 @@ private:
     auto migrate_primary(
         const UnallocatedCString& from,
         const UnallocatedCString& to) -> void;
-
-    Multiplex() = delete;
-    Multiplex(const Multiplex&) = delete;
-    Multiplex(Multiplex&&) = delete;
-    auto operator=(const Multiplex&) -> Multiplex& = delete;
-    auto operator=(Multiplex&&) -> Multiplex& = delete;
 };
 }  // namespace opentxs::storage::driver

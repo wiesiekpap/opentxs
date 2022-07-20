@@ -20,15 +20,14 @@ public:
     auto StoreRoot(const bool commit, const UnallocatedCString& hash) const
         -> bool override = 0;
 
-    ~Plugin() override = default;
-
-protected:
-    Plugin() = default;
-
-private:
     Plugin(const Plugin&) = delete;
     Plugin(Plugin&&) = delete;
     auto operator=(const Plugin&) -> Plugin& = delete;
     auto operator=(Plugin&&) -> Plugin& = delete;
+
+    ~Plugin() override = default;
+
+protected:
+    Plugin() = default;
 };
 }  // namespace opentxs::storage

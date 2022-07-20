@@ -873,6 +873,12 @@ public:
         const UnallocatedCString& words,
         const UnallocatedCString& passphrase) const -> UnallocatedCString;
 
+    OTAPI_Exec() = delete;
+    OTAPI_Exec(const OTAPI_Exec&) = delete;
+    OTAPI_Exec(OTAPI_Exec&&) = delete;
+    auto operator=(const OTAPI_Exec&) -> OTAPI_Exec = delete;
+    auto operator=(OTAPI_Exec&&) -> OTAPI_Exec = delete;
+
     ~OTAPI_Exec() override = default;
 
 private:
@@ -888,11 +894,6 @@ private:
         const api::session::Contacts& contacts,
         const api::network::ZMQ& zeromq,
         const OT_API& otapi,
-        const ContextLockCallback& lockCallback);
-    OTAPI_Exec() = delete;
-    OTAPI_Exec(const OTAPI_Exec&) = delete;
-    OTAPI_Exec(OTAPI_Exec&&) = delete;
-    auto operator=(const OTAPI_Exec&) -> OTAPI_Exec = delete;
-    auto operator=(OTAPI_Exec&&) -> OTAPI_Exec = delete;
+        ContextLockCallback lockCallback);
 };
 }  // namespace opentxs

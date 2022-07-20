@@ -174,15 +174,14 @@ public:
     virtual auto Subaccount(const Identifier& id) const noexcept(false)
         -> const Subaccount& = 0;
 
-    OPENTXS_NO_EXPORT virtual ~Account() = default;
-
-protected:
-    Account() noexcept = default;
-
-private:
     Account(const Account&) = delete;
     Account(Account&&) = delete;
     auto operator=(const Account&) -> Account& = delete;
     auto operator=(Account&&) -> Account& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~Account() = default;
+
+protected:
+    Account() noexcept = default;
 };
 }  // namespace opentxs::blockchain::crypto

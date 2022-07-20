@@ -44,6 +44,11 @@ public:
     auto PublicKeysizeMax() const -> std::uint32_t override;
 
     Config(const api::Settings& settings) noexcept;
+    Config() = delete;
+    Config(const Config&) = delete;
+    Config(Config&&) = delete;
+    auto operator=(const Config&) -> Config& = delete;
+    auto operator=(Config&&) -> Config& = delete;
 
 private:
     const api::Settings& config_;
@@ -61,11 +66,5 @@ private:
         const UnallocatedCString& strKeyName,
         const std::int32_t nDefaultValue,
         std::int32_t& out_nValue) const -> bool;
-
-    Config() = delete;
-    Config(const Config&) = delete;
-    Config(Config&&) = delete;
-    auto operator=(const Config&) -> Config& = delete;
-    auto operator=(Config&&) -> Config& = delete;
 };
 }  // namespace opentxs::api::crypto::imp

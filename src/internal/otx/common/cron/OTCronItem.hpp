@@ -231,6 +231,12 @@ public:
         -> std::int64_t;
     auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
+    OTCronItem() = delete;
+    OTCronItem(const OTCronItem&) = delete;
+    OTCronItem(OTCronItem&&) = delete;
+    auto operator=(const OTCronItem&) -> OTCronItem& = delete;
+    auto operator=(OTCronItem&&) -> OTCronItem& = delete;
+
 protected:
     UnallocatedDeque<std::int64_t> m_dequeClosingNumbers;  // Numbers used for
                                                            // CLOSING a
@@ -292,11 +298,5 @@ private:
     Time m_LAST_PROCESS_DATE;  // The last time this item was processed.
     std::chrono::seconds m_PROCESS_INTERVAL;  // How often to Process Cron
                                               // on this item.
-
-    OTCronItem() = delete;
-    OTCronItem(const OTCronItem&) = delete;
-    OTCronItem(OTCronItem&&) = delete;
-    auto operator=(const OTCronItem&) -> OTCronItem& = delete;
-    auto operator=(OTCronItem&&) -> OTCronItem& = delete;
 };
 }  // namespace opentxs

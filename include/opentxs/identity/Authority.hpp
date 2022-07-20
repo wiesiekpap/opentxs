@@ -122,15 +122,14 @@ public:
     virtual void RevokeVerificationCredentials(
         UnallocatedList<UnallocatedCString>& verificationCredentialIDs) = 0;
 
-    virtual ~Authority() = default;
-
-protected:
-    Authority() noexcept = default;
-
-private:
     Authority(const Authority&) = delete;
     Authority(Authority&&) = delete;
     auto operator=(const Authority&) -> Authority& = delete;
     auto operator=(Authority&&) -> Authority& = delete;
+
+    virtual ~Authority() = default;
+
+protected:
+    Authority() noexcept = default;
 };
 }  // namespace opentxs::identity

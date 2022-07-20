@@ -39,6 +39,12 @@ public:
         const Callback& callback) const -> bool final;
     auto SetDefaultPolicy(const Policy policy) const -> bool final;
 
+    ZAP() = delete;
+    ZAP(const ZAP&) = delete;
+    ZAP(ZAP&&) = delete;
+    auto operator=(const ZAP&) -> ZAP& = delete;
+    auto operator=(ZAP&&) -> ZAP& = delete;
+
     ~ZAP() final = default;
 
 private:
@@ -49,10 +55,5 @@ private:
     OTZMQZAPHandler zap_;
 
     ZAP(const opentxs::network::zeromq::Context& context);
-    ZAP() = delete;
-    ZAP(const ZAP&) = delete;
-    ZAP(ZAP&&) = delete;
-    auto operator=(const ZAP&) -> ZAP& = delete;
-    auto operator=(ZAP&&) -> ZAP& = delete;
 };
 }  // namespace opentxs::api::network::imp

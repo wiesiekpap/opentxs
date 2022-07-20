@@ -372,6 +372,8 @@ public:
                    // serialization, this is where the
                    // ledger saves its contents
 
+    OTSmartContract() = delete;
+
     ~OTSmartContract() override;
 
 protected:
@@ -462,7 +464,5 @@ private:
     OTSmartContract(
         const api::Session& api,
         const identifier::Notary& NOTARY_ID);
-
-    OTSmartContract() = delete;
 };
 }  // namespace opentxs

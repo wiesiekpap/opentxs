@@ -70,6 +70,11 @@ public:
         const Flag& bucket,
         const UnallocatedCString& folder,
         crypto::key::Symmetric& key);
+    Archiving() = delete;
+    Archiving(const Archiving&) = delete;
+    Archiving(Archiving&&) = delete;
+    auto operator=(const Archiving&) -> Archiving& = delete;
+    auto operator=(Archiving&&) -> Archiving& = delete;
 
     ~Archiving() final;
 
@@ -89,11 +94,5 @@ private:
 
     void Init_Archiving();
     void Cleanup_Archiving();
-
-    Archiving() = delete;
-    Archiving(const Archiving&) = delete;
-    Archiving(Archiving&&) = delete;
-    auto operator=(const Archiving&) -> Archiving& = delete;
-    auto operator=(Archiving&&) -> Archiving& = delete;
 };
 }  // namespace opentxs::storage::driver::filesystem

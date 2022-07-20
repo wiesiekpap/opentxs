@@ -79,6 +79,12 @@ public:
     auto Save(const Driver& to) const -> bool;
     auto Sequence() const -> std::uint64_t;
 
+    Root() = delete;
+    Root(const Root&) = delete;
+    Root(Root&&) = delete;
+    auto operator=(const Root&) -> Root = delete;
+    auto operator=(Root&&) -> Root = delete;
+
     ~Root() final = default;
 
 private:
@@ -162,10 +168,5 @@ private:
         const UnallocatedCString& hash,
         const std::int64_t interval,
         Flag& bucket);
-    Root() = delete;
-    Root(const Root&) = delete;
-    Root(Root&&) = delete;
-    auto operator=(const Root&) -> Root = delete;
-    auto operator=(Root&&) -> Root = delete;
 };
 }  // namespace opentxs::storage

@@ -48,15 +48,14 @@ public:
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ContactListItem> = 0;
 
-    OPENTXS_NO_EXPORT ~ContactList() override = default;
-
-protected:
-    ContactList() noexcept = default;
-
-private:
     ContactList(const ContactList&) = delete;
     ContactList(ContactList&&) = delete;
     auto operator=(const ContactList&) -> ContactList& = delete;
     auto operator=(ContactList&&) -> ContactList& = delete;
+
+    OPENTXS_NO_EXPORT ~ContactList() override = default;
+
+protected:
+    ContactList() noexcept = default;
 };
 }  // namespace opentxs::ui

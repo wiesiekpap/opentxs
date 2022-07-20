@@ -78,6 +78,11 @@ struct Acceptors::Imp {
         , map_()
     {
     }
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() { Stop(); }
 
@@ -86,12 +91,6 @@ private:
     boost::asio::io_context& context_;
     mutable std::mutex lock_;
     UnallocatedMap<UnallocatedCString, Acceptor> map_;
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 
 Acceptors::Acceptors(

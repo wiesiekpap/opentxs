@@ -67,6 +67,10 @@ public:
         const cfilter::Type type,
         const block::Height start,
         block::Hash&& stop) noexcept;
+    Getcfheaders(const Getcfheaders&) = delete;
+    Getcfheaders(Getcfheaders&&) = delete;
+    auto operator=(const Getcfheaders&) -> Getcfheaders& = delete;
+    auto operator=(Getcfheaders&&) -> Getcfheaders& = delete;
 
     ~Getcfheaders() final = default;
 
@@ -77,10 +81,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Getcfheaders(const Getcfheaders&) = delete;
-    Getcfheaders(Getcfheaders&&) = delete;
-    auto operator=(const Getcfheaders&) -> Getcfheaders& = delete;
-    auto operator=(Getcfheaders&&) -> Getcfheaders& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

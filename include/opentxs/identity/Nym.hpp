@@ -241,15 +241,14 @@ public:
         const PasswordPrompt& reason,
         const bool primary) -> bool = 0;
 
-    virtual ~Nym() = default;
-
-protected:
-    Nym() noexcept = default;
-
-private:
     Nym(const Nym&) = delete;
     Nym(Nym&&) = delete;
     auto operator=(const Nym&) -> Nym& = delete;
     auto operator=(Nym&&) -> Nym& = delete;
+
+    virtual ~Nym() = default;
+
+protected:
+    Nym() noexcept = default;
 };
 }  // namespace opentxs::identity

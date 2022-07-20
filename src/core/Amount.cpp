@@ -38,10 +38,11 @@ auto signed_amount(long long ip, unsigned long long fp, unsigned long long div)
 {
     using Imp = Amount::Imp;
 
-    if (ip < 0)
+    if (ip < 0) {
         return -Amount(Imp::shift_left(-ip) + (Imp::shift_left(fp) / div));
-    else
-        return Amount(Imp::shift_left(ip) + (Imp::shift_left(fp) / div));
+    } else {
+        return {Imp::shift_left(ip) + (Imp::shift_left(fp) / div)};
+    }
 }
 
 auto unsigned_amount(
@@ -51,7 +52,7 @@ auto unsigned_amount(
 {
     using Imp = Amount::Imp;
 
-    return Amount(Imp::shift_left(ip) + (Imp::shift_left(fp) / div));
+    return {Imp::shift_left(ip) + (Imp::shift_left(fp) / div)};
 }
 
 auto swap(Amount& lhs, Amount& rhs) noexcept -> void { lhs.swap(rhs); }
@@ -124,12 +125,14 @@ auto IntegerToFloat(const Integer& rhs) noexcept -> Float
 
 namespace opentxs::internal
 {
+// NOLINTBEGIN(clang-analyzer-core.StackAddressEscape)
 auto FloatToAmount(const amount::Float& rhs) noexcept(false)
     -> opentxs::Amount::Imp*
 {
     return std::make_unique<opentxs::Amount::Imp>(amount::FloatToInteger(rhs))
         .release();
 }
+// NOLINTEND(clang-analyzer-core.StackAddressEscape)
 
 auto Amount::SerializeBitcoinSize() noexcept -> std::size_t
 {

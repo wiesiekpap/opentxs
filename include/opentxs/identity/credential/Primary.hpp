@@ -31,15 +31,14 @@ public:
         -> bool = 0;
     virtual auto Path() const -> UnallocatedCString = 0;
 
-    ~Primary() override = default;
-
-protected:
-    Primary() noexcept {}  // TODO Signable
-
-private:
     Primary(const Primary&) = delete;
     Primary(Primary&&) = delete;
     auto operator=(const Primary&) -> Primary& = delete;
     auto operator=(Primary&&) -> Primary& = delete;
+
+    ~Primary() override = default;
+
+protected:
+    Primary() noexcept = default;  // TODO Signable
 };
 }  // namespace opentxs::identity::credential

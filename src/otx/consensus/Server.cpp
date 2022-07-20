@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <atomic>
-#include <functional>
 #include <iterator>
 #include <stdexcept>
 #include <string_view>
@@ -180,7 +179,7 @@ Server::Server(
     const identifier::Notary& server,
     network::ServerConnection& connection)
     : Base(api, current_version_, local, remote, server)
-    , StateMachine(std::bind(&Server::state_machine, this))
+    , StateMachine([this] { return state_machine(); })
     , request_sent_(requestSent)
     , reply_received_(replyReceived)
     , client_(nullptr)
@@ -234,7 +233,7 @@ Server::Server(
           local,
           remote,
           api.Factory().ServerID(serialized.servercontext().serverid()))
-    , StateMachine(std::bind(&Server::state_machine, this))
+    , StateMachine([this] { return state_machine(); })
     , request_sent_(requestSent)
     , reply_received_(replyReceived)
     , client_(nullptr)

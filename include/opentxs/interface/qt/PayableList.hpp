@@ -43,6 +43,10 @@ public:
     };
 
     PayableListQt(internal::PayableList& parent) noexcept;
+    PayableListQt(const PayableListQt&) = delete;
+    PayableListQt(PayableListQt&&) = delete;
+    auto operator=(const PayableListQt&) -> PayableListQt& = delete;
+    auto operator=(PayableListQt&&) -> PayableListQt& = delete;
 
     ~PayableListQt() final;
 
@@ -50,9 +54,4 @@ private:
     struct Imp;
 
     Imp* imp_;
-
-    PayableListQt(const PayableListQt&) = delete;
-    PayableListQt(PayableListQt&&) = delete;
-    PayableListQt& operator=(const PayableListQt&) = delete;
-    PayableListQt& operator=(PayableListQt&&) = delete;
 };

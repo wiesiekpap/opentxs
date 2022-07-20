@@ -74,6 +74,11 @@ public:
     static auto Factory(const UnallocatedCString& rhs) -> OTNotaryID;
     static auto Factory(const String& rhs) -> OTNotaryID;
 
+    Notary(const Notary&) = delete;
+    Notary(Notary&&) = delete;
+    auto operator=(const Notary&) -> Notary& = delete;
+    auto operator=(Notary&&) -> Notary& = delete;
+
     ~Notary() override = default;
 
 protected:
@@ -85,9 +90,5 @@ private:
 #ifndef _WIN32
     auto clone() const -> Notary* override = 0;
 #endif
-    Notary(const Notary&) = delete;
-    Notary(Notary&&) = delete;
-    auto operator=(const Notary&) -> Notary& = delete;
-    auto operator=(Notary&&) -> Notary& = delete;
 };
 }  // namespace opentxs::identifier

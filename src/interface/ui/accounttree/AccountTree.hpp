@@ -97,6 +97,11 @@ public:
         const api::session::Client& api,
         const identifier::Nym& nymID,
         const SimpleCallback& cb) noexcept;
+    AccountTree() = delete;
+    AccountTree(const AccountTree&) = delete;
+    AccountTree(AccountTree&&) = delete;
+    auto operator=(const AccountTree&) -> AccountTree& = delete;
+    auto operator=(AccountTree&&) -> AccountTree& = delete;
 
     ~AccountTree() final;
 
@@ -176,11 +181,5 @@ private:
     auto process_blockchain_balance(Message&& message) noexcept -> void;
     auto process_custodial(Message&& message) noexcept -> void;
     auto startup() noexcept -> void;
-
-    AccountTree() = delete;
-    AccountTree(const AccountTree&) = delete;
-    AccountTree(AccountTree&&) = delete;
-    auto operator=(const AccountTree&) -> AccountTree& = delete;
-    auto operator=(AccountTree&&) -> AccountTree& = delete;
 };
 }  // namespace opentxs::ui::implementation

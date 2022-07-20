@@ -112,15 +112,14 @@ public:
         const Identifier& requestID,
         const bool isUsed = true) -> bool = 0;
 
-    virtual ~Issuer() = default;
-
-protected:
-    Issuer() = default;
-
-private:
     Issuer(const Issuer&) = delete;
     Issuer(Issuer&&) = delete;
     auto operator=(const Issuer&) -> Issuer& = delete;
     auto operator=(Issuer&&) -> Issuer& = delete;
+
+    virtual ~Issuer() = default;
+
+protected:
+    Issuer() = default;
 };
 }  // namespace opentxs::otx::client

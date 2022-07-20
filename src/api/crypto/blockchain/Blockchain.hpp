@@ -284,16 +284,15 @@ public:
         const api::Legacy& legacy,
         const UnallocatedCString& dataFolder,
         const Options& args) noexcept;
-
-    ~Blockchain() final;
-
-private:
-    std::unique_ptr<Imp> imp_;
-
     Blockchain() = delete;
     Blockchain(const Blockchain&) = delete;
     Blockchain(Blockchain&&) = delete;
     auto operator=(const Blockchain&) -> Blockchain& = delete;
     auto operator=(Blockchain&&) -> Blockchain& = delete;
+
+    ~Blockchain() final;
+
+private:
+    std::unique_ptr<Imp> imp_;
 };
 }  // namespace opentxs::api::crypto::imp

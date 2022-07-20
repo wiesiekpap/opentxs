@@ -45,15 +45,14 @@ public:
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ActivitySummaryItem> = 0;
 
-    ~ActivitySummary() override = default;
-
-protected:
-    ActivitySummary() = default;
-
-private:
     ActivitySummary(const ActivitySummary&) = delete;
     ActivitySummary(ActivitySummary&&) = delete;
     auto operator=(const ActivitySummary&) -> ActivitySummary& = delete;
     auto operator=(ActivitySummary&&) -> ActivitySummary& = delete;
+
+    ~ActivitySummary() override = default;
+
+protected:
+    ActivitySummary() = default;
 };
 }  // namespace opentxs::ui

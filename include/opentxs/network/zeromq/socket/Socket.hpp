@@ -70,15 +70,14 @@ public:
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Socket& = 0;
 
-    virtual ~Socket() = default;
-
-protected:
-    Socket() noexcept = default;
-
-private:
     Socket(const Socket&) = delete;
     Socket(Socket&&) = default;
     auto operator=(const Socket&) -> Socket& = delete;
     auto operator=(Socket&&) -> Socket& = default;
+
+    virtual ~Socket() = default;
+
+protected:
+    Socket() noexcept = default;
 };
 }  // namespace opentxs::network::zeromq::socket

@@ -92,6 +92,12 @@ public:
         const Push push) -> otx::client::NetworkReplyMessage;
     auto Status() const -> bool;
 
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> ServerConnection& = delete;
+    auto operator=(Imp&&) -> ServerConnection& = delete;
+
     ~Imp() final;
 
 private:
@@ -146,10 +152,5 @@ private:
         const api::network::ZMQ& zmq,
         const zeromq::socket::Publish& updates,
         const OTServerContract& contract);
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> ServerConnection& = delete;
-    auto operator=(Imp&&) -> ServerConnection& = delete;
 };
 }  // namespace opentxs::network

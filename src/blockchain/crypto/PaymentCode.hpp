@@ -137,6 +137,10 @@ public:
         const SerializedType& serialized,
         Identifier& id,
         OTIdentifier&& contact) noexcept(false);
+    PaymentCode(const PaymentCode&) = delete;
+    PaymentCode(PaymentCode&&) = delete;
+    auto operator=(const PaymentCode&) -> PaymentCode& = delete;
+    auto operator=(PaymentCode&&) -> PaymentCode& = delete;
 
     ~PaymentCode() final = default;
 
@@ -176,10 +180,5 @@ private:
     {
         contacts.emplace(get_contact());
     }
-
-    PaymentCode(const PaymentCode&) = delete;
-    PaymentCode(PaymentCode&&) = delete;
-    auto operator=(const PaymentCode&) -> PaymentCode& = delete;
-    auto operator=(PaymentCode&&) -> PaymentCode& = delete;
 };
 }  // namespace opentxs::blockchain::crypto::implementation

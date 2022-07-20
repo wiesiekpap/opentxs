@@ -230,36 +230,7 @@ Options::Imp::Imp() noexcept
 {
 }
 
-Options::Imp::Imp(const Imp& rhs) noexcept
-    : blockchain_disabled_chains_(rhs.blockchain_disabled_chains_)
-    , blockchain_ipv4_bind_(rhs.blockchain_ipv4_bind_)
-    , blockchain_ipv6_bind_(rhs.blockchain_ipv6_bind_)
-    , blockchain_storage_level_(rhs.blockchain_storage_level_)
-    , blockchain_sync_server_enabled_(rhs.blockchain_sync_server_enabled_)
-    , blockchain_sync_servers_(rhs.blockchain_sync_servers_)
-    , blockchain_wallet_enabled_(rhs.blockchain_wallet_enabled_)
-    , default_mint_key_bytes_(rhs.default_mint_key_bytes_)
-    , experimental_(rhs.experimental_)
-    , home_(rhs.home_)
-    , log_endpoint_(rhs.log_endpoint_)
-    , ipv4_connection_mode_(rhs.ipv4_connection_mode_)
-    , ipv6_connection_mode_(rhs.ipv6_connection_mode_)
-    , log_level_(rhs.log_level_)
-    , notary_bind_inproc_(rhs.notary_bind_inproc_)
-    , notary_bind_ip_(rhs.notary_bind_ip_)
-    , notary_bind_port_(rhs.notary_bind_port_)
-    , notary_name_(rhs.notary_name_)
-    , notary_public_eep_(rhs.notary_public_eep_)
-    , notary_public_ipv4_(rhs.notary_public_ipv4_)
-    , notary_public_ipv6_(rhs.notary_public_ipv6_)
-    , notary_public_onion_(rhs.notary_public_onion_)
-    , notary_public_port_(rhs.notary_public_port_)
-    , notary_terms_(rhs.notary_terms_)
-    , qt_root_object_(rhs.qt_root_object_)
-    , storage_primary_plugin_(rhs.storage_primary_plugin_)
-    , test_mode_(rhs.test_mode_)
-{
-}
+Options::Imp::Imp(const Imp& rhs) noexcept = default;
 
 auto Options::Imp::convert(std::string_view value) const noexcept(false)
     -> blockchain::Type

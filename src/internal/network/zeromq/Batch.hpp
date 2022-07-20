@@ -59,14 +59,12 @@ public:
         const BatchID id,
         const zeromq::Context& context,
         Vector<socket::Type>&& types) noexcept;
-
-    ~Batch();
-
-private:
     Batch() = delete;
     Batch(const Batch&) = delete;
     Batch(Batch&&) = delete;
     auto operator=(const Batch&) -> Batch& = delete;
     auto operator=(Batch&&) -> Batch& = delete;
+
+    ~Batch();
 };
 }  // namespace opentxs::network::zeromq::internal

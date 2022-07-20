@@ -100,6 +100,11 @@ public:
     virtual auto WriteInto(const std::optional<Mode> = {}) noexcept
         -> AllocateOutput = 0;
 
+    Secret(const Secret& rhs) = delete;
+    Secret(Secret&& rhs) = delete;
+    auto operator=(const Secret& rhs) -> Secret& = delete;
+    auto operator=(Secret&& rhs) -> Secret& = delete;
+
     virtual ~Secret() = default;
 
 protected:
@@ -112,14 +117,6 @@ private:
 public:
 #endif
     virtual auto clone() const noexcept -> Secret* = 0;
-#ifdef _WIN32
-private:
-#endif
-
-    Secret(const Secret& rhs) = delete;
-    Secret(Secret&& rhs) = delete;
-    auto operator=(const Secret& rhs) -> Secret& = delete;
-    auto operator=(Secret&& rhs) -> Secret& = delete;
 };
 }  // namespace opentxs
 

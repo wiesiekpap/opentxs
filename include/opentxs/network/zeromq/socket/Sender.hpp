@@ -32,15 +32,14 @@ class OPENTXS_EXPORT Sender : virtual public Socket
 public:
     virtual auto Send(Message&& message) const noexcept -> bool = 0;
 
-    ~Sender() override = default;
-
-protected:
-    Sender() = default;
-
-private:
     Sender(const Sender&) = delete;
     Sender(Sender&&) = delete;
     auto operator=(const Sender&) -> Sender& = delete;
     auto operator=(Sender&&) -> Sender& = delete;
+
+    ~Sender() override = default;
+
+protected:
+    Sender() = default;
 };
 }  // namespace opentxs::network::zeromq::socket

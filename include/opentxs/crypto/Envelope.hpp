@@ -63,6 +63,11 @@ public:
         const ReadView plaintext,
         const PasswordPrompt& reason) noexcept -> bool = 0;
 
+    Envelope(const Envelope&) = delete;
+    Envelope(Envelope&&) = delete;
+    auto operator=(const Envelope&) -> Envelope& = delete;
+    auto operator=(Envelope&&) -> Envelope& = delete;
+
     virtual ~Envelope() = default;
 
 protected:
@@ -70,10 +75,5 @@ protected:
 
 private:
     virtual auto clone() const noexcept -> Envelope* = 0;
-
-    Envelope(const Envelope&) = delete;
-    Envelope(Envelope&&) = delete;
-    auto operator=(const Envelope&) -> Envelope& = delete;
-    auto operator=(Envelope&&) -> Envelope& = delete;
 };
 }  // namespace opentxs::crypto

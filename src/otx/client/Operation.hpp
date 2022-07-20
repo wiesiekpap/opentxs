@@ -164,6 +164,12 @@ public:
     auto WithdrawCash(const Identifier& accountID, const Amount& amount)
         -> bool override;
 
+    Operation() = delete;
+    Operation(const Operation&) = delete;
+    Operation(Operation&&) = delete;
+    auto operator=(const Operation&) -> Operation& = delete;
+    auto operator=(Operation&&) -> Operation& = delete;
+
     ~Operation() override;
 
 private:
@@ -349,10 +355,5 @@ private:
         const identifier::Nym& nym,
         const identifier::Notary& server,
         const PasswordPrompt& reason);
-    Operation() = delete;
-    Operation(const Operation&) = delete;
-    Operation(Operation&&) = delete;
-    auto operator=(const Operation&) -> Operation& = delete;
-    auto operator=(Operation&&) -> Operation& = delete;
 };
 }  // namespace opentxs::otx::client::implementation

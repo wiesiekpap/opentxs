@@ -60,10 +60,10 @@ OTAPI_Exec::OTAPI_Exec(
     const api::session::Contacts& contacts,
     const api::network::ZMQ& zeromq,
     const OT_API& otapi,
-    const ContextLockCallback& lockCallback)
+    ContextLockCallback lockCallback)
     : api_(api)
     , ot_api_(otapi)
-    , lock_callback_(lockCallback)
+    , lock_callback_(std::move(lockCallback))
 {
     // WARNING: do not access api_.Wallet() during construction
 }

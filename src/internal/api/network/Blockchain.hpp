@@ -97,15 +97,14 @@ public:
         const Options& args) noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 
+    Blockchain(const Blockchain&) = delete;
+    Blockchain(Blockchain&&) = delete;
+    auto operator=(const Blockchain&) -> Blockchain& = delete;
+    auto operator=(Blockchain&&) -> Blockchain& = delete;
+
     virtual ~Blockchain() = default;
 
 protected:
     Blockchain() = default;
-
-private:
-    Blockchain(const Blockchain&) = delete;
-    Blockchain(Blockchain&&) = delete;
-    Blockchain& operator=(const Blockchain&) = delete;
-    Blockchain& operator=(Blockchain&&) = delete;
 };
 }  // namespace opentxs::api::network::internal

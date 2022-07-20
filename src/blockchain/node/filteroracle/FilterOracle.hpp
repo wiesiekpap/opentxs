@@ -184,6 +184,11 @@ public:
         const blockchain::Type chain,
         const blockchain::cfilter::Type filter,
         const UnallocatedCString& shutdown) noexcept;
+    FilterOracle() = delete;
+    FilterOracle(const FilterOracle&) = delete;
+    FilterOracle(FilterOracle&&) = delete;
+    auto operator=(const FilterOracle&) -> FilterOracle& = delete;
+    auto operator=(FilterOracle&&) -> FilterOracle& = delete;
 
     ~FilterOracle() final;
 
@@ -248,11 +253,5 @@ private:
         const cfilter::Header& header) noexcept -> block::Position;
     auto compare_tips_to_checkpoint() noexcept -> void;
     auto compare_tips_to_header_chain() noexcept -> bool;
-
-    FilterOracle() = delete;
-    FilterOracle(const FilterOracle&) = delete;
-    FilterOracle(FilterOracle&&) = delete;
-    auto operator=(const FilterOracle&) -> FilterOracle& = delete;
-    auto operator=(FilterOracle&&) -> FilterOracle& = delete;
 };
 }  // namespace opentxs::blockchain::node::implementation

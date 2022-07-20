@@ -88,6 +88,12 @@ public:
     auto UpgradeGroupVersion(const VersionNumber groupVersion) noexcept
         -> bool final;
 
+    Set() = delete;
+    Set(const Set&) = delete;
+    Set(Set&&) = delete;
+    auto operator=(const Set&) -> Set& = delete;
+    auto operator=(Set&&) -> Set& = delete;
+
     ~Set() final = default;
 
 private:
@@ -114,10 +120,5 @@ private:
     Set(const api::Session& api,
         const identifier::Nym& nym,
         const SerializedType& serialized) noexcept(false);
-    Set() = delete;
-    Set(const Set&) = delete;
-    Set(Set&&) = delete;
-    auto operator=(const Set&) -> Set& = delete;
-    auto operator=(Set&&) -> Set& = delete;
 };
 }  // namespace opentxs::identity::wot::verification::implementation

@@ -60,11 +60,6 @@ private:
                                    // destructs, it will remove itself from the
                                    // script.
 
-    OTVariable(const OTVariable&) = delete;
-    OTVariable(OTVariable&&) = delete;
-    auto operator=(const OTVariable&) -> OTVariable& = delete;
-    auto operator=(OTVariable&&) -> OTVariable& = delete;
-
 public:
     void RegisterForExecution(OTScript& theScript);  // We keep an
                                                      // internal script
@@ -127,6 +122,11 @@ public:
         const UnallocatedCString& str_Name,
         const UnallocatedCString& str_Value,
         const OTVariable_Access theAccess = Var_Persistent);
+    OTVariable(const OTVariable&) = delete;
+    OTVariable(OTVariable&&) = delete;
+    auto operator=(const OTVariable&) -> OTVariable& = delete;
+    auto operator=(OTVariable&&) -> OTVariable& = delete;
+
     virtual ~OTVariable();
 
     void Serialize(Tag& parent, bool bCalculatingID = false) const;

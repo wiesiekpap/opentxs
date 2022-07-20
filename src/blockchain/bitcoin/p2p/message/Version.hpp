@@ -141,6 +141,10 @@ public:
         const block::Height height,
         const bool relay,
         const Time time = Clock::now()) noexcept;
+    Version(const Version&) = delete;
+    Version(Version&&) = delete;
+    auto operator=(const Version&) -> Version& = delete;
+    auto operator=(Version&&) -> Version& = delete;
 
     ~Version() final = default;
 
@@ -159,10 +163,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Version(const Version&) = delete;
-    Version(Version&&) = delete;
-    auto operator=(const Version&) -> Version& = delete;
-    auto operator=(Version&&) -> Version& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

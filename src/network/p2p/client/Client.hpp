@@ -80,6 +80,11 @@ public:
     auto Init(const api::network::Blockchain& parent) noexcept -> void;
 
     Imp(const api::Session& api, zeromq::internal::Handle&& handle) noexcept;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp();
 
@@ -155,10 +160,4 @@ private:
     auto shutdown() noexcept -> void;
     auto startup(const api::network::Blockchain& parent) noexcept -> void;
     auto state_machine() noexcept -> void;
-
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };

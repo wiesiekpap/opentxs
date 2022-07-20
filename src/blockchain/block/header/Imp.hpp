@@ -83,6 +83,11 @@ public:
     auto RemoveCheckpointState() noexcept -> void final;
     auto SetDisconnectedState() noexcept -> void final;
 
+    Header() = delete;
+    Header(Header&&) = delete;
+    auto operator=(const Header&) -> Header& = delete;
+    auto operator=(Header&&) -> Header& = delete;
+
 protected:
     static const VersionNumber default_version_{1};
 
@@ -117,10 +122,5 @@ private:
     Status status_;
     Status inherit_status_;
     OTWork inherit_work_;
-
-    Header() = delete;
-    Header(Header&&) = delete;
-    auto operator=(const Header&) -> Header& = delete;
-    auto operator=(Header&&) -> Header& = delete;
 };
 }  // namespace opentxs::blockchain::block::implementation

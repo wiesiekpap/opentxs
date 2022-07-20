@@ -71,6 +71,10 @@ struct RPCPushCounter::Imp {
             ot::network::zeromq::MakeDeterministicInproc("rpc/push", -1, 1);
         socket_->Start(endpoint);
     }
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() { socket_->Close(); }
 
@@ -86,11 +90,6 @@ private:
         auto lock = ot::Lock{lock_};
         received_.emplace_back(std::move(in));
     }
-
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
 };
 
 RPC_fixture::RPC_fixture() noexcept

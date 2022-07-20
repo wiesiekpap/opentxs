@@ -50,6 +50,11 @@ public:
         const std::string_view publicUpdate) noexcept -> bool;
 
     Server(const api::Session& api, const zeromq::Context& zmq) noexcept;
+    Server() = delete;
+    Server(const Server&) = delete;
+    Server(Server&&) = delete;
+    auto operator=(const Server&) -> Server& = delete;
+    auto operator=(Server&&) -> Server& = delete;
 
     ~Server();
 
@@ -57,11 +62,5 @@ private:
     class Imp;
 
     Imp* imp_;
-
-    Server() = delete;
-    Server(const Server&) = delete;
-    Server(Server&&) = delete;
-    auto operator=(const Server&) -> Server& = delete;
-    auto operator=(Server&&) -> Server& = delete;
 };
 }  // namespace opentxs::network::p2p

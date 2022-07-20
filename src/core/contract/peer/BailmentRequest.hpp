@@ -46,19 +46,6 @@ class Bailment final : public request::Bailment,
                        public peer::implementation::Request
 {
 public:
-    Bailment(
-        const api::Session& api,
-        const Nym_p& nym,
-        const identifier::Nym& recipientID,
-        const identifier::UnitDefinition& unitID,
-        const identifier::Notary& serverID);
-    Bailment(
-        const api::Session& api,
-        const Nym_p& nym,
-        const proto::PeerRequest& serialized);
-
-    ~Bailment() final = default;
-
     auto asBailment() const noexcept -> const request::Bailment& final
     {
         return *this;
@@ -69,6 +56,24 @@ public:
     {
         return unit_;
     }
+
+    Bailment(
+        const api::Session& api,
+        const Nym_p& nym,
+        const identifier::Nym& recipientID,
+        const identifier::UnitDefinition& unitID,
+        const identifier::Notary& serverID);
+    Bailment(
+        const api::Session& api,
+        const Nym_p& nym,
+        const proto::PeerRequest& serialized);
+    Bailment() = delete;
+    Bailment(const Bailment&);
+    Bailment(Bailment&&) = delete;
+    auto operator=(const Bailment&) -> Bailment& = delete;
+    auto operator=(Bailment&&) -> Bailment& = delete;
+
+    ~Bailment() final = default;
 
 private:
     friend opentxs::Factory;
@@ -83,11 +88,5 @@ private:
         return new Bailment(*this);
     }
     auto IDVersion(const Lock& lock) const -> SerializedType final;
-
-    Bailment() = delete;
-    Bailment(const Bailment&);
-    Bailment(Bailment&&) = delete;
-    auto operator=(const Bailment&) -> Bailment& = delete;
-    auto operator=(Bailment&&) -> Bailment& = delete;
 };
 }  // namespace opentxs::contract::peer::request::implementation

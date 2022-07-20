@@ -58,6 +58,12 @@ public:
     auto Value() const noexcept -> Type final { return value_; }
     auto Version() const noexcept -> VersionNumber final { return version_; }
 
+    Item() = delete;
+    Item(const Item&) = delete;
+    Item(Item&&) = delete;
+    auto operator=(const Item&) -> Item& = delete;
+    auto operator=(Item&&) -> Item& = delete;
+
     ~Item() final = default;
 
 private:
@@ -119,10 +125,5 @@ private:
     Item(
         const internal::Nym& parent,
         const SerializedType& serialized) noexcept(false);
-    Item() = delete;
-    Item(const Item&) = delete;
-    Item(Item&&) = delete;
-    auto operator=(const Item&) -> Item& = delete;
-    auto operator=(Item&&) -> Item& = delete;
 };
 }  // namespace opentxs::identity::wot::verification::implementation

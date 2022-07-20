@@ -43,17 +43,16 @@ public:
     ShutdownSender(
         const network::zeromq::Context& zmq,
         const UnallocatedCString endpoint) noexcept;
-
-    ~ShutdownSender();
-
-private:
-    OTZMQPublishSocket socket_;
-
     ShutdownSender() = delete;
     ShutdownSender(const ShutdownSender&) = delete;
     ShutdownSender(ShutdownSender&&) = delete;
     auto operator=(const ShutdownSender&) -> ShutdownSender& = delete;
     auto operator=(ShutdownSender&&) -> ShutdownSender& = delete;
+
+    ~ShutdownSender();
+
+private:
+    OTZMQPublishSocket socket_;
 };
 
 class ShutdownReceiver
@@ -73,17 +72,16 @@ public:
         const network::zeromq::Context& zmq,
         const Endpoints endpoints,
         Callback cb) noexcept;
+    ShutdownReceiver() = delete;
+    ShutdownReceiver(const ShutdownReceiver&) = delete;
+    ShutdownReceiver(ShutdownReceiver&&) = delete;
+    auto operator=(const ShutdownReceiver&) -> ShutdownReceiver& = delete;
+    auto operator=(ShutdownReceiver&&) -> ShutdownReceiver& = delete;
 
     ~ShutdownReceiver();
 
 private:
     OTZMQListenCallback callback_;
     OTZMQSubscribeSocket socket_;
-
-    ShutdownReceiver() = delete;
-    ShutdownReceiver(const ShutdownReceiver&) = delete;
-    ShutdownReceiver(ShutdownReceiver&&) = delete;
-    auto operator=(const ShutdownReceiver&) -> ShutdownReceiver& = delete;
-    auto operator=(ShutdownReceiver&&) -> ShutdownReceiver& = delete;
 };
 }  // namespace opentxs::internal

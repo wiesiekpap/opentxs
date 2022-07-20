@@ -84,6 +84,11 @@ public:
         const api::session::Client& api,
         const identifier::Nym& nymID,
         const SimpleCallback& cb) noexcept;
+    AccountList() = delete;
+    AccountList(const AccountList&) = delete;
+    AccountList(AccountList&&) = delete;
+    auto operator=(const AccountList&) -> AccountList& = delete;
+    auto operator=(AccountList&&) -> AccountList& = delete;
 
     ~AccountList() final;
 
@@ -138,11 +143,5 @@ private:
     auto process_blockchain(Message&& message) noexcept -> void;
     auto process_blockchain_balance(Message&& message) noexcept -> void;
     auto startup() noexcept -> void;
-
-    AccountList() = delete;
-    AccountList(const AccountList&) = delete;
-    AccountList(AccountList&&) = delete;
-    auto operator=(const AccountList&) -> AccountList& = delete;
-    auto operator=(AccountList&&) -> AccountList& = delete;
 };
 }  // namespace opentxs::ui::implementation

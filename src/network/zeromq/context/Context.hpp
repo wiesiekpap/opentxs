@@ -151,6 +151,10 @@ public:
     auto ThreadID(BatchID id) const noexcept -> std::thread::id final;
 
     Context() noexcept;
+    Context(const Context&) = delete;
+    Context(Context&&) = delete;
+    auto operator=(const Context&) -> Context& = delete;
+    auto operator=(Context&&) -> Context& = delete;
 
     ~Context() final;
 
@@ -159,10 +163,5 @@ private:
     mutable context::Pool pool_;
 
     static auto max_sockets() noexcept -> int;
-
-    Context(const Context&) = delete;
-    Context(Context&&) = delete;
-    auto operator=(const Context&) -> Context& = delete;
-    auto operator=(Context&&) -> Context& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

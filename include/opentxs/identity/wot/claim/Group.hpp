@@ -49,18 +49,6 @@ class OPENTXS_EXPORT Group
 public:
     using ItemMap = UnallocatedMap<OTIdentifier, std::shared_ptr<claim::Item>>;
 
-    Group(
-        const UnallocatedCString& nym,
-        const claim::SectionType section,
-        const claim::ClaimType type,
-        const ItemMap& items);
-    Group(
-        const UnallocatedCString& nym,
-        const claim::SectionType section,
-        const std::shared_ptr<Item>& item);
-    Group(const Group&) noexcept;
-    Group(Group&&) noexcept;
-
     auto operator+(const Group& rhs) const -> Group;
 
     auto begin() const -> ItemMap::const_iterator;
@@ -78,15 +66,26 @@ public:
     auto Size() const -> std::size_t;
     auto Type() const -> const claim::ClaimType&;
 
+    Group(
+        const UnallocatedCString& nym,
+        const claim::SectionType section,
+        const claim::ClaimType type,
+        const ItemMap& items);
+    Group(
+        const UnallocatedCString& nym,
+        const claim::SectionType section,
+        const std::shared_ptr<Item>& item);
+    Group() = delete;
+    Group(const Group&) noexcept;
+    Group(Group&&) noexcept;
+    auto operator=(const Group&) -> Group& = delete;
+    auto operator=(Group&&) -> Group& = delete;
+
     ~Group();
 
 private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    Group() = delete;
-    auto operator=(const Group&) -> Group& = delete;
-    auto operator=(Group&&) -> Group& = delete;
 };
 }  // namespace opentxs::identity::wot::claim

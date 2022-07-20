@@ -31,15 +31,14 @@ public:
         const crypto::HashType hash,
         Space& signature) const noexcept -> bool = 0;
 
-    ~EcdsaProvider() override = default;
-
-protected:
-    EcdsaProvider() = default;
-
-private:
     EcdsaProvider(const EcdsaProvider&) = delete;
     EcdsaProvider(EcdsaProvider&&) = delete;
     auto operator=(const EcdsaProvider&) -> EcdsaProvider& = delete;
     auto operator=(EcdsaProvider&&) -> EcdsaProvider& = delete;
+
+    ~EcdsaProvider() override = default;
+
+protected:
+    EcdsaProvider() = default;
 };
 }  // namespace opentxs::crypto

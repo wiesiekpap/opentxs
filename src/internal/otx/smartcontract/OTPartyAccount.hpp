@@ -151,6 +151,11 @@ public:
         const String& strAcctID,
         const String& strInstrumentDefinitionID,
         std::int64_t lClosingTransNo);
+    OTPartyAccount() = delete;
+    OTPartyAccount(const OTPartyAccount&) = delete;
+    OTPartyAccount(OTPartyAccount&&) = delete;
+    auto operator=(const OTPartyAccount&) -> OTPartyAccount& = delete;
+    auto operator=(OTPartyAccount&&) -> OTPartyAccount& = delete;
 
     virtual ~OTPartyAccount();
 
@@ -193,11 +198,5 @@ private:
     //
 
     auto get_account() const -> SharedAccount;
-
-    OTPartyAccount() = delete;
-    OTPartyAccount(const OTPartyAccount&) = delete;
-    OTPartyAccount(OTPartyAccount&&) = delete;
-    auto operator=(const OTPartyAccount&) -> OTPartyAccount& = delete;
-    auto operator=(OTPartyAccount&&) -> OTPartyAccount& = delete;
 };
 }  // namespace opentxs

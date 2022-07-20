@@ -364,6 +364,11 @@ struct TXOs {
     auto Extract(TXOState& output) const noexcept -> void;
 
     TXOs(const User& owner) noexcept;
+    TXOs() = delete;
+    TXOs(const TXOs&) = delete;
+    TXOs(TXOs&&) = delete;
+    auto operator=(const TXOs&) -> TXOs& = delete;
+    auto operator=(TXOs&&) -> TXOs& = delete;
 
     ~TXOs();
 
@@ -371,12 +376,6 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-
-    TXOs() = delete;
-    TXOs(const TXOs&) = delete;
-    TXOs(TXOs&&) = delete;
-    auto operator=(const TXOs&) -> TXOs& = delete;
-    auto operator=(TXOs&&) -> TXOs& = delete;
 };
 
 class Regtest_fixture_base : virtual public ::testing::Test

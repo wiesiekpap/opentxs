@@ -99,15 +99,14 @@ public:
         const Signature& theSignature,
         const crypto::HashType hashType) const -> bool = 0;
 
-    OPENTXS_NO_EXPORT virtual ~AsymmetricProvider() = default;
-
-protected:
-    AsymmetricProvider() = default;
-
-private:
     AsymmetricProvider(const AsymmetricProvider&) = delete;
     AsymmetricProvider(AsymmetricProvider&&) = delete;
     auto operator=(const AsymmetricProvider&) -> AsymmetricProvider& = delete;
     auto operator=(AsymmetricProvider&&) -> AsymmetricProvider& = delete;
+
+    OPENTXS_NO_EXPORT virtual ~AsymmetricProvider() = default;
+
+protected:
+    AsymmetricProvider() = default;
 };
 }  // namespace opentxs::crypto

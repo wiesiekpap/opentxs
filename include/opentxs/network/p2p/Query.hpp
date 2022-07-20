@@ -17,6 +17,10 @@ public:
     class Imp;
 
     OPENTXS_NO_EXPORT Query(Imp* imp) noexcept;
+    Query(const Query&) = delete;
+    Query(Query&&) = delete;
+    auto operator=(const Query&) -> Query& = delete;
+    auto operator=(Query&&) -> Query& = delete;
 
     ~Query() final;
 
@@ -25,10 +29,5 @@ private:
 #pragma GCC diagnostic ignored "-Wshadow-field"
     Imp* imp_;
 #pragma GCC diagnostic pop
-
-    Query(const Query&) = delete;
-    Query(Query&&) = delete;
-    auto operator=(const Query&) -> Query& = delete;
-    auto operator=(Query&&) -> Query& = delete;
 };
 }  // namespace opentxs::network::p2p

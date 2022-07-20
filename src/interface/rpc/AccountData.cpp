@@ -80,8 +80,6 @@ struct AccountData::Imp {
               rhs.type_)
     {
     }
-
-private:
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;

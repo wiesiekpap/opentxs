@@ -48,12 +48,10 @@ public:
     Imp() noexcept;
     Imp(const ProtobufType& input) noexcept;
     Imp(const Imp&) noexcept;
-
-    ~Imp() final;
-
-private:
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;
+
+    ~Imp() final;
 };
 }  // namespace opentxs::network::zeromq

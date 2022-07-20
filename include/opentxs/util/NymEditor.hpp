@@ -163,6 +163,10 @@ public:
         const bool primary,
         const PasswordPrompt& reason) -> bool;
 
+    NymData() = delete;
+    auto operator=(const NymData&) -> NymData& = delete;
+    auto operator=(NymData&&) -> NymData& = delete;
+
     ~NymData();
 
 private:
@@ -189,8 +193,5 @@ private:
         std::mutex& objectMutex,
         const std::shared_ptr<identity::Nym>& nym,
         LockedSave save);
-    NymData() = delete;
-    auto operator=(const NymData&) -> NymData& = delete;
-    auto operator=(NymData&&) -> NymData& = delete;
 };
 }  // namespace opentxs

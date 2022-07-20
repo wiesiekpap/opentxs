@@ -58,15 +58,13 @@ struct ListAccounts final : public Base::Imp {
     {
         check_session();
     }
-
-    ~ListAccounts() final = default;
-
-private:
     ListAccounts() = delete;
     ListAccounts(const ListAccounts&) = delete;
     ListAccounts(ListAccounts&&) = delete;
     auto operator=(const ListAccounts&) -> ListAccounts& = delete;
     auto operator=(ListAccounts&&) -> ListAccounts& = delete;
+
+    ~ListAccounts() final = default;
 };
 }  // namespace opentxs::rpc::request::implementation
 

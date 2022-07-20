@@ -99,15 +99,14 @@ public:
         const UnallocatedCString& claimID,
         const UnallocatedCString& value) const noexcept -> bool = 0;
 
-    ~Profile() override = default;
-
-protected:
-    Profile() noexcept = default;
-
-private:
     Profile(const Profile&) = delete;
     Profile(Profile&&) = delete;
     auto operator=(const Profile&) -> Profile& = delete;
     auto operator=(Profile&&) -> Profile& = delete;
+
+    ~Profile() override = default;
+
+protected:
+    Profile() noexcept = default;
 };
 }  // namespace opentxs::ui

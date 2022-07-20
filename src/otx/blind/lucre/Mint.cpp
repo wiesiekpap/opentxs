@@ -13,6 +13,7 @@ extern "C" {
 #include <openssl/ossl_typ.h>
 }
 
+#include <array>
 #include <limits>
 #include <memory>
 #include <utility>
@@ -283,8 +284,8 @@ auto Lucre::SignToken(
     req.WriteBIO(bioSignature);
     DumpNumber(bioSignature, "signature=", bnSignature);
     BN_free(bnSignature);
-    char sig_buf[1024]{};
-    auto sig_len = BIO_read(bioSignature, sig_buf, 1023);
+    auto sig_buf = std::array<char, 1024>{};
+    auto sig_len = BIO_read(bioSignature, sig_buf.data(), 1023);
     sig_buf[sig_len] = '\0';
 
     if (0 == sig_len) {
@@ -295,7 +296,7 @@ auto Lucre::SignToken(
         LogInsane()(OT_PRETTY_CLASS())("Signature copied").Flush();
     }
 
-    auto signature = String::Factory(sig_buf);
+    auto signature = String::Factory(sig_buf.data());
 
     if (false == lToken.AddSignature(signature)) {
         LogError()(OT_PRETTY_CLASS())("Failed to set signature").Flush();

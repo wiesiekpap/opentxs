@@ -113,8 +113,6 @@ public:
               proto::Factory<proto::Identifier>(id.data(), id.size())))
     {
     }
-
-private:
     Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;

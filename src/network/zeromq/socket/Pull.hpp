@@ -55,6 +55,11 @@ public:
         const Direction direction,
         const zeromq::ListenCallback& callback) noexcept;
     Pull(const zeromq::Context& context, const Direction direction) noexcept;
+    Pull() = delete;
+    Pull(const Pull&) = delete;
+    Pull(Pull&&) = delete;
+    auto operator=(const Pull&) -> Pull& = delete;
+    auto operator=(Pull&&) -> Pull& = delete;
 
     ~Pull() final;
 
@@ -66,11 +71,5 @@ private:
 
     auto process_incoming(const Lock& lock, Message&& message) noexcept
         -> void final;
-
-    Pull() = delete;
-    Pull(const Pull&) = delete;
-    Pull(Pull&&) = delete;
-    auto operator=(const Pull&) -> Pull& = delete;
-    auto operator=(Pull&&) -> Pull& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

@@ -55,15 +55,13 @@ struct GetAccountActivity final : public Base::Imp {
         check_session();
         check_identifiers();
     }
-
-    ~GetAccountActivity() final = default;
-
-private:
     GetAccountActivity() = delete;
     GetAccountActivity(const GetAccountActivity&) = delete;
     GetAccountActivity(GetAccountActivity&&) = delete;
     auto operator=(const GetAccountActivity&) -> GetAccountActivity& = delete;
     auto operator=(GetAccountActivity&&) -> GetAccountActivity& = delete;
+
+    ~GetAccountActivity() final = default;
 };
 }  // namespace opentxs::rpc::request::implementation
 

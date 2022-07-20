@@ -87,15 +87,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto InternalNotary() noexcept
         -> session::internal::Notary& = 0;
 
-    OPENTXS_NO_EXPORT ~Notary() override = default;
-
-protected:
-    Notary() = default;
-
-private:
     Notary(const Notary&) = delete;
     Notary(Notary&&) = delete;
     auto operator=(const Notary&) -> Notary& = delete;
     auto operator=(Notary&&) -> Notary& = delete;
+
+    OPENTXS_NO_EXPORT ~Notary() override = default;
+
+protected:
+    Notary() = default;
 };
 }  // namespace opentxs::api::session

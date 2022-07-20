@@ -30,15 +30,14 @@ public:
     virtual auto SetPrivateKey(const UnallocatedCString& z85) const noexcept
         -> bool = 0;
 
-    ~Server() override = default;
-
-protected:
-    Server() noexcept = default;
-
-private:
     Server(const Server&) = delete;
     Server(Server&&) = delete;
     auto operator=(const Server&) -> Server& = delete;
     auto operator=(Server&&) -> Server& = delete;
+
+    ~Server() override = default;
+
+protected:
+    Server() noexcept = default;
 };
 }  // namespace opentxs::network::zeromq::curve

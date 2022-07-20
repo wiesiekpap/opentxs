@@ -40,15 +40,14 @@ public:
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::UnitListItem> = 0;
 
-    ~UnitList() override = default;
-
-protected:
-    UnitList() noexcept = default;
-
-private:
     UnitList(const UnitList&) = delete;
     UnitList(UnitList&&) = delete;
     auto operator=(const UnitList&) -> UnitList& = delete;
     auto operator=(UnitList&&) -> UnitList& = delete;
+
+    ~UnitList() override = default;
+
+protected:
+    UnitList() noexcept = default;
 };
 }  // namespace opentxs::ui

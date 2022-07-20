@@ -158,6 +158,11 @@ public:
         const api::session::Client& api,
         const api::crypto::Blockchain& blockchain,
         const Flag& running) noexcept;
+    ImpQt() = delete;
+    ImpQt(const ImpQt&) = delete;
+    ImpQt(ImpQt&&) = delete;
+    auto operator=(const ImpQt&) -> ImpQt& = delete;
+    auto operator=(ImpQt&&) -> ImpQt& = delete;
 
     ~ImpQt() final;
 
@@ -247,11 +252,5 @@ private:
     mutable SeedTreeQtPointer seed_tree_qt_;
     mutable SeedValidatorMap seed_validators_;
     mutable UnitListQtMap unit_lists_qt_;
-
-    ImpQt() = delete;
-    ImpQt(const ImpQt&) = delete;
-    ImpQt(ImpQt&&) = delete;
-    auto operator=(const ImpQt&) -> ImpQt& = delete;
-    auto operator=(ImpQt&&) -> ImpQt& = delete;
 };
 }  // namespace opentxs::api::session::ui

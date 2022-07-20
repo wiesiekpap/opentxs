@@ -52,13 +52,10 @@ public:
     {
         return payload_.at(position);
     }
-    auto begin() const noexcept -> const_iterator final
-    {
-        return const_iterator(this, 0);
-    }
+    auto begin() const noexcept -> const_iterator final { return {this, 0}; }
     auto end() const noexcept -> const_iterator final
     {
-        return const_iterator(this, payload_.size());
+        return {this, payload_.size()};
     }
     auto size() const noexcept -> std::size_t final { return payload_.size(); }
 
@@ -70,6 +67,10 @@ public:
         const api::Session& api,
         std::unique_ptr<Header> header,
         UnallocatedVector<value_type>&& payload) noexcept;
+    Notfound(const Notfound&) = delete;
+    Notfound(Notfound&&) = delete;
+    auto operator=(const Notfound&) -> Notfound& = delete;
+    auto operator=(Notfound&&) -> Notfound& = delete;
 
     ~Notfound() final = default;
 
@@ -78,10 +79,5 @@ private:
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;
-
-    Notfound(const Notfound&) = delete;
-    Notfound(Notfound&&) = delete;
-    auto operator=(const Notfound&) -> Notfound& = delete;
-    auto operator=(Notfound&&) -> Notfound& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

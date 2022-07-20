@@ -60,10 +60,7 @@ private:
             , future_(std::move(rhs.future_))
         {
         }
-
-    private:
         Task(const Task&) = delete;
-
         auto operator=(const Task&) -> Task& = delete;
         auto operator=(Task&&) -> Task& = delete;
     };

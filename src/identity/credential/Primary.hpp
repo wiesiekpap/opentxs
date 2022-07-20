@@ -79,6 +79,12 @@ public:
         const Identifier& masterID,
         const proto::Signature& masterSig) const -> bool final;
 
+    Primary() = delete;
+    Primary(const Primary&) = delete;
+    Primary(Primary&&) = delete;
+    auto operator=(const Primary&) -> Primary& = delete;
+    auto operator=(Primary&&) -> Primary& = delete;
+
     ~Primary() final = default;
 
 private:
@@ -125,10 +131,5 @@ private:
         const identity::internal::Authority& parent,
         const identity::Source& source,
         const proto::Credential& serializedCred) noexcept(false);
-    Primary() = delete;
-    Primary(const Primary&) = delete;
-    Primary(Primary&&) = delete;
-    auto operator=(const Primary&) -> Primary& = delete;
-    auto operator=(Primary&&) -> Primary& = delete;
 };
 }  // namespace opentxs::identity::credential::implementation

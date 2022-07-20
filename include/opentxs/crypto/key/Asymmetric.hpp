@@ -132,6 +132,11 @@ public:
     OPENTXS_NO_EXPORT virtual auto operator==(const Serialized&) const noexcept
         -> bool = 0;
 
+    Asymmetric(const Asymmetric&) = delete;
+    Asymmetric(Asymmetric&&) = delete;
+    auto operator=(const Asymmetric&) -> Asymmetric& = delete;
+    auto operator=(Asymmetric&&) -> Asymmetric& = delete;
+
     virtual ~Asymmetric() = default;
 
 protected:
@@ -141,10 +146,5 @@ private:
     friend OTAsymmetricKey;
 
     virtual auto clone() const noexcept -> Asymmetric* = 0;
-
-    Asymmetric(const Asymmetric&) = delete;
-    Asymmetric(Asymmetric&&) = delete;
-    auto operator=(const Asymmetric&) -> Asymmetric& = delete;
-    auto operator=(Asymmetric&&) -> Asymmetric& = delete;
 };
 }  // namespace opentxs::crypto::key

@@ -92,6 +92,13 @@ public:
         const identifier::Nym& nymID,
         const Identifier& accountID,
         const SimpleCallback& cb) noexcept;
+    CustodialAccountActivity() = delete;
+    CustodialAccountActivity(const CustodialAccountActivity&) = delete;
+    CustodialAccountActivity(CustodialAccountActivity&&) = delete;
+    auto operator=(const CustodialAccountActivity&)
+        -> CustodialAccountActivity& = delete;
+    auto operator=(CustodialAccountActivity&&)
+        -> CustodialAccountActivity& = delete;
 
     ~CustodialAccountActivity() final;
 
@@ -138,13 +145,5 @@ private:
     auto process_workflow(const Message& message) noexcept -> void;
     auto process_unit(const Message& message) noexcept -> void;
     auto startup() noexcept -> void final;
-
-    CustodialAccountActivity() = delete;
-    CustodialAccountActivity(const CustodialAccountActivity&) = delete;
-    CustodialAccountActivity(CustodialAccountActivity&&) = delete;
-    auto operator=(const CustodialAccountActivity&)
-        -> CustodialAccountActivity& = delete;
-    auto operator=(CustodialAccountActivity&&)
-        -> CustodialAccountActivity& = delete;
 };
 }  // namespace opentxs::ui::implementation

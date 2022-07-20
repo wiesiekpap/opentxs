@@ -11,10 +11,12 @@
 
 namespace opentxs::network::zeromq::socket::implementation
 {
+// NOLINTBEGIN(modernize-use-equals-default)
 template <typename Interface, typename ImplementationParent>
 Sender<Interface, ImplementationParent>::Sender() noexcept
 {
 }
+// NOLINTEND(modernize-use-equals-default)
 
 template <typename Interface, typename ImplementationParent>
 auto Sender<Interface, ImplementationParent>::Send(

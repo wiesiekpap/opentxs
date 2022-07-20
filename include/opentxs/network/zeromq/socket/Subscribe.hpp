@@ -39,6 +39,11 @@ public:
     virtual auto SetSocksProxy(const UnallocatedCString& proxy) const noexcept
         -> bool = 0;
 
+    Subscribe(const Subscribe&) = delete;
+    Subscribe(Subscribe&&) = delete;
+    auto operator=(const Subscribe&) -> Subscribe& = delete;
+    auto operator=(Subscribe&&) -> Subscribe& = delete;
+
     ~Subscribe() override = default;
 
 protected:
@@ -48,10 +53,5 @@ private:
     friend OTZMQSubscribeSocket;
 
     virtual auto clone() const noexcept -> Subscribe* = 0;
-
-    Subscribe(const Subscribe&) = delete;
-    Subscribe(Subscribe&&) = delete;
-    auto operator=(const Subscribe&) -> Subscribe& = delete;
-    auto operator=(Subscribe&&) -> Subscribe& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket

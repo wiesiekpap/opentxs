@@ -60,14 +60,7 @@ struct Group::Imp {
         for (const auto& it : items_) { OT_ASSERT(it.second); }
     }
 
-    Imp(const Imp& rhs)
-        : nym_(rhs.nym_)
-        , section_(rhs.section_)
-        , type_(rhs.type_)
-        , primary_(rhs.primary_)
-        , items_(rhs.items_)
-    {
-    }
+    Imp(const Imp& rhs) = default;
 
     Imp(Imp&& rhs)
         : nym_(std::move(const_cast<UnallocatedCString&>(rhs.nym_)))
@@ -177,7 +170,7 @@ auto Group::operator+(const Group& rhs) const -> Group
         OT_ASSERT(map[id])
     }
 
-    return Group(imp_->nym_, imp_->section_, imp_->type_, map);
+    return {imp_->nym_, imp_->section_, imp_->type_, map};
 }
 
 auto Group::AddItem(const std::shared_ptr<Item>& item) const -> Group
@@ -195,7 +188,7 @@ auto Group::AddItem(const std::shared_ptr<Item>& item) const -> Group
     auto map = imp_->items_;
     map[id] = item;
 
-    return Group(imp_->nym_, imp_->section_, imp_->type_, map);
+    return {imp_->nym_, imp_->section_, imp_->type_, map};
 }
 
 auto Group::AddPrimary(const std::shared_ptr<Item>& item) const -> Group
@@ -222,7 +215,7 @@ auto Group::AddPrimary(const std::shared_ptr<Item>& item) const -> Group
         OT_ASSERT(oldPrimary);
     }
 
-    return Group(imp_->nym_, imp_->section_, imp_->type_, map);
+    return {imp_->nym_, imp_->section_, imp_->type_, map};
 }
 
 auto Group::begin() const -> Group::ItemMap::const_iterator
@@ -267,7 +260,7 @@ auto Group::Delete(const Identifier& id) const -> Group
     auto map = imp_->items_;
     map.erase(id);
 
-    return Group(imp_->nym_, imp_->section_, imp_->type_, map);
+    return {imp_->nym_, imp_->section_, imp_->type_, map};
 }
 
 auto Group::end() const -> Group::ItemMap::const_iterator

@@ -268,6 +268,8 @@ public:
                    // this
                    // is where the ledger saves its contents
 
+    OTPaymentPlan() = delete;
+
     ~OTPaymentPlan() override;
 
 private:
@@ -414,7 +416,5 @@ private:
     // during execution.
     bool m_bProcessingInitialPayment;
     bool m_bProcessingPaymentPlan;
-
-    OTPaymentPlan() = delete;
 };
 }  // namespace opentxs

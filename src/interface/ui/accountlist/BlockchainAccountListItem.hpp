@@ -50,13 +50,6 @@ public:
         const AccountListRowID& rowID,
         const AccountListSortKey& sortKey,
         CustomData& custom) noexcept;
-
-    ~BlockchainAccountListItem() final;
-
-private:
-    const blockchain::Type chain_;
-    const UnallocatedCString notary_name_;
-
     BlockchainAccountListItem() = delete;
     BlockchainAccountListItem(const BlockchainAccountListItem&) = delete;
     BlockchainAccountListItem(BlockchainAccountListItem&&) = delete;
@@ -64,5 +57,11 @@ private:
         -> BlockchainAccountListItem& = delete;
     auto operator=(BlockchainAccountListItem&&)
         -> BlockchainAccountListItem& = delete;
+
+    ~BlockchainAccountListItem() final;
+
+private:
+    const blockchain::Type chain_;
+    const UnallocatedCString notary_name_;
 };
 }  // namespace opentxs::ui::implementation

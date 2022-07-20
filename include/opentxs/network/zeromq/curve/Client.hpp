@@ -42,15 +42,14 @@ public:
         const contract::Server& contract) const noexcept -> bool = 0;
     virtual auto SetServerPubkey(const Data& key) const noexcept -> bool = 0;
 
-    ~Client() override = default;
-
-protected:
-    Client() noexcept = default;
-
-private:
     Client(const Client&) = delete;
     Client(Client&&) = delete;
     auto operator=(const Client&) -> Client& = delete;
     auto operator=(Client&&) -> Client& = delete;
+
+    ~Client() override = default;
+
+protected:
+    Client() noexcept = default;
 };
 }  // namespace opentxs::network::zeromq::curve

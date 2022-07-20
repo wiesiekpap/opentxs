@@ -330,7 +330,7 @@ auto HeaderOracle::best_chain(
 {
     const auto [youngest, best] = common_parent(lock, tip);
     static const auto blank = block::Hash{};
-    auto height{youngest.first};
+    auto height = std::max<block::Height>(youngest.first, 0);
     auto output = Positions{};
 
     // TODO allocator
@@ -339,6 +339,8 @@ auto HeaderOracle::best_chain(
 
         if ((0u < limit) && (output.size() == limit)) { break; }
     }
+
+    OT_ASSERT(0 < output.size());
 
     return output;
 }

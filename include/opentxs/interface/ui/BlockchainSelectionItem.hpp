@@ -45,17 +45,16 @@ public:
     /// Returns enum containing the blockchain type.
     virtual auto Type() const noexcept -> blockchain::Type = 0;
 
-    ~BlockchainSelectionItem() override = default;
-
-protected:
-    BlockchainSelectionItem() noexcept = default;
-
-private:
     BlockchainSelectionItem(const BlockchainSelectionItem&) = delete;
     BlockchainSelectionItem(BlockchainSelectionItem&&) = delete;
     auto operator=(const BlockchainSelectionItem&)
         -> BlockchainSelectionItem& = delete;
     auto operator=(BlockchainSelectionItem&&)
         -> BlockchainSelectionItem& = delete;
+
+    ~BlockchainSelectionItem() override = default;
+
+protected:
+    BlockchainSelectionItem() noexcept = default;
 };
 }  // namespace opentxs::ui

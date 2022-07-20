@@ -38,7 +38,7 @@ OTStashItem::OTStashItem(
 {
 }
 
-OTStashItem::~OTStashItem() {}
+OTStashItem::~OTStashItem() = default;
 
 /*
  IDEA: todo security.

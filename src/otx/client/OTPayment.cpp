@@ -39,7 +39,8 @@
 
 namespace opentxs
 {
-char const* const __TypeStringsPayment[] = {
+// NOLINTNEXTLINE(modernize-avoid-c-arrays)
+char const* const TypeStringsPayment[] = {
 
     // OTCheque is derived from OTTrackable, which is derived from OTInstrument,
     // which is
@@ -123,17 +124,17 @@ OTPayment::OTPayment(const api::Session& api, const String& strPayment)
 auto OTPayment::GetTypeString(paymentType theType) -> const char*
 {
     auto nType = static_cast<std::int32_t>(theType);
-    return __TypeStringsPayment[nType];
+    return TypeStringsPayment[nType];
 }
 
 auto OTPayment::GetTypeFromString(const String& strType)
     -> OTPayment::paymentType
 {
 #define OT_NUM_ELEM(blah) (sizeof(blah) / sizeof(*(blah)))
-    for (std::uint32_t i = 0; i < (OT_NUM_ELEM(__TypeStringsPayment) - 1);
-         i++) {
-        if (strType.Compare(__TypeStringsPayment[i]))
+    for (std::uint32_t i = 0; i < (OT_NUM_ELEM(TypeStringsPayment) - 1); i++) {
+        if (strType.Compare(TypeStringsPayment[i])) {
             return static_cast<OTPayment::paymentType>(i);
+        }
     }
 #undef OT_NUM_ELEM
     return OTPayment::ERROR_STATE;
@@ -196,44 +197,47 @@ auto OTPayment::SetTempValues(const PasswordPrompt& reason)
             case VOUCHER:
             case INVOICE:
                 pCheque = dynamic_cast<Cheque*>(pTrackable);
-                if (nullptr == pCheque)
+                if (nullptr == pCheque) {
                     LogError()(OT_PRETTY_CLASS())(
                         "Failure: "
                         "dynamic_cast<OTCheque *>(pTrackable). Contents: ")(
                         m_strPayment)(".")
                         .Flush();
-                // Let's grab all the temp values from the cheque!!
-                //
-                else  // success
+                    // Let's grab all the temp values from the cheque!!
+                    //
+                } else {  // success
                     return SetTempValuesFromCheque(*pCheque);
+                }
                 break;
 
             case PAYMENT_PLAN:
                 pPaymentPlan = dynamic_cast<OTPaymentPlan*>(pTrackable);
-                if (nullptr == pPaymentPlan)
+                if (nullptr == pPaymentPlan) {
                     LogError()(OT_PRETTY_CLASS())(
                         "Failure: "
                         "dynamic_cast<OTPaymentPlan *>(pTrackable). "
                         "Contents: ")(m_strPayment)(".")
                         .Flush();
-                // Let's grab all the temp values from the payment plan!!
-                //
-                else  // success
+                    // Let's grab all the temp values from the payment plan!!
+                    //
+                } else {  // success
                     return SetTempValuesFromPaymentPlan(*pPaymentPlan);
+                }
                 break;
 
             case SMART_CONTRACT:
                 pSmartContract = dynamic_cast<OTSmartContract*>(pTrackable);
-                if (nullptr == pSmartContract)
+                if (nullptr == pSmartContract) {
                     LogError()(OT_PRETTY_CLASS())(
                         "Failure: "
                         "dynamic_cast<OTSmartContract *>(pTrackable). "
                         "Contents: ")(m_strPayment)(".")
                         .Flush();
-                // Let's grab all the temp values from the smart contract!!
-                //
-                else  // success
+                    // Let's grab all the temp values from the smart contract!!
+                    //
+                } else {  // success
                     return SetTempValuesFromSmartContract(*pSmartContract);
+                }
                 break;
 
             default:
@@ -260,10 +264,11 @@ auto OTPayment::SetTempValuesFromCheque(const Cheque& theInput) -> bool
             m_lTransactionNum = theInput.GetTransactionNum();
             m_lTransNumDisplay = m_lTransactionNum;
 
-            if (theInput.GetMemo().Exists())
+            if (theInput.GetMemo().Exists()) {
                 m_strMemo->Set(theInput.GetMemo());
-            else
+            } else {
                 m_strMemo->Release();
+            }
 
             m_InstrumentDefinitionID = theInput.GetInstrumentDefinitionID();
             m_NotaryID = theInput.GetNotaryID();
@@ -324,12 +329,13 @@ auto OTPayment::SetTempValuesFromNotice(
         auto pItem =
             (const_cast<OTTransaction&>(theInput)).GetItem(itemType::notice);
 
-        if (false != bool(pItem))         // The item's NOTE, as opposed to the
+        if (false != bool(pItem)) {       // The item's NOTE, as opposed to the
                                           // transaction's reference string,
             pItem->GetNote(strCronItem);  // contains the updated version of the
-                                          // cron item, versus the original.
-                                          //        else
-                                          //        {
+        }
+        // cron item, versus the original.
+        //        else
+        //        {
         //            otErr << "DEBUGGING: Failed to get the notice item! Thus
         //            forcing us to grab the old version of the payment plan
         //            instead of the current version.\n";
@@ -337,11 +343,12 @@ auto OTPayment::SetTempValuesFromNotice(
         //            otErr << "THE ACTUAL TRANSACTION:\n\n" << strBlah << "\n";
         //        }
         // -------------------------------------------
-        if (!strCronItem->Exists())
+        if (!strCronItem->Exists()) {
             theInput.GetReferenceString(strCronItem);  // Didn't find the
-                                                       // updated one? Okay
-                                                       // let's grab the
-                                                       // original then.
+        }
+        // updated one? Okay
+        // let's grab the
+        // original then.
         // -------------------------------------------
         if (!strCronItem->Exists()) {
             LogError()(OT_PRETTY_CLASS())(
@@ -390,9 +397,10 @@ auto OTPayment::SetTempValuesFromNotice(
             "or smart contract – but was supposed to be. "
             "(Returning false).")
             .Flush();
-    } else
+    } else {
         LogError()(OT_PRETTY_CLASS())("Error: Wrong type. (Returning false).")
             .Flush();
+    }
 
     return false;
 }
@@ -410,10 +418,11 @@ void OTPayment::lowLevelSetTempValuesFromPaymentPlan(
     m_lTransactionNum = theInput.GetTransactionNum();
     m_lTransNumDisplay = theInput.GetRecipientOpeningNum();
 
-    if (theInput.GetConsideration().Exists())
+    if (theInput.GetConsideration().Exists()) {
         m_strMemo->Set(theInput.GetConsideration());
-    else
+    } else {
         m_strMemo->Release();
+    }
 
     m_InstrumentDefinitionID = theInput.GetInstrumentDefinitionID();
     m_NotaryID = theInput.GetNotaryID();
@@ -437,9 +446,10 @@ auto OTPayment::SetTempValuesFromPaymentPlan(const OTPaymentPlan& theInput)
     if (OTPayment::PAYMENT_PLAN == m_Type) {
         lowLevelSetTempValuesFromPaymentPlan(theInput);
         return true;
-    } else
+    } else {
         LogError()(OT_PRETTY_CLASS())("Error: Wrong type. (Returning false).")
             .Flush();
+    }
 
     return false;
 }
@@ -529,9 +539,10 @@ auto OTPayment::SetTempValuesFromSmartContract(const OTSmartContract& theInput)
     if (OTPayment::SMART_CONTRACT == m_Type) {
         lowLevelSetTempValuesFromSmartContract(theInput);
         return true;
-    } else
+    } else {
         LogError()(OT_PRETTY_CLASS())("Error: Wrong type. (Returning false).")
             .Flush();
+    }
 
     return false;
 }
@@ -540,7 +551,7 @@ auto OTPayment::GetMemo(String& strOutput) const -> bool
 {
     strOutput.Release();
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     bool bSuccess = false;
 
@@ -553,8 +564,9 @@ auto OTPayment::GetMemo(String& strOutput) const -> bool
             if (m_strMemo->Exists()) {
                 strOutput.Set(m_strMemo);
                 bSuccess = true;
-            } else
+            } else {
                 bSuccess = false;
+            }
             break;
 
         case OTPayment::SMART_CONTRACT:
@@ -573,7 +585,7 @@ auto OTPayment::GetAmount(Amount& lOutput) const -> bool
 {
     lOutput = 0;
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     bool bSuccess = false;
 
@@ -663,16 +675,18 @@ auto OTPayment::GetAllTransactionNumbers(
         // -------------------------------------------
         auto pItem = pNotice->GetItem(itemType::notice);
 
-        if (false != bool(pItem))         // The item's NOTE, as opposed to the
+        if (false != bool(pItem)) {       // The item's NOTE, as opposed to the
                                           // transaction's reference string,
             pItem->GetNote(strCronItem);  // contains the updated version of the
-                                          // cron item, versus the original.
+        }
+        // cron item, versus the original.
         // -------------------------------------------
-        if (!strCronItem->Exists())
+        if (!strCronItem->Exists()) {
             pNotice->GetReferenceString(strCronItem);  // Didn't find the
-                                                       // updated one? Okay
-                                                       // let's grab the
-                                                       // original then.
+        }
+        // updated one? Okay
+        // let's grab the
+        // original then.
         // -------------------------------------------
         if (!strCronItem->Exists()) {
             LogError()(OT_PRETTY_CLASS())(
@@ -715,7 +729,7 @@ auto OTPayment::GetAllTransactionNumbers(
         case OTPayment::CHEQUE:
         case OTPayment::VOUCHER:
         case OTPayment::INVOICE:
-            if (m_lTransactionNum > 0) numlistOutput.Add(m_lTransactionNum);
+            if (m_lTransactionNum > 0) { numlistOutput.Add(m_lTransactionNum); }
             bSuccess = true;
             break;
 
@@ -767,10 +781,11 @@ auto OTPayment::HasTransactionNum(
         pPlan = dynamic_cast<OTPaymentPlan*>(pTrackable);
         pSmartContract = dynamic_cast<OTSmartContract*>(pTrackable);
 
-        if (nullptr != pPlan)
+        if (nullptr != pPlan) {
             return pPlan->HasTransactionNum(lInput);
-        else if (nullptr != pSmartContract)
+        } else if (nullptr != pSmartContract) {
             return pSmartContract->HasTransactionNum(lInput);
+        }
 
         return false;
     }
@@ -792,16 +807,18 @@ auto OTPayment::HasTransactionNum(
         // -------------------------------------------
         auto pItem = pNotice->GetItem(itemType::notice);
 
-        if (false != bool(pItem))         // The item's NOTE, as opposed to the
+        if (false != bool(pItem)) {       // The item's NOTE, as opposed to the
                                           // transaction's reference string,
             pItem->GetNote(strCronItem);  // contains the updated version of the
-                                          // cron item, versus the original.
+        }
+        // cron item, versus the original.
         // -------------------------------------------
-        if (!strCronItem->Exists())
+        if (!strCronItem->Exists()) {
             pNotice->GetReferenceString(strCronItem);  // Didn't find the
-                                                       // updated one? Okay
-                                                       // let's grab the
-                                                       // original then.
+        }
+        // updated one? Okay
+        // let's grab the
+        // original then.
         // -------------------------------------------
         if (!strCronItem->Exists()) {
             LogError()(OT_PRETTY_CLASS())(
@@ -834,7 +851,7 @@ auto OTPayment::HasTransactionNum(
         case OTPayment::CHEQUE:
         case OTPayment::VOUCHER:
         case OTPayment::INVOICE:
-            if (lInput == m_lTransactionNum) bSuccess = true;
+            if (lInput == m_lTransactionNum) { bSuccess = true; }
             break;
 
         default:
@@ -882,11 +899,11 @@ auto OTPayment::GetClosingNum(
 
         if (nullptr != pSmartContract) {
             lOutput = pSmartContract->GetClosingNumber(theAcctID);
-            if (lOutput > 0) return true;
+            if (lOutput > 0) { return true; }
             return false;
         } else if (nullptr != pPlan) {
             lOutput = pPlan->GetClosingNumber(theAcctID);
-            if (lOutput > 0) return true;
+            if (lOutput > 0) { return true; }
             return false;
         }
 
@@ -896,7 +913,7 @@ auto OTPayment::GetClosingNum(
         // whatever.
     }
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
     // --------------------------------------
     if (OTPayment::NOTICE == m_Type) {
         std::unique_ptr<OTTransaction> pNotice(InstantiateNotice());
@@ -912,16 +929,18 @@ auto OTPayment::GetClosingNum(
         // -------------------------------------------
         auto pItem = pNotice->GetItem(itemType::notice);
 
-        if (false != bool(pItem))         // The item's NOTE, as opposed to the
+        if (false != bool(pItem)) {       // The item's NOTE, as opposed to the
                                           // transaction's reference string,
             pItem->GetNote(strCronItem);  // contains the updated version of the
-                                          // cron item, versus the original.
+        }
+        // cron item, versus the original.
         // -------------------------------------------
-        if (!strCronItem->Exists())
+        if (!strCronItem->Exists()) {
             pNotice->GetReferenceString(strCronItem);  // Didn't find the
-                                                       // updated one? Okay
-                                                       // let's grab the
-                                                       // original then.
+        }
+        // updated one? Okay
+        // let's grab the
+        // original then.
         // -------------------------------------------
         if (!strCronItem->Exists()) {
             LogError()(OT_PRETTY_CLASS())(
@@ -1002,11 +1021,11 @@ auto OTPayment::GetOpeningNum(
 
         if (nullptr != pSmartContract) {
             lOutput = pSmartContract->GetOpeningNumber(theNymID);
-            if (lOutput > 0) return true;
+            if (lOutput > 0) { return true; }
             return false;
         } else if (nullptr != pPlan) {
             lOutput = pPlan->GetOpeningNumber(theNymID);
-            if (lOutput > 0) return true;
+            if (lOutput > 0) { return true; }
             return false;
         }
 
@@ -1016,7 +1035,7 @@ auto OTPayment::GetOpeningNum(
         // whatever.
     }
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
     // --------------------------------------
     if (OTPayment::NOTICE == m_Type) {
         std::unique_ptr<OTTransaction> pNotice(InstantiateNotice());
@@ -1032,16 +1051,18 @@ auto OTPayment::GetOpeningNum(
         // -------------------------------------------
         auto pItem = pNotice->GetItem(itemType::notice);
 
-        if (false != bool(pItem))         // The item's NOTE, as opposed to the
+        if (false != bool(pItem)) {       // The item's NOTE, as opposed to the
                                           // transaction's reference string,
             pItem->GetNote(strCronItem);  // contains the updated version of the
-                                          // cron item, versus the original.
+        }
+        // cron item, versus the original.
         // -------------------------------------------
-        if (!strCronItem->Exists())
+        if (!strCronItem->Exists()) {
             pNotice->GetReferenceString(strCronItem);  // Didn't find the
-                                                       // updated one? Okay
-                                                       // let's grab the
-                                                       // original then.
+        }
+        // updated one? Okay
+        // let's grab the
+        // original then.
         // -------------------------------------------
         if (!strCronItem->Exists()) {
             LogError()(OT_PRETTY_CLASS())(
@@ -1112,7 +1133,7 @@ auto OTPayment::GetTransNumDisplay(std::int64_t& lOutput) const -> bool
 {
     lOutput = 0;
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     bool bSuccess = false;
 
@@ -1171,7 +1192,7 @@ auto OTPayment::GetTransactionNum(std::int64_t& lOutput) const -> bool
 {
     lOutput = 0;
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     bool bSuccess = false;
 
@@ -1203,7 +1224,7 @@ auto OTPayment::GetValidFrom(Time& tOutput) const -> bool
 {
     tOutput = Time{};
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     bool bSuccess = false;
 
@@ -1230,7 +1251,7 @@ auto OTPayment::GetValidTo(Time& tOutput) const -> bool
 {
     tOutput = Time{};
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     bool bSuccess = false;
 
@@ -1262,7 +1283,7 @@ auto OTPayment::GetValidTo(Time& tOutput) const -> bool
 //
 auto OTPayment::IsExpired(bool& bExpired) -> bool
 {
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     const auto CURRENT_TIME = Clock::now();
 
@@ -1283,7 +1304,7 @@ auto OTPayment::IsExpired(bool& bExpired) -> bool
 //
 auto OTPayment::VerifyCurrentDate(bool& bVerified) -> bool
 {
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     const auto CURRENT_TIME = Clock::now();
 
@@ -1301,7 +1322,7 @@ auto OTPayment::GetInstrumentDefinitionID(Identifier& theOutput) const -> bool
 {
     theOutput.clear();
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     bool bSuccess = false;
 
@@ -1365,7 +1386,7 @@ auto OTPayment::GetRemitterNymID(identifier::Nym& theOutput) const -> bool
 {
     theOutput.clear();
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     bool bSuccess = false;
 
@@ -1393,7 +1414,7 @@ auto OTPayment::GetRemitterAcctID(Identifier& theOutput) const -> bool
 {
     theOutput.clear();
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     bool bSuccess = false;
 
@@ -1416,14 +1437,14 @@ auto OTPayment::GetRemitterAcctID(Identifier& theOutput) const -> bool
 auto OTPayment::GetSenderNymIDForDisplay(identifier::Nym& theOutput) const
     -> bool
 {
-    if (IsVoucher()) return GetRemitterNymID(theOutput);
+    if (IsVoucher()) { return GetRemitterNymID(theOutput); }
 
     return GetSenderNymID(theOutput);
 }
 
 auto OTPayment::GetSenderAcctIDForDisplay(Identifier& theOutput) const -> bool
 {
-    if (IsVoucher()) return GetRemitterAcctID(theOutput);
+    if (IsVoucher()) { return GetRemitterAcctID(theOutput); }
 
     return GetSenderAcctID(theOutput);
 }
@@ -1432,7 +1453,7 @@ auto OTPayment::GetSenderNymID(identifier::Nym& theOutput) const -> bool
 {
     theOutput.clear();
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     bool bSuccess = false;
 
@@ -1459,7 +1480,7 @@ auto OTPayment::GetSenderAcctID(Identifier& theOutput) const -> bool
 {
     theOutput.clear();
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     bool bSuccess = false;
 
@@ -1489,7 +1510,7 @@ auto OTPayment::GetRecipientNymID(identifier::Nym& theOutput) const -> bool
 {
     theOutput.clear();
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     bool bSuccess = false;
 
@@ -1502,8 +1523,9 @@ auto OTPayment::GetRecipientNymID(identifier::Nym& theOutput) const -> bool
             if (m_bHasRecipient) {
                 theOutput.Assign(m_RecipientNymID);
                 bSuccess = !m_RecipientNymID->empty();
-            } else
+            } else {
                 bSuccess = false;
+            }
 
             break;
 
@@ -1531,7 +1553,7 @@ auto OTPayment::GetRecipientAcctID(Identifier& theOutput) const -> bool
 
     theOutput.clear();
 
-    if (!m_bAreTempValuesSet) return false;
+    if (!m_bAreTempValuesSet) { return false; }
 
     bool bSuccess = false;
 
@@ -1541,8 +1563,9 @@ auto OTPayment::GetRecipientAcctID(Identifier& theOutput) const -> bool
             if (m_bHasRecipient) {
                 theOutput.Assign(m_RecipientAcctID);
                 bSuccess = !m_RecipientAcctID->empty();
-            } else
+            } else {
                 bSuccess = false;
+            }
 
             break;
 
@@ -1599,13 +1622,15 @@ auto OTPayment::Instantiate() const -> OTTrackable*
                         "Tried to instantiate cheque, "
                         "but factory returned non-cheque: ")(m_strPayment)(".")
                         .Flush();
-                } else
+                } else {
                     pTrackable = pCheque;
-            } else
+                }
+            } else {
                 LogError()(OT_PRETTY_CLASS())(
                     "Tried to instantiate cheque, but "
                     "factory returned nullptr: ")(m_strPayment)(".")
                     .Flush();
+            }
             break;
 
         case PAYMENT_PLAN:
@@ -1621,13 +1646,15 @@ auto OTPayment::Instantiate() const -> OTTrackable*
                         "plan, but factory returned non-payment-plan: ")(
                         m_strPayment)(".")
                         .Flush();
-                } else
+                } else {
                     pTrackable = pPaymentPlan;
-            } else
+                }
+            } else {
                 LogError()(OT_PRETTY_CLASS())(
                     "Tried to instantiate payment "
                     "plan, but factory returned nullptr: ")(m_strPayment)(".")
                     .Flush();
+            }
             break;
 
         case SMART_CONTRACT:
@@ -1642,14 +1669,16 @@ auto OTPayment::Instantiate() const -> OTTrackable*
                         "Tried to instantiate smart contract, but factory "
                         "returned non-smart-contract: ")(m_strPayment)(".")
                         .Flush();
-                } else
+                } else {
                     pTrackable = pSmartContract;
-            } else
+                }
+            } else {
                 LogError()(OT_PRETTY_CLASS())(
                     "Tried to instantiate smart "
                     "contract, but factory returned nullptr: ")(
                     m_strPayment)(".")
                     .Flush();
+            }
             break;
 
         case NOTICE:
@@ -1672,24 +1701,25 @@ auto OTPayment::Instantiate() const -> OTTrackable*
 
 auto OTPayment::Instantiate(const String& strPayment) -> OTTrackable*
 {
-    if (SetPayment(strPayment)) return Instantiate();
+    if (SetPayment(strPayment)) { return Instantiate(); }
 
     return nullptr;
 }
 
 auto OTPayment::InstantiateNotice(const String& strNotice) -> OTTransaction*
 {
-    if (!SetPayment(strNotice))
+    if (!SetPayment(strNotice)) {
         LogError()(OT_PRETTY_CLASS())("WARNING: Failed setting the "
                                       "notice string based on "
                                       "what was passed in: ")(strNotice)(".")
             .Flush();
-    else if (OTPayment::NOTICE != m_Type)
+    } else if (OTPayment::NOTICE != m_Type) {
         LogError()(OT_PRETTY_CLASS())("WARNING: No notice was found in "
                                       "provided string: ")(strNotice)(".")
             .Flush();
-    else
+    } else {
         return InstantiateNotice();
+    }
 
     return nullptr;
 }
@@ -1718,11 +1748,12 @@ auto OTPayment::InstantiateNotice() const -> OTTransaction*
         }
 
         return pNotice;
-    } else
+    } else {
         LogError()(OT_PRETTY_CLASS())(
             "Failure 3: This payment object does NOT contain a notice. "
             "Contents: ")(m_strPayment)(".")
             .Flush();
+    }
 
     return nullptr;
 }
@@ -1781,10 +1812,11 @@ auto OTPayment::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         const auto strPaymentType =
             String::Factory(xml->getAttributeValue("type"));
 
-        if (strPaymentType->Exists())
+        if (strPaymentType->Exists()) {
             m_Type = OTPayment::GetTypeFromString(strPaymentType);
-        else
+        } else {
             m_Type = OTPayment::ERROR_STATE;
+        }
 
         LogTrace()(OT_PRETTY_CLASS())("Loaded payment... Type: ")(
             GetTypeString())
@@ -1872,21 +1904,21 @@ auto OTPayment::SetPayment(const String& strPayment) -> bool
 
     // todo: should be "starts with" and perhaps with a trim first
     //
-    if (strContract->Contains("-----BEGIN SIGNED CHEQUE-----"))
+    if (strContract->Contains("-----BEGIN SIGNED CHEQUE-----")) {
         m_Type = OTPayment::CHEQUE;
-    else if (strContract->Contains("-----BEGIN SIGNED VOUCHER-----"))
+    } else if (strContract->Contains("-----BEGIN SIGNED VOUCHER-----")) {
         m_Type = OTPayment::VOUCHER;
-    else if (strContract->Contains("-----BEGIN SIGNED INVOICE-----"))
+    } else if (strContract->Contains("-----BEGIN SIGNED INVOICE-----")) {
         m_Type = OTPayment::INVOICE;
 
-    else if (strContract->Contains("-----BEGIN SIGNED PAYMENT PLAN-----"))
+    } else if (strContract->Contains("-----BEGIN SIGNED PAYMENT PLAN-----")) {
         m_Type = OTPayment::PAYMENT_PLAN;
-    else if (strContract->Contains("-----BEGIN SIGNED SMARTCONTRACT-----"))
+    } else if (strContract->Contains("-----BEGIN SIGNED SMARTCONTRACT-----")) {
         m_Type = OTPayment::SMART_CONTRACT;
 
-    else if (strContract->Contains("-----BEGIN SIGNED TRANSACTION-----"))
+    } else if (strContract->Contains("-----BEGIN SIGNED TRANSACTION-----")) {
         m_Type = OTPayment::NOTICE;
-    else {
+    } else {
         m_Type = OTPayment::ERROR_STATE;
 
         LogError()(OT_PRETTY_CLASS())(
@@ -1895,7 +1927,7 @@ auto OTPayment::SetPayment(const String& strPayment) -> bool
             .Flush();
     }
 
-    if (OTPayment::ERROR_STATE == m_Type) return false;
+    if (OTPayment::ERROR_STATE == m_Type) { return false; }
 
     m_strPayment->Set(strContract);
 

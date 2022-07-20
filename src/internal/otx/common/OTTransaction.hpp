@@ -612,6 +612,12 @@ public:
         m_outboxhash = outboxhash;
     }
 
+    OTTransaction() = delete;
+    OTTransaction(const OTTransaction&) = delete;
+    OTTransaction(OTTransaction&&) = delete;
+    auto operator=(const OTTransaction&) -> OTTransaction& = delete;
+    auto operator=(OTTransaction&&) -> OTTransaction& = delete;
+
     ~OTTransaction() override;
 
 protected:
@@ -779,11 +785,5 @@ private:
         const std::int64_t& lRequestNum,
         const bool bReplyTransSuccess,
         NumList* pNumList = nullptr);
-
-    OTTransaction() = delete;
-    OTTransaction(const OTTransaction&) = delete;
-    OTTransaction(OTTransaction&&) = delete;
-    auto operator=(const OTTransaction&) -> OTTransaction& = delete;
-    auto operator=(OTTransaction&&) -> OTTransaction& = delete;
 };
 }  // namespace opentxs

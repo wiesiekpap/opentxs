@@ -60,15 +60,14 @@ public:
         const std::uint32_t section,
         const proto::ContactItem& item) -> Claim;
 
-    ~Contact() override = default;
-
-protected:
-    Contact() noexcept {}  // TODO Signable
-
-private:
     Contact(const Contact&) = delete;
     Contact(Contact&&) = delete;
     auto operator=(const Contact&) -> Contact& = delete;
     auto operator=(Contact&&) -> Contact& = delete;
+
+    ~Contact() override = default;
+
+protected:
+    Contact() noexcept = default;  // TODO Signable
 };
 }  // namespace opentxs::identity::credential

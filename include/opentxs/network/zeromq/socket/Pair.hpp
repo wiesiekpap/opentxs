@@ -41,6 +41,11 @@ class OPENTXS_EXPORT Pair : virtual public socket::Socket, virtual public Sender
 public:
     virtual auto Endpoint() const noexcept -> std::string_view = 0;
 
+    Pair(const Pair&) = delete;
+    Pair(Pair&&) = delete;
+    auto operator=(const Pair&) -> Pair& = delete;
+    auto operator=(Pair&&) -> Pair& = delete;
+
     ~Pair() override = default;
 
 protected:
@@ -50,10 +55,5 @@ private:
     friend OTZMQPairSocket;
 
     virtual auto clone() const noexcept -> Pair* = 0;
-
-    Pair(const Pair&) = delete;
-    Pair(Pair&&) = delete;
-    auto operator=(const Pair&) -> Pair& = delete;
-    auto operator=(Pair&&) -> Pair& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket

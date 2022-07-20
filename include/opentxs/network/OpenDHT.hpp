@@ -24,15 +24,14 @@ public:
         DhtResultsCallback vcb,
         DhtDoneCallback dcb = {}) const noexcept = 0;
 
-    virtual ~OpenDHT() = default;
-
-protected:
-    OpenDHT() = default;
-
-private:
     OpenDHT(const OpenDHT&) = delete;
     OpenDHT(OpenDHT&&) = delete;
     auto operator=(const OpenDHT&) -> OpenDHT& = delete;
     auto operator=(OpenDHT&&) -> OpenDHT& = delete;
+
+    virtual ~OpenDHT() = default;
+
+protected:
+    OpenDHT() = default;
 };
 }  // namespace opentxs::network

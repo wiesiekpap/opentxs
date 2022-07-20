@@ -94,15 +94,14 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> session::internal::Session& = 0;
 
-    OPENTXS_NO_EXPORT ~Session() override = default;
-
-protected:
-    Session() = default;
-
-private:
     Session(const Session&) = delete;
     Session(Session&&) = delete;
     auto operator=(const Session&) -> Session& = delete;
     auto operator=(Session&&) -> Session& = delete;
+
+    OPENTXS_NO_EXPORT ~Session() override = default;
+
+protected:
+    Session() = default;
 };
 }  // namespace opentxs::api

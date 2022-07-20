@@ -97,6 +97,11 @@ public:
         const bitcoin::Command command,
         const std::size_t payload,
         const OTData checksum) noexcept;
+    Header() = delete;
+    Header(const Header&) = delete;
+    Header(Header&&) = delete;
+    auto operator=(const Header&) -> Header& = delete;
+    auto operator=(Header&&) -> Header& = delete;
 
     ~Header() = default;
 
@@ -107,11 +112,5 @@ private:
     bitcoin::Command command_;
     std::size_t payload_size_;
     OTData checksum_;
-
-    Header() = delete;
-    Header(const Header&) = delete;
-    Header(Header&&) = delete;
-    auto operator=(const Header&) -> Header& = delete;
-    auto operator=(Header&&) -> Header& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin

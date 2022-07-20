@@ -43,15 +43,14 @@ public:
     virtual auto ReorgNotification(const Txid& tx) const noexcept -> bool = 0;
     virtual auto Remote() const noexcept -> const opentxs::PaymentCode& = 0;
 
-    OPENTXS_NO_EXPORT ~PaymentCode() override = default;
-
-protected:
-    PaymentCode() noexcept = default;
-
-private:
     PaymentCode(const PaymentCode&) = delete;
     PaymentCode(PaymentCode&&) = delete;
     auto operator=(const PaymentCode&) -> PaymentCode& = delete;
     auto operator=(PaymentCode&&) -> PaymentCode& = delete;
+
+    OPENTXS_NO_EXPORT ~PaymentCode() override = default;
+
+protected:
+    PaymentCode() noexcept = default;
 };
 }  // namespace opentxs::blockchain::crypto

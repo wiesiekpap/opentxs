@@ -162,15 +162,14 @@ public:
         const Amount amount,
         const UnallocatedCString& memo) const -> Action = 0;
 
-    virtual ~ServerAction() = default;
-
-protected:
-    ServerAction() = default;
-
-private:
     ServerAction(const ServerAction&) = delete;
     ServerAction(ServerAction&&) = delete;
     auto operator=(const ServerAction&) -> ServerAction& = delete;
     auto operator=(ServerAction&&) -> ServerAction& = delete;
+
+    virtual ~ServerAction() = default;
+
+protected:
+    ServerAction() = default;
 };
 }  // namespace opentxs::otx::client

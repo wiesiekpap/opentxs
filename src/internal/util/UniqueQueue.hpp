@@ -122,15 +122,14 @@ public:
         , set_()
     {
     }
+    UniqueQueue(const UniqueQueue&) = delete;
+    UniqueQueue(UniqueQueue&&) = delete;
+    auto operator=(const UniqueQueue&) -> UniqueQueue& = delete;
+    auto operator=(UniqueQueue&&) -> UniqueQueue& = delete;
 
 private:
     mutable std::mutex lock_;
     mutable UnallocatedDeque<std::pair<Key, T>> queue_;
     mutable UnallocatedSet<T> set_;
-
-    UniqueQueue(const UniqueQueue&) = delete;
-    UniqueQueue(UniqueQueue&&) = delete;
-    auto operator=(const UniqueQueue&) -> UniqueQueue& = delete;
-    auto operator=(UniqueQueue&&) -> UniqueQueue& = delete;
 };
 }  // namespace opentxs

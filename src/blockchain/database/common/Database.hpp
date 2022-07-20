@@ -209,6 +209,11 @@ public:
         const api::Legacy& legacy,
         const UnallocatedCString& dataFolder,
         const Options& args) noexcept(false);
+    Database() = delete;
+    Database(const Database&) = delete;
+    Database(Database&&) = delete;
+    auto operator=(const Database&) -> Database& = delete;
+    auto operator=(Database&&) -> Database& = delete;
 
     ~Database();
 
@@ -217,11 +222,5 @@ private:
 
     std::unique_ptr<Imp> imp_p_;
     Imp& imp_;
-
-    Database() = delete;
-    Database(const Database&) = delete;
-    Database(Database&&) = delete;
-    auto operator=(const Database&) -> Database& = delete;
-    auto operator=(Database&&) -> Database& = delete;
 };
 }  // namespace opentxs::blockchain::database::common

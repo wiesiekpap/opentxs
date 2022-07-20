@@ -48,6 +48,11 @@ class Connection final : public request::Connection,
                          public peer::implementation::Request
 {
 public:
+    auto asConnection() const noexcept -> const request::Connection& final
+    {
+        return *this;
+    }
+
     Connection(
         const api::Session& api,
         const Nym_p& nym,
@@ -58,13 +63,13 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const proto::PeerRequest& serialized);
+    Connection() = delete;
+    Connection(const Connection&);
+    Connection(Connection&&) = delete;
+    auto operator=(const Connection&) -> Connection& = delete;
+    auto operator=(Connection&&) -> Connection& = delete;
 
     ~Connection() final = default;
-
-    auto asConnection() const noexcept -> const request::Connection& final
-    {
-        return *this;
-    }
 
 private:
     friend opentxs::Factory;
@@ -78,11 +83,5 @@ private:
         return new Connection(*this);
     }
     auto IDVersion(const Lock& lock) const -> SerializedType final;
-
-    Connection() = delete;
-    Connection(const Connection&);
-    Connection(Connection&&) = delete;
-    auto operator=(const Connection&) -> Connection& = delete;
-    auto operator=(Connection&&) -> Connection& = delete;
 };
 }  // namespace opentxs::contract::peer::request::implementation
