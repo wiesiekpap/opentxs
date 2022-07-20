@@ -844,7 +844,7 @@ auto Factory::CronItem(const String& strCronItem) const
     strContract->reset();  // for sgets
     bool bGotLine = strContract->sgets(buf.data(), 40);
 
-    if (!bGotLine) return nullptr;
+    if (!bGotLine) { return nullptr; }
 
     auto strFirstLine = String::Factory(buf.data());
     // set the "file" pointer within this string back to index 0.
@@ -854,8 +854,9 @@ auto Factory::CronItem(const String& strCronItem) const
     // the first 45 characters of the beginning of the contract, and
     // it will NOT contain the escape "- " sequence. From there, if
     // it contains the proper sequence, I will instantiate that type.
-    if (!strFirstLine->Exists() || strFirstLine->Contains("- -"))
+    if (!strFirstLine->Exists() || strFirstLine->Contains("- -")) {
         return nullptr;
+    }
 
     // By this point we know already that it's not escaped.
     // BUT it might still be ARMORED!
@@ -2086,7 +2087,7 @@ auto Factory::Scriptable(const String& strInput) const
     strContract->reset();  // for sgets
     bool bGotLine = strContract->sgets(buf.data(), 40);
 
-    if (!bGotLine) return nullptr;
+    if (!bGotLine) { return nullptr; }
 
     std::unique_ptr<OTScriptable> pItem;
 
@@ -2098,25 +2099,25 @@ auto Factory::Scriptable(const String& strInput) const
     // the first 45 characters of the beginning of the contract, and
     // it will NOT contain the escape "- " sequence. From there, if
     // it contains the proper sequence, I will instantiate that type.
-    if (!strFirstLine->Exists() || strFirstLine->Contains("- -"))
+    if (!strFirstLine->Exists() || strFirstLine->Contains("- -")) {
         return nullptr;
 
-    // There are actually two factories that load smart contracts. See
-    // OTCronItem.
-    //
-    else if (strFirstLine->Contains(
-                 "-----BEGIN SIGNED SMARTCONTRACT-----"))  // this string is 36
-                                                           // chars long.
+        // There are actually two factories that load smart contracts. See
+        // OTCronItem.
+        //
+    } else if (strFirstLine->Contains(
+                   "-----BEGIN SIGNED SMARTCONTRACT-----"))  // this string is
+                                                             // 36 chars long.
     {
         pItem.reset(new OTSmartContract(api_));
         OT_ASSERT(false != bool(pItem));
     }
 
     // The string didn't match any of the options in the factory.
-    if (false == bool(pItem)) return nullptr;
+    if (false == bool(pItem)) { return nullptr; }
 
     // Does the contract successfully load from the string passed in?
-    if (pItem->LoadContractFromString(strContract)) return pItem;
+    if (pItem->LoadContractFromString(strContract)) { return pItem; }
 
     return nullptr;
 }
@@ -2579,7 +2580,7 @@ auto Factory::Transaction(
         theType,
         theOriginType,
         lTransactionNum);
-    if (false != bool(pTransaction)) pTransaction->SetParent(theOwner);
+    if (false != bool(pTransaction)) { pTransaction->SetParent(theOwner); }
 
     return pTransaction;
 }

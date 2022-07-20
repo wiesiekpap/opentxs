@@ -119,6 +119,7 @@ Unit::Unit(
 {
 }
 
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
 Unit::Unit(
     const api::Session& api,
     const Nym_p& nym,
@@ -140,6 +141,7 @@ Unit::Unit(
     , short_name_(serialized.name())
 {
 }
+// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
 Unit::Unit(const Unit& rhs)
     : Signable(rhs)
@@ -180,8 +182,8 @@ auto Unit::AddAccountRecord(
             api_.Internal().Legacy().Contract(),
             record_file,
             "",
-            ""))  // the file already exists; let's
-                  // try to load it up.
+            "")) {  // the file already exists; let's
+                    // try to load it up.
         pStorable = OTDB::QueryObject(
             api_,
             OTDB::STORED_OBJ_STRING_MAP,
@@ -190,10 +192,12 @@ auto Unit::AddAccountRecord(
             record_file,
             "",
             "");
-    else  // the account records file (for this instrument definition) doesn't
-          // exist.
+    } else {  // the account records file (for this instrument definition)
+              // doesn't
+              // exist.
         pStorable = OTDB::CreateObject(
             OTDB::STORED_OBJ_STRING_MAP);  // this asserts already, on failure.
+    }
 
     theAngel.reset(pStorable);
     pMap = (nullptr == pStorable) ? nullptr
@@ -348,8 +352,8 @@ auto Unit::EraseAccountRecord(
             api_.Internal().Legacy().Contract(),
             strAcctRecordFile,
             "",
-            ""))  // the file already exists; let's
-                  // try to load it up.
+            "")) {  // the file already exists; let's
+                    // try to load it up.
         pStorable = OTDB::QueryObject(
             api_,
             OTDB::STORED_OBJ_STRING_MAP,
@@ -358,10 +362,12 @@ auto Unit::EraseAccountRecord(
             strAcctRecordFile,
             "",
             "");
-    else  // the account records file (for this instrument definition) doesn't
-          // exist.
+    } else {  // the account records file (for this instrument definition)
+              // doesn't
+              // exist.
         pStorable = OTDB::CreateObject(
             OTDB::STORED_OBJ_STRING_MAP);  // this asserts already, on failure.
+    }
 
     theAngel.reset(pStorable);
     pMap = (nullptr == pStorable) ? nullptr

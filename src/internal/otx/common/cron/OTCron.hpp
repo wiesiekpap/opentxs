@@ -92,10 +92,11 @@ public:
     inline auto IsActivated() const -> bool { return m_bIsActivated; }
     inline auto ActivateCron() -> bool
     {
-        if (!m_bIsActivated)
+        if (!m_bIsActivated) {
             return m_bIsActivated = true;
-        else
+        } else {
             return false;
+        }
     }
     // RECURRING TRANSACTIONS
     auto AddCronItem(

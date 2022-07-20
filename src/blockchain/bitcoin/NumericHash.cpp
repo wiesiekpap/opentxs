@@ -30,6 +30,7 @@
 
 namespace be = boost::endian;
 
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
 namespace opentxs::factory
 {
 auto NumericHashNBits(const std::uint32_t input) noexcept
@@ -222,3 +223,4 @@ auto NumericHash::asHex(const std::size_t minimumBytes) const noexcept
     return opentxs::Data::Factory(bytes.data(), bytes.size())->asHex();
 }
 }  // namespace opentxs::blockchain::implementation
+// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)

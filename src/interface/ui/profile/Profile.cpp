@@ -370,6 +370,8 @@ void Profile::startup() noexcept
 
 Profile::~Profile()
 {
+    ClearCallbacks();
+
     for (auto& it : listeners_) { delete it.second; }
 }
 }  // namespace opentxs::ui::implementation

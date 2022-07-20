@@ -137,7 +137,7 @@ auto BitcoinP2PMerkleblock(
 
         UnallocatedVector<std::byte> temp_flags(flagByteCount);
         std::memcpy(temp_flags.data(), it, flagByteCount);
-        it += flagByteCount;
+        std::advance(it, flagByteCount);
         flags = temp_flags;
     }
     // --------------------------------------------------------

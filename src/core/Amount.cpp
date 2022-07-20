@@ -125,14 +125,12 @@ auto IntegerToFloat(const Integer& rhs) noexcept -> Float
 
 namespace opentxs::internal
 {
-// NOLINTBEGIN(clang-analyzer-core.StackAddressEscape)
 auto FloatToAmount(const amount::Float& rhs) noexcept(false)
     -> opentxs::Amount::Imp*
 {
     return std::make_unique<opentxs::Amount::Imp>(amount::FloatToInteger(rhs))
         .release();
 }
-// NOLINTEND(clang-analyzer-core.StackAddressEscape)
 
 auto Amount::SerializeBitcoinSize() noexcept -> std::size_t
 {

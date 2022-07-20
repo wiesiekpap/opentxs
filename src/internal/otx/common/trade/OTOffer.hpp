@@ -106,7 +106,7 @@ public:
     }
     inline auto GetMinimumIncrement() -> const Amount&
     {
-        if (m_lMinimumIncrement < 1) m_lMinimumIncrement = 1;
+        if (m_lMinimumIncrement < 1) { m_lMinimumIncrement = 1; }
         return m_lMinimumIncrement;
     }
     inline auto GetScale() const -> const Amount& { return m_lScale; }
@@ -218,12 +218,12 @@ protected:
     inline void SetMinimumIncrement(const Amount& lMinIncrement)
     {
         m_lMinimumIncrement = lMinIncrement;
-        if (m_lMinimumIncrement < 1) m_lMinimumIncrement = 1;
+        if (m_lMinimumIncrement < 1) { m_lMinimumIncrement = 1; }
     }
     inline void SetScale(const Amount& lScale)
     {
         m_lScale = lScale;
-        if (m_lScale < 1) m_lScale = 1;
+        if (m_lScale < 1) { m_lScale = 1; }
     }
 
 private:

@@ -105,10 +105,10 @@ struct AmountValidator::Imp {
         const auto& scaledef = definition.DisplayScales()[scale].second;
 
         const auto& minDecimals = scaledef.DefaultMinDecimals();
-        if (minDecimals.has_value()) setMinDecimals(minDecimals.value());
+        if (minDecimals.has_value()) { setMinDecimals(minDecimals.value()); }
 
         const auto& maxDecimals = scaledef.DefaultMaxDecimals();
-        if (maxDecimals.has_value()) setMaxDecimals(maxDecimals.value());
+        if (maxDecimals.has_value()) { setMaxDecimals(maxDecimals.value()); }
 
         return static_cast<Index>(old) != value;
     }
@@ -324,10 +324,11 @@ private:
                 if (leadingZero) {
                     keep = false;
                 } else {
-                    if (fractional < maxDecimals || 0 == maxDecimals)
+                    if (fractional < maxDecimals || 0 == maxDecimals) {
                         keep = true;
-                    else
+                    } else {
                         keep = false;
+                    }
 
                     if (0 < decimalCount) {
                         ++fractional;

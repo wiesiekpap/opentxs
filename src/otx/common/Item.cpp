@@ -745,7 +745,7 @@ auto Item::GetItem(std::int32_t nIndex) -> std::shared_ptr<Item>
 
         nTempIndex++;  // first iteration this becomes 0 here.
 
-        if (nTempIndex == nIndex) return pItem;
+        if (nTempIndex == nIndex) { return pItem; }
     }
 
     return nullptr;
@@ -761,7 +761,7 @@ auto Item::GetItem(std::int32_t nIndex) const -> std::shared_ptr<const Item>
 
         nTempIndex++;  // first iteration this becomes 0 here.
 
-        if (nTempIndex == nIndex) return pItem;
+        if (nTempIndex == nIndex) { return pItem; }
     }
 
     return nullptr;
@@ -775,7 +775,7 @@ auto Item::GetItemByTransactionNum(std::int64_t lTransactionNumber)
         const auto pItem = it;
         OT_ASSERT(false != bool(pItem));
 
-        if (pItem->GetTransactionNum() == lTransactionNumber) return pItem;
+        if (pItem->GetTransactionNum() == lTransactionNumber) { return pItem; }
     }
 
     return nullptr;
@@ -793,7 +793,7 @@ auto Item::GetItemCountInRefTo(std::int64_t lReference) -> std::int32_t
         const auto pItem = it;
         OT_ASSERT(false != bool(pItem));
 
-        if (pItem->GetReferenceToNum() == lReference) nCount++;
+        if (pItem->GetReferenceToNum() == lReference) { nCount++; }
     }
 
     return nCount;
@@ -810,8 +810,8 @@ auto Item::GetFinalReceiptItemByReferenceNum(std::int64_t lReferenceNumber)
         const auto pItem = it;
         OT_ASSERT(false != bool(pItem));
 
-        if (itemType::finalReceipt != pItem->GetType()) continue;
-        if (pItem->GetReferenceToNum() == lReferenceNumber) return pItem;
+        if (itemType::finalReceipt != pItem->GetType()) { continue; }
+        if (pItem->GetReferenceToNum() == lReferenceNumber) { return pItem; }
     }
 
     return nullptr;
@@ -985,12 +985,13 @@ void Item::CalculateNumberOfOrigin()
             auto strAttachment = String::Factory();
             GetAttachment(strAttachment);
 
-            if (!theCheque->LoadContractFromString(strAttachment))
+            if (!theCheque->LoadContractFromString(strAttachment)) {
                 LogError()(OT_PRETTY_CLASS())(
                     "ERROR loading cheque from string: ")(strAttachment)(".")
                     .Flush();
-            else
+            } else {
                 SetNumberOfOrigin(theCheque->GetTransactionNum());
+            }
         } break;
 
         case itemType::atDepositCheque:  // this item is a server response to
@@ -1220,161 +1221,162 @@ auto Item::GetItemTypeFromString(const String& strType) -> itemType
 {
     itemType theType = itemType::error_state;
 
-    if (strType.Compare("transfer"))
+    if (strType.Compare("transfer")) {
         theType = itemType::transfer;
-    else if (strType.Compare("atTransfer"))
+    } else if (strType.Compare("atTransfer")) {
         theType = itemType::atTransfer;
 
-    else if (strType.Compare("acceptTransaction"))
+    } else if (strType.Compare("acceptTransaction")) {
         theType = itemType::acceptTransaction;
-    else if (strType.Compare("atAcceptTransaction"))
+    } else if (strType.Compare("atAcceptTransaction")) {
         theType = itemType::atAcceptTransaction;
 
-    else if (strType.Compare("acceptMessage"))
+    } else if (strType.Compare("acceptMessage")) {
         theType = itemType::acceptMessage;
-    else if (strType.Compare("atAcceptMessage"))
+    } else if (strType.Compare("atAcceptMessage")) {
         theType = itemType::atAcceptMessage;
 
-    else if (strType.Compare("acceptNotice"))
+    } else if (strType.Compare("acceptNotice")) {
         theType = itemType::acceptNotice;
-    else if (strType.Compare("atAcceptNotice"))
+    } else if (strType.Compare("atAcceptNotice")) {
         theType = itemType::atAcceptNotice;
 
-    else if (strType.Compare("acceptPending"))
+    } else if (strType.Compare("acceptPending")) {
         theType = itemType::acceptPending;
-    else if (strType.Compare("atAcceptPending"))
+    } else if (strType.Compare("atAcceptPending")) {
         theType = itemType::atAcceptPending;
-    else if (strType.Compare("rejectPending"))
+    } else if (strType.Compare("rejectPending")) {
         theType = itemType::rejectPending;
-    else if (strType.Compare("atRejectPending"))
+    } else if (strType.Compare("atRejectPending")) {
         theType = itemType::atRejectPending;
 
-    else if (strType.Compare("acceptCronReceipt"))
+    } else if (strType.Compare("acceptCronReceipt")) {
         theType = itemType::acceptCronReceipt;
-    else if (strType.Compare("atAcceptCronReceipt"))
+    } else if (strType.Compare("atAcceptCronReceipt")) {
         theType = itemType::atAcceptCronReceipt;
-    else if (strType.Compare("disputeCronReceipt"))
+    } else if (strType.Compare("disputeCronReceipt")) {
         theType = itemType::disputeCronReceipt;
-    else if (strType.Compare("atDisputeCronReceipt"))
+    } else if (strType.Compare("atDisputeCronReceipt")) {
         theType = itemType::atDisputeCronReceipt;
-    else if (strType.Compare("acceptItemReceipt"))
+    } else if (strType.Compare("acceptItemReceipt")) {
         theType = itemType::acceptItemReceipt;
-    else if (strType.Compare("atAcceptItemReceipt"))
+    } else if (strType.Compare("atAcceptItemReceipt")) {
         theType = itemType::atAcceptItemReceipt;
-    else if (strType.Compare("disputeItemReceipt"))
+    } else if (strType.Compare("disputeItemReceipt")) {
         theType = itemType::disputeItemReceipt;
-    else if (strType.Compare("atDisputeItemReceipt"))
+    } else if (strType.Compare("atDisputeItemReceipt")) {
         theType = itemType::atDisputeItemReceipt;
 
-    else if (strType.Compare("acceptFinalReceipt"))
+    } else if (strType.Compare("acceptFinalReceipt")) {
         theType = itemType::acceptFinalReceipt;
-    else if (strType.Compare("atAcceptFinalReceipt"))
+    } else if (strType.Compare("atAcceptFinalReceipt")) {
         theType = itemType::atAcceptFinalReceipt;
-    else if (strType.Compare("disputeFinalReceipt"))
+    } else if (strType.Compare("disputeFinalReceipt")) {
         theType = itemType::disputeFinalReceipt;
-    else if (strType.Compare("atDisputeFinalReceipt"))
+    } else if (strType.Compare("atDisputeFinalReceipt")) {
         theType = itemType::atDisputeFinalReceipt;
 
-    else if (strType.Compare("acceptBasketReceipt"))
+    } else if (strType.Compare("acceptBasketReceipt")) {
         theType = itemType::acceptBasketReceipt;
-    else if (strType.Compare("atAcceptBasketReceipt"))
+    } else if (strType.Compare("atAcceptBasketReceipt")) {
         theType = itemType::atAcceptBasketReceipt;
-    else if (strType.Compare("disputeBasketReceipt"))
+    } else if (strType.Compare("disputeBasketReceipt")) {
         theType = itemType::disputeBasketReceipt;
-    else if (strType.Compare("atDisputeBasketReceipt"))
+    } else if (strType.Compare("atDisputeBasketReceipt")) {
         theType = itemType::atDisputeBasketReceipt;
 
-    else if (strType.Compare("serverfee"))
+    } else if (strType.Compare("serverfee")) {
         theType = itemType::serverfee;
-    else if (strType.Compare("atServerfee"))
+    } else if (strType.Compare("atServerfee")) {
         theType = itemType::atServerfee;
-    else if (strType.Compare("issuerfee"))
+    } else if (strType.Compare("issuerfee")) {
         theType = itemType::issuerfee;
-    else if (strType.Compare("atIssuerfee"))
+    } else if (strType.Compare("atIssuerfee")) {
         theType = itemType::atIssuerfee;
 
-    else if (strType.Compare("balanceStatement"))
+    } else if (strType.Compare("balanceStatement")) {
         theType = itemType::balanceStatement;
-    else if (strType.Compare("atBalanceStatement"))
+    } else if (strType.Compare("atBalanceStatement")) {
         theType = itemType::atBalanceStatement;
-    else if (strType.Compare("transactionStatement"))
+    } else if (strType.Compare("transactionStatement")) {
         theType = itemType::transactionStatement;
-    else if (strType.Compare("atTransactionStatement"))
+    } else if (strType.Compare("atTransactionStatement")) {
         theType = itemType::atTransactionStatement;
 
-    else if (strType.Compare("withdrawal"))
+    } else if (strType.Compare("withdrawal")) {
         theType = itemType::withdrawal;
-    else if (strType.Compare("atWithdrawal"))
+    } else if (strType.Compare("atWithdrawal")) {
         theType = itemType::atWithdrawal;
-    else if (strType.Compare("deposit"))
+    } else if (strType.Compare("deposit")) {
         theType = itemType::deposit;
-    else if (strType.Compare("atDeposit"))
+    } else if (strType.Compare("atDeposit")) {
         theType = itemType::atDeposit;
 
-    else if (strType.Compare("withdrawVoucher"))
+    } else if (strType.Compare("withdrawVoucher")) {
         theType = itemType::withdrawVoucher;
-    else if (strType.Compare("atWithdrawVoucher"))
+    } else if (strType.Compare("atWithdrawVoucher")) {
         theType = itemType::atWithdrawVoucher;
-    else if (strType.Compare("depositCheque"))
+    } else if (strType.Compare("depositCheque")) {
         theType = itemType::depositCheque;
-    else if (strType.Compare("atDepositCheque"))
+    } else if (strType.Compare("atDepositCheque")) {
         theType = itemType::atDepositCheque;
 
-    else if (strType.Compare("payDividend"))
+    } else if (strType.Compare("payDividend")) {
         theType = itemType::payDividend;
-    else if (strType.Compare("atPayDividend"))
+    } else if (strType.Compare("atPayDividend")) {
         theType = itemType::atPayDividend;
 
-    else if (strType.Compare("marketOffer"))
+    } else if (strType.Compare("marketOffer")) {
         theType = itemType::marketOffer;
-    else if (strType.Compare("atMarketOffer"))
+    } else if (strType.Compare("atMarketOffer")) {
         theType = itemType::atMarketOffer;
 
-    else if (strType.Compare("paymentPlan"))
+    } else if (strType.Compare("paymentPlan")) {
         theType = itemType::paymentPlan;
-    else if (strType.Compare("atPaymentPlan"))
+    } else if (strType.Compare("atPaymentPlan")) {
         theType = itemType::atPaymentPlan;
 
-    else if (strType.Compare("smartContract"))
+    } else if (strType.Compare("smartContract")) {
         theType = itemType::smartContract;
-    else if (strType.Compare("atSmartContract"))
+    } else if (strType.Compare("atSmartContract")) {
         theType = itemType::atSmartContract;
 
-    else if (strType.Compare("cancelCronItem"))
+    } else if (strType.Compare("cancelCronItem")) {
         theType = itemType::cancelCronItem;
-    else if (strType.Compare("atCancelCronItem"))
+    } else if (strType.Compare("atCancelCronItem")) {
         theType = itemType::atCancelCronItem;
 
-    else if (strType.Compare("exchangeBasket"))
+    } else if (strType.Compare("exchangeBasket")) {
         theType = itemType::exchangeBasket;
-    else if (strType.Compare("atExchangeBasket"))
+    } else if (strType.Compare("atExchangeBasket")) {
         theType = itemType::atExchangeBasket;
 
-    else if (strType.Compare("chequeReceipt"))
+    } else if (strType.Compare("chequeReceipt")) {
         theType = itemType::chequeReceipt;
-    else if (strType.Compare("voucherReceipt"))
+    } else if (strType.Compare("voucherReceipt")) {
         theType = itemType::voucherReceipt;
-    else if (strType.Compare("marketReceipt"))
+    } else if (strType.Compare("marketReceipt")) {
         theType = itemType::marketReceipt;
-    else if (strType.Compare("paymentReceipt"))
+    } else if (strType.Compare("paymentReceipt")) {
         theType = itemType::paymentReceipt;
-    else if (strType.Compare("transferReceipt"))
+    } else if (strType.Compare("transferReceipt")) {
         theType = itemType::transferReceipt;
 
-    else if (strType.Compare("finalReceipt"))
+    } else if (strType.Compare("finalReceipt")) {
         theType = itemType::finalReceipt;
-    else if (strType.Compare("basketReceipt"))
+    } else if (strType.Compare("basketReceipt")) {
         theType = itemType::basketReceipt;
 
-    else if (strType.Compare("replyNotice"))
+    } else if (strType.Compare("replyNotice")) {
         theType = itemType::replyNotice;
-    else if (strType.Compare("successNotice"))
+    } else if (strType.Compare("successNotice")) {
         theType = itemType::successNotice;
-    else if (strType.Compare("notice"))
+    } else if (strType.Compare("notice")) {
         theType = itemType::notice;
 
-    else
+    } else {
         theType = itemType::error_state;
+    }
 
     return theType;
 }
@@ -1392,14 +1394,15 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         m_Type = GetItemTypeFromString(strType);  // just above.
 
         // Status
-        if (strStatus->Compare("request"))
+        if (strStatus->Compare("request")) {
             m_Status = request;
-        else if (strStatus->Compare("acknowledgement"))
+        } else if (strStatus->Compare("acknowledgement")) {
             m_Status = acknowledgement;
-        else if (strStatus->Compare("rejection"))
+        } else if (strStatus->Compare("rejection")) {
             m_Status = rejection;
-        else
+        } else {
             m_Status = error_status;
+        }
 
         auto strAcctFromID = String::Factory(), strAcctToID = String::Factory(),
              strNotaryID = String::Factory(), strNymID = String::Factory(),
@@ -1414,8 +1417,9 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         strOutboxNewTransNum =
             String::Factory(xml->getAttributeValue("outboxNewTransNum"));
 
-        if (strOutboxNewTransNum->Exists())
+        if (strOutboxNewTransNum->Exists()) {
             m_lNewOutboxTransNum = strOutboxNewTransNum->ToLong();
+        }
 
         // an OTTransaction::blank may now contain 20 or 100 new numbers.
         // Therefore, the Item::acceptTransaction must contain the same list,
@@ -1426,10 +1430,11 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                 String::Factory(xml->getAttributeValue("totalListOfNumbers"));
             m_Numlist.Release();
 
-            if (strTotalList->Exists())
+            if (strTotalList->Exists()) {
                 m_Numlist.Add(strTotalList);  // (Comma-separated list of
-                                              // numbers now becomes
-                                              // UnallocatedSet<std::int64_t>.)
+            }
+            // numbers now becomes
+            // UnallocatedSet<std::int64_t>.)
         }
 
         const auto ACCOUNT_ID = api_.Factory().Identifier(strAcctFromID);
@@ -1452,16 +1457,18 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         auto strTemp = String::Factory();
 
         strTemp = String::Factory(xml->getAttributeValue("numberOfOrigin"));
-        if (strTemp->Exists()) SetNumberOfOrigin(strTemp->ToLong());
+        if (strTemp->Exists()) { SetNumberOfOrigin(strTemp->ToLong()); }
 
         strTemp = String::Factory(xml->getAttributeValue("originType"));
-        if (strTemp->Exists()) SetOriginType(GetOriginTypeFromString(strTemp));
+        if (strTemp->Exists()) {
+            SetOriginType(GetOriginTypeFromString(strTemp));
+        }
 
         strTemp = String::Factory(xml->getAttributeValue("transactionNum"));
-        if (strTemp->Exists()) SetTransactionNum(strTemp->ToLong());
+        if (strTemp->Exists()) { SetTransactionNum(strTemp->ToLong()); }
 
         strTemp = String::Factory(xml->getAttributeValue("inReferenceTo"));
-        if (strTemp->Exists()) SetReferenceToNum(strTemp->ToLong());
+        if (strTemp->Exists()) { SetReferenceToNum(strTemp->ToLong()); }
 
         m_lAmount = factory::Amount(xml->getAttributeValue("amount"));
 
@@ -1571,22 +1578,29 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             auto strTemp = String::Factory();
 
             strTemp = String::Factory(xml->getAttributeValue("numberOfOrigin"));
-            if (strTemp->Exists()) pItem->SetNumberOfOrigin(strTemp->ToLong());
+            if (strTemp->Exists()) {
+                pItem->SetNumberOfOrigin(strTemp->ToLong());
+            }
 
             strTemp = String::Factory(xml->getAttributeValue("originType"));
-            if (strTemp->Exists())
+            if (strTemp->Exists()) {
                 pItem->SetOriginType(GetOriginTypeFromString(strTemp));
+            }
 
             strTemp = String::Factory(xml->getAttributeValue("transactionNum"));
-            if (strTemp->Exists()) pItem->SetTransactionNum(strTemp->ToLong());
+            if (strTemp->Exists()) {
+                pItem->SetTransactionNum(strTemp->ToLong());
+            }
 
             strTemp = String::Factory(xml->getAttributeValue("inReferenceTo"));
-            if (strTemp->Exists()) pItem->SetReferenceToNum(strTemp->ToLong());
+            if (strTemp->Exists()) {
+                pItem->SetReferenceToNum(strTemp->ToLong());
+            }
 
             strTemp = String::Factory(xml->getAttributeValue(
                 "closingTransactionNum"));  // only used in the inbox report for
                                             // balance agreement.
-            if (strTemp->Exists()) pItem->SetClosingNum(strTemp->ToLong());
+            if (strTemp->Exists()) { pItem->SetClosingNum(strTemp->ToLong()); }
 
             AddItem(pItem);  // <======= adding to list.
 
@@ -1926,10 +1940,10 @@ void Item::UpdateContents(const PasswordPrompt& reason)  // Before transmission
     // number to verify when he is
     // verifying the outbox against the
     // last signed receipt.
-    if (m_lNewOutboxTransNum > 0)
+    if (m_lNewOutboxTransNum > 0) {
         tag.add_attribute(
             "outboxNewTransNum", std::to_string(m_lNewOutboxTransNum));
-    else {
+    } else {
         // IF this item is "acceptTransaction" then this
         // will serialize the list of transaction numbers
         // being accepted. (They now support multiple
@@ -1940,8 +1954,9 @@ void Item::UpdateContents(const PasswordPrompt& reason)  // Before transmission
             // itemType::acceptTransaction.
             auto strListOfBlanks = String::Factory();
 
-            if (true == m_Numlist.Output(strListOfBlanks))
+            if (true == m_Numlist.Output(strListOfBlanks)) {
                 tag.add_attribute("totalListOfNumbers", strListOfBlanks->Get());
+            }
         }
     }
 

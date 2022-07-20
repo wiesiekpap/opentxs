@@ -12,14 +12,21 @@ string(
   REPLACE
     "DifficultyTest_isMinAnnDiffOk"
     "pc_is_min_ann_diff_ok"
-    DIFFICULTY_TEST_2
+    DIFFICULTY_TEST_1
     "${DIFFICULTY_TEST_ORIGINAL}"
 )
 string(
   REPLACE
     "DifficultyTest_degradeAnnouncementTarget"
     "pc_degrade_announcement_target"
-    DIFFICULTY_TEST_1
+    DIFFICULTY_TEST_2
+    "${DIFFICULTY_TEST_1}"
+)
+string(
+  REPLACE
+    "assert(BN_zero(out));"
+    "BN_zero(out);"
+    DIFFICULTY_TEST_3
     "${DIFFICULTY_TEST_2}"
 )
 string(
@@ -27,7 +34,7 @@ string(
     "DifficultyTest_getEffectiveTarget"
     "pc_get_effective_target"
     DIFFICULTY_TEST_FIXED
-    "${DIFFICULTY_TEST_1}"
+    "${DIFFICULTY_TEST_3}"
 )
 file(
   WRITE "${CMAKE_CURRENT_BINARY_DIR}/DifficultyTest.c"

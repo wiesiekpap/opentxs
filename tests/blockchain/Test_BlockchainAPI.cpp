@@ -552,8 +552,6 @@ TEST_F(Test_BlockchainAPI, invalid_nym)
     EXPECT_EQ(list.size(), 0);
     EXPECT_EQ(list.count(accountID), 0);
 
-    loaded = false;
-
     try {
         api_.Crypto().Blockchain().Account(nym_not_in_wallet_, btc_chain_);
         loaded = true;

@@ -135,7 +135,7 @@ auto OTCronItem::LoadCronReceipt(
             szFoldername)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
         return nullptr;
-    } else
+    } else {
         // NOTE: NewCronItem can handle the normal cron item contracts, as well
         // as the OT ARMORED version
         // (It will decode the armor before instantiating the contract.)
@@ -143,6 +143,7 @@ auto OTCronItem::LoadCronReceipt(
         // THIS function to do any decoding...
         //
         return api.Factory().InternalSession().CronItem(strFileContents);
+    }
 }
 
 // static
@@ -186,7 +187,7 @@ auto OTCronItem::LoadActiveCronReceipt(
             strNotaryID)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
         return nullptr;
-    } else
+    } else {
         // NOTE: NewCronItem can handle the normal cron item contracts, as well
         // as the OT ARMORED version
         // (It will decode the armor before instantiating the contract.)
@@ -194,6 +195,7 @@ auto OTCronItem::LoadActiveCronReceipt(
         // THIS function to do any decoding...
         //
         return api.Factory().InternalSession().CronItem(strFileContents);
+    }
 }
 
 // static
@@ -232,8 +234,9 @@ auto OTCronItem::GetActiveCronTransNums(
                     strNumlist)(".")
                     .Flush();
                 return false;
-            } else
+            } else {
                 output.Add(strNumlist);
+            }
         }
     }
 
@@ -290,13 +293,14 @@ auto OTCronItem::EraseActiveCronReceipt(
                     "was encoded "
                     "and then failed decoding. Contents: ")(strNumlist)(".")
                     .Flush();
-            } else
+            } else {
                 numlist.Add(strNumlist);
+            }
         }
 
         strNumlist->Release();
 
-        if (numlist.Count() > 0) numlist.Remove(lTransactionNum);
+        if (numlist.Count() > 0) { numlist.Remove(lTransactionNum); }
 
         if (0 == numlist.Count()) {
             if (!OTDB::EraseValueByKey(
@@ -438,8 +442,9 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
                         "Input string apparently was encoded and then"
                         " failed decoding. Contents: ")(strNumlist)(".")
                         .Flush();
-                } else
+                } else {
                     numlist.Add(strNumlist);
+                }
             }
         }
 
@@ -760,10 +765,11 @@ void OTCronItem::HookActivationOnCron(
     // cron item base class, upon activation. (This executes
     // no matter what, even if onActivate() is overridden.)
 
-    if (bForTheFirstTime)
+    if (bForTheFirstTime) {
         onActivate(reason);  // Subclasses may override this.
-                             //
-                             // MOST NOTABLY,
+    }
+    //
+    // MOST NOTABLY,
     // OTSmartContract overrides this, so it can allow the SCRIPT
     // a chance to hook onActivate() as well.
 }
@@ -1008,12 +1014,13 @@ void OTCronItem::onFinalReceipt(
                 GetOriginType(),
                 reason,
                 String::Factory(),  // note
-                pstrAttachment))    // pActualAcct = nullptr by default.
+                pstrAttachment)) {  // pActualAcct = nullptr by default.
                                     // (This call will load it up in order
                                     // to update the inbox hash.)
             LogError()(OT_PRETTY_CLASS())(
                 "Failure dropping receipt into inbox.")
                 .Flush();
+        }
 
         // In this case, I'm passing nullptr for pstrNote, since there is no
         // note.
@@ -1068,10 +1075,11 @@ auto OTCronItem::DropFinalReceiptToInbox(
 
     // ...or generate it otherwise...
 
-    if (true == bSuccessLoading)
+    if (true == bSuccessLoading) {
         bSuccessLoading = theInbox->VerifyAccount(pServerNym);
-    else
+    } else {
         LogError()(OT_PRETTY_CLASS())("ERROR loading inbox ledger.").Flush();
+    }
     //      otErr << szFunc << ": ERROR loading inbox ledger.\n";
     //  else
     //      bSuccessLoading = theInbox->GenerateLedger(ACCOUNT_ID,
@@ -1247,10 +1255,11 @@ auto OTCronItem::DropFinalReceiptToNymbox(
 
     // ...or generate it otherwise...
 
-    if (true == bSuccessLoading)
+    if (true == bSuccessLoading) {
         bSuccessLoading = theLedger->VerifyAccount(*pServerNym);
-    else
+    } else {
         LogError()(OT_PRETTY_CLASS())("Unable to load Nymbox.").Flush();
+    }
     //    else
     //        bSuccessLoading        = theLedger->GenerateLedger(NYM_ID,
     // GetNotaryID(), OTLedger::nymbox, true); // bGenerateFile=true
@@ -1409,7 +1418,7 @@ auto OTCronItem::GetClosingNum() const -> std::int64_t
 auto OTCronItem::IsValidOpeningNumber(const std::int64_t& lOpeningNum) const
     -> bool
 {
-    if (GetOpeningNum() == lOpeningNum) return true;
+    if (GetOpeningNum() == lOpeningNum) { return true; }
 
     return false;
 }
@@ -1429,7 +1438,7 @@ auto OTCronItem::GetClosingNumber(const Identifier& theAcctID) const
 {
     const auto& theSenderAcctID = GetSenderAcctID();
 
-    if (theAcctID == theSenderAcctID) return GetClosingNum();
+    if (theAcctID == theSenderAcctID) { return GetClosingNum(); }
 
     return 0;
 }
@@ -1501,7 +1510,7 @@ auto OTCronItem::CancelBeforeActivation(
 {
     OT_ASSERT(!m_pCancelerNymID->empty());
 
-    if (IsCanceled()) return false;
+    if (IsCanceled()) { return false; }
 
     m_bCanceled = true;
     m_pCancelerNymID = theCancelerNym.ID();
@@ -1558,9 +1567,10 @@ auto OTCronItem::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
     nReturnVal = ot_super::ProcessXMLNode(xml);
 
-    if (nReturnVal != 0)    // -1 is error, and 1 is "found it". Either way,
+    if (nReturnVal != 0) {  // -1 is error, and 1 is "found it". Either way,
                             // return.
         return nReturnVal;  // 0 means "nothing happened, keep going."
+    }
 
     const auto strNodeName = String::Factory(xml->getNodeName());
 

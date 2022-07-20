@@ -56,9 +56,8 @@ auto BitcoinP2PFeefilter(
 
     FeeRateField raw_rate;
     std::memcpy(reinterpret_cast<std::byte*>(&raw_rate), it, sizeof(raw_rate));
-    it += sizeof(raw_rate);
-
-    const std::uint64_t fee_rate = raw_rate.value();
+    std::advance(it, sizeof(raw_rate));
+    const auto fee_rate = raw_rate.value();
 
     try {
         return new ReturnType(api, std::move(pHeader), fee_rate);

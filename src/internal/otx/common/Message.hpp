@@ -77,7 +77,7 @@ public:
     auto findStrategy(UnallocatedCString name) -> OTMessageStrategy*
     {
         auto strategy = mapping.find(name);
-        if (strategy == mapping.end()) return nullptr;
+        if (strategy == mapping.end()) { return nullptr; }
         return strategy->second.get();
     }
     void registerStrategy(UnallocatedCString name, OTMessageStrategy* strategy)

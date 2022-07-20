@@ -1285,7 +1285,7 @@ void Notary::NotarizeWithdrawal(
     if (false == bool(pItemVoucher)) {
         pItemCash = tranIn.GetItem(itemType::withdrawal);
         pItem = pItemCash;
-        if (false != bool(pItem)) theReplyItemType = itemType::atWithdrawal;
+        if (false != bool(pItem)) { theReplyItemType = itemType::atWithdrawal; }
     } else {
         pItem = pItemVoucher;
         theReplyItemType = itemType::atWithdrawVoucher;
@@ -2173,13 +2173,14 @@ void Notary::NotarizePayDividend(
                                     // back.)
                                     //
                                     if (false == theSourceAccount.get().Credit(
-                                                     lTotalCostOfDividend))
+                                                     lTotalCostOfDividend)) {
                                         LogError()(OT_PRETTY_CLASS())(
                                             "Failed crediting back the user "
                                             "account, after taking his funds "
                                             "and failing to credit them to the "
                                             "voucher reserve account.")
                                             .Flush();
+                                    }
                                 } else  // By this point, we have taken the full
                                         // funds
                                         // and moved them to the voucher
@@ -3348,12 +3349,13 @@ void Notary::NotarizePaymentPlan(
                                             "it was ever activated. (At user's "
                                             "request.)")
                                             .Flush();
-                                    } else
+                                    } else {
                                         LogError()(OT_PRETTY_CLASS())(
                                             "Unable to add payment plan to "
                                             "Cron. (Failed activating payment "
                                             "plan.)")
                                             .Flush();
+                                    }
 
                                     // Send a failure notice to the other
                                     // parties.
@@ -3613,8 +3615,12 @@ void Notary::NotarizeSmartContract(
                                              // number for the current
                                              // account.
 
-                    if (lFoundOpeningNum > 0) FOUND_NYM_ID = theCancelerNymID;
-                    if (lFoundClosingNum > 0) FOUND_ACCT_ID = ACTIVATOR_ACCT_ID;
+                    if (lFoundOpeningNum > 0) {
+                        FOUND_NYM_ID = theCancelerNymID;
+                    }
+                    if (lFoundClosingNum > 0) {
+                        FOUND_ACCT_ID = ACTIVATOR_ACCT_ID;
+                    }
                 }
 
                 if (lFoundNum != lExpectedNum) {
@@ -4713,6 +4719,7 @@ void Notary::NotarizeExchangeBasket(
                                         break;
                                     } else  // if equal
                                     {
+                                        // NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
                                         bSuccess = true;
 
                                         // Load up the two accounts and perform
@@ -4824,10 +4831,10 @@ void Notary::NotarizeExchangeBasket(
                                                         lTransferAmount)) {
                                                     if (serverAccount.get()
                                                             .Credit(
-                                                                lTransferAmount))
+                                                                lTransferAmount)) {
                                                         bSuccess = true;
-                                                    else {  // the server credit
-                                                            // failed.
+                                                    } else {  // the server
+                                                              // credit failed.
                                                         LogError()(
                                                             OT_PRETTY_CLASS())(
                                                             "Failure "
@@ -4840,7 +4847,7 @@ void Notary::NotarizeExchangeBasket(
                                                         // let's put that back.
                                                         if (false ==
                                                             userAccount.get().Credit(
-                                                                lTransferAmount))
+                                                                lTransferAmount)) {
                                                             LogError()(
                                                                 OT_PRETTY_CLASS())(
                                                                 "Failure "
@@ -4848,6 +4855,7 @@ void Notary::NotarizeExchangeBasket(
                                                                 "back user "
                                                                 "account.")
                                                                 .Flush();
+                                                        }
                                                         bSuccess = false;
                                                         break;
                                                     }
@@ -4866,10 +4874,10 @@ void Notary::NotarizeExchangeBasket(
                                                 if (serverAccount.get().Debit(
                                                         lTransferAmount)) {
                                                     if (userAccount.get().Credit(
-                                                            lTransferAmount))
+                                                            lTransferAmount)) {
                                                         bSuccess = true;
-                                                    else {  // the user credit
-                                                            // failed.
+                                                    } else {  // the user credit
+                                                              // failed.
                                                         LogError()(
                                                             OT_PRETTY_CLASS())(
                                                             "Failure "
@@ -4882,9 +4890,8 @@ void Notary::NotarizeExchangeBasket(
                                                         // already, let's put
                                                         // that back.
                                                         if (false ==
-                                                            serverAccount.get()
-                                                                .Credit(
-                                                                    lTransferAmount))
+                                                            serverAccount.get().Credit(
+                                                                lTransferAmount)) {
                                                             LogError()(
                                                                 OT_PRETTY_CLASS())(
                                                                 "Failure "
@@ -4892,6 +4899,7 @@ void Notary::NotarizeExchangeBasket(
                                                                 "back server "
                                                                 "account.")
                                                                 .Flush();
+                                                        }
                                                         bSuccess = false;
                                                         break;
                                                     }
@@ -5068,9 +5076,9 @@ void Notary::NotarizeExchangeBasket(
                                         if (basketAccount.get().Debit(
                                                 lTransferAmount)) {
                                             if (theAccount.get().Credit(
-                                                    lTransferAmount))
+                                                    lTransferAmount)) {
                                                 bSuccess = true;
-                                            else {
+                                            } else {
                                                 LogError()(OT_PRETTY_CLASS())(
                                                     "Failed crediting user "
                                                     "basket account.")
@@ -5078,13 +5086,14 @@ void Notary::NotarizeExchangeBasket(
 
                                                 if (false ==
                                                     basketAccount.get().Credit(
-                                                        lTransferAmount))
+                                                        lTransferAmount)) {
                                                     LogError()(
                                                         OT_PRETTY_CLASS())(
                                                         "Failed crediting "
                                                         "back basket issuer "
                                                         "account.")
                                                         .Flush();
+                                                }
 
                                                 bSuccess = false;
                                             }
@@ -5100,9 +5109,9 @@ void Notary::NotarizeExchangeBasket(
                                         if (theAccount.get().Debit(
                                                 lTransferAmount)) {
                                             if (basketAccount.get().Credit(
-                                                    lTransferAmount))
+                                                    lTransferAmount)) {
                                                 bSuccess = true;
-                                            else {
+                                            } else {
                                                 LogError()(OT_PRETTY_CLASS())(
                                                     "Failed crediting basket "
                                                     "issuer account.")
@@ -5110,13 +5119,14 @@ void Notary::NotarizeExchangeBasket(
 
                                                 if (false ==
                                                     theAccount.get().Credit(
-                                                        lTransferAmount))
+                                                        lTransferAmount)) {
                                                     LogError()(
                                                         OT_PRETTY_CLASS())(
                                                         "Failed crediting "
                                                         "back user basket "
                                                         "account.")
                                                         .Flush();
+                                                }
 
                                                 bSuccess = false;
                                             }
@@ -6537,7 +6547,6 @@ auto Notary::NotarizeProcessNymbox(
                             LogError()(OT_PRETTY_CLASS())(
                                 "Should never happen.")
                                 .Flush();
-                            theReplyItemType = itemType::error_state;
                         }
                             continue;
                     }
@@ -6718,14 +6727,13 @@ auto Notary::NotarizeProcessNymbox(
                             // still get his transaction # later, from the
                             // notice, instead of going out of sync.
                             //
-                            std::int64_t lSuccessNoticeTransNum = 0;
+                            auto lSuccessNoticeTransNum = TransactionNumber{};
                             bool bGotNextTransNum =
                                 server_.GetTransactor()
                                     .issueNextTransactionNumber(
                                         lSuccessNoticeTransNum);
 
                             if (!bGotNextTransNum) {
-                                lSuccessNoticeTransNum = 0;
                                 LogError()(OT_PRETTY_CLASS())(
                                     "Error getting next transaction "
                                     "number in "
@@ -8021,23 +8029,24 @@ void Notary::NotarizeProcessInbox(
                     // so we will create this inbox if we have
                     // to, so we can add that record to it.
 
-                    if (true == bSuccessLoadingInbox)
+                    if (true == bSuccessLoadingInbox) {
                         bSuccessLoadingInbox =
                             theFromInbox->VerifyAccount(server_.GetServerNym());
-                    else
+                    } else {
                         LogError()(OT_PRETTY_CLASS())("ERROR missing 'from' "
                                                       "inbox in "
                                                       "Notary::"
                                                       "NotarizeProcessInbox.")
                             .Flush();
+                    }
                     // THE FROM OUTBOX -- We are removing an
                     // item, so this outbox SHOULD already
                     // exist.
 
-                    if (true == bSuccessLoadingOutbox)
+                    if (true == bSuccessLoadingOutbox) {
                         bSuccessLoadingOutbox = theFromOutbox->VerifyAccount(
                             server_.GetServerNym());
-                    else  // If it does not already exist, that
+                    } else {  // If it does not already exist, that
                         // is an error condition. For now, log
                         // and fail.
                         LogError()(OT_PRETTY_CLASS())("ERROR missing 'from' "
@@ -8045,6 +8054,7 @@ void Notary::NotarizeProcessInbox(
                                                       "Notary::"
                                                       "NotarizeProcessInbox.")
                             .Flush();
+                    }
                     if (!bSuccessLoadingInbox ||
                         false == bSuccessLoadingOutbox) {
                         LogError()(OT_PRETTY_CLASS())("ERROR loading 'from' "
@@ -8339,8 +8349,9 @@ send_message:
 
         bOutSuccess = true;  // the processInbox was successful.
         strPath->Set(api::Legacy::GetFilenameSuccess(strAcctID->Get()).c_str());
-    } else
+    } else {
         strPath->Set(api::Legacy::GetFilenameFail(strAcctID->Get()).c_str());
+    }
 
     const char* szFoldername = server_.API().Internal().Legacy().Receipt();
 

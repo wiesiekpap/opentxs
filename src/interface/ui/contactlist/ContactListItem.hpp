@@ -61,6 +61,8 @@ public:
     auto ImageURI() const noexcept -> UnallocatedCString final;
     auto Section() const noexcept -> UnallocatedCString final;
 
+    auto init_contact_list() noexcept -> void;
+
     ContactListItem(
         const ContactListInternalInterface& parent,
         const api::session::Client& api,
@@ -77,11 +79,11 @@ public:
 protected:
     ContactListSortKey key_;
 
+    auto qt_data(const int column, const int role, QVariant& out) const noexcept
+        -> void override;
     auto translate_section(const Lock&) const noexcept -> UnallocatedCString;
 
     using ContactListItemRow::reindex;
-    auto qt_data(const int column, const int role, QVariant& out) const noexcept
-        -> void override;
     auto reindex(const ContactListSortKey&, CustomData&) noexcept
         -> bool override;
     virtual auto reindex(

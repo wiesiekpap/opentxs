@@ -245,6 +245,7 @@ Reply::Imp::Imp(
     first_time_init(lock);
 }
 
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
 Reply::Imp::Imp(const api::Session& api, const proto::ServerReply serialized)
     : Signable(
           api,
@@ -270,6 +271,7 @@ Reply::Imp::Imp(const api::Session& api, const proto::ServerReply serialized)
     Lock lock(lock_);
     init_serialized(lock);
 }
+// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
 Reply::Imp::Imp(const Imp& rhs) noexcept
     : Signable(rhs)

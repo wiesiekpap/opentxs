@@ -21,11 +21,12 @@ class OPENTXS_EXPORT ManagedNumber
 {
 public:
     class Imp;
-    void SetSuccess(const bool value = true) const;
+
+    auto SetSuccess(const bool value = true) const -> void;
     auto Valid() const -> bool;
     auto Value() const -> TransactionNumber;
 
-    virtual auto swap(ManagedNumber& rhs) noexcept -> void;
+    auto swap(ManagedNumber& rhs) noexcept -> void;
 
     ManagedNumber(Imp* imp) noexcept;
     ManagedNumber(const ManagedNumber&) = delete;
@@ -33,7 +34,7 @@ public:
     auto operator=(const ManagedNumber&) -> ManagedNumber& = delete;
     auto operator=(ManagedNumber&&) noexcept -> ManagedNumber&;
 
-    virtual ~ManagedNumber();
+    ~ManagedNumber();
 
 private:
     Imp* imp_;

@@ -39,7 +39,6 @@
 
 namespace opentxs::otx::blind::mint
 {
-
 Mint::Mint(
     const api::Session& api,
     const identifier::Notary& notary,
@@ -145,6 +144,7 @@ void Mint::Release_Mint()
 {
     ReleaseDenominations();
     m_CashAccountID->clear();
+    Imp::Release_Mint();
 }
 
 void Mint::Release()
@@ -180,15 +180,16 @@ auto Mint::LoadMint(const char* szAppend) -> bool  // todo: server should
                                                    // here. client never
                                                    // should. Enforcement?
 {
-    if (!m_strFoldername->Exists())
+    if (!m_strFoldername->Exists()) {
         m_strFoldername->Set(api_.Internal().Legacy().Mint());
+    }
 
     const auto strNotaryID = String::Factory(m_NotaryID),
                strInstrumentDefinitionID =
                    String::Factory(m_InstrumentDefinitionID);
 
     if (!m_strFilename->Exists()) {
-        if (nullptr != szAppend)
+        if (nullptr != szAppend) {
             m_strFilename->Set(
                 api::Legacy::Concatenate(
                     strNotaryID->Get(),
@@ -197,7 +198,7 @@ auto Mint::LoadMint(const char* szAppend) -> bool  // todo: server should
                     strInstrumentDefinitionID->Get(),
                     szAppend)
                     .c_str());
-        else
+        } else {
             m_strFilename->Set(api::Legacy::Concatenate(
                                    strNotaryID->Get(),
                                    api::Legacy::PathSeparator(),
@@ -206,18 +207,20 @@ auto Mint::LoadMint(const char* szAppend) -> bool  // todo: server should
                                              // instrument definition
                                              // id, no append.
             );
+        }
     }
 
     auto strFilename = String::Factory();
-    if (nullptr != szAppend)
+    if (nullptr != szAppend) {
         strFilename->Set(api::Legacy::Concatenate(
                              strInstrumentDefinitionID->Get(),
                              szAppend)
                              .c_str()  // server side
         );
-    else
+    } else {
         strFilename =
             String::Factory(strInstrumentDefinitionID->Get());  // client side
+    }
 
     const char* szFolder1name = api_.Internal().Legacy().Mint();  // "mints"
     const char* szFolder2name = strNotaryID->Get();  // "mints/NOTARY_ID"
@@ -269,36 +272,39 @@ auto Mint::LoadMint(const char* szAppend) -> bool  // todo: server should
 
 auto Mint::SaveMint(const char* szAppend) -> bool
 {
-    if (!m_strFoldername->Exists())
+    if (!m_strFoldername->Exists()) {
         m_strFoldername->Set(api_.Internal().Legacy().Mint());
+    }
 
     const auto strNotaryID = String::Factory(m_NotaryID),
                strInstrumentDefinitionID =
                    String::Factory(m_InstrumentDefinitionID);
 
     if (!m_strFilename->Exists()) {
-        if (nullptr != szAppend)
+        if (nullptr != szAppend) {
             m_strFilename->Set(api::Legacy::Concatenate(
                                    strNotaryID->Get(),
                                    api::Legacy::PathSeparator(),  // server side
                                    strInstrumentDefinitionID->Get(),
                                    szAppend)
                                    .c_str());
-        else
+        } else {
             m_strFilename->Set(api::Legacy::Concatenate(
                                    strNotaryID->Get(),
                                    api::Legacy::PathSeparator(),
                                    strInstrumentDefinitionID->Get())
                                    .c_str());  // client side
+        }
     }
 
     auto strFilename = String::Factory();
-    if (nullptr != szAppend)
+    if (nullptr != szAppend) {
         strFilename->Set(
             api::Legacy::Concatenate(strInstrumentDefinitionID->Get(), szAppend)
                 .c_str());
-    else
+    } else {
         strFilename = String::Factory(strInstrumentDefinitionID->Get());
+    }
 
     const char* szFolder1name = api_.Internal().Legacy().Mint();
     const char* szFolder2name = strNotaryID->Get();
@@ -336,17 +342,18 @@ auto Mint::SaveMint(const char* szAppend) -> bool
         szFilename,
         "");  // <=== SAVING TO LOCAL DATA STORE.
     if (!bSaved) {
-        if (nullptr != szAppend)
+        if (nullptr != szAppend) {
             LogError()(OT_PRETTY_CLASS())("Error writing to file: ")(
                 szFolder1name)(api::Legacy::PathSeparator())(
                 szFolder2name)(api::Legacy::PathSeparator())(
                 szFilename)(szAppend)(".")
                 .Flush();
-        else
+        } else {
             LogError()(OT_PRETTY_CLASS())("Error writing to file: ")(
                 szFolder1name)(api::Legacy::PathSeparator())(
                 szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
                 .Flush();
+        }
 
         return false;
     }
@@ -456,7 +463,7 @@ auto Mint::GetLargestDenomination(const Amount& lAmount) const -> Amount
          nIndex--) {
         const Amount& lDenom = GetDenomination(nIndex);
 
-        if (lDenom <= lAmount) return lDenom;
+        if (lDenom <= lAmount) { return lDenom; }
     }
 
     return 0;
@@ -475,7 +482,7 @@ auto Mint::GetDenomination(std::int32_t nIndex) const -> Amount
     for (auto it = m_mapPublic.begin(); it != m_mapPublic.end();
          ++it, nIterateIndex++) {
 
-        if (nIndex == nIterateIndex) return it->first;
+        if (nIndex == nIterateIndex) { return it->first; }
     }
 
     return 0;
@@ -743,5 +750,5 @@ void Mint::GenerateNewMint(
     }
 }
 
-Mint::~Mint() { Release_Mint(); }
+Mint::~Mint() = default;
 }  // namespace opentxs::otx::blind::mint

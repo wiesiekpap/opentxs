@@ -191,10 +191,11 @@ auto OTAgent::LoadNym() -> Nym_p
         OT_ASSERT(m_pNym);
 
         return m_pNym;
-    } else
+    } else {
         LogError()(OT_PRETTY_CLASS())(
             "Failure. Are you sure this agent IS a Nym at all?")
             .Flush();
+    }
 
     return nullptr;
 }
@@ -412,7 +413,7 @@ auto OTAgent::IsValidSignerID(const Identifier& theNymID) -> bool
 
     // If there's a NymID on this agent, and it matches theNymID...
     //
-    if (bNymID && (theNymID == theAgentNymID)) return true;
+    if (bNymID && (theNymID == theAgentNymID)) { return true; }
 
     // TODO Entities...
     //
@@ -489,10 +490,11 @@ auto OTAgent::GetEntityID(Identifier& theOutput) const -> bool
 //
 auto OTAgent::IsAuthorizingAgentForParty() -> bool
 {
-    if (nullptr == m_pForParty) return false;
+    if (nullptr == m_pForParty) { return false; }
 
-    if (m_strName->Compare(m_pForParty->GetAuthorizingAgentName().c_str()))
+    if (m_strName->Compare(m_pForParty->GetAuthorizingAgentName().c_str())) {
         return true;
+    }
 
     return false;
 }
@@ -530,7 +532,7 @@ auto OTAgent::GetGroupName(String& strGroupName) -> bool
 //
 auto OTAgent::GetPartyID(Identifier& theOutput) const -> bool
 {
-    if (DoesRepresentHimself()) return GetNymID(theOutput);
+    if (DoesRepresentHimself()) { return GetNymID(theOutput); }
 
     return GetEntityID(theOutput);
 }

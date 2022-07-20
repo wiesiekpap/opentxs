@@ -188,8 +188,9 @@ auto OTSignedFile::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 auto OTSignedFile::VerifyFile() -> bool
 {
     if (m_strLocalDir->Compare(m_strPurportedLocalDir) &&
-        m_strSignedFilename->Compare(m_strPurportedFilename))
+        m_strSignedFilename->Compare(m_strPurportedFilename)) {
         return true;
+    }
 
     LogError()(OT_PRETTY_CLASS())(
         "Failed verifying signed file: "
@@ -232,8 +233,9 @@ auto OTSignedFile::LoadFile() -> bool
             m_strFoldername->Get(),
             m_strFilename->Get(),
             "",
-            ""))
+            "")) {
         return LoadContract();
+    }
 
     return false;
 }

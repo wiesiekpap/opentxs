@@ -156,18 +156,18 @@ public:
     inline void SetScale(const Amount& lScale)
     {
         m_lScale = lScale;
-        if (m_lScale < 1) m_lScale = 1;
+        if (m_lScale < 1) { m_lScale = 1; }
     }
 
     inline auto GetLastSalePrice() -> const Amount&
     {
-        if (m_lLastSalePrice < 1) m_lLastSalePrice = 1;
+        if (m_lLastSalePrice < 1) { m_lLastSalePrice = 1; }
         return m_lLastSalePrice;
     }
     inline void SetLastSalePrice(const std::int64_t& lLastSalePrice)
     {
         m_lLastSalePrice = lLastSalePrice;
-        if (m_lLastSalePrice < 1) m_lLastSalePrice = 1;
+        if (m_lLastSalePrice < 1) { m_lLastSalePrice = 1; }
     }
 
     auto GetLastSaleDate() -> const UnallocatedCString&

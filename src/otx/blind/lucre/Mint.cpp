@@ -371,4 +371,6 @@ auto Lucre::VerifyToken(
 
     return bank.Verify(coin);
 }
+
+Lucre::~Lucre() { Release_Mint(); }
 }  // namespace opentxs::otx::blind::mint

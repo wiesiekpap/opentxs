@@ -81,7 +81,7 @@ public:
         const Push push = Push::Enable) -> otx::client::NetworkReplyMessage;
     auto Status() const -> bool;
 
-    virtual auto swap(ServerConnection& rhs) noexcept -> void;
+    auto swap(ServerConnection& rhs) noexcept -> void;
 
     OPENTXS_NO_EXPORT ServerConnection(Imp* imp) noexcept;
     ServerConnection(const ServerConnection&) noexcept = delete;

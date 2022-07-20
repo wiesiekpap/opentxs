@@ -151,7 +151,9 @@ auto OTPaymentPlan::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
     // -- Note you can choose not to call the parent if
     // you don't want to use any of those xml tags.
     // As I do below, in the case of OTAccount.
-    if (0 != (nReturnVal = ot_super::ProcessXMLNode(xml))) return nReturnVal;
+    if (0 != (nReturnVal = ot_super::ProcessXMLNode(xml))) {
+        return nReturnVal;
+    }
 
     // Note: the closing transaction numbers are read in
     // OTCronItem::ProcessXMLNode,
@@ -256,7 +258,7 @@ void OTPaymentPlan::UpdateContents(const PasswordPrompt& reason)
 
     auto strCanceler = String::Factory();
 
-    if (m_bCanceled) m_pCancelerNymID->GetString((strCanceler));
+    if (m_bCanceled) { m_pCancelerNymID->GetString((strCanceler)); }
 
     // OTAgreement
     Tag tag("agreement");
@@ -398,7 +400,7 @@ auto OTPaymentPlan::SetInitialPayment(
 
 auto OTPaymentPlan::CompareAgreement(const OTAgreement& rhs) const -> bool
 {
-    if (!ot_super::CompareAgreement(rhs)) return false;
+    if (!ot_super::CompareAgreement(rhs)) { return false; }
 
     // Compare OTPaymentPlan specific info here.
     const auto* pPlan = dynamic_cast<const OTPaymentPlan*>(&rhs);
@@ -412,8 +414,9 @@ auto OTPaymentPlan::CompareAgreement(const OTAgreement& rhs) const -> bool
         (GetTimeBetweenPayments() == pPlan->GetTimeBetweenPayments()) &&
         (GetPaymentPlanStartDate() == pPlan->GetPaymentPlanStartDate()) &&
         (GetPaymentPlanLength() == pPlan->GetPaymentPlanLength()) &&
-        (GetMaximumNoPayments() == pPlan->GetMaximumNoPayments()))
+        (GetMaximumNoPayments() == pPlan->GetMaximumNoPayments())) {
         return true;
+    }
 
     return false;
 }
@@ -500,7 +503,7 @@ auto OTPaymentPlan::VerifyAgreement(
         return false;
     }
 
-    for (std::int32_t i = 0; i < GetCountClosingNumbers(); i++)
+    for (std::int32_t i = 0; i < GetCountClosingNumbers(); i++) {
         if (!sender.VerifyIssuedNumber(GetClosingTransactionNoAt(i))) {
             LogError()(OT_PRETTY_CLASS())("Closing transaction number ")(
                 GetClosingTransactionNoAt(i))(" isn't on sender's issued list.")
@@ -508,6 +511,7 @@ auto OTPaymentPlan::VerifyAgreement(
 
             return false;
         }
+    }
 
     // Verify Recipient closing numbers against RECIPIENT's issued list.
     if (GetRecipientCountClosingNumbers() < 2) {
@@ -520,7 +524,7 @@ auto OTPaymentPlan::VerifyAgreement(
         return false;
     }
 
-    for (std::int32_t i = 0; i < GetRecipientCountClosingNumbers(); i++)
+    for (std::int32_t i = 0; i < GetRecipientCountClosingNumbers(); i++) {
         if (!recipient.VerifyIssuedNumber(
                 GetRecipientClosingTransactionNoAt(i))) {
             LogError()(OT_PRETTY_CLASS())(
@@ -531,6 +535,7 @@ auto OTPaymentPlan::VerifyAgreement(
 
             return false;
         }
+    }
 
     return true;  // Success!
 }
@@ -610,8 +615,9 @@ auto OTPaymentPlan::SetPaymentPlan(
 
 auto OTPaymentPlan::SetInitialPaymentDone() -> bool
 {
-    if (m_bInitialPaymentDone)  // if done already.
+    if (m_bInitialPaymentDone) {  // if done already.
         return false;
+    }
 
     m_bInitialPaymentDone = true;
     // We store the bool that it's done (above), and we also store the date when
@@ -875,25 +881,27 @@ auto OTPaymentPlan::ProcessPayment(
 
         // ...or generate them otherwise...
         //
-        if (true == bSuccessLoadingSenderInbox)
+        if (true == bSuccessLoadingSenderInbox) {
             bSuccessLoadingSenderInbox =
                 theSenderInbox->VerifyAccount(*pServerNym);
-        else
+        } else {
             bSuccessLoadingSenderInbox = theSenderInbox->GenerateLedger(
                 SOURCE_ACCT_ID,
                 NOTARY_ID,
                 ledgerType::inbox,
                 true);  // bGenerateFile=true
+        }
 
-        if (true == bSuccessLoadingRecipientInbox)
+        if (true == bSuccessLoadingRecipientInbox) {
             bSuccessLoadingRecipientInbox =
                 theRecipientInbox->VerifyAccount(*pServerNym);
-        else
+        } else {
             bSuccessLoadingRecipientInbox = theRecipientInbox->GenerateLedger(
                 RECIPIENT_ACCT_ID,
                 NOTARY_ID,
                 ledgerType::inbox,
                 true);  // bGenerateFile=true
+        }
 
         if ((false == bSuccessLoadingSenderInbox) ||
             (false == bSuccessLoadingRecipientInbox)) {
@@ -1011,11 +1019,12 @@ auto OTPaymentPlan::ProcessPayment(
                     // (EVEN THOUGH we'll just "NOT SAVE" after any failure, so
                     // it's really superfluous.)
                     //
-                    if (!bMoveRecipient)
+                    if (!bMoveRecipient) {
                         sourceAccount.get().Credit(amount);  // put the money
                                                              // back
-                    else
+                    } else {
                         bSuccess = true;
+                    }
                 }
 
                 // If ANY of these failed, then roll them all back and break.
@@ -1424,10 +1433,11 @@ auto OTPaymentPlan::ProcessCron(const PasswordPrompt& reason) -> bool
 
     // START DATE --------------------------------
     // Okay, so it's not expired. But might not have reached START DATE yet...
-    if (!VerifyCurrentDate())
+    if (!VerifyCurrentDate()) {
         return true;  // The Payment Plan is not yet valid, so we return. BUT,
-                      // we
-                      // also
+    }
+    // we
+    // also
     // return TRUE, so it will STAY on Cron until it BECOMES valid.
 
     if (GetCron()->GetTransactionCount() < 1) {

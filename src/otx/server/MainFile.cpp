@@ -338,10 +338,11 @@ auto MainFile::LoadMainFile(bool bReadOnly) -> bool
 
                         if ((-1) == server_.GetTransactor()
                                         .voucherAccounts_.ReadFromXMLNode(
-                                            xml, strAcctType, strAcctCount))
+                                            xml, strAcctType, strAcctCount)) {
                             LogError()(OT_PRETTY_CLASS())(
                                 "Error loading voucher accountList.")
                                 .Flush();
+                        }
                     } else if (strNodeName->Compare("basketInfo")) {
                         auto strBasketID =
                             String::Factory(xml->getAttributeValue("basketID"));

@@ -44,11 +44,12 @@ auto StringFill(
 {
     UnallocatedCString strString(szString);
 
-    if (nullptr != szAppend) strString.append(szAppend);
+    if (nullptr != szAppend) { strString.append(szAppend); }
 
     for (; (static_cast<std::int32_t>(strString.length()) < iLength);
-         strString.append(" "))
+         strString.append(" ")) {
         ;
+    }
 
     out_strString.Set(strString.c_str());
 
@@ -97,11 +98,11 @@ auto Settings::Init() -> bool
         LogConsole()(OT_PRETTY_CLASS())(
             "No existing configuration. Creating a new file.")
             .Flush();
-        if (!Reset()) return false;
-        if (!Save()) return false;
+        if (!Reset()) { return false; }
+        if (!Save()) { return false; }
     }
 
-    if (!Reset()) return false;
+    if (!Reset()) { return false; }
 
     // Second Load, Throw Assert if Failed loading.
     if (!Load()) {
@@ -146,16 +147,19 @@ auto Settings::Load(const String& strConfigurationFileExactPath) const -> bool
 
         SI_Error rc = pvt_->iniSimple.SaveFile(
             strConfigurationFileExactPath.Get());  // save a new file.
-        if (0 > rc) return false;                  // error!
+        if (0 > rc) {
+            return false;  // error!
+        }
 
         pvt_->iniSimple.Reset();  // clean the config (again).
     }
 
     SI_Error rc = pvt_->iniSimple.LoadFile(strConfigurationFileExactPath.Get());
-    if (0 > rc)
+    if (0 > rc) {
         return false;
-    else
+    } else {
         return true;
+    }
 }
 
 auto Settings::Save(const String& strConfigurationFileExactPath) const -> bool
@@ -168,10 +172,11 @@ auto Settings::Save(const String& strConfigurationFileExactPath) const -> bool
     }
 
     SI_Error rc = pvt_->iniSimple.SaveFile(strConfigurationFileExactPath.Get());
-    if (0 > rc)
+    if (0 > rc) {
         return false;
-    else
+    } else {
         return true;
+    }
 }
 
 auto Settings::LogChange_str(
@@ -193,8 +198,8 @@ auto Settings::LogChange_str(
                                     : "nullptr";
 
     auto strCategory = String::Factory(), strOption = String::Factory();
-    if (!StringFill(strCategory, strSection.Get(), 12)) return false;
-    if (!StringFill(strOption, strKey.Get(), 30, " to:")) return false;
+    if (!StringFill(strCategory, strSection.Get(), 12)) { return false; }
+    if (!StringFill(strOption, strKey.Get(), 30, " to:")) { return false; }
 
     LogDetail()(OT_PRETTY_CLASS())("Setting ")(strCategory)(" ")(
         strOption)(" ")(szValue)
@@ -370,10 +375,11 @@ auto Settings::Check_bool(
     if (strVar->Exists() &&
         (strVar->Compare("false") || strVar->Compare("true"))) {
         out_bKeyExist = true;
-        if (strVar->Compare("true"))
+        if (strVar->Compare("true")) {
             out_bResult = true;
-        else
+        } else {
             out_bResult = false;
+        }
     } else {
         out_bKeyExist = false;
         out_bResult = false;
@@ -428,7 +434,9 @@ auto Settings::Set_str(
     bool bOldKeyExist = false, bNewKeyExist = false;
 
     // Check if Old Key exists.
-    if (!Check_str(strSection, strKey, strOldValue, bOldKeyExist)) return false;
+    if (!Check_str(strSection, strKey, strOldValue, bOldKeyExist)) {
+        return false;
+    }
 
     if (bOldKeyExist) {
         if (strValue.Compare(strOldValue)) {
@@ -438,26 +446,29 @@ auto Settings::Set_str(
     }
 
     // Log to Output Setting Change
-    if (!LogChange_str(strSection, strKey, strValue)) return false;
+    if (!LogChange_str(strSection, strKey, strValue)) { return false; }
 
     // Set New Value
     SI_Error rc = pvt_->iniSimple.SetValue(
         strSection.Get(), strKey.Get(), szValue, szComment, true);
-    if (0 > rc) return false;
+    if (0 > rc) { return false; }
 
     if (nullptr == szValue)  // We set the key's value to null, thus removing
                              // it.
     {
-        if (bOldKeyExist)
+        if (bOldKeyExist) {
             out_bNewOrUpdate = true;
-        else
+        } else {
             out_bNewOrUpdate = false;
+        }
 
         return true;
     }
 
     // Check if the new value is the same as intended.
-    if (!Check_str(strSection, strKey, strNewValue, bNewKeyExist)) return false;
+    if (!Check_str(strSection, strKey, strNewValue, bNewKeyExist)) {
+        return false;
+    }
 
     if (bNewKeyExist) {
         if (strValue.Compare(strNewValue)) {
@@ -518,7 +529,9 @@ auto Settings::Set_long(
     bool bOldKeyExist = false, bNewKeyExist = false;
 
     // Check if Old Key exists.
-    if (!Check_str(strSection, strKey, strOldValue, bOldKeyExist)) return false;
+    if (!Check_str(strSection, strKey, strOldValue, bOldKeyExist)) {
+        return false;
+    }
 
     if (bOldKeyExist) {
         if (strValue->Compare(strOldValue)) {
@@ -528,15 +541,17 @@ auto Settings::Set_long(
     }
 
     // Log to Output Setting Change
-    if (!LogChange_str(strSection, strKey, strValue)) return false;
+    if (!LogChange_str(strSection, strKey, strValue)) { return false; }
 
     // Set New Value
     SI_Error rc = pvt_->iniSimple.SetLongValue(
         strSection.Get(), strKey.Get(), lValue, szComment, false, true);
-    if (0 > rc) return false;
+    if (0 > rc) { return false; }
 
     // Check if the new value is the same as intended.
-    if (!Check_str(strSection, strKey, strNewValue, bNewKeyExist)) return false;
+    if (!Check_str(strSection, strKey, strNewValue, bNewKeyExist)) {
+        return false;
+    }
 
     if (bNewKeyExist) {
         if (strValue->Compare(strNewValue)) {
@@ -608,7 +623,7 @@ auto Settings::CheckSetSection(
         out_bIsNewSection = true;
         SI_Error rc = pvt_->iniSimple.SetValue(
             strSection.Get(), nullptr, nullptr, szComment, false);
-        if (0 > rc) return false;
+        if (0 > rc) { return false; }
     } else {
         out_bIsNewSection = false;
     }
@@ -679,7 +694,9 @@ auto Settings::CheckSet_str(
 
     auto strTempResult = String::Factory();
     bool bKeyExist = false;
-    if (!Check_str(strSection, strKey, strTempResult, bKeyExist)) return false;
+    if (!Check_str(strSection, strKey, strTempResult, bKeyExist)) {
+        return false;
+    }
 
     if (bKeyExist) {
         // Already have a key, lets use it's value.
@@ -688,8 +705,10 @@ auto Settings::CheckSet_str(
         return true;
     } else {
         bool bNewKeyCheck;
-        if (!Set_str(strSection, strKey, strDefault, bNewKeyCheck, strComment))
+        if (!Set_str(
+                strSection, strKey, strDefault, bNewKeyCheck, strComment)) {
             return false;
+        }
 
         if (nullptr == szDefault)  // The Default is to have no key.
         {
@@ -743,7 +762,9 @@ auto Settings::CheckSet_long(
 
     std::int64_t lTempResult = 0;
     bool bKeyExist = false;
-    if (!Check_long(strSection, strKey, lTempResult, bKeyExist)) return false;
+    if (!Check_long(strSection, strKey, lTempResult, bKeyExist)) {
+        return false;
+    }
 
     if (bKeyExist) {
         // Already have a key, lets use it's value.
@@ -752,8 +773,9 @@ auto Settings::CheckSet_long(
         return true;
     } else {
         bool bNewKeyCheck;
-        if (!Set_long(strSection, strKey, lDefault, bNewKeyCheck, strComment))
+        if (!Set_long(strSection, strKey, lDefault, bNewKeyCheck, strComment)) {
             return false;
+        }
         if (bNewKeyCheck) {
             // Success
             out_bIsNew = true;
@@ -797,7 +819,9 @@ auto Settings::CheckSet_bool(
     }
 
     bool bKeyExist = false, bTempResult = false;
-    if (!Check_bool(strSection, strKey, bTempResult, bKeyExist)) return false;
+    if (!Check_bool(strSection, strKey, bTempResult, bKeyExist)) {
+        return false;
+    }
 
     if (bKeyExist) {
         // Already have a key, lets use it's value.
@@ -806,8 +830,9 @@ auto Settings::CheckSet_bool(
         return true;
     } else {
         bool bNewKeyCheck;
-        if (!Set_bool(strSection, strKey, bDefault, bNewKeyCheck, strComment))
+        if (!Set_bool(strSection, strKey, bDefault, bNewKeyCheck, strComment)) {
             return false;
+        }
         if (bNewKeyCheck) {
             // Success
             out_bIsNew = true;

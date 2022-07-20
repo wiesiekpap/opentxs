@@ -70,19 +70,19 @@ auto String::tokenize_basic(
 {
     // simple parser that allows for one level of quotes nesting but no escaped
     // quotes
-    if (!Exists()) return true;
+    if (!Exists()) { return true; }
 
     const char* txt = Get();
     UnallocatedCString buf = txt;
     for (std::int32_t i = 0; txt[i] != 0;) {
-        while (txt[i] == ' ') i++;
+        while (txt[i] == ' ') { i++; }
         std::int32_t k = i;
-        std::int32_t k2 = i;
+        std::int32_t k2{};
         if (txt[i] == '\'' || txt[i] == '"') {
             // quoted string
             char quote = txt[i++];
             k = i;
-            while (txt[i] != quote && txt[i] != 0) i++;
+            while (txt[i] != quote && txt[i] != 0) { i++; }
             if (txt[i] != quote) {
                 LogError()(OT_PRETTY_CLASS())("Unmatched quotes in: ")(txt)(".")
                     .Flush();
@@ -91,19 +91,19 @@ auto String::tokenize_basic(
             k2 = i;
             i++;
         } else {
-            while (txt[i] != ' ' && txt[i] != 0) i++;
+            while (txt[i] != ' ' && txt[i] != 0) { i++; }
             k2 = i;
         }
         const UnallocatedCString key = buf.substr(k, k2 - k);
 
-        while (txt[i] == ' ') i++;
+        while (txt[i] == ' ') { i++; }
         std::int32_t v = i;
-        std::int32_t v2 = i;
+        std::int32_t v2{};
         if (txt[i] == '\'' || txt[i] == '"') {
             // quoted string
             char quote = txt[i++];
             v = i;
-            while (txt[i] != quote && txt[i] != 0) i++;
+            while (txt[i] != quote && txt[i] != 0) { i++; }
             if (txt[i] != quote) {
                 LogError()(OT_PRETTY_CLASS())("Unmatched quotes in: ")(txt)(".")
                     .Flush();
@@ -112,7 +112,7 @@ auto String::tokenize_basic(
             v2 = i;
             i++;
         } else {
-            while (txt[i] != ' ' && txt[i] != 0) i++;
+            while (txt[i] != ' ' && txt[i] != 0) { i++; }
             v2 = i;
         }
         const UnallocatedCString value = buf.substr(v, v2 - v);
@@ -134,7 +134,7 @@ auto String::tokenize_enhanced(
 #if __has_include(<wordexp.h>)
     // fabcy-pansy parser that allows for multiple level of quotes nesting and
     // escaped quotes
-    if (!Exists()) return true;
+    if (!Exists()) { return true; }
 
     wordexp_t exp_result;
 

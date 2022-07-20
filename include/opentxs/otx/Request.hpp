@@ -85,7 +85,7 @@ public:
     auto Version() const noexcept -> VersionNumber;
     auto SetAlias(const UnallocatedCString& alias) noexcept -> bool;
 
-    virtual auto swap(Request& rhs) noexcept -> void;
+    auto swap(Request& rhs) noexcept -> void;
 
     OPENTXS_NO_EXPORT Request(Imp* imp) noexcept;
     Request(const Request&) noexcept;

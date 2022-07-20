@@ -59,21 +59,15 @@ auto Socket::Imp::Receive(
     return asio_.Receive(id, type, bytes, *this);
 }
 
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
 auto Socket::Imp::Transmit(const ReadView data, Notification notifier) noexcept
     -> bool
 {
     using SharedStatus = std::shared_ptr<SendStatus>;
-    auto* buf = [&] {
-        auto out = std::make_unique<Space>();
-        *out = space(data);
-
-        return out.release();
-    }();
+    auto buf = std::make_shared<Space>(space(data));
     auto work =
         [this, buf, promise = SharedStatus{std::move(notifier)}]() -> void {
         auto cb = [buf, promise](auto& error, auto bytes) -> void {
-            auto cleanup = std::unique_ptr<Space>{buf};
-
             try {
                 if (promise) { promise->set_value(!error); }
             } catch (...) {
@@ -85,6 +79,7 @@ auto Socket::Imp::Transmit(const ReadView data, Notification notifier) noexcept
 
     return asio_.Post(ThreadPool::Network, std::move(work));
 }
+// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
 Socket::Imp::~Imp() { Close(); }
 

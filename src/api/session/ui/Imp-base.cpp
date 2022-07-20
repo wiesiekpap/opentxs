@@ -580,12 +580,6 @@ auto UI::Imp::RegisterUICallback(
     update_manager_.RegisterUICallback(widget, cb);
 }
 
-auto UI::Imp::Shutdown() noexcept -> void
-{
-    ShutdownCallbacks();
-    ShutdownModels();
-}
-
 auto UI::Imp::SeedTree(const SimpleCallback cb) const noexcept
     -> const opentxs::ui::SeedTree&
 {
@@ -604,6 +598,12 @@ auto UI::Imp::seed_tree(const Lock& lock, const SimpleCallback& cb)
     }
 
     return *seed_tree_;
+}
+
+auto UI::Imp::Shutdown() noexcept -> void
+{
+    ShutdownCallbacks();
+    ShutdownModels();
 }
 
 auto UI::Imp::ShutdownCallbacks() noexcept -> void
@@ -691,5 +691,9 @@ auto UI::Imp::UnitList(const identifier::Nym& nymID, const SimpleCallback cb)
     return *unit_list(lock, nymID, cb);
 }
 
-UI::Imp::~Imp() { Shutdown(); }
+UI::Imp::~Imp()
+{
+    ShutdownCallbacks();
+    Imp::ShutdownModels();
+}
 }  // namespace opentxs::api::session::imp

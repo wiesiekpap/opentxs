@@ -25,8 +25,13 @@ auto ContactListItem(
     -> std::shared_ptr<ui::implementation::ContactListRowInternal>
 {
     using ReturnType = ui::implementation::ContactListItem;
+    // TODO ContactListItem should have a common parent class and three final
+    // child classes so that the construction process can work consistently no
+    // matter which of the three child types is used.
+    auto out = std::make_shared<ReturnType>(parent, api, rowID, key);
+    out->init_contact_list();
 
-    return std::make_shared<ReturnType>(parent, api, rowID, key);
+    return std::move(out);
 }
 }  // namespace opentxs::factory
 
@@ -39,7 +44,7 @@ ContactListItem::ContactListItem(
     const ContactListSortKey& key) noexcept
     : ContactListItemRow(parent, api, rowID, true)
     , key_(key)
-    , section_(calculate_section())
+    , section_()
 {
 }
 
@@ -75,6 +80,11 @@ auto ContactListItem::ImageURI() const noexcept -> UnallocatedCString
     // TODO
 
     return {};
+}
+
+auto ContactListItem::init_contact_list() noexcept -> void
+{
+    section_ = calculate_section();
 }
 
 auto ContactListItem::reindex(

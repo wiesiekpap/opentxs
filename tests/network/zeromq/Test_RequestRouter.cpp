@@ -148,8 +148,9 @@ TEST_F(Test_RequestRouter, Request_Router)
         &Test_RequestRouter::requestSocketThread, this, testMessage_);
 
     auto end = std::time(nullptr) + 5;
-    while (!callbackFinishedCount_ && std::time(nullptr) < end)
+    while (!callbackFinishedCount_ && std::time(nullptr) < end) {
         std::this_thread::sleep_for(100ms);
+    }
 
     ASSERT_EQ(1, callbackFinishedCount_);
 
@@ -212,8 +213,9 @@ TEST_F(Test_RequestRouter, Request_2_Router_1)
     const auto& replyMessage2 = replyMessages.at(testMessage3_);
 
     auto end = std::time(nullptr) + 15;
-    while (!callbackFinishedCount_ && std::time(nullptr) < end)
+    while (!callbackFinishedCount_ && std::time(nullptr) < end) {
         std::this_thread::sleep_for(100ms);
+    }
 
     bool message1Sent{false};
     if (0 != replyMessage1.size()) {
@@ -224,8 +226,10 @@ TEST_F(Test_RequestRouter, Request_2_Router_1)
     }
 
     end = std::time(nullptr) + 15;
-    while (callbackFinishedCount_ < callbackCount_ && std::time(nullptr) < end)
+    while (callbackFinishedCount_ < callbackCount_ &&
+           std::time(nullptr) < end) {
         std::this_thread::sleep_for(100ms);
+    }
 
     if (false == message1Sent) {
         routerSocket->Send(ot::network::zeromq::Message{replyMessage1});
@@ -281,8 +285,9 @@ TEST_F(Test_RequestRouter, Request_Router_Multipart)
         &Test_RequestRouter::requestSocketThreadMultipart, this);
 
     auto end = std::time(nullptr) + 15;
-    while (0 == replyMessage.size() && std::time(nullptr) < end)
+    while (0 == replyMessage.size() && std::time(nullptr) < end) {
         std::this_thread::sleep_for(100ms);
+    }
 
     auto sent = routerSocket->Send(std::move(replyMessage));
 

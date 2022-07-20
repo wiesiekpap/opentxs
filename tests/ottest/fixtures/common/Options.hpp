@@ -23,6 +23,7 @@ namespace ot = opentxs;
 
 namespace ottest
 {
+// NOLINTBEGIN(clang-analyzer-optin.performance.Padding)
 struct OptionsData {
     ot::Set<ot::CString> blockchain_bind_ipv4_;
     ot::Set<ot::CString> blockchain_bind_ipv6_;
@@ -51,6 +52,7 @@ struct OptionsData {
     ot::CString storage_primary_plugin_;
     bool test_mode_;
 };
+// NOLINTEND(clang-analyzer-optin.performance.Padding)
 
 auto check_options(
     const opentxs::Options& options,

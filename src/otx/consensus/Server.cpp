@@ -1280,29 +1280,29 @@ auto Server::extract_payment_instrument_from_notice(
 
             // Decrypt the Envelope.
             if (!theEnvelope->Open(
-                    *nym_, strEnvelopeContents->WriteInto(), reason))
+                    *nym_, strEnvelopeContents->WriteInto(), reason)) {
                 LogConsole()(OT_PRETTY_CLASS())(
                     "Failed trying to decrypt the financial instrument "
                     "that was supposedly attached as a payload to this "
                     "payment message: ")(strMsg)(".")
                     .Flush();
-            else if (!strEnvelopeContents->Exists())
+            } else if (!strEnvelopeContents->Exists()) {
                 LogConsole()(OT_PRETTY_CLASS())(
                     "Failed: after decryption, cleartext is empty. "
                     "From: ")(strMsg)(".")
                     .Flush();
-            else {
+            } else {
                 // strEnvelopeContents contains a PURSE or CHEQUE
                 // (etc) and not specifically a generic "PAYMENT".
                 //
                 auto pPayment{api.Factory().InternalSession().Payment(
                     strEnvelopeContents)};
-                if (false == bool(pPayment) || !pPayment->IsValid())
+                if (false == bool(pPayment) || !pPayment->IsValid()) {
                     LogConsole()(OT_PRETTY_CLASS())(
                         "Failed: after decryption, payment is invalid. "
                         "Contents: ")(strEnvelopeContents)(".")
                         .Flush();
-                else  // success.
+                } else  // success.
                 {
                     std::shared_ptr<OTPayment> payment{pPayment.release()};
                     return payment;
@@ -1318,11 +1318,11 @@ auto Server::extract_payment_instrument_from_notice(
         auto strNotice = String::Factory(*pTransaction);
         auto pPayment{api.Factory().InternalSession().Payment(strNotice)};
 
-        if (false == bool(pPayment) || !pPayment->IsValid())
+        if (false == bool(pPayment) || !pPayment->IsValid()) {
             LogConsole()(OT_PRETTY_CLASS())(
                 "Failed: the notice is invalid. Contents: ")(strNotice)(".")
                 .Flush();
-        else  // success.
+        } else  // success.
         {
             std::shared_ptr<OTPayment> payment{pPayment.release()};
             return payment;
@@ -2929,7 +2929,7 @@ void Server::process_accept_cron_receipt_reply(
                 "trades",  // todo stop
                            // hardcoding.
                 server_id_->str().c_str(),
-                strNymID->Get()))
+                strNymID->Get())) {
             pList.reset(dynamic_cast<OTDB::TradeListNym*>(OTDB::QueryObject(
                 api_,
                 OTDB::STORED_OBJ_TRADE_LIST_NYM,
@@ -2939,6 +2939,7 @@ void Server::process_accept_cron_receipt_reply(
                 // hardcoding.
                 server_id_->str().c_str(),
                 strNymID->Get())));
+        }
         if (false == bool(pList)) {
             LogVerbose()(OT_PRETTY_CLASS())("Creating storage list of trade ")(
                 "receipts for "
@@ -2964,15 +2965,18 @@ void Server::process_accept_cron_receipt_reply(
              ++nym_count) {
             OTDB::TradeDataNym* pTradeData = pList->GetTradeDataNym(nym_count);
 
-            if (nullptr == pTradeData) continue;  // Should never happen.
+            if (nullptr == pTradeData) {
+                continue;  // Should never happen.
+            }
 
             if (0 == pTradeData->updated_id.compare(pData->updated_id)) {
                 // It's a repeat of the same one. (Discard.)
                 if ((!pTradeData->instrument_definition_id.empty() &&
                      !pData->instrument_definition_id.empty()) ||
                     (!pTradeData->currency_id.empty() &&
-                     !pData->currency_id.empty()))
+                     !pData->currency_id.empty())) {
                     break;
+                }
                 // Okay looks like one is the asset receipt,
                 // and the other is the currency receipt.
                 // Therefore let's combine them into
@@ -3022,11 +3026,12 @@ void Server::process_accept_cron_receipt_reply(
                          api_.Internal().Legacy().Nym(),
                          "trades",  // todo stop hardcoding.
                          server_id_->str().c_str(),
-                         strNymID->Get()))
+                         strNymID->Get())) {
             LogError()(OT_PRETTY_CLASS())(
                 "Failed storing list of trades for "
                 "Nym. Notary ID: ")(server_id_)(". Nym ID: ")(strNymID)(".")
                 .Flush();
+        }
     }
 }
 
@@ -3787,11 +3792,12 @@ auto Server::process_get_market_list_response(
             reply.m_strNotaryID->Get(),         // "markets/<notaryID>"
             data_file,
             "");  // "markets/<notaryID>/market_data.bin"
-        if (!success)
+        if (!success) {
             LogError()(OT_PRETTY_CLASS())(
                 "Error erasing market list from market "
                 "folder: ")(data_file)(".")
                 .Flush();
+        }
 
         return true;
     }
@@ -5550,34 +5556,36 @@ void Server::process_response_transaction_cron(
         bool bSuccessLoading1 = (bExists1 && thePmntInbox->LoadPaymentInbox());
         bool bSuccessLoading2 = (bExists2 && theRecordBox->LoadRecordBox());
 
-        if (bExists1 && bSuccessLoading1)
+        if (bExists1 && bSuccessLoading1) {
             bSuccessLoading1 =
                 (thePmntInbox->VerifyContractID() &&
                  thePmntInbox->VerifySignature(nym));
-        // (thePmntInbox->VerifyAccount(*pNym));
-        // (No need to load all the Box
-        // Receipts using VerifyAccount)
-        else if (!bExists1)
+            // (thePmntInbox->VerifyAccount(*pNym));
+            // (No need to load all the Box
+            // Receipts using VerifyAccount)
+        } else if (!bExists1) {
             bSuccessLoading1 = thePmntInbox->GenerateLedger(
                 nymID,
                 server_id_,
                 ledgerType::paymentInbox,
 
                 true);  // bGenerateFile=true
-        if (bExists2 && bSuccessLoading2)
+        }
+        if (bExists2 && bSuccessLoading2) {
             bSuccessLoading2 =
                 (theRecordBox->VerifyContractID() &&
                  theRecordBox->VerifySignature(nym));
-        // (theRecordBox->VerifyAccount(*pNym));
-        // (No need to load all the Box
-        // Receipts using VerifyAccount)
-        else if (!bExists2)
+            // (theRecordBox->VerifyAccount(*pNym));
+            // (No need to load all the Box
+            // Receipts using VerifyAccount)
+        } else if (!bExists2) {
             bSuccessLoading2 = theRecordBox->GenerateLedger(
                 nymID,
                 server_id_,
                 ledgerType::recordBox,
 
                 true);  // bGenerateFile=true
+        }
         // By this point, the boxes DEFINITELY exist -- or not. (generation
         // might have failed, or verification.)
         //
@@ -5786,10 +5794,11 @@ void Server::process_response_transaction_cron(
                 originType theOriginType = originType::not_applicable;
 
                 if (theOutpayment->IsValid()) {
-                    if (theOutpayment->IsPaymentPlan())
+                    if (theOutpayment->IsPaymentPlan()) {
                         theOriginType = originType::origin_payment_plan;
-                    else if (theOutpayment->IsSmartContract())
+                    } else if (theOutpayment->IsSmartContract()) {
                         theOriginType = originType::origin_smart_contract;
+                    }
                 }
 
                 auto pNewTransaction =
@@ -5834,8 +5843,9 @@ void Server::process_response_transaction_cron(
                     // outpayments box.
                     pNewTransaction->SetReferenceString(strInstrument);
 
-                    if (response.IsCancelled())
+                    if (response.IsCancelled()) {
                         pNewTransaction->SetAsCancelled();
+                    }
 
                     pNewTransaction->SignContract(nym, reason);
                     pNewTransaction->SaveContract();
@@ -6538,7 +6548,6 @@ auto Server::remove_nymbox_item(
             requestType = itemType::acceptTransaction;
         } break;
         case itemType::atTransactionStatement: {
-            requestType = itemType::transactionStatement;
             // (The transaction statement itself is already handled
 
             return true;

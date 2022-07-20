@@ -439,7 +439,7 @@ auto Issuer::BailmentInstructions(
 
             if (false == loadedreply) {
                 reply = proto::PeerReply{};
-                loaded = wallet_.Internal().PeerReply(
+                loadedreply = wallet_.Internal().PeerReply(
                     nym_id_,
                     replyID,
                     otx::client::StorageBox::INCOMINGPEERREPLY,

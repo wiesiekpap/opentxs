@@ -66,6 +66,7 @@ Base::Base(
 {
 }
 
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
 Base::Base(
     const api::Session& api,
     const VersionNumber targetVersion,
@@ -80,6 +81,7 @@ Base::Base(
           {},
           {},
           calculate_id(api, local, remote),
+
           serialized.has_signature()
               ? Signatures{std::make_shared<proto::Signature>(
                     serialized.signature())}
@@ -108,6 +110,7 @@ Base::Base(
         issued_transaction_numbers_.insert(it);
     }
 }
+// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
 auto Base::AcknowledgedNumbers() const -> UnallocatedSet<RequestNumber>
 {

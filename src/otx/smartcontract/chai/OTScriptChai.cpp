@@ -173,33 +173,35 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
                     std::int32_t& nValue = pVar->GetValueInteger();
 
                     if (OTVariable::Var_Constant ==
-                        pVar->GetAccess())  // no pointer here, since it's
-                                            // constant.
+                        pVar->GetAccess()) {  // no pointer here, since it's
+                                              // constant.
                         chai_->add_global_const(
                             const_var(pVar->CopyValueInteger()),
                             var_name.c_str());
-                    else
+                    } else {
                         chai_->add(
                             var(&nValue),  // passing ptr here so the
                                            // script can modify this
                                            // variable if it wants.
                             var_name.c_str());
+                    }
                 } break;
 
                 case OTVariable::Var_Bool: {
                     bool& bValue = pVar->GetValueBool();
 
                     if (OTVariable::Var_Constant ==
-                        pVar->GetAccess())  // no pointer here, since it's
-                                            // constant.
+                        pVar->GetAccess()) {  // no pointer here, since it's
+                                              // constant.
                         chai_->add_global_const(
                             const_var(pVar->CopyValueBool()), var_name.c_str());
-                    else
+                    } else {
                         chai_->add(
                             var(&bValue),  // passing ptr here so the
                                            // script can modify this
                                            // variable if it wants.
                             var_name.c_str());
+                    }
                 } break;
 
                 case OTVariable::Var_String: {
@@ -248,13 +250,13 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
         // "Parties");
 
         try {
-            if (nullptr == pReturnVar)  // Nothing to return.
+            if (nullptr == pReturnVar) {  // Nothing to return.
                 chai_->eval(
                     m_str_script.c_str(),
                     exception_specification<const std::exception&>(),
                     m_str_display_filename);
 
-            else  // There's a return variable.
+            } else  // There's a return variable.
             {
                 switch (pReturnVar->GetType()) {
                     case OTVariable::Var_Integer: {
@@ -520,7 +522,7 @@ OTScriptChai::OTScriptChai(const UnallocatedCString& new_string)
 
 OTScriptChai::~OTScriptChai()
 {
-    if (nullptr != chai_) delete chai_;
+    if (nullptr != chai_) { delete chai_; }
 
     // chai = nullptr;  (It's const).
 }

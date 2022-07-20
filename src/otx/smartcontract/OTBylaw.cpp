@@ -42,20 +42,22 @@ OTBylaw::OTBylaw(const char* szName, const char* szLanguage)
     , m_mapCallbacks()
     , m_pOwnerAgreement(nullptr)
 {
-    if (nullptr != szName)
+    if (nullptr != szName) {
         m_strName->Set(szName);
-    else
+    } else {
         LogError()(OT_PRETTY_CLASS())(
             "nullptr szName passed in to OTBylaw::OTBylaw.")
             .Flush();
+    }
 
-    if (nullptr != szLanguage)
+    if (nullptr != szLanguage) {
         m_strLanguage =
             String::Factory(szLanguage);  // "chai", "angelscript" etc.
-    else
+    } else {
         LogError()(OT_PRETTY_CLASS())(
             "nullptr szLanguage passed in to OTBylaw::OTBylaw.")
             .Flush();
+    }
 
     const UnallocatedCString str_bylaw_name = m_strName->Get();
     const UnallocatedCString str_language = m_strLanguage->Get();
@@ -150,12 +152,13 @@ auto OTBylaw::IsDirty() const -> bool
             if (pVar->IsPersistent()) {
                 bIsDirty = true;
                 break;
-            } else  // If it's not persistent (which also includes important)
+            } else {  // If it's not persistent (which also includes important)
                 // the only other option is CONSTANT. Then why is it dirty?
                 LogError()(OT_PRETTY_CLASS())(
                     "Error: Why is it that a variable "
                     "is CONSTANT, yet DIRTY at the same time?")
                     .Flush();
+            }
         }
     }
 
@@ -412,7 +415,7 @@ auto OTBylaw::GetCallbackNameByIndex(std::int32_t nIndex)
         for (auto& it : m_mapCallbacks) {
             const UnallocatedCString& str_callback_name = it.first;
             ++nLoopIndex;  // 0 on first iteration.
-            if (nLoopIndex == nIndex) return str_callback_name;
+            if (nLoopIndex == nIndex) { return str_callback_name; }
         }
     }
     return "";
@@ -482,7 +485,7 @@ auto OTBylaw::RemoveClause(UnallocatedCString str_Name) -> bool
 
     auto it = m_mapClauses.find(str_Name);
 
-    if (m_mapClauses.end() == it) return false;
+    if (m_mapClauses.end() == it) { return false; }
     // -----------------------------------
     OTClause* pClause = it->second;
     OT_ASSERT(nullptr != pClause);
@@ -562,8 +565,9 @@ auto OTBylaw::RemoveHook(
             (0 == str_clause_name.compare(str_ClauseName))) {
             it = m_mapHooks.erase(it);
             bReturnVal = true;
-        } else
+        } else {
             ++it;
+        }
     }
     // ----------------------------------------
     return bReturnVal;
@@ -593,7 +597,7 @@ auto OTBylaw::RemoveCallback(UnallocatedCString str_Name) -> bool
         //
         OTClause* pClause = GetClause(str_clause_name);
 
-        if (nullptr != pClause) RemoveClause(str_clause_name);
+        if (nullptr != pClause) { RemoveClause(str_clause_name); }
 
         return true;
     }
@@ -628,21 +632,22 @@ auto OTBylaw::AddCallback(
     // Below this point, we know the callback wasn't already there.
 
     if (!OTScriptable::ValidateCallbackName(str_CallbackName) ||
-        !OTScriptable::ValidateClauseName(str_ClauseName))
+        !OTScriptable::ValidateClauseName(str_ClauseName)) {
         LogError()(OT_PRETTY_CLASS())("Error: Empty or invalid name (")(
             str_CallbackName)(") or clause (")(str_ClauseName)(").")
             .Flush();
-    else if (
+    } else if (
         m_mapCallbacks.end() ==
         m_mapCallbacks.insert(
             m_mapCallbacks.begin(),
             std::pair<UnallocatedCString, UnallocatedCString>(
-                str_CallbackName.c_str(), str_ClauseName.c_str())))
+                str_CallbackName.c_str(), str_ClauseName.c_str()))) {
         LogError()(OT_PRETTY_CLASS())("Failed inserting to m_mapCallbacks: ")(
             str_CallbackName)(" / ")(str_ClauseName)(".")
             .Flush();
-    else
+    } else {
         return true;
+    }
 
     return false;
 }
@@ -681,12 +686,13 @@ auto OTBylaw::AddHook(
     // ----------------------------------------
     if (m_mapHooks.end() ==
         m_mapHooks.insert(std::pair<UnallocatedCString, UnallocatedCString>(
-            str_HookName.c_str(), str_ClauseName.c_str())))
+            str_HookName.c_str(), str_ClauseName.c_str()))) {
         LogError()(OT_PRETTY_CLASS())("Failed inserting to m_mapHooks: ")(
             str_HookName)(" / ")(str_ClauseName)(".")
             .Flush();
-    else
+    } else {
         return true;
+    }
 
     return false;
 }
@@ -700,7 +706,7 @@ auto OTBylaw::GetVariable(UnallocatedCString str_var_name)
 {
     auto it = m_mapVariables.find(str_var_name);
 
-    if (m_mapVariables.end() == it) return nullptr;
+    if (m_mapVariables.end() == it) { return nullptr; }
 
     if (!OTScriptable::ValidateVariableName(str_var_name)) {
         LogError()(OT_PRETTY_CLASS())("Error: Invalid variable name: ")(
@@ -732,7 +738,7 @@ auto OTBylaw::GetVariableByIndex(std::int32_t nIndex) -> OTVariable*
 
             ++nLoopIndex;  // 0 on first iteration.
 
-            if (nLoopIndex == nIndex) return pVar;
+            if (nLoopIndex == nIndex) { return pVar; }
         }
     }
     return nullptr;
@@ -747,7 +753,7 @@ auto OTBylaw::GetClause(UnallocatedCString str_clause_name) const -> OTClause*
 
     auto it = m_mapClauses.find(str_clause_name);
 
-    if (m_mapClauses.end() == it) return nullptr;
+    if (m_mapClauses.end() == it) { return nullptr; }
 
     OTClause* pClause = it->second;
     OT_ASSERT(nullptr != pClause);
@@ -772,7 +778,7 @@ auto OTBylaw::GetClauseByIndex(std::int32_t nIndex) -> OTClause*
 
             ++nLoopIndex;  // 0 on first iteration.
 
-            if (nLoopIndex == nIndex) return pClause;
+            if (nLoopIndex == nIndex) { return pClause; }
         }
     }
     return nullptr;
@@ -792,7 +798,7 @@ auto OTBylaw::GetHookNameByIndex(std::int32_t nIndex)
             const UnallocatedCString& str_hook_name = it.first;
             ++nLoopIndex;  // 0 on first iteration.
 
-            if (nLoopIndex == nIndex) return str_hook_name;
+            if (nLoopIndex == nIndex) { return str_hook_name; }
         }
     }
     return "";
@@ -840,8 +846,9 @@ auto OTBylaw::GetHooks(
                     theResults.insert(
                         theResults.begin(),
                         std::pair<UnallocatedCString, OTClause*>(
-                            str_clause_name, pClause)))
+                            str_clause_name, pClause))) {
                     bReturnVal = true;
+                }
             } else {
                 LogConsole()(OT_PRETTY_CLASS())("Couldn't find clause (")(
                     str_clause_name)(") that was registered for hook (")(
@@ -969,8 +976,9 @@ auto OTBylaw::UpdateClause(
 
     auto it = m_mapClauses.find(str_Name);
 
-    if (m_mapClauses.end() == it)  // Didn't exist.
+    if (m_mapClauses.end() == it) {  // Didn't exist.
         return false;
+    }
     // -----------------------------------
     OTClause* pClause = it->second;
     OT_ASSERT(nullptr != pClause);

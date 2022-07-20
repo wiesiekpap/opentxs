@@ -131,8 +131,9 @@ auto OTAgreement::SendNoticeToAllParties(
             pstrNote,
             pstrAttachment,
             GetSenderNymID(),
-            reason))
+            reason)) {
         bSuccess = false;
+    }
     // Notice I don't break here -- I still allow it to try to notice ALL
     // parties, even if one fails.
 
@@ -150,8 +151,9 @@ auto OTAgreement::SendNoticeToAllParties(
             pstrNote,
             pstrAttachment,
             GetRecipientNymID(),
-            reason))
+            reason)) {
         bSuccess = false;
+    }
 
     return bSuccess;
 }
@@ -312,18 +314,20 @@ auto OTAgreement::DropServerNoticeToNymbox(
 // Overrides from OTTrackable.
 auto OTAgreement::HasTransactionNum(const std::int64_t& lInput) const -> bool
 {
-    if (lInput == GetTransactionNum()) return true;
+    if (lInput == GetTransactionNum()) { return true; }
 
     const size_t nSizeClosing = m_dequeClosingNumbers.size();
 
     for (size_t nIndex = 0; nIndex < nSizeClosing; ++nIndex) {
-        if (lInput == m_dequeClosingNumbers.at(nIndex)) return true;
+        if (lInput == m_dequeClosingNumbers.at(nIndex)) { return true; }
     }
 
     const size_t nSizeRecipient = m_dequeRecipientClosingNumbers.size();
 
     for (size_t nIndex = 0; nIndex < nSizeRecipient; ++nIndex) {
-        if (lInput == m_dequeRecipientClosingNumbers.at(nIndex)) return true;
+        if (lInput == m_dequeRecipientClosingNumbers.at(nIndex)) {
+            return true;
+        }
     }
 
     return false;
@@ -332,20 +336,20 @@ auto OTAgreement::HasTransactionNum(const std::int64_t& lInput) const -> bool
 void OTAgreement::GetAllTransactionNumbers(NumList& numlistOutput) const
 {
 
-    if (GetTransactionNum() > 0) numlistOutput.Add(GetTransactionNum());
+    if (GetTransactionNum() > 0) { numlistOutput.Add(GetTransactionNum()); }
 
     const size_t nSizeClosing = m_dequeClosingNumbers.size();
 
     for (size_t nIndex = 0; nIndex < nSizeClosing; ++nIndex) {
         const std::int64_t lTemp = m_dequeClosingNumbers.at(nIndex);
-        if (lTemp > 0) numlistOutput.Add(lTemp);
+        if (lTemp > 0) { numlistOutput.Add(lTemp); }
     }
 
     const size_t nSizeRecipient = m_dequeRecipientClosingNumbers.size();
 
     for (size_t nIndex = 0; nIndex < nSizeRecipient; ++nIndex) {
         const std::int64_t lTemp = m_dequeRecipientClosingNumbers.at(nIndex);
-        if (lTemp > 0) numlistOutput.Add(lTemp);
+        if (lTemp > 0) { numlistOutput.Add(lTemp); }
     }
 }
 
@@ -565,7 +569,7 @@ void OTAgreement::onFinalReceipt(
 auto OTAgreement::IsValidOpeningNumber(const std::int64_t& lOpeningNum) const
     -> bool
 {
-    if (GetRecipientOpeningNum() == lOpeningNum) return true;
+    if (GetRecipientOpeningNum() == lOpeningNum) { return true; }
 
     return ot_super::IsValidOpeningNumber(lOpeningNum);
 }
@@ -658,7 +662,7 @@ auto OTAgreement::GetClosingNumber(const Identifier& theAcctID) const
 {
     const auto& theRecipientAcctID = GetRecipientAcctID();
 
-    if (theAcctID == theRecipientAcctID) return GetRecipientClosingNum();
+    if (theAcctID == theRecipientAcctID) { return GetRecipientClosingNum(); }
     // else...
     return ot_super::GetClosingNumber(theAcctID);
 }
@@ -710,18 +714,20 @@ auto OTAgreement::ProcessCron(const PasswordPrompt& reason) -> bool
     // END DATE --------------------------------
     // First call the parent's version (which this overrides) so it has
     // a chance to check its stuff. Currently it checks IsExpired().
-    if (!ot_super::ProcessCron(reason))
+    if (!ot_super::ProcessCron(reason)) {
         return false;  // It's expired or flagged--removed it from Cron.
+    }
 
     // START DATE --------------------------------
     // Okay, so it's NOT expired. But might not have reached START DATE yet...
     // (If not expired, yet current date is not verified, that means it hasn't
     // ENTERED the date range YET.)
     //
-    if (!VerifyCurrentDate())
+    if (!VerifyCurrentDate()) {
         return true;  // The Trade is not yet valid, so we return. BUT, we
-                      // return
-                      //  true, so it will stay on Cron until it BECOMES valid.
+    }
+    // return
+    //  true, so it will stay on Cron until it BECOMES valid.
 
     // Process my Agreement-specific stuff
     // below.--------------------------------
@@ -826,8 +832,9 @@ auto OTAgreement::CompareAgreement(const OTAgreement& rhs) const -> bool
                                               // verify it.)
         (GetNotaryID() == rhs.GetNotaryID()) &&
         (GetValidFrom() == rhs.GetValidFrom()) &&
-        (GetValidTo() == rhs.GetValidTo()))
+        (GetValidTo() == rhs.GetValidTo())) {
         return true;
+    }
 
     return false;
 }
@@ -1221,8 +1228,9 @@ auto OTAgreement::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         if (strCanceled->Exists() && strCanceled->Compare("true")) {
             m_bCanceled = true;
 
-            if (strCancelerNymID->Exists())
+            if (strCancelerNymID->Exists()) {
                 m_pCancelerNymID->SetString(strCancelerNymID);
+            }
             // else log
         } else {
             m_bCanceled = false;

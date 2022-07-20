@@ -80,6 +80,6 @@ public:
         const identifier::Nym& serverNym,
         const identifier::UnitDefinition& unit);
 
-    ~Lucre() final = default;
+    ~Lucre() final;
 };
 }  // namespace opentxs::otx::blind::mint

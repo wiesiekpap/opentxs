@@ -2779,7 +2779,7 @@ auto Workflow::WorkflowParty(
 {
     auto workflow = get_workflow_by_id(nymID.str(), workflowID.str());
 
-    if (false == bool{workflow}) return {};
+    if (false == bool{workflow}) { return {}; }
 
     return workflow->party(index);
 }

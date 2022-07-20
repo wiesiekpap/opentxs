@@ -718,7 +718,7 @@ auto Nym::get_private_auth_key(
         // going to return the first one that's valid (not null).
 
         pCredential = it.second.get();
-        if (nullptr != pCredential) break;
+        if (nullptr != pCredential) { break; }
     }
     if (nullptr == pCredential) OT_FAIL;
 
@@ -753,7 +753,7 @@ auto Nym::GetPrivateEncrKey(crypto::key::asymmetric::Algorithm keytype) const
         // going to return the first one that's valid (not null).
 
         pCredential = it.second.get();
-        if (nullptr != pCredential) break;
+        if (nullptr != pCredential) { break; }
     }
     if (nullptr == pCredential) OT_FAIL;
 
@@ -792,7 +792,7 @@ auto Nym::get_private_sign_key(
         // going to return the first one that's valid (not null).
 
         pCredential = it.second.get();
-        if (nullptr != pCredential) break;
+        if (nullptr != pCredential) { break; }
     }
     if (nullptr == pCredential) OT_FAIL;
 
@@ -823,7 +823,7 @@ auto Nym::get_public_sign_key(
         // going to return the first one that's valid (not null).
 
         pCredential = it.second.get();
-        if (nullptr != pCredential) break;
+        if (nullptr != pCredential) { break; }
     }
     if (nullptr == pCredential) OT_FAIL;
 
@@ -851,7 +851,7 @@ auto Nym::GetPublicAuthKey(crypto::key::asymmetric::Algorithm keytype) const
         // going to return the first one that's valid (not null).
 
         pCredential = it.second.get();
-        if (nullptr != pCredential) break;
+        if (nullptr != pCredential) { break; }
     }
     if (nullptr == pCredential) OT_FAIL;
 
@@ -878,7 +878,7 @@ auto Nym::GetPublicEncrKey(crypto::key::asymmetric::Algorithm keytype) const
         // going to return the first one that's valid (not null).
 
         pCredential = it.second.get();
-        if (nullptr != pCredential) break;
+        if (nullptr != pCredential) { break; }
     }
     if (nullptr == pCredential) OT_FAIL;
 
@@ -958,7 +958,7 @@ auto Nym::HasPath() const -> bool
 {
     auto path = proto::HDPath{};
 
-    if (false == Path(path)) return false;
+    if (false == Path(path)) { return false; }
 
     return true;
 }
@@ -1156,7 +1156,7 @@ auto Nym::PathRoot() const -> const UnallocatedCString
     sLock lock(shared_lock_);
 
     auto proto = proto::HDPath{};
-    if (false == path(lock, proto)) return "";
+    if (false == path(lock, proto)) { return ""; }
     return proto.root();
 }
 
@@ -1165,7 +1165,7 @@ auto Nym::PathChildSize() const -> int
     sLock lock(shared_lock_);
 
     auto proto = proto::HDPath{};
-    if (false == path(lock, proto)) return 0;
+    if (false == path(lock, proto)) { return 0; }
     return proto.child_size();
 }
 
@@ -1174,7 +1174,7 @@ auto Nym::PathChild(int index) const -> std::uint32_t
     sLock lock(shared_lock_);
 
     auto proto = proto::HDPath{};
-    if (false == path(lock, proto)) return 0;
+    if (false == path(lock, proto)) { return 0; }
     return proto.child(index);
 }
 

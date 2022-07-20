@@ -152,19 +152,19 @@ auto VerifyBalanceReceipt(
     {
         std::int64_t lBoxType = 0;
 
-        if (tranOut->Contains("nymboxRecord"))
+        if (tranOut->Contains("nymboxRecord")) {
             lBoxType = static_cast<std::int64_t>(ledgerType::nymbox);
-        else if (tranOut->Contains("inboxRecord"))
+        } else if (tranOut->Contains("inboxRecord")) {
             lBoxType = static_cast<std::int64_t>(ledgerType::inbox);
-        else if (tranOut->Contains("outboxRecord"))
+        } else if (tranOut->Contains("outboxRecord")) {
             lBoxType = static_cast<std::int64_t>(ledgerType::outbox);
-        else if (tranOut->Contains("paymentInboxRecord"))
+        } else if (tranOut->Contains("paymentInboxRecord")) {
             lBoxType = static_cast<std::int64_t>(ledgerType::paymentInbox);
-        else if (tranOut->Contains("recordBoxRecord"))
+        } else if (tranOut->Contains("recordBoxRecord")) {
             lBoxType = static_cast<std::int64_t>(ledgerType::recordBox);
-        else if (tranOut->Contains("expiredBoxRecord"))
+        } else if (tranOut->Contains("expiredBoxRecord")) {
             lBoxType = static_cast<std::int64_t>(ledgerType::expiredBox);
-        else {
+        } else {
             LogError()(__func__)(
                 "Error loading from "
                 "abbreviated transaction: "
@@ -181,8 +181,9 @@ auto VerifyBalanceReceipt(
                 .Flush();
             return false;
         }
-    } else
+    } else {
         transaction.reset(tranOut.release());
+    }
 
     if (!transaction->VerifySignature(SERVER_NYM)) {
         LogError()(__func__)("Unable to verify "
@@ -628,7 +629,7 @@ auto OT_API::SmartContract_RemoveParty(
 
     auto nym = api_.Wallet().Nym(SIGNER_NYM_ID);
 
-    if (false == bool(nym)) return false;
+    if (false == bool(nym)) { return false; }
     // By this point, nymfile is a good pointer, and is on the wallet. (No need
     // to
     // cleanup.)
@@ -742,7 +743,9 @@ auto OT_API::SmartContract_AddAccount(
                strAcctID = String::Factory();
     auto strInstrumentDefinitionID = String::Factory();
 
-    if (nullptr != szAssetTypeID) strInstrumentDefinitionID->Set(szAssetTypeID);
+    if (nullptr != szAssetTypeID) {
+        strInstrumentDefinitionID->Set(szAssetTypeID);
+    }
 
     if (false == party->AddAccount(
                      strAgentName,
@@ -869,7 +872,7 @@ auto OT_API::SmartContract_ConfirmAccount(
     const auto accountID = api_.Factory().Identifier(ACCT_ID);
     auto account = api_.Wallet().Internal().Account(accountID);
 
-    if (false == bool(account)) return false;
+    if (false == bool(account)) { return false; }
 
     // By this point, account is a good pointer, and is on the wallet. (No need
     // to cleanup.)
@@ -1192,7 +1195,7 @@ auto OT_API::SmartContract_AddBylaw(
 
     const char* BYLAW_LANGUAGE = "chai";  // todo hardcoding.
     auto nym = api_.Wallet().Nym(SIGNER_NYM_ID);
-    if (false == bool(nym)) return false;
+    if (false == bool(nym)) { return false; }
     // By this point, nym is a good pointer, and is on the wallet. (No need
     // to
     // cleanup.)
@@ -1758,20 +1761,22 @@ auto OT_API::SmartContract_AddVariable(
     }
     OTVariable::OTVariable_Access theAccess = OTVariable::Var_Error_Access;
 
-    if (str_access.compare("constant") == 0)
+    if (str_access.compare("constant") == 0) {
         theAccess = OTVariable::Var_Constant;
-    else if (str_access.compare("persistent") == 0)
+    } else if (str_access.compare("persistent") == 0) {
         theAccess = OTVariable::Var_Persistent;
-    else if (str_access.compare("important") == 0)
+    } else if (str_access.compare("important") == 0) {
         theAccess = OTVariable::Var_Important;
+    }
     OTVariable::OTVariable_Type theType = OTVariable::Var_Error_Type;
 
-    if (str_type.compare("bool") == 0)
+    if (str_type.compare("bool") == 0) {
         theType = OTVariable::Var_Bool;
-    else if (str_type.compare("integer") == 0)
+    } else if (str_type.compare("integer") == 0) {
         theType = OTVariable::Var_Integer;
-    else if (str_type.compare("string") == 0)
+    } else if (str_type.compare("string") == 0) {
         theType = OTVariable::Var_String;
+    }
     if ((OTVariable::Var_Error_Type == theType) ||
         (OTVariable::Var_Error_Access == theAccess)) {
         LogError()(OT_PRETTY_CLASS())("Failed due to bad "
@@ -2135,20 +2140,21 @@ auto OT_API::ProposePaymentPlan(
         // "Creation Date".
         std::chrono::seconds PAYMENT_DELAY = std::chrono::hours{24 * 30};
 
-        if (PAYMENT_PLAN_DELAY > 0s) PAYMENT_DELAY = PAYMENT_PLAN_DELAY;
+        if (PAYMENT_PLAN_DELAY > 0s) { PAYMENT_DELAY = PAYMENT_PLAN_DELAY; }
         // Defaults to 30 days, measured in seconds (if you pass 0.)
         std::chrono::seconds PAYMENT_PERIOD = std::chrono::hours{24 * 30};
 
-        if (PAYMENT_PLAN_PERIOD > 0s) PAYMENT_PERIOD = PAYMENT_PLAN_PERIOD;
+        if (PAYMENT_PLAN_PERIOD > 0s) { PAYMENT_PERIOD = PAYMENT_PLAN_PERIOD; }
         // Defaults to 0 seconds (for no max length).
         std::chrono::seconds PLAN_LENGTH = 0s;
 
-        if (PAYMENT_PLAN_LENGTH > 0s) PLAN_LENGTH = PAYMENT_PLAN_LENGTH;
+        if (PAYMENT_PLAN_LENGTH > 0s) { PLAN_LENGTH = PAYMENT_PLAN_LENGTH; }
         std::int32_t nMaxPayments =
             0;  // Defaults to 0 maximum payments (for no maximum).
 
-        if (PAYMENT_PLAN_MAX_PAYMENTS > 0)
+        if (PAYMENT_PLAN_MAX_PAYMENTS > 0) {
             nMaxPayments = PAYMENT_PLAN_MAX_PAYMENTS;
+        }
         bSuccessSetPaymentPlan = pPlan->SetPaymentPlan(
             PAYMENT_PLAN_AMOUNT,
             PAYMENT_DELAY,
@@ -2575,7 +2581,7 @@ auto OT_API::GenerateBasketExchange(
 
         std::int32_t nTransferMultiple = 1;
 
-        if (TRANSFER_MULTIPLE > 0) nTransferMultiple = TRANSFER_MULTIPLE;
+        if (TRANSFER_MULTIPLE > 0) { nTransferMultiple = TRANSFER_MULTIPLE; }
 
         // Next load the Basket object out of that contract.
         std::unique_ptr<Basket> pRequestBasket = nullptr;

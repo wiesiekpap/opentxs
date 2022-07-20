@@ -98,7 +98,7 @@ public:
     auto Version() const noexcept -> VersionNumber;
     auto SetAlias(const UnallocatedCString& alias) noexcept -> bool;
 
-    virtual auto swap(Reply& rhs) noexcept -> void;
+    auto swap(Reply& rhs) noexcept -> void;
 
     OPENTXS_NO_EXPORT Reply(Imp* imp) noexcept;
     Reply(const Reply&) noexcept;
@@ -111,5 +111,4 @@ public:
 private:
     Imp* imp_;
 };
-
 }  // namespace opentxs::otx

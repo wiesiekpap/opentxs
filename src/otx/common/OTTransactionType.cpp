@@ -97,18 +97,19 @@ auto OTTransactionType::GetOriginTypeFromString(const String& strType)
 {
     originType theType = originType::origin_error_state;
 
-    if (strType.Compare("not_applicable"))
+    if (strType.Compare("not_applicable")) {
         theType = originType::not_applicable;
-    else if (strType.Compare("origin_market_offer"))
+    } else if (strType.Compare("origin_market_offer")) {
         theType = originType::origin_market_offer;
-    else if (strType.Compare("origin_payment_plan"))
+    } else if (strType.Compare("origin_payment_plan")) {
         theType = originType::origin_payment_plan;
-    else if (strType.Compare("origin_smart_contract"))
+    } else if (strType.Compare("origin_smart_contract")) {
         theType = originType::origin_smart_contract;
-    else if (strType.Compare("origin_pay_dividend"))
+    } else if (strType.Compare("origin_pay_dividend")) {
         theType = originType::origin_pay_dividend;
-    else
+    } else {
         theType = originType::origin_error_state;
+    }
 
     return theType;
 }
@@ -304,7 +305,7 @@ void OTTransactionType::CalculateNumberOfOrigin()
 // virtual
 auto OTTransactionType::GetNumberOfOrigin() -> std::int64_t
 {
-    if (0 == m_lNumberOfOrigin) CalculateNumberOfOrigin();
+    if (0 == m_lNumberOfOrigin) { CalculateNumberOfOrigin(); }
 
     return m_lNumberOfOrigin;
 }

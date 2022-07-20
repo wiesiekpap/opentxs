@@ -119,7 +119,7 @@ auto DearmorAndTrim(
     std::array<char, 75> buf{};
     bool bGotLine = strOutput.sgets(buf.data(), 70);
 
-    if (!bGotLine) return false;
+    if (!bGotLine) { return false; }
 
     strFirstLine.Set(buf.data());
     strOutput.reset();  // set the "file" pointer within this string back to
@@ -129,7 +129,9 @@ auto DearmorAndTrim(
     // the first 70 characters of the beginning of the contract, and
     // it will NOT contain the escape "- " sequence. From there, if
     // it contains the proper sequence, I will instantiate that type.
-    if (!strFirstLine.Exists() || strFirstLine.Contains("- -")) return false;
+    if (!strFirstLine.Exists() || strFirstLine.Contains("- -")) {
+        return false;
+    }
 
     return true;
 }
@@ -198,10 +200,11 @@ auto LoadEncodedTextField(irr::io::IrrXMLReader*& xml, Armored& ascOutput)
 
             return true;
         }
-    } else
+    } else {
         LogDetail()(__func__)(
             ": Failure: Unable to find expected text field 2.")
             .Flush();
+    }
 
     return false;
 }

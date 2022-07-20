@@ -124,8 +124,9 @@ auto Keypair::GetPublicKeyBySignature(
     // in case."
     //
     if ((false == bInclusive) &&
-        (false == theSignature.getMetaData().HasMetadata()))
+        (false == theSignature.getMetaData().HasMetadata())) {
         return 0;
+    }
 
     // Below this point, metadata is used if it's available.
     // It's assumed to be "okay" if it's not available, since any non-inclusive

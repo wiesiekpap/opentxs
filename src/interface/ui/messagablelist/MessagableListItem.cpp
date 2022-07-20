@@ -33,5 +33,6 @@ MessagableListItem::MessagableListItem(
     const ContactListSortKey& key) noexcept
     : ot_super(parent, api, rowID, key)
 {
+    init_contact_list();
 }
 }  // namespace opentxs::ui::implementation
