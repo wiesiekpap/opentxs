@@ -26,8 +26,8 @@ public:
 
     Job(const Job&) = delete;
     Job(Job&&) = delete;
-    Job& operator=(const Job&) = delete;
-    Job& operator=(Job&&) = delete;
+    auto operator=(const Job&) -> Job& = delete;
+    auto operator=(Job&&) -> Job& = delete;
 
     virtual ~Job() = default;
 

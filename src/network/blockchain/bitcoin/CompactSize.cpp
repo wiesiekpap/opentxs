@@ -246,7 +246,7 @@ auto CompactSize::Encode(AllocateOutput destination) const noexcept -> bool
         return false;
     }
 
-    auto it = static_cast<std::byte*>(out.data());
+    auto* it = static_cast<std::byte*>(out.data());
     const auto& data = imp_->data_;
 
     if (data <= Imp::threshold_.at(0).first) {

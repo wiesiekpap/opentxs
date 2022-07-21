@@ -115,11 +115,11 @@ public:
     {
     }
 
-    static ot::OTAsymmetricKey get_hd_key(
+    static auto get_hd_key(
         const ot::api::session::Client& api,
         const ot::UnallocatedCString& fingerprint,
         const ot::crypto::EcdsaCurve& curve,
-        const std::uint32_t index = 0)
+        const std::uint32_t index = 0) -> ot::OTAsymmetricKey
     {
         auto reason = api.Factory().PasswordPrompt(__func__);
         ot::UnallocatedCString id{fingerprint};
@@ -140,10 +140,10 @@ public:
                     reason)
                 .release()};
     }
-    [[maybe_unused]] static ot::OTAsymmetricKey get_key(
+    [[maybe_unused]] static auto get_key(
         const ot::api::session::Client& api,
         const ot::crypto::EcdsaCurve curve,
-        const Role role)
+        const Role role) -> ot::OTAsymmetricKey
     {
         const auto reason = api.Factory().PasswordPrompt(__func__);
         const auto params = [&] {
@@ -164,11 +164,11 @@ public:
         return api.Factory().AsymmetricKey(params, reason, role);
     }
 
-    [[maybe_unused]] bool test_dh(
+    [[maybe_unused]] auto test_dh(
         const ot::crypto::AsymmetricProvider& lib,
         const ot::crypto::key::Asymmetric& keyOne,
         const ot::crypto::key::Asymmetric& keyTwo,
-        const ot::Data& expected)
+        const ot::Data& expected) -> bool
     {
         constexpr auto style = ot::crypto::SecretStyle::Default;
         auto reason = api_.Factory().PasswordPrompt(__func__);
@@ -197,11 +197,11 @@ public:
         return output;
     }
 
-    [[maybe_unused]] bool test_signature(
+    [[maybe_unused]] auto test_signature(
         const ot::Data& plaintext,
         const ot::crypto::AsymmetricProvider& lib,
         const ot::crypto::key::Asymmetric& key,
-        const ot::crypto::HashType hash)
+        const ot::crypto::HashType hash) -> bool
     {
         auto reason = api_.Factory().PasswordPrompt(__func__);
         auto sig = ot::Space{};
@@ -223,10 +223,10 @@ public:
         return haveSig && verified;
     }
 
-    [[maybe_unused]] bool bad_signature(
+    [[maybe_unused]] auto bad_signature(
         const ot::crypto::AsymmetricProvider& lib,
         const ot::crypto::key::Asymmetric& key,
-        const ot::crypto::HashType hash)
+        const ot::crypto::HashType hash) -> bool
     {
         auto reason = api_.Factory().PasswordPrompt(__func__);
         auto sig = ot::Space{};

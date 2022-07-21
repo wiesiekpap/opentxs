@@ -11,9 +11,7 @@
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
-{
-namespace client
+namespace opentxs::client
 {
 class ServerAction
 {
@@ -34,5 +32,4 @@ public:
 protected:
     ServerAction() = default;
 };
-}  // namespace client
-}  // namespace opentxs
+}  // namespace opentxs::client

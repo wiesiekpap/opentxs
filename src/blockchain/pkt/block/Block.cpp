@@ -33,14 +33,14 @@ auto parse_pkt_block(
         (blockchain::Type::PKT == chain) ||
         (blockchain::Type::PKT_testnet == chain));
 
-    auto it = ByteIterator{};
+    const auto* it = ByteIterator{};
     auto expectedSize = std::size_t{};
     auto pHeader = parse_header(api, chain, in, it, expectedSize);
 
     OT_ASSERT(pHeader);
 
     const auto& header = *pHeader;
-    const auto proofStart{it};
+    const auto* const proofStart{it};
     auto proofs = ReturnType::Proofs{};
 
     while (true) {
@@ -82,7 +82,7 @@ auto parse_pkt_block(
         if (type == terminalType) { break; }
     }
 
-    const auto proofEnd{it};
+    const auto* const proofEnd{it};
     auto sizeData = ReturnType::CalculatedSize{
         in.size(), network::blockchain::bitcoin::CompactSize{}};
     auto [index, transactions] =

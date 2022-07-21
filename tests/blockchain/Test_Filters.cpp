@@ -555,6 +555,7 @@ TEST_F(Test_Filters, test_set_intersection)
 
         while (stop--) {
             auto r = begin;
+            // NOLINTNEXTLINE(cert-msc30-c,cert-msc50-cpp)
             std::advance(r, rand() % left);
             std::swap(*begin, *r);
             ++begin;

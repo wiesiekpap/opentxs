@@ -51,7 +51,7 @@ auto BitcoinP2PGetblocks(
 
         return nullptr;
     }
-    auto* it{static_cast<const std::byte*>(payload)};
+    const auto* it{static_cast<const std::byte*>(payload)};
     std::memcpy(
         static_cast<void*>(&raw_item.version_), it, sizeof(raw_item.version_));
     it += sizeof(raw_item.version_);

@@ -27,7 +27,7 @@ auto CheckProto_1(
 {
     VerificationNymMap nymMap;
 
-    for (auto& it : input.identity()) {
+    for (const auto& it : input.identity()) {
         try {
             const bool validIdentity = Check(
                 it,

@@ -325,7 +325,7 @@ auto SeedTree::load_nym(OTNymID&& nymID, ChildMap& out) const noexcept -> void
 
 auto SeedTree::load_nyms(ChildMap& out) const noexcept -> void
 {
-    for (auto& nymID : Widget::api_.Wallet().LocalNyms()) {
+    for (const auto& nymID : Widget::api_.Wallet().LocalNyms()) {
         load_nym(std::move(const_cast<OTNymID&>(nymID)), out);
     }
 }

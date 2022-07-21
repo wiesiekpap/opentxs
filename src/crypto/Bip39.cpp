@@ -227,14 +227,14 @@ auto Bip39::GetSuggestions(const Language lang, const std::string_view word)
 
         if (0 == words.size()) { return {}; }
 
-        for (const auto candidate : words) {
+        for (const auto* const candidate : words) {
             const auto csize = std::strlen(candidate);
             const auto size = word.size();
 
             if (csize < size) { continue; }
 
-            const auto start = word.data();
-            const auto end = start + size;
+            const auto* const start = word.data();
+            const auto* const end = start + size;
             const auto prefix = std::distance(
                 start, std::mismatch(start, end, candidate).first);
 
@@ -448,7 +448,7 @@ auto Bip39::words_to_root_pkt(
         OT_ASSERT(keyBytes == key->size());
 
         auto v = key->Bytes();
-        auto k{v.data()};
+        const auto* k{v.data()};
 
         for (auto b = std::next(ent.begin(), 2); b < ent.end(); ++b, ++k) {
             (*b) ^= (*k);

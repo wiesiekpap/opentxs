@@ -95,7 +95,7 @@ auto Encode::BreakLines(const UnallocatedCString& input) const
 
     std::size_t width = 0;
 
-    for (auto& character : input) {
+    for (const auto& character : input) {
         output.push_back(character);
 
         if (++width >= LineWidth) {

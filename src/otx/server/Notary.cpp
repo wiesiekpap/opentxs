@@ -723,7 +723,7 @@ void Notary::NotarizeTransfer(
     auto accountHash{server_.API().Factory().Identifier()};
 
     if (false ==
-        NYM_IS_ALLOWED(strNymID->Get(), ServerSettings::__transact_transfer)) {
+        NYM_IS_ALLOWED(strNymID->Get(), ServerSettings::_transact_transfer)) {
 
         LogError()(OT_PRETTY_CLASS())("User ")(
             strNymID)(" cannot do this transaction (All "
@@ -1328,7 +1328,7 @@ void Notary::NotarizeWithdrawal(
     // permissions:
     // This permission has to do with ALL withdrawals (cash or voucher)
     else if (!NYM_IS_ALLOWED(
-                 strNymID->Get(), ServerSettings::__transact_withdrawal)) {
+                 strNymID->Get(), ServerSettings::_transact_withdrawal)) {
         LogError()(OT_PRETTY_CLASS())("User ")(
             strNymID)(" cannot do this transaction (All withdrawals "
                       "are disallowed in "
@@ -1340,7 +1340,7 @@ void Notary::NotarizeWithdrawal(
         (nullptr != pItemVoucher) &&
         (false ==
          NYM_IS_ALLOWED(
-             strNymID->Get(), ServerSettings::__transact_withdraw_voucher))) {
+             strNymID->Get(), ServerSettings::_transact_withdraw_voucher))) {
         LogError()(OT_PRETTY_CLASS())("User ")(
             strNymID)(" cannot do this transaction (withdraw "
                       "voucher is disallowed in "
@@ -1352,7 +1352,7 @@ void Notary::NotarizeWithdrawal(
         (nullptr != pItemCash) &&
         (false ==
          NYM_IS_ALLOWED(
-             strNymID->Get(), ServerSettings::__transact_withdraw_cash))) {
+             strNymID->Get(), ServerSettings::_transact_withdraw_cash))) {
         LogError()(OT_PRETTY_CLASS())("User ")(
             strNymID)(" cannot do this transaction (withdraw cash "
                       "is disallowed in "
@@ -1500,7 +1500,7 @@ void Notary::NotarizeWithdrawal(
                                              // successful.
                 auto strChequeMemo = String::Factory();
                 UnallocatedCString tmp;
-                auto& ref = theVoucherRequest->GetMemo();
+                const auto& ref = theVoucherRequest->GetMemo();
                 tmp.reserve(strItemNote->GetLength() + ref.GetLength());
                 tmp.append(strItemNote->Get());
                 tmp.append(ref.Get());
@@ -1838,7 +1838,7 @@ void Notary::NotarizePayDividend(
     // This permission has to do with ALL withdrawals from an account (cash /
     // voucher / dividends)
     else if (!NYM_IS_ALLOWED(
-                 strNymID->Get(), ServerSettings::__transact_withdrawal)) {
+                 strNymID->Get(), ServerSettings::_transact_withdrawal)) {
         LogError()(OT_PRETTY_CLASS())("User ")(
             strNymID)(" cannot do this transaction (All withdrawals "
                       "are disallowed in "
@@ -1849,7 +1849,7 @@ void Notary::NotarizePayDividend(
     else if (
         (nullptr != pItemPayDividend) &&
         (!NYM_IS_ALLOWED(
-            strNymID->Get(), ServerSettings::__transact_pay_dividend))) {
+            strNymID->Get(), ServerSettings::_transact_pay_dividend))) {
         LogError()(OT_PRETTY_CLASS())("User ")(
             strNymID)(" cannot do this transaction (payDividend is "
                       "disallowed in "
@@ -2602,18 +2602,18 @@ void Notary::NotarizeDeposit(
     std::shared_ptr<Item> responseBalanceItem{nullptr};
     itemType type{itemType::error_state};
     bool permission =
-        NYM_IS_ALLOWED(nymID.str(), ServerSettings::__transact_deposit);
+        NYM_IS_ALLOWED(nymID.str(), ServerSettings::_transact_deposit);
 
     if (input.GetItem(itemType::depositCheque)) {
         type = itemType::atDepositCheque;
         depositItem = input.GetItem(itemType::depositCheque);
         permission &= NYM_IS_ALLOWED(
-            nymID.str(), ServerSettings::__transact_deposit_cheque);
+            nymID.str(), ServerSettings::_transact_deposit_cheque);
     } else if (input.GetItem(itemType::deposit)) {
         type = itemType::atDeposit;
         depositItem = input.GetItem(itemType::deposit);
-        permission &= NYM_IS_ALLOWED(
-            nymID.str(), ServerSettings::__transact_deposit_cash);
+        permission &=
+            NYM_IS_ALLOWED(nymID.str(), ServerSettings::_transact_deposit_cash);
     }
 
     responseItem.reset(
@@ -2785,7 +2785,7 @@ void Notary::NotarizePaymentPlan(
 
     if ((nullptr != pItem) &&
         (!NYM_IS_ALLOWED(
-            strNymID->Get(), ServerSettings::__transact_payment_plan))) {
+            strNymID->Get(), ServerSettings::_transact_payment_plan))) {
         LogError()(OT_PRETTY_CLASS())("User ")(
             strNymID)(" cannot do this transaction (All payment "
                       "plans are disallowed in "
@@ -3499,7 +3499,7 @@ void Notary::NotarizeSmartContract(
     if ((nullptr != pItem) &&
         (false ==
          NYM_IS_ALLOWED(
-             strNymID->Get(), ServerSettings::__transact_smart_contract))) {
+             strNymID->Get(), ServerSettings::_transact_smart_contract))) {
         LogError()(OT_PRETTY_CLASS())("User ")(
             strNymID)(" cannot do this transaction (All smart "
                       "contracts are disallowed "
@@ -4281,7 +4281,7 @@ void Notary::NotarizeCancelCronItem(
     auto accountHash{server_.API().Factory().Identifier()};
 
     if (!NYM_IS_ALLOWED(
-            strNymID->Get(), ServerSettings::__transact_cancel_cron_item)) {
+            strNymID->Get(), ServerSettings::_transact_cancel_cron_item)) {
         LogError()(OT_PRETTY_CLASS())("User ")(
             strNymID)(" cannot do this transaction (CancelCronItem "
                       "messages are "
@@ -4495,7 +4495,7 @@ void Notary::NotarizeExchangeBasket(
     auto accountHash{server_.API().Factory().Identifier()};
 
     if (!NYM_IS_ALLOWED(
-            strNymID->Get(), ServerSettings::__transact_exchange_basket)) {
+            strNymID->Get(), ServerSettings::_transact_exchange_basket)) {
         LogError()(OT_PRETTY_CLASS())("User ")(
             strNymID)(" cannot do this transaction (All basket "
                       "exchanges are disallowed "
@@ -5448,7 +5448,7 @@ void Notary::NotarizeMarketOffer(
     auto accountHash{server_.API().Factory().Identifier()};
 
     if (!NYM_IS_ALLOWED(
-            strNymID->Get(), ServerSettings::__transact_market_offer)) {
+            strNymID->Get(), ServerSettings::_transact_market_offer)) {
         LogError()(OT_PRETTY_CLASS())("User ")(
             strNymID)(" cannot do this transaction (All market "
                       "offers are disallowed in "
@@ -7008,7 +7008,7 @@ void Notary::NotarizeProcessInbox(
     UnallocatedList<TransactionNumber> theListOfInboxReceiptsBeingRemoved{};
     bool bVerifiedBalanceStatement{false};
     const bool allowed =
-        NYM_IS_ALLOWED(strNymID, ServerSettings::__transact_process_inbox);
+        NYM_IS_ALLOWED(strNymID, ServerSettings::_transact_process_inbox);
 
     auto accountHash{server_.API().Factory().Identifier()};
 

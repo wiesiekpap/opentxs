@@ -11,6 +11,7 @@
 #include <future>
 #include <memory>
 #include <type_traits>
+#include <utility>
 
 #include "interface/ui/base/List.hpp"
 #include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep

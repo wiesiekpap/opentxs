@@ -40,7 +40,7 @@ struct SecureAllocator {
         if (items > limit) { throw std::bad_alloc(); }
 
         const auto bytes = items * sizeof(value_type);
-        auto output = std::malloc(bytes);
+        auto* output = std::malloc(bytes);
 
         if (nullptr == output) { throw std::bad_alloc(); }
 

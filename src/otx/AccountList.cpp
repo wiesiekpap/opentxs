@@ -56,7 +56,7 @@ void AccountList::Serialize(Tag& parent) const
     pTag->add_attribute("type", acctType->Get());
     pTag->add_attribute("count", std::to_string(sizeMapAcctIDs));
 
-    for (auto& it : mapAcctIDs_) {
+    for (const auto& it : mapAcctIDs_) {
         UnallocatedCString instrumentDefinitionID = it.first;
         UnallocatedCString accountId = it.second;
         OT_ASSERT(
@@ -96,6 +96,7 @@ auto AccountList::ReadFromXMLNode(
     }
 
     // Load up the account IDs.
+    // NOLINTNEXTLINE(cert-err34-c)
     std::int32_t count = acctCount.Exists() ? atoi(acctCount.Get()) : 0;
     if (count > 0) {
         while (count-- > 0) {

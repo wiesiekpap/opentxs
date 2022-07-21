@@ -466,7 +466,7 @@ auto Server::accept_entire_nymbox(
         return false;
     }
 
-    for (auto& number : setNoticeNumbers) {
+    for (const auto& number : setNoticeNumbers) {
         accept_issued_number(lock, number);
     }
 
@@ -2783,7 +2783,7 @@ auto Server::ProcessNotification(
         return false;
     }
 
-    auto& push = *pPush;
+    const auto& push = *pPush;
 
     switch (push.type()) {
         case proto::OTXPUSH_NYMBOX: {
@@ -3297,7 +3297,7 @@ auto Server::process_account_data(
         }
     }
 
-    for (auto& [number, pTransaction] : inbox_->GetTransactionMap()) {
+    for (const auto& [number, pTransaction] : inbox_->GetTransactionMap()) {
 
         if (false == bool(pTransaction)) {
             LogError()(OT_PRETTY_CLASS())("Invalid transaction ")(
@@ -3446,9 +3446,9 @@ auto Server::process_box_item(
     OT_ASSERT(nym_);
     OT_ASSERT(remote_nym_);
 
-    auto& nym = *nym_;
-    auto& remoteNym = *remote_nym_;
-    auto& nymID = nym.ID();
+    const auto& nym = *nym_;
+    const auto& remoteNym = *remote_nym_;
+    const auto& nymID = nym.ID();
     BoxType box{BoxType::Invalid};
 
     switch (push.type()) {
@@ -3774,7 +3774,7 @@ auto Server::process_get_market_list_response(
 {
     auto data_file = api::Legacy::GetFilenameBin("market_data");
 
-    auto pStorage = OTDB::GetDefaultStorage();
+    auto* pStorage = OTDB::GetDefaultStorage();
     OT_ASSERT(nullptr != pStorage);
 
     auto& storage = *pStorage;
@@ -3814,7 +3814,7 @@ auto Server::process_get_market_list_response(
 
     // Unpack the market list...
 
-    auto pPacker = storage.GetPacker();
+    auto* pPacker = storage.GetPacker();
 
     OT_ASSERT(nullptr != pPacker);
 
@@ -3866,7 +3866,7 @@ auto Server::process_get_market_offers_response(
 
     auto data_file = api::Legacy::GetFilenameBin(marketID.Get());
 
-    auto pStorage = OTDB::GetDefaultStorage();
+    auto* pStorage = OTDB::GetDefaultStorage();
     OT_ASSERT(nullptr != pStorage);
 
     auto& storage = *pStorage;
@@ -3956,7 +3956,7 @@ auto Server::process_get_market_recent_trades_response(
     const String& marketID = reply.m_strNymID2;  // market ID stored here.
     auto data_file = api::Legacy::GetFilenameBin(marketID.Get());
 
-    auto pStorage = OTDB::GetDefaultStorage();
+    auto* pStorage = OTDB::GetDefaultStorage();
     OT_ASSERT(nullptr != pStorage);
 
     auto& storage = *pStorage;
@@ -4002,7 +4002,7 @@ auto Server::process_get_market_recent_trades_response(
 
     // Unpack the market list...
 
-    auto pPacker = storage.GetPacker();
+    auto* pPacker = storage.GetPacker();
 
     OT_ASSERT(nullptr != pPacker);
 
@@ -4076,7 +4076,7 @@ auto Server::process_get_nym_market_offers_response(
 {
     auto data_file = api::Legacy::GetFilenameBin(reply.m_strNymID->Get());
 
-    auto pStorage = OTDB::GetDefaultStorage();
+    auto* pStorage = OTDB::GetDefaultStorage();
     OT_ASSERT(nullptr != pStorage);
 
     auto& storage = *pStorage;
@@ -4117,7 +4117,7 @@ auto Server::process_get_nym_market_offers_response(
 
     // Unpack the nym's offer list...
 
-    auto pPacker = storage.GetPacker();
+    auto* pPacker = storage.GetPacker();
 
     OT_ASSERT(nullptr != pPacker);
 
@@ -4391,7 +4391,8 @@ auto Server::process_notarize_transaction_response(
         return false;
     }
 
-    for (auto& [number, pTransaction] : responseLedger->GetTransactionMap()) {
+    for (const auto& [number, pTransaction] :
+         responseLedger->GetTransactionMap()) {
         if (false == bool(pTransaction)) {
             LogError()(OT_PRETTY_CLASS())("Invalid transaction ")(
                 number)(" in response ledger")
@@ -5340,7 +5341,7 @@ void Server::process_response_transaction_cheque_deposit(
     const auto chequeNumber = cheque.GetTransactionNum();
     auto receipt_ids = paymentInbox->GetTransactionNums();
 
-    for (auto& receipt_id : receipt_ids) {
+    for (const auto& receipt_id : receipt_ids) {
         TransactionNumber number{0};
         auto pPayment = get_instrument_by_receipt_id(
             api_, nym, receipt_id, *paymentInbox, reason);
@@ -7728,7 +7729,7 @@ void Server::verify_blank(
     OTTransaction& blank,
     TransactionNumbers& output) const
 {
-    for (auto& number : extract_numbers(blank)) {
+    for (const auto& number : extract_numbers(blank)) {
         if (verify_issued_number(lock, number)) {
             LogConsole()(OT_PRETTY_CLASS())(
                 "Attempted to accept a blank transaction number that I "

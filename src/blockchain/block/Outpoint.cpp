@@ -131,11 +131,13 @@ auto Outpoint::operator>=(const Outpoint& rhs) const noexcept -> bool
 
 auto Outpoint::operator==(const Outpoint& rhs) const noexcept -> bool
 {
+    // NOLINTNEXTLINE(cert-exp42-c,cert-flp37-c)
     return (index_ == rhs.index_) && (txid_ == rhs.txid_);
 }
 
 auto Outpoint::operator!=(const Outpoint& rhs) const noexcept -> bool
 {
+    // NOLINTNEXTLINE(cert-exp42-c,cert-flp37-c)
     return (index_ != rhs.index_) || (txid_ != rhs.txid_);
 }
 

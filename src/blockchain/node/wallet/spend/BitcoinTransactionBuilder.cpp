@@ -861,7 +861,7 @@ private:
 
         {
             auto preimage = space(inputs_.size() * sizeof(block::Outpoint));
-            auto it = preimage.data();
+            auto* it = preimage.data();
 
             for (const auto& [input, amount] : inputs_) {
                 const auto& outpoint = input->PreviousOutput();
@@ -879,7 +879,7 @@ private:
 
         {
             auto preimage = space(inputs_.size() * sizeof(std::uint32_t));
-            auto it = preimage.data();
+            auto* it = preimage.data();
 
             for (const auto& [input, value] : inputs_) {
                 const auto sequence = input->Sequence();
@@ -897,7 +897,7 @@ private:
 
         {
             auto preimage = space(output_total_);
-            auto it = preimage.data();
+            auto* it = preimage.data();
 
             for (const auto& output : outputs_) {
                 const auto size = output->CalculateSize();

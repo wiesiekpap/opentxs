@@ -30,7 +30,7 @@ auto DecodeBip34(const ReadView coinbase) noexcept -> blockchain::block::Height
 
     if (false == valid(coinbase)) { return null; }
 
-    auto* i = reinterpret_cast<const std::byte*>(coinbase.data());
+    const auto* i = reinterpret_cast<const std::byte*>(coinbase.data());
     const auto size = std::to_integer<std::uint8_t>(*i);
     std::advance(i, 1);
     auto buf = be::little_int64_buf_t{0};

@@ -59,7 +59,7 @@ auto CheckProto_1(
         }
     }
 
-    for (auto& it : input.repudiated()) {
+    for (const auto& it : input.repudiated()) {
         if (MIN_PLAUSIBLE_IDENTIFIER < it.size()) {
             FAIL_1("invalid repudiation")
         }

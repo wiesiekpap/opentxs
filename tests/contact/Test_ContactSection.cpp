@@ -382,8 +382,7 @@ TEST_F(Test_ContactSection, AddItem_different_versions)
 
 TEST_F(Test_ContactSection, begin)
 {
-    ot::identity::wot::claim::Section::GroupMap::const_iterator it =
-        contactSection_.begin();
+    auto it = contactSection_.begin();
     ASSERT_EQ(contactSection_.end(), it);
     ASSERT_EQ(std::distance(it, contactSection_.end()), 0);
 
@@ -436,8 +435,7 @@ TEST_F(Test_ContactSection, Claim_notfound)
 
 TEST_F(Test_ContactSection, end)
 {
-    ot::identity::wot::claim::Section::GroupMap::const_iterator it =
-        contactSection_.end();
+    auto it = contactSection_.end();
     ASSERT_EQ(contactSection_.begin(), it);
     ASSERT_EQ(std::distance(contactSection_.begin(), it), 0);
 

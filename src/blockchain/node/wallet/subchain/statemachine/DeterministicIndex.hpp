@@ -52,8 +52,8 @@ public:
     DeterministicIndex() = delete;
     DeterministicIndex(const Imp&) = delete;
     DeterministicIndex(DeterministicIndex&&) = delete;
-    DeterministicIndex& operator=(const DeterministicIndex&) = delete;
-    DeterministicIndex& operator=(DeterministicIndex&&) = delete;
+    auto operator=(const DeterministicIndex&) -> DeterministicIndex& = delete;
+    auto operator=(DeterministicIndex&&) -> DeterministicIndex& = delete;
 
     ~DeterministicIndex() final = default;
 

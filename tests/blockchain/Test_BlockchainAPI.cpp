@@ -179,7 +179,7 @@ public:
     ot::Identifier& account_9_id_;  // alex, bch, bip44
     const ThreadVectors threads_;
 
-    static const ot::api::session::Client& init()
+    static auto init() -> const ot::api::session::Client&
     {
         const auto& api = ot::Context().StartClientSession(0);
 

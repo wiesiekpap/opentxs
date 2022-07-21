@@ -186,7 +186,7 @@ auto DeterministicStateData::handle_confirmed_matches(
         } else {
             auto& existing = i->second;
 
-            for (auto& [txid, newMatchData] : matches) {
+            for (const auto& [txid, newMatchData] : matches) {
                 if (auto e = existing.find(txid); existing.end() == e) {
                     log(OT_PRETTY_CLASS())(name_)(" adding transaction ")
                         .asHex(txid)(" to cache")

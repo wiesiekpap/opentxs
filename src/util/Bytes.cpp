@@ -103,7 +103,7 @@ auto space(const ReadView bytes) noexcept -> Space
 {
     if ((nullptr == bytes.data()) || (0 == bytes.size())) { return {}; }
 
-    auto it = reinterpret_cast<const std::byte*>(bytes.data());
+    const auto* it = reinterpret_cast<const std::byte*>(bytes.data());
 
     return {it, it + bytes.size()};
 }
@@ -114,7 +114,7 @@ auto space(const ReadView bytes, alloc::Resource* alloc) noexcept
 
     if ((nullptr == bytes.data()) || (0 == bytes.size())) { return Out{alloc}; }
 
-    auto it = reinterpret_cast<const std::byte*>(bytes.data());
+    const auto* it = reinterpret_cast<const std::byte*>(bytes.data());
 
     return Out{it, it + bytes.size(), alloc};
 }

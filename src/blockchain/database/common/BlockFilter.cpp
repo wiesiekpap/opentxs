@@ -11,8 +11,10 @@
 #include <array>
 #include <cstddef>
 #include <cstring>
+#include <mutex>
 #include <stdexcept>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -20,6 +22,7 @@
 #include "blockchain/database/common/Bulk.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
@@ -28,6 +31,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainFilterHeader.pb.h"
+#include "serialization/protobuf/GCS.pb.h"
 #include "util/ByteLiterals.hpp"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
@@ -148,6 +152,7 @@ auto BlockFilter::LoadFilters(
                 blocks.get_allocator()));
         } catch (const std::exception& e) {
             LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
+
             break;
         }
     }
@@ -250,7 +255,7 @@ auto BlockFilter::store(
         auto view =
             bulk_.WriteView(lock, tx, index, std::move(callback), bytes);
 
-        if (!view.valid(bytes)) {
+        if (false == view.valid(bytes)) {
             throw std::runtime_error{
                 "Failed to get write position for cfilter"};
         }
@@ -282,7 +287,7 @@ auto BlockFilter::StoreFilterHeaders(
             const auto stored = lmdb_.Store(
                 translate_header(type), block.Bytes(), reader(bytes), tx);
 
-            if (!stored.first) { return false; }
+            if (false == stored.first) { return false; }
         } catch (const std::exception& e) {
             LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
@@ -300,10 +305,12 @@ auto BlockFilter::StoreFilters(
     auto tx = lmdb_.TransactionRW();
     auto lock = Lock{bulk_.Mutex()};
 
-    for (auto& [block, cfilter] : filters) {
+    for (const auto& [block, cfilter] : filters) {
         OT_ASSERT(cfilter.IsValid());
 
-        if (!store(lock, tx, block.Bytes(), type, cfilter)) { return false; }
+        if (false == store(lock, tx, block.Bytes(), type, cfilter)) {
+            return false;
+        }
     }
 
     return tx.Finalize(true);
@@ -312,23 +319,75 @@ auto BlockFilter::StoreFilters(
 auto BlockFilter::StoreFilters(
     const cfilter::Type type,
     const Vector<CFHeaderParams>& headers,
-    const Vector<CFilterParams>& filters) const -> bool
+    const Vector<CFilterParams>& filters) const noexcept -> bool
 {
     try {
         if (headers.size() != filters.size()) {
             throw std::runtime_error{
                 "wrong number of filters compared to headers"};
         }
+
+        using BlockHash = ReadView;
+        using SerializedCfheader = Vector<std::byte>;
+        using SerializedCfilter = proto::GCS*;
+        using CFilterSize = std::size_t;
+        using BulkIndex = util::IndexData;
+        using StorageItem = std::tuple<
+            BlockHash,
+            SerializedCfheader,
+            SerializedCfilter,
+            CFilterSize,
+            BulkIndex>;
+
+        // NOTE do as much work as possible before locking mutexes
+        static const auto options = [] {
+            auto out = google::protobuf::ArenaOptions{};
+            out.start_block_size = 8_MiB;
+            out.max_block_size = 8_MiB;
+
+            return out;
+        }();
+        auto arena = google::protobuf::Arena{options};
         auto upstream = alloc::StandardToBoost(alloc::System());
         auto alloc = alloc::BoostMonotonic{4_MiB, &upstream};
-        // NOTE do as much work as possible before locking mutexes
-        google::protobuf::ArenaOptions options{};
-        options.start_block_size = 8_MiB;
-        options.max_block_size = 8_MiB;
-        google::protobuf::Arena arena{options};
+        auto data = [&] {
+            auto out = Vector<StorageItem>{&alloc};
+            out.reserve(headers.size());
+            auto h = headers.cbegin();
+            auto f = filters.cbegin();
 
-        auto data = load_storage_items(headers, filters, alloc, arena);
+            for (auto end = filters.cend(); end != f; ++f, ++h) {
+                auto& [bHash, cfHeader, cfilter, bytes, index] =
+                    out.emplace_back(
+                        BlockHash{},
+                        SerializedCfheader{&alloc},
+                        google::protobuf::Arena::Create<proto::GCS>(&arena),
+                        0,
+                        BulkIndex{});
+                bHash = std::get<0>(*h).Bytes();
+                const auto* cfheaderProto = [&] {
+                    const auto& [block, header, hash] = *h;
+                    auto* proto = google::protobuf::Arena::Create<
+                        proto::BlockchainFilterHeader>(&arena);
+                    proto->set_version(1);
+                    proto->set_header(header.data(), header.size());
+                    proto->set_hash(hash.data(), hash.size());
 
+                    return proto;
+                }();
+                proto::write(*cfheaderProto, writer(cfHeader));
+
+                if (const auto& [b, filter] = *f;
+                    (false == filter.IsValid()) ||
+                    (false == filter.Internal().Serialize(*cfilter))) {
+                    throw std::runtime_error{"Failed to serialize gcs"};
+                }
+
+                bytes = cfilter->ByteSizeLong();
+            }
+
+            return out;
+        }();
         const auto hTable = translate_header(type);
         const auto fTable = translate_filter(type);
         auto tx = lmdb_.TransactionRW();
@@ -356,7 +415,7 @@ auto BlockFilter::StoreFilters(
             auto view =
                 bulk_.WriteView(lock, tx, index, std::move(writeIndex), bytes);
 
-            if (!view.valid(bytes)) {
+            if (false == view.valid(bytes)) {
                 throw std::runtime_error{
                     "Failed to get write position for cfilter"};
             }
@@ -367,7 +426,7 @@ auto BlockFilter::StoreFilters(
 
             const auto stored = lmdb_.Store(hTable, block, reader(header), tx);
 
-            if (!stored.first) {
+            if (false == stored.first) {
                 throw std::runtime_error{"Failed to get write cfheader"};
             }
         }

@@ -68,7 +68,7 @@ auto NymList::construct_row(
 
 auto NymList::load() noexcept -> void
 {
-    for (auto& nym : Widget::api_.Wallet().LocalNyms()) {
+    for (const auto& nym : Widget::api_.Wallet().LocalNyms()) {
         load(std::move(const_cast<OTNymID&&>(nym)));
     }
 }

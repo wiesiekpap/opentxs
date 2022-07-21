@@ -271,7 +271,7 @@ auto Cache::ReceiveBlock(
         return;
     }
 
-    auto& block = *in;
+    const auto& block = *in;
 
     if (database::BlockStorage::None != db_.BlockPolicy()) {
         const auto saved = db_.BlockStore(block);

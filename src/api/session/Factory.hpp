@@ -562,7 +562,7 @@ public:
     auto Market() const -> std::unique_ptr<OTMarket> final;
     auto Market(const char* szFilename) const
         -> std::unique_ptr<OTMarket> final;
-    virtual auto Market(
+    auto Market(
         const identifier::Notary& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_TYPE_ID,

@@ -387,7 +387,8 @@ TEST_F(Test_BitcoinBlock, bip158)
         {
             namespace bb = ot::blockchain::bitcoin;
             auto expectedSize = std::size_t{1};
-            auto it = static_cast<bb::ByteIterator>(encodedFilter->data());
+            const auto* it =
+                static_cast<bb::ByteIterator>(encodedFilter->data());
 
             ASSERT_TRUE(opentxs::network::blockchain::bitcoin::DecodeSize(
                 it, expectedSize, encodedFilter->size(), encodedElements));

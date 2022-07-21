@@ -67,13 +67,16 @@ public:
 #pragma GCC diagnostic ignored "-Wnull-dereference"
     auto operator=(const Pimpl& rhs) noexcept -> Pimpl&
     {
-        pimpl_.reset(
+        if (this != std::addressof(rhs)) {
+            pimpl_.reset(
 #ifndef _WIN32
-            rhs.pimpl_->clone()
+                rhs.pimpl_->clone()
 #else
-            dynamic_cast<C*>(rhs.pimpl_->clone())
+                dynamic_cast<C*>(rhs.pimpl_->clone())
 #endif
-        );
+            );
+        }
+
         assert(pimpl_);
 
         return *this;

@@ -26,7 +26,7 @@ auto CheckProto_1(const StorageThread& input, const bool silent) -> bool
 
     if (MIN_PLAUSIBLE_IDENTIFIER > input.id().size()) { FAIL_1("invalid id") }
 
-    for (auto& nym : input.participant()) {
+    for (const auto& nym : input.participant()) {
         if (MIN_PLAUSIBLE_IDENTIFIER > nym.size()) {
             FAIL_1("invalid participant")
         }
@@ -34,7 +34,7 @@ auto CheckProto_1(const StorageThread& input, const bool silent) -> bool
 
     if (0 == input.participant_size()) { FAIL_1("no patricipants") }
 
-    for (auto& item : input.item()) {
+    for (const auto& item : input.item()) {
         try {
             const bool valid = Check(
                 item,

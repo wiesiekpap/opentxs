@@ -278,7 +278,7 @@ auto Message::Imp::findDivider() const noexcept -> std::size_t
 {
     std::size_t divider = 0;
 
-    for (auto& frame : frames_) {
+    for (const auto& frame : frames_) {
         if (0 == frame.size()) { break; }
         ++divider;
     }

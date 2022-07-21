@@ -49,7 +49,7 @@ auto BitcoinP2PSendcmpct(
 
         return nullptr;
     }
-    auto* it{static_cast<const std::byte*>(payload)};
+    const auto* it{static_cast<const std::byte*>(payload)};
     // --------------------------------------------------------
     auto raw_item = ReturnType::Raw{};
     std::memcpy(static_cast<void*>(&raw_item), it, sizeof(raw_item));

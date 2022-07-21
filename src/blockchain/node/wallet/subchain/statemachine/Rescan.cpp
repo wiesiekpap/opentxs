@@ -249,7 +249,7 @@ auto Rescan::Imp::process_dirty(const Set<block::Position>& dirty) noexcept
                 .Flush();
         }
 
-        for (auto& position : dirty) {
+        for (const auto& position : dirty) {
             log_(OT_PRETTY_CLASS())(name_)(" block ")(opentxs::print(position))(
                 " must be processed due to cfilter matches")
                 .Flush();

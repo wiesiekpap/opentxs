@@ -45,8 +45,8 @@ public:
     Rescan() = delete;
     Rescan(const Rescan&) = delete;
     Rescan(Rescan&&) = delete;
-    Rescan& operator=(const Rescan&) = delete;
-    Rescan& operator=(Rescan&&) = delete;
+    auto operator=(const Rescan&) -> Rescan& = delete;
+    auto operator=(Rescan&&) -> Rescan& = delete;
 
     ~Rescan() final;
 

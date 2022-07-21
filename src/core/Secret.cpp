@@ -41,16 +41,6 @@ auto Secret(const ReadView bytes, const bool mode) noexcept
 }
 }  // namespace opentxs::factory
 
-namespace std
-{
-auto less<opentxs::Pimpl<opentxs::Secret>>::operator()(
-    const opentxs::OTSecret& lhs,
-    const opentxs::OTSecret& rhs) const -> bool
-{
-    return lhs.get() < rhs.get();
-}
-}  // namespace std
-
 namespace opentxs
 {
 auto operator==(const OTSecret& lhs, const Secret& rhs) noexcept -> bool
@@ -209,7 +199,7 @@ auto Secret::Concatenate(const void* in, const std::size_t bytes) noexcept
     if ((y < a) || (x > b)) {
         const auto targetSize = std::size_t{size() + bytes};
         Resize(targetSize);
-        auto it = data();
+        auto* it = data();
         std::advance(it, size());
         std::memcpy(it, in, bytes);
     } else {

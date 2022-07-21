@@ -70,7 +70,7 @@ auto BitcoinTransactionInput(
     namespace bb = b::bitcoin::block;
     namespace bi = bb::internal;
 
-    auto& pPrevOut = spends.second;
+    const auto& pPrevOut = spends.second;
 
     if (false == bool(pPrevOut)) {
         LogError()("opentxs::factory::")(__func__)(": Invalid previous output")
@@ -211,7 +211,7 @@ auto BitcoinTransactionInput(
     auto witness = UnallocatedVector<Space>{};
 
     for (const auto& bytes : in.witness().item()) {
-        const auto it = reinterpret_cast<const std::byte*>(bytes.data());
+        const auto* const it = reinterpret_cast<const std::byte*>(bytes.data());
         witness.emplace_back(it, it + bytes.size());
     }
 
@@ -595,7 +595,7 @@ auto Input::decode_coinbase() const noexcept -> UnallocatedCString
     };
 
     const auto first = std::to_integer<std::uint8_t>(coinbase_.front());
-    auto* data = reinterpret_cast<const char*>(coinbase_.data());
+    const auto* data = reinterpret_cast<const char*>(coinbase_.data());
 
     switch (first) {
         case 1u: {
@@ -703,7 +703,7 @@ auto Input::ExtractElements(const cfilter::Type style) const noexcept
         case cfilter::Type::Basic_BCHVariant: {
             LogTrace()(OT_PRETTY_CLASS())("processing consumed outpoint")
                 .Flush();
-            auto it = reinterpret_cast<const std::byte*>(&previous_);
+            const auto* it = reinterpret_cast<const std::byte*>(&previous_);
             output.emplace_back(it, it + sizeof(previous_));
         } break;
         case cfilter::Type::Basic_BIP158:
@@ -902,7 +902,7 @@ auto Input::serialize(const AllocateOutput destination, const bool normalized)
         return std::nullopt;
     }
 
-    auto it = static_cast<std::byte*>(output.data());
+    auto* it = static_cast<std::byte*>(output.data());
     std::memcpy(static_cast<void*>(it), &previous_, sizeof(previous_));
     std::advance(it, sizeof(previous_));
     const auto isCoinbase{0 < coinbase_.size()};

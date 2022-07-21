@@ -938,7 +938,7 @@ TEST(Test_BitcoinScript, opcodes_push_inline)
             {
                 ASSERT_EQ(1, script1->size());
 
-                auto& [opcode, invalid, bytes, data] = *script1->cbegin();
+                const auto& [opcode, invalid, bytes, data] = *script1->cbegin();
 
                 EXPECT_EQ(n, static_cast<std::uint8_t>(opcode));
                 EXPECT_FALSE(bytes.has_value());
@@ -949,7 +949,7 @@ TEST(Test_BitcoinScript, opcodes_push_inline)
             {
                 ASSERT_EQ(1, script2->size());
 
-                auto& [opcode, invalid, bytes, data] = *script2->cbegin();
+                const auto& [opcode, invalid, bytes, data] = *script2->cbegin();
 
                 EXPECT_EQ(n, static_cast<std::uint8_t>(opcode));
                 EXPECT_FALSE(bytes.has_value());
@@ -1026,7 +1026,7 @@ TEST(Test_BitcoinScript, opcodes_push_1)
         {
             ASSERT_EQ(1, script1->size());
 
-            auto& [opcode, invalid, bytes, data] = *script1->cbegin();
+            const auto& [opcode, invalid, bytes, data] = *script1->cbegin();
 
             EXPECT_EQ(opcode, b::OP::PUSHDATA1);
             ASSERT_TRUE(bytes.has_value());
@@ -1039,7 +1039,7 @@ TEST(Test_BitcoinScript, opcodes_push_1)
         {
             ASSERT_EQ(1, script2->size());
 
-            auto& [opcode, invalid, bytes, data] = *script2->cbegin();
+            const auto& [opcode, invalid, bytes, data] = *script2->cbegin();
 
             EXPECT_EQ(opcode, b::OP::PUSHDATA1);
             ASSERT_TRUE(bytes.has_value());
@@ -1148,7 +1148,7 @@ TEST(Test_BitcoinScript, opcodes_push_2)
         {
             ASSERT_EQ(1, script1->size());
 
-            auto& [opcode, invalid, bytes, data] = *script1->cbegin();
+            const auto& [opcode, invalid, bytes, data] = *script1->cbegin();
 
             EXPECT_EQ(opcode, b::OP::PUSHDATA2);
             ASSERT_TRUE(bytes.has_value());
@@ -1162,7 +1162,7 @@ TEST(Test_BitcoinScript, opcodes_push_2)
         {
             ASSERT_EQ(1, script2->size());
 
-            auto& [opcode, invalid, bytes, data] = *script2->cbegin();
+            const auto& [opcode, invalid, bytes, data] = *script2->cbegin();
 
             EXPECT_EQ(opcode, b::OP::PUSHDATA2);
             ASSERT_TRUE(bytes.has_value());
@@ -1302,7 +1302,7 @@ TEST(Test_BitcoinScript, opcodes_push_4)
         {
             ASSERT_EQ(1, script1->size());
 
-            auto& [opcode, invalid, bytes, data] = *script1->cbegin();
+            const auto& [opcode, invalid, bytes, data] = *script1->cbegin();
 
             EXPECT_EQ(opcode, b::OP::PUSHDATA4);
             ASSERT_TRUE(bytes.has_value());
@@ -1318,7 +1318,7 @@ TEST(Test_BitcoinScript, opcodes_push_4)
         {
             ASSERT_EQ(1, script2->size());
 
-            auto& [opcode, invalid, bytes, data] = *script2->cbegin();
+            const auto& [opcode, invalid, bytes, data] = *script2->cbegin();
 
             EXPECT_EQ(opcode, b::OP::PUSHDATA4);
             ASSERT_TRUE(bytes.has_value());

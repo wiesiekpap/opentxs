@@ -280,6 +280,7 @@ public:
         , data_(std::move(const_cast<Vector&>(rhs.data_)))
         , extra_(std::move(const_cast<ExtraData&>(rhs.extra_)))
         , downloaded_(rhs.downloaded_.load())
+        // NOLINTNEXTLINE(cert-oop11-cpp)
         , cb_(rhs.cb_)
         , index_(std::move(const_cast<Index&>(rhs.index_)))
         , started_(rhs.started_)

@@ -24,7 +24,7 @@ namespace opentxs::proto
 {
 auto CheckProto_1(const StorageContacts& input, const bool silent) -> bool
 {
-    for (auto& merge : input.merge()) {
+    for (const auto& merge : input.merge()) {
         try {
             const bool valid = Check(
                 merge,
@@ -40,7 +40,7 @@ auto CheckProto_1(const StorageContacts& input, const bool silent) -> bool
         }
     }
 
-    for (auto& hash : input.contact()) {
+    for (const auto& hash : input.contact()) {
         try {
             const bool valid = Check(
                 hash,
@@ -60,7 +60,7 @@ auto CheckProto_1(const StorageContacts& input, const bool silent) -> bool
         }
     }
 
-    for (auto& index : input.address()) {
+    for (const auto& index : input.address()) {
         try {
             const bool valid = Check(
                 index,

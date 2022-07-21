@@ -55,8 +55,8 @@ const ot::UnallocatedMap<ot::UnallocatedCString, std::uint64_t> vector_5_{
 
 using CompactSize = opentxs::network::blockchain::bitcoin::CompactSize;
 
-CompactSize::Bytes decode_hex(const ot::UnallocatedCString& hex);
-CompactSize::Bytes decode_hex(const ot::UnallocatedCString& hex)
+auto decode_hex(const ot::UnallocatedCString& hex) -> CompactSize::Bytes;
+auto decode_hex(const ot::UnallocatedCString& hex) -> CompactSize::Bytes
 {
     CompactSize::Bytes output{};
     auto bytes = [](auto& hex) {

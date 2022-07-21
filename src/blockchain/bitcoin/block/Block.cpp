@@ -210,7 +210,7 @@ auto parse_normal_block(
         (blockchain::Type::PKT != chain) &&
         (blockchain::Type::PKT_testnet != chain));
 
-    auto it = ByteIterator{};
+    const auto* it = ByteIterator{};
     auto expectedSize = std::size_t{};
     auto pHeader = parse_header(api, chain, in, it, expectedSize);
 
@@ -314,7 +314,7 @@ auto Block::calculate_merkle_hash(
         throw std::runtime_error("Invalid rhs hash size");
     }
 
-    auto it = preimage.data();
+    auto* it = preimage.data();
     std::memcpy(it, lhs.data(), chunk);
     std::advance(it, chunk);
     std::memcpy(it, rhs.data(), chunk);
@@ -502,7 +502,7 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
         " transactions into ")(size)(" bytes.")
         .Flush();
     auto remaining = std::size_t{size};
-    auto it = static_cast<std::byte*>(out.data());
+    auto* it = static_cast<std::byte*>(out.data());
 
     if (false == header_.Serialize(preallocated(remaining, it))) {
         LogError()(OT_PRETTY_CLASS())("Failed to serialize header").Flush();

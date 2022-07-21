@@ -59,7 +59,7 @@ auto CheckProto_1(const Nym& input, const bool silent) -> bool
 
     bool haveHD = false;
 
-    for (auto& it : input.activecredentials()) {
+    for (const auto& it : input.activecredentials()) {
         try {
             const KeyMode mode =
                 (NYM_PRIVATE == actualMode) ? KEYMODE_PRIVATE : KEYMODE_PUBLIC;
@@ -80,7 +80,7 @@ auto CheckProto_1(const Nym& input, const bool silent) -> bool
         }
     }
 
-    for (auto& it : input.revokedcredentials()) {
+    for (const auto& it : input.revokedcredentials()) {
         try {
             const KeyMode mode =
                 (NYM_PRIVATE == actualMode) ? KEYMODE_PRIVATE : KEYMODE_PUBLIC;

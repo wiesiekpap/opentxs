@@ -43,30 +43,6 @@
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/BlockchainAddress.pb.h"
 
-namespace std
-{
-using COIN = std::tuple<opentxs::UnallocatedCString, std::size_t, std::int64_t>;
-
-template <>
-struct less<COIN> {
-    auto operator()(const COIN& lhs, const COIN& rhs) const -> bool
-    {
-        const auto& [lID, lIndex, lAmount] = lhs;
-        const auto& [rID, rIndex, rAmount] = rhs;
-
-        if (lID < rID) { return true; }
-
-        if (rID < lID) { return false; }
-
-        if (lIndex < rIndex) { return true; }
-
-        if (rIndex < lIndex) { return false; }
-
-        return (lAmount < rAmount);
-    }
-};
-}  // namespace std
-
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {

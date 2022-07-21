@@ -803,7 +803,7 @@ auto Authority::load_child(
     auto output = UnallocatedMap<OTIdentifier, std::unique_ptr<Type>>{};
 
     if (proto::AUTHORITYMODE_INDEX == serialized.mode()) {
-        for (auto& it : serialized.activechildids()) {
+        for (const auto& it : serialized.activechildids()) {
             auto child = std::shared_ptr<proto::Credential>{};
             const auto loaded =
                 api.Wallet().Internal().LoadCredential(it, child);

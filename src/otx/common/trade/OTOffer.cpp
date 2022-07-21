@@ -150,13 +150,15 @@ void OTOffer::GetIdentifier(Identifier& theIdentifier) const
     tmp.resize(
         fmt.length() + strAsset->GetLength() + strCurrency->GetLength() +
         lScale.length() + 1);
-    std::snprintf(
+    const auto rc = std::snprintf(
         &tmp[0],
         tmp.capacity(),
         fmt.c_str(),
         strAsset->Get(),
         strCurrency->Get(),
         lScale.c_str());
+
+    OT_ASSERT(0 >= rc);
 
     theIdentifier.CalculateDigest(&tmp[0]);
 }

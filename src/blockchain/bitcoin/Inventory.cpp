@@ -74,7 +74,7 @@ auto Inventory::decode_hash(
 {
     if (EncodedSize != size) { throw std::runtime_error("Invalid payload"); }
 
-    auto* it{static_cast<const std::byte*>(payload)};
+    const auto* it{static_cast<const std::byte*>(payload)};
     it += sizeof(BitcoinFormat::type_);
 
     return Data::Factory(it, sizeof(BitcoinFormat::hash_));

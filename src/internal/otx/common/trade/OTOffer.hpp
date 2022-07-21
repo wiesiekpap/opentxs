@@ -16,8 +16,11 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Time.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
 {
+// inline namespace v1
+// {
 namespace api
 {
 namespace session
@@ -38,6 +41,9 @@ class Notary;
 
 class OTTrade;
 class PasswordPrompt;
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 // Each instance of OTOffer represents a Bid or Ask. (A Market has a list of bid
 // offers and a list of ask offers.)
@@ -63,6 +69,8 @@ class PasswordPrompt;
  for sale”, effectively becomes a FILL OR KILL order. MUST be 1 or greater.
  CANNOT be zero.)
 */
+namespace opentxs
+{
 class OTOffer : public Instrument
 {
 public:

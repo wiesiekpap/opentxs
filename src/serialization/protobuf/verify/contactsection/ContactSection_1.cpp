@@ -33,7 +33,7 @@ auto CheckProto_1(
         FAIL_2("invalid name", input.name())
     }
 
-    for (auto& it : input.item()) {
+    for (const auto& it : input.item()) {
         try {
             bool validItem = Check(
                 it,
@@ -104,7 +104,7 @@ auto CheckProto_6(
 
     if (0 == input.item_size()) { FAIL_1("empty section") }
 
-    for (auto& it : input.item()) {
+    for (const auto& it : input.item()) {
         try {
             bool validItem = Check(
                 it,

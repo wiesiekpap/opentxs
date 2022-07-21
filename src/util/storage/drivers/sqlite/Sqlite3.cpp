@@ -117,7 +117,7 @@ auto Sqlite3::EmptyBucket(const bool bucket) const -> bool
 
 auto Sqlite3::expand_sql(sqlite3_stmt* statement) const -> UnallocatedCString
 {
-    const auto sql = sqlite3_expanded_sql(statement);
+    auto* const sql = sqlite3_expanded_sql(statement);
     const UnallocatedCString output{sql};
     sqlite3_free(sql);
 
@@ -210,7 +210,8 @@ auto Sqlite3::Select(
                 success = (0 < size);
 
                 if (success) {
-                    const auto pResult = sqlite3_column_blob(statement, 0);
+                    const auto* const pResult =
+                        sqlite3_column_blob(statement, 0);
                     value.assign(static_cast<const char*>(pResult), size);
                 }
             } break;

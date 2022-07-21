@@ -26,7 +26,7 @@ auto CheckProto_1(const BasketParams& input, const bool silent) -> bool
 
     BasketItemMap itemMap;
 
-    for (auto& item : input.item()) {
+    for (const auto& item : input.item()) {
         try {
             bool validItem = Check(
                 item,

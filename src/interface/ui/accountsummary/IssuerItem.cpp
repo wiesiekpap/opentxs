@@ -181,6 +181,6 @@ void IssuerItem::startup() noexcept
 
 IssuerItem::~IssuerItem()
 {
-    for (auto& it : listeners_) { delete it.second; }
+    for (const auto& it : listeners_) { delete it.second; }
 }
 }  // namespace opentxs::ui::implementation

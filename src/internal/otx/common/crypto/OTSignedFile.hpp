@@ -12,8 +12,11 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/core/String.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
 {
+// inline namespace v1
+// {
 namespace api
 {
 namespace session
@@ -28,7 +31,12 @@ class Session;
 }  // namespace api
 
 class PasswordPrompt;
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
+namespace opentxs
+{
 class OTSignedFile : public Contract
 {
 public:

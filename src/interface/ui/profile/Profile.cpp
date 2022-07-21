@@ -201,7 +201,7 @@ auto Profile::Delete(
     const UnallocatedCString& claimID) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
-    auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));
+    const auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));
 
     if (false == section.Valid()) { return false; }
 
@@ -271,7 +271,7 @@ void Profile::process_nym(const identity::Nym& nym) noexcept
     auto active = UnallocatedSet<ProfileRowID>{};
 
     for (const auto& section : nym.Claims()) {
-        auto& type = section.first;
+        const auto& type = section.first;
 
         if (check_type(type)) {
             CustomData custom{
@@ -310,7 +310,7 @@ auto Profile::SetActive(
     const bool active) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
-    auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));
+    const auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));
 
     if (false == section.Valid()) { return false; }
 
@@ -330,7 +330,7 @@ auto Profile::SetPrimary(
     const bool primary) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
-    auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));
+    const auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));
 
     if (false == section.Valid()) { return false; }
 
@@ -344,7 +344,7 @@ auto Profile::SetValue(
     const UnallocatedCString& value) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
-    auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));
+    const auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));
 
     if (false == section.Valid()) { return false; }
 

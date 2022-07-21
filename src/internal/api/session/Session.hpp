@@ -46,15 +46,12 @@ class PasswordPrompt;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace
-{
 /** Callbacks in this form allow OpenSSL to query opentxs to get key encryption
  *  and decryption passwords*/
 extern "C" {
 using INTERNAL_PASSWORD_CALLBACK =
     std::int32_t(char*, std::int32_t, std::int32_t, void*);
 }
-}  // namespace
 
 namespace opentxs::api::session::internal
 {

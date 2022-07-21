@@ -253,8 +253,8 @@ TEST_F(Test_Basic, sign)
     ASSERT_TRUE(alice_);
     ASSERT_TRUE(bob_);
 
-    auto& alice = *alice_;
-    auto& bob = *bob_;
+    const auto& alice = *alice_;
+    const auto& bob = *bob_;
 
     EXPECT_TRUE(requestPurse.Unlock(bob, reason_));
     ASSERT_TRUE(requestPurse.IsUnlocked());
@@ -310,7 +310,7 @@ TEST_F(Test_Basic, process)
     ASSERT_TRUE(purse);
 
     auto& mint = *mint_;
-    auto& alice = *alice_;
+    const auto& alice = *alice_;
 
     EXPECT_TRUE(purse.Unlock(alice, reason_));
     ASSERT_TRUE(purse.IsUnlocked());
@@ -327,7 +327,7 @@ TEST_F(Test_Basic, verify)
     ASSERT_TRUE(bob_);
 
     auto& issuePurse = *issue_purse_;
-    auto& bob = *bob_;
+    const auto& bob = *bob_;
 
     EXPECT_TRUE(issuePurse.Unlock(bob, reason_));
     ASSERT_TRUE(issuePurse.IsUnlocked());
@@ -356,7 +356,7 @@ TEST_F(Test_Basic, verify)
 TEST_F(Test_Basic, wallet)
 {
     {
-        auto& purse =
+        const auto& purse =
             api_.Wallet().Purse(alice_nym_id_, server_id_, unit_id_, true);
 
         EXPECT_FALSE(purse);
@@ -372,7 +372,7 @@ TEST_F(Test_Basic, wallet)
     }
 
     {
-        auto& purse =
+        const auto& purse =
             api_.Wallet().Purse(alice_nym_id_, server_id_, unit_id_, false);
 
         EXPECT_TRUE(purse);
@@ -392,7 +392,7 @@ TEST_F(Test_Basic, PushPop)
     ASSERT_TRUE(issue_purse_);
 
     auto& issuePurse = *issue_purse_;
-    auto& alice = *alice_;
+    const auto& alice = *alice_;
     const auto unlocked = issuePurse.Unlock(alice, reason_);
 
     ASSERT_TRUE(unlocked);

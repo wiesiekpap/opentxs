@@ -53,7 +53,7 @@ auto Pattern::Data() const noexcept -> ReadView
 {
     static constexpr auto offset = fixed_;
     const auto size = data_.size() - offset;
-    const auto start = std::next(data_.data(), offset);
+    const auto* const start = std::next(data_.data(), offset);
 
     return {reinterpret_cast<const char*>(start), size};
 }
@@ -63,7 +63,7 @@ auto Pattern::Index() const noexcept -> Bip32Index
     auto out = Bip32Index{};
     static constexpr auto offset = std::size_t{0};
     static constexpr auto size = sizeof(out);
-    const auto start = std::next(data_.data(), offset);
+    const auto* const start = std::next(data_.data(), offset);
     std::memcpy(&out, start, size);
 
     return out;

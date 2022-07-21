@@ -34,7 +34,7 @@ auto CheckProto_1(
 
     map[input.nym()] += 1;
 
-    for (auto& it : input.verification()) {
+    for (const auto& it : input.verification()) {
         try {
             const bool verification = Check(
                 it,

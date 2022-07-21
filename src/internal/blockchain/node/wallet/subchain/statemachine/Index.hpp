@@ -56,8 +56,8 @@ public:
     Index() = delete;
     Index(const Index&) = delete;
     Index(Index&&) noexcept;
-    Index& operator=(const Index&) = delete;
-    Index& operator=(Index&&) = delete;
+    auto operator=(const Index&) -> Index& = delete;
+    auto operator=(Index&&) -> Index& = delete;
 
     ~Index() final;
 

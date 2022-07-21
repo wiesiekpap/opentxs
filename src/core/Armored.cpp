@@ -577,8 +577,8 @@ auto Armored::WriteArmoredString(
     bool bEscaped) const -> bool
 {
     static std::string escape = "- ";
-    static std::string _OT_BEGIN_ARMORED{OT_BEGIN_ARMORED};
-    static std::string _OT_END_ARMORED{OT_END_ARMORED};
+    static std::string OT_BEGIN_ARMORED_{OT_BEGIN_ARMORED};
+    static std::string OT_END_ARMORED_{OT_END_ARMORED};
 
     // "%s-----BEGIN OT ARMORED %s-----\n"
     // "%s-----END OT ARMORED %s-----\n"
@@ -588,15 +588,15 @@ auto Armored::WriteArmoredString(
         "http://opentransactions.org\n\n%s\n%s%s %s-----\n\n";
     // 20 for version
     tmp.resize(
-        fmt.length() + 1 + escape.length() + _OT_BEGIN_ARMORED.length() +
+        fmt.length() + 1 + escape.length() + OT_BEGIN_ARMORED_.length() +
         str_type.length() + 20 + GetLength() + escape.length() +
-        _OT_END_ARMORED.length() + str_type.length());
+        OT_END_ARMORED_.length() + str_type.length());
     auto size = std::snprintf(
         &tmp[0],
         tmp.capacity(),
         fmt.c_str(),
         bEscaped ? escape.c_str() : "",
-        _OT_BEGIN_ARMORED.c_str(),
+        OT_BEGIN_ARMORED_.c_str(),
         str_type.c_str(),  // "%s%s %s-----\n"
         VersionString(),   // "Version: Open Transactions %s\n"
         /* No variable */  // "Comment:
@@ -604,7 +604,7 @@ auto Armored::WriteArmoredString(
         Get(),  //  "%s"     <==== CONTENTS OF THIS OBJECT BEING
                 // WRITTEN...
         bEscaped ? escape.c_str() : "",
-        _OT_END_ARMORED.c_str(),
+        OT_END_ARMORED_.c_str(),
         str_type.c_str());  // "%s%s %s-----\n"
 
     strOutput.Concatenate(String::Factory(&tmp[0], size));

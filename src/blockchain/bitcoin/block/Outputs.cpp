@@ -211,7 +211,7 @@ auto Outputs::MergeMetadata(
 
     for (auto i = std::size_t{0}; i < count; ++i) {
         auto& l = *outputs_.at(i);
-        auto& r = rhs.at(i).Internal();
+        const auto& r = rhs.at(i).Internal();
 
         if (false == l.MergeMetadata(r, log)) {
             LogError()(OT_PRETTY_CLASS())("Failed to merge output ")(i).Flush();
@@ -256,7 +256,7 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
 
     auto remaining{output.size()};
     const auto cs = blockchain::bitcoin::CompactSize(this->size()).Encode();
-    auto it = static_cast<std::byte*>(output.data());
+    auto* it = static_cast<std::byte*>(output.data());
     std::memcpy(static_cast<void*>(it), cs.data(), cs.size());
     std::advance(it, cs.size());
     remaining -= cs.size();
@@ -296,6 +296,6 @@ auto Outputs::Serialize(
 auto Outputs::SetKeyData(const blockchain::block::KeyData& data) noexcept
     -> void
 {
-    for (auto& output : outputs_) { output->SetKeyData(data); }
+    for (const auto& output : outputs_) { output->SetKeyData(data); }
 }
 }  // namespace opentxs::blockchain::bitcoin::block::implementation

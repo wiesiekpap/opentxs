@@ -149,11 +149,11 @@ auto Thread::poll(Items& data) noexcept -> void
     auto c = data.data_.begin();
 
     for (auto s = v.begin(), end = v.end(); s != end; ++s, ++c) {
-        auto& item = *s;
+        const auto& item = *s;
 
         if (ZMQ_POLLIN != item.revents) { continue; }
 
-        auto& socket = item.socket;
+        const auto& socket = item.socket;
         auto message = Message{};
 
         if (receive_message(socket, message)) {

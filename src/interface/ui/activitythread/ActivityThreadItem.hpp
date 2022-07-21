@@ -6,6 +6,7 @@
 #pragma once
 
 #include <chrono>
+#include <iosfwd>
 
 #include "1_Internal.hpp"
 #include "interface/ui/base/Row.hpp"

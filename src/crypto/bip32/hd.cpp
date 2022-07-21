@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"        // IWYU pragma: associated
 #include "crypto/bip32/Imp.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <iterator>
@@ -249,7 +250,7 @@ auto Bip32::Imp::root_node(
 
     OT_ASSERT(64 == node.size());
 
-    auto start{node.data()};
+    auto* start{node.data()};
     std::memcpy(keyOut, start, 32);
     std::advance(start, 32);
     std::memcpy(codeOut, start, 32);

@@ -21,7 +21,7 @@ namespace opentxs::proto
 
 auto CheckProto_1(const StorageCredentials& input, const bool silent) -> bool
 {
-    for (auto& hash : input.cred()) {
+    for (const auto& hash : input.cred()) {
         try {
             const bool valid = Check(
                 hash,

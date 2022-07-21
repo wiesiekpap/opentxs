@@ -149,7 +149,7 @@ auto Contact::asClaim(
 {
     UnallocatedSet<std::uint32_t> attributes;
 
-    for (auto& attrib : item.attribute()) { attributes.insert(attrib); }
+    for (const auto& attrib : item.attribute()) { attributes.insert(attrib); }
 
     return Claim{
         ClaimID(api, nymid.Get(), section, item),

@@ -28,6 +28,7 @@
 #include "opentxs/util/Time.hpp"
 #include "util/Gatekeeper.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace boost
 {
 namespace system
@@ -35,6 +36,7 @@ namespace system
 class error_code;
 }  // namespace system
 }  // namespace boost
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs
 {

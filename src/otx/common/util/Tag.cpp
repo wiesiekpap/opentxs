@@ -43,7 +43,7 @@ void Tag::outputXML(UnallocatedCString& str_output) const
     str_output += ("<" + name_);
 
     if (!attributes_.empty()) {
-        for (auto& kv : attributes_) {
+        for (const auto& kv : attributes_) {
             str_output += ("\n " + kv.first + "=\"" + kv.second + "\"");
         }
     }
@@ -56,7 +56,7 @@ void Tag::outputXML(UnallocatedCString& str_output) const
         if (!text_.empty()) {
             str_output += text_;
         } else if (!tags_.empty()) {
-            for (auto& kv : tags_) { kv->output(str_output); }
+            for (const auto& kv : tags_) { kv->output(str_output); }
         }
 
         str_output += ("\n</" + name_ + ">\n");

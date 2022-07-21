@@ -755,7 +755,7 @@ auto Item::GetItem(std::int32_t nIndex) const -> std::shared_ptr<const Item>
 {
     std::int32_t nTempIndex = (-1);
 
-    for (auto& it : m_listItems) {
+    for (const auto& it : m_listItems) {
         const auto pItem = it;
         OT_ASSERT(false != bool(pItem));
 

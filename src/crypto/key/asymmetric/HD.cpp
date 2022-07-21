@@ -342,7 +342,7 @@ auto HD::Path() const noexcept -> const UnallocatedCString
             root->SetString(path_->root());
             path->Concatenate(String::Factory(root));
 
-            for (auto& it : path_->child()) {
+            for (const auto& it : path_->child()) {
                 static auto slash = String::Factory(UnallocatedCString{" / "});
                 path->Concatenate(slash);
                 if (it < HDIndex{Bip32Child::HARDENED}) {

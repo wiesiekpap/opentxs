@@ -40,8 +40,8 @@ public:
     }
     Test_PairSocket(const Test_PairSocket&) = delete;
     Test_PairSocket(Test_PairSocket&&) = delete;
-    Test_PairSocket& operator=(const Test_PairSocket&) = delete;
-    Test_PairSocket& operator=(Test_PairSocket&&) = delete;
+    auto operator=(const Test_PairSocket&) -> Test_PairSocket& = delete;
+    auto operator=(Test_PairSocket&&) -> Test_PairSocket& = delete;
 };
 
 void Test_PairSocket::pairSocketThread(

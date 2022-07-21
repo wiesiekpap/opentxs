@@ -58,7 +58,7 @@ auto BitcoinP2PHeaders(
         return nullptr;
     }
 
-    auto* it{static_cast<const std::byte*>(payload)};
+    const auto* it{static_cast<const std::byte*>(payload)};
     auto count = std::size_t{0};
     const bool decodedSize =
         network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);

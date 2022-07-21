@@ -15,6 +15,7 @@
 #include "internal/blockchain/p2p/bitcoin/Factory.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace boost
 {
 namespace asio
@@ -25,6 +26,7 @@ class tcp;
 }  // namespace ip
 }  // namespace asio
 }  // namespace boost
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace b = ot::blockchain;
 namespace bb = b::bitcoin;

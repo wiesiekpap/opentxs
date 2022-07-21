@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <iosfwd>
 #include <memory>
 #include <thread>
 

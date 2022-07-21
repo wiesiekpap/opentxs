@@ -727,7 +727,7 @@ auto Transaction::serialize(
     const auto version = be::little_int32_buf_t{version_};
     const auto lockTime = be::little_uint32_buf_t{lock_time_};
     auto remaining{output.size()};
-    auto it = static_cast<std::byte*>(output.data());
+    auto* it = static_cast<std::byte*>(output.data());
 
     if (remaining < sizeof(version)) {
         LogError()(OT_PRETTY_CLASS())(

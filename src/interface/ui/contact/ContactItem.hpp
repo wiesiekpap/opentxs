@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <iosfwd>
 #include <memory>
 
 #include "1_Internal.hpp"

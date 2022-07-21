@@ -255,8 +255,8 @@ auto Parameters::SetDefault(const bool in) noexcept -> void
 
 auto Parameters::SetDHParams(const ReadView bytes) noexcept -> void
 {
-    auto start = reinterpret_cast<const std::byte*>(bytes.data());
-    auto end = start + bytes.size();
+    const auto* start = reinterpret_cast<const std::byte*>(bytes.data());
+    const auto* end = start + bytes.size();
 
     imp_->params_.assign(start, end);
 }

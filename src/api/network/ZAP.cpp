@@ -14,14 +14,6 @@
 
 namespace opentxs
 {
-namespace network
-{
-namespace zeromq
-{
-class Context;
-}  // namespace zeromq
-}  // namespace network
-
 auto Factory::ZAP(const network::zeromq::Context& context) -> api::network::ZAP*
 {
     return new api::network::imp::ZAP(context);

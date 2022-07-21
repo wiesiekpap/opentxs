@@ -241,7 +241,7 @@ auto Threads::List(const bool unreadOnly) const -> ObjectList
     for (const auto& it : item_map_) {
         const auto& threadID = it.first;
         const auto& alias = std::get<1>(it.second);
-        auto thread = Threads::thread(threadID, lock);
+        auto* thread = Threads::thread(threadID, lock);
 
         OT_ASSERT(nullptr != thread);
 

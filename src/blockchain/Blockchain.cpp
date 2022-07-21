@@ -305,7 +305,7 @@ auto DecodeSerializedCfilter(const ReadView bytes) noexcept(false)
     -> std::pair<std::uint32_t, ReadView>
 {
     auto output = std::pair<std::uint32_t, ReadView>{};
-    auto it = reinterpret_cast<const std::byte*>(bytes.data());
+    const auto* it = reinterpret_cast<const std::byte*>(bytes.data());
     auto expectedSize = std::size_t{1u};
 
     if (expectedSize > bytes.size()) {
@@ -372,7 +372,7 @@ auto Deserialize(const api::Session& api, const ReadView in) noexcept
     if (in.size() < sizeof(output.first)) { return output; }
 
     const auto size = in.size() - sizeof(output.first);
-    auto it = reinterpret_cast<const std::byte*>(in.data());
+    const auto* it = reinterpret_cast<const std::byte*>(in.data());
     std::memcpy(&output.first, it, sizeof(output.first));
 
     if (0u < size) {
@@ -461,7 +461,7 @@ auto Serialize(const Type chain, const cfilter::Type type) noexcept(false)
 auto Serialize(const block::Position& in) noexcept -> Space
 {
     auto output = space(sizeof(in.first) + in.second.size());
-    auto it = output.data();
+    auto* it = output.data();
     std::memcpy(it, &in.first, sizeof(in.first));
     std::advance(it, sizeof(in.first));
     std::memcpy(it, in.second.data(), in.second.size());

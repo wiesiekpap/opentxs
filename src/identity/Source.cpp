@@ -241,7 +241,7 @@ auto Source::extract_key(
 
     const auto& publicCred = credential.publiccredential();
 
-    for (auto& key : publicCred.key()) {
+    for (const auto& key : publicCred.key()) {
         if (role == key.role()) {
             output = std::make_unique<proto::AsymmetricKey>(key);
 

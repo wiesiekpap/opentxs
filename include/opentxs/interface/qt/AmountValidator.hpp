@@ -48,8 +48,9 @@ public slots:
     void setScale(int);
 
 public:
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    // NOLINTBEGIN(modernize-use-trailing-return-type)
     Q_INVOKABLE QString revise(QString& input, int previousValue) const;
+    // NOLINTEND(modernize-use-trailing-return-type)
 
 public:
     auto getMaxDecimals() const -> int;

@@ -142,7 +142,7 @@ struct PacketCrypt::Imp {
             const auto hashes = [&] {
                 auto out =
                     std::array<std::uint8_t, PacketCrypt_NUM_ANNS * 32>{};
-                auto i{out.data()};
+                auto* i{out.data()};
 
                 for (const auto& ann : headerAndProof.announcements) {
                     const auto height =

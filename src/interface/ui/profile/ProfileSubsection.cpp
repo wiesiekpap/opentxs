@@ -80,7 +80,7 @@ auto ProfileSubsection::Delete(const UnallocatedCString& claimID) const noexcept
     -> bool
 {
     rLock lock{recursive_lock_};
-    auto& claim = lookup(lock, Identifier::Factory(claimID));
+    const auto& claim = lookup(lock, Identifier::Factory(claimID));
 
     if (false == claim.Valid()) { return false; }
 
@@ -128,7 +128,7 @@ auto ProfileSubsection::SetActive(
     const bool active) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
-    auto& claim = lookup(lock, Identifier::Factory(claimID));
+    const auto& claim = lookup(lock, Identifier::Factory(claimID));
 
     if (false == claim.Valid()) { return false; }
 
@@ -140,7 +140,7 @@ auto ProfileSubsection::SetPrimary(
     const bool primary) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
-    auto& claim = lookup(lock, Identifier::Factory(claimID));
+    const auto& claim = lookup(lock, Identifier::Factory(claimID));
 
     if (false == claim.Valid()) { return false; }
 
@@ -152,7 +152,7 @@ auto ProfileSubsection::SetValue(
     const UnallocatedCString& value) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
-    auto& claim = lookup(lock, Identifier::Factory(claimID));
+    const auto& claim = lookup(lock, Identifier::Factory(claimID));
 
     if (false == claim.Valid()) { return false; }
 

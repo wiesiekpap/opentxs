@@ -108,7 +108,7 @@ private:
 
         OT_ASSERT(0u < body.size());
 
-        auto& idFrame = body.at(0);
+        const auto& idFrame = body.at(0);
 
         OT_ASSERT(0u < idFrame.size());
 

@@ -54,7 +54,7 @@ auto BitcoinP2PVersion(
         return nullptr;
     }
 
-    auto* it{static_cast<const std::byte*>(payload)};
+    const auto* it{static_cast<const std::byte*>(payload)};
     ReturnType::BitcoinFormat_1 raw1{};
     std::memcpy(reinterpret_cast<std::byte*>(&raw1), it, sizeof(raw1));
     it += sizeof(raw1);

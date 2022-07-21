@@ -76,13 +76,13 @@ auto CheckProto_1(
                     input.revokedchildren_size())
             }
 
-            for (auto& it : input.activechildids()) {
+            for (const auto& it : input.activechildids()) {
                 if (MIN_PLAUSIBLE_IDENTIFIER > it.size()) {
                     FAIL_2("invalid active child credential identifier", it)
                 }
             }
 
-            for (auto& it : input.revokedchildids()) {
+            for (const auto& it : input.revokedchildids()) {
                 if (MIN_PLAUSIBLE_IDENTIFIER > it.size()) {
                     FAIL_2("invalid revoked child credential identifier", it)
                 }
@@ -124,7 +124,7 @@ auto CheckProto_1(
                     input.revokedchildids_size())
             }
 
-            for (auto& it : input.activechildren()) {
+            for (const auto& it : input.activechildren()) {
                 if (!Check(
                         it,
                         AuthorityAllowedCredential().at(input.version()).first,
@@ -143,7 +143,7 @@ auto CheckProto_1(
                 }
             }
 
-            for (auto& it : input.revokedchildren()) {
+            for (const auto& it : input.revokedchildren()) {
                 if (!Check(
                         it,
                         AuthorityAllowedCredential().at(input.version()).first,

@@ -90,7 +90,7 @@ void OTBylaw::Serialize(Tag& parent, bool bCalculatingID) const
     pTag->add_attribute("numHooks", std::to_string(numHooks));
     pTag->add_attribute("numCallbacks", std::to_string(numCallbacks));
 
-    for (auto& it : m_mapVariables) {
+    for (const auto& it : m_mapVariables) {
         OTVariable* pVar = it.second;
         OT_ASSERT(nullptr != pVar);
         // Variables save in a specific state during ID calculation (no matter
@@ -98,14 +98,14 @@ void OTBylaw::Serialize(Tag& parent, bool bCalculatingID) const
         pVar->Serialize(*pTag, bCalculatingID);
     }
 
-    for (auto& it : m_mapClauses) {
+    for (const auto& it : m_mapClauses) {
         OTClause* pClause = it.second;
         OT_ASSERT(nullptr != pClause);
 
         pClause->Serialize(*pTag);
     }
 
-    for (auto& it : m_mapHooks) {
+    for (const auto& it : m_mapHooks) {
         const UnallocatedCString& str_hook_name = it.first;
         const UnallocatedCString& str_clause_name = it.second;
 
@@ -117,7 +117,7 @@ void OTBylaw::Serialize(Tag& parent, bool bCalculatingID) const
         pTag->add_tag(pTagHook);
     }
 
-    for (auto& it : m_mapCallbacks) {
+    for (const auto& it : m_mapCallbacks) {
         const UnallocatedCString& str_callback_name = it.first;
         const UnallocatedCString& str_clause_name = it.second;
 

@@ -11,13 +11,13 @@
 
 #include "ottest/Basic.hpp"
 
-namespace
+namespace ottest
 {
 extern const std::array<std::uint8_t, 381319> bch_filter_1307544_;
 extern const std::array<std::uint8_t, 430483> bch_filter_1307723_;
 
-auto some_moron_wrote_the_bytes_backwards(const ot::UnallocatedCString& in)
-    -> ot::UnallocatedCString
+static auto some_moron_wrote_the_bytes_backwards(
+    const ot::UnallocatedCString& in) -> ot::UnallocatedCString
 {
     if (0 != (in.size() % 2)) {
         throw std::runtime_error("Invalid hex string");
@@ -31,7 +31,7 @@ auto some_moron_wrote_the_bytes_backwards(const ot::UnallocatedCString& in)
     return output;
 }
 
-auto parse_hex(
+static auto parse_hex(
     const ot::api::Session& api,
     const ot::UnallocatedCString& hex,
     const bool reverse = false) noexcept -> ot::OTData
@@ -433,4 +433,4 @@ const ot::UnallocatedMap<
           "001446c29eabe8208a33aa1023c741fa79aa92e881ff"}},
         {1414221, {}},
     };
-}  // namespace
+}  // namespace ottest

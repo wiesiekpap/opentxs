@@ -8,6 +8,7 @@
 #pragma once
 
 #include <atomic>
+#include <iosfwd>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"

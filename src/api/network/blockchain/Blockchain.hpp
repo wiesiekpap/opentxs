@@ -137,7 +137,7 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
         throw std::out_of_range("no blockchain support");
     }
     virtual auto GetSyncServers() const noexcept -> Endpoints { return {}; }
-    virtual auto Hello() const noexcept -> SyncData override { return {}; }
+    auto Hello() const noexcept -> SyncData override { return {}; }
     auto IsEnabled([[maybe_unused]] const Chain chain) const noexcept
         -> bool override
     {
@@ -167,7 +167,7 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
         const noexcept -> void override
     {
     }
-    virtual auto RestoreNetworks() const noexcept -> void override {}
+    auto RestoreNetworks() const noexcept -> void override {}
     virtual auto Start(
         [[maybe_unused]] const Chain type,
         [[maybe_unused]] const UnallocatedCString& seednode) const noexcept
@@ -188,7 +188,7 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     {
         return {};
     }
-    virtual auto SyncEndpoint() const noexcept -> std::string_view override
+    auto SyncEndpoint() const noexcept -> std::string_view override
     {
         return {};
     }

@@ -22,7 +22,7 @@ auto CheckProto_1(const CurrencyParams& input, const bool silent) -> bool
 
     if (0 == input.scales_size()) { FAIL_1("missing scales") };
 
-    for (auto& it : input.scales()) {
+    for (const auto& it : input.scales()) {
         if (!Check(
                 it,
                 CurrencyParamsAllowedDisplayScales().at(input.version()).first,

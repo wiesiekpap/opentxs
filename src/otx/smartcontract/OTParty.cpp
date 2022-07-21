@@ -581,7 +581,7 @@ auto OTParty::GetAgentByIndex(std::int32_t nIndex) const -> OTAgent*
     } else {
         std::int32_t nLoopIndex = -1;
 
-        for (auto& it : m_mapAgents) {
+        for (const auto& it : m_mapAgents) {
             OTAgent* pAgent = it.second;
             OT_ASSERT(nullptr != pAgent);
 
@@ -1300,7 +1300,7 @@ void OTParty::recover_closing_numbers(
     OTAgent& theAgent,
     otx::context::Server& context) const
 {
-    for (auto& it : m_mapPartyAccounts) {
+    for (const auto& it : m_mapPartyAccounts) {
         OTPartyAccount* pAcct = it.second;
 
         OT_ASSERT_MSG(
@@ -1549,14 +1549,14 @@ void OTParty::Serialize(
     pTag->add_attribute("numAccounts", std::to_string(numAccounts));
 
     if (!bCalculatingID) {
-        for (auto& it : m_mapAgents) {
+        for (const auto& it : m_mapAgents) {
             OTAgent* pAgent = it.second;
             OT_ASSERT(nullptr != pAgent);
             pAgent->Serialize(*pTag);
         }
     }
 
-    for (auto& it : m_mapPartyAccounts) {
+    for (const auto& it : m_mapPartyAccounts) {
         OTPartyAccount* pAcct = it.second;
         OT_ASSERT(nullptr != pAcct);
         pAcct->Serialize(*pTag, bCalculatingID, bSpecifyInstrumentDefinitionID);

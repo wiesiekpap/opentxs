@@ -11,9 +11,11 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <iosfwd>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string_view>
 #include <type_traits>
@@ -36,18 +38,24 @@
 #include "opentxs/blockchain/bitcoin/block/Block.hpp"
 #include "opentxs/blockchain/bitcoin/block/Output.hpp"
 #include "opentxs/blockchain/bitcoin/block/Outputs.hpp"
+#include "opentxs/blockchain/bitcoin/block/Script.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/crypto/Notification.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Contact.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/NymEditor.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -136,7 +144,7 @@ auto NotificationStateData::handle_confirmed_matches(
             .asHex(txid)(" contains a version ")(version)(" notification for ")(
                 pc_display_)
             .Flush();
-        const auto& tx = block.at(txid->Bytes());
+        const auto tx = block.at(txid->Bytes());
 
         OT_ASSERT(tx);
 
@@ -204,17 +212,17 @@ auto NotificationStateData::init_contacts() noexcept -> void
 
 auto NotificationStateData::init_keys() const noexcept -> OTPasswordPrompt
 {
-    auto reason = api_.Factory().PasswordPrompt(
+    const auto reason = api_.Factory().PasswordPrompt(
         "Decoding payment code notification transaction");
     auto handle = code_.lock();
 
     if (auto key{handle->Key()}; key) {
-        if (!key->HasPrivate()) {
+        if (false == key->HasPrivate()) {
             auto seed{path_.root()};
             const auto upgraded = handle->Internal().AddPrivateKeys(
                 seed, *path_.child().rbegin(), reason);
 
-            if (!upgraded) { OT_FAIL; }
+            if (false == upgraded) { OT_FAIL; }
         }
     } else {
         OT_FAIL;
@@ -244,8 +252,9 @@ auto NotificationStateData::process(
                 OT_ASSERT(view.has_value());
 
                 const auto& value = view.value();
-                auto* start = reinterpret_cast<const std::byte*>(value.data());
-                auto* stop = std::next(start, value.size());
+                const auto* start =
+                    reinterpret_cast<const std::byte*>(value.data());
+                const auto* stop = std::next(start, value.size());
                 elements.emplace_back(start, stop);
             }
 

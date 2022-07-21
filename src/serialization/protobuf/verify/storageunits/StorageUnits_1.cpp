@@ -21,7 +21,7 @@ namespace opentxs::proto
 
 auto CheckProto_1(const StorageUnits& input, const bool silent) -> bool
 {
-    for (auto& hash : input.unit()) {
+    for (const auto& hash : input.unit()) {
         try {
             const bool valid = Check(
                 hash,

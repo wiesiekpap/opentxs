@@ -54,7 +54,7 @@ auto BitcoinP2PReject(
         return nullptr;
     }
 
-    auto* it{static_cast<const std::byte*>(payload)};
+    const auto* it{static_cast<const std::byte*>(payload)};
     // -----------------------------------------------
     auto messageSize = std::size_t{0};
     const bool decodedSize = network::blockchain::bitcoin::DecodeSize(

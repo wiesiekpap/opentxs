@@ -83,6 +83,37 @@ auto BlockchainFilterOracle(
 
 namespace opentxs::blockchain::node::implementation
 {
+struct FilterOracle::SyncClientFilterData {
+    using Future = std::future<cfilter::Header>;
+    using Promise = std::promise<cfilter::Header>;
+
+    const block::Hash& block_hash_;
+    const network::p2p::Block& incoming_data_;
+    cfilter::Hash filter_hash_;
+    database::Cfilter::CFilterParams& filter_data_;
+    database::Cfilter::CFHeaderParams& header_data_;
+    Outstanding& job_counter_;
+    Future previous_header_;
+    Promise calculated_header_;
+
+    SyncClientFilterData(
+        const block::Hash& block,
+        const network::p2p::Block& data,
+        database::Cfilter::CFilterParams& filter,
+        database::Cfilter::CFHeaderParams& header,
+        Outstanding& jobCounter,
+        Future&& previous) noexcept
+        : block_hash_(block)
+        , incoming_data_(data)
+        , filter_hash_()
+        , filter_data_(filter)
+        , header_data_(header)
+        , job_counter_(jobCounter)
+        , previous_header_(std::move(previous))
+        , calculated_header_()
+    {
+    }
+};
 
 FilterOracle::FilterOracle(
     const api::Session& api,
@@ -113,7 +144,8 @@ FilterOracle::FilterOracle(
         return socket;
     }())
     , cb_([this](const auto type, const auto& pos) {
-        if (!running_) { return; }
+        if (false == running_) { return; }
+
 
         auto lock = rLock{lock_};
         new_tip(lock, type, pos);
@@ -419,7 +451,7 @@ auto FilterOracle::ProcessBlock(
     const auto& cfilter =
         filters.emplace_back(id, process_block(default_type_, block)).second;
 
-    if (!cfilter.IsValid()) {
+    if (false == cfilter.IsValid()) {
         LogError()(OT_PRETTY_CLASS())("Failed to calculate ")(print(chain_))(
             " cfilter")
             .Flush();
@@ -480,7 +512,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
         blockHashView = blockHash.Bytes();
         const auto pBlock = task.data_.get();
 
-        if (!bool(pBlock)) {
+        if (false == bool(pBlock)) {
             LogError()(OT_PRETTY_CLASS())("Failed to load ")(print(chain_))(
                 " block #")(height)
                 .Flush();
@@ -492,7 +524,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
 
         cfilter = process_block(data.type_, *pBlock);
 
-        if (!cfilter.IsValid()) {
+        if (false == cfilter.IsValid()) {
             LogError()(OT_PRETTY_CLASS())("Failed to instantiate ")(
                 print(chain_))(" cfilter #")(height)
                 .Flush();
@@ -596,7 +628,7 @@ auto FilterOracle::ProcessSyncData(
                     syncData.Filter(),
                     {}));  // TODO allocator
 
-            if (!cfilter.IsValid()) {
+            if (false == cfilter.IsValid()) {
                 LogError()(OT_PRETTY_CLASS())("Failed to instantiate ")(
                     print(chain_))(" cfilter #")(height)
                     .Flush();
@@ -690,16 +722,20 @@ auto FilterOracle::reset_tips_to(
     const block::Position& filterTip,
     const block::Position& position,
     std::optional<bool> resetHeader,
-    std::optional<bool> resetFilter) const noexcept -> bool
+    std::optional<bool> resetfilter) const noexcept -> bool
 {
     auto counter{0};
 
-    if (!resetHeader.has_value()) { resetHeader = headerTip > position; }
+    if (false == resetHeader.has_value()) {
+        resetHeader = headerTip > position;
+    }
 
-    if (!resetFilter.has_value()) { resetFilter = filterTip > position; }
+    if (false == resetfilter.has_value()) {
+        resetfilter = filterTip > position;
+    }
 
     OT_ASSERT(resetHeader.has_value());
-    OT_ASSERT(resetFilter.has_value());
+    OT_ASSERT(resetfilter.has_value());
 
     auto lock = rLock{lock_};
     using Future = std::shared_future<cfilter::Header>;
@@ -728,7 +764,7 @@ auto FilterOracle::reset_tips_to(
         ++counter;
     }
 
-    if (resetFilter.value()) {
+    if (resetfilter.value()) {
         if (filter_downloader_) {
             filter_downloader_->Reset(position, Future{previous});
             filterTipHasBeenReset = true;
@@ -744,11 +780,11 @@ auto FilterOracle::reset_tips_to(
         filterTipHasBeenReset = true;
     }
 
-    if (resetHeader.value() && !headerTipHasBeenReset) {
+    if (resetHeader.value() && (false == headerTipHasBeenReset)) {
         database_.SetFilterHeaderTip(default_type_, position);
     }
 
-    if (resetFilter.value() && !filterTipHasBeenReset) {
+    if (resetfilter.value() && (false == filterTipHasBeenReset)) {
         database_.SetFilterTip(default_type_, position);
     }
 

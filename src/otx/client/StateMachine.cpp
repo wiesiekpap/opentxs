@@ -764,7 +764,7 @@ auto StateMachine::message_nym(const TaskID taskID, const MessageTask& task)
     auto messageID = Identifier::Factory();
     auto updateID = [&](const Identifier& in) -> void {
         messageID = in;
-        auto& pID = std::get<2>(task);
+        const auto& pID = std::get<2>(task);
 
         if (pID) {
             auto& id = *pID;

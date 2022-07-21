@@ -1327,7 +1327,7 @@ auto RPC::import_seed(const proto::RPCCommand& command) const
     INIT_SESSION();
 
     if (api::crypto::HaveHDKeys()) {
-        auto& seed = command.hdseed();
+        const auto& seed = command.hdseed();
         auto words = ot_.Factory().SecretFromText(seed.words());
         auto passphrase = ot_.Factory().SecretFromText(seed.passphrase());
         const auto identifier = session.Crypto().Seed().ImportSeed(
@@ -1953,7 +1953,7 @@ auto RPC::start_client(const proto::RPCCommand& command) const
     std::uint32_t instance{0};
 
     try {
-        auto& manager =
+        const auto& manager =
             ot_.StartClientSession(get_args(command.arg()), session);
         instance = manager.Instance();
 
@@ -1984,7 +1984,7 @@ auto RPC::start_server(const proto::RPCCommand& command) const
     std::uint32_t instance{0};
 
     try {
-        auto& manager =
+        const auto& manager =
             ot_.StartNotarySession(get_args(command.arg()), session);
         instance = manager.Instance();
     } catch (const std::invalid_argument&) {

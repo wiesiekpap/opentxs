@@ -99,7 +99,7 @@ public:
     auto StoreFilters(
         const cfilter::Type type,
         const Vector<CFHeaderParams>& headers,
-        const Vector<CFilterParams>& filters) const -> bool;
+        const Vector<CFilterParams>& filters) const noexcept -> bool;
 
     BlockFilter(
         const api::Session& api,

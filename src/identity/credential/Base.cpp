@@ -135,7 +135,7 @@ auto Base::extract_signatures(const SerializedType& serialized) -> Signatures
 {
     auto output = Signatures{};
 
-    for (auto& it : serialized.signature()) {
+    for (const auto& it : serialized.signature()) {
         output.push_back(std::make_shared<proto::Signature>(it));
     }
 
@@ -220,7 +220,7 @@ auto Base::MasterSignature() const -> Base::Signature
     auto masterSignature = Signature{};
     const auto targetRole{proto::SIGROLE_PUBCREDENTIAL};
 
-    for (auto& it : signatures_) {
+    for (const auto& it : signatures_) {
         if ((it->role() == targetRole) && (it->credentialid() == master_id_)) {
 
             masterSignature = it;
@@ -277,7 +277,7 @@ auto Base::SelfSignature(CredentialModeFlag version) const -> Base::Signature
                                      : proto::SIGROLE_PUBCREDENTIAL};
     const auto self = id_->str();
 
-    for (auto& it : signatures_) {
+    for (const auto& it : signatures_) {
         if ((it->role() == targetRole) && (it->credentialid() == self)) {
 
             return it;
@@ -385,7 +385,7 @@ auto Base::SourceSignature() const -> Base::Signature
 {
     auto signature = Signature{};
 
-    for (auto& it : signatures_) {
+    for (const auto& it : signatures_) {
         if ((it->role() == proto::SIGROLE_NYMIDSOURCE) &&
             (it->credentialid() == nym_id_)) {
             signature = std::make_shared<proto::Signature>(*it);

@@ -109,7 +109,7 @@ auto check_account_activity(
         output &= (row->Type() == it->type_);
         output &= (row->UUID() == it->uuid_);
 
-        if (auto& time = it->timestamp_; time.has_value()) {
+        if (const auto& time = it->timestamp_; time.has_value()) {
             output &= (row->Timestamp() == time.value());
 
             EXPECT_EQ(row->Timestamp(), time.value());

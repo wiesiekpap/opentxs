@@ -25,7 +25,7 @@ public:
     std::atomic<int> target_;
     std::atomic<int> counter_;
 
-    bool callback()
+    auto callback() -> bool
     {
         while (step_.load() <= counter_.load()) { ot::Sleep(10us); }
 

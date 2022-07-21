@@ -45,10 +45,7 @@ class Filterload final : virtual public internal::Filterload,
                          public implementation::Message
 {
 public:
-    virtual auto Filter() const noexcept -> OTBloomFilter final
-    {
-        return payload_;
-    }
+    auto Filter() const noexcept -> OTBloomFilter final { return payload_; }
 
     Filterload(
         const api::Session& api,

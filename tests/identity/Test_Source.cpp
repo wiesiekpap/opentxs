@@ -269,8 +269,8 @@ TEST_F(Test_Source, Sign_ShouldReturnTrue)
 /////////////// VERIFY ////////////////
 TEST_F(Test_Source, Verify_seedPubKeySourceBip47_ShouldReturnTrue)
 {
-    auto masterId = "SOME ID BIGGER THAN 20 CHARS";
-    auto nymId = "SOME NYM ID BIGGER THAN 20 CHARS";
+    const auto* masterId = "SOME ID BIGGER THAN 20 CHARS";
+    const auto* nymId = "SOME NYM ID BIGGER THAN 20 CHARS";
     crypto::Parameters parameters{
         crypto::key::asymmetric::Algorithm::Secp256k1,
         identity::CredentialType::HD,
@@ -314,20 +314,20 @@ TEST_F(Test_Source, Verify_seedPubKeySourceBip47_ShouldReturnTrue)
     credential.mutable_publiccredential()->set_mode(proto::KEYMODE_PUBLIC);
 
     for (int i = 1; i < 4; ++i) {
-        auto key = credential.mutable_publiccredential()->add_key();
+        auto* key = credential.mutable_publiccredential()->add_key();
         key->set_version(version_);
         key->set_mode(proto::KEYMODE_PUBLIC);
         key->set_type(proto::AKEYTYPE_SECP256K1);
         key->set_role(static_cast<proto::KeyRole>(i));
         *key->mutable_key() = pubkey->str();
     }
-    auto masterData = credential.mutable_masterdata();
+    auto* masterData = credential.mutable_masterdata();
     masterData->set_version(version_);
     masterData->mutable_sourceproof()->set_version(version_);
     masterData->mutable_sourceproof()->set_type(
         proto::SOURCEPROOFTYPE_SELF_SIGNATURE);
 
-    auto source = masterData->mutable_source();
+    auto* source = masterData->mutable_source();
     source->set_version(version_);
     source->set_type(proto::SOURCETYPE_BIP47);
     source->mutable_paymentcode()->set_version(version_);
@@ -337,7 +337,7 @@ TEST_F(Test_Source, Verify_seedPubKeySourceBip47_ShouldReturnTrue)
     *source->mutable_paymentcode()->mutable_chaincode() =
         "SOME CHAINCODE BIGGER THAN 20 CHARS";
 
-    auto childCredentialParameters = credential.mutable_childdata();
+    auto* childCredentialParameters = credential.mutable_childdata();
     childCredentialParameters->set_version(version_);
     childCredentialParameters->set_masterid(masterId);
 

@@ -29,7 +29,7 @@ auto random_bytes_non_crypto(AllocateOutput dest, std::size_t bytes) noexcept
     using RandType = int;
     using OutType = std::byte;
     auto rand = std::uniform_int_distribution<RandType>{};
-    auto i = static_cast<OutType*>(out.data());
+    auto* i = static_cast<OutType*>(out.data());
 
     static_assert(sizeof(OutType) <= sizeof(RandType));
 

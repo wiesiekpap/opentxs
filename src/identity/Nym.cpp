@@ -934,7 +934,7 @@ auto Nym::has_capability(const eLock& lock, const NymCapability& capability)
 {
     OT_ASSERT(verify_lock(lock));
 
-    for (auto& it : active_) {
+    for (const auto& it : active_) {
         OT_ASSERT(nullptr != it.second);
 
         if (nullptr != it.second) {
@@ -974,7 +974,7 @@ void Nym::init_claims(const eLock& lock) const
 
     OT_ASSERT(contact_data_);
 
-    for (auto& it : active_) {
+    for (const auto& it : active_) {
         OT_ASSERT(nullptr != it.second);
 
         const auto& credSet = *it.second;
@@ -1009,7 +1009,7 @@ auto Nym::load_authorities(
                           ? proto::KEYMODE_PRIVATE
                           : proto::KEYMODE_PUBLIC;
 
-    for (auto& it : serialized.activecredentials()) {
+    for (const auto& it : serialized.activecredentials()) {
         auto pCandidate = std::unique_ptr<identity::internal::Authority>{
             opentxs::Factory::Authority(api, parent, source, mode, it)};
 
@@ -1039,7 +1039,7 @@ auto Nym::load_revoked(
                               ? proto::KEYMODE_PRIVATE
                               : proto::KEYMODE_PUBLIC;
 
-        for (auto& it : serialized.revokedcredentials()) {
+        for (const auto& it : serialized.revokedcredentials()) {
             auto pCandidate = std::unique_ptr<identity::internal::Authority>{
                 opentxs::Factory::Authority(api, parent, source, mode, it)};
 
@@ -1301,27 +1301,27 @@ auto Nym::SerializeCredentialIndex(Serialized& index, const Mode mode) const
 
     if (false == source_.Serialize(*(index.mutable_source()))) { return false; }
 
-    for (auto& it : active_) {
+    for (const auto& it : active_) {
         if (nullptr != it.second) {
             auto credset = proto::Authority{};
             if (false ==
                 it.second->Serialize(credset, static_cast<bool>(mode))) {
                 return false;
             }
-            auto pCredSet = index.add_activecredentials();
+            auto* pCredSet = index.add_activecredentials();
             *pCredSet = credset;
             pCredSet = nullptr;
         }
     }
 
-    for (auto& it : m_mapRevokedSets) {
+    for (const auto& it : m_mapRevokedSets) {
         if (nullptr != it.second) {
             auto credset = proto::Authority{};
             if (false ==
                 it.second->Serialize(credset, static_cast<bool>(mode))) {
                 return false;
             }
-            auto pCredSet = index.add_revokedcredentials();
+            auto* pCredSet = index.add_revokedcredentials();
             *pCredSet = credset;
             pCredSet = nullptr;
         }
@@ -1484,7 +1484,7 @@ auto Nym::Sign(
         return proto::ToString(input);
     };
 
-    for (auto& it : active_) {
+    for (const auto& it : active_) {
         if (nullptr != it.second) {
             bool success = it.second->Sign(
                 preimage,
@@ -1543,7 +1543,7 @@ auto Nym::TransportKey(Data& pubkey, const opentxs::PasswordPrompt& reason)
     auto privateKey = api_.Factory().Secret(0);
     sLock lock(shared_lock_);
 
-    for (auto& it : active_) {
+    for (const auto& it : active_) {
         OT_ASSERT(nullptr != it.second);
 
         if (nullptr != it.second) {
@@ -1603,7 +1603,7 @@ auto Nym::Verify(const ProtobufType& input, proto::Signature& signature) const
     signature.clear_signature();
     const auto plaintext = api_.Factory().InternalSession().Data(input);
 
-    for (auto& it : active_) {
+    for (const auto& it : active_) {
         if (nullptr != it.second) {
             if (it.second->Verify(plaintext, copy)) { return true; }
         }
@@ -1654,7 +1654,7 @@ auto Nym::WriteCredentials() const -> bool
 {
     sLock lock(shared_lock_);
 
-    for (auto& it : active_) {
+    for (const auto& it : active_) {
         if (!it.second->WriteCredentials()) {
             LogError()(OT_PRETTY_CLASS())("Failed to save credentials.")
                 .Flush();

@@ -18,8 +18,11 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
 {
+// inline namespace v1
+// {
 namespace api
 {
 namespace session
@@ -45,7 +48,12 @@ class Identifier;
 class OTCronItem;
 class OTMarket;
 class PasswordPrompt;
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
+namespace opentxs
+{
 /** mapOfCronItems:      Mapped (uniquely) to transaction number. */
 using mapOfCronItems =
     UnallocatedMap<std::int64_t, std::shared_ptr<OTCronItem>>;
@@ -66,28 +74,28 @@ class OTCron final : public Contract
 public:
     static auto GetCronMsBetweenProcess() -> std::chrono::milliseconds
     {
-        return __cron_ms_between_process;
+        return _cron_ms_between_process;
     }
     static void SetCronMsBetweenProcess(std::chrono::milliseconds lMS)
     {
-        __cron_ms_between_process = lMS;
+        _cron_ms_between_process = lMS;
     }
 
     static auto GetCronRefillAmount() -> std::int32_t
     {
-        return __trans_refill_amount;
+        return _trans_refill_amount;
     }
     static void SetCronRefillAmount(std::int32_t nAmount)
     {
-        __trans_refill_amount = nAmount;
+        _trans_refill_amount = nAmount;
     }
     static auto GetCronMaxItemsPerNym() -> std::int32_t
     {
-        return __cron_max_items_per_nym;
+        return _cron_max_items_per_nym;
     }
     static void SetCronMaxItemsPerNym(std::int32_t nMax)
     {
-        __cron_max_items_per_nym = nMax;
+        _cron_max_items_per_nym = nMax;
     }
     inline auto IsActivated() const -> bool { return m_bIsActivated; }
     inline auto ActivateCron() -> bool
@@ -190,12 +198,12 @@ private:
 
     // Number of transaction numbers Cron  will grab for itself, when it gets
     // low, before each round.
-    static std::int32_t __trans_refill_amount;
+    static std::int32_t _trans_refill_amount;
     // Number of milliseconds (ideally) between each "Cron Process" event.
-    static std::chrono::milliseconds __cron_ms_between_process;
+    static std::chrono::milliseconds _cron_ms_between_process;
     // Int. The maximum number of cron items any given Nym can have
     // active at the same time.
-    static std::int32_t __cron_max_items_per_nym;
+    static std::int32_t _cron_max_items_per_nym;
     static Time last_executed_;
 
     // A list of all valid markets.

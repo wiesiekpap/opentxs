@@ -651,7 +651,7 @@ auto HeaderOracle::connect_children(
     UpdateTransaction& update) -> void
 {
     auto& chain = candidate.chain_;
-    auto& end = *chain.crbegin();
+    const auto& end = *chain.crbegin();
 
     OT_ASSERT(end.first + 1 == parent.Position().first);
 

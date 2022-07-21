@@ -51,7 +51,7 @@ auto BitcoinP2PGetblocktxn(
 
         return nullptr;
     }
-    auto* it{static_cast<const std::byte*>(payload)};
+    const auto* it{static_cast<const std::byte*>(payload)};
     // --------------------------------------------------------
     OTData block_hash =
         Data::Factory(it, sizeof(bitcoin::BlockHeaderHashField));

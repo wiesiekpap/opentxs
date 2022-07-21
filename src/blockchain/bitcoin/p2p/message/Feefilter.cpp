@@ -52,7 +52,7 @@ auto BitcoinP2PFeefilter(
 
         return nullptr;
     }
-    auto* it{static_cast<const std::byte*>(payload)};
+    const auto* it{static_cast<const std::byte*>(payload)};
 
     FeeRateField raw_rate;
     std::memcpy(reinterpret_cast<std::byte*>(&raw_rate), it, sizeof(raw_rate));

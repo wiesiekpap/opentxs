@@ -450,9 +450,9 @@ TEST_F(Test_Authority, Serialize_AddedCredentialsFirst_ShouldReturnProperData)
     EXPECT_EQ(serialized.nymid(), internalNym_->ID().str());
 }
 
-ot::UnallocatedCString func();
+auto func() -> ot::UnallocatedCString;
 
-ot::UnallocatedCString func() { return "Test"; }
+auto func() -> ot::UnallocatedCString { return "Test"; }
 
 TEST_F(Test_Authority, Sign_ShouldReturnProperData)
 {

@@ -29,7 +29,7 @@ auto CheckProto_1(
 {
     UnallocatedMap<ContactSectionName, uint32_t> sectionCount;
 
-    for (auto& it : input.section()) {
+    for (const auto& it : input.section()) {
         try {
             bool validSection = Check(
                 it,

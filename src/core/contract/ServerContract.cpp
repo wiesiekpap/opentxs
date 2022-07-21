@@ -227,7 +227,7 @@ auto Server::extract_endpoints(const proto::ServerContract& serialized) noexcept
 {
     auto output = UnallocatedList<contract::Server::Endpoint>{};
 
-    for (auto& listen : serialized.address()) {
+    for (const auto& listen : serialized.address()) {
         // WARNING: preserve the order of this list, or signature verfication
         // will fail!
         output.emplace_back(contract::Server::Endpoint{
@@ -253,7 +253,7 @@ auto Server::ConnectInfo(
     const AddressType& preferred) const -> bool
 {
     if (0 < listen_params_.size()) {
-        for (auto& endpoint : listen_params_) {
+        for (const auto& endpoint : listen_params_) {
             const auto& type = std::get<0>(endpoint);
             const auto& url = std::get<2>(endpoint);
             const auto& port = std::get<3>(endpoint);
@@ -464,7 +464,7 @@ auto Server::validate(const Lock& lock) const -> bool
     }
 
     bool validSig = false;
-    auto& signature = *signatures_.cbegin();
+    const auto& signature = *signatures_.cbegin();
 
     if (signature) { validSig = verify_signature(lock, *signature); }
 

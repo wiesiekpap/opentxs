@@ -2007,7 +2007,7 @@ struct TXOs::Imp {
                 (pos - height) >= Regtest_fixture_base::MaturationInterval();
 
             if (mature) {
-                for (auto& [subaccount, txo] : outputs) {
+                for (const auto& [subaccount, txo] : outputs) {
                     const auto [it, added] =
                         confirmed_incoming_[subaccount].emplace(txo);
                     output &= added;

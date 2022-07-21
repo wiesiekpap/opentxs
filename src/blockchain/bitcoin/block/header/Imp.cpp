@@ -162,7 +162,7 @@ auto BitcoinBlockHeader(
 
         OT_ASSERT(sizeof(serialized) == raw.size());
 
-        const auto result = std::memcpy(
+        auto* const result = std::memcpy(
             static_cast<void*>(&serialized), raw.data(), raw.size());
 
         if (nullptr == result) {

@@ -21,8 +21,11 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
 {
+// inline namespace v1
+// {
 namespace api
 {
 namespace session
@@ -39,6 +42,9 @@ class Session;
 class NumList;
 class OTTrackable;
 class PasswordPrompt;
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 /*
   The PAYMENT can be of types:
@@ -88,6 +94,8 @@ class PasswordPrompt;
   Currently OTSmartContract is the only actual server-side scripting on OT.
  */
 
+namespace opentxs
+{
 class OTPayment : public Contract
 {
 public:

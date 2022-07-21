@@ -17,6 +17,7 @@
 #include "opentxs/util/Container.hpp"
 #include "util/storage/Plugin.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace boost
 {
 namespace iostreams
@@ -25,7 +26,6 @@ class file_descriptor_sink;
 }  // namespace iostreams
 }  // namespace boost
 
-// NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
 // inline namespace v1

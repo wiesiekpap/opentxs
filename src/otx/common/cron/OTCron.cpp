@@ -44,14 +44,14 @@ namespace opentxs
 
 // The number of transaction numbers Cron will grab for itself, when it gets
 // low, before each round.
-std::int32_t OTCron::__trans_refill_amount = 500;
+std::int32_t OTCron::_trans_refill_amount = 500;
 
 // The number of milliseconds (ideally) between each "Cron Process" event.
-std::chrono::milliseconds OTCron::__cron_ms_between_process{10000};
+std::chrono::milliseconds OTCron::_cron_ms_between_process{10000};
 
 // The maximum number of cron items any given Nym can have active at the same
 // time.
-std::int32_t OTCron::__cron_max_items_per_nym{10};
+std::int32_t OTCron::_cron_max_items_per_nym{10};
 
 Time OTCron::last_executed_{};
 

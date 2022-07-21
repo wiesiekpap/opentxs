@@ -191,7 +191,7 @@ auto Nyms::RelabelThread(
 
     for (const auto& it : item_map_) {
         const auto& nymID = it.first;
-        auto nym = Nyms::nym(lock, nymID);
+        auto* nym = Nyms::nym(lock, nymID);
 
         OT_ASSERT(nym);
 
