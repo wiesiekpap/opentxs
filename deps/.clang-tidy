@@ -1,5 +1,5 @@
 {
-  "Checks": "boost-use-to-string,bugprone-unused-raii,bugprone-use-after-move,cert-*,-cert-oop54-cpp,-cert-err58-cpp,-cert-err33-c,-cert-err34-c,clang-diagnostic-*,clang-analyzer-*,",
+  "Checks": "boost-use-to-string,bugprone-unused-raii,bugprone-use-after-move,cert-*,-cert-oop54-cpp,-cert-err58-cpp,-cert-err33-c,-cert-err34-c,clang-diagnostic-*,clang-analyzer-*,-modernize*,-readability*",
   "FormatStyle": "file",
   "WarningsAsErrors": "*"
 }
