@@ -20,8 +20,8 @@
 
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/database/Sync.hpp"
-#include "internal/blockchain/node/FilterOracle.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
+#include "internal/blockchain/node/filteroracle/FilterOracle.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Signals.hpp"

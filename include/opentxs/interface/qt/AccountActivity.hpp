@@ -11,7 +11,7 @@
 #include <QString>
 #include <QVariant>
 
-#include "opentxs/interface/qt/AmountValidator.hpp"       // IWYU pragma: keep
+#include "opentxs/interface/qt/AmountValidator.hpp"  // IWYU pragma: keep
 #include "opentxs/interface/qt/BlockchainAccountStatus.hpp"
 #include "opentxs/interface/qt/DestinationValidator.hpp"  // IWYU pragma: keep
 #include "opentxs/interface/qt/DisplayScale.hpp"          // IWYU pragma: keep

@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
-#include <exception>
 #include <future>
 #include <iterator>
 #include <stdexcept>
@@ -19,8 +18,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "blockchain/DownloadTask.hpp"
-#include "blockchain/node/filteroracle/BlockIndexer.hpp"
 #include "blockchain/node/filteroracle/FilterCheckpoints.hpp"
 #include "blockchain/node/filteroracle/FilterDownloader.hpp"
 #include "blockchain/node/filteroracle/HeaderDownloader.hpp"
@@ -32,6 +29,7 @@
 #include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Types.hpp"
+#include "internal/blockchain/node/filteroracle/BlockIndexer.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -57,8 +55,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/Types.hpp"
-#include "util/ScopeGuard.hpp"
 
 namespace opentxs::factory
 {
@@ -144,8 +140,7 @@ FilterOracle::FilterOracle(
         return socket;
     }())
     , cb_([this](const auto type, const auto& pos) {
-        if (false == running_) { return; }
-
+        if (!running_) { return; }
 
         auto lock = rLock{lock_};
         new_tip(lock, type, pos);
@@ -183,20 +178,19 @@ FilterOracle::FilterOracle(
             return {};
         }
     }())
-    , block_indexer_([&]() -> std::unique_ptr<BlockIndexer> {
+    , block_indexer_([&]() -> std::unique_ptr<filteroracle::BlockIndexer> {
         if (config.generate_cfilters_) {
-            return std::make_unique<BlockIndexer>(
+            return std::make_unique<filteroracle::BlockIndexer>(
                 api,
-                database_,
-                header_,
-                block,
                 node_,
                 *this,
+                database_,
+                filteroracle::NotifyCallback{cb_},
                 chain,
                 default_type_,
-                shutdown,
-                cb_);
+                shutdown);
         } else {
+
             return {};
         }
     }())
@@ -347,7 +341,6 @@ auto FilterOracle::Heartbeat() const noexcept -> void
 
     if (filter_downloader_) { filter_downloader_->Heartbeat(); }
     if (header_downloader_) { header_downloader_->Heartbeat(); }
-    if (block_indexer_) { block_indexer_->Heartbeat(); }
 
     constexpr auto limit = 5s;
 
@@ -449,7 +442,7 @@ auto FilterOracle::ProcessBlock(
     auto filters = Vector<database::Cfilter::CFilterParams>{};
     auto headers = Vector<database::Cfilter::CFHeaderParams>{};
     const auto& cfilter =
-        filters.emplace_back(id, process_block(default_type_, block)).second;
+        filters.emplace_back(id, ProcessBlock(default_type_, block, {})).second;
 
     if (false == cfilter.IsValid()) {
         LogError()(OT_PRETTY_CLASS())("Failed to calculate ")(print(chain_))(
@@ -496,50 +489,34 @@ auto FilterOracle::ProcessBlock(
     }
 }
 
-auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
+auto FilterOracle::ProcessBlock(
+    const cfilter::Type filterType,
+    const bitcoin::block::Block& block,
+    alloc::Default alloc) const noexcept -> GCS
 {
-    auto post = ScopeGuard{[&] { --data.job_counter_; }};
-    auto& task = data.incoming_data_;
-    const auto& [height, block] = task.position_;
+    const auto& id = block.ID();
+    const auto params = blockchain::internal::GetFilterParams(filterType);
+    const auto elements = [&] {
+        const auto input = block.Internal().ExtractElements(filterType);
+        auto output = Vector<OTData>{};
+        std::transform(
+            input.begin(),
+            input.end(),
+            std::back_inserter(output),
+            [&](const auto& element) -> OTData {
+                return api_.Factory().DataFromBytes(reader(element));
+            });
 
-    try {
-        LogTrace()(OT_PRETTY_CLASS())("Calculating cfilter for ")(
-            print(chain_))(" block at height ")(height)
-            .Flush();
-        auto& [blockHashView, cfilter] = data.filter_data_;
-        auto& [blockHash, filterHeader, filterHashView] = data.header_data_;
-        blockHash = block;
-        blockHashView = blockHash.Bytes();
-        const auto pBlock = task.data_.get();
+        return output;
+    }();
 
-        if (false == bool(pBlock)) {
-            LogError()(OT_PRETTY_CLASS())("Failed to load ")(print(chain_))(
-                " block #")(height)
-                .Flush();
-
-            throw std::runtime_error(
-                UnallocatedCString{"failed to load block "} +
-                blockHash.asHex());
-        }
-
-        cfilter = process_block(data.type_, *pBlock);
-
-        if (false == cfilter.IsValid()) {
-            LogError()(OT_PRETTY_CLASS())("Failed to instantiate ")(
-                print(chain_))(" cfilter #")(height)
-                .Flush();
-
-            throw std::runtime_error("Failed to instantiate gcs");
-        }
-
-        data.filter_hash_ = cfilter.Hash();
-        LogTrace()(OT_PRETTY_CLASS())("Finished calculating cfilter for ")(
-            print(chain_))(" block at height ")(height)
-            .Flush();
-        filterHashView = data.filter_hash_;
-    } catch (...) {
-        task.process(std::current_exception());
-    }
+    return factory::GCS(
+        api_,
+        params.first,
+        params.second,
+        blockchain::internal::BlockHashToFilterKey(id.Bytes()),
+        elements,
+        alloc);
 }
 
 auto FilterOracle::ProcessSyncData(
@@ -628,7 +605,7 @@ auto FilterOracle::ProcessSyncData(
                     syncData.Filter(),
                     {}));  // TODO allocator
 
-            if (false == cfilter.IsValid()) {
+            if (!cfilter.IsValid()) {
                 LogError()(OT_PRETTY_CLASS())("Failed to instantiate ")(
                     print(chain_))(" cfilter #")(height)
                     .Flush();
@@ -659,32 +636,6 @@ auto FilterOracle::ProcessSyncData(
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
     }
-}
-
-auto FilterOracle::process_block(
-    const cfilter::Type filterType,
-    const bitcoin::block::Block& block) const noexcept -> GCS
-{
-    const auto& id = block.ID();
-    const auto params = blockchain::internal::GetFilterParams(filterType);
-
-    const auto input = block.Internal().ExtractElements(filterType);
-    Vector<OTData> elements{};
-    std::transform(
-        input.begin(),
-        input.end(),
-        std::back_inserter(elements),
-        [&](const auto& element) -> OTData {
-            return api_.Factory().DataFromBytes(reader(element));
-        });
-
-    return factory::GCS(
-        api_,
-        params.first,
-        params.second,
-        blockchain::internal::BlockHashToFilterKey(id.Bytes()),
-        elements,
-        {});  // TODO allocator
 }
 
 auto FilterOracle::reset_tips_to(
@@ -775,7 +726,7 @@ auto FilterOracle::reset_tips_to(
     }
 
     if (resetBlock && block_indexer_) {
-        block_indexer_->Reset(position, std::move(previous));
+        block_indexer_->Reindex();
         headerTipHasBeenReset = true;
         filterTipHasBeenReset = true;
     }
