@@ -9,8 +9,8 @@
 #include <cstdint>
 #include <memory>
 
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/fixtures/paymentcode/Helpers.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 namespace ottest
 {
@@ -28,18 +28,18 @@ public:
         : PC_Fixture_Base(
               version_,
               version_,
-              GetVectors3().alice_.words_,
-              GetVectors3().bob_.words_,
-              GetVectors3().alice_.payment_code_,
-              GetVectors3().bob_.payment_code_)
+              GetPaymentCodeVector3().alice_.words_,
+              GetPaymentCodeVector3().bob_.words_,
+              GetPaymentCodeVector3().alice_.payment_code_,
+              GetPaymentCodeVector3().bob_.payment_code_)
         , alice_blind_secret_(user_1_.blinding_key_secret(
               api_,
-              GetVectors3().bob_.receive_chain_,
+              GetPaymentCodeVector3().bob_.receive_chain_,
               reason_))
         , alice_blind_public_(user_1_.blinding_key_public())
         , bob_blind_secret_(user_2_.blinding_key_secret(
               api_,
-              GetVectors3().alice_.receive_chain_,
+              GetPaymentCodeVector3().alice_.receive_chain_,
               reason_))
         , bob_blind_public_(user_2_.blinding_key_public())
     {
@@ -61,9 +61,12 @@ TEST_F(Test_PaymentCode_v3, generate)
     auto data2 = api_.Factory().DataFromBytes(decode2);
 
     EXPECT_EQ(alice_pc_secret_.asBase58(), alice_pc_public_.asBase58());
-    EXPECT_EQ(alice_pc_secret_.asBase58(), GetVectors3().alice_.payment_code_);
+    EXPECT_EQ(
+        alice_pc_secret_.asBase58(),
+        GetPaymentCodeVector3().alice_.payment_code_);
     EXPECT_EQ(bob_pc_secret_.asBase58(), bob_pc_public_.asBase58());
-    EXPECT_EQ(bob_pc_secret_.asBase58(), GetVectors3().bob_.payment_code_);
+    EXPECT_EQ(
+        bob_pc_secret_.asBase58(), GetPaymentCodeVector3().bob_.payment_code_);
 }
 
 TEST_F(Test_PaymentCode_v3, locators)
@@ -74,14 +77,17 @@ TEST_F(Test_PaymentCode_v3, locators)
 
         EXPECT_TRUE(alice_pc_public_.Locator(pub->WriteInto(), i));
         EXPECT_TRUE(alice_pc_secret_.Locator(sec->WriteInto(), i));
-        EXPECT_EQ(pub->asHex(), GetVectors3().alice_.locators_.at(i - 1u));
-        EXPECT_EQ(sec->asHex(), GetVectors3().alice_.locators_.at(i - 1u));
+        EXPECT_EQ(
+            pub->asHex(), GetPaymentCodeVector3().alice_.locators_.at(i - 1u));
+        EXPECT_EQ(
+            sec->asHex(), GetPaymentCodeVector3().alice_.locators_.at(i - 1u));
     }
     {
         auto got = api_.Factory().Data();
 
         EXPECT_TRUE(alice_pc_secret_.Locator(got->WriteInto()));
-        EXPECT_EQ(got->asHex(), GetVectors3().alice_.locators_.back());
+        EXPECT_EQ(
+            got->asHex(), GetPaymentCodeVector3().alice_.locators_.back());
     }
 
     for (auto i = std::uint8_t{1}; i < 4u; ++i) {
@@ -90,14 +96,16 @@ TEST_F(Test_PaymentCode_v3, locators)
 
         EXPECT_TRUE(bob_pc_public_.Locator(pub->WriteInto(), i));
         EXPECT_TRUE(bob_pc_secret_.Locator(sec->WriteInto(), i));
-        EXPECT_EQ(pub->asHex(), GetVectors3().bob_.locators_.at(i - 1u));
-        EXPECT_EQ(sec->asHex(), GetVectors3().bob_.locators_.at(i - 1u));
+        EXPECT_EQ(
+            pub->asHex(), GetPaymentCodeVector3().bob_.locators_.at(i - 1u));
+        EXPECT_EQ(
+            sec->asHex(), GetPaymentCodeVector3().bob_.locators_.at(i - 1u));
     }
     {
         auto got = api_.Factory().Data();
 
         EXPECT_TRUE(bob_pc_secret_.Locator(got->WriteInto()));
-        EXPECT_EQ(got->asHex(), GetVectors3().bob_.locators_.back());
+        EXPECT_EQ(got->asHex(), GetPaymentCodeVector3().bob_.locators_.back());
     }
 }
 
@@ -107,7 +115,7 @@ TEST_F(Test_PaymentCode_v3, outgoing_btc)
         const auto pKey = bob_pc_secret_.Outgoing(
             alice_pc_public_,
             i,
-            GetVectors3().alice_.receive_chain_,
+            GetPaymentCodeVector3().alice_.receive_chain_,
             reason_,
             version_);
 
@@ -115,11 +123,11 @@ TEST_F(Test_PaymentCode_v3, outgoing_btc)
 
         const auto& key = *pKey;
         const auto expect = api_.Factory().DataFromHex(
-            GetVectors3().alice_.receive_keys_.at(i));
+            GetPaymentCodeVector3().alice_.receive_keys_.at(i));
 
         EXPECT_NE(
-            GetVectors3().alice_.receive_keys_.at(i),
-            GetVectors3().bob_.receive_keys_.at(i));
+            GetPaymentCodeVector3().alice_.receive_keys_.at(i),
+            GetPaymentCodeVector3().bob_.receive_keys_.at(i));
         EXPECT_EQ(expect->Bytes(), key.PublicKey());
     }
 }
@@ -130,7 +138,7 @@ TEST_F(Test_PaymentCode_v3, incoming_btc)
         const auto pKey = alice_pc_secret_.Incoming(
             bob_pc_public_,
             i,
-            GetVectors3().alice_.receive_chain_,
+            GetPaymentCodeVector3().alice_.receive_chain_,
             reason_,
             version_);
 
@@ -138,11 +146,11 @@ TEST_F(Test_PaymentCode_v3, incoming_btc)
 
         const auto& key = *pKey;
         const auto expect = api_.Factory().DataFromHex(
-            GetVectors3().alice_.receive_keys_.at(i));
+            GetPaymentCodeVector3().alice_.receive_keys_.at(i));
 
         EXPECT_NE(
-            GetVectors3().alice_.receive_keys_.at(i),
-            GetVectors3().bob_.receive_keys_.at(i));
+            GetPaymentCodeVector3().alice_.receive_keys_.at(i),
+            GetPaymentCodeVector3().bob_.receive_keys_.at(i));
         EXPECT_EQ(expect->Bytes(), key.PublicKey());
     }
 }
@@ -153,19 +161,19 @@ TEST_F(Test_PaymentCode_v3, outgoing_testnet)
         const auto pKey = alice_pc_secret_.Outgoing(
             bob_pc_public_,
             i,
-            GetVectors3().bob_.receive_chain_,
+            GetPaymentCodeVector3().bob_.receive_chain_,
             reason_,
             version_);
 
         ASSERT_TRUE(pKey);
 
         const auto& key = *pKey;
-        const auto expect =
-            api_.Factory().DataFromHex(GetVectors3().bob_.receive_keys_.at(i));
+        const auto expect = api_.Factory().DataFromHex(
+            GetPaymentCodeVector3().bob_.receive_keys_.at(i));
 
         EXPECT_NE(
-            GetVectors3().bob_.receive_keys_.at(i),
-            GetVectors3().alice_.receive_keys_.at(i));
+            GetPaymentCodeVector3().bob_.receive_keys_.at(i),
+            GetPaymentCodeVector3().alice_.receive_keys_.at(i));
         EXPECT_EQ(expect->Bytes(), key.PublicKey());
     }
 }
@@ -176,19 +184,19 @@ TEST_F(Test_PaymentCode_v3, incoming_testnet)
         const auto pKey = bob_pc_secret_.Incoming(
             alice_pc_public_,
             i,
-            GetVectors3().bob_.receive_chain_,
+            GetPaymentCodeVector3().bob_.receive_chain_,
             reason_,
             version_);
 
         ASSERT_TRUE(pKey);
 
         const auto& key = *pKey;
-        const auto expect =
-            api_.Factory().DataFromHex(GetVectors3().bob_.receive_keys_.at(i));
+        const auto expect = api_.Factory().DataFromHex(
+            GetPaymentCodeVector3().bob_.receive_keys_.at(i));
 
         EXPECT_NE(
-            GetVectors3().bob_.receive_keys_.at(i),
-            GetVectors3().alice_.receive_keys_.at(i));
+            GetPaymentCodeVector3().bob_.receive_keys_.at(i),
+            GetPaymentCodeVector3().alice_.receive_keys_.at(i));
         EXPECT_EQ(expect->Bytes(), key.PublicKey());
     }
 }
@@ -207,7 +215,7 @@ TEST_F(Test_PaymentCode_v3, avoid_cross_chain_address_reuse)
 
         const auto& key = *pKey;
         const auto expect = api_.Factory().DataFromHex(
-            GetVectors3().alice_.receive_keys_.at(i));
+            GetPaymentCodeVector3().alice_.receive_keys_.at(i));
 
         EXPECT_NE(expect->Bytes(), key.PublicKey());
     }
@@ -215,10 +223,10 @@ TEST_F(Test_PaymentCode_v3, avoid_cross_chain_address_reuse)
 
 TEST_F(Test_PaymentCode_v3, blind_alice)
 {
-    const auto sec =
-        api_.Factory().DataFromHex(GetVectors3().alice_.change_key_secret_);
-    const auto pub =
-        api_.Factory().DataFromHex(GetVectors3().alice_.change_key_public_);
+    const auto sec = api_.Factory().DataFromHex(
+        GetPaymentCodeVector3().alice_.change_key_secret_);
+    const auto pub = api_.Factory().DataFromHex(
+        GetPaymentCodeVector3().alice_.change_key_public_);
 
     EXPECT_EQ(sec->Bytes(), alice_blind_secret_.PrivateKey(reason_));
     EXPECT_EQ(pub->Bytes(), alice_blind_public_.PublicKey());
@@ -226,7 +234,7 @@ TEST_F(Test_PaymentCode_v3, blind_alice)
 
     {
         const auto expect = api_.Factory().DataFromHex(
-            GetVectors3().alice_.blinded_payment_code_);
+            GetPaymentCodeVector3().alice_.blinded_payment_code_);
         auto blinded = api_.Factory().Data();
 
         EXPECT_TRUE(alice_pc_secret_.BlindV3(
@@ -240,7 +248,8 @@ TEST_F(Test_PaymentCode_v3, blind_alice)
             version_, blinded->Bytes(), alice_blind_public_, reason_);
 
         EXPECT_GT(alice.Version(), 0u);
-        EXPECT_EQ(alice.asBase58(), GetVectors3().alice_.payment_code_);
+        EXPECT_EQ(
+            alice.asBase58(), GetPaymentCodeVector3().alice_.payment_code_);
     }
 
     const auto elements = alice_pc_secret_.GenerateNotificationElements(
@@ -258,13 +267,15 @@ TEST_F(Test_PaymentCode_v3, blind_alice)
         EXPECT_EQ(got->Bytes(), alice_blind_public_.PublicKey());
     }
     {
-        const auto expect = api_.Factory().DataFromHex(GetVectors3().alice_.F_);
+        const auto expect =
+            api_.Factory().DataFromHex(GetPaymentCodeVector3().alice_.F_);
         const auto got = api_.Factory().DataFromBytes(ot::reader(F));
 
         EXPECT_EQ(expect.get(), got.get());
     }
     {
-        const auto expect = api_.Factory().DataFromHex(GetVectors3().alice_.G_);
+        const auto expect =
+            api_.Factory().DataFromHex(GetPaymentCodeVector3().alice_.G_);
         const auto got = api_.Factory().DataFromBytes(ot::reader(G));
         constexpr auto ignore = std::size_t{16};
         const auto v1 =
@@ -280,7 +291,8 @@ TEST_F(Test_PaymentCode_v3, blind_alice)
             version_, Elements{A, F, G}, reason_);
 
         EXPECT_GT(alice.Version(), 0u);
-        EXPECT_EQ(alice.asBase58(), GetVectors3().alice_.payment_code_);
+        EXPECT_EQ(
+            alice.asBase58(), GetPaymentCodeVector3().alice_.payment_code_);
     }
     {
         const auto alice = bob_pc_secret_.DecodeNotificationElements(
@@ -316,10 +328,10 @@ TEST_F(Test_PaymentCode_v3, blind_alice)
 
 TEST_F(Test_PaymentCode_v3, blind_bob)
 {
-    const auto sec =
-        api_.Factory().DataFromHex(GetVectors3().bob_.change_key_secret_);
-    const auto pub =
-        api_.Factory().DataFromHex(GetVectors3().bob_.change_key_public_);
+    const auto sec = api_.Factory().DataFromHex(
+        GetPaymentCodeVector3().bob_.change_key_secret_);
+    const auto pub = api_.Factory().DataFromHex(
+        GetPaymentCodeVector3().bob_.change_key_public_);
 
     EXPECT_EQ(sec->Bytes(), bob_blind_secret_.PrivateKey(reason_));
     EXPECT_EQ(pub->Bytes(), bob_blind_public_.PublicKey());
@@ -327,7 +339,7 @@ TEST_F(Test_PaymentCode_v3, blind_bob)
 
     {
         const auto expect = api_.Factory().DataFromHex(
-            GetVectors3().bob_.blinded_payment_code_);
+            GetPaymentCodeVector3().bob_.blinded_payment_code_);
         auto blinded = api_.Factory().Data();
 
         EXPECT_TRUE(bob_pc_secret_.BlindV3(
@@ -341,7 +353,7 @@ TEST_F(Test_PaymentCode_v3, blind_bob)
             version_, blinded->Bytes(), bob_blind_public_, reason_);
 
         EXPECT_GT(bob.Version(), 0u);
-        EXPECT_EQ(bob.asBase58(), GetVectors3().bob_.payment_code_);
+        EXPECT_EQ(bob.asBase58(), GetPaymentCodeVector3().bob_.payment_code_);
     }
 
     const auto elements = bob_pc_secret_.GenerateNotificationElements(
@@ -359,13 +371,15 @@ TEST_F(Test_PaymentCode_v3, blind_bob)
         EXPECT_EQ(got->Bytes(), bob_blind_public_.PublicKey());
     }
     {
-        const auto expect = api_.Factory().DataFromHex(GetVectors3().bob_.F_);
+        const auto expect =
+            api_.Factory().DataFromHex(GetPaymentCodeVector3().bob_.F_);
         const auto got = api_.Factory().DataFromBytes(ot::reader(F));
 
         EXPECT_EQ(expect.get(), got.get());
     }
     {
-        const auto expect = api_.Factory().DataFromHex(GetVectors3().bob_.G_);
+        const auto expect =
+            api_.Factory().DataFromHex(GetPaymentCodeVector3().bob_.G_);
         const auto got = api_.Factory().DataFromBytes(ot::reader(G));
         constexpr auto ignore = std::size_t{16};
         const auto v1 =
@@ -381,7 +395,7 @@ TEST_F(Test_PaymentCode_v3, blind_bob)
             version_, Elements{A, F, G}, reason_);
 
         EXPECT_GT(bob.Version(), 0u);
-        EXPECT_EQ(bob.asBase58(), GetVectors3().bob_.payment_code_);
+        EXPECT_EQ(bob.asBase58(), GetPaymentCodeVector3().bob_.payment_code_);
     }
     {
         const auto bob = alice_pc_secret_.DecodeNotificationElements(

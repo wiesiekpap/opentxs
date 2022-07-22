@@ -7,7 +7,7 @@
 #include <opentxs/opentxs.hpp>
 #include <memory>
 
-#include "crypto/Bip32Vectors.hpp"
+#include "ottest/data/crypto/Bip32.hpp"
 
 namespace ot = opentxs;
 
@@ -49,7 +49,7 @@ TEST_F(Test_BIP32, init) {}
 
 TEST_F(Test_BIP32, cases)
 {
-    for (const auto& item : bip32_test_cases_) {
+    for (const auto& item : Bip32TestCases()) {
         const auto seedID = [&] {
             const auto bytes = api_.Factory().DataFromHex(item.seed_);
             const auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
@@ -79,7 +79,7 @@ TEST_F(Test_BIP32, cases)
 
 TEST_F(Test_BIP32, stress)
 {
-    const auto& item = bip32_test_cases_.at(0u);
+    const auto& item = Bip32TestCases().at(0u);
     const auto& child = item.children_.at(3u);
     const auto seedID = [&] {
         const auto bytes = api_.Factory().DataFromHex(item.seed_);

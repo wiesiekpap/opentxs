@@ -8,9 +8,9 @@
 #include <atomic>
 #include <optional>
 
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/fixtures/common/Counter.hpp"
 #include "ottest/fixtures/common/User.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 #include "ottest/fixtures/ui/SeedTree.hpp"
 
 namespace ottest
@@ -69,12 +69,12 @@ TEST_F(Test_SeedTree, create_nyms)
     counter_.expected_ += 7;
 
     {
-        const auto& v = GetVectors3().alice_;
+        const auto& v = GetPaymentCodeVector3().alice_;
         alex_.emplace(v.words_, alex_name_);
         alex_->init(api_);
     }
     {
-        const auto& v = GetVectors3().alice_;
+        const auto& v = GetPaymentCodeVector3().alice_;
         bob_.emplace(v.words_, bob_name_);
         bob_->init(api_, ot::identity::Type::individual, 1);
     }
@@ -113,7 +113,7 @@ TEST_F(Test_SeedTree, create_nyms)
 TEST_F(Test_SeedTree, add_seed)
 {
     counter_.expected_ += 1;
-    const auto& v = GetVectors3().bob_;
+    const auto& v = GetPaymentCodeVector3().bob_;
     api_.Crypto().Seed().ImportSeed(
         api_.Factory().SecretFromText(v.words_),
         api_.Factory().Secret(0),

@@ -18,7 +18,7 @@
 #include "internal/identity/Nym.hpp"
 #include "internal/identity/Types.hpp"
 #include "internal/otx/common/crypto/Signature.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "serialization/protobuf/Authority.pb.h"
 #include "serialization/protobuf/ContactData.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
@@ -53,7 +53,7 @@ public:
         , reason_(client_.Factory().PasswordPrompt(__func__))
         , nonConstReason_(client_.Factory().PasswordPrompt(__func__))
         , words_(client_.Factory().SecretFromText(
-              ottest::GetVectors3().alice_.words_))
+              ottest::GetPaymentCodeVector3().alice_.words_))
         , parameters_()
         , source_{nullptr}
         , internalNym_{nullptr}

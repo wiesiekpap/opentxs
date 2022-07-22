@@ -10,7 +10,7 @@
 #include <string_view>
 
 #include "internal/util/LogMacros.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 
 namespace ottest
 {
@@ -38,8 +38,8 @@ protected:
         , reason_(api_.Factory().PasswordPrompt(__func__))
         , nym_id_([&]() -> const ot::identifier::Nym& {
             if (seed_id_.empty()) {
-                const auto words =
-                    api_.Factory().SecretFromText(GetVectors3().alice_.words_);
+                const auto words = api_.Factory().SecretFromText(
+                    GetPaymentCodeVector3().alice_.words_);
                 const auto phrase = api_.Factory().Secret(0);
                 const_cast<ot::UnallocatedCString&>(seed_id_) =
                     api_.Crypto().Seed().ImportSeed(

@@ -45,9 +45,9 @@ void Regtest_fixture_simple::SetUp()
     auto chris_words =
         "eight upper indicate swift arch wrestle injury crystal super reward";
 
-    core_wallet_ = {"Alice", GetVectors3().alice_.words_};
+    core_wallet_ = {"Alice", GetPaymentCodeVector3().alice_.words_};
     auxiliary_wallets_.emplace(
-        name_bob, WalletDescription{name_bob, GetVectors3().bob_.words_});
+        name_bob, WalletDescription{name_bob, GetPaymentCodeVector3().bob_.words_});
     auxiliary_wallets_.emplace(
         name_chris, WalletDescription{name_chris, chris_words});
 }

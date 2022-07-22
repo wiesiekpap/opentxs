@@ -8,9 +8,9 @@
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
 
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/fixtures/blockchain/RegtestSimple.hpp"
 #include "ottest/fixtures/common/User.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 namespace ottest
 {
@@ -36,7 +36,7 @@ TEST_F(Regtest_fixture_simple, start_stop_client)
             opentxs::Options{},
             number_of_test + 3,
             core_wallet_.name_,
-            GetVectors3().alice_.words_,
+            GetPaymentCodeVector3().alice_.words_,
             address_);
         EXPECT_TRUE(success);
 

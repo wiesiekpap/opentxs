@@ -14,8 +14,8 @@
 #include "internal/otx/client/Pair.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/util/Shared.hpp"
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/fixtures/common/User.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 namespace ot = opentxs;
 namespace rpc = opentxs::rpc;
@@ -48,7 +48,8 @@ TEST_F(RPC_fixture, preconditions)
         const auto instance = session.Instance();
         const auto& nyms = local_nym_map_.at(instance);
         const auto& seeds = seed_map_.at(instance);
-        const auto seed = ImportBip39(session, GetVectors3().alice_.words_);
+        const auto seed =
+            ImportBip39(session, GetPaymentCodeVector3().alice_.words_);
 
         EXPECT_FALSE(seed.empty());
         EXPECT_TRUE(SetIntroductionServer(session, server));

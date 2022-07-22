@@ -15,7 +15,7 @@
 #include "internal/core/Factory.hpp"
 #include "internal/identity/Authority.hpp"
 #include "internal/identity/Nym.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/mocks/identity/credential/Primary.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
 #include "serialization/protobuf/ChildCredentialParameters.pb.h"
@@ -53,9 +53,9 @@ public:
         : client_(ot::Context().StartClientSession(0))
         , reason_(client_.Factory().PasswordPrompt(__func__))
         , words_(client_.Factory().SecretFromText(
-              ottest::GetVectors3().alice_.words_))
+              ottest::GetPaymentCodeVector3().alice_.words_))
         , phrase_(client_.Factory().SecretFromText(
-              ottest::GetVectors3().alice_.words_))
+              ottest::GetPaymentCodeVector3().alice_.words_))
         , parameters_()
         , source_{nullptr}
         , internalNym_{nullptr}

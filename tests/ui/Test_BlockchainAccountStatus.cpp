@@ -9,9 +9,9 @@
 #include <memory>
 #include <optional>
 
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/fixtures/common/Counter.hpp"
 #include "ottest/fixtures/common/User.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 #include "ottest/fixtures/ui/BlockchainAccountStatus.hpp"
 
 namespace ottest
@@ -81,7 +81,7 @@ public:
     BlockchainSelector()
         : alice_([&]() -> auto& {
             if (false == alice_s_.has_value()) {
-                const auto& v = GetVectors3().alice_;
+                const auto& v = GetPaymentCodeVector3().alice_;
                 alice_s_.emplace(v.words_, "Alice");
                 alice_s_->init(ot::Context().StartClientSession(0));
             }
@@ -90,7 +90,7 @@ public:
         }())
         , bob_([&]() -> auto& {
             if (false == bob_s_.has_value()) {
-                const auto& v = GetVectors3().bob_;
+                const auto& v = GetPaymentCodeVector3().bob_;
                 bob_s_.emplace(v.words_, "Bob");
                 bob_s_->init(ot::Context().StartClientSession(1));
             }
