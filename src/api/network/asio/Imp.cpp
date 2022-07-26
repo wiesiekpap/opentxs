@@ -574,7 +574,7 @@ auto Asio::Imp::state_machine() noexcept -> bool
     auto futures4 = UnallocatedVector<std::future<OTData>>{};
     auto futures6 = UnallocatedVector<std::future<OTData>>{};
 
-    for (const auto& site : sites) {
+    for (const auto& site : sites()) {
         auto promise = std::make_shared<std::promise<OTData>>();
 
         if (IPversion::IPV4 == site.protocol) {

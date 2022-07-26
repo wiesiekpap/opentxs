@@ -173,7 +173,7 @@ private:
         const unsigned http_version{};
     };
 
-    static const Vector<Site> sites;
+    static auto sites() -> const Vector<Site>&;
 
     const zmq::Context& zmq_;
     const UnallocatedCString notification_endpoint_;

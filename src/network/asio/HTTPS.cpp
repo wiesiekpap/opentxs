@@ -114,7 +114,7 @@ auto HTTPS::load_root_certificates() noexcept(false) -> void
 {
     auto ec = boost::system::error_code{};
 
-    for (const auto& cert : ssl_certs_) {
+    for (const auto& cert : ssl_certs()) {
         ssl_.add_certificate_authority(
             boost::asio::buffer(cert.data(), cert.size()), ec);
     }

@@ -106,7 +106,7 @@ protected:
         allocator_type&& alloc) noexcept;
 
 private:
-    static const display::Scale scale_;
+    static auto display_scale() -> const display::Scale&;
 
     std::random_device rd_;
     std::default_random_engine eng_;
