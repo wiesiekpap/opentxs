@@ -19,7 +19,6 @@
 #include "internal/blockchain/database/Wallet.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
-#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
@@ -47,6 +46,11 @@ namespace block
 class Transaction;
 }  // namespace block
 }  // namespace bitcoin
+
+namespace block
+{
+class Position;
+}  // namespace block
 
 namespace database
 {

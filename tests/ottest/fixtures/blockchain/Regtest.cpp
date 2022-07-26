@@ -1536,7 +1536,7 @@ struct ScanListener::Imp {
         }
         auto test() noexcept -> void
         {
-            if (pos_.first == target_) {
+            if (pos_.height_ == target_) {
                 try {
                     promise_.set_value();
                 } catch (...) {
@@ -1600,7 +1600,7 @@ struct ScanListener::Imp {
         auto& map = map_[std::move(nymID)][chain][std::move(accountID)];
         auto it = [&] {
             if (auto i = map.find(sub); i != map.end()) {
-                if (height > i->second.pos_.first) {
+                if (height > i->second.pos_.height_) {
                     i->second.pos_ = Position{height, std::move(hash)};
                 }
 
@@ -1767,13 +1767,13 @@ auto SyncRequestor::check(const otsync::Block& block, const std::size_t index)
     const auto& pos = header->Position();
     auto output{true};
     output &= (block.Chain() == test_chain_);
-    output &= (block.Height() == pos.first);
+    output &= (block.Height() == pos.height_);
     output &= (block.Header() == ot::reader(headerBytes));
     output &= (block.FilterType() == filterType);
     // TODO verify filter
 
     EXPECT_EQ(block.Chain(), test_chain_);
-    EXPECT_EQ(block.Height(), pos.first);
+    EXPECT_EQ(block.Height(), pos.height_);
     EXPECT_EQ(block.Header(), ot::reader(headerBytes));
     EXPECT_EQ(block.FilterType(), filterType);
 
@@ -1880,7 +1880,7 @@ struct SyncSubscriber::Imp {
                 throw std::runtime_error{error.c_str()};
             }
 
-            if (state.Position().second != hash) {
+            if (state.Position().hash_ != hash) {
                 std::runtime_error("wrong hash");
             }
         } catch (const std::exception& e) {

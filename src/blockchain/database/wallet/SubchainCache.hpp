@@ -21,7 +21,6 @@
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
-#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -47,6 +46,7 @@ namespace blockchain
 namespace block
 {
 class Hash;
+class Position;
 }  // namespace block
 
 namespace database

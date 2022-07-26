@@ -15,6 +15,7 @@
 
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -49,7 +50,9 @@ State::State(
     const proto::P2PBlockchainChainState& in) noexcept(false)
     : State(
           static_cast<opentxs::blockchain::Type>(in.chain()),
-          {in.height(), ReadView{in.hash()}})
+          opentxs::blockchain::block::Position{
+              static_cast<opentxs::blockchain::block::Height>(in.height()),
+              ReadView{in.hash()}})
 {
 }
 
@@ -81,10 +84,10 @@ auto State::Serialize(proto::P2PBlockchainChainState& dest) const noexcept
     -> bool
 {
     const auto& pos = imp_->position_;
-    const auto bytes = pos.second.Bytes();
+    const auto bytes = pos.hash_.Bytes();
     dest.set_version(Imp::default_version_);
     dest.set_chain(static_cast<std::uint32_t>(imp_->chain_));
-    dest.set_height(pos.first);
+    dest.set_height(pos.height_);
     dest.set_hash(bytes.data(), bytes.size());
 
     return true;

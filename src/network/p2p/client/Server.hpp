@@ -21,6 +21,14 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace blockchain
+{
+namespace block
+{
+class Position;
+}  // namespace block
+}  // namespace blockchain
+
 namespace network
 {
 namespace p2p

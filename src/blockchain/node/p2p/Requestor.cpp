@@ -104,7 +104,7 @@ auto Requestor::Imp::add_to_queue(
 {
     const auto& blocks = data.Blocks();
 
-    if (blocks.empty()) { return; }
+    if (0u == blocks.size()) { return; }
 
     const auto bytes = msg.Total();
     log_(OT_PRETTY_CLASS())("buffering ")(bytes)(" bytes of ")(print(chain_))(
@@ -160,7 +160,7 @@ auto Requestor::Imp::do_common() noexcept -> void
 
     if (processing_) { return; }
 
-    if (!queue_.empty()) {
+    if (0 < queue_.size()) {
         auto& msg = queue_.front();
         const auto bytes = msg.Total();
         to_parent_.Send(std::move(msg));
@@ -293,7 +293,7 @@ auto Requestor::Imp::process_sync_ack(Message&& in) noexcept -> void
     const auto& ack = base->asAcknowledgement();
     update_remote_position(ack.State(chain_));
     log_(OT_PRETTY_CLASS())("best chain tip for ")(print(chain_))(
-        " according to sync peer is ")(print(remote_position_))
+        " according to sync peer is ")(remote_position_)
         .Flush();
 }
 
@@ -346,7 +346,7 @@ auto Requestor::Imp::request(const block::Position& position) noexcept -> void
 
     if (have_pending_request()) { return; }
 
-    if (!received_first_ack_) {
+    if (false == received_first_ack_) {
         log_(OT_PRETTY_CLASS())("waiting to request ")(print(chain_))(
             " sync data until a data provider is available ")
             .Flush();
@@ -355,18 +355,22 @@ auto Requestor::Imp::request(const block::Position& position) noexcept -> void
     }
 
     log_(OT_PRETTY_CLASS())("requesting ")(print(chain_))(
-        " sync data starting from block ")(position.first)
+        " sync data starting from block ")(position.height_)
         .Flush();
+    // TODO remove Lambda
+    pipeline_.Internal().SendFromThread([&] {
+        auto msg = MakeWork(Work::Request);
+        msg.AddFrame(chain_);
+        msg.Internal().AddFrame([&] {
+            auto proto = proto::P2PBlockchainChainState{};
+            const auto state = network::p2p::State{chain_, position};
+            state.Serialize(proto);
 
-    auto msg = MakeWork(Work::Request);
-    msg.AddFrame(chain_);
+            return proto;
+        }());
 
-    proto::P2PBlockchainChainState proto{};
-    const auto state = network::p2p::State{chain_, position};
-    state.Serialize(proto);
-    msg.Internal().AddFrame(proto);
-
-    pipeline_.Internal().SendFromThread(std::move(msg));
+        return msg;
+    }());
     last_request_ = Clock::now();
     reset_request_timer(request_timeout_);
 }
@@ -525,7 +529,7 @@ auto Requestor::Imp::transition_state_run() noexcept -> void
 {
     const auto checkpoint = params::Chains().at(chain_).checkpoint_.height_;
 
-    if (remote_position_.first < checkpoint ||
+    if (remote_position_.height_ < checkpoint ||
         local_position_ != remote_position_ || !queue_.empty() ||
         last_request_.has_value() || processing_) {
         return;
@@ -560,7 +564,7 @@ auto Requestor::Imp::update_activity() noexcept -> void
 
 auto Requestor::Imp::update_queue_position() noexcept -> void
 {
-    if (queue_.empty()) {
+    if (0 == queue_.size()) {
         queue_position_ = blank();
 
         return;
@@ -575,7 +579,9 @@ auto Requestor::Imp::update_queue_position() noexcept -> void
 auto Requestor::Imp::update_queue_position(
     const network::p2p::Data& data) noexcept -> void
 {
-    if (data.Blocks().empty()) { return; }
+    const auto& blocks = data.Blocks();
+
+    if (0u == blocks.size()) { return; }
 
     queue_position_ = data.LastPosition(api_);
 }

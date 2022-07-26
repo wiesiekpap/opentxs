@@ -140,7 +140,7 @@ auto BitcoinTransaction(
             std::move(inputs),
             std::move(outputs),
             UnallocatedVector<blockchain::Type>{chain},
-            make_blank<blockchain::block::Position>::value(api));
+            blockchain::block::Position{});
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
@@ -230,10 +230,10 @@ auto BitcoinTransaction(
         auto outputs =
             std::unique_ptr<const blockchain::bitcoin::block::Outputs>{};
 
-        std::optional<std::size_t> size =
+        std::optional<const std::size_t> size =
             std::numeric_limits<std::size_t>::max() == position
                 ? std::nullopt
-                : std::optional{position};
+                : std::make_optional(position);
 
         return std::make_unique<ReturnType>(
             api,
@@ -251,7 +251,7 @@ auto BitcoinTransaction(
             factory::BitcoinTransactionOutputs(
                 std::move(instantiatedOutputs), outputBytes),
             UnallocatedVector<blockchain::Type>{chain},
-            make_blank<blockchain::block::Position>::value(api),
+            blockchain::block::Position{},
             std::move(size));
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();

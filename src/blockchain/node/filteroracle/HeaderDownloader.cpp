@@ -31,7 +31,7 @@ FilterOracle::HeaderDownloader::HeaderDownloader(
           [&] {
               auto promise = std::promise<cfilter::Header>{};
               const auto tip = db.FilterHeaderTip(type);
-              promise.set_value(db.LoadFilterHeader(type, tip.second.Bytes()));
+              promise.set_value(db.LoadFilterHeader(type, tip.hash_.Bytes()));
 
               return Finished{promise.get_future()};
           }(),
@@ -68,8 +68,8 @@ auto FilterOracle::HeaderDownloader::batch_ready() const noexcept -> void
     node_.JobReady(PeerManagerJobs::JobAvailableCfheaders);
 }
 
-auto FilterOracle::HeaderDownloader::batch_size(const std::size_t in) noexcept
-    -> std::size_t
+auto FilterOracle::HeaderDownloader::batch_size(
+    const std::size_t in) noexcept -> std::size_t
 {
     if (in < 10) {
 
@@ -106,7 +106,7 @@ auto FilterOracle::HeaderDownloader::update_tip(
     OT_ASSERT(saved);
 
     LogDetail()(print(chain_))(" cfheader chain updated to height ")(
-        position.first)
+        position.height_)
         .Flush();
     filter_.UpdatePosition(position);
 }
@@ -140,8 +140,7 @@ auto FilterOracle::HeaderDownloader::process_position() noexcept -> void
 
         if (first != current) {
             auto promise = std::promise<cfilter::Header>{};
-            promise.set_value(
-                db_.LoadFilterHeader(type_, first.second.Bytes()));
+            promise.set_value(db_.LoadFilterHeader(type_, first.hash_.Bytes()));
             prior.emplace(std::move(first), promise.get_future());
         }
     }
@@ -179,16 +178,16 @@ auto FilterOracle::HeaderDownloader::queue_processing(
         const auto check = checkpoint_(position, header);
 
         if (check == position) {
-            headers.emplace_back(position.second, header, hash);
+            headers.emplace_back(position.hash_, header, hash);
             task->process(std::move(header));
         } else {
-            const auto good = db_.LoadFilterHeader(type_, check.second.Bytes());
+            const auto good = db_.LoadFilterHeader(type_, check.hash_.Bytes());
 
             OT_ASSERT(false == good.IsNull());
 
             auto work = MakeWork(Work::reset_filter_tip);
-            work.AddFrame(check.first);
-            work.AddFrame(check.second);
+            work.AddFrame(check.height_);
+            work.AddFrame(check.hash_);
             work.AddFrame(good);
             pipeline_.Push(std::move(work));
         }

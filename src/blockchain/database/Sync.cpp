@@ -44,7 +44,7 @@ Sync::Sync(
 {
     auto tip = Tip();
 
-    if (blank_position_.first == tip.first) {
+    if (blank_position_.height_ == tip.height_) {
         const auto genesis = block::Position{0, genesis_};
         const auto saved = SetTip(genesis);
         tip = genesis;
@@ -52,9 +52,9 @@ Sync::Sync(
         OT_ASSERT(saved);
     }
 
-    LogVerbose()(OT_PRETTY_CLASS())("Sync tip: ")(tip.first).Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("Sync tip: ")(tip.height_).Flush();
 
-    if (const auto ctip = common_.SyncTip(chain_); tip.first == ctip) {
+    if (const auto ctip = common_.SyncTip(chain_); tip.height_ == ctip) {
         LogVerbose()(OT_PRETTY_CLASS())("Database is consistent").Flush();
     } else {
         LogVerbose()(OT_PRETTY_CLASS())(

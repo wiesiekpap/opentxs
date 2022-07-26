@@ -72,7 +72,7 @@ auto Transaction::Cache::height() const noexcept -> blockchain::block::Height
 {
     auto lock = rLock{lock_};
 
-    return mined_position_.first;
+    return mined_position_.height_;
 }
 
 auto Transaction::Cache::memo() const noexcept -> UnallocatedCString

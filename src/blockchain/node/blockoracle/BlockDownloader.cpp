@@ -20,6 +20,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/block/Block.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
@@ -89,16 +90,16 @@ auto BlockDownloader::batch_size(const std::size_t in) const noexcept
 
 auto BlockDownloader::check_task(TaskType& task) const noexcept -> void
 {
-    const auto& hash = task.position_.second;
+    const auto& hash = task.position_.hash_;
 
     if (auto block = db_.BlockLoadBitcoin(hash); bool(block)) {
         task.download(std::move(block));
     }
 }
 
-auto BlockDownloader::pipeline(network::zeromq::Message&& in) -> void
+auto BlockDownloader::pipeline(network::zeromq::Message&& in) noexcept -> void
 {
-    if (!running_.load()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -155,7 +156,7 @@ auto BlockDownloader::process_position() noexcept -> void
     auto current = known();
     auto hashes = header_.BestChain(current, 2000);
 
-    OT_ASSERT(!hashes.empty());
+    OT_ASSERT(0 < hashes.size());
 
     auto prior = Previous{std::nullopt};
     {
@@ -173,7 +174,7 @@ auto BlockDownloader::process_position() noexcept -> void
 
 auto BlockDownloader::queue_processing(DownloadedData&& data) noexcept -> void
 {
-    if (data.empty()) { return; }
+    if (0 == data.size()) { return; }
 
     for (const auto& task : data) {
         const auto& pBlock = task->data_.get();
@@ -216,11 +217,11 @@ auto BlockDownloader::update_tip(const Position& position, const int&)
     OT_ASSERT(saved);
 
     LogDetail()(print(chain_))(" block chain updated to height ")(
-        position.first)
+        position.height_)
         .Flush();
     auto work = MakeWork(OT_ZMQ_NEW_FULL_BLOCK_SIGNAL);
-    work.AddFrame(position.first);
-    work.AddFrame(position.second);
+    work.AddFrame(position.height_);
+    work.AddFrame(position.hash_);
     socket_->Send(std::move(work));
 }
 

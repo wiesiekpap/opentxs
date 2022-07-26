@@ -69,6 +69,7 @@ class Input;
 class Output;
 }  // namespace internal
 
+class Position;
 class Transaction;
 }  // namespace block
 }  // namespace bitcoin

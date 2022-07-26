@@ -12,6 +12,7 @@
 #include <iterator>
 #include <utility>
 
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/network/p2p/State.hpp"
 
 namespace opentxs::network::p2p::client
@@ -89,11 +90,11 @@ auto Server::ProcessState(const opentxs::network::p2p::State& state) noexcept
     if (auto it = chains_.find(chain); it != chains_.end()) {
         it->second = state.Position();
 
-        return it->second.first;
+        return it->second.height_;
     } else {
         auto [i, added] = chains_.try_emplace(chain, state.Position());
 
-        return i->second.first;
+        return i->second.height_;
     }
 }
 

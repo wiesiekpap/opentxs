@@ -15,6 +15,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
@@ -33,6 +34,13 @@ namespace std
 auto less<opentxs::blockchain::block::Hash>::operator()(
     const opentxs::blockchain::block::Hash& lhs,
     const opentxs::blockchain::block::Hash& rhs) const noexcept -> bool
+{
+    return lhs < rhs;
+}
+
+auto less<opentxs::blockchain::block::Position>::operator()(
+    const opentxs::blockchain::block::Position& lhs,
+    const opentxs::blockchain::block::Position& rhs) const noexcept -> bool
 {
     return lhs < rhs;
 }

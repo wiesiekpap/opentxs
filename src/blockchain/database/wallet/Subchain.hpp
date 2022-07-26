@@ -15,7 +15,6 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
-#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -37,6 +36,11 @@ class Session;
 
 namespace blockchain
 {
+namespace block
+{
+class Position;
+}  // namespace block
+
 namespace node
 {
 class HeaderOracle;

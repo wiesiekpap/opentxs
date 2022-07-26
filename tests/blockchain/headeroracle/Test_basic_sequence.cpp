@@ -33,10 +33,10 @@ TEST_F(Test_HeaderOracle, basic_sequence)
             const auto data = header_oracle_.BestChain(existing->Position());
 
             ASSERT_EQ(data.size(), 4);
-            EXPECT_EQ(data.at(0).second, get_block_hash(BLOCK_7));
-            EXPECT_EQ(data.at(1).second, get_block_hash(BLOCK_8));
-            EXPECT_EQ(data.at(2).second, get_block_hash(BLOCK_9));
-            EXPECT_EQ(data.at(3).second, get_block_hash(BLOCK_10));
+            EXPECT_EQ(data.at(0).hash_, get_block_hash(BLOCK_7));
+            EXPECT_EQ(data.at(1).hash_, get_block_hash(BLOCK_8));
+            EXPECT_EQ(data.at(2).hash_, get_block_hash(BLOCK_9));
+            EXPECT_EQ(data.at(3).hash_, get_block_hash(BLOCK_10));
         }
         {
             const auto target =
@@ -48,9 +48,9 @@ TEST_F(Test_HeaderOracle, basic_sequence)
                 existing->Position(), target->Position());
 
             ASSERT_EQ(data.size(), 3);
-            EXPECT_EQ(data.at(0).second, get_block_hash(BLOCK_7));
-            EXPECT_EQ(data.at(1).second, get_block_hash(BLOCK_8));
-            EXPECT_EQ(data.at(2).second, get_block_hash(BLOCK_9));
+            EXPECT_EQ(data.at(0).hash_, get_block_hash(BLOCK_7));
+            EXPECT_EQ(data.at(1).hash_, get_block_hash(BLOCK_8));
+            EXPECT_EQ(data.at(2).hash_, get_block_hash(BLOCK_9));
         }
         {
             const auto target =
@@ -62,14 +62,14 @@ TEST_F(Test_HeaderOracle, basic_sequence)
                 existing->Position(), target->Position());
 
             ASSERT_EQ(data.size(), 1);
-            EXPECT_EQ(data.at(0).second, get_block_hash(BLOCK_5));
+            EXPECT_EQ(data.at(0).hash_, get_block_hash(BLOCK_5));
         }
         {
             const auto data = header_oracle_.Ancestors(
                 existing->Position(), existing->Position());
 
             ASSERT_EQ(data.size(), 1);
-            EXPECT_EQ(data.at(0).second, get_block_hash(BLOCK_7));
+            EXPECT_EQ(data.at(0).hash_, get_block_hash(BLOCK_7));
         }
     }
 }

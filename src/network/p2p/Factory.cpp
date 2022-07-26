@@ -23,6 +23,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/network/p2p/Acknowledgement.hpp"
@@ -204,7 +205,10 @@ auto BlockchainSyncMessage(
             for (const auto& state : hello.state()) {
                 out.emplace_back(network::p2p::State{
                     static_cast<opentxs::blockchain::Type>(state.chain()),
-                    {state.height(), blockchain::block::Hash{state.hash()}}});
+                    opentxs::blockchain::block::Position{
+                        static_cast<opentxs::blockchain::block::Height>(
+                            state.height()),
+                        opentxs::blockchain::block::Hash{state.hash()}}});
             }
 
             return out;

@@ -58,6 +58,7 @@ class Header;
 namespace block
 {
 class Header;
+class Position;
 }  // namespace block
 
 namespace database
@@ -90,7 +91,7 @@ public:
         -> block::Hash;
     auto CurrentBest() const noexcept -> std::unique_ptr<block::Header>
     {
-        return load_header(best().second);
+        return load_header(best().hash_);
     }
     auto CurrentCheckpoint() const noexcept -> block::Position;
     auto DisconnectedHashes() const noexcept -> database::DisconnectedList;

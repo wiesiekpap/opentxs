@@ -41,6 +41,11 @@ namespace block
 class Header;
 }  // namespace block
 }  // namespace bitcoin
+
+namespace block
+{
+class Position;
+}  // namespace block
 }  // namespace blockchain
 // }  // namespace v1
 }  // namespace opentxs

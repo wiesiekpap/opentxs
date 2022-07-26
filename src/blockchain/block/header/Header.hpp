@@ -45,6 +45,7 @@ class Header;
 namespace block
 {
 class Hash;
+class Position;
 }  // namespace block
 }  // namespace blockchain
 // }  // namespace v1

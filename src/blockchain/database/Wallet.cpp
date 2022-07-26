@@ -11,6 +11,7 @@
 
 #include "blockchain/database/common/Database.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/core/Amount.hpp"  // IWYU pragma: keep
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
@@ -251,7 +252,7 @@ auto Wallet::ReorgTo(
     if (reorg.empty()) { return true; }
 
     const auto& oldest = *reorg.crbegin();
-    const auto lastGoodHeight = block::Height{oldest.first - 1};
+    const auto lastGoodHeight = block::Height{oldest.height_ - 1};
     const auto subchainID = subchains_.GetSubchainID(balanceNode, subchain, tx);
 
     try {

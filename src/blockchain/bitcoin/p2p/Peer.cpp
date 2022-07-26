@@ -1905,7 +1905,7 @@ auto Peer::request_block_job() noexcept -> void
         auto blocks = UnallocatedVector<Inventory>{};
 
         for (const auto& task : data) {
-            blocks.emplace_back(Type::MsgBlock, task->position_.second);
+            blocks.emplace_back(Type::MsgBlock, task->position_.hash_);
         }
 
         if (0 == blocks.size()) { return; }
@@ -1954,8 +1954,8 @@ auto Peer::request_cfheaders() noexcept -> void
                 api_,
                 chain_,
                 job.extra_,
-                data.front()->position_.first,
-                data.back()->position_.second)};
+                data.front()->position_.height_,
+                data.back()->position_.hash_)};
 
         if (false == bool(pMessage)) {
             LogError()(OT_PRETTY_CLASS())("Failed to construct getcfheaders")
@@ -1988,8 +1988,8 @@ auto Peer::request_cfilter() noexcept -> void
             api_,
             chain_,
             job.extra_,
-            data.front()->position_.first,
-            data.back()->position_.second)};
+            data.front()->position_.height_,
+            data.back()->position_.hash_)};
 
         if (false == bool(pMessage)) {
             LogError()(OT_PRETTY_CLASS())("Failed to construct getcfilters")

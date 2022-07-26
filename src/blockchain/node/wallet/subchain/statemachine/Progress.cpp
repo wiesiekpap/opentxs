@@ -20,6 +20,10 @@
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
@@ -63,14 +67,14 @@ auto Progress::Imp::do_process_update(Message&& msg) noexcept -> void
     decode(parent_.api_, msg, clean, dirty);
     const auto decoded = Clock::now();
 
-    OT_ASSERT(dirty.empty());
-    OT_ASSERT(!clean.empty());
+    OT_ASSERT(0u == dirty.size());
+    OT_ASSERT(0u < clean.size());
 
     const auto& best = clean.crbegin()->second;
     auto handle = parent_.progress_position_.lock();
     auto& last = *handle;
 
-    if (!last.has_value() || (last.value() != best)) {
+    if ((false == last.has_value()) || (last.value() != best)) {
         parent_.db_.SubchainSetLastScanned(parent_.db_key_, best);
         last = best;
         notify(best);

@@ -44,6 +44,11 @@ namespace api
 class Session;
 }  // namespace api
 
+namespace block
+{
+class Position;
+}  // namespace block
+
 namespace network
 {
 namespace p2p

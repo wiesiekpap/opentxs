@@ -33,6 +33,7 @@
 #include "opentxs/blockchain/bitcoin/block/Output.hpp"
 #include "opentxs/blockchain/bitcoin/block/Script.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -771,7 +772,7 @@ auto OutputCache::Print() const noexcept -> void
     log(OT_PRETTY_CLASS())("Outputs by block:\n");
 
     for (const auto& [position, outputs] : positions_) {
-        log("  * block ")(print(position))("\n");
+        log("  * block ")(position)("\n");
 
         for (const auto& outpoint : outputs) {
             log("    * ")(outpoint.str())("\n");

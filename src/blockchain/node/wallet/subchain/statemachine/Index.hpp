@@ -16,7 +16,6 @@
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/Mutex.hpp"
-#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
@@ -29,6 +28,11 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
+namespace block
+{
+class Position;
+}  // namespace block
+
 namespace node
 {
 namespace wallet

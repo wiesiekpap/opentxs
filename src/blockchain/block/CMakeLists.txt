@@ -7,7 +7,13 @@ if(OT_BLOCKCHAIN_EXPORT)
   add_subdirectory(header)
 endif()
 
-target_sources(opentxs-common PRIVATE "Hash.cpp" "Outpoint.cpp")
+target_sources(
+  opentxs-common
+  PRIVATE
+    "Hash.cpp"
+    "Outpoint.cpp"
+    "Position.cpp"
+)
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Hash.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Outpoint.hpp"

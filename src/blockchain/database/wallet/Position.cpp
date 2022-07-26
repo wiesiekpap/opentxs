@@ -11,10 +11,10 @@
 #include <cstring>
 #include <iterator>
 #include <stdexcept>
-#include <type_traits>
-#include <utility>
 
 #include "internal/util/Mutex.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Container.hpp"
 

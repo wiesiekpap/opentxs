@@ -6,8 +6,6 @@
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
 #include <memory>
-#include <type_traits>
-#include <utility>
 
 #include "ottest/fixtures/blockchain/HeaderOracle.hpp"
 

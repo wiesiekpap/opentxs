@@ -87,6 +87,7 @@ namespace block
 {
 class Block;
 class Header;
+class Position;
 }  // namespace block
 
 namespace database

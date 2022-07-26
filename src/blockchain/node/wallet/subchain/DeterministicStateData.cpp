@@ -33,6 +33,7 @@
 #include "opentxs/blockchain/bitcoin/block/Script.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"

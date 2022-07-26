@@ -15,7 +15,6 @@
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/Timer.hpp"
-#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
@@ -31,6 +30,7 @@ namespace blockchain
 namespace block
 {
 class Hash;
+class Position;
 }  // namespace block
 
 namespace node

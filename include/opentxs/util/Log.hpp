@@ -40,6 +40,7 @@ namespace blockchain
 namespace block
 {
 class Outpoint;
+class Position;
 }  // namespace block
 }  // namespace blockchain
 
@@ -104,6 +105,8 @@ public:
     auto operator()(const boost::system::error_code& error) const noexcept
         -> const Log&;
     auto operator()(const blockchain::block::Outpoint& outpoint) const noexcept
+        -> const Log&;
+    auto operator()(const blockchain::block::Position& position) const noexcept
         -> const Log&;
     template <typename T>
     auto operator()(const T& in) const noexcept -> const Log&

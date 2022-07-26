@@ -30,6 +30,11 @@ namespace opentxs  // NOLINT
 // {
 namespace blockchain
 {
+namespace block
+{
+class Position;
+}  // namespace block
+
 namespace node
 {
 namespace wallet

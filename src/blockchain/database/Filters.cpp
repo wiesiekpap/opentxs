@@ -86,9 +86,9 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
 {
     for (const auto& [style, genesis] : params::Filters().at(chain)) {
         const auto needHeader =
-            blank_position_.first == CurrentHeaderTip(style).first;
+            blank_position_.height_ == CurrentHeaderTip(style).height_;
         const auto needFilter =
-            blank_position_.first == CurrentTip(style).first;
+            blank_position_.height_ == CurrentTip(style).height_;
 
         if (!(needHeader || needFilter)) { return; }
 
@@ -224,7 +224,7 @@ auto Filters::StoreFilters(
         return false;
     }
 
-    if (0 > tip.first) { return true; }
+    if (0 > tip.height_) { return true; }
 
     auto parentTxn = lmdb_.TransactionRW();
     output = lmdb_

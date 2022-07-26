@@ -3,7 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+// IWYU pragma: no_forward_declare opentxs::blockchain::node::implementation::FilterOracle::BlockIndexer
+// IWYU pragma: no_forward_declare opentxs::blockchain::node::implementation::FilterOracle::BlockIndexerData
 
 #pragma once
 
@@ -37,6 +38,15 @@ class Session;
 
 namespace blockchain
 {
+namespace bitcoin
+{
+namespace block
+{
+class Block;
+class Position;
+}  // namespace block
+}  // namespace bitcoin
+
 namespace database
 {
 class Cfilter;

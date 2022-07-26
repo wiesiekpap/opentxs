@@ -33,7 +33,6 @@
 #include "opentxs/blockchain/bitcoin/block/Output.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
-#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
@@ -69,6 +68,11 @@ class Output;
 class Transaction;
 }  // namespace block
 }  // namespace bitcoin
+
+namespace block
+{
+class Position;
+}  // namespace block
 
 namespace database
 {

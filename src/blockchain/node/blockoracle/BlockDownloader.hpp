@@ -43,6 +43,11 @@ class Block;
 }  // namespace block
 }  // namespace bitcoin
 
+namespace block
+{
+class Position;
+}  // namespace block
+
 namespace database
 {
 class Block;
@@ -106,7 +111,7 @@ public:
     ~BlockDownloader() final;
 
 protected:
-    auto pipeline(network::zeromq::Message&& in) -> void final;
+    auto pipeline(network::zeromq::Message&& in) noexcept -> void final;
     auto state_machine() noexcept -> bool final;
 
 private:

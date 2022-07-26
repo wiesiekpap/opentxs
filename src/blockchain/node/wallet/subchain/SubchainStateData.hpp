@@ -93,6 +93,11 @@ class Transaction;
 }  // namespace block
 }  // namespace bitcoin
 
+namespace block
+{
+class Position;
+}  // namespace block
+
 namespace crypto
 {
 class Element;

@@ -59,6 +59,7 @@ class Block;
 namespace block
 {
 class Block;
+class Position;
 }  // namespace block
 
 namespace database

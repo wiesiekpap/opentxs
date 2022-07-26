@@ -153,11 +153,10 @@ auto Accounts::Imp::do_startup() noexcept -> void
     for (const auto& id : api_.Wallet().LocalNyms()) { process_nym(id); }
 
     const auto oldPosition = db_.GetPosition();
-    log_(OT_PRETTY_CLASS())(name_)(" last wallet position is ")(
-        print(oldPosition))
+    log_(OT_PRETTY_CLASS())(name_)(" last wallet position is ")(oldPosition)
         .Flush();
 
-    if (0 > oldPosition.first) { return; }
+    if (0 > oldPosition.height_) { return; }
 
     const auto [parent, best] = node_.HeaderOracle().CommonParent(oldPosition);
 
@@ -171,10 +170,10 @@ auto Accounts::Imp::do_startup() noexcept -> void
 
         auto work = MakeWork(Work::reorg);
         work.AddFrame(chain_);
-        work.AddFrame(parent.second);
-        work.AddFrame(parent.first);
-        work.AddFrame(best.second);
-        work.AddFrame(best.first);
+        work.AddFrame(parent.hash_);
+        work.AddFrame(parent.height_);
+        work.AddFrame(best.hash_);
+        work.AddFrame(best.height_);
         pipeline_.Push(std::move(work));
     }
 }
@@ -216,8 +215,7 @@ auto Accounts::Imp::process_block_header(Message&& in) noexcept -> void
 
     const auto position =
         block::Position{body.at(3).as<block::Height>(), body.at(2).Bytes()};
-    log_(OT_PRETTY_CLASS())("processing block header for ")(print(position))
-        .Flush();
+    log_(OT_PRETTY_CLASS())("processing block header for ")(position).Flush();
     db_.AdvanceTo(position);
 }
 
@@ -277,8 +275,8 @@ auto Accounts::Imp::process_reorg(Message&& in) noexcept -> void
 
     process_reorg(
         std::move(in),
-        std::make_pair(body.at(3).as<block::Height>(), body.at(2).Bytes()),
-        std::make_pair(body.at(5).as<block::Height>(), body.at(4).Bytes()));
+        {body.at(3).as<block::Height>(), body.at(2).Bytes()},
+        {body.at(5).as<block::Height>(), body.at(4).Bytes()});
 }
 
 auto Accounts::Imp::process_reorg(
@@ -286,7 +284,7 @@ auto Accounts::Imp::process_reorg(
     const block::Position& ancestor,
     const block::Position& tip) noexcept -> void
 {
-    if (!transition_state_reorg()) {
+    if (false == transition_state_reorg()) {
         LogError()(OT_PRETTY_CLASS())(
             name_)(" failed to transaction to reorg state (possibly due to "
                    "startup condition")
@@ -305,12 +303,12 @@ auto Accounts::Imp::process_reorg(
             a.second.ProcessReorg(lock, tx, errors, ancestor);
         });
 
-        if (!db_.FinalizeReorg(tx, ancestor)) { ++errors; }
+        if (false == db_.FinalizeReorg(tx, ancestor)) { ++errors; }
 
         try {
             if (0 < errors) { throw std::runtime_error{"Prepare step failed"}; }
 
-            if (!tx.Finalize(true)) {
+            if (false == tx.Finalize(true)) {
 
                 throw std::runtime_error{"Finalize transaction failed"};
             }
@@ -322,7 +320,7 @@ auto Accounts::Imp::process_reorg(
     }
 
     try {
-        if (!db_.AdvanceTo(tip)) {
+        if (false == db_.AdvanceTo(tip)) {
 
             throw std::runtime_error{"Advance chain failed"};
         }
@@ -338,7 +336,7 @@ auto Accounts::Imp::process_reorg(
 
         OT_ASSERT(rc);
     });
-    LogConsole()(name_)(": reorg to ")(print(tip))(" finished").Flush();
+    LogConsole()(name_)(": reorg to ")(tip)(" finished").Flush();
 }
 
 auto Accounts::Imp::process_rescan(Message&& in) noexcept -> void

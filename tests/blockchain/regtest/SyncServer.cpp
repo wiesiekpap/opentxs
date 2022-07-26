@@ -8,7 +8,6 @@
 #include <atomic>
 #include <memory>
 #include <optional>
-#include <utility>
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
 #include "internal/network/p2p/Factory.hpp"
@@ -74,8 +73,8 @@ TEST_F(Regtest_fixture_sync, mine)
         sync_server_.Network().Blockchain().GetChain(test_chain_);
     const auto best = chain.HeaderOracle().BestChain();
 
-    EXPECT_EQ(best.first, 10);
-    EXPECT_EQ(best.second, mined_blocks_.get(9).get());
+    EXPECT_EQ(best.height_, 10);
+    EXPECT_EQ(best.hash_, mined_blocks_.get(9).get());
 }
 
 TEST_F(Regtest_fixture_sync, sync_full)
@@ -181,8 +180,8 @@ TEST_F(Regtest_fixture_sync, reorg)
         sync_server_.Network().Blockchain().GetChain(test_chain_);
     const auto best = chain.HeaderOracle().BestChain();
 
-    EXPECT_EQ(best.first, 12);
-    EXPECT_EQ(best.second, mined_blocks_.get(13).get());
+    EXPECT_EQ(best.height_, 12);
+    EXPECT_EQ(best.hash_, mined_blocks_.get(13).get());
 }
 
 TEST_F(Regtest_fixture_sync, sync_reorg)

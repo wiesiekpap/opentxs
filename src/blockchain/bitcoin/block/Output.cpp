@@ -144,9 +144,8 @@ auto BitcoinTransactionOutput(
         const auto& hash = in.mined_block();
         blockchain::block::Position position =
             0 < hash.size()
-                ? std::make_pair(
-                      in.mined_height(), blockchain::block::Hash{hash})
-                : make_blank<blockchain::block::Position>::value(api);
+                ? blockchain::block::Position{in.mined_height(), hash}
+                : blockchain::block::Position{};
 
         UnallocatedSet<blockchain::node::TxoTag> txoTags;
 
@@ -266,7 +265,7 @@ Output::Output(
           {},
           {},
           false,
-          make_blank<blockchain::block::Position>::value(api),
+          blockchain::block::Position{},
           node::TxoState::Error,
           {})
 {
@@ -292,7 +291,7 @@ Output::Output(
           {},
           {},
           false,
-          make_blank<blockchain::block::Position>::value(api),
+          blockchain::block::Position{},
           node::TxoState::Error,
           {})
 {

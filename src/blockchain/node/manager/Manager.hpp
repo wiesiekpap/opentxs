@@ -79,6 +79,7 @@ class Transaction;
 namespace block
 {
 class Header;
+class Position;
 }  // namespace block
 
 namespace database

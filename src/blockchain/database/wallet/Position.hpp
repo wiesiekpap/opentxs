@@ -23,6 +23,14 @@ namespace api
 {
 class Session;
 }  // namespace api
+
+namespace blockchain
+{
+namespace block
+{
+class Position;
+}  // namespace block
+}  // namespace blockchain
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)

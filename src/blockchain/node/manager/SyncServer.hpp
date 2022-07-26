@@ -3,28 +3,22 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
-// IWYU pragma: no_include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
-
 #pragma once
+
+#include "0_stdafx.hpp"    // IWYU pragma: associated
+#include "1_Internal.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>
 #include <atomic>
-#include <cstddef>
-#include <exception>
-#include <future>
-#include <memory>
+#include <functional>
+#include <limits>
 #include <mutex>
 #include <thread>
 
 #include "blockchain/DownloadManager.hpp"
-#include "blockchain/DownloadTask.hpp"
+#include "blockchain/node/filteroracle/FilterOracle.hpp"
 #include "blockchain/node/manager/Manager.hpp"
-#include "core/Worker.hpp"
-#include "internal/util/Mutex.hpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/api/session/Session.hpp"
-#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
@@ -43,6 +37,11 @@ class Session;
 
 namespace blockchain
 {
+namespace block
+{
+class Position;
+}  // namespace block
+
 namespace database
 {
 class Sync;
@@ -90,8 +89,6 @@ class Message;
 
 namespace opentxs::blockchain::node::base
 {
-class SyncServer;
-
 using SyncDM = download::Manager<SyncServer, GCS, int, cfilter::Type>;
 using SyncWorker = Worker<api::Session>;
 

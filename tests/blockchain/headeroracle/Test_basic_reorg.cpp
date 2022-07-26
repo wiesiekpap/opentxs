@@ -7,7 +7,6 @@
 #include <opentxs/opentxs.hpp>
 #include <iostream>
 #include <stdexcept>
-#include <utility>
 
 #include "ottest/fixtures/blockchain/HeaderOracle.hpp"
 
@@ -33,16 +32,16 @@ TEST_F(Test_HeaderOracle, basic_reorg)
             {
                 const auto& position = *(it++);
 
-                EXPECT_EQ(position.first, tip.first);
-                EXPECT_EQ(position.second, tip.second);
+                EXPECT_EQ(position.height_, tip.height_);
+                EXPECT_EQ(position.hash_, tip.hash_);
             }
 
             {
                 const auto& position = *(it++);
                 const auto parent = bb::Position{3, get_block_hash(BLOCK_5)};
 
-                EXPECT_EQ(position.first, parent.first);
-                EXPECT_EQ(position.second, parent.second);
+                EXPECT_EQ(position.height_, parent.height_);
+                EXPECT_EQ(position.hash_, parent.hash_);
             }
         } catch (const std::exception& e) {
             std::cout << e.what() << '\n';
@@ -65,8 +64,8 @@ TEST_F(Test_HeaderOracle, basic_reorg)
             {
                 const auto& position = *(it++);
 
-                EXPECT_EQ(position.first, tip.first);
-                EXPECT_EQ(position.second, tip.second);
+                EXPECT_EQ(position.height_, tip.height_);
+                EXPECT_EQ(position.hash_, tip.hash_);
             }
         } catch (const std::exception& e) {
             std::cout << e.what() << '\n';

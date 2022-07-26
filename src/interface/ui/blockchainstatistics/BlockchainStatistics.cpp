@@ -142,8 +142,8 @@ auto BlockchainStatistics::get_cache(
             const auto& hOracle = network.HeaderOracle();
             const auto& fOracle = network.FilterOracle();
             const auto& bOracle = network.BlockOracle();
-            header = hOracle.BestChain().first;
-            filter = fOracle.FilterTip(fOracle.DefaultType()).first;
+            header = hOracle.BestChain().height_;
+            filter = fOracle.FilterTip(fOracle.DefaultType()).height_;
             connected = network.GetPeerCount();
             active = network.GetVerifiedPeerCount();
             blocks = bOracle.DownloadQueue();

@@ -64,7 +64,7 @@ public:
 
         if (false == state_.compare_exchange_strong(expect, State::Update)) {
             LogVerbose()(log_)(" download job ")(id_)(" for block ")(
-                print(position_))(" failed state check")
+                position_)(" failed state check")
                 .Flush();
 
             return false;
@@ -72,7 +72,7 @@ public:
 
         if (check.has_value() && (check.value() != extra_)) {
             LogVerbose()(log_)(" download job ")(id_)(" for block ")(
-                print(position_))(" failed metadata check")
+                position_)(" failed metadata check")
                 .Flush();
             state_.store(expect);
 
@@ -83,11 +83,11 @@ public:
             download_.set_value(std::move(data));
             state_.store(State::Downloaded);
             LogTrace()(log_)(" download job ")(id_)(" for block ")(
-                print(position_))(" completed")
+                position_)(" completed")
                 .Flush();
         } catch (const std::exception& e) {
             LogError()(log_)(" download job ")(id_)(" for block ")(
-                print(position_))(" failed: ")(e.what())
+                position_)(" failed: ")(e.what())
                 .Flush();
 
             OT_FAIL;
@@ -107,11 +107,11 @@ public:
             process_.set_value(std::move(data));
             state_.store(State::Processed);
             LogTrace()(log_)(" process job ")(id_)(" for block ")(
-                print(position_))(" completed")
+                position_)(" completed")
                 .Flush();
         } catch (const std::exception& e) {
             LogError()(log_)(" process job ")(id_)(" for block ")(
-                print(position_))(" failed: ")(e.what())
+                position_)(" failed: ")(e.what())
                 .Flush();
 
             OT_FAIL;
@@ -126,7 +126,7 @@ public:
         }
 
         LogVerbose()("Redownloading ")(log_)(" job ")(id_)(" for block ")(
-            print(position_))
+            position_)
             .Flush();
         {
             auto promise = std::promise<DownloadType>{};
@@ -155,7 +155,7 @@ public:
         }
 
         LogVerbose()("Redownloading ")(log_)(" job ")(id_)(" for block ")(
-            print(position_))
+            position_)
             .Flush();
         auto promise = std::promise<DownloadType>{};
         download_.swap(promise);

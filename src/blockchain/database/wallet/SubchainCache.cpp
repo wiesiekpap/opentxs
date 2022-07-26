@@ -15,12 +15,12 @@
 #include "blockchain/database/wallet/Pattern.hpp"
 #include "blockchain/database/wallet/Position.hpp"
 #include "blockchain/database/wallet/SubchainID.hpp"
-#include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -205,7 +205,7 @@ auto SubchainCache::GetLastScanned(const SubchainIndex& subchain) noexcept
         return serialized.Decode(api_);
     } catch (const std::exception& e) {
         LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
-        static const auto null = make_blank<block::Position>::value(api_);
+        static const auto null = block::Position{};
 
         return null;
     }

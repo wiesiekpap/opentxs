@@ -45,7 +45,7 @@ public:
     auto Reset(const Position& position, Finished&& previous) noexcept -> void
     {
         LogVerbose()(OT_PRETTY_CLASS())("resetting ")(log_)(" to height")(
-            position.first)
+            position.height_)
             .Flush();
         auto lock = Lock{dm_lock_};
         dm_previous_ = std::move(previous);
@@ -121,7 +121,7 @@ protected:
                     }
 
                     LogTrace()(OT_PRETTY_CLASS())("queueing ")(
-                        log_)(" item at height ")(task->position_.first)(
+                        log_)(" item at height ")(task->position_.height_)(
                         " for download")
                         .Flush();
                     output.emplace_back(task);
@@ -163,20 +163,22 @@ protected:
     {
         if (0 == positions.size()) { return; }
 
-        if (prior) { OT_ASSERT(prior->first.first <= positions.front().first); }
+        if (prior) {
+            OT_ASSERT(prior->first.height_ <= positions.front().height_);
+        }
 
         auto lock = Lock{dm_lock_};
         {
             const auto& start = positions.front();
 
-            if (dm_known_.first >= start.first) {
+            if (dm_known_.height_ >= start.height_) {
                 auto next = std::ptrdiff_t{-1};
                 auto lastGoodTask = TaskPtr{};
 
                 for (auto i{buffer_.begin()}; i != buffer_.end(); ++i) {
                     const auto& position = (*i)->position_;
 
-                    if (position.first < start.first) {
+                    if (position.height_ < start.height_) {
                         lastGoodTask = *i;
                         ++next;
 
@@ -245,7 +247,7 @@ protected:
 
         dm_known_ = buffer_.back()->position_;
 
-        OT_ASSERT(dm_done_.first <= dm_known_.first);
+        OT_ASSERT(dm_done_.height_ <= dm_known_.height_);
 
         downcast().trigger_state_machine();
     }
@@ -322,7 +324,7 @@ private:
     inline auto unallocated(const Lock&) const noexcept -> std::size_t
     {
         const auto outstanding =
-            static_cast<std::size_t>(dm_known_.first - dm_done_.first);
+            static_cast<std::size_t>(dm_known_.height_ - dm_done_.height_);
 
         OT_ASSERT(next_ <= outstanding);
         OT_ASSERT(next_ <= buffer_.size());
@@ -431,7 +433,7 @@ private:
             }
         }
 
-        OT_ASSERT(dm_done_.first <= dm_known_.first);
+        OT_ASSERT(dm_done_.height_ <= dm_known_.height_);
 
         auto process = DownloadedData{};
 

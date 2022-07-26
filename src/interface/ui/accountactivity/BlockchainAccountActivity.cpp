@@ -155,7 +155,7 @@ auto BlockchainAccountActivity::load_thread() noexcept -> void
         try {
             const auto& chain =
                 Widget::api_.Network().Blockchain().GetChain(chain_);
-            height_ = chain.HeaderOracle().BestChain().first;
+            height_ = chain.HeaderOracle().BestChain().height_;
 
             return chain.Internal().GetTransactions(primary_id_);
         } catch (...) {
@@ -395,7 +395,7 @@ auto BlockchainAccountActivity::process_state(const Message& in) noexcept
     try {
         const auto& chain =
             Widget::api_.Network().Blockchain().GetChain(chain_);
-        process_height(chain.HeaderOracle().BestChain().first);
+        process_height(chain.HeaderOracle().BestChain().height_);
     } catch (...) {
     }
 }

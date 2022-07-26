@@ -88,7 +88,7 @@ auto Rescan::Imp::adjust_last_scanned(
 
         if (highestClean.has_value()) {
             log_(OT_PRETTY_CLASS())(name_)(" last scanned updated to ")(
-                opentxs::print(effective))
+                effective)
                 .Flush();
             set_last_scanned(highestClean);
         }
@@ -99,7 +99,7 @@ auto Rescan::Imp::before(const block::Position& position) const noexcept
     -> block::Position
 {
     return parent_.node_.HeaderOracle().GetPosition(
-        std::max<block::Height>(position.first - 1, 0));
+        std::max<block::Height>(position.height_ - 1, 0));
 }
 
 auto Rescan::Imp::can_advance() const noexcept -> bool
@@ -108,13 +108,13 @@ auto Rescan::Imp::can_advance() const noexcept -> bool
         dirty_.empty()
             ? filter_tip_.value_or(parent_.null_position_)
             : parent_.node_.HeaderOracle().GetPosition(
-                  std::max<block::Height>(dirty_.cbegin()->first - 1, 0));
+                  std::max<block::Height>(dirty_.cbegin()->height_ - 1, 0));
 
     const auto position = current();
     log_(OT_PRETTY_CLASS())(name_)(
-        " the highest position available for rescanning is ")(print(target))
+        " the highest position available for rescanning is ")(target)
         .Flush();
-    log_(OT_PRETTY_CLASS())(name_)(" the current position is ")(print(position))
+    log_(OT_PRETTY_CLASS())(name_)(" the current position is ")(position)
         .Flush();
 
     return position != target;
@@ -175,15 +175,15 @@ auto Rescan::Imp::do_startup() noexcept -> void
     OT_ASSERT(filter_tip_.has_value());
 
     log_(OT_PRETTY_CLASS())(name_)(" loaded last scanned value of ")(
-        opentxs::print(last_scanned_.value()))(" from database")
+        last_scanned_.value())(" from database")
         .Flush();
     log_(OT_PRETTY_CLASS())(name_)(" loaded filter tip value of ")(
-        opentxs::print(last_scanned_.value()))(" from filter oracle")
+        last_scanned_.value())(" from filter oracle")
         .Flush();
 
     if (last_scanned_.value() > filter_tip_.value()) {
         log_(OT_PRETTY_CLASS())(name_)(" last scanned reset to ")(
-            opentxs::print(filter_tip_.value()))
+            filter_tip_.value())
             .Flush();
         set_last_scanned(filter_tip_);
     }
@@ -212,16 +212,13 @@ auto Rescan::Imp::ProcessReorg(
     if (last_scanned_.has_value()) {
         const auto target = parent_.ReorgTarget(
             headerOracleLock, parent, last_scanned_.value());
-        log_(OT_PRETTY_CLASS())(name_)(" last scanned reset to ")(
-            opentxs::print(target))
+        log_(OT_PRETTY_CLASS())(name_)(" last scanned reset to ")(target)
             .Flush();
         set_last_scanned(target);
     }
 
     if (filter_tip_.has_value() && (filter_tip_.value() > parent)) {
-        log_(OT_PRETTY_CLASS())(name_)(" filter tip reset to ")(
-            opentxs::print(parent))
-            .Flush();
+        log_(OT_PRETTY_CLASS())(name_)(" filter tip reset to ")(parent).Flush();
         filter_tip_ = parent;
     }
 
@@ -233,7 +230,7 @@ auto Rescan::Imp::process_clean(const Set<ScanStatus>& clean) noexcept -> void
     for (const auto& [state, position] : clean) {
         if (ScanState::processed == state) {
             log_(OT_PRETTY_CLASS())(name_)(" removing processed block ")(
-                opentxs::print(position))(" from dirty list")
+                position)(" from dirty list")
                 .Flush();
             dirty_.erase(position);
         }
@@ -251,10 +248,10 @@ auto Rescan::Imp::process_dirty(const Set<block::Position>& dirty) noexcept
         }
 
         for (const auto& position : dirty) {
-            log_(OT_PRETTY_CLASS())(name_)(" block ")(opentxs::print(position))(
-                " must be processed due to cfilter matches")
+            log_(OT_PRETTY_CLASS())(name_)(" block ")(
+                position)(" must be processed due to cfilter matches")
                 .Flush();
-            dirty_.emplace(position);
+            dirty_.emplace(std::move(position));
         }
     }
 
@@ -266,8 +263,8 @@ auto Rescan::Imp::process_dirty(const Set<block::Position>& dirty) noexcept
 
         if (current > limit) {
             log_(OT_PRETTY_CLASS())(name_)(" adjusting last scanned to ")(
-                opentxs::print(limit))(" based on dirty block ")(
-                opentxs::print(lowestDirty))
+                (limit))(" based on dirty block ")(
+                (lowestDirty))
                 .Flush();
             set_last_scanned(limit);
         }
@@ -291,8 +288,7 @@ auto Rescan::Imp::process_filter(Message&& in, block::Position&& tip) noexcept
         const auto body = in.Body();
 
         if (5u >= body.size()) {
-            log_(OT_PRETTY_CLASS())(name_)(" ignoring stale filter tip ")(
-                opentxs::print(tip))
+            log_(OT_PRETTY_CLASS())(name_)(" ignoring stale filter tip ")(tip)
                 .Flush();
 
             return;
@@ -301,17 +297,14 @@ auto Rescan::Imp::process_filter(Message&& in, block::Position&& tip) noexcept
         const auto incoming = body.at(5).as<StateSequence>();
 
         if (incoming < last.value()) {
-            log_(OT_PRETTY_CLASS())(name_)(" ignoring stale filter tip ")(
-                opentxs::print(tip))
+            log_(OT_PRETTY_CLASS())(name_)(" ignoring stale filter tip ")(tip)
                 .Flush();
 
             return;
         }
     }
 
-    log_(OT_PRETTY_CLASS())(name_)(" filter tip updated to ")(
-        opentxs::print(tip))
-        .Flush();
+    log_(OT_PRETTY_CLASS())(name_)(" filter tip updated to ")(tip).Flush();
     filter_tip_ = std::move(tip);
     do_work();
 }
@@ -327,7 +320,7 @@ auto Rescan::Imp::prune() noexcept -> void
 
         if (position <= target) {
             log_(OT_PRETTY_CLASS())(name_)(" pruning re-scanned position ")(
-                opentxs::print(position))
+                position)
                 .Flush();
             i = dirty_.erase(i);
         } else {
@@ -344,8 +337,8 @@ auto Rescan::Imp::rescan_finished() const noexcept -> bool
 
     if (!dirty_.empty()) { return false; }
 
-    const auto& clean = last_scanned_.value().first;
-    const auto& dirty = highest_dirty_.first;
+    const auto& clean = last_scanned_.value().height_;
+    const auto& dirty = highest_dirty_.height_;
 
     if (dirty > clean) { return false; }
 
@@ -390,9 +383,9 @@ auto Rescan::Imp::stop() const noexcept -> block::Height
     }
 
     const auto& lowestDirty = *dirty_.cbegin();
-    const auto stopHeight = std::max<block::Height>(0, lowestDirty.first - 1);
+    const auto stopHeight = std::max<block::Height>(0, lowestDirty.height_ - 1);
     log_(OT_PRETTY_CLASS())(name_)(" first dirty block is ")(
-        print(lowestDirty))(" so rescan must stop at height ")(
+        lowestDirty)(" so rescan must stop at height ")(
         stopHeight)(" until this block has been processed")
         .Flush();
 
@@ -404,7 +397,7 @@ auto Rescan::Imp::work() noexcept -> bool
     auto post = ScopeGuard{[&] {
         if (last_scanned_.has_value()) {
             log_(OT_PRETTY_CLASS())(name_)(" progress updated to ")(
-                opentxs::print(last_scanned_.value()))
+                last_scanned_.value())
                 .Flush();
             auto clean = Vector<ScanStatus>{get_allocator()};
             clean.emplace_back(ScanState::rescan_clean, last_scanned_.value());
@@ -418,7 +411,7 @@ auto Rescan::Imp::work() noexcept -> bool
         Job::work();
     }};
 
-    if (!parent_.scan_dirty_) {
+    if (false == parent_.scan_dirty_) {
         log_(OT_PRETTY_CLASS())(name_)(" rescan is not necessary").Flush();
 
         return false;
@@ -436,10 +429,10 @@ auto Rescan::Imp::work() noexcept -> bool
     auto highestTested = current();
     const auto stopHeight = stop();
 
-    if (highestTested.first >= stopHeight) {
+    if (highestTested.height_ >= stopHeight) {
         log_(OT_PRETTY_CLASS())(name_)(" waiting for first of ")(dirty_.size())(
             " blocks to finish processing before continuing rescan "
-            "beyond height ")(highestTested.first)
+            "beyond height ")(highestTested.height_)
             .Flush();
 
         return false;
@@ -451,7 +444,7 @@ auto Rescan::Imp::work() noexcept -> bool
 
     if (highestClean.has_value()) {
         log_(OT_PRETTY_CLASS())(name_)(" last scanned updated to ")(
-            opentxs::print(highestClean.value()))
+            highestClean.value())
             .Flush();
         set_last_scanned(std::move(highestClean));
         // TODO The interval used for rescanning should never include any dirty
@@ -472,7 +465,7 @@ auto Rescan::Imp::work() noexcept -> bool
 
         for (auto& status : dirty) {
             auto& [type, position] = status;
-            log_(" * ")(opentxs::print(position)).Flush();
+            log_(" * ")(position).Flush();
             encode(status, work);
             dirty_.emplace(std::move(position));
         }

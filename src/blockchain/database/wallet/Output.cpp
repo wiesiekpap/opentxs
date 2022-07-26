@@ -32,7 +32,6 @@
 #include "internal/blockchain/bitcoin/block/Output.hpp"
 #include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/node/SpendPolicy.hpp"
-#include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -45,6 +44,7 @@
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -249,8 +249,7 @@ public:
             auto tx = lmdb_.TransactionRW();
 
             for (const auto& [block, blockMatches] : transactions) {
-                log(OT_PRETTY_CLASS())("processing block ")(print(block))
-                    .Flush();
+                log(OT_PRETTY_CLASS())("processing block ")(block).Flush();
                 add_transactions(
                     log,
                     account,
@@ -317,7 +316,7 @@ public:
         const bitcoin::block::Transaction& original,
         TXOs& txoCreated) noexcept -> bool
     {
-        static const auto block = make_blank<block::Position>::value(api_);
+        static const auto block = block::Position{};
         auto txoConsumed = TXOs{};
 
         return AddTransactions(
@@ -521,16 +520,15 @@ public:
 
         try {
             const auto current = cache.GetPosition().Decode(api_);
-            const auto start = current.first;
-            LogTrace()(OT_PRETTY_CLASS())("incoming position: ")(print(pos))
-                .Flush();
-            LogTrace()(OT_PRETTY_CLASS())(" current position: ")(print(current))
+            const auto start = current.height_;
+            LogTrace()(OT_PRETTY_CLASS())("incoming position: ")(pos).Flush();
+            LogTrace()(OT_PRETTY_CLASS())(" current position: ")(current)
                 .Flush();
 
             if (pos == current) { return true; }
-            if (pos.first < current.first) { return true; }
+            if (pos.height_ < current.height_) { return true; }
 
-            OT_ASSERT(pos.first > start);
+            OT_ASSERT(pos.height_ > start);
 
             const auto stop = std::max<block::Height>(
                 0,
@@ -731,7 +729,7 @@ public:
                             }();
                             outputs.emplace_back(value);
 
-                            if (height >= pos.first) {
+                            if (height >= pos.height_) {
                                 out.emplace(height);
 
                                 return true;
@@ -905,8 +903,7 @@ public:
         const SubchainID& subchain,
         const block::Position& position) noexcept -> bool
     {
-        LogTrace()(OT_PRETTY_CLASS())("rolling back block ")(print(position))
-            .Flush();
+        LogTrace()(OT_PRETTY_CLASS())("rolling back block ")(position).Flush();
         auto handle = lock();
         auto& cache = *handle;
         const auto& api = api_.Crypto().Blockchain();
@@ -1222,7 +1219,7 @@ private:
         const block::Height height,
         const block::Position& pos) const noexcept -> bool
     {
-        return (pos.first - height) >= maturation_target_;
+        return (pos.height_ - height) >= maturation_target_;
     }
     [[nodiscard]] auto match(
         const OutputCache& cache,
@@ -1515,7 +1512,7 @@ private:
         const block::Txid& txid,
         UnallocatedSet<OTIdentifier>& processed) noexcept -> bool
     {
-        if (-1 == block.first) { return true; }
+        if (-1 == block.height_) { return true; }
 
         auto oProposalID = std::optional<OTIdentifier>{};
 
@@ -1671,7 +1668,7 @@ private:
 
             if (isGeneration) {
                 if (State::ConfirmedNew == state) {
-                    if (is_mature(cache, position.first)) {
+                    if (is_mature(cache, position.height_)) {
 
                         return State::ConfirmedNew;
                     } else {
@@ -1730,7 +1727,7 @@ private:
                 const auto rc = lmdb_
                                     .Store(
                                         generation_,
-                                        static_cast<std::size_t>(pos.first),
+                                        static_cast<std::size_t>(pos.height_),
                                         id.Bytes(),
                                         tx)
                                     .first;

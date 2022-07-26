@@ -26,7 +26,6 @@
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/Timer.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
-#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -47,6 +46,11 @@ class Session;
 
 namespace blockchain
 {
+namespace block
+{
+class Position;
+}  // namespace block
+
 namespace database
 {
 class Wallet;

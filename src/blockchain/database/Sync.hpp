@@ -45,6 +45,11 @@ class Session;
 
 namespace blockchain
 {
+namespace block
+{
+class Position;
+}  // namespace block
+
 namespace database
 {
 namespace common

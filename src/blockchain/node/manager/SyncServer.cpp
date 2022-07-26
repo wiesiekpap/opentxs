@@ -36,6 +36,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
@@ -156,8 +157,8 @@ auto SyncServer::hello(const Lock&, const block::Position& incoming)
 {
     // TODO use known() and Ancestors() instead
     auto [parent, best] = header_.CommonParent(incoming);
-    if ((0 == parent.first) && (1000 < incoming.first)) {
-        const auto height = std::min(incoming.first - 1000, best.first);
+    if ((0 == parent.height_) && (1000 < incoming.height_)) {
+        const auto height = std::min(incoming.height_ - 1000, best.height_);
         parent = {height, header_.BestHash(height)};
     }
     const auto needSync = incoming != best;
@@ -175,7 +176,7 @@ auto SyncServer::update_tip(const Position& position, const int&) const noexcept
 
     OT_ASSERT(saved);
 
-    LogDetail()(print(chain_))(" sync data updated to height ")(position.first)
+    LogDetail()(print(chain_))(" sync data updated to height ")(position.height_)
         .Flush();
 }
 
@@ -185,7 +186,7 @@ auto SyncServer::download() noexcept -> void
 
     for (const auto& task : work.data_) {
         // TODO allocator
-        task->download(filter_.LoadFilter(type_, task->position_.second, {}));
+        task->download(filter_.LoadFilter(type_, task->position_.hash_, {}));
     }
 }
 auto SyncServer::process_position(const zmq::Message& in) noexcept -> void
@@ -203,21 +204,20 @@ auto SyncServer::process_position(const zmq::Message& in) noexcept -> void
 }
 auto SyncServer::process_position(const Position& pos) noexcept -> void
 {
-    LogTrace()(OT_PRETTY_CLASS())(__func__)(": processing block ")(print(pos))
-        .Flush();
+    LogTrace()(OT_PRETTY_CLASS())(__func__)(": processing block ")(pos).Flush();
 
     try {
         auto current = known();
         auto hashes = header_.Ancestors(current, pos, 2000);
         LogTrace()(OT_PRETTY_CLASS())(__func__)(
-            ": current position best known position is block ")(print(current))
+            ": current position best known position is block ")(current)
             .Flush();
 
-        OT_ASSERT(!hashes.empty());
+        OT_ASSERT(0 < hashes.size());
 
         if (1 == hashes.size()) {
             LogTrace()(OT_PRETTY_CLASS())(__func__)(
-                ": current position matches incoming block ")(print(pos))
+                ": current position matches incoming block ")(pos)
                 .Flush();
 
             return;
@@ -235,14 +235,14 @@ auto SyncServer::process_position(const Position& pos) noexcept -> void
             const auto& first = hashes.front();
             const auto& last = hashes.back();
 
-            if (first.first <= current.first) {
+            if (first.height_ <= current.height_) {
                 LogTrace()(OT_PRETTY_CLASS())(__func__)(": reorg detected")
                     .Flush();
             }
 
             LogTrace()(OT_PRETTY_CLASS())(__func__)(
-                ": scheduling download starting from block ")(print(first))(
-                " until block ")(print(last))
+                ": scheduling download starting from block ")(
+                first)(" until block ")(last)
                 .Flush();
         }
         update_position(std::move(hashes), type_, std::move(prior));
@@ -305,12 +305,12 @@ auto SyncServer::queue_processing(DownloadedData&& data) noexcept -> void
     for (const auto& task : data) {
         try {
             const auto pHeader =
-                header_.Internal().LoadBitcoinHeader(task->position_.second);
+                header_.Internal().LoadBitcoinHeader(task->position_.hash_);
 
-            if (!bool(pHeader)) {
+            if (false == bool(pHeader)) {
                 throw std::runtime_error(
                     UnallocatedCString{"failed to load block header "} +
-                    task->position_.second.asHex());
+                    task->position_.hash_.asHex());
             }
 
             const auto& header = *pHeader;
@@ -324,16 +324,16 @@ auto SyncServer::queue_processing(DownloadedData&& data) noexcept -> void
                         UnallocatedCString{
                             "failed to previous filter header for "
                             "block  "} +
-                        task->position_.second.asHex());
+                        task->position_.hash_.asHex());
                 }
             }
 
             const auto& cfilter = task->data_.get();
 
-            if (!cfilter.IsValid()) {
+            if (false == cfilter.IsValid()) {
                 throw std::runtime_error(
                     UnallocatedCString{"failed to load gcs for block "} +
-                    task->position_.second.asHex());
+                    task->position_.hash_.asHex());
             }
 
             const auto headerBytes = header.Encode();
@@ -342,7 +342,7 @@ auto SyncServer::queue_processing(DownloadedData&& data) noexcept -> void
 
             items.emplace_back(
                 chain_,
-                task->position_.first,
+                task->position_.height_,
                 type_,
                 cfilter.ElementCount(),
                 headerBytes->Bytes(),
@@ -364,7 +364,7 @@ auto SyncServer::queue_processing(DownloadedData&& data) noexcept -> void
     const auto& pos = tip->position_;
     const auto stored = db_.StoreSync(pos, items);
 
-    if (!stored) { OT_FAIL; }
+    if (false == stored) { OT_FAIL; }
 
     const auto msg = factory::BlockchainSyncData(
         WorkType::P2PBlockchainNewBlock,

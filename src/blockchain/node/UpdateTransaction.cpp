@@ -15,6 +15,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -44,17 +45,17 @@ auto UpdateTransaction::AddSibling(const block::Position& position) -> void
 {
     {
         auto& cached = siblings();
-        cached.emplace(position.second);
+        cached.emplace(position.hash_);
     }
 
-    add_sib_.emplace(position.second);
-    delete_sib_.erase(position.second);
+    add_sib_.emplace(position.hash_);
+    delete_sib_.erase(position.hash_);
 }
 
 auto UpdateTransaction::AddToBestChain(const block::Position& position) -> void
 {
-    RemoveSibling(position.second);
-    best_.emplace(position);
+    RemoveSibling(position.hash_);
+    best_.emplace(std::make_pair(position.height_, position.hash_));
 }
 
 auto UpdateTransaction::Checkpoint() const -> block::Position
@@ -65,7 +66,7 @@ auto UpdateTransaction::Checkpoint() const -> block::Position
 auto UpdateTransaction::ClearCheckpoint() -> void
 {
     have_checkpoint_ = true;
-    checkpoint_ = make_blank<block::Position>::value(api_);
+    checkpoint_ = block::Position{};
 }
 
 auto UpdateTransaction::ConnectBlock(database::ChainSegment&& segment) -> void
@@ -124,11 +125,11 @@ auto UpdateTransaction::EffectiveBestBlock(const block::Height height) const
 
 auto UpdateTransaction::EffectiveCheckpoint() const noexcept -> bool
 {
-    static const auto blank = make_blank<block::Position>::value(api_);
+    static const auto blank = block::Position{};
 
     if (have_checkpoint_) {
 
-        return blank.first != checkpoint_.first;
+        return blank.height_ != checkpoint_.height_;
     } else {
 
         return db_.HaveCheckpoint();
@@ -183,7 +184,7 @@ auto UpdateTransaction::SetReorgParent(const block::Position& pos) noexcept
     -> void
 {
     for (auto it{best_.begin()}; it != best_.end();) {
-        if (it->first > pos.first) {
+        if (it->first > pos.height_) {
             it = best_.erase(it);
         } else {
             ++it;
@@ -191,9 +192,9 @@ auto UpdateTransaction::SetReorgParent(const block::Position& pos) noexcept
     }
 
     have_reorg_ = true;
-    static const auto blank = make_blank<block::Position>::value(api_);
-    const auto set =
-        (blank.first == reorg_from_.first) || (pos.first <= reorg_from_.first);
+    static const auto blank = block::Position{};
+    const auto set = (blank.height_ == reorg_from_.height_) ||
+                     (pos.height_ <= reorg_from_.height_);
 
     if (set) { reorg_from_ = pos; }
 }

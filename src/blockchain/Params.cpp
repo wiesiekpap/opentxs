@@ -9,8 +9,6 @@
 #include "internal/blockchain/Params.hpp"      // IWYU pragma: associated
 
 #include <boost/container/vector.hpp>
-#include <iosfwd>
-#include <sstream>
 #include <string_view>
 #include <type_traits>
 
@@ -65,17 +63,6 @@ auto UnitToBlockchain(const UnitType type) noexcept -> blockchain::Type
     } catch (...) {
         return blockchain::Type::Unknown;
     }
-}
-
-auto print(const blockchain::block::Position& in) noexcept -> UnallocatedCString
-{
-    const auto& [height, hash] = in;
-    auto out = std::stringstream{};
-    out << hash.asHex();
-    out << " at height ";
-    out << std::to_string(height);
-
-    return out.str();
 }
 }  // namespace opentxs
 

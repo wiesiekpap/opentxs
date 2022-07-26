@@ -61,6 +61,14 @@ class Blockchain;
 class Session;
 }  // namespace api
 
+namespace blockchain
+{
+namespace block
+{
+class Position;
+}  // namespace block
+}  // namespace blockchain
+
 class Log;
 // }  // namespace v1
 }  // namespace opentxs

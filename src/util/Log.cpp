@@ -27,6 +27,7 @@
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
@@ -454,6 +455,14 @@ auto Log::operator()(const blockchain::block::Outpoint& outpoint) const noexcept
     if (false == imp_->active()) { return *this; }
 
     return imp_->operator()(outpoint.str());
+}
+
+auto Log::operator()(const blockchain::block::Position& pos) const noexcept
+    -> const Log&
+{
+    if (false == imp_->active()) { return *this; }
+
+    return imp_->operator()(pos.print());
 }
 
 auto Log::Assert(const char* file, const std::size_t line) const noexcept

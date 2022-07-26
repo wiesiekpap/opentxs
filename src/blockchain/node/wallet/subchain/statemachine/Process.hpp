@@ -19,7 +19,6 @@
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
-#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
@@ -46,6 +45,7 @@ class Block;
 namespace block
 {
 class Hash;
+class Position;
 }  // namespace block
 
 namespace node
