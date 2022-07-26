@@ -1139,8 +1139,12 @@ auto Base::shutdown(std::promise<void>& promise) noexcept -> void
     }
 }
 
+auto Base::shutdown_timers() noexcept -> void { heartbeat_.Cancel(); }
+
 auto Base::shut_down() noexcept -> void
 {
+    shutdown_timers();
+
     close_pipeline();
     shutdown_sender_.Activate();
     wallet_.Shutdown();

@@ -83,4 +83,5 @@ auto Activity::reset_ping() noexcept -> void
         }
     });
 }
+
 }  // namespace opentxs::blockchain::p2p::peer
