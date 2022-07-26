@@ -491,6 +491,8 @@ auto claimtype_map() noexcept -> const ClaimTypeMap&
         {ClaimType::Custom, proto::CITEMTYPE_CUSTOM},
         {ClaimType::Tnbsv, proto::CITEMTYPE_TNBSV},
         {ClaimType::TnXec, proto::CITEMTYPE_TNXEC},
+        {ClaimType::Cspr, proto::CITEMTYPE_CSPR},
+        {ClaimType::TnCspr, proto::CITEMTYPE_TNCSPR},
     };
 
     return map;
@@ -835,6 +837,8 @@ auto unittype_map() noexcept -> const UnitTypeMap&
         {UnitType::Custom, ClaimType::Custom},
         {UnitType::Tnbsv, ClaimType::Tnbsv},
         {UnitType::TnXec, ClaimType::TnXec},
+        {UnitType::Cspr, ClaimType::Cspr},
+        {UnitType::TnCspr, ClaimType::TnCspr},
     };
 
     return map;

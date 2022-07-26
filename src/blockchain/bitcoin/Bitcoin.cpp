@@ -735,6 +735,8 @@ SigHash::SigHash(
         case opentxs::blockchain::Type::Bitcoin_testnet3:
         case opentxs::blockchain::Type::Ethereum_frontier:
         case opentxs::blockchain::Type::Ethereum_ropsten:
+        case opentxs::blockchain::Type::Casper:
+        case opentxs::blockchain::Type::Casper_testnet:
         case opentxs::blockchain::Type::Litecoin:
         case opentxs::blockchain::Type::Litecoin_testnet4:
         case opentxs::blockchain::Type::PKT:

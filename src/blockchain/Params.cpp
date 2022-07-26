@@ -103,6 +103,8 @@ auto BlockHash(
         case Type::BitcoinSV_testnet3:
         case Type::eCash:
         case Type::eCash_testnet3:
+        case Type::Casper:
+        case Type::Casper_testnet:
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
@@ -148,6 +150,8 @@ auto FilterHash(
         case Type::BitcoinSV_testnet3:
         case Type::eCash:
         case Type::eCash_testnet3:
+        case Type::Casper:
+        case Type::Casper_testnet:
         case Type::UnitTest:
         default: {
             return BlockHash(api, chain, input, output);
@@ -197,6 +201,8 @@ auto MerkleHash(
         case Type::BitcoinSV_testnet3:
         case Type::eCash:
         case Type::eCash_testnet3:
+        case Type::Casper:
+        case Type::Casper_testnet:
         case Type::UnitTest:
         default: {
             return BlockHash(api, chain, input, output);
@@ -226,6 +232,8 @@ auto P2PMessageHash(
         case Type::BitcoinSV_testnet3:
         case Type::eCash:
         case Type::eCash_testnet3:
+        case Type::Casper:
+        case Type::Casper_testnet:
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
@@ -265,6 +273,8 @@ auto ProofOfWorkHash(
         case Type::BitcoinSV_testnet3:
         case Type::eCash:
         case Type::eCash_testnet3:
+        case Type::Casper:
+        case Type::Casper_testnet:
         default: {
             return BlockHash(api, chain, input, output);
         }
@@ -293,6 +303,8 @@ auto PubkeyHash(
         case Type::BitcoinSV_testnet3:
         case Type::eCash:
         case Type::eCash_testnet3:
+        case Type::Casper:
+        case Type::Casper_testnet:
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
@@ -323,6 +335,8 @@ auto ScriptHash(
         case Type::BitcoinSV_testnet3:
         case Type::eCash:
         case Type::eCash_testnet3:
+        case Type::Casper:
+        case Type::Casper_testnet:
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
@@ -353,6 +367,8 @@ auto ScriptHashSegwit(
         case Type::BitcoinSV_testnet3:
         case Type::eCash:
         case Type::eCash_testnet3:
+        case Type::Casper:
+        case Type::Casper_testnet:
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
@@ -404,6 +420,8 @@ auto TransactionHash(
         case Type::BitcoinSV_testnet3:
         case Type::eCash:
         case Type::eCash_testnet3:
+        case Type::Casper:
+        case Type::Casper_testnet:
         case Type::UnitTest:
         default: {
             return BlockHash(api, chain, input, output);
@@ -469,6 +487,8 @@ auto Bip158() noexcept -> const FilterTypes&
          }},
         {Type::Ethereum_frontier, {}},
         {Type::Ethereum_ropsten, {}},
+        {Type::Casper, {}},
+        {Type::Casper_testnet, {}},
         {Type::Litecoin,
          {
              {cfilter::Type::Basic_BIP158, 0x0},
@@ -751,6 +771,68 @@ auto Chains() noexcept -> const ChainData&
              0,
              0,
              30303,
+             {},
+             0,
+             0,
+             {
+                 {Data::Style::P2PKH, false},
+                 {Data::Style::P2SH, false},
+                 {Data::Style::P2WPKH, false},
+                 {Data::Style::P2WSH, false},
+                 {Data::Style::P2TR, false},
+             },
+             {},
+             {},
+         }},
+        {blockchain::Type::Casper,
+         {
+             false,
+             false,
+             false,
+             0,
+             opentxs::UnitType::Cspr,
+             Bip44Type::CSPR,
+             0,
+             ""sv,
+             "2fe9630b7790852e4409d815b04ca98f37effcdf9097d317b9b9b8ad658f47c8"sv,
+             ""sv,
+             {0, ""sv, ""sv, ""sv},
+             {},
+             p2p::Protocol::casper,
+             0,
+             0,
+             35000,
+             {},
+             0,
+             0,
+             {
+                 {Data::Style::P2PKH, false},
+                 {Data::Style::P2SH, false},
+                 {Data::Style::P2WPKH, false},
+                 {Data::Style::P2WSH, false},
+                 {Data::Style::P2TR, false},
+             },
+             {},
+             {},
+         }},
+        {blockchain::Type::Casper_testnet,
+         {
+             false,
+             true,
+             false,
+             0,
+             opentxs::UnitType::TnCspr,
+             Bip44Type::TESTNET,
+             0,
+             ""sv,
+             "975ea4de188c2a67946188cea0ec8a93d2d38286d7642526d50c45839a291210"sv,
+             ""sv,
+             {0, ""sv, ""sv, ""sv},
+             {},
+             p2p::Protocol::casper,
+             0,
+             0,
+             35000,
              {},
              0,
              0,

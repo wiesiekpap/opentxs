@@ -537,6 +537,7 @@ auto BlockchainImp::start(
         }
         case p2p::Protocol::opentxs:
         case p2p::Protocol::ethereum:
+        case p2p::Protocol::casper:
         default: {
         }
     }

@@ -32,6 +32,7 @@ enum class Protocol : std::uint8_t {
     opentxs = 0,
     bitcoin = 1,
     ethereum = 2,
+    casper = 3,
 };
 
 enum class Service : std::uint8_t {
