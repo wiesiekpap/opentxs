@@ -19,6 +19,7 @@ extern "C" {
 #include <limits>
 #include <memory>
 #include <stdexcept>
+#include <string_view>
 
 #include "crypto/library/AsymmetricProvider.hpp"
 #include "crypto/library/EcdsaProvider.hpp"
@@ -29,7 +30,6 @@ extern "C" {
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
-#include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -277,39 +277,67 @@ auto Sodium::Derive(
 
 auto Sodium::Digest(
     const crypto::HashType hashType,
-    const std::uint8_t* input,
-    const size_t inputSize,
-    std::uint8_t* output) const -> bool
+    const ReadView data,
+    const AllocateOutput output) const noexcept -> bool
 {
-    switch (hashType) {
-        case (crypto::HashType::Blake2b160):
-        case (crypto::HashType::Blake2b256):
-        case (crypto::HashType::Blake2b512): {
-            return (
-                0 == ::crypto_generichash(
-                         output,
-                         HashingProvider::HashSize(hashType),
-                         input,
-                         inputSize,
-                         nullptr,
-                         0));
+    try {
+        if (false == output.operator bool()) {
+            throw std::runtime_error{"invalid output"};
         }
-        case (crypto::HashType::Sha256): {
-            return (0 == ::crypto_hash_sha256(output, input, inputSize));
+
+        const auto size = HashSize(hashType);
+        auto buf = output(size);
+
+        if (false == buf.valid(size)) {
+            throw std::runtime_error{"failed to allocate space for output"};
         }
-        case (crypto::HashType::Sha512): {
-            return (0 == ::crypto_hash_sha512(output, input, inputSize));
+
+        switch (hashType) {
+            case (crypto::HashType::Blake2b160):
+            case (crypto::HashType::Blake2b256):
+            case (crypto::HashType::Blake2b512): {
+
+                return (
+                    0 ==
+                    ::crypto_generichash(
+                        buf.as<unsigned char>(),
+                        buf.size(),
+                        reinterpret_cast<const unsigned char*>(data.data()),
+                        data.size(),
+                        nullptr,
+                        0));
+            }
+            case (crypto::HashType::Sha256): {
+
+                return (
+                    0 ==
+                    ::crypto_hash_sha256(
+                        buf.as<unsigned char>(),
+                        reinterpret_cast<const unsigned char*>(data.data()),
+                        data.size()));
+            }
+            case (crypto::HashType::Sha512): {
+
+                return (
+                    0 ==
+                    ::crypto_hash_sha512(
+                        buf.as<unsigned char>(),
+                        reinterpret_cast<const unsigned char*>(data.data()),
+                        data.size()));
+            }
+            case (crypto::HashType::Sha1): {
+
+                return sha1(data, buf);
+            }
+            default: {
+                throw std::runtime_error{"unsupported hash type"};
+            }
         }
-        case (crypto::HashType::Sha1): {
-            return sha1(input, inputSize, output);
-        }
-        default: {
-        }
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
     }
-
-    LogError()(OT_PRETTY_CLASS())("Unsupported hash function.").Flush();
-
-    return false;
 }
 
 auto Sodium::Encrypt(
@@ -438,95 +466,139 @@ auto Sodium::Generate(
 
 auto Sodium::HMAC(
     const crypto::HashType hashType,
-    const std::uint8_t* input,
-    const size_t inputSize,
-    const std::uint8_t* key,
-    const size_t keySize,
-    std::uint8_t* output) const -> bool
+    const ReadView key,
+    const ReadView data,
+    const AllocateOutput output) const noexcept -> bool
 {
-    switch (hashType) {
-        case (crypto::HashType::Blake2b160):
-        case (crypto::HashType::Blake2b256):
-        case (crypto::HashType::Blake2b512): {
-            return (
-                0 == ::crypto_generichash(
-                         output,
-                         HashingProvider::HashSize(hashType),
-                         input,
-                         inputSize,
-                         key,
-                         keySize));
+    try {
+        if (false == valid(data)) { throw std::runtime_error{"invalid input"}; }
+
+        if (false == valid(key)) { throw std::runtime_error{"invalid key"}; }
+
+        if (false == output.operator bool()) {
+            throw std::runtime_error{"invalid output"};
         }
-        case (crypto::HashType::Sha256): {
-            auto success{false};
-            auto state = crypto_auth_hmacsha256_state{};
-            success = (0 == crypto_auth_hmacsha256_init(&state, key, keySize));
 
-            if (false == success) {
-                LogError()(OT_PRETTY_CLASS())("Failed to initialize hash")
-                    .Flush();
+        const auto size = HashSize(hashType);
+        auto buf = output(size);
 
-                return false;
-            }
-
-            success =
-                (0 == crypto_auth_hmacsha256_update(&state, input, inputSize));
-
-            if (false == success) {
-                LogError()(OT_PRETTY_CLASS())("Failed to update hash").Flush();
-
-                return false;
-            }
-
-            return (0 == ::crypto_auth_hmacsha256_final(&state, output));
+        if (false == buf.valid(size)) {
+            throw std::runtime_error{"failed to allocate space for output"};
         }
-        case (crypto::HashType::Sha512): {
-            auto success{false};
-            auto state = crypto_auth_hmacsha512_state{};
-            success = (0 == crypto_auth_hmacsha512_init(&state, key, keySize));
 
-            if (false == success) {
-                LogError()(OT_PRETTY_CLASS())("Failed to initialize hash")
-                    .Flush();
-
-                return false;
+        switch (hashType) {
+            case (crypto::HashType::Blake2b160):
+            case (crypto::HashType::Blake2b256):
+            case (crypto::HashType::Blake2b512): {
+                return (
+                    0 ==
+                    ::crypto_generichash(
+                        buf.as<unsigned char>(),
+                        buf.size(),
+                        reinterpret_cast<const unsigned char*>(data.data()),
+                        data.size(),
+                        reinterpret_cast<const unsigned char*>(key.data()),
+                        key.size()));
             }
+            case (crypto::HashType::Sha256): {
+                auto success{false};
+                auto state = ::crypto_auth_hmacsha256_state{};
+                success =
+                    (0 ==
+                     ::crypto_auth_hmacsha256_init(
+                         &state,
+                         reinterpret_cast<const unsigned char*>(key.data()),
+                         key.size()));
 
-            success =
-                (0 == crypto_auth_hmacsha512_update(&state, input, inputSize));
+                if (false == success) {
+                    throw std::runtime_error{
+                        "Failed to initialize sha256 context"};
+                }
 
-            if (false == success) {
-                LogError()(OT_PRETTY_CLASS())("Failed to update hash").Flush();
+                success =
+                    (0 ==
+                     ::crypto_auth_hmacsha256_update(
+                         &state,
+                         reinterpret_cast<const unsigned char*>(data.data()),
+                         data.size()));
 
-                return false;
+                if (false == success) {
+                    throw std::runtime_error{"Failed to update sha256 context"};
+                }
+
+                return (
+                    0 == ::crypto_auth_hmacsha256_final(
+                             &state, buf.as<unsigned char>()));
             }
+            case (crypto::HashType::Sha512): {
+                auto success{false};
+                auto state = ::crypto_auth_hmacsha512_state{};
+                success =
+                    (0 ==
+                     ::crypto_auth_hmacsha512_init(
+                         &state,
+                         reinterpret_cast<const unsigned char*>(key.data()),
+                         key.size()));
 
-            return (0 == ::crypto_auth_hmacsha512_final(&state, output));
-        }
-        case (crypto::HashType::SipHash24): {
-            if (crypto_shorthash_KEYBYTES < keySize) {
-                LogError()(OT_PRETTY_CLASS())("Incorrect key size: ")(
-                    keySize)(" vs "
-                             "expected"
-                             " ")(crypto_shorthash_KEYBYTES)
-                    .Flush();
+                if (false == success) {
+                    throw std::runtime_error{
+                        "Failed to initialize sha512 context"};
+                }
 
-                return false;
+                success =
+                    (0 ==
+                     ::crypto_auth_hmacsha512_update(
+                         &state,
+                         reinterpret_cast<const unsigned char*>(data.data()),
+                         data.size()));
+
+                if (false == success) {
+                    throw std::runtime_error{"Failed to update sha512 context"};
+                }
+
+                return (
+                    0 == ::crypto_auth_hmacsha512_final(
+                             &state, buf.as<unsigned char>()));
             }
+            case (crypto::HashType::SipHash24): {
+                auto temp = std::array<char, crypto_shorthash_KEYBYTES>{};
+                const auto keyView = [&]() -> ReadView {
+                    if (auto s = key.size(); crypto_shorthash_KEYBYTES < s) {
+                        const auto error =
+                            UnallocatedCString{"Excessive key size: "}
+                                .append(std::to_string(s))
+                                .append(" vs maximum ")
+                                .append(
+                                    std::to_string(crypto_shorthash_KEYBYTES));
 
-            auto buf = std::array<std::uint8_t, crypto_shorthash_KEYBYTES>{};
-            std::memcpy(buf.data(), key, keySize);
+                        throw std::runtime_error{error};
+                    } else if (s == crypto_shorthash_KEYBYTES) {
 
-            return 0 ==
-                   ::crypto_shorthash(output, input, inputSize, buf.data());
+                        return key;
+                    } else {
+                        std::memcpy(temp.data(), key.data(), key.size());
+
+                        return {temp.data(), temp.size()};
+                    }
+                }();
+
+                return 0 ==
+                       ::crypto_shorthash(
+                           buf.as<unsigned char>(),
+                           reinterpret_cast<const unsigned char*>(data.data()),
+                           data.size(),
+                           reinterpret_cast<const unsigned char*>(
+                               keyView.data()));
+            }
+            default: {
+                throw std::runtime_error{"unsupported hash type"};
+            }
         }
-        default: {
-        }
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
     }
-
-    LogError()(OT_PRETTY_CLASS())("Unsupported hash function.").Flush();
-
-    return false;
 }
 
 auto Sodium::IvSize(const opentxs::crypto::key::symmetric::Algorithm mode) const
@@ -588,26 +660,33 @@ auto Sodium::SaltSize(const crypto::key::symmetric::Source type) const
     return 0;
 }
 
-auto Sodium::sha1(
-    const std::uint8_t* input,
-    const std::size_t size,
-    std::uint8_t* output) const -> bool
+auto Sodium::sha1(const ReadView data, WritableView& output) const -> bool
 {
-    if (std::numeric_limits<std::uint32_t>::max() < size) { return false; }
+    try {
+        const auto size = data.size();
 
-    auto hex = std::array<char, SHA1_HEX_SIZE>{};
-    ::sha1()
-        .add(input, static_cast<std::uint32_t>(size))
-        .finalize()
-        .print_hex(hex.data());
-    const auto hash = [&]() {
-        auto out = Data::Factory();
-        out->DecodeHex({hex.data(), hex.size()});
-        return out;
-    }();
-    std::memcpy(output, hash->data(), hash->size());
+        if (std::numeric_limits<std::uint32_t>::max() < size) {
+            throw std::runtime_error{"input too large"};
+        }
 
-    return true;
+        auto hex = std::array<char, SHA1_HEX_SIZE>{};
+        ::sha1()
+            .add(data.data(), static_cast<std::uint32_t>(size))
+            .finalize()
+            .print_hex(hex.data());
+        const auto hash = [&]() {
+            auto out = Data::Factory();
+            out->DecodeHex({hex.data(), hex.size()});
+            return out;
+        }();
+        std::memcpy(output.data(), hash->data(), hash->size());
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
 }
 
 auto Sodium::TagSize(
