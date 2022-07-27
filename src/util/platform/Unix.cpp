@@ -13,8 +13,7 @@ extern "C" {
 #include <sys/resource.h>
 #include <unistd.h>
 }
-
-#include <pthread.h>
+#include <pthread.h>  // IWYU pragma: keep
 #include <robin_hood.h>
 #include <array>
 #include <cerrno>

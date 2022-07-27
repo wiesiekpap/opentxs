@@ -6,6 +6,7 @@
 #pragma once
 
 #include <ostream>
+#include <string_view>
 
 #include "internal/util/Mutex.hpp"
 #include "network/zeromq/curve/Server.hpp"
