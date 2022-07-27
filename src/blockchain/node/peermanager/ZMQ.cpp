@@ -35,6 +35,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/Thread.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -93,10 +94,12 @@ public:
         }))
         , external_(api_.Network().ZeroMQ().RouterSocket(
               cb_ex_,
-              zmq::socket::Direction::Bind))
+              zmq::socket::Direction::Bind,
+              ZMQIncomingExternalThreadName))
         , internal_(api_.Network().ZeroMQ().RouterSocket(
               cb_int_,
-              zmq::socket::Direction::Bind))
+              zmq::socket::Direction::Bind,
+              ZMQIncomingInternalThreadName))
     {
     }
     ZMQIncomingConnectionManager() = delete;

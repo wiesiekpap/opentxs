@@ -49,12 +49,17 @@ public:
         const zeromq::Context& context,
         const Direction direction,
         const zeromq::ListenCallback& callback,
-        const bool startThread) noexcept;
+        const bool startThread,
+        const std::string_view threadName = pullThreadName) noexcept;
     Pull(
         const zeromq::Context& context,
         const Direction direction,
-        const zeromq::ListenCallback& callback) noexcept;
-    Pull(const zeromq::Context& context, const Direction direction) noexcept;
+        const zeromq::ListenCallback& callback,
+        const std::string_view threadName = pullThreadName) noexcept;
+    Pull(
+        const zeromq::Context& context,
+        const Direction direction,
+        const std::string_view threadName = pullThreadName) noexcept;
     Pull() = delete;
     Pull(const Pull&) = delete;
     Pull(Pull&&) = delete;

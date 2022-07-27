@@ -21,6 +21,7 @@ extern "C" {
 #include <ShlObj.h>
 #include <WinSock2.h>
 #include <direct.h>
+#include <pthread.h>
 #include <robin_hood.h>
 #include <iostream>
 #include <xstring>
@@ -154,7 +155,7 @@ auto Legacy::get_home_platform() noexcept -> UnallocatedCString
     const auto drive = UnallocatedCString{getenv("HOMEDRIVE")};
     const auto path = UnallocatedCString{getenv("HOMEPATH")};
 
-    if ((false == drive.empty()) && (false == drive.empty())) {
+    if ((false == drive.empty()) && (false == path.empty())) {
 
         return drive + path;
     }

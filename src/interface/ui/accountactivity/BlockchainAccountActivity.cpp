@@ -62,6 +62,7 @@
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Container.hpp"
+#include "util/Thread.hpp"
 
 namespace opentxs::factory
 {
@@ -97,7 +98,8 @@ BlockchainAccountActivity::BlockchainAccountActivity(
           [this](auto&& in) { pipeline_.Push(std::move(in)); }))
     , balance_socket_(Widget::api_.Network().ZeroMQ().DealerSocket(
           balance_cb_,
-          network::zeromq::socket::Direction::Connect))
+          network::zeromq::socket::Direction::Connect,
+          blockchainAccountActivityThreadName))
     , progress_()
     , height_(0)
 {

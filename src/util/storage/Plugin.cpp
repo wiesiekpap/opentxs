@@ -15,6 +15,7 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/Thread.hpp"
 
 namespace opentxs::storage::implementation
 {
@@ -132,9 +133,10 @@ void Plugin::Store(
     // NOTE taking arguments by reference is safe if and only if the caller is
     // waiting on the future before allowing the input values to pass out of
     // scope
-    asio_.Internal().Post(ThreadPool::Storage, [&] {
-        store(isTransaction, key, value, bucket, &promise);
-    });
+    asio_.Internal().Post(
+        ThreadPool::Storage,
+        [&] { store(isTransaction, key, value, bucket, &promise); },
+        storeThreadName);
 }
 
 auto Plugin::Store(

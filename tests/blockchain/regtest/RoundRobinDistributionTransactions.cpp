@@ -11,8 +11,8 @@
 
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
-#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
+#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
 
 namespace ottest
 {

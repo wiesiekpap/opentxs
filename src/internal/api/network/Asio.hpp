@@ -43,6 +43,9 @@ enum class ThreadPool {
     Storage,
     Blockchain,
 };
+
+auto print(ThreadPool) noexcept -> std::string_view;
+
 }  // namespace opentxs
 
 namespace opentxs::api::network::internal
@@ -65,7 +68,10 @@ public:
         -> bool = 0;
     virtual auto GetTimer() noexcept -> Timer = 0;
     virtual auto IOContext() noexcept -> boost::asio::io_context& = 0;
-    virtual auto Post(ThreadPool type, Callback cb) noexcept -> bool = 0;
+    virtual auto Post(
+        ThreadPool type,
+        Callback cb,
+        std::string_view threadName) noexcept -> bool = 0;
     virtual auto Receive(
         const ReadView id,
         const OTZMQWorkType type,

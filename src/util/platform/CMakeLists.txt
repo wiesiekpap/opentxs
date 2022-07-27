@@ -3,23 +3,46 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+if(OPENTXS_DEBUG_BUILD)
+  target_sources(opentxs-common PRIVATE "Debug.cpp")
+else()
+  target_sources(opentxs-common PRIVATE "Release.cpp")
+endif()
+
 if(WIN32)
   target_sources(opentxs-common PRIVATE "Windows.cpp")
+
+  if(OPENTXS_DEBUG_BUILD)
+    target_sources(opentxs-common PRIVATE "Windows_debug.cpp")
+  endif()
+
   target_include_directories(
     opentxs-common SYSTEM
     PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
   )
   target_link_libraries(opentxs-common PRIVATE unofficial-sodium::sodium)
   target_link_libraries(opentxs PUBLIC unofficial-sodium::sodium)
+  target_link_libraries(opentxs PUBLIC PThreads4W::PThreads4W)
 elseif(UNIX)
   # Use this file for functions which are the same between all non-Windows
   # platforms
   target_sources(opentxs-common PRIVATE "Posix.cpp")
+
+  if(OPENTXS_DEBUG_BUILD)
+    # TODO
+  else()
+    target_sources(opentxs-common PRIVATE "Posix_release.cpp")
+  endif()
+
   target_link_libraries(opentxs-common PRIVATE unofficial-sodium::sodium)
   target_link_libraries(opentxs PUBLIC unofficial-sodium::sodium)
 
   if(APPLE)
     target_sources(opentxs-common PRIVATE "Apple.cpp")
+
+    if(OPENTXS_DEBUG_BUILD)
+      target_sources(opentxs-common PRIVATE "Apple_debug.cpp")
+    endif()
 
     if(IOS)
       target_sources(opentxs-common PRIVATE "iOS.cpp")
@@ -30,6 +53,11 @@ elseif(UNIX)
     # Use this file for functions which do not need different behavior on
     # Android.
     target_sources(opentxs-common PRIVATE "Unix.cpp")
+
+    if(OPENTXS_DEBUG_BUILD)
+      target_sources(opentxs-common PRIVATE "Unix_debug.cpp")
+    endif()
+
     target_include_directories(
       opentxs-common SYSTEM
       PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"

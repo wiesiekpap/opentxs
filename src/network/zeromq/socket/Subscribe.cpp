@@ -31,12 +31,13 @@ namespace opentxs::factory
 {
 auto SubscribeSocket(
     const network::zeromq::Context& context,
-    const network::zeromq::ListenCallback& callback)
+    const network::zeromq::ListenCallback& callback,
+    const std::string_view threadName)
     -> std::unique_ptr<network::zeromq::socket::Subscribe>
 {
     using ReturnType = network::zeromq::socket::implementation::Subscribe;
 
-    return std::make_unique<ReturnType>(context, callback);
+    return std::make_unique<ReturnType>(context, callback, threadName);
 }
 }  // namespace opentxs::factory
 
@@ -44,8 +45,15 @@ namespace opentxs::network::zeromq::socket::implementation
 {
 Subscribe::Subscribe(
     const zeromq::Context& context,
-    const zeromq::ListenCallback& callback) noexcept
-    : Receiver(context, socket::Type::Subscribe, Direction::Connect, true)
+    const zeromq::ListenCallback& callback,
+    const std::string_view threadName) noexcept
+    : Receiver(
+          context,
+          socket::Type::Subscribe,
+          Direction::Connect,
+          true,
+          threadName.empty() ? "Subscribe"
+                             : adjustThreadName(threadName, "Subscribe"))
     , Client(this->get())
     , callback_(callback)
 {

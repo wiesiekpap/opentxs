@@ -23,6 +23,7 @@
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/Types.hpp"
 #include "util/ScopeGuard.hpp"
+#include "util/Thread.hpp"
 
 namespace opentxs::ui::implementation
 {
@@ -116,6 +117,8 @@ private:
     }
     auto thread() noexcept -> void
     {
+        SetThisThreadsName(sendMonitorThreadName);
+
         static constexpr auto limit = Duration{25};
 
         while (running_) {

@@ -25,6 +25,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "util/Thread.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -45,7 +46,10 @@ namespace opentxs::api::imp
 Log::Log(const zmq::Context& zmq, const UnallocatedCString endpoint)
     : callback_(opentxs::network::zeromq::ListenCallback::Factory(
           [&](auto&& msg) -> void { callback(std::move(msg)); }))
-    , socket_(zmq.PullSocket(callback_, zmq::socket::Direction::Bind))
+    , socket_(zmq.PullSocket(
+          callback_,
+          zmq::socket::Direction::Bind,
+          loggerThreadName))
     , publish_socket_(zmq.PublishSocket())
     , publish_{!endpoint.empty()}
 {

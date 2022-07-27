@@ -91,10 +91,11 @@ auto Context::BelongsToThreadPool(const std::thread::id id) const noexcept
 
 auto Context::DealerSocket(
     const ListenCallback& callback,
-    const socket::Direction direction) const noexcept -> OTZMQDealerSocket
+    const socket::Direction direction,
+    const std::string_view threadName) const noexcept -> OTZMQDealerSocket
 {
-    return OTZMQDealerSocket{
-        factory::DealerSocket(*this, static_cast<bool>(direction), callback)};
+    return OTZMQDealerSocket{factory::DealerSocket(
+        *this, static_cast<bool>(direction), callback, threadName)};
 }
 
 auto Context::max_sockets() noexcept -> int { return 32768; }
@@ -120,34 +121,42 @@ auto Context::Modify(SocketID id, ModifyCallback cb) const noexcept
 
 auto Context::PairEventListener(
     const PairEventCallback& callback,
-    const int instance) const noexcept -> OTZMQSubscribeSocket
+    const int instance,
+    const std::string_view threadName) const noexcept -> OTZMQSubscribeSocket
 {
     return OTZMQSubscribeSocket(
-        new class PairEventListener(*this, callback, instance));
-}
-
-auto Context::PairSocket(const zeromq::ListenCallback& callback) const noexcept
-    -> OTZMQPairSocket
-{
-    return OTZMQPairSocket{factory::PairSocket(*this, callback, true)};
+        new class PairEventListener(*this, callback, instance, threadName));
 }
 
 auto Context::PairSocket(
     const zeromq::ListenCallback& callback,
-    const socket::Pair& peer) const noexcept -> OTZMQPairSocket
+    const std::string_view threadName) const noexcept -> OTZMQPairSocket
 {
-    return OTZMQPairSocket{factory::PairSocket(callback, peer, true)};
+    return OTZMQPairSocket{
+        factory::PairSocket(*this, callback, true, threadName)};
 }
 
 auto Context::PairSocket(
     const zeromq::ListenCallback& callback,
-    const std::string_view endpoint) const noexcept -> OTZMQPairSocket
+    const socket::Pair& peer,
+    const std::string_view threadName) const noexcept -> OTZMQPairSocket
 {
-    return OTZMQPairSocket{factory::PairSocket(*this, callback, endpoint)};
+    return OTZMQPairSocket{
+        factory::PairSocket(callback, peer, true, threadName)};
+}
+
+auto Context::PairSocket(
+    const zeromq::ListenCallback& callback,
+    const std::string_view endpoint,
+    const std::string_view threadName) const noexcept -> OTZMQPairSocket
+{
+    return OTZMQPairSocket{
+        factory::PairSocket(*this, callback, endpoint, threadName)};
 }
 
 auto Context::Pipeline(
     std::function<void(zeromq::Message&&)>&& callback,
+    const std::string_view threadName,
     const EndpointArgs& subscribe,
     const EndpointArgs& pull,
     const EndpointArgs& dealer,
@@ -162,6 +171,7 @@ auto Context::Pipeline(
         pull,
         dealer,
         extra,
+        threadName,
         preallocated,
         pmr);
 }
@@ -171,10 +181,12 @@ auto Context::PreallocateBatch() const noexcept -> BatchID
     return pool_.PreallocateBatch();
 }
 
-auto Context::Proxy(socket::Socket& frontend, socket::Socket& backend)
-    const noexcept -> OTZMQProxy
+auto Context::Proxy(
+    socket::Socket& frontend,
+    socket::Socket& backend,
+    const std::string_view threadName) const noexcept -> OTZMQProxy
 {
-    return zeromq::Proxy::Factory(*this, frontend, backend);
+    return zeromq::Proxy::Factory(*this, frontend, backend, threadName);
 }
 
 auto Context::PublishSocket() const noexcept -> OTZMQPublishSocket
@@ -182,19 +194,21 @@ auto Context::PublishSocket() const noexcept -> OTZMQPublishSocket
     return OTZMQPublishSocket{factory::PublishSocket(*this)};
 }
 
-auto Context::PullSocket(const socket::Direction direction) const noexcept
-    -> OTZMQPullSocket
+auto Context::PullSocket(
+    const socket::Direction direction,
+    const std::string_view threadName) const noexcept -> OTZMQPullSocket
 {
     return OTZMQPullSocket{
-        factory::PullSocket(*this, static_cast<bool>(direction))};
+        factory::PullSocket(*this, static_cast<bool>(direction), threadName)};
 }
 
 auto Context::PullSocket(
     const ListenCallback& callback,
-    const socket::Direction direction) const noexcept -> OTZMQPullSocket
+    const socket::Direction direction,
+    const std::string_view threadName) const noexcept -> OTZMQPullSocket
 {
-    return OTZMQPullSocket{
-        factory::PullSocket(*this, static_cast<bool>(direction), callback)};
+    return OTZMQPullSocket{factory::PullSocket(
+        *this, static_cast<bool>(direction), callback, threadName)};
 }
 
 auto Context::PushSocket(const socket::Direction direction) const noexcept
@@ -211,10 +225,11 @@ auto Context::RawSocket(socket::Type type) const noexcept -> socket::Raw
 
 auto Context::ReplySocket(
     const ReplyCallback& callback,
-    const socket::Direction direction) const noexcept -> OTZMQReplySocket
+    const socket::Direction direction,
+    const std::string_view threadName) const noexcept -> OTZMQReplySocket
 {
-    return OTZMQReplySocket{
-        factory::ReplySocket(*this, static_cast<bool>(direction), callback)};
+    return OTZMQReplySocket{factory::ReplySocket(
+        *this, static_cast<bool>(direction), callback, threadName)};
 }
 
 auto Context::RequestSocket() const noexcept -> OTZMQRequestSocket
@@ -224,16 +239,19 @@ auto Context::RequestSocket() const noexcept -> OTZMQRequestSocket
 
 auto Context::RouterSocket(
     const ListenCallback& callback,
-    const socket::Direction direction) const noexcept -> OTZMQRouterSocket
+    const socket::Direction direction,
+    const std::string_view threadName) const noexcept -> OTZMQRouterSocket
 {
-    return OTZMQRouterSocket{
-        factory::RouterSocket(*this, static_cast<bool>(direction), callback)};
+    return OTZMQRouterSocket{factory::RouterSocket(
+        *this, static_cast<bool>(direction), callback, threadName)};
 }
 
-auto Context::Start(BatchID id, StartArgs&& sockets) const noexcept
-    -> internal::Thread*
+auto Context::Start(
+    BatchID id,
+    StartArgs&& sockets,
+    const std::string_view threadName) const noexcept -> internal::Thread*
 {
-    return pool_.Start(id, std::move(sockets));
+    return pool_.Start(id, std::move(sockets), threadName);
 }
 
 auto Context::Stop(BatchID id) const noexcept -> std::future<bool>
@@ -241,10 +259,12 @@ auto Context::Stop(BatchID id) const noexcept -> std::future<bool>
     return pool_.Stop(id);
 }
 
-auto Context::SubscribeSocket(const ListenCallback& callback) const noexcept
-    -> OTZMQSubscribeSocket
+auto Context::SubscribeSocket(
+    const ListenCallback& callback,
+    const std::string_view threadName) const noexcept -> OTZMQSubscribeSocket
 {
-    return OTZMQSubscribeSocket{factory::SubscribeSocket(*this, callback)};
+    return OTZMQSubscribeSocket{
+        factory::SubscribeSocket(*this, callback, threadName)};
 }
 
 auto Context::Thread(BatchID id) const noexcept -> internal::Thread*

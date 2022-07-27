@@ -16,6 +16,7 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/Thread.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -56,19 +57,23 @@ public:
         const zeromq::ListenCallback& callback,
         const std::string_view endpoint,
         const Direction direction,
-        const bool startThread) noexcept;
+        const bool startThreadconst,
+        const std::string_view threadName = pairThreadName) noexcept;
     Pair(
         const zeromq::Context& context,
         const zeromq::ListenCallback& callback,
-        const bool startThread = true) noexcept;
+        const bool startThread = true,
+        const std::string_view threadName = pairThreadName) noexcept;
     Pair(
         const zeromq::ListenCallback& callback,
         const zeromq::socket::Pair& peer,
-        const bool startThread = true) noexcept;
+        const bool startThread = true,
+        const std::string_view threadName = pairThreadName) noexcept;
     Pair(
         const zeromq::Context& context,
         const zeromq::ListenCallback& callback,
-        const std::string_view endpoint) noexcept;
+        const std::string_view endpoint,
+        const std::string_view threadName = pairThreadName) noexcept;
     Pair() = delete;
     Pair(const Pair&) = delete;
     Pair(Pair&&) = delete;

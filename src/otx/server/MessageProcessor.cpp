@@ -62,6 +62,7 @@
 #include "serialization/protobuf/OTXPush.pb.h"
 #include "serialization/protobuf/ServerReply.pb.h"
 #include "serialization/protobuf/ServerRequest.pb.h"
+#include "util/Thread.hpp"
 
 namespace opentxs::server
 {
@@ -142,7 +143,8 @@ MessageProcessor::Imp::Imp(
                  m.Internal().Prepend(id);
                  cb.Process(std::move(m));
              }},
-        });
+        },
+        messageProcessorFrontendThreadName);
 
     OT_ASSERT(nullptr != zmq_thread_);
 
@@ -648,6 +650,8 @@ auto MessageProcessor::Imp::query_connection(const identifier::Nym& id) noexcept
 
 auto MessageProcessor::Imp::run() noexcept -> void
 {
+    SetThisThreadsName(messageProcessorThreadName);
+
     while (running_.load()) {
         // timeout is the time left until the next cron should execute.
         const auto timeout = server_.ComputeTimeout();

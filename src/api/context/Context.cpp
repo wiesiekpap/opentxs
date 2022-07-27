@@ -192,6 +192,7 @@ auto Context::Init() noexcept -> void
     Init_Factory();
     Init_Profile();
     Init_Rlimit();
+    Init_CoreDump();
     Init_Zap();
 }
 

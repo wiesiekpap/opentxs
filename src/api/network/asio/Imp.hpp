@@ -133,7 +133,10 @@ struct Asio::Imp final : public api::network::internal::Asio,
     auto GetTimer() noexcept -> Timer final;
     auto Init() noexcept -> void;
     auto IOContext() noexcept -> boost::asio::io_context& final;
-    auto Post(ThreadPool type, Asio::Callback cb) noexcept -> bool final;
+    auto Post(
+        ThreadPool type,
+        Asio::Callback cb,
+        std::string_view threadName) noexcept -> bool final;
     auto Receive(
         const ReadView id,
         const OTZMQWorkType type,
@@ -221,5 +224,8 @@ private:
         std::shared_ptr<std::promise<OTData>> promise) -> void;
 
     auto state_machine() noexcept -> bool;
+    static auto adjust_thread_pool_thread_name(
+        std::string_view threadName,
+        ThreadPool type) noexcept -> std::string;
 };
 }  // namespace opentxs::api::network

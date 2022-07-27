@@ -17,6 +17,7 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/Thread.hpp"
 
 namespace opentxs::ui::implementation
 {
@@ -72,8 +73,9 @@ auto Widget::setup_listeners(const ListenerDefinitions& definitions) noexcept
                 [=](const Message& message) -> void {
                     (*copy)(this, message);
                 }));
-        auto& socket = listeners_.emplace_back(
-            api_.Network().ZeroMQ().SubscribeSocket(nextCallback.get()));
+        auto& socket =
+            listeners_.emplace_back(api_.Network().ZeroMQ().SubscribeSocket(
+                nextCallback.get(), widgetThreadName));
         const auto listening = socket->Start(endpoint);
 
         OT_ASSERT(listening)

@@ -8,8 +8,8 @@
 #include <thread>
 
 #include "opentxs/util/Log.hpp"
-#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
+#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
 
 namespace ottest
 {

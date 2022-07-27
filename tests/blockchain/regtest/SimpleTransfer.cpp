@@ -11,9 +11,9 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/util/Log.hpp"
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/fixtures/blockchain/Regtest.hpp"
 #include "ottest/fixtures/blockchain/RegtestSimple.hpp"
-#include "ottest/data/crypto/PaymentCodeV3.hpp"
 
 namespace ottest
 {
@@ -39,7 +39,11 @@ TEST_F(Regtest_fixture_simple, send_to_client)
     EXPECT_TRUE(success_alice);
 
     auto [user_bob, success_bob] = CreateClient(
-        opentxs::Options{}, 4, name_bob, GetPaymentCodeVector3().bob_.words_, address_);
+        opentxs::Options{},
+        4,
+        name_bob,
+        GetPaymentCodeVector3().bob_.words_,
+        address_);
     EXPECT_TRUE(success_bob);
 
     std::vector<std::reference_wrapper<const User>> users{user_alice, user_bob};

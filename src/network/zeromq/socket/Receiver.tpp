@@ -23,6 +23,7 @@
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
+#include "util/Thread.hpp"
 
 namespace opentxs::network::zeromq::socket::implementation
 {
@@ -31,10 +32,12 @@ Receiver<InterfaceType, MessageType>::Receiver(
     const zeromq::Context& context,
     const socket::Type type,
     const Direction direction,
-    const bool startThread) noexcept
+    const bool startThread,
+    const std::string_view threadName) noexcept
     : Socket(context, type, direction)
     , start_thread_(startThread)
     , receiver_thread_()
+    , thread_name_(threadName)
     , next_task_(0)
     , task_lock_()
     , socket_tasks_()
@@ -137,6 +140,8 @@ template <typename InterfaceType, typename MessageType>
 void Receiver<InterfaceType, MessageType>::thread() noexcept
 {
     Signals::Block();
+
+    if (!thread_name_.empty()) { SetThisThreadsName(thread_name_); }
 
     while (running_.get()) {
         if (have_callback()) { break; }

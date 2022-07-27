@@ -21,6 +21,7 @@
 #include "serialization/protobuf/Nym.pb.h"
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
+#include "util/Thread.hpp"
 
 namespace opentxs::api::session
 {
@@ -52,6 +53,7 @@ void Scheduler::Start(
             NymLambda nymLambda(
                 [=,
                  &dht](const identity::internal::Nym::Serialized& nym) -> void {
+                    SetThisThreadsName(schedulerPublishNymThreadName);
                     dht.Internal().Insert(nym);
                 });
             storage->MapPublicNyms(nymLambda);
@@ -62,6 +64,7 @@ void Scheduler::Start(
         std::chrono::seconds(nym_refresh_interval_),
         [=, &dht]() -> void {
             NymLambda nymLambda([=, &dht](const proto::Nym& nym) -> void {
+                SetThisThreadsName(schedulerRefreshNymThreadName);
                 dht.GetPublicNym(nym.nymid());
             });
             storage->MapPublicNyms(nymLambda);
@@ -73,6 +76,7 @@ void Scheduler::Start(
         [=, &dht]() -> void {
             ServerLambda serverLambda(
                 [=, &dht](const proto::ServerContract& server) -> void {
+                    SetThisThreadsName(schedulerPublishServerThreadName);
                     dht.Internal().Insert(server);
                 });
             storage->MapServers(serverLambda);
@@ -84,6 +88,7 @@ void Scheduler::Start(
         [=, &dht]() -> void {
             ServerLambda serverLambda(
                 [=, &dht](const proto::ServerContract& server) -> void {
+                    SetThisThreadsName(schedulerRefreshServerThreadName);
                     dht.GetServerContract(server.id());
                 });
             storage->MapServers(serverLambda);
@@ -95,6 +100,7 @@ void Scheduler::Start(
         [=, &dht]() -> void {
             UnitLambda unitLambda(
                 [=, &dht](const proto::UnitDefinition& unit) -> void {
+                    SetThisThreadsName(schedulerPublishUnitThreadName);
                     dht.Internal().Insert(unit);
                 });
             storage->MapUnitDefinitions(unitLambda);
@@ -106,6 +112,7 @@ void Scheduler::Start(
         [=, &dht]() -> void {
             UnitLambda unitLambda(
                 [=, &dht](const proto::UnitDefinition& unit) -> void {
+                    SetThisThreadsName(schedulerRefreshUnitThreadName);
                     dht.GetUnitDefinition(unit.id());
                 });
             storage->MapUnitDefinitions(unitLambda);
@@ -117,6 +124,8 @@ void Scheduler::Start(
 
 void Scheduler::thread()
 {
+    SetThisThreadsName(schedulerThreadName);
+
     while (running_) {
         // Storage has its own interval checking.
         storage_gc_hook();

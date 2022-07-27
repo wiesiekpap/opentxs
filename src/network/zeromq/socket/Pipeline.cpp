@@ -31,6 +31,7 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Gatekeeper.hpp"
+#include "util/Thread.hpp"
 
 namespace opentxs::factory
 {
@@ -41,6 +42,7 @@ auto Pipeline(
     const network::zeromq::EndpointArgs& pull,
     const network::zeromq::EndpointArgs& dealer,
     const Vector<network::zeromq::SocketData>& extra,
+    const std::string_view threadName,
     const std::optional<network::zeromq::BatchID>& preallocated,
     alloc::Resource* pmr) noexcept -> opentxs::network::zeromq::Pipeline
 {
@@ -56,6 +58,7 @@ auto Pipeline(
         pull,
         dealer,
         extra,
+        threadName,
         preallocated);
 
     return imp;
@@ -71,6 +74,7 @@ Pipeline::Imp::Imp(
     const EndpointArgs& pull,
     const EndpointArgs& dealer,
     const Vector<SocketData>& extra,
+    const std::string_view threadName,
     const std::optional<zeromq::BatchID>& preallocated,
     allocator_type pmr) noexcept
     : Imp(context,
@@ -81,6 +85,7 @@ Pipeline::Imp::Imp(
           pull,
           dealer,
           extra,
+          threadName,
           preallocated,
           pmr)
 {
@@ -95,6 +100,7 @@ Pipeline::Imp::Imp(
     const EndpointArgs& pull,
     const EndpointArgs& dealer,
     const Vector<SocketData>& extra,
+    const std::string_view threadName,
     const std::optional<zeromq::BatchID>& preallocated,
     allocator_type pmr) noexcept
     : Allocated(allocator_type{pmr})
@@ -134,6 +140,7 @@ Pipeline::Imp::Imp(
             ListenCallback::Factory(std::move(callback)));
 
         OT_ASSERT(batch.sockets_.size() == total_socket_count_);
+        batch.thread_name_ = adjustThreadName(threadName, "Pipeline");
 
         return batch;
     }())
@@ -191,65 +198,68 @@ Pipeline::Imp::Imp(
 
         return socket;
     }())
-    , thread_(context_.Internal().Start(batch_.id_, [&] {
-        auto out = StartArgs{
-            {outgoing_.ID(),
-             &outgoing_,
-             [id = outgoing_.ID(), socket = &dealer_](auto&& m) {
-                 socket->Send(std::move(m));
-             }},
-            {internal_.ID(),
-             &internal_,
-             [id = internal_.ID(),
-              &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
-                 m.Internal().Prepend(id);
-                 cb.Process(std::move(m));
-             }},
-            {dealer_.ID(),
-             &dealer_,
-             [id = dealer_.ID(),
-              &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
-                 m.Internal().Prepend(id);
-                 cb.Process(std::move(m));
-             }},
-            {pull_.ID(),
-             &pull_,
-             [id = pull_.ID(),
-              &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
-                 m.Internal().Prepend(id);
-                 cb.Process(std::move(m));
-             }},
-            {sub_.ID(),
-             &sub_,
-             [id = sub_.ID(),
-              &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
-                 m.Internal().Prepend(id);
-                 cb.Process(std::move(m));
-             }},
-        };
+    , thread_(context_.Internal().Start(
+          batch_.id_,
+          [&] {
+              auto out = StartArgs{
+                  {outgoing_.ID(),
+                   &outgoing_,
+                   [socket = &dealer_](auto&& m) {
+                       socket->Send(std::move(m));
+                   }},
+                  {internal_.ID(),
+                   &internal_,
+                   [id = internal_.ID(),
+                    &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                       m.Internal().Prepend(id);
+                       cb.Process(std::move(m));
+                   }},
+                  {dealer_.ID(),
+                   &dealer_,
+                   [id = dealer_.ID(),
+                    &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                       m.Internal().Prepend(id);
+                       cb.Process(std::move(m));
+                   }},
+                  {pull_.ID(),
+                   &pull_,
+                   [id = pull_.ID(),
+                    &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                       m.Internal().Prepend(id);
+                       cb.Process(std::move(m));
+                   }},
+                  {sub_.ID(),
+                   &sub_,
+                   [id = sub_.ID(),
+                    &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                       m.Internal().Prepend(id);
+                       cb.Process(std::move(m));
+                   }},
+              };
 
-        OT_ASSERT(batch_.sockets_.size() == total_socket_count_);
-        OT_ASSERT((fixed_sockets_ + extra.size()) == total_socket_count_);
+              OT_ASSERT(batch_.sockets_.size() == total_socket_count_);
+              OT_ASSERT((fixed_sockets_ + extra.size()) == total_socket_count_);
 
-        // NOTE adjust to the last fixed socket because the iterator will be
-        // preincremented
-        auto s = std::next(batch_.sockets_.begin(), fixed_sockets_ - 1u);
+              // NOTE adjust to the last fixed socket because the iterator will
+              // be preincremented
+              auto s = std::next(batch_.sockets_.begin(), fixed_sockets_ - 1u);
 
-        for (const auto& [type, args] : extra) {
-            auto& socket = *(++s);
-            apply(args, socket);
-            out.emplace_back(
-                socket.ID(),
-                &socket,
-                [id = socket.ID(),
-                 &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
-                    m.Internal().Prepend(id);
-                    cb.Process(std::move(m));
-                });
-        }
+              for (const auto& [type, args] : extra) {
+                  auto& socket = *(++s);
+                  apply(args, socket);
+                  out.emplace_back(
+                      socket.ID(),
+                      &socket,
+                      [id = socket.ID(),
+                       &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                          m.Internal().Prepend(id);
+                          cb.Process(std::move(m));
+                      });
+              }
 
-        return out;
-    }()))
+              return out;
+          }(),
+          batch_.thread_name_))
 {
     OT_ASSERT(nullptr != thread_);
 }

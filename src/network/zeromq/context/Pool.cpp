@@ -124,8 +124,10 @@ auto Pool::PreallocateBatch() const noexcept -> BatchID { return GetBatchID(); }
 
 auto Pool::Shutdown() noexcept -> void { stop(); }
 
-auto Pool::Start(BatchID id, StartArgs&& sockets) noexcept
-    -> zeromq::internal::Thread*
+auto Pool::Start(
+    BatchID id,
+    StartArgs&& sockets,
+    const std::string_view threadName) noexcept -> zeromq::internal::Thread*
 {
     const auto ticket = gate_.get();
 
@@ -140,7 +142,7 @@ auto Pool::Start(BatchID id, StartArgs&& sockets) noexcept
 
         auto& thread = get(id);
 
-        if (thread.Add(id, std::move(sockets))) {
+        if (thread.Add(id, std::move(sockets), threadName)) {
 
             return &thread;
         } else {
