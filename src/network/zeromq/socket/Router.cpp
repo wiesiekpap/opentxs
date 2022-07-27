@@ -32,7 +32,8 @@ namespace opentxs::factory
 auto RouterSocket(
     const network::zeromq::Context& context,
     const bool direction,
-    const network::zeromq::ListenCallback& callback)
+    const network::zeromq::ListenCallback& callback,
+    const std::string_view threadName)
     -> std::unique_ptr<network::zeromq::socket::Router>
 {
     using ReturnType = network::zeromq::socket::implementation::Router;
@@ -40,7 +41,8 @@ auto RouterSocket(
     return std::make_unique<ReturnType>(
         context,
         static_cast<network::zeromq::socket::Direction>(direction),
-        callback);
+        callback,
+        threadName);
 }
 }  // namespace opentxs::factory
 
@@ -49,9 +51,15 @@ namespace opentxs::network::zeromq::socket::implementation
 Router::Router(
     const zeromq::Context& context,
     const Direction direction,
-    const zeromq::ListenCallback& callback) noexcept
-    : Receiver(context, socket::Type::Router, direction, false)
-    , Bidirectional(context, true)
+    const zeromq::ListenCallback& callback,
+    const std::string_view threadName) noexcept
+    : Receiver(
+          context,
+          socket::Type::Router,
+          direction,
+          false,
+          adjustThreadName(threadName, "Router"))
+    , Bidirectional(context, true, adjustThreadName(threadName, "Router"))
     , Client(this->get())
     , Server(this->get())
     , callback_(callback)

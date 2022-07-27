@@ -26,6 +26,7 @@
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/Thread.hpp"
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -119,6 +120,7 @@ protected:
               [this](auto&& in) {
                   if (running_) pipeline(std::move(in));
               },
+              workerThreadName,
               {},
               {},
               {},

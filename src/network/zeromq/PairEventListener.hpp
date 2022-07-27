@@ -8,6 +8,7 @@
 #include <string_view>
 
 #include "network/zeromq/socket/Subscribe.hpp"
+#include "util/Thread.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -55,6 +56,7 @@ private:
     PairEventListener(
         const zeromq::Context& context,
         const zeromq::PairEventCallback& callback,
-        const int instance);
+        const int instance,
+        const std::string_view threadName = pairEventListenerThreadName);
 };
 }  // namespace opentxs::network::zeromq::implementation

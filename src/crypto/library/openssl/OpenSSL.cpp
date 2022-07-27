@@ -220,74 +220,125 @@ auto OpenSSL::HashTypeToOpenSSLType(const crypto::HashType hashType) noexcept
 
 auto OpenSSL::Digest(
     const crypto::HashType type,
-    const std::uint8_t* input,
-    const size_t inputSize,
-    std::uint8_t* output) const -> bool
+    const ReadView data,
+    const AllocateOutput output) const noexcept -> bool
 
 {
-    auto md = MD{};
+    try {
+        if (false == output.operator bool()) {
+            throw std::runtime_error{"invalid output"};
+        }
 
-    if (false == md.init_digest(type)) { return false; }
+        if (data.size() > std::numeric_limits<int>::max()) {
+            throw std::runtime_error{"input too large"};
+        }
 
-    if (1 != EVP_DigestInit_ex(md, md, nullptr)) {
-        LogError()(OT_PRETTY_CLASS())("Failed to initialize digest operation")
-            .Flush();
+        const auto size = HashSize(type);
+
+        OT_ASSERT(size <= std::size_t{EVP_MAX_MD_SIZE});
+
+        auto buf = output(size);
+
+        if (false == buf.valid(size)) {
+            throw std::runtime_error{"failed to allocate space for output"};
+        }
+
+        auto md = MD{};
+
+        if (false == md.init_digest(type)) {
+            throw std::runtime_error{"failed to initialize context"};
+        }
+
+        static_assert(
+            EVP_MAX_MD_SIZE <= std::numeric_limits<unsigned int>::max());
+        auto bytes = static_cast<unsigned int>(size);
+        auto rc = EVP_DigestInit_ex(md, md, nullptr);
+
+        if (1 != rc) {
+            throw std::runtime_error{"failed to initialize digest operation"};
+        }
+
+        rc = EVP_DigestUpdate(
+            md,
+            reinterpret_cast<const unsigned char*>(data.data()),
+            data.size());
+
+        if (1 != rc) {
+            throw std::runtime_error{"failed to process plaintext"};
+        }
+
+        rc = EVP_DigestFinal_ex(md, buf.as<unsigned char>(), &bytes);
+
+        if (1 != rc) { throw std::runtime_error{"failed to write digest"}; }
+
+        return true;
+        
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return false;
     }
-
-    if (1 != EVP_DigestUpdate(md, input, inputSize)) {
-        LogError()(OT_PRETTY_CLASS())("Failed to process plaintext").Flush();
-
-        return false;
-    }
-
-    unsigned int bytes{};
-
-    if (1 != EVP_DigestFinal_ex(md, output, &bytes)) {
-        LogError()(OT_PRETTY_CLASS())("Failed to write digest").Flush();
-
-        return false;
-    }
-
-    OT_ASSERT(
-        HashingProvider::HashSize(type) == static_cast<std::size_t>(bytes));
-
-    return true;
 }
 
 // Calculate an HMAC given some input data and a key
 auto OpenSSL::HMAC(
     const crypto::HashType hashType,
-    const std::uint8_t* input,
-    const size_t inputSize,
-    const std::uint8_t* key,
-    const size_t keySize,
-    std::uint8_t* output) const -> bool
+    const ReadView key,
+    const ReadView data,
+    const AllocateOutput output) const noexcept -> bool
 {
-    unsigned int size = 0;
-    const auto* evp_md = HashTypeToOpenSSLType(hashType);
+    try {
+        if (false == valid(data)) { throw std::runtime_error{"invalid input"}; }
 
-    if (nullptr != evp_md) {
-        ::HMAC(
-            evp_md,
-            key,
-            static_cast<int>(keySize),
-            input,
-            inputSize,
-            output,
-            &size);
+        if (false == valid(key)) { throw std::runtime_error{"invalid key"}; }
 
-        if (nullptr != output) {
-            return true;
-        } else {
-            LogError()(OT_PRETTY_CLASS())("Failed to produce a valid HMAC.")
-                .Flush();
-
-            return false;
+        if (false == output.operator bool()) {
+            throw std::runtime_error{"invalid output"};
         }
-    } else {
-        LogError()(OT_PRETTY_CLASS())("Invalid hash type.").Flush();
+
+        if (data.size() > std::numeric_limits<int>::max()) {
+            throw std::runtime_error{"input too large"};
+        }
+
+        if (key.size() > std::numeric_limits<int>::max()) {
+            throw std::runtime_error{"key too large"};
+        }
+
+        const auto size = HashSize(hashType);
+
+        OT_ASSERT(size <= std::size_t{EVP_MAX_MD_SIZE});
+
+        auto buf = output(size);
+
+        if (false == buf.valid(size)) {
+            throw std::runtime_error{"failed to allocate space for output"};
+        }
+
+        const auto* context = HashTypeToOpenSSLType(hashType);
+
+        if (nullptr == context) {
+            throw std::runtime_error{"invalid hash type"};
+        }
+
+        static_assert(
+            EVP_MAX_MD_SIZE <= std::numeric_limits<unsigned int>::max());
+        auto bytes = static_cast<unsigned int>(size);
+        const auto* rc = ::HMAC(
+            context,
+            key.data(),
+            static_cast<int>(key.size()),
+            reinterpret_cast<const unsigned char*>(data.data()),
+            data.size(),
+            buf.as<unsigned char>(),
+            &bytes);
+
+        if (nullptr == rc) {
+            throw std::runtime_error{"failed to calculate HMAC"};
+        }
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return false;
     }
@@ -380,11 +431,9 @@ auto OpenSSL::PKCS5_PBKDF2_HMAC(
                     static_cast<unsigned char*>(output));
 }
 
-auto OpenSSL::RIPEMD160(
-    const std::uint8_t* input,
-    const std::size_t inputSize,
-    std::uint8_t* output) const -> bool
+auto OpenSSL::RIPEMD160(const ReadView data, const AllocateOutput destination)
+    const noexcept -> bool
 {
-    return Digest(crypto::HashType::Ripemd160, input, inputSize, output);
+    return Digest(crypto::HashType::Ripemd160, data, destination);
 }
 }  // namespace opentxs::crypto::implementation

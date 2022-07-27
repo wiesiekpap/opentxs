@@ -18,6 +18,7 @@
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/Thread.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -55,6 +56,7 @@ public:
 protected:
     const bool start_thread_;
     mutable std::thread receiver_thread_;
+    mutable CString thread_name_;
 
     virtual auto have_callback() const noexcept -> bool { return false; }
     void run_tasks(const Lock& lock) const noexcept;
@@ -70,7 +72,8 @@ protected:
         const zeromq::Context& context,
         const socket::Type type,
         const Direction direction,
-        const bool startThread) noexcept;
+        const bool startThread,
+        const std::string_view threadName = receiverThreadName) noexcept;
 
     ~Receiver() override;
 

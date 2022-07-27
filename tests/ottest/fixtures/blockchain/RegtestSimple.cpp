@@ -47,7 +47,8 @@ void Regtest_fixture_simple::SetUp()
 
     core_wallet_ = {"Alice", GetPaymentCodeVector3().alice_.words_};
     auxiliary_wallets_.emplace(
-        name_bob, WalletDescription{name_bob, GetPaymentCodeVector3().bob_.words_});
+        name_bob,
+        WalletDescription{name_bob, GetPaymentCodeVector3().bob_.words_});
     auxiliary_wallets_.emplace(
         name_chris, WalletDescription{name_chris, chris_words});
 }

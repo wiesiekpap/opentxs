@@ -51,10 +51,12 @@ if(CMAKE_BUILD_TYPE
    STREQUAL
    "Debug"
 )
+  set(OPENTXS_DEBUG_BUILD ON)
   set(OPENTXS_PEDANTIC_DEFAULT ON)
   set(OPENTXS_BUILD_TESTS_DEFAULT ON)
   set(CMAKE_VERBOSE_MAKEFILE ON)
 else()
+  set(OPENTXS_DEBUG_BUILD OFF)
   set(OPENTXS_PEDANTIC_DEFAULT OFF)
   set(OPENTXS_BUILD_TESTS_DEFAULT OFF)
 endif()
@@ -476,6 +478,11 @@ if(OPENTXS_BUILD_TESTS)
 endif()
 
 find_package(Threads REQUIRED)
+
+if(WIN32)
+  find_package(pthread REQUIRED)
+endif()
+
 find_package(unofficial-sodium REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(ZLIB REQUIRED)

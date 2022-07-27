@@ -85,16 +85,13 @@ class OpenSSL final : virtual public crypto::OpenSSL, public AsymmetricProvider
 public:
     auto Digest(
         const crypto::HashType hashType,
-        const std::uint8_t* input,
-        const size_t inputSize,
-        std::uint8_t* output) const -> bool final;
+        const ReadView data,
+        const AllocateOutput output) const noexcept -> bool final;
     auto HMAC(
         const crypto::HashType hashType,
-        const std::uint8_t* input,
-        const size_t inputSize,
-        const std::uint8_t* key,
-        const size_t keySize,
-        std::uint8_t* output) const -> bool final;
+        const ReadView key,
+        const ReadView data,
+        const AllocateOutput output) const noexcept -> bool final;
     auto PKCS5_PBKDF2_HMAC(
         const void* input,
         const std::size_t inputSize,
@@ -104,10 +101,8 @@ public:
         const crypto::HashType hashType,
         const std::size_t bytes,
         void* output) const noexcept -> bool final;
-    auto RIPEMD160(
-        const std::uint8_t* input,
-        const std::size_t inputSize,
-        std::uint8_t* output) const -> bool final;
+    auto RIPEMD160(const ReadView data, const AllocateOutput destination)
+        const noexcept -> bool final;
 
     using AsymmetricProvider::RandomKeypair;
     auto RandomKeypair(

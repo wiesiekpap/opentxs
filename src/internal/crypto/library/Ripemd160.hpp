@@ -5,8 +5,7 @@
 
 #pragma once
 
-#include <cstddef>  // IWYU pragma: keep
-#include <cstdint>
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs::crypto
 {
@@ -14,9 +13,8 @@ class Ripemd160
 {
 public:
     virtual auto RIPEMD160(
-        const std::uint8_t* input,
-        const std::size_t inputSize,
-        std::uint8_t* output) const -> bool = 0;
+        const ReadView data,
+        const AllocateOutput destination) const noexcept -> bool = 0;
 
     Ripemd160(const Ripemd160&) = delete;
     Ripemd160(Ripemd160&&) = delete;

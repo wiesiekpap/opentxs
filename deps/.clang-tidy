@@ -1,5 +1,8 @@
-{
-  "Checks": "boost-use-to-string,bugprone-unused-raii,bugprone-use-after-move,cert-*,-cert-oop54-cpp,-cert-err58-cpp,-cert-err33-c,-cert-err34-c,clang-diagnostic-*,clang-analyzer-*,-modernize*,-readability*",
-  "FormatStyle": "file",
-  "WarningsAsErrors": "*"
-}
+# Disable most checks as this is third-party code.
+# Have to enable at least one check - so we add dummy check.
+# The HeaderFileExtensions option can be used to make the check work
+# with only certain header file suffixes. If you set it to something
+# non-existent line "should-never-exist" then you have a "do nothing" check.
+Checks: '-*,misc-definitions-in-headers'
+CheckOptions:
+  - { key: HeaderFileExtensions, value: "should-never-exist" }

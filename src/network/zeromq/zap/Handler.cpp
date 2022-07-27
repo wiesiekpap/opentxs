@@ -30,9 +30,11 @@ namespace opentxs::network::zeromq::zap
 {
 auto Handler::Factory(
     const zeromq::Context& context,
-    const zap::Callback& callback) -> OTZMQZAPHandler
+    const zap::Callback& callback,
+    const std::string_view threadName) -> OTZMQZAPHandler
 {
-    return OTZMQZAPHandler(new implementation::Handler(context, callback));
+    return OTZMQZAPHandler(
+        new implementation::Handler(context, callback, threadName));
 }
 }  // namespace opentxs::network::zeromq::zap
 
@@ -40,8 +42,15 @@ namespace opentxs::network::zeromq::zap::implementation
 {
 Handler::Handler(
     const zeromq::Context& context,
-    const zap::Callback& callback) noexcept
-    : Receiver(context, socket::Type::Router, socket::Direction::Bind, true)
+    const zap::Callback& callback,
+    const std::string_view threadName) noexcept
+    : Receiver(
+          context,
+          socket::Type::Router,
+          socket::Direction::Bind,
+          true,
+          threadName.empty() ? "Handler"
+                             : adjustThreadName(threadName, "Handler"))
     , Server(this->get())
     , callback_(callback)
 {

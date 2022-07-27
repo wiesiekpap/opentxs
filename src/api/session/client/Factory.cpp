@@ -211,6 +211,8 @@ auto Factory::BlockHeader(const proto::BlockchainBlockHeader& serialized) const
         case opentxs::blockchain::Type::Unknown:
         case opentxs::blockchain::Type::Ethereum_frontier:
         case opentxs::blockchain::Type::Ethereum_ropsten:
+        case opentxs::blockchain::Type::Casper:
+        case opentxs::blockchain::Type::Casper_testnet:
         default: {
             LogError()(OT_PRETTY_CLASS())("Unsupported type (")(
                 static_cast<std::uint32_t>(type))(")")
@@ -249,6 +251,8 @@ auto Factory::BlockHeader(
         case opentxs::blockchain::Type::Unknown:
         case opentxs::blockchain::Type::Ethereum_frontier:
         case opentxs::blockchain::Type::Ethereum_ropsten:
+        case opentxs::blockchain::Type::Casper:
+        case opentxs::blockchain::Type::Casper_testnet:
         default: {
             LogError()(OT_PRETTY_CLASS())("Unsupported type (")(
                 static_cast<std::uint32_t>(type))(")")

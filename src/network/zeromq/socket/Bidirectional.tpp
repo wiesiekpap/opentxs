@@ -29,7 +29,8 @@ namespace opentxs::network::zeromq::socket::implementation
 template <typename InterfaceType, typename MessageType>
 Bidirectional<InterfaceType, MessageType>::Bidirectional(
     const zeromq::Context& context,
-    const bool startThread) noexcept
+    const bool startThread,
+    const std::string_view threadName) noexcept
     : bidirectional_start_thread_(startThread)
     , endpoint_(MakeArbitraryInproc())
     , push_socket_([&] {
@@ -50,6 +51,7 @@ Bidirectional<InterfaceType, MessageType>::Bidirectional(
     , send_timeout_(-1)
     , receive_timeout_(-1)
     , send_lock_()
+    , thread_name_(threadName)
 {
 }
 
@@ -231,6 +233,8 @@ void Bidirectional<InterfaceType, MessageType>::thread() noexcept
 {
     Signals::Block();
     LogTrace()(OT_PRETTY_CLASS())("Starting listener").Flush();
+
+    if (!thread_name_.empty()) { SetThisThreadsName(thread_name_); }
 
     while (this->running_.get()) {
         if (this->have_callback()) { break; }

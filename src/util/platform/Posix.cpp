@@ -28,10 +28,6 @@ extern "C" {
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/util/Log.hpp"
 
-#if defined(debug) || defined(_DEBUG) || defined(DEBUG)
-#define PREDEF_MODE_DEBUG 1
-#endif
-
 namespace opentxs
 {
 
@@ -239,19 +235,6 @@ auto Context::Init_Rlimit() noexcept -> void
     LogVerbose()("Adjusted open files limit: ")(result.rlim_cur)(" / ")(
         result.rlim_max)
         .Flush();
-// Here is a security measure intended to make it more difficult to capture a
-// core dump. (Not used in debug mode, obviously.)
-#if !defined(PREDEF_MODE_DEBUG)
-    struct rlimit rlim;
-    getrlimit(RLIMIT_CORE, &rlim);
-    rlim.rlim_max = rlim.rlim_cur = 0;
-
-    if (setrlimit(RLIMIT_CORE, &rlim)) {
-        LogConsole()(" setrlimit: ")(strerror(errno)).Flush();
-        OT_FAIL_MSG("Crypto::Init: ASSERT: setrlimit failed. (Used for "
-                    "preventing core dumps.)\n");
-    }
-#endif  // !defined(PREDEF_MODE_DEBUG)
 }
 
 auto Legacy::get_home_platform() noexcept -> UnallocatedCString

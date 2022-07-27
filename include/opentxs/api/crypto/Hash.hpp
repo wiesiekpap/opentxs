@@ -66,7 +66,7 @@ public:
     virtual auto HMAC(
         const opentxs::crypto::HashType hashType,
         const ReadView key,
-        const ReadView& data,
+        const ReadView data,
         const AllocateOutput digest) const noexcept -> bool = 0;
     OPENTXS_NO_EXPORT virtual auto InternalHash() const noexcept
         -> const internal::Hash& = 0;

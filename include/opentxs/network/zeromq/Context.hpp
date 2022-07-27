@@ -73,43 +73,61 @@ public:
 
     virtual auto DealerSocket(
         const ListenCallback& callback,
-        const socket::Direction direction) const noexcept
+        const socket::Direction direction,
+        const std::string_view threadName = {}) const noexcept
         -> Pimpl<socket::Dealer> = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Context& = 0;
     virtual auto PairEventListener(
         const PairEventCallback& callback,
-        const int instance) const noexcept -> Pimpl<socket::Subscribe> = 0;
-    virtual auto PairSocket(const ListenCallback& callback) const noexcept
+        const int instance,
+        const std::string_view threadName = {}) const noexcept
+        -> Pimpl<socket::Subscribe> = 0;
+    virtual auto PairSocket(
+        const ListenCallback& callback,
+        const std::string_view threadName = {}) const noexcept
         -> Pimpl<socket::Pair> = 0;
     virtual auto PairSocket(
         const ListenCallback& callback,
-        const socket::Pair& peer) const noexcept -> Pimpl<socket::Pair> = 0;
+        const socket::Pair& peer,
+        const std::string_view threadName = {}) const noexcept
+        -> Pimpl<socket::Pair> = 0;
     virtual auto PairSocket(
         const ListenCallback& callback,
-        const std::string_view endpoint) const noexcept
+        const std::string_view endpoint,
+        const std::string_view threadName = {}) const noexcept
         -> Pimpl<socket::Pair> = 0;
-    virtual auto Proxy(socket::Socket& frontend, socket::Socket& backend)
-        const noexcept -> Pimpl<zeromq::Proxy> = 0;
+    virtual auto Proxy(
+        socket::Socket& frontend,
+        socket::Socket& backend,
+        const std::string_view threadName = {}) const noexcept
+        -> Pimpl<zeromq::Proxy> = 0;
     virtual auto PublishSocket() const noexcept -> Pimpl<socket::Publish> = 0;
-    virtual auto PullSocket(const socket::Direction direction) const noexcept
+    virtual auto PullSocket(
+        const socket::Direction direction,
+        const std::string_view threadName = {}) const noexcept
         -> Pimpl<socket::Pull> = 0;
     virtual auto PullSocket(
         const ListenCallback& callback,
-        const socket::Direction direction) const noexcept
+        const socket::Direction direction,
+        const std::string_view threadName = {}) const noexcept
         -> Pimpl<socket::Pull> = 0;
     virtual auto PushSocket(const socket::Direction direction) const noexcept
         -> Pimpl<socket::Push> = 0;
     virtual auto ReplySocket(
         const ReplyCallback& callback,
-        const socket::Direction direction) const noexcept
+        const socket::Direction direction,
+        const std::string_view threadName = {}) const noexcept
         -> Pimpl<socket::Reply> = 0;
     virtual auto RequestSocket() const noexcept -> Pimpl<socket::Request> = 0;
     virtual auto RouterSocket(
         const ListenCallback& callback,
-        const socket::Direction direction) const noexcept
+        const socket::Direction direction,
+        const std::string_view threadName = {}) const noexcept
         -> Pimpl<socket::Router> = 0;
-    virtual auto SubscribeSocket(const ListenCallback& callback) const noexcept
+    virtual auto SubscribeSocket(
+        const ListenCallback& callback,
+        const std::string_view threadName = {}) const noexcept
         -> Pimpl<socket::Subscribe> = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept

@@ -16,6 +16,7 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/Thread.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -49,7 +50,8 @@ public:
     Reply(
         const zeromq::Context& context,
         const Direction direction,
-        const ReplyCallback& callback) noexcept;
+        const ReplyCallback& callback,
+        const std::string_view threadName = replyThreadName) noexcept;
     Reply() = delete;
     Reply(const Reply&) = delete;
     Reply(Reply&&) = delete;

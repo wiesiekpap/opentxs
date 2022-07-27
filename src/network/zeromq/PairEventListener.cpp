@@ -24,8 +24,9 @@ namespace opentxs::network::zeromq::implementation
 PairEventListener::PairEventListener(
     const zeromq::Context& context,
     const zeromq::PairEventCallback& callback,
-    const int instance)
-    : ot_super(context, callback)
+    const int instance,
+    const std::string_view threadName)
+    : ot_super(context, callback, threadName)
     , instance_(instance)
 {
     const auto endpoint = MakeDeterministicInproc(
@@ -42,6 +43,7 @@ auto PairEventListener::clone() const noexcept -> PairEventListener*
     return new PairEventListener(
         context_,
         dynamic_cast<const zeromq::PairEventCallback&>(callback_),
-        instance_);
+        instance_,
+        adjustThreadName(thread_name_, std::to_string(instance_)));
 }
 }  // namespace opentxs::network::zeromq::implementation

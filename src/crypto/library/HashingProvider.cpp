@@ -13,7 +13,7 @@
 
 namespace opentxs::crypto
 {
-auto HashingProvider::StringToHashType(const String& inputString)
+auto HashingProvider::StringToHashType(const String& inputString) noexcept
     -> crypto::HashType
 {
     if (inputString.Compare("NULL")) {
@@ -32,7 +32,7 @@ auto HashingProvider::StringToHashType(const String& inputString)
 
     return crypto::HashType::Error;
 }
-auto HashingProvider::HashTypeToString(const crypto::HashType hashType)
+auto HashingProvider::HashTypeToString(const crypto::HashType hashType) noexcept
     -> OTString
 
 {
@@ -65,7 +65,8 @@ auto HashingProvider::HashTypeToString(const crypto::HashType hashType)
     return hashTypeString;
 }
 
-auto HashingProvider::HashSize(const crypto::HashType hashType) -> std::size_t
+auto HashingProvider::HashSize(const crypto::HashType hashType) noexcept
+    -> std::size_t
 {
     switch (hashType) {
         case crypto::HashType::Sha256: {
@@ -102,9 +103,9 @@ auto HashingProvider::HashSize(const crypto::HashType hashType) -> std::size_t
             return 8;
         }
         default: {
+
+            return 0;
         }
     }
-
-    return 0;
 }
 }  // namespace opentxs::crypto

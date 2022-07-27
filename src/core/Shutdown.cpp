@@ -15,6 +15,7 @@
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/Thread.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -62,7 +63,7 @@ ShutdownReceiver::ShutdownReceiver(
     , callback_(zmq::ListenCallback::Factory([cb, this](auto&&) {
         if (bool(cb)) { cb(this->promise_); }
     }))
-    , socket_(zmq.SubscribeSocket(callback_))
+    , socket_(zmq.SubscribeSocket(callback_, shutdownReceiverThreadName))
 {
     auto init{false};
 

@@ -13,6 +13,7 @@
 #include "network/zeromq/socket/Receiver.tpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/Thread.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -48,7 +49,8 @@ public:
 
     Subscribe(
         const zeromq::Context& context,
-        const zeromq::ListenCallback& callback) noexcept;
+        const zeromq::ListenCallback& callback,
+        const std::string_view threadName = subscribeThreadName) noexcept;
     Subscribe() = delete;
     Subscribe(const Subscribe&) = delete;
     Subscribe(Subscribe&&) = delete;

@@ -67,6 +67,7 @@ public:
     virtual auto PreallocateBatch() const noexcept -> BatchID = 0;
     virtual auto Pipeline(
         std::function<void(zeromq::Message&&)>&& callback,
+        const std::string_view threadName = {},
         const EndpointArgs& subscribe = {},
         const EndpointArgs& pull = {},
         const EndpointArgs& dealer = {},
@@ -75,8 +76,10 @@ public:
         alloc::Resource* pmr = alloc::System()) const noexcept
         -> zeromq::Pipeline = 0;
     virtual auto RawSocket(socket::Type type) const noexcept -> socket::Raw = 0;
-    virtual auto Start(BatchID id, StartArgs&& sockets) const noexcept
-        -> Thread* = 0;
+    virtual auto Start(
+        BatchID id,
+        StartArgs&& sockets,
+        const std::string_view threadName = {}) const noexcept -> Thread* = 0;
     virtual auto Thread(BatchID id) const noexcept -> Thread* = 0;
     virtual auto ThreadID(BatchID id) const noexcept -> std::thread::id = 0;
 

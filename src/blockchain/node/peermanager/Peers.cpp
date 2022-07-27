@@ -568,6 +568,7 @@ auto PeerManager::Peers::peer_factory(Endpoint endpoint, const int id) noexcept
         }
         case blockchain::p2p::Protocol::opentxs:
         case blockchain::p2p::Protocol::ethereum:
+        case blockchain::p2p::Protocol::casper:
         default: {
             OT_FAIL;
         }

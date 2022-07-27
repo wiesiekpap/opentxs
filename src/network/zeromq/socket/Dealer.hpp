@@ -17,6 +17,7 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/Thread.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -56,7 +57,8 @@ public:
     Dealer(
         const zeromq::Context& context,
         const Direction direction,
-        const zeromq::ListenCallback& callback) noexcept;
+        const zeromq::ListenCallback& callback,
+        const std::string_view threadName = dealerThreadName) noexcept;
     Dealer() = delete;
     Dealer(const Dealer&) = delete;
     Dealer(Dealer&&) = delete;

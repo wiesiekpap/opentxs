@@ -105,6 +105,7 @@ public:
         const EndpointArgs& pull,
         const EndpointArgs& dealer,
         const Vector<SocketData>& extra,
+        const std::string_view threadName,
         const std::optional<zeromq::BatchID>& preallocated,
         allocator_type pmr) noexcept;
     Imp(const zeromq::Context& context,
@@ -115,6 +116,7 @@ public:
         const EndpointArgs& pull,
         const EndpointArgs& dealer,
         const Vector<SocketData>& extra,
+        const std::string_view threadName,
         const std::optional<zeromq::BatchID>& preallocated,
         allocator_type pmr) noexcept;
     Imp() = delete;

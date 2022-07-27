@@ -89,7 +89,10 @@ public:
     auto DoModify(SocketID id, const ModifyCallback& cb) noexcept -> bool final;
     auto PreallocateBatch() const noexcept -> BatchID final;
     auto Shutdown() noexcept -> void final;
-    auto Start(BatchID id, StartArgs&& sockets) noexcept
+    auto Start(
+        BatchID id,
+        StartArgs&& sockets,
+        const std::string_view threadName) noexcept
         -> zeromq::internal::Thread*;
     auto Stop(BatchID id) noexcept -> std::future<bool>;
     auto UpdateIndex(BatchID id, StartArgs&& sockets) noexcept -> void final;

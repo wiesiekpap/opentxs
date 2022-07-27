@@ -349,6 +349,8 @@ auto Peer::get_local_services(
         case blockchain::Type::Unknown:
         case blockchain::Type::Ethereum_frontier:
         case blockchain::Type::Ethereum_ropsten:
+        case blockchain::Type::Casper:
+        case blockchain::Type::Casper_testnet:
         case blockchain::Type::UnitTest:
         default: {
         }
@@ -1256,7 +1258,7 @@ auto Peer::process_getheaders(
         hashes.begin(),
         hashes.end(),
         std::back_inserter(headers),
-        [&](const auto& hash) -> auto {
+        [&](const auto& hash) -> auto{
             return headers_.Internal().LoadBitcoinHeader(hash);
         });
     auto pOut = std::unique_ptr<message::internal::Headers>{

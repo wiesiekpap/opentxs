@@ -55,6 +55,7 @@
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/Thread.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs::network::p2p
@@ -72,7 +73,12 @@ Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
 
         return out;
     }()))
-    , batch_(handle_.batch_)
+    , batch_([&]() -> auto& {
+        auto& out = handle_.batch_;
+        out.thread_name_ = P2PServerThreadName;
+
+        return out;
+    }())
     , external_callback_(
           batch_.listen_callbacks_.emplace_back(zeromq::ListenCallback::Factory(
               [this](auto&& msg) { process_external(std::move(msg)); })))
@@ -160,7 +166,8 @@ Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
               }
 
               return out;
-          }()))
+          }(),
+          batch_.thread_name_))
     , sync_endpoint_()
     , sync_public_endpoint_()
     , update_endpoint_()

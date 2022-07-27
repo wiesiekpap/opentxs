@@ -7,6 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <string_view>
+
 #include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -41,7 +43,8 @@ public:
     static auto Factory(
         const Context& context,
         socket::Socket& frontend,
-        socket::Socket& backend) -> OTZMQProxy;
+        socket::Socket& backend,
+        const std::string_view threadName = {}) -> OTZMQProxy;
 
     Proxy(const Proxy&) = delete;
     Proxy(Proxy&&) = default;
