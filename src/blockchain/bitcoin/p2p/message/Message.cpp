@@ -173,6 +173,7 @@ auto VerifyChecksum(
         } break;
         case p2p::Protocol::opentxs:
         case p2p::Protocol::ethereum:
+        case p2p::Protocol::casper:
         default: {
             LogError()(__func__)(": Unsupported type").Flush();
         }

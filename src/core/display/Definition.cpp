@@ -156,6 +156,8 @@ auto GetDefinition(UnitType in) noexcept -> const Definition&
           }}},
         {UnitType::Eth, {}},               // TODO
         {UnitType::Ethereum_ropsten, {}},  // TODO
+        {UnitType::Cspr, {}},              // TODO
+        {UnitType::TnCspr, {}},            // TODO
         {UnitType::Ltc,
          {u8"LTC",
           {

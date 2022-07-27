@@ -59,6 +59,8 @@ auto GenesisBlockHeader(
         case blockchain::Type::Unknown:
         case blockchain::Type::Ethereum_frontier:
         case blockchain::Type::Ethereum_ropsten:
+        case blockchain::Type::Casper:
+        case blockchain::Type::Casper_testnet:
         default: {
             LogError()("opentxs::factory::")(__func__)(": Unsupported type (")(
                 static_cast<std::uint32_t>(type))(")")

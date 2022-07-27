@@ -26,6 +26,9 @@ auto BlockchainBlockHeaderAllowedBlockchainBlockLocalData() noexcept
     -> const VersionMap&;
 auto BlockchainBlockHeaderAllowedEthereumBlockHeaderFields() noexcept
     -> const VersionMap&;
+// TODO: Casper. Defining a protobuf serialization for Casper block headers
+// and transactions is needed in the stage where opentxs is storing
+// those transactions itself in the blockchain database.
 auto BlockchainDeterministicAccountDataAllowedBlockchainAccountData() noexcept
     -> const VersionMap&;
 auto BlockchainDeterministicAccountDataAllowedHDPath() noexcept

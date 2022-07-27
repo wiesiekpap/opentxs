@@ -409,6 +409,8 @@ private:
             case Type::Unknown:
             case Type::Ethereum_frontier:
             case Type::Ethereum_ropsten:
+            case Type::Casper:
+            case Type::Casper_testnet:
             default: {
                 LogError()(OT_PRETTY_CLASS())("Unsupported chain").Flush();
 

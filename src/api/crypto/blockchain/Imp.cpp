@@ -377,6 +377,10 @@ auto Blockchain::Imp::bip44_type(const UnitType type) const noexcept
 
             return Bip44Type::ECASH;
         }
+        case UnitType::Cspr: {
+
+            return Bip44Type::CSPR;
+        }
         case UnitType::Tnbch:
         case UnitType::Tnbtc:
         case UnitType::Tnxrp:
@@ -394,6 +398,7 @@ auto Blockchain::Imp::bip44_type(const UnitType type) const noexcept
         case UnitType::Tnpkt:
         case UnitType::Tnbsv:
         case UnitType::TnXec:
+        case UnitType::TnCspr:
         case UnitType::Regtest: {
             return Bip44Type::TESTNET;
         }

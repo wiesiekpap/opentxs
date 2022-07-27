@@ -1,0 +1,3 @@
+# IDE specific dirs
+.vscode
+.idea

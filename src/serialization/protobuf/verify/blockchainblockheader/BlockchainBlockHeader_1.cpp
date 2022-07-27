@@ -44,6 +44,8 @@ auto CheckProto_1(const BlockchainBlockHeader& input, const bool silent) -> bool
         case 6: {
             ethereum = true;
         } break;
+        case 15:
+        case 16:
         default: {
             FAIL_2("Invalid type", std::to_string(input.type()));
         }
