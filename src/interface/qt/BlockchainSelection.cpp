@@ -85,6 +85,19 @@ auto BlockchainSelectionQt::enabledCount() const noexcept -> int
     return static_cast<int>(imp_->parent_.EnabledCount());
 }
 
+auto BlockchainSelectionQt::enabledChains() const noexcept -> UnallocatedSet<int>
+{
+    const auto chains = imp_->parent_.EnabledChains();
+    UnallocatedSet<int> castedChains;
+    std::transform(
+        chains.cbegin(),
+        chains.cend(),
+        std::inserter(castedChains, castedChains.begin()),
+        [](const blockchain::Type &type) { return static_cast<int>(type);}
+    );
+    return castedChains;
+}
+
 auto BlockchainSelectionQt::flags(const QModelIndex& index) const
     -> Qt::ItemFlags
 {
