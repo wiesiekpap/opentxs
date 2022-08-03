@@ -134,6 +134,11 @@ auto BlockchainSelection::EnabledCount() const noexcept -> std::size_t
     return enabled_count_.load();
 }
 
+auto BlockchainSelection::EnabledChains() const noexcept -> UnallocatedSet<blockchain::Type>
+{
+    return Widget::api_.Network().Blockchain().EnabledChains();
+}
+
 auto BlockchainSelection::filter(const ui::Blockchains type) noexcept
     -> UnallocatedSet<blockchain::Type>
 {

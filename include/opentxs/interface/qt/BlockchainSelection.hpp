@@ -6,6 +6,7 @@
 #pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
+#include "opentxs/util/Container.hpp"
 
 #include <QObject>
 #include <QString>
@@ -64,6 +65,7 @@ public:
     };
 
     auto enabledCount() const noexcept -> int;
+    auto enabledChains() const noexcept -> UnallocatedSet<int>;
     auto flags(const QModelIndex& index) const -> Qt::ItemFlags final;
 
     auto setData(const QModelIndex& index, const QVariant& value, int role)
