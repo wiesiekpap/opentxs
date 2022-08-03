@@ -85,6 +85,33 @@ auto BlockchainSelectionQt::enabledCount() const noexcept -> int
     return static_cast<int>(imp_->parent_.EnabledCount());
 }
 
+auto BlockchainSelectionQt::enabledChains() const noexcept
+    -> UnallocatedSet<int>
+{
+    const auto chains = imp_->parent_.EnabledChains();
+    static auto const is_above_int_limits = [](const auto value) {
+        return static_cast<blockchain::TypeEnum>(value) >
+               std::numeric_limits<int>::max();
+    };
+    static auto const cast_type_f = [this](auto const type) {
+        if (is_above_int_limits(type)) {
+            LogError()(OT_PRETTY_CLASS())("enabledChains type: ")(
+                static_cast<blockchain::TypeEnum>(type))(
+                " is beyond int limits. return Unknown")
+                .Flush();
+            return 0;
+        }
+        return static_cast<int>(type);
+    };
+    UnallocatedSet<int> castedChains;
+    std::transform(
+        chains.cbegin(),
+        chains.cend(),
+        std::inserter(castedChains, castedChains.begin()),
+        [](const blockchain::Type type) { return cast_type_f(type); });
+    return castedChains;
+}
+
 auto BlockchainSelectionQt::flags(const QModelIndex& index) const
     -> Qt::ItemFlags
 {
