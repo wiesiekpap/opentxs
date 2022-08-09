@@ -12,6 +12,7 @@
 #include "Proto.hpp"
 #include "internal/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -113,6 +114,7 @@ public:
         const api::crypto::Encode& encode,
         const opentxs::crypto::HashingProvider& sha,
         const opentxs::crypto::HashingProvider& blake,
+        const opentxs::crypto::HashingProvider& keccak,
         const opentxs::crypto::Pbkdf2& pbkdf2,
         const opentxs::crypto::Ripemd160& ripe,
         const opentxs::crypto::Scrypt& scrypt) noexcept;
@@ -127,16 +129,25 @@ private:
     const api::crypto::Encode& encode_;
     const opentxs::crypto::HashingProvider& sha_;
     const opentxs::crypto::HashingProvider& blake_;
+    const opentxs::crypto::HashingProvider& keccak_;
     const opentxs::crypto::Pbkdf2& pbkdf2_;
     const opentxs::crypto::Ripemd160& ripe_;
     const opentxs::crypto::Scrypt& scrypt_;
 
     auto bitcoin_hash_160(const ReadView data, const AllocateOutput destination)
         const noexcept -> bool;
+    auto ethereum_hash(const ReadView data, const AllocateOutput destination)
+        const noexcept -> bool;
+    auto ethereum_address(
+        const ReadView keccakData,
+        const AllocateOutput destination) const -> bool;
     auto sha_256_double(const ReadView data, const AllocateOutput destination)
         const noexcept -> bool;
     auto sha_256_double_checksum(
         const ReadView data,
         const AllocateOutput destination) const noexcept -> bool;
+    auto uncompress_pubkey(
+        const ReadView keccakData,
+        const AllocateOutput output) const noexcept -> bool;
 };
 }  // namespace opentxs::api::crypto::imp

@@ -222,6 +222,10 @@ auto OpenSSL::HashTypeToOpenSSLType(const crypto::HashType hashType) noexcept
         case crypto::HashType::Sha1: {
             return ::EVP_sha1();
         }
+        case crypto::HashType::Keccak256: {
+            return nullptr;
+           // return ::EVP_sha3_256(); //TODO when opentxs will support OpenSSL3
+        }
         default: {
             return nullptr;
         }

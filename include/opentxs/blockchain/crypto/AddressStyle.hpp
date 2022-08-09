@@ -17,5 +17,6 @@ enum class AddressStyle : std::uint16_t {
     P2WPKH = 3,
     P2WSH = 4,
     P2TR = 5,
+    ChecksummedHex = 6,
 };
 }  // namespace opentxs::blockchain::crypto

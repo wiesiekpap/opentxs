@@ -50,13 +50,14 @@ Crypto::Crypto(const api::Settings& settings) noexcept
     : config_(factory::CryptoConfig(settings))
     , sodium_(factory::Sodium(*this))
     , ssl_(factory::OpenSSL())
+    , kec_(factory::Keccak())
     , util_(*sodium_)
     , secp256k1_(factory::Secp256k1(*this, util_))
     , bip39_p_(opentxs::Factory::Bip39(*this))
     , bip32_(factory::Bip32(*this))
     , bip39_(*bip39_p_)
     , encode_(factory::Encode(*this))
-    , hash_(factory::Hash(*encode_, *ssl_, *sodium_, *ssl_, *ssl_, *sodium_))
+    , hash_(factory::Hash(*encode_, *ssl_, *sodium_, *kec_, *ssl_, *ssl_, *sodium_))
     , asymmetric_map_([this] {
         auto out = AMap{};
         out.emplace(AType::ED25519, sodium_.get());

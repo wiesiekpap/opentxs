@@ -6,6 +6,7 @@
 add_subdirectory(base)
 add_subdirectory(base58)
 add_subdirectory(blockchain)
+add_subdirectory(eliptic_curve)
 
 target_sources(
   opentxs-common

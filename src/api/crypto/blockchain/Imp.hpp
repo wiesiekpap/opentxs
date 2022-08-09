@@ -310,6 +310,8 @@ protected:
     mutable blockchain::Wallets wallets_;
 
     auto bip44_type(const UnitType type) const noexcept -> Bip44Type;
+    auto checksummedHex(const opentxs::blockchain::Type chain,
+                        const Data& pubkeyHash) const noexcept -> UnallocatedCString;
     auto decode_bech23(const UnallocatedCString& encoded) const noexcept
         -> std::optional<DecodedAddress>;
     auto decode_legacy(const UnallocatedCString& encoded) const noexcept

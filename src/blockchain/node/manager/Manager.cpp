@@ -860,6 +860,7 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
             case Style::P2SH: {
                 output.set_scripthash(data->str());
             } break;
+            case Style::ChecksummedHex:
             default: {
                 rc = SendResult::UnsupportedAddressFormat;
 
