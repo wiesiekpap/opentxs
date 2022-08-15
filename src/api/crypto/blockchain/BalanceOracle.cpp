@@ -50,6 +50,7 @@
 #include "util/ScopeGuard.hpp"
 #include "util/Thread.hpp"
 #include "util/Work.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::api::crypto::blockchain
 {
@@ -356,7 +357,7 @@ auto BalanceOracle::Imp::do_startup() noexcept -> void {}
 
 auto BalanceOracle::Imp::do_shutdown() noexcept -> void {}
 
-auto BalanceOracle::Imp::work() noexcept -> int { return -1; }
+auto BalanceOracle::Imp::work() noexcept -> int { return SM_off; }
 
 BalanceOracle::Imp::~Imp() { signal_shutdown(); }
 }  // namespace opentxs::api::crypto::blockchain

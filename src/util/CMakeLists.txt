@@ -71,6 +71,7 @@ target_sources(
     "timed.hpp"
     "Timer.cpp"
     "Timer.hpp"
+    "tuning.hpp"
     "Work.hpp"
 )
 target_include_directories(

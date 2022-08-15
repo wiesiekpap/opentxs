@@ -29,6 +29,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::factory
 {
@@ -184,7 +185,7 @@ auto FeeOracle::Imp::state_machine() noexcept -> int
     }
     tdiag("FeeOracle state_machine 3");
 
-    return -1;
+    return SM_off;
 }
 
 auto FeeOracle::Imp::to_string(Work value) const noexcept -> const std::string&

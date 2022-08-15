@@ -266,7 +266,6 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
         std::cerr << ThreadMonitor::get_name()
                   << " Headers::ApplyUpdate sending BlockchainNewHeader\n";
 
-        // QQQ
         MessageMarker().mark(work);
         network_.Reorg().Send(std::move(work));
     }

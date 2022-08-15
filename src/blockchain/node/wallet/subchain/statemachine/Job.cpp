@@ -34,6 +34,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -526,7 +527,7 @@ auto Job::work() noexcept -> int
 {
     process_watchdog();
 
-    return -1;
+    return SM_off;
 }
 
 Job::~Job() { watchdog_.Cancel(); }

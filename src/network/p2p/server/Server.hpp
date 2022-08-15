@@ -12,6 +12,7 @@
 
 #include "internal/network/p2p/Server.hpp"
 #include "internal/network/zeromq/Handle.hpp"
+#include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Gatekeeper.hpp"
 #include "util/Reactor.hpp"
@@ -87,6 +88,14 @@ public:
     std::atomic_bool running_;
     mutable Gatekeeper gate_;
 
+private:
+    struct diag {
+        MessageType last_message_type_;
+        unsigned last_idx_;
+    };
+    diag diag_;
+
+public:
     Imp(const api::Session& api, const zeromq::Context& zmq) noexcept;
     Imp() = delete;
     Imp(const Imp&) = delete;
@@ -111,5 +120,7 @@ private:
     auto process_sync(
         zeromq::Message&& incoming,
         const p2p::Base& base) noexcept -> void;
+
+    static auto to_str(MessageType value, unsigned idx) -> std::string;
 };
 }  // namespace opentxs::network::p2p

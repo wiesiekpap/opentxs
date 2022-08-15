@@ -70,24 +70,26 @@ public:
         return pipeline_.get_allocator();
     }
 
+    // Accessor for the name given this object at construction.
     const std::string& name() const noexcept { return name_; }
 
 protected:
-    // This interface used to be private and accessed through friend
-    // relationship.
+    // These functions are the orphans after the original 'downcast' calls
     using Work = JobType;
     virtual auto do_startup() noexcept -> void = 0;
     virtual auto do_shutdown() noexcept -> void = 0;
     virtual auto pipeline(const Work work, Message&& msg) noexcept -> void = 0;
     virtual auto work() noexcept -> int = 0;
 
-protected:
+    // Some subclasses do not want their messages default processed...
     auto disable_automatic_processing(bool value) -> void
     {
         if (value == disable_automatic_processing_.exchange(value)) {
-            // No change
+            // Avoid doing anything when there has been no change.
             return;
         }
+        // Work in progress, anything automatically triggered by the change will
+        // go off here...
         if (value) {
             // TODO
         } else {
@@ -95,6 +97,7 @@ protected:
         }
     }
 
+    // Send a state machine message for immediate execution
     auto trigger() const noexcept -> void
     {
         auto was_queued = state_machine_queued_.exchange(true);
@@ -103,10 +106,14 @@ protected:
             pipeline_.Push(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL));
         }
     }
+
+    // Stop message processing, prepare for destruction.
     auto signal_shutdown(bool immediate = false) noexcept -> void
     {
         shutdown_actor();
     }
+
+    // Start message processing.
     template <typename ME>
     auto signal_startup(const boost::shared_ptr<ME>& me) noexcept -> void
     {
@@ -120,11 +127,16 @@ protected:
         }
         notify();
     }
+
+    // For the bottom subclass constructor to trigger when it is ready for final
+    // initialization.
     auto do_init() noexcept -> void
     {
         log_(name_)(" ")(__FUNCTION__)(": initializing").Flush();
         do_startup();
     }
+
+    // Subclasses use this to trigger off their state machine, typically...
     auto do_work() noexcept -> void
     {
         state_machine_queued_ = false;
@@ -138,7 +150,7 @@ protected:
         }
     }
 
-protected:
+    // Stop message processing, prepare for destruction.
     auto shutdown_actor() noexcept -> void
     {
         tdiag(typeid(this), "shutdown_actor.1");
@@ -159,7 +171,6 @@ protected:
         tdiag(typeid(this), "shutdown_actor.3");
     }
 
-protected:
     Actor(
         const api::Session& api,
         const Log& logger,
@@ -170,7 +181,7 @@ protected:
         const network::zeromq::EndpointArgs& pull = {},
         const network::zeromq::EndpointArgs& dealer = {},
         const Vector<network::zeromq::SocketData>& extra = {}) noexcept
-        : Reactor(logger, name)
+        : Reactor(name)
         , running_{true}
         , name_(std::move(name))
         , log_{logger}
@@ -202,6 +213,7 @@ protected:
     ~Actor() override { tdiag("Actor::~Actor", processing_thread_id()); }
 
 private:
+    // Schedule a delayed execution of state machine.
     auto trigger_at(
         std::chrono::time_point<std::chrono::system_clock> t_at) noexcept
         -> void
@@ -314,7 +326,8 @@ private:
         }
     }
 
-    // The reactor calls to dispatch unqueued messages.
+    // Called by Reactor to process a message. The unsigned argument is an
+    // index, irrelevant in the context of Actor.
     auto handle(Message&& in, unsigned) noexcept -> void final
     {
         try {
@@ -330,10 +343,14 @@ private:
     auto worker(Message&& in) noexcept -> void
     {
         log_(name_)(" ")(__FUNCTION__)(": Message received").Flush();
-        enqueue(std::move(in));
+        post(std::move(in));
     }
 
+    // The implementer is to provide a string representation of the message
+    // 'job'.
     virtual auto to_str(Work) const noexcept -> std::string = 0;
+
+    // The most recent message, for diagnostic display in case of time overruns.
     auto last_job_str() const noexcept -> std::string final
     {
         return to_str(last_job_);
@@ -342,6 +359,9 @@ private:
 private:
     std::atomic<bool> running_;
 
+    // TODO provide public or protected accessors/modifiers as needed, change
+    // all the data members to private. Warning: it is probably easier to do
+    // after the false constness has been fixed throughout.
 public:
     // TODO change this to private by making the subclasses
     // access it via name()

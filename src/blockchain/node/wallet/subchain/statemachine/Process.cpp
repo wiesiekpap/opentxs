@@ -44,6 +44,7 @@
 #include "util/ScopeGuard.hpp"
 #include "util/Thread.hpp"
 #include "util/Work.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -429,7 +430,7 @@ auto Process::Imp::work() noexcept -> int
     queue_downloads();
     Job::work();
 
-    return check_process() ? 1 : 400;
+    return check_process() ? SM_Process_fast : SM_Process_slow;
 }
 }  // namespace opentxs::blockchain::node::wallet
 

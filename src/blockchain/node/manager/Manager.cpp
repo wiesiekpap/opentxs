@@ -89,6 +89,7 @@
 #include "serialization/protobuf/PaymentCode.pb.h"
 #include "util/Thread.hpp"
 #include "util/threadutil.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::internal
 {
@@ -229,6 +230,17 @@ struct NullWallet final : public node::internal::Wallet {
 
     ~NullWallet() final = default;
 };
+
+auto Base::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::heartbeat, "heartbeat"},
+        {Work::filter, "filter"},
+        {Work::statemachine, "statemachine"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
 
 Base::Base(
     const api::Session& api,
@@ -487,7 +499,6 @@ auto Base::AddBlock(const std::shared_ptr<const bitcoin::block::Block> pBlock)
         return false;
     }
 
-    tdiag("QQQ HB Base::AddBlock to AddHeader");
     if (!header_.AddHeader(block.Header().clone())) {
         LogError()(OT_PRETTY_CLASS())("failed to process ")(print(chain_))(
             " header")
@@ -837,10 +848,7 @@ auto Base::process_header(network::zeromq::Message&& in) noexcept -> void
         headers.emplace_back(instantiate_header(header));
     }
 
-    if (!headers.empty()) {
-        tdiag("QQQ HB Base::proceess_header to AddHeaders");
-        header_.AddHeaders(headers);
-    }
+    if (!headers.empty()) { header_.AddHeaders(headers); }
 
     work_promises_.clear(promise);
 }
@@ -1233,7 +1241,7 @@ auto Base::StartWallet() noexcept -> void
 
 auto Base::state_machine() noexcept -> int
 {
-    if (!running_.load()) { return -1; }
+    if (!running_.load()) { return SM_off; }
 
     const auto& log = LogTrace();
     log(OT_PRETTY_CLASS())("Starting state machine for ")(print(chain_))
@@ -1322,7 +1330,7 @@ auto Base::state_machine() noexcept -> int
     log(OT_PRETTY_CLASS())("Completed state machine for ")(print(chain_))
         .Flush();
 
-    return -1;
+    return SM_off;
 }
 
 auto Base::state_machine_headers() noexcept -> void

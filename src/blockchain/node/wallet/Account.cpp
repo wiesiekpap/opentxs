@@ -44,6 +44,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -603,7 +604,7 @@ auto Account::Imp::transition_state_shutdown() noexcept -> bool
     return true;
 }
 
-auto Account::Imp::work() noexcept -> int { return -1; }
+auto Account::Imp::work() noexcept -> int { return SM_off; }
 }  // namespace opentxs::blockchain::node::wallet
 
 namespace opentxs::blockchain::node::wallet

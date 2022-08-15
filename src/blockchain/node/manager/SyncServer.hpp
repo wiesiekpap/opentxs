@@ -100,6 +100,8 @@ public:
     auto NextBatch() noexcept -> BatchType;
     auto Shutdown() noexcept -> std::shared_future<void>;
 
+    auto last_job_str() const noexcept -> std::string override;
+
     SyncServer(
         const api::Session& api,
         database::Sync& db,
@@ -139,6 +141,7 @@ private:
     mutable std::mutex zmq_lock_;
     std::atomic_bool zmq_running_;
     std::thread zmq_thread_;
+    Work last_job_;
 
     auto batch_ready() const noexcept -> void;
     static auto batch_size(const std::size_t in) noexcept -> std::size_t;
@@ -155,4 +158,5 @@ private:
     auto queue_processing(DownloadedData&& data) noexcept -> void;
     auto zmq_thread() noexcept -> void;
 };
+
 }  // namespace opentxs::blockchain::node::base

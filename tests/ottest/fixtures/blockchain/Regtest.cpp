@@ -223,8 +223,8 @@ struct BlockListener::Imp {
 
                             opentxs::MessageMarker diagnostic(msg);
                             std::cerr << opentxs::ThreadMonitor::get_name()
-                                      << "QQQ Regtest BlockListener::Imp "
-                                         "received BlockchainReorg from "
+                                      << "Regtest BlockListener::Imp received "
+                                         "BlockchainReorg from "
                                       << diagnostic << "\n";
 
                             return {

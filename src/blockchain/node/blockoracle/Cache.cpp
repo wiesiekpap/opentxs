@@ -44,6 +44,7 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/ByteLiterals.hpp"
 #include "util/threadutil.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::blockoracle
 {
@@ -470,7 +471,7 @@ auto Cache::Shutdown() noexcept -> void
 
 auto Cache::StateMachine() noexcept -> int
 {
-    if (!running_) { return -1; }
+    if (!running_) { return SM_off; }
 
     LogVerbose()(OT_PRETTY_CLASS())(print(chain_))(" download queue contains ")(
         pending_.size())(" blocks.")
@@ -501,6 +502,6 @@ auto Cache::StateMachine() noexcept -> int
 
     if (!blockList.empty()) { node_.RequestBlocks(blockList); }
 
-    return pending_.empty() ? 1000 : 500;
+    return pending_.empty() ? SM_Cache_slow : SM_Cache_fast;
 }
 }  // namespace opentxs::blockchain::node::blockoracle

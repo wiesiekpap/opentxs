@@ -32,6 +32,7 @@
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -156,7 +157,7 @@ auto Index::Imp::work() noexcept -> int
 
     Job::work();
 
-    return -1;
+    return SM_off;
 }
 }  // namespace opentxs::blockchain::node::wallet
 

@@ -218,4 +218,10 @@ auto FilterOracle::FilterDownloader::shut_down() noexcept -> void
     // TODO MT-34 investigate what other actions might be needed
 }
 
+auto FilterOracle::FilterDownloader::last_job_str() const noexcept
+    -> std::string
+{
+    return FilterOracle::to_str(last_job_);
+}
+
 }  // namespace opentxs::blockchain::node::implementation

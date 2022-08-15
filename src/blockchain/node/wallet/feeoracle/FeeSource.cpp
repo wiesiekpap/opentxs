@@ -27,6 +27,7 @@
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::factory
 {
@@ -216,7 +217,7 @@ auto FeeSource::Imp::startup() noexcept -> void
 
 auto FeeSource::Imp::state_machine() noexcept -> int
 {
-    if (!future_.has_value()) { return -1; }
+    if (!future_.has_value()) { return SM_off; }
 
     auto& future = future_.value();
     static constexpr auto limit = 5ms;
@@ -232,16 +233,16 @@ auto FeeSource::Imp::state_machine() noexcept -> int
 
             reset_timer();
 
-            return -1;
+            return SM_off;
         } else {
             LogError()(OT_PRETTY_CLASS())("Future is not ready").Flush();
 
-            return 20;
+            return SM_FeeSource_fast;
         }
     } catch (const std::exception& e) {
         LogError()(e.what()).Flush();
 
-        return -1;
+        return SM_off;
     }
 }
 

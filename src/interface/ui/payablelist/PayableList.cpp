@@ -27,6 +27,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::factory
 {
@@ -45,6 +46,18 @@ auto PayableListModel(
 
 namespace opentxs::ui::implementation
 {
+auto PayableList::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::contact, "contact"},
+        {Work::nym, "nym"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"},
+        {Work::shutdown, "shutdown"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 PayableList::PayableList(
     const api::session::Client& api,
     const identifier::Nym& nymID,
@@ -54,6 +67,7 @@ PayableList::PayableList(
     , Worker(api, "PayableList")
     , owner_contact_id_(Widget::api_.Factory().Identifier())  // FIXME wtf
     , currency_(currency)
+    , last_job_{}
 {
     init_executor(
         {UnallocatedCString{api.Endpoints().ContactUpdate()},
@@ -97,6 +111,7 @@ auto PayableList::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     switch (work) {
         case Work::contact: {
@@ -122,7 +137,7 @@ auto PayableList::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto PayableList::state_machine() noexcept -> int { return -1; }
+auto PayableList::state_machine() noexcept -> int { return SM_off; }
 
 auto PayableList::shut_down() noexcept -> void
 {
@@ -204,6 +219,11 @@ auto PayableList::startup() noexcept -> void
     }
 
     finish_startup();
+}
+
+auto PayableList::last_job_str() const noexcept -> std::string
+{
+    return std::string{to_str(last_job_)};
 }
 
 PayableList::~PayableList()

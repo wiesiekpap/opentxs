@@ -1234,7 +1234,6 @@ auto Peer::process_getheaders(
     std::unique_ptr<HeaderType> header,
     const zmq::Frame& payload) -> void
 {
-    tdiag("QQQ process_getheaders");
     const auto pIn = std::unique_ptr<message::internal::Getheaders>{
         factory::BitcoinP2PGetheaders(
             api_,
@@ -1264,7 +1263,6 @@ auto Peer::process_getheaders(
         [&](const auto& hash) -> auto{
             return headers_.Internal().LoadBitcoinHeader(hash);
         });
-    tdiag("QQQ About to create a Command::headers message");
     auto pOut = std::unique_ptr<message::internal::Headers>{
         factory::BitcoinP2PHeaders(api_, chain_, std::move(headers))};
 
@@ -1287,7 +1285,6 @@ auto Peer::process_headers(
     std::unique_ptr<HeaderType> header,
     const zmq::Frame& payload) -> void
 {
-    tdiag("QQQ Got a message with Command::headers");
     auto& success = state_.verify_.first_action_;
     auto postcondition = ScopeGuard{[this, &success] {
         if (verifying() && (false == success)) {
@@ -1343,7 +1340,6 @@ auto Peer::process_headers(
         log_("Block checkpoint validated for ")(display_chain_)(" peer ")(
             address_.Display())
             .Flush();
-        tdiag("QQQ block checkpoint validated");
         header_checkpoint_verified_ = true;
         success = true;
         check_verify();
@@ -1351,7 +1347,7 @@ auto Peer::process_headers(
         get_headers_.Finish();
         using Task = node::ManagerJobs;
         tdiag(
-            "QQQ About to send SubmitBlockHeader to ? ",
+            "About to send SubmitBlockHeader to ? ",
             std::string(display_chain_));
         auto work = MakeWork(Task::SubmitBlockHeader);
 
@@ -1496,7 +1492,7 @@ auto Peer::process_message(zmq::Message&& message) noexcept -> void
     if (false == running_.load()) { return; }
 
     MessageMarker mm(message);
-    if (mm) { tdiag("QQQ Received bitcoin message from ", to_string(mm)); }
+    if (mm) { tdiag("Received bitcoin message from ", to_string(mm)); }
 
     const auto body = message.Body();
 
@@ -1553,7 +1549,6 @@ auto Peer::process_message(zmq::Message&& message) noexcept -> void
         const auto& p = command_map_.at(command);
         (this->*p)(std::move(pHeader), payloadBytes);
     } catch (...) {
-        tdiag("QQQ unhandled command message");
         auto raw = Data::Factory(headerBytes);
         auto unknown = Data::Factory();
         raw->Extract(12, unknown, 4);

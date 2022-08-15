@@ -53,6 +53,8 @@ public:
 
     ~HeaderDownloader() final;
 
+    auto last_job_str() const noexcept -> std::string final;
+
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
     auto state_machine() noexcept -> int final;
@@ -67,6 +69,7 @@ private:
     const blockchain::Type chain_;
     const cfilter::Type type_;
     const Callback checkpoint_;
+    FilterOracle::Work last_job_;
 
     auto batch_ready() const noexcept -> void;
     static auto batch_size(const std::size_t in) noexcept -> std::size_t;
@@ -83,4 +86,5 @@ private:
     auto queue_processing(DownloadedData&& data) noexcept -> void;
     auto shut_down() noexcept -> void;
 };
+
 }  // namespace opentxs::blockchain::node::implementation

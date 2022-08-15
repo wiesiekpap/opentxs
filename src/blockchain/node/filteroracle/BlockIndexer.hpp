@@ -97,8 +97,10 @@ public:
 
     ~Imp() final;
 
+    auto last_job_str() const noexcept -> std::string final;
+
 protected:
-    auto pipeline(zmq::Message&& in) -> void final;
+    auto pipeline(const BlockIndexerJob work, Message&& msg) noexcept -> void final;
     auto state_machine() noexcept -> int final;
 
 private:
@@ -109,7 +111,9 @@ private:
 
     const api::Session& api_;
     const node::Manager& node_;
-    const node::FilterOracle& parent_;
+    const node::FilterOracle& parent_;    return BlockDMFilter::state_machine() ? SM_BlockIndexer_fast
+                                          : SM_BlockIndexer_slow;
+
     database::Cfilter& db_;
     const blockchain::Type chain_;
     const cfilter::Type filter_type_;
@@ -119,19 +123,19 @@ private:
     cfilter::Header current_header_;
     block::Position best_position_;
     block::Position current_position_;
+    BlockIndexerJob last_job_;
 
     auto calculate_next_block() noexcept -> bool;
     auto do_shutdown() noexcept -> void final;
     auto do_startup() noexcept -> void final;
     auto find_best_position(block::Position candidate) noexcept -> void;
-    auto pipeline(const Work work, Message&& msg) noexcept -> void final;
     auto process_block(network::zeromq::Message&& in) noexcept -> void;
     auto process_block(block::Position&& position) noexcept -> void;
     auto process_reindex(network::zeromq::Message&& in) noexcept -> void;
     auto process_reorg(network::zeromq::Message&& in) noexcept -> void;
     auto process_reorg(block::Position&& commonParent) noexcept -> void;
     auto reset(block::Position&& to) noexcept -> void;
-    auto state_normal(const Work work, network::zeromq::Message&& msg) noexcept
+    auto state_normal(const BlockIndexerJob work, network::zeromq::Message&& msg) noexcept
         -> void;
     auto transition_state_shutdown() noexcept -> void;
     auto update_position(

@@ -46,8 +46,6 @@ User::User(
     , contacts_()
     , accounts_()
 {
-    std::cerr << "QQQ passphrase_: " << passphrase_ << "\n";
-    std::cerr << "QQQ name_lower_: " << name_lower_ << "\n";
 }
 
 auto User::Account(std::string_view type) const noexcept
