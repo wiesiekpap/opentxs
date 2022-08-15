@@ -47,6 +47,7 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/LMDB.hpp"
 #include "util/Work.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -432,7 +433,7 @@ auto Accounts::Imp::transition_state_shutdown() noexcept -> void
     signal_shutdown();
 }
 
-auto Accounts::Imp::work() noexcept -> int { return -1; }
+auto Accounts::Imp::work() noexcept -> int { return SM_off; }
 
 Accounts::Imp::~Imp() = default;
 }  // namespace opentxs::blockchain::node::wallet

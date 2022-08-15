@@ -23,6 +23,57 @@ namespace opentxs  // NOLINT
 {
 #if defined(__linux) && defined(TDIAG)
 
+thread_local PerformanceTimer* PerformanceTimer::instance_ = nullptr;
+
+double PerformanceTimer::Times::avg_us() const noexcept
+{
+    if (ct_in_ == 0) { return -1; }
+    return static_cast<double>(total_us_ / ct_in_) +
+           static_cast<double>(total_us_ % ct_in_) / ct_in_;
+}
+
+// static
+PerformanceTimer& PerformanceTimer::get() noexcept
+{
+    if (!instance_) { instance_ = new PerformanceTimer{}; }
+    return *instance_;
+}
+void PerformanceTimer::start(unsigned id) noexcept
+{
+    if (id >= times_.size()) { times_.resize(id + 1); }
+    auto& t = times_[id];
+    if (t.ct_in_ != t.ct_out_) { return; }
+    ++t.ct_in_;
+    t.t_ = std::chrono::system_clock::now();
+}
+void PerformanceTimer::stop(unsigned id) noexcept
+{
+    using namespace std::chrono;
+    if (id >= times_.size()) { times_.resize(id + 1); }
+    auto& t = times_[id];
+    if (t.ct_in_ == t.ct_out_) { return; }
+    ++t.ct_out_;
+
+    auto us = duration_cast<microseconds>(system_clock::now() - t.t_).count();
+    if (us > t.max_us_) { t.max_us_ = us; }
+    if (us < t.min_us_) { t.min_us_ = us; }
+    t.total_us_ += us;
+}
+void PerformanceTimer::clear(unsigned id) noexcept
+{
+    if (id >= times_.size()) { times_.resize(id + 1); }
+    times_[id] = {};
+}
+PerformanceTimer::Times PerformanceTimer::gett(unsigned id) const noexcept
+{
+    return id < times_.size() ? times_[id] : PerformanceTimer::Times{};
+}
+void PerformanceTimer::clear() noexcept { times_.clear(); }
+PerformanceTimer::PerformanceTimer()
+    : times_{}
+{
+}
+
 ThreadHandle::ThreadHandle()
     : name_{}
     , description_{}
@@ -49,15 +100,8 @@ ThreadHandle ThreadMonitor::add_current_thread(
         std::move(name), std::move(description));
 }
 
-ThreadMonitor::ThreadInfo::ThreadInfo(
-    handle_type native,
-    State state,
-    std::string blocking_resource_str,
-    std::string blocking_comment_str)
+ThreadMonitor::ThreadInfo::ThreadInfo(handle_type native)
     : native_{native}
-    , state_{state}
-    , blocking_resource_str_{blocking_resource_str}
-    , blocking_comment_str_{blocking_comment_str}
 {
 }
 
@@ -149,41 +193,42 @@ std::string abbreviate(std::string&& full);
 std::string abbreviate(std::string&& full)
 {
     static const auto dict = std::map<std::string, std::string>{
-        {"Account", "Acc"},       {"Accounts", "Accs"},
-        {"Action", "Actn"},       {"Activity", "Avty"},
-        {"Actor", "Actr"},        {"Balance", "Blnc"},
-        {"Bitcoin", "Bitc"},      {"Block", "Blck"},
-        {"Blockchain", "Bchn"},   {"Data", "Data"},
-        {"Deterministic", "Det"}, {"Downloader", "Dldr"},
-        {"Event", "Evt"},         {"Filter", "Flt"},
-        {"Imp", "Imp"},           {"Header", "Hdr"},
-        {"Index", "Idx"},         {"Indexer", "Idxr"},
-        {"Internal", "Int"},      {"Jobs", "Jobs"},
-        {"Manager", "Mgr"},       {"Miner", "Mnr"},
-        {"Network", "Nwk"},       {"Notification", "Ntf"},
-        {"Oracle", "Orac"},       {"Process", "Proc"},
-        {"Progress", "Prog"},     {"Reactor", "Reac"},
-        {"Rescan", "Resc"},       {"Scan", "Scan"},
-        {"Server", "Serv"},       {"Simple", "Simp"},
-        {"State", "Stat"},        {"Status", "Stts"},
-        {"Summary", "Sum"},       {"Thread", "Thr"},
-        {"Visitor", "Vis"},       {"Wallet", "Wal"},
-        {"account", "ac"},        {"accounts", "as"},
-        {"actor", "ar"},          {"balance", "bl"},
-        {"balance", "bl"},        {"base", "bs"},
-        {"block", "bk"},          {"blockchain", "bn"},
-        {"blockoracle", "bo"},    {"data", "dt"},
-        {"deterministic", "dm"},  {"downloader", "dl"},
-        {"filter", "fl"},         {"impl", "im"},
-        {"implementation", "im"}, {"index", "ix"},
-        {"indexer", "ir"},        {"internal", "in"},
-        {"jobs", "jb"},           {"manager", "mr"},
-        {"network", "nk"},        {"notification", "nf"},
-        {"oracle", "or"},         {"process", "pr"},
-        {"progress", "pg"},       {"reactor", "rr"},
-        {"rescan", "rs"},         {"scan", "sc"},
-        {"server", "sv"},         {"state", "st"},
-        {"wallet", "wt"}};
+        {"Account", "Acc"},      {"Accounts", "Accs"},
+        {"Action", "Actn"},      {"Activity", "Acvt"},
+        {"Actor", "Actr"},       {"Balance", "Blnc"},
+        {"Bitcoin", "Bitc"},     {"Block", "Blck"},
+        {"Blockchain", "Bchn"},  {"Data", "Data"},
+        {"Client", "Clt"},       {"Deterministic", "Det"},
+        {"Downloader", "Dldr"},  {"Event", "Evt"},
+        {"Filter", "Flt"},       {"Imp", "Imp"},
+        {"Header", "Hdr"},       {"Index", "Idx"},
+        {"Indexer", "Idxr"},     {"Internal", "Int"},
+        {"Jobs", "Jobs"},        {"Manager", "Mgr"},
+        {"Miner", "Mnr"},        {"Network", "Nwk"},
+        {"Notification", "Ntf"}, {"Oracle", "Orac"},
+        {"Process", "Proc"},     {"Progress", "Prog"},
+        {"Reactor", "Reac"},     {"Rescan", "Resc"},
+        {"Scan", "Scan"},        {"Selection", "Sel"},
+        {"Server", "Serv"},      {"Simple", "Smpl"},
+        {"State", "Sta"},        {"Status", "Stt"},
+        {"Statistics", "Scs"},   {"Summary", "Sum"},
+        {"Thread", "Thr"},       {"Visitor", "Vis"},
+        {"Wallet", "Wal"},       {"account", "ac"},
+        {"accounts", "as"},      {"actor", "ar"},
+        {"balance", "bl"},       {"balance", "bl"},
+        {"base", "bs"},          {"block", "bk"},
+        {"blockchain", "bn"},    {"blockoracle", "bo"},
+        {"data", "dt"},          {"deterministic", "dm"},
+        {"downloader", "dl"},    {"filter", "fl"},
+        {"impl", "im"},          {"implementation", "im"},
+        {"index", "ix"},         {"indexer", "ir"},
+        {"internal", "in"},      {"jobs", "jb"},
+        {"manager", "mr"},       {"network", "nk"},
+        {"notification", "nf"},  {"oracle", "or"},
+        {"process", "pr"},       {"progress", "pg"},
+        {"reactor", "rr"},       {"rescan", "rs"},
+        {"scan", "sc"},          {"server", "sv"},
+        {"state", "st"},         {"wallet", "wt"}};
 
     while (true) {
         auto idouble_colon = full.find("::");
@@ -255,8 +300,7 @@ ThreadHandle ThreadMonitor::p_add_current_thread(
         std::move(description),
         static_cast<handle_type>(pthread_self())};
     names_.insert(th.name_);
-    thread_info_[th.native_] =
-        ThreadInfo{pthread_self(), State::Unknown, {}, {}};
+    thread_info_[th.native_] = ThreadInfo{pthread_self()};
     return handles_[th.native_] = std::move(th);
 }
 
@@ -310,6 +354,9 @@ ThreadMonitor::ThreadMonitor()
 
 std::mutex ThreadMonitor::mutex_ = {};
 ThreadMonitor* ThreadMonitor::instance_ = nullptr;
+
+// static
+std::int64_t Mytime::base = basecount();
 
 Mytime::Mytime() {}
 std::string Mytime::str()
@@ -496,7 +543,7 @@ MessageMarker::MessageMarker(std::string_view tag, std::string threadname)
     , name_{'\0'}
 {
     if (tag.size()) {
-        std::memcpy(&tag_[0], tag.data(), std::min(tag.size(), sizeof(tag_)));
+        std::memcpy(&tag_[0], tag.data(), std::min(tag.size(), sizeof tag_));
     }
     std::memcpy(
         &name_[0],

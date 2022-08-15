@@ -7,16 +7,8 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "api/session/base/Scheduler.hpp"  // IWYU pragma: associated
 
-#include <ctime>
-#include <limits>
-#include <ratio>
-
-#include "internal/api/network/Dht.hpp"
-#include "internal/identity/Nym.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/network/Dht.hpp"
-#include "opentxs/api/session/Storage.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/Nym.pb.h"
 #include "serialization/protobuf/ServerContract.pb.h"
@@ -28,20 +20,12 @@ namespace opentxs::api::session
 Scheduler::Scheduler(const api::Context& parent, Flag& running)
     : Lockable()
     , parent_(parent)
-    , nym_publish_interval_(std::numeric_limits<std::int64_t>::max())
-    , nym_refresh_interval_(std::numeric_limits<std::int64_t>::max())
-    , server_publish_interval_(std::numeric_limits<std::int64_t>::max())
-    , server_refresh_interval_(std::numeric_limits<std::int64_t>::max())
-    , unit_publish_interval_(std::numeric_limits<std::int64_t>::max())
-    , unit_refresh_interval_(std::numeric_limits<std::int64_t>::max())
     , running_(running)
     , periodic_()
 {
 }
 
-void Scheduler::Start(
-    const api::session::Storage* const storage,
-    const api::network::Dht& dht)
+void Scheduler::Start(const api::session::Storage* const storage)
 {
     OT_ASSERT(nullptr != storage);
 

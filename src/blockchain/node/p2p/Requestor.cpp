@@ -41,6 +41,7 @@
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/P2PBlockchainChainState.pb.h"
 #include "util/Work.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::p2p
 {
@@ -404,7 +405,7 @@ auto Requestor::Imp::reset_timer(
                 LogError()(OT_PRETTY_CLASS())(ec).Flush();
             }
         } else {
-            tdiag("QQQ Requestor::Imp::reset_timer StateMachine");
+            tdiag("Requestor::Imp::reset_timer StateMachine");
             pipeline_.Push(MakeWork(Work::StateMachine));
         }
     });
@@ -625,7 +626,7 @@ auto Requestor::Imp::work() noexcept -> int
         }
     }
 
-    return -1;
+    return SM_off;
 }
 
 Requestor::Imp::~Imp()

@@ -38,6 +38,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -625,7 +626,7 @@ auto PeerManager::Peers::Run() noexcept -> int
         if (peer) { add_peer(std::move(peer)); }
     }
 
-    return target > peers_.size() ? 100 : 1000;
+    return target > peers_.size() ? SM_PeerManager_fast : SM_PeerManager_slow;
 }
 
 auto PeerManager::Peers::Shutdown() noexcept -> void

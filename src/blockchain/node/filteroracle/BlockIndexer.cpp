@@ -42,6 +42,7 @@
 #include "opentxs/util/Log.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::filteroracle
 {
@@ -116,6 +117,7 @@ BlockIndexer::Imp::Imp(
     , current_header_()
     , best_position_(block::Position{})
     , current_position_(block::Position{})
+    , last_job_{}
 {
 }
 
@@ -290,18 +292,19 @@ auto BlockIndexer::Imp::Init(boost::shared_ptr<Imp> me) noexcept -> void
 }
 
 auto BlockIndexer::Imp::pipeline(
-    const Work work,
+    const BlockIndexerJob work,
     network::zeromq::Message&& msg) noexcept -> void
 {
+    last_job_ = work;
     switch (state_) {
         case State::normal: {
             state_normal(work, std::move(msg));
         } break;
-        case State::shutdown: {
-            shutdown_actor();
+    case State::shutdown: {
+        shutdown_actor();
         } break;
-        default: {
-            OT_FAIL;
+    default: {
+        OT_FAIL;
         }
     }
 }
@@ -452,7 +455,8 @@ auto BlockIndexer::Imp::work() noexcept -> int
 {
     if (current_position_ == best_position_) { return -1; }
 
-    return calculate_next_block() ? 20 : 500;
+    return calculate_next_block() ? SM_BlockIndexer_fast
+                                  : SM_BlockIndexer_slow;
 }
 
 BlockIndexer::Imp::~Imp() = default;
@@ -498,3 +502,11 @@ auto BlockIndexer::Start() noexcept -> void { imp_->Init(imp_); }
 
 BlockIndexer::~BlockIndexer() { imp_->Shutdown(); }
 }  // namespace opentxs::blockchain::node::filteroracle
+
+auto FilterOracle::BlockIndexer::last_job_str() const noexcept -> std::string
+{
+    return FilterOracle::to_str(last_job_);
+}
+
+}  // namespace opentxs::blockchain::node::implementation
+

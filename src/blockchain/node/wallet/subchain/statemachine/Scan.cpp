@@ -38,6 +38,7 @@
 #include "util/Actor.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -201,7 +202,7 @@ auto Scan::Imp::work() noexcept -> int
             " scanning not possible until a filter tip value is received ")
             .Flush();
 
-        return false;
+        return SM_off;
     }
 
     if (false == enabled_) {
@@ -212,7 +213,7 @@ auto Scan::Imp::work() noexcept -> int
                 " waiting to begin scan until cfilter sync is complete")
                 .Flush();
 
-            return false;
+            return SM_off;
         } else {
             log_(OT_PRETTY_CLASS())(parent_.name_)(
                 " starting scan since cfilter sync is complete")
@@ -225,7 +226,7 @@ auto Scan::Imp::work() noexcept -> int
             " all available filters have been scanned")
             .Flush();
 
-        return -1;
+        return SM_off;
     }
 
     const auto height = current().height_;
@@ -233,7 +234,7 @@ auto Scan::Imp::work() noexcept -> int
     if (auto handle = parent_.progress_position_.lock(); handle->has_value())
         rescan = handle->value().height_;
     else
-        rescan = -1;
+        rescan = SM_off;
 
     const auto& threshold = parent_.scan_threshold_;
 
@@ -243,7 +244,7 @@ auto Scan::Imp::work() noexcept -> int
             height - threshold)(" from current position of ")(rescan)
             .Flush();
 
-        return -1;
+        return SM_off;
     }
 
     auto buf = std::array<std::byte, scan_status_bytes_ * 1000u>{};
@@ -287,7 +288,7 @@ auto Scan::Imp::work() noexcept -> int
         }());
     }
 
-    return !caught_up() ? 1 : 400;
+    return !caught_up() ? SM_Scan_fast : SM_Scan_slow;
 }
 
 network::zeromq::Message Scan::Imp::make_work(

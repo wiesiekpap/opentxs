@@ -37,22 +37,18 @@ TEST_F(Restart_fixture, send_remove_user_compare_repeat)
             // Mine initial balance
             MineBlocksForUsers(users, current_height_, blocks_number_);
 
-            std::cerr << "QQQ about to WaitForSynchro 1a, i=" << i << "\n";
             WaitForSynchro(
                 user_alice,
                 current_height_,
                 amount_in_transaction_ * blocks_number_ *
                     transaction_in_block_);
-            std::cerr << "QQQ about to WaitForSynchro 2a, i=" << i << "\n";
             WaitForSynchro(
                 user_bob,
                 current_height_,
                 amount_in_transaction_ * blocks_number_ *
                     transaction_in_block_);
         } else {
-            std::cerr << "QQQ about to WaitForSynchro 1, i=" << i << "\n";
             WaitForSynchro(user_alice, current_height_, sender_balance);
-            std::cerr << "QQQ about to WaitForSynchro 2, i=" << i << "\n";
             WaitForSynchro(user_bob, current_height_, receiver_balance);
         }
         sender_balance = GetBalance(user_alice);
@@ -60,7 +56,6 @@ TEST_F(Restart_fixture, send_remove_user_compare_repeat)
         // Send coins from alice to bob
         SendCoins(user_bob, user_alice, current_height_);
 
-        std::cerr << "QQQ about to WaitForSynchro 3, i=" << i << "\n";
         WaitForSynchro(
             user_bob,
             current_height_,
@@ -72,14 +67,12 @@ TEST_F(Restart_fixture, send_remove_user_compare_repeat)
             user_alice, send_transactions_, transactions_ptxid_);
         auto fee = CalculateFee(send_transactions_, loaded_transactions);
 
-        std::cerr << "QQQ about to WaitForSynchro 4, i=" << i << "\n";
         WaitForSynchro(
             user_alice,
             current_height_,
             Amount{balance_after_mine_} - Amount{coin_to_send_ * (i + 1)} -
                 fee);
 
-        std::cerr << "QQQ returned from WaitForSynchro 4, i=" << i << "\n";
         EXPECT_EQ(
             Amount{balance_after_mine_} - Amount{coin_to_send_ * (i + 1)} - fee,
             GetBalance(user_alice));
@@ -115,12 +108,10 @@ TEST_F(Restart_fixture, send_remove_user_compare_repeat)
         const auto& user_alice_after_reboot =
             CreateUser(name_alice_, words_alice_);
 
-        std::cerr << "QQQ about to WaitForSynchro 5, i=" << i << "\n";
         WaitForSynchro(
             user_alice_after_reboot, current_height_, sender_balance);
 
         const auto& user_bob_after_reboot = CreateUser(name_bob_, words_bob_);
-        std::cerr << "QQQ about to WaitForSynchro 6, i=" << i << "\n";
         WaitForSynchro(
             user_bob_after_reboot, current_height_, receiver_balance);
 

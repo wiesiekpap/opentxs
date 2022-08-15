@@ -83,8 +83,6 @@ protected:
 
         if (caught_up(lock)) {
             LogTrace()(OT_PRETTY_CLASS())(log_)(" caught up").Flush();
-            std::cerr << ThreadMonitor::get_name()
-                      << " QQQ download Manager caught up3\n";
 
             return {};
         }

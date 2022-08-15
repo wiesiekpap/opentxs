@@ -9,6 +9,7 @@
 
 #include <opentxs/util/Log.hpp>
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <future>
 #include <limits>
@@ -63,6 +64,7 @@
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Container.hpp"
 #include "util/Thread.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::factory
 {
@@ -102,12 +104,20 @@ BlockchainAccountActivity::BlockchainAccountActivity(
           blockchainAccountActivityThreadName))
     , progress_()
     , height_(0)
+    , last_job_{}
+    , transactions_{}
+    , active_{}
+    , iload_{transactions_.cend()}
+    , eload_{transactions_.cend()}
+    , load_in_progress_{}
+    , load_lock_{}
 {
     const auto connected = balance_socket_->Start(
         Widget::api_.Endpoints().BlockchainBalance().data());
 
     OT_ASSERT(connected);
 
+    start();
     init({
         UnallocatedCString{api.Endpoints().BlockchainReorg()},
         UnallocatedCString{api.Endpoints().BlockchainStateChange()},
@@ -116,7 +126,6 @@ BlockchainAccountActivity::BlockchainAccountActivity(
         UnallocatedCString{api.Endpoints().BlockchainTransactions(nymID)},
         UnallocatedCString{api.Endpoints().ContactUpdate()},
     });
-    start();
     balance_socket_->Send([&] {
         using Job = api::crypto::blockchain::BalanceOracleJobs;
         auto work = network::zeromq::tagged_message(Job::registration);
@@ -151,30 +160,130 @@ auto BlockchainAccountActivity::display_balance(
     return blockchain::internal::Format(chain_, value);
 }
 
+enum class Diag {
+    load_thread,
+    delete_inactive,
+    emplace,
+    load_transaction_bitcoin,
+    process_txid,
+    blockchain_thread_item_id,
+    process_txid_lambda,
+    process_txid_custom,
+    add_item,
+    end
+};
+
+std::string to_string(Diag d);
+
+std::string to_string(Diag d)
+{
+    switch (d) {
+        case Diag::load_thread:
+            return "load_thread    ";
+        case Diag::delete_inactive:
+            return "delete_inactive";
+        case Diag::emplace:
+            return "emplace        ";
+        case Diag::load_transaction_bitcoin:
+            return "lo.._bitcoin   ";
+        case Diag::process_txid:
+            return "process_txid   ";
+        case Diag::blockchain_thread_item_id:
+            return "bl.._item_id   ";
+        case Diag::process_txid_lambda:
+            return "pr.._lambda    ";
+        case Diag::process_txid_custom:
+            return "pr.._custom    ";
+        case Diag::add_item:
+            return "add_item       ";
+        case Diag::end:
+            return "end";
+        default:
+            return "???";
+    }
+}
+
 auto BlockchainAccountActivity::load_thread() noexcept -> void
 {
-    const auto transactions =
-        [&]() -> UnallocatedVector<blockchain::block::pTxid> {
-        try {
-            const auto& chain =
-                Widget::api_.Network().Blockchain().GetChain(chain_);
-            height_ = chain.HeaderOracle().BestChain().height_;
-
-            return chain.Internal().GetTransactions(primary_id_);
-        } catch (...) {
-
-            return {};
+    bool go{};
+    {
+        std::unique_lock<std::mutex> L(load_lock_);
+        if (load_in_progress_) {
+            tdiag("ZZZZ load_thread load_in_progress_");
+            return;
         }
-    }();
-    auto active = UnallocatedSet<AccountActivityRowID>{};
+        tdiag("ZZZZ load_thread");
+        load_in_progress_ = true;
+        transactions_ = [&]() -> UnallocatedVector<blockchain::block::pTxid> {
+            try {
+                auto& chain =
+                    Widget::api_.Network().Blockchain().GetChain(chain_);
+                height_ = chain.HeaderOracle().BestChain().first;
 
-    for (const auto& txid : transactions) {
-        if (const auto id = process_txid(txid); id.has_value()) {
-            active.emplace(id.value());
-        }
+                return chain.Internal().GetTransactions(primary_id_);
+            } catch (...) {
+                tdiag("ZZZZ load_thread transactions exception");
+                return {};
+            }
+        }();
+        iload_ = transactions_.cbegin();
+        eload_ = transactions_.cend();
+        active_.clear();
+        go = iload_ != eload_;
     }
 
-    delete_inactive(active);
+    if (go) {
+        tdiag("ZZZZ load_thread start");
+        PTimer<Diag>::start(Diag::load_thread);
+        trigger();
+    } else {
+        load_in_progress_ = false;
+    }
+}
+
+auto BlockchainAccountActivity::load_thread_portion() noexcept -> bool
+{
+    using namespace std::chrono;
+    static thread_local auto cc = 0ull;
+    int ct = 0;
+    std::unique_lock<std::mutex> L(load_lock_);
+    auto Tstart = Clock::now();
+    while (iload_ != eload_) {
+        auto txid = *iload_;
+        ++iload_;
+        ++cc;
+        if (const auto id = process_txid(txid); id.has_value()) {
+            PTimer<Diag>::start(Diag::emplace);
+            active_.emplace(id.value());
+            PTimer<Diag>::stop(Diag::emplace);
+        }
+        using namespace std::literals;
+        if (++ct == 50) {
+            ct = 0;
+            if (Clock::now() - Tstart > 200ms) { break; }
+        }
+    }
+    if (iload_ == eload_) {
+        cc = 0;
+        load_in_progress_ = false;
+        transactions_.clear();
+        iload_ = transactions_.cbegin();
+        eload_ = transactions_.cend();
+        PTimer<Diag>::start(Diag::delete_inactive);
+        delete_inactive(active_);
+        PTimer<Diag>::stop(Diag::delete_inactive);
+        PTimer<Diag>::stop(Diag::load_thread);
+        for (auto i = Diag::load_thread; i != Diag::end;
+             i = static_cast<Diag>(static_cast<int>(i) + 1)) {
+            auto t = PTimer<Diag>::gett(i);
+            tdiag(
+                to_string(i) + " avg: " + std::to_string(t.avg_us()) +
+                "us, min: " + std::to_string(t.min_us_) +
+                "us, max: " + std::to_string(t.max_us_));
+        }
+        PTimer<Diag>::clear();
+    }
+    return load_in_progress_;
 }
 
 auto BlockchainAccountActivity::pipeline(Message&& in) noexcept -> void
@@ -198,6 +307,8 @@ auto BlockchainAccountActivity::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
+    tadiag("ZZZZ pipeline Work:", print(work));
 
     switch (work) {
         case Work::shutdown: {
@@ -239,7 +350,11 @@ auto BlockchainAccountActivity::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainAccountActivity::state_machine() noexcept -> int { return -1; }
+auto BlockchainAccountActivity::state_machine() noexcept -> int
+{
+
+    return load_thread_portion() ? SM_BlockchainAccountActivity_fast : SM_off;
+}
 
 auto BlockchainAccountActivity::shut_down() noexcept -> void
 {
@@ -307,6 +422,7 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
         UpdateNotify();
     }
 
+    tdiag("ZZZZ process_balance");
     load_thread();
 }
 
@@ -358,6 +474,7 @@ auto BlockchainAccountActivity::process_height(
     if (height == height_) { return; }
 
     height_ = height;
+    tdiag("ZZZZ process_height");
     load_thread();
 }
 
@@ -451,8 +568,13 @@ auto BlockchainAccountActivity::process_txid(const Message& in) noexcept -> void
 auto BlockchainAccountActivity::process_txid(const Data& txid) noexcept
     -> std::optional<AccountActivityRowID>
 {
-    return process_txid(
-        txid, Widget::api_.Crypto().Blockchain().LoadTransactionBitcoin(txid));
+    PTimer<Diag>::start(Diag::load_transaction_bitcoin);
+    auto bct = Widget::api_.Crypto().Blockchain().LoadTransactionBitcoin(txid);
+    PTimer<Diag>::stop(Diag::load_transaction_bitcoin);
+    PTimer<Diag>::start(Diag::process_txid);
+    auto r = process_txid(txid, std::move(bct));
+    PTimer<Diag>::stop(Diag::process_txid);
+    return r;
 }
 
 auto BlockchainAccountActivity::process_txid(
@@ -461,16 +583,17 @@ auto BlockchainAccountActivity::process_txid(
         pTX) noexcept  // TODO : MT-83
     -> std::optional<AccountActivityRowID>
 {
+    if (!pTX) { return std::nullopt; }
+    const auto& tx = pTX->Internal();
+    if (!contains(tx.Chains(), chain_)) { return std::nullopt; }
+
+    PTimer<Diag>::start(Diag::blockchain_thread_item_id);
     const auto rowID = AccountActivityRowID{
         blockchain_thread_item_id(Widget::api_.Crypto(), chain_, txid),
         proto::PAYMENTEVENTTYPE_COMPLETE};
+    PTimer<Diag>::stop(Diag::blockchain_thread_item_id);
 
-    if (false == bool(pTX)) { return std::nullopt; }
-
-    const auto& tx = pTX->Internal();
-
-    if (false == contains(tx.Chains(), chain_)) { return std::nullopt; }
-
+    PTimer<Diag>::start(Diag::process_txid_lambda);
     const auto sortKey{tx.Timestamp()};
     const auto conf = [&]() -> int {
         const auto height = tx.ConfirmationHeight();
@@ -479,6 +602,8 @@ auto BlockchainAccountActivity::process_txid(
 
         return static_cast<int>(height_ - height) + 1;
     }();
+    PTimer<Diag>::stop(Diag::process_txid_lambda);
+    PTimer<Diag>::start(Diag::process_txid_custom);
     auto custom = CustomData{
         new proto::PaymentWorkflow(),
         new proto::PaymentEvent(),
@@ -490,8 +615,11 @@ auto BlockchainAccountActivity::process_txid(
         new OTData{tx.ID()},
         new int{conf},
     };
-    add_item(rowID, sortKey, custom);
+    PTimer<Diag>::stop(Diag::process_txid_custom);
 
+    PTimer<Diag>::start(Diag::add_item);
+    add_item(rowID, sortKey, custom);
+    PTimer<Diag>::stop(Diag::add_item);
     return std::move(rowID);
 }
 
@@ -535,7 +663,11 @@ auto BlockchainAccountActivity::Send(
     }
 }
 
-auto BlockchainAccountActivity::startup() noexcept -> void { load_thread(); }
+auto BlockchainAccountActivity::startup() noexcept -> void
+{
+    tdiag("ZZZZ startup");
+    load_thread();
+}
 
 auto BlockchainAccountActivity::ValidateAddress(
     const UnallocatedCString& in) const noexcept -> bool
@@ -570,6 +702,11 @@ auto BlockchainAccountActivity::ValidateAmount(
 
         return {};
     }
+}
+
+auto BlockchainAccountActivity::last_job_str() const noexcept -> std::string
+{
+    return std::string{print(last_job_)};
 }
 
 BlockchainAccountActivity::~BlockchainAccountActivity()

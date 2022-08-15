@@ -46,6 +46,7 @@
 #include "serialization/protobuf/PaymentEvent.pb.h"
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
+#include "util/tuning.hpp"
 
 namespace opentxs::factory
 {
@@ -64,6 +65,21 @@ auto CustodialAccountActivityModel(
 
 namespace opentxs::ui::implementation
 {
+auto CustodialAccountActivity::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::notary, "notary"},
+        {Work::unit, "unit"},
+        {Work::contact, "contact"},
+        {Work::account, "account"},
+        {Work::workflow, "workflow"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"},
+        {Work::shutdown, "shutdown"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 CustodialAccountActivity::CustodialAccountActivity(
     const api::session::Client& api,
     const identifier::Nym& nymID,
@@ -71,6 +87,7 @@ CustodialAccountActivity::CustodialAccountActivity(
     const SimpleCallback& cb) noexcept
     : AccountActivity(api, nymID, accountID, AccountType::Custodial, cb)
     , alias_()
+    , last_job_{}
 {
     tdiag("CCA constructor 1");
     init({
@@ -402,6 +419,7 @@ auto CustodialAccountActivity::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     switch (work) {
         case Work::notary: {
@@ -438,7 +456,10 @@ auto CustodialAccountActivity::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto CustodialAccountActivity::state_machine() noexcept -> int { return -1; }
+auto CustodialAccountActivity::state_machine() noexcept -> int
+{
+    return SM_off;
+}
 
 auto CustodialAccountActivity::shut_down() noexcept -> void
 {
@@ -610,6 +631,11 @@ auto CustodialAccountActivity::Unit() const noexcept -> UnitType
     auto lock = sLock{shared_lock_};
 
     return contract_->UnitOfAccount();
+}
+
+std::string CustodialAccountActivity::last_job_str() const noexcept
+{
+    return to_str(last_job_);
 }
 
 CustodialAccountActivity::~CustodialAccountActivity()

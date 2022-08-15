@@ -44,6 +44,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/tuning.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -70,6 +71,7 @@ AccountList::AccountList(
     : AccountListList(api, nymID, cb, false)
     , Worker(api, "AccountList")
     , chains_()
+    , last_job_{}
 {
     // TODO monitor for notary nym changes since this may affect custodial
     // account names
@@ -252,6 +254,7 @@ auto AccountList::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     if ((false == startup_complete()) && (Work::init != work)) {
         pipeline_.Push(std::move(in));
@@ -286,7 +289,7 @@ auto AccountList::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto AccountList::state_machine() noexcept -> int { return -1; }
+auto AccountList::state_machine() noexcept -> int { return SM_off; }
 
 auto AccountList::shut_down() noexcept -> void
 {
@@ -378,6 +381,11 @@ auto AccountList::subscribe(const blockchain::Type chain) const noexcept -> void
 
         return work;
     }());
+}
+
+auto AccountList::last_job_str() const noexcept -> std::string
+{
+    return std::string{print(last_job_)};
 }
 
 AccountList::~AccountList()

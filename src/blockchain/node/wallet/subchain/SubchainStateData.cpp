@@ -81,6 +81,7 @@
 #include "util/ScopeGuard.hpp"
 #include "util/Thread.hpp"
 #include "util/Work.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs
 {
@@ -1898,8 +1899,8 @@ auto SubchainStateData::work() noexcept -> int
         }
     }
 
-    // trigger in 60s
-    return 60000;
+    // trigger in a while
+    return SM_SubchainStateData_slow;
 }
 
 SubchainStateData::~SubchainStateData()

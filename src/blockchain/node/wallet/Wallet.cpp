@@ -25,6 +25,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::factory
 {
@@ -83,6 +84,7 @@ Wallet::Wallet(
     , fee_oracle_(factory::FeeOracle(api_, chain))
     , accounts_(api, parent_, db_, mempool, chain_)
     , proposals_(api, parent_, db_, chain_)
+    , last_job_{}
 {
     init_executor({
         UnallocatedCString{shutdown},
@@ -201,6 +203,7 @@ auto Wallet::pipeline(network::zeromq::Message&& in) -> void
     }
 
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
     const auto start = Clock::now();
 
     switch (work) {
@@ -246,9 +249,14 @@ auto Wallet::StartRescan() const noexcept -> bool
 
 auto Wallet::state_machine() noexcept -> int
 {
-    if (!running_.load()) { return -1; }
+    if (!running_.load()) { return SM_off; }
 
-    return proposals_.Run() ? 10 : 100;
+    return proposals_.Run() ? SM_Wallet_fast : SM_Wallet_slow;
+}
+
+auto Wallet::last_job_str() const noexcept -> std::string
+{
+    return std::string{print(last_job_)};
 }
 
 Wallet::~Wallet()

@@ -33,6 +33,7 @@
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
 #include "util/threadutil.hpp"
+#include "util/tuning.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -325,7 +326,7 @@ auto Peer::on_init() noexcept -> void { check_init(); }
 auto Peer::pipeline(zmq::Message&& message) noexcept -> void
 {
     MessageMarker m(message);
-    if (m) { tdiag("QQQ message from ", to_string(m)); }
+    if (m) { tdiag("Message from ", to_string(m)); }
 
     if (false == IsReady(init_)) {
         pipeline_.Push(std::move(message));
@@ -668,7 +669,7 @@ auto Peer::state_machine() noexcept -> int
     tdiag("Peer::state_machine");
     log_(OT_PRETTY_CLASS()).Flush();
 
-    if (false == running_.load()) { return -1; }
+    if (false == running_.load()) { return SM_off; }
 
     try {
         switch (state_.value_.load()) {
@@ -752,7 +753,7 @@ auto Peer::state_machine() noexcept -> int
         disconnect();
     }
 
-    return -1;
+    return SM_off;
 }
 
 auto Peer::last_job_str() const noexcept -> std::string

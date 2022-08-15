@@ -54,27 +54,13 @@ template <typename API = api::session::Client>
 class Worker : public Reactor
 {
 protected:
+    // Subclass message processor.
     virtual auto pipeline(network::zeromq::Message&& in) -> void = 0;
+
+    // Subclass state machine updater.
     virtual auto state_machine() noexcept -> int = 0;
 
-protected:
-    using Endpoints = UnallocatedVector<UnallocatedCString>;
-
-    const API& api_;
-    std::string diagnostic_;
-    std::atomic<bool> running_;
-
-private:
-    std::promise<void> shutdown_promise_;
-    std::shared_future<void> shutdown_complete_;
-    std::mutex shutdown_mutex_;
-    Time last_executed_;
-    mutable std::atomic<bool> state_machine_queued_;
-    //    std::once_flag thread_register_once_;
-
-protected:
-    network::zeromq::Pipeline pipeline_;
-
+    // Set off the state machine calls.
     auto trigger() const noexcept -> void
     {
         if (!running_) { return; }
@@ -85,13 +71,18 @@ protected:
             pipeline_.Push(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL));
         }
     }
+
+    // Stop processing, get ready for destruction.
     auto signal_shutdown() noexcept -> std::shared_future<void>
     {
         protect_shutdown([this] { close_pipeline(); });
         return shutdown_complete_;
     }
+
+    // Stop the receiving sockets and zap the receive callbacks.
     auto close_pipeline() noexcept -> void { pipeline_.Close(); }
 
+    // Subclasses call this to get the state machine going. Usually...
     auto do_work() noexcept
     {
         if (!running_) { return; }
@@ -106,6 +97,10 @@ protected:
             trigger_at(last_executed_ + std::chrono::milliseconds(when_next));
         }
     }
+
+    // Called from a bottom level subclass constructor to ensure connections are
+    // only made after everything has been constructed.
+    using Endpoints = UnallocatedVector<UnallocatedCString>;
     auto init_executor(const Endpoints endpoints = {}) noexcept -> void
     {
         pipeline_.SubscribeTo(api_.Endpoints().Shutdown());
@@ -119,7 +114,7 @@ protected:
         const API& api,
         std::string diagnostic,
         const Vector<network::zeromq::SocketData>& extra = {}) noexcept
-        : Reactor(LogTrace(), diagnostic)
+        : Reactor(diagnostic)
         , api_{api}
         , diagnostic_{diagnostic}
         , running_{true}
@@ -130,7 +125,7 @@ protected:
         , state_machine_queued_{}
         , pipeline_{api.Network().ZeroMQ().Internal().Pipeline(
               std::move(diagnostic),
-              [this](network::zeromq::Message&& in) { enqueue(std::move(in)); },
+              [this](network::zeromq::Message&& in) { post(std::move(in)); },
               workerThreadName,
               {},
               {},
@@ -152,6 +147,8 @@ protected:
 
     auto is_running() const noexcept { return running_.load(); }
 
+    // Stop processing and prepare for destruction.
+    // TODO check if we still need the mutex.
     void protect_shutdown(std::function<void()> funct)
     {
         bool can_do = running_.exchange(false);
@@ -168,6 +165,7 @@ protected:
     }
 
 private:
+    // Schedule a delayed execution of state machine.
     auto trigger_at(
         std::chrono::time_point<std::chrono::system_clock> t_at) noexcept
         -> void
@@ -176,15 +174,28 @@ private:
 
         if (!queued) { post_at(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL), t_at); }
     }
+
+    // Called by Reactor to process a message. The unsigned argument is an
+    // index, irrelevant in the context of Actor.
     auto handle(network::zeromq::Message&& in, unsigned) noexcept -> void final
     {
         if (running_) pipeline(std::move(in));
     }
 
-    std::string last_job_str() const noexcept override
-    {
-        // By default we do not care about Worker's last job.
-        return {};
-    }
+protected:
+    const API& api_;
+    std::string diagnostic_;
+    std::atomic<bool> running_;
+
+private:
+    std::promise<void> shutdown_promise_;
+    std::shared_future<void> shutdown_complete_;
+    std::mutex shutdown_mutex_;
+    Time last_executed_;
+    mutable std::atomic<bool> state_machine_queued_;
+    //    std::once_flag thread_register_once_;
+
+protected:
+    network::zeromq::Pipeline pipeline_;
 };
 }  // namespace opentxs

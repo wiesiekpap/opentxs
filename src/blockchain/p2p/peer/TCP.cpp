@@ -163,7 +163,7 @@ struct TCPConnectionManager : virtual public ConnectionManager {
                 out.AddFrame(std::move(header));
                 out.AddFrame();
 
-                MessageMarker m("QQQ TCPConnectionManager::on_header"sv);
+                MessageMarker m("TCPC..on_header"sv);
                 m.mark(out);
 
                 return out;

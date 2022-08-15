@@ -467,4 +467,9 @@ auto SyncServer::shut_down() noexcept -> void
     // TODO MT-34 investigate what other actions might be needed
 }
 
+auto SyncServer::last_job_str() const noexcept -> std::string
+{
+    return node::implementation::Base::to_str(last_job_);
+}
+
 }  // namespace opentxs::blockchain::node::base

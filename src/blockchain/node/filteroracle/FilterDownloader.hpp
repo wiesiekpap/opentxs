@@ -40,6 +40,8 @@ public:
     auto NextBatch() noexcept -> BatchType;
     auto UpdatePosition(const Position& pos) -> void;
 
+    std::string last_job_str() const noexcept override;
+
     FilterDownloader(
         const api::Session& api,
         database::Cfilter& db,
@@ -66,6 +68,7 @@ private:
     const blockchain::Type chain_;
     const cfilter::Type type_;
     const filteroracle::NotifyCallback& notify_;
+    FilterOracle::Work last_job_;
 
     auto batch_ready() const noexcept -> void;
     static auto batch_size(std::size_t in) noexcept -> std::size_t;
