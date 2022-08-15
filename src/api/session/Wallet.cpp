@@ -172,9 +172,6 @@ Wallet::Wallet(const api::Session& api)
     , unit_publisher_(api_.Network().ZeroMQ().PublishSocket())
     , peer_reply_publisher_(api_.Network().ZeroMQ().PublishSocket())
     , peer_request_publisher_(api_.Network().ZeroMQ().PublishSocket())
-    , dht_nym_requester_{api_.Network().ZeroMQ().RequestSocket()}
-    , dht_server_requester_{api_.Network().ZeroMQ().RequestSocket()}
-    , dht_unit_requester_{api_.Network().ZeroMQ().RequestSocket()}
     , find_nym_(api_.Network().ZeroMQ().PushSocket(
           opentxs::network::zeromq::socket::Direction::Connect))
     , handle_([&] {
@@ -247,9 +244,6 @@ Wallet::Wallet(const api::Session& api)
     unit_publisher_->Start(api_.Endpoints().UnitUpdate().data());
     peer_reply_publisher_->Start(api_.Endpoints().PeerReplyUpdate().data());
     peer_request_publisher_->Start(api_.Endpoints().PeerRequestUpdate().data());
-    dht_nym_requester_->Start(api_.Endpoints().DhtRequestNym().data());
-    dht_server_requester_->Start(api_.Endpoints().DhtRequestServer().data());
-    dht_unit_requester_->Start(api_.Endpoints().DhtRequestUnit().data());
     find_nym_->Start(api_.Endpoints().FindNym().data());
 
     OT_ASSERT(nullptr != thread_);
@@ -2669,12 +2663,6 @@ auto Wallet::search_notary(const identifier::Notary& id) const noexcept -> void
     LogVerbose()(OT_PRETTY_CLASS())(
         "Searching remote networks for unknown notary ")(id)
         .Flush();
-    auto work =
-        opentxs::network::zeromq::tagged_message(WorkType::DHTRequestServer);
-    work.AddFrame(id);
-
-    dht_server_requester_->Send(std::move(work));
-
     to_loopback_.modify_detach([&id](auto& socket) {
         const auto command = factory::BlockchainSyncQueryContract(id);
         opentxs::network::zeromq::Message message{};
@@ -2689,12 +2677,6 @@ auto Wallet::search_nym(const identifier::Nym& id) const noexcept -> void
     LogVerbose()(OT_PRETTY_CLASS())(
         "Searching remote networks for unknown nym ")(id)
         .Flush();
-    auto work =
-        opentxs::network::zeromq::tagged_message(WorkType::DHTRequestNym);
-    work.AddFrame(id);
-
-    dht_nym_requester_->Send(std::move(work));
-
     to_loopback_.modify_detach([&id](auto& socket) {
         const auto command = factory::BlockchainSyncQueryContract(id);
         opentxs::network::zeromq::Message message{};
@@ -2710,12 +2692,6 @@ auto Wallet::search_unit(const identifier::UnitDefinition& id) const noexcept
     LogVerbose()(OT_PRETTY_CLASS())(
         "Searching remote networks for unknown unit definition ")(id)
         .Flush();
-    auto work =
-        opentxs::network::zeromq::tagged_message(WorkType::DHTRequestUnit);
-    work.AddFrame(id);
-
-    dht_unit_requester_->Send(std::move(work));
-
     to_loopback_.modify_detach([&id](auto& socket) {
         const auto command = factory::BlockchainSyncQueryContract(id);
         opentxs::network::zeromq::Message message{};
