@@ -184,6 +184,7 @@ public:
 protected:
     auto pipeline(Message&& in) noexcept -> void final;
     auto state_machine() noexcept -> int final;
+    auto last_job_str() const noexcept -> std::string final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -240,6 +241,7 @@ private:
     OTZMQDealerSocket balance_socket_;
     Progress progress_;
     blockchain::block::Height height_;
+    Work last_job_;
 
     static auto print(Work type) noexcept -> const char*;
 

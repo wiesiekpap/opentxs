@@ -28,7 +28,6 @@
 #include "internal/core/contract/Types.hpp"
 #include "internal/identity/Nym.hpp"
 #include "internal/network/p2p/Factory.hpp"
-#include "internal/network/p2p/Types.hpp"
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Types.hpp"
@@ -125,9 +124,12 @@ namespace opentxs::api::session::imp
 class Wallet::WalletReactor : public Reactor
 {
 public:
-    WalletReactor(opentxs::network::zeromq::ListenCallback& callback)
+    WalletReactor(
+        opentxs::network::zeromq::ListenCallback& callback,
+        ReactorClient& rc)
         : Reactor(LogTrace(), "Wallet", 1)
         , callback_(callback)
+        , rc_(rc)
     {
     }
 
@@ -137,14 +139,19 @@ private:
     {
         callback_.Process(std::move(in));
     }
-    auto last_job_str() const noexcept -> std::string final { return "Wallet"; }
+    auto last_job_str() const noexcept -> std::string final
+    {
+        return rc_.last_job();
+    }
 
 private:
     opentxs::network::zeromq::ListenCallback& callback_;
+    ReactorClient& rc_;
 };
 
 Wallet::Wallet(const api::Session& api)
-    : api_(api)
+    : ReactorClient{}
+    , api_(api)
     , context_map_()
     , context_map_lock_()
     , account_map_()
@@ -219,7 +226,7 @@ Wallet::Wallet(const api::Session& api)
 
         return socket;
     }())
-    , reactor_(std::make_unique<WalletReactor>(p2p_callback_))
+    , reactor_(std::make_unique<WalletReactor>(p2p_callback_, *this))
     , thread_(api_.Network().ZeroMQ().Internal().Start(
           batch_.id_,
           {
@@ -233,6 +240,7 @@ Wallet::Wallet(const api::Session& api)
                    if (batch.toggle_) { socket.Send(std::move(m)); }
                }},
           }))
+    , last_job_{}
 {
     reactor_->start();
     LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(batch_.id_).Flush();
@@ -247,6 +255,11 @@ Wallet::Wallet(const api::Session& api)
     find_nym_->Start(api_.Endpoints().FindNym().data());
 
     OT_ASSERT(nullptr != thread_);
+}
+
+auto Wallet::last_job() const noexcept -> std::string
+{
+    return std::string{print(last_job_)};
 }
 
 auto Wallet::account(
@@ -2009,6 +2022,7 @@ auto Wallet::process_p2p(opentxs::network::zeromq::Message&& msg) const noexcept
 
     using Job = opentxs::network::p2p::Job;
     const auto type = body.at(0).as<Job>();
+    last_job_ = type;
 
     switch (type) {
         case Job::Response: {

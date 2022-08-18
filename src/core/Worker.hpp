@@ -178,11 +178,5 @@ private:
     {
         if (running_) pipeline(std::move(in));
     }
-
-    std::string last_job_str() const noexcept override
-    {
-        // By default we do not care about Worker's last job.
-        return {};
-    }
 };
 }  // namespace opentxs

@@ -100,6 +100,7 @@ BlockchainAccountActivity::BlockchainAccountActivity(
           network::zeromq::socket::Direction::Connect))
     , progress_()
     , height_(0)
+    , last_job_{}
 {
     const auto connected = balance_socket_->Start(
         Widget::api_.Endpoints().BlockchainBalance().data());
@@ -196,6 +197,7 @@ auto BlockchainAccountActivity::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     switch (work) {
         case Work::shutdown: {
@@ -568,6 +570,11 @@ auto BlockchainAccountActivity::ValidateAmount(
 
         return {};
     }
+}
+
+auto BlockchainAccountActivity::last_job_str() const noexcept -> std::string
+{
+    return std::string{print(last_job_)};
 }
 
 BlockchainAccountActivity::~BlockchainAccountActivity()

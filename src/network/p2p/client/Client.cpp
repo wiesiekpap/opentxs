@@ -256,6 +256,7 @@ Client::Imp::Imp(
                &wallet_,
                [this](auto&& m) { enqueue(std::move(m), Wallet_IDX); }},
           }))
+    , diag_{0}
 {
     OT_ASSERT(nullptr != thread_);
 
@@ -267,6 +268,7 @@ Client::Imp::Imp(
 auto Client::Imp::handle(network::zeromq::Message&& in, unsigned idx) noexcept
     -> void
 {
+    diag_.last_idx_ = idx;
     if (idx < end_IDX) {
         batch_.listen_callbacks_.at(idx)->Process(std::move(in));
     } else {
@@ -276,7 +278,7 @@ auto Client::Imp::handle(network::zeromq::Message&& in, unsigned idx) noexcept
 
 auto Client::Imp::last_job_str() const noexcept -> std::string
 {
-    return "Client";
+    return std::string{"channel:"} + std::to_string(diag_.last_idx_);
 }
 
 auto Client::Imp::Endpoint() const noexcept -> std::string_view

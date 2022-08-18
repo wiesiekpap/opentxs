@@ -110,6 +110,7 @@ public:
                     command_queue_.push(std::move(fc));
                     notify();
                 } else {
+                    fc->exec();
                     fc.reset();
                 }
             }
