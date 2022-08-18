@@ -1,6 +1,6 @@
 [submodule "cmake"]
 	path = cmake
-	url = https://github.com/Open-Transactions/opentxs-cmake
+	url = https://github.com/matterfi/opentxs-cmake
 [submodule "deps/ChaiScript"]
 	path = deps/ChaiScript
 	url = https://github.com/ChaiScript/ChaiScript.git
