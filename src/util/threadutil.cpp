@@ -312,6 +312,9 @@ ThreadMonitor::ThreadMonitor()
 std::mutex ThreadMonitor::mutex_ = {};
 ThreadMonitor* ThreadMonitor::instance_ = nullptr;
 
+// static
+std::int64_t Mytime::base = basecount();
+
 Mytime::Mytime() {}
 std::string Mytime::str()
 {

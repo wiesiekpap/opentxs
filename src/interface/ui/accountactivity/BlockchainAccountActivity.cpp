@@ -166,9 +166,8 @@ auto BlockchainAccountActivity::load_thread() noexcept -> void
             tdiag("ZZZZ load_thread load_in_progress_");
             return;
         }
+        tdiag("ZZZZ load_thread");
         load_in_progress_ = true;
-        tdiag("ZZZZ load_thread start");
-
         transactions_ = [&]() -> UnallocatedVector<blockchain::block::pTxid> {
             try {
                 auto& chain =
@@ -187,7 +186,12 @@ auto BlockchainAccountActivity::load_thread() noexcept -> void
         go = iload_ != eload_;
     }
 
-    if (go) { trigger(); }
+    if (go) {
+        tdiag("ZZZZ load_thread start");
+        trigger();
+    } else {
+        load_in_progress_ = false;
+    }
 }
 
 auto BlockchainAccountActivity::load_thread_portion() noexcept -> bool
@@ -231,7 +235,7 @@ auto BlockchainAccountActivity::load_thread_portion() noexcept -> bool
             "ZZZZ load_thread_portion, deleted inactive in[us]:",
             (duration_cast<microseconds>(T2 - T1)).count());
     }
-    return iload_ != eload_;
+    return load_in_progress_;
 }
 
 auto BlockchainAccountActivity::load_thread_old() noexcept -> void

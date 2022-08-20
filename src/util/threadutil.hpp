@@ -99,7 +99,7 @@ private:
 struct Mytime {
     Mytime();
     static std::int64_t basecount() noexcept;
-    inline static std::int64_t base = basecount();
+    static std::int64_t base;
     std::string str();
 };
 
