@@ -10,7 +10,7 @@ std::thread::id Reactor::processing_thread_id()
     return processing_thread_id_;
 }
 
-auto Reactor::enqueue(network::zeromq::Message&& in, unsigned idx) -> bool
+auto Reactor::post(network::zeromq::Message&& in, unsigned idx) -> bool
 {
     if (active_) {
         auto& mq = message_queue_.at(idx);
@@ -152,8 +152,11 @@ bool Reactor::stop()
     auto was_active = active_.exchange(false);
     if (was_active) {
         while (true) {
-            auto c = dequeue_command();
-            if (c) { c->exec(); }
+            if (auto c = dequeue_command(); c) {
+                c->exec();
+            } else {
+                break;
+            }
         }
 
         // Abort all messages

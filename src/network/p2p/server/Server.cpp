@@ -100,10 +100,10 @@ Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
     , batch_(handle_.batch_)
     , external_callback_(
           batch_.listen_callbacks_.emplace_back(zeromq::ListenCallback::Factory(
-              [this](auto&& msg) { enqueue(std::move(msg), 1); })))
+              [this](auto&& msg) { post(std::move(msg), 1); })))
     , internal_callback_(
           batch_.listen_callbacks_.emplace_back(zeromq::ListenCallback::Factory(
-              [this](auto&& msg) { enqueue(std::move(msg), 0); })))
+              [this](auto&& msg) { post(std::move(msg), 0); })))
     , sync_([&]() -> auto& {
         auto& out = batch_.sockets_.at(0);
         const auto rc = out.SetExposedUntrusted();

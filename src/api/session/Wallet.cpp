@@ -232,7 +232,7 @@ Wallet::Wallet(const api::Session& api)
           {
               {p2p_socket_.ID(),
                &p2p_socket_,
-               [this](auto&& m) { reactor_->enqueue(std::move(m)); }},
+               [this](auto&& m) { reactor_->post(std::move(m)); }},
               {loopback_.ID(),
                &loopback_,
                [id = loopback_.ID(), &socket = p2p_socket_, &batch = batch_](

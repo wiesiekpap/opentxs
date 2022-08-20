@@ -129,7 +129,7 @@ protected:
         , state_machine_queued_{}
         , pipeline_{api.Network().ZeroMQ().Internal().Pipeline(
               std::move(diagnostic),
-              [this](network::zeromq::Message&& in) { enqueue(std::move(in)); },
+              [this](network::zeromq::Message&& in) { post(std::move(in)); },
               {},
               {},
               {},
