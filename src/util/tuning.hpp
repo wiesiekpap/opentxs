@@ -93,6 +93,9 @@ constexpr static const int SM_SubchainStateData_slow = 60000;
 // BlockchainAccountActivity
 constexpr static const int SM_BlockchainAccountActivity_fast = 10;
 
+// Requestor
+constexpr static const int SM_Requestor_fast = 5000;
+
 }  // namespace opentxs
 
 #endif  // util_tuning_hpp__

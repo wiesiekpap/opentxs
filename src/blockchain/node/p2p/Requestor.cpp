@@ -75,9 +75,6 @@ Requestor::Imp::Imp(
     , chain_(chain)
     , to_parent_(pipeline_.Internal().ExtraSocket(0))
     , state_(State::init)
-    , init_timer_(api_.Network().Asio().Internal().GetTimer())
-    , request_timer_(api_.Network().Asio().Internal().GetTimer())
-    , heartbeat_timer_(api_.Network().Asio().Internal().GetTimer())
     , last_remote_position_()
     , begin_sync_()
     , last_request_(std::nullopt)
@@ -146,8 +143,6 @@ auto Requestor::Imp::check_remote_position() noexcept -> void
     }
 }
 
-auto Requestor::Imp::do_init() noexcept -> void { register_chain(); }
-
 auto Requestor::Imp::do_common() noexcept -> void
 {
     if (need_sync()) { request(next_position()); }
@@ -165,23 +160,15 @@ auto Requestor::Imp::do_common() noexcept -> void
     }
 }
 
-auto Requestor::Imp::do_run() noexcept -> void
-{
-    do_common();
-    reset_heartbeat_timer(heartbeat_timeout_);
-}
+auto Requestor::Imp::do_run() noexcept -> void { do_common(); }
 
-auto Requestor::Imp::do_shutdown() noexcept -> void
-{
-    init_timer_.Cancel();
-    request_timer_.Cancel();
-    heartbeat_timer_.Cancel();
-}
+auto Requestor::Imp::do_shutdown() noexcept -> void {}
 
 auto Requestor::Imp::do_startup() noexcept -> void
 {
+    tdiag("RRRR do_startup");
+    register_chain();
     do_work();
-    reset_init_timer(init_timeout_);
 }
 
 auto Requestor::Imp::do_sync() noexcept -> void
@@ -265,6 +252,13 @@ auto Requestor::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
     tadiag("pipeline ", std::string{print(work)});
 
+    if (work == Work::Init) {
+        tdiag(
+            "RRRR init, state = ",
+            state_ == State::init   ? "init"
+            : state_ == State::sync ? "sync"
+                                    : "run");
+    }
     switch (state_) {
         case State::init: {
             state_init(work, std::move(msg));
@@ -289,7 +283,6 @@ auto Requestor::Imp::process_push_tx(Message&& in) noexcept -> void
 auto Requestor::Imp::process_sync_ack(Message&& in) noexcept -> void
 {
     received_first_ack_ = true;
-    update_activity();
     const auto base = api_.Factory().BlockchainSyncMessage(in);
     const auto& ack = base->asAcknowledgement();
     update_remote_position(ack.State(chain_));
@@ -322,7 +315,6 @@ auto Requestor::Imp::process_sync_reply(Message&& in) noexcept -> void
     const auto base = api_.Factory().BlockchainSyncMessage(in);
     const auto& data = base->asData();
     update_remote_position(data);
-    request_timer_.Cancel();
     last_request_.reset();
     add_to_queue(data, std::move(in));
 }
@@ -338,7 +330,8 @@ auto Requestor::Imp::register_chain() noexcept -> void
 
         return out;
     }());
-    reset_request_timer(request_timeout_);
+    static thread_local unsigned rcct = 0;
+    tdiag("RRRR register_chain", ++rcct);
 }
 
 auto Requestor::Imp::request(const block::Position& position) noexcept -> void
@@ -373,25 +366,6 @@ auto Requestor::Imp::request(const block::Position& position) noexcept -> void
         return msg;
     }());
     last_request_ = Clock::now();
-    reset_request_timer(request_timeout_);
-}
-
-auto Requestor::Imp::reset_heartbeat_timer(
-    std::chrono::seconds interval) noexcept -> void
-{
-    reset_timer(interval, heartbeat_timer_);
-}
-
-auto Requestor::Imp::reset_init_timer(std::chrono::seconds interval) noexcept
-    -> void
-{
-    reset_timer(interval, init_timer_);
-}
-
-auto Requestor::Imp::reset_request_timer(std::chrono::seconds interval) noexcept
-    -> void
-{
-    reset_timer(interval, request_timer_);
 }
 
 auto Requestor::Imp::reset_timer(
@@ -432,7 +406,6 @@ auto Requestor::Imp::state_init(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::StateMachine: {
             do_work();
-            reset_init_timer(init_timeout_);
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())(print(chain_))(
@@ -548,21 +521,13 @@ auto Requestor::Imp::transition_state_run() noexcept -> void
         interval)(" (")(kb / seconds)(" KiB/sec)")
         .Flush();
     state_ = State::run;
-    reset_heartbeat_timer(heartbeat_timeout_);
 }
 
 auto Requestor::Imp::transition_state_sync() noexcept -> void
 {
-    init_timer_.Cancel();
-    request_timer_.Cancel();
     begin_sync_ = Clock::now();
     state_ = State::sync;
     flush_cache();
-}
-
-auto Requestor::Imp::update_activity() noexcept -> void
-{
-    heartbeat_timer_.Cancel();
 }
 
 auto Requestor::Imp::update_queue_position() noexcept -> void
@@ -605,15 +570,18 @@ auto Requestor::Imp::update_remote_position(
     const network::p2p::State& state) noexcept -> void
 {
     remote_position_ = state.Position();
-    update_activity();
     last_remote_position_ = Clock::now();
 }
 
 auto Requestor::Imp::work() noexcept -> int
 {
+    tdiag(
+        "RRRR work(), state = ",
+        state_ == State::init   ? "init"
+        : state_ == State::sync ? "sync"
+                                : "run");
     switch (state_) {
         case State::init: {
-            do_init();
         } break;
         case State::sync: {
             do_sync();
@@ -626,7 +594,7 @@ auto Requestor::Imp::work() noexcept -> int
         }
     }
 
-    return SM_off;
+    return SM_Requestor_fast;
 }
 
 Requestor::Imp::~Imp()
