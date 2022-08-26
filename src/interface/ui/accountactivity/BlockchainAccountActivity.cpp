@@ -111,6 +111,7 @@ BlockchainAccountActivity::BlockchainAccountActivity(
     , eload_{transactions_.cend()}
     , load_in_progress_{}
     , load_lock_{}
+    , active_lock_{}
 {
     const auto connected = balance_socket_->Start(
         Widget::api_.Endpoints().BlockchainBalance().data());
@@ -162,6 +163,7 @@ auto BlockchainAccountActivity::display_balance(
 
 enum class Diag {
     load_thread,
+    portion_p,
     delete_inactive,
     emplace,
     load_transaction_bitcoin,
@@ -180,6 +182,8 @@ std::string to_string(Diag d)
     switch (d) {
         case Diag::load_thread:
             return "load_thread    ";
+        case Diag::portion_p:
+            return "portion_p    ";
         case Diag::delete_inactive:
             return "delete_inactive";
         case Diag::emplace:
@@ -233,7 +237,7 @@ auto BlockchainAccountActivity::load_thread() noexcept -> void
     }
 
     if (go) {
-        tdiag("ZZZZ load_thread start");
+        tdiag("ZZZZ load_thread start, n=", transactions_.size());
         PTimer<Diag>::start(Diag::load_thread);
         trigger();
     } else {
@@ -276,14 +280,98 @@ auto BlockchainAccountActivity::load_thread_portion() noexcept -> bool
         for (auto i = Diag::load_thread; i != Diag::end;
              i = static_cast<Diag>(static_cast<int>(i) + 1)) {
             auto t = PTimer<Diag>::gett(i);
-            tdiag(
-                to_string(i) + " avg: " + std::to_string(t.avg_us()) +
-                "us, min: " + std::to_string(t.min_us_) +
-                "us, max: " + std::to_string(t.max_us_));
+            switch (t.ct_out_) {
+                case 0:
+                    break;
+                case 1:
+                    tdiag(to_string(i) + " avg: " + std::to_string(t.avg_us()));
+                    break;
+                default:
+                    tdiag(
+                        to_string(i) + " avg: " + std::to_string(t.avg_us()) +
+                        "us, min: " + std::to_string(t.min_us_) +
+                        "us, max: " + std::to_string(t.max_us_));
+            }
         }
         PTimer<Diag>::clear();
     }
     return load_in_progress_;
+}
+
+auto BlockchainAccountActivity::load_thread_portion_p() noexcept -> bool
+{
+    using namespace std::chrono;
+    std::unique_lock<std::mutex> L(load_lock_);
+
+    constexpr const unsigned threadcount = 3;
+    constexpr const unsigned stride = 50;
+
+    PTimer<Diag>::start(Diag::portion_p);
+    tdiag("PPP 1");
+    std::vector<std::future<unsigned>> fvec = [this]() {
+        std::vector<std::future<unsigned>> v{};
+        for (unsigned i = 0; i != threadcount; ++i) {
+            auto ib = iload_ + i * stride;
+            auto ie = (eload_ - ib) > stride ? ib + stride : eload_;
+            v.emplace_back(
+                std::async(std::launch::async, [ib, ie, this]() -> unsigned {
+                    return load_portion(ib, ie);
+                }));
+            if (ie == eload_) { break; }
+        }
+        return v;
+    }();
+    tdiag("PPP 2");
+    for (auto& f : fvec) {
+        try {
+            unsigned step = f.get();
+            iload_ += step;
+        } catch (const std::exception& e) {
+            tdiag("load_portion exception", e.what());
+        }
+    }
+    PTimer<Diag>::stop(Diag::portion_p);
+    tdiag("PPP 3, e-b=", (eload_ - iload_));
+    if (iload_ == eload_) {
+        load_in_progress_ = false;
+        transactions_.clear();
+        iload_ = transactions_.cbegin();
+        eload_ = transactions_.cend();
+        PTimer<Diag>::start(Diag::delete_inactive);
+        delete_inactive(active_);
+        PTimer<Diag>::stop(Diag::delete_inactive);
+        PTimer<Diag>::stop(Diag::load_thread);
+        for (auto i = Diag::load_thread; i != Diag::end;
+             i = static_cast<Diag>(static_cast<int>(i) + 1)) {
+            auto t = PTimer<Diag>::gett(i);
+            if (t.ct_in_) {
+                tdiag(
+                    to_string(i) + " avg: " + std::to_string(t.avg_us()) +
+                    "us, min: " + std::to_string(t.min_us_) +
+                    "us, max: " + std::to_string(t.max_us_));
+            }
+        }
+        PTimer<Diag>::clear();
+    }
+    return load_in_progress_;
+}
+auto BlockchainAccountActivity::load_portion(
+    UnallocatedVector<blockchain::block::pTxid>::const_iterator ibeg,
+    UnallocatedVector<blockchain::block::pTxid>::const_iterator iend) noexcept
+    -> unsigned
+{
+    //    std::cerr << "PPP X k=" << (iend - ibeg) << "\n";
+    auto i0 = ibeg;
+    while (ibeg != iend) {
+        auto txid = *ibeg;
+        ++ibeg;
+        if (const auto id = process_txid(txid); id.has_value()) {
+            std::unique_lock<std::mutex> L(active_lock_);
+            active_.emplace(id.value());
+        }
+    }
+    //    std::cerr << "PPP Y r=" << (ibeg - i0) << "\n";
+    return static_cast<unsigned>(ibeg - i0);
 }
 
 auto BlockchainAccountActivity::pipeline(Message&& in) noexcept -> void

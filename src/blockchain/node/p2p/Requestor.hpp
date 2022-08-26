@@ -106,18 +106,13 @@ private:
     enum class State { init, sync, run };
 
     static constexpr std::size_t limit_{32_MiB};
-    static constexpr auto init_timeout_{5s};
     static constexpr auto request_timeout_{45s};
     static constexpr auto remote_position_timeout_{2 * 60s};
-    static constexpr auto heartbeat_timeout_{5 * 60s};
 
     const api::Session& api_;
     const Type chain_;
     network::zeromq::socket::Raw& to_parent_;
     State state_;
-    Timer init_timer_;
-    Timer request_timer_;
-    Timer heartbeat_timer_;
     Time last_remote_position_;
     Time begin_sync_;
     std::optional<Time> last_request_;
@@ -140,7 +135,6 @@ private:
         -> void;
     auto check_remote_position() noexcept -> void;
     auto do_common() noexcept -> void;
-    auto do_init() noexcept -> void;
     auto do_run() noexcept -> void;
     auto do_sync() noexcept -> void;
     auto have_pending_request() noexcept -> bool;
@@ -152,9 +146,6 @@ private:
     auto process_sync_reply(Message&& in) noexcept -> void;
     auto register_chain() noexcept -> void;
     auto request(const block::Position& position) noexcept -> void;
-    auto reset_heartbeat_timer(std::chrono::seconds interval) noexcept -> void;
-    auto reset_init_timer(std::chrono::seconds interval) noexcept -> void;
-    auto reset_request_timer(std::chrono::seconds interval) noexcept -> void;
     auto reset_timer(
         const std::chrono::seconds& interval,
         Timer& timer) noexcept -> void;
@@ -163,7 +154,6 @@ private:
     auto state_sync(const Work work, Message&& msg) noexcept -> void;
     auto transition_state_run() noexcept -> void;
     auto transition_state_sync() noexcept -> void;
-    auto update_activity() noexcept -> void;
     auto update_queue_position() noexcept -> void;
     auto update_queue_position(const network::p2p::Data& data) noexcept -> void;
     auto update_remote_position(const Message& msg) noexcept -> void;

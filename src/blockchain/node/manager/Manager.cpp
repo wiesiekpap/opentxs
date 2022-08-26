@@ -344,11 +344,11 @@ Base::Base(
     }())
     , p2p_requestor_([&] {
         if (config_.use_sync_server_) {
-
+            tdiag("RRRR with endpoint");
             return std::make_unique<p2p::Requestor>(
                 api_, chain_, requestor_endpoint_);
         } else {
-
+            tdiag("RRRR without endpoint");
             return std::unique_ptr<p2p::Requestor>{};
         }
     }())

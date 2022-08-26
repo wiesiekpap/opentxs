@@ -113,8 +113,8 @@ class PerformanceTimer
 {
 public:
     struct Times {
-        std::int64_t min_us_ = 0xffffffffffffffff;
-        std::int64_t max_us_ = 0;
+        std::int64_t min_us_ = 0x7fffffffffffffff;
+        std::int64_t max_us_ = 0x8000000000000000;
         std::int64_t total_us_ = 0;
         std::uint32_t ct_in_ = 0;
         std::uint32_t ct_out_ = 0;

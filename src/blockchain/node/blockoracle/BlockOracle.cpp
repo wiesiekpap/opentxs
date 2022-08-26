@@ -181,7 +181,9 @@ auto BlockOracle::Imp::GetBlockBatch(boost::shared_ptr<Imp> me) const noexcept
     -> BlockBatch
 {
     auto alloc = alloc::PMR<BlockBatch::Imp>{get_allocator()};
+    tdiag("GetBlockBatch before cache");
     auto [id, hashes] = cache_.lock()->GetBatch(alloc);
+    tdiag("GetBlockBatch after cache");
     const auto batchID{id};  // TODO c++20 lambda capture structured binding
     auto* imp = alloc.allocate(1);
     alloc.construct(
@@ -216,7 +218,9 @@ auto BlockOracle::Imp::Heartbeat() const noexcept -> void
 auto BlockOracle::Imp::LoadBitcoin(const block::Hash& block) const noexcept
     -> BitcoinBlockResult
 {
+    tdiag("LoadBitcoinH before cache");
     auto output = cache_.lock()->Request(block);
+    tdiag("LoadBitcoinH after cache");
     trigger();
 
     return output;
@@ -225,7 +229,9 @@ auto BlockOracle::Imp::LoadBitcoin(const block::Hash& block) const noexcept
 auto BlockOracle::Imp::LoadBitcoin(
     const Vector<block::Hash>& hashes) const noexcept -> BitcoinBlockResults
 {
+    tdiag("LoadBitcoinV before cache");
     auto output = cache_.lock()->Request(hashes);
+    tdiag("LoadBitcoinV after cache");
     trigger();
 
     OT_ASSERT(hashes.size() == output.size());
@@ -247,7 +253,9 @@ auto BlockOracle::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
             shutdown_actor();
         } break;
         case Work::request_blocks: {
+            tdiag("request_blocks before cache");
             cache_.lock()->ProcessBlockRequests(std::move(msg));
+            tdiag("request_blocks before cache");
         } break;
         case Work::process_block: {
             const auto body = msg.Body();
@@ -258,7 +266,9 @@ auto BlockOracle::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
                 OT_FAIL;
             }
 
+            tdiag("process_block before cache");
             cache_.lock()->ReceiveBlock(body.at(1));
+            tdiag("process_block after cache");
             do_work();
         } break;
         case Work::start_downloader: {
@@ -294,7 +304,10 @@ auto BlockOracle::Imp::SubmitBlock(const ReadView in) const noexcept -> void
 
 auto BlockOracle::Imp::work() noexcept -> int
 {
-    return cache_.lock()->StateMachine();
+    tdiag("work before cache");
+    auto milliseconds_to_return = cache_.lock()->StateMachine();
+    tdiag("work after cache");
+    return milliseconds_to_return;
 }
 
 BlockOracle::Imp::~Imp() = default;

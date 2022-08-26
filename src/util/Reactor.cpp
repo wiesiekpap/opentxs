@@ -26,9 +26,8 @@ auto Reactor::post_at(
     network::zeromq::Message&& in,
     std::chrono::time_point<std::chrono::system_clock> t_at) -> bool
 {
-    if (!active_) { return false; }
     std::unique_lock<std::mutex> lck(mtx_queue_state);
-    if (!scheduler_queue_.empty()) { return false; }
+    if (scheduler_queue_.size() > 2) { return false; }
     if (!active_) { return false; }
     scheduler_queue_.push(
         Timed<network::zeromq::Message, std::chrono::system_clock>{

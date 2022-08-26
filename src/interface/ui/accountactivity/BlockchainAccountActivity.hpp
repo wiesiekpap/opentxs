@@ -258,6 +258,7 @@ private:
     UnallocatedVector<blockchain::block::pTxid>::const_iterator eload_;
     bool load_in_progress_;
     mutable std::mutex load_lock_;
+    mutable std::mutex active_lock_;
 
     static auto print(Work type) noexcept -> const char*;
 
@@ -268,6 +269,11 @@ private:
     // startup.
     auto load_thread() noexcept -> void;
     auto load_thread_portion() noexcept -> bool;
+    auto load_thread_portion_p() noexcept -> bool;
+    auto load_portion(
+        UnallocatedVector<blockchain::block::pTxid>::const_iterator ibeg,
+        UnallocatedVector<blockchain::block::pTxid>::const_iterator
+            iend) noexcept -> unsigned;
 
     auto process_balance(const Message& in) noexcept -> void;
     auto process_block(const Message& in) noexcept -> void;
