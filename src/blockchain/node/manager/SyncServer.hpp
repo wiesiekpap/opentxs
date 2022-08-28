@@ -24,6 +24,7 @@
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
+#include "util/tuning.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -158,5 +159,4 @@ private:
     auto queue_processing(DownloadedData&& data) noexcept -> void;
     auto zmq_thread() noexcept -> void;
 };
-
 }  // namespace opentxs::blockchain::node::base

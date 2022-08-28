@@ -269,6 +269,7 @@ auto PeerManager::GetVerifiedPeerCount() const noexcept -> std::size_t
 
 auto PeerManager::init() noexcept -> void
 {
+    allow_command_processing();
     init_promise_.set_value();
     trigger();
 }

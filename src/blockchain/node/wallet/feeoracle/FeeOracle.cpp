@@ -73,6 +73,7 @@ FeeOracle::Imp::Imp(
     pipeline_.BindSubscriber(endpoint);
     reset_timer();
     start();
+    allow_command_processing();
 }
 
 auto FeeOracle::Imp::EstimatedFee() const noexcept -> std::optional<Amount>

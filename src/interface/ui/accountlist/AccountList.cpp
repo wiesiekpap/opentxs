@@ -368,6 +368,7 @@ auto AccountList::startup() noexcept -> void
     load_blockchain();
     load_custodial();
     finish_startup();
+    allow_command_processing();
     trigger();
 }
 

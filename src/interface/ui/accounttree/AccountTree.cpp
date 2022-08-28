@@ -543,6 +543,7 @@ auto AccountTree::process_custodial(Message&& message) noexcept -> void
 
 auto AccountTree::startup() noexcept -> void
 {
+    allow_command_processing();
     load();
     finish_startup();
     trigger();

@@ -130,8 +130,6 @@ Headers::Headers(
     : Message(api, network, bitcoin::Command::headers)
     , payload_(std::move(headers))
 {
-    std::cerr << ThreadMonitor::get_name()
-              << " Headers::Headers with Message(Command::headers)\n";
     init_hash();
 }
 
@@ -142,7 +140,6 @@ Headers::Headers(
     : Message(api, std::move(header))
     , payload_(std::move(headers))
 {
-    std::cerr << ThreadMonitor::get_name() << " Headers::Headers\n";
 }
 
 auto Headers::payload(AllocateOutput out) const noexcept -> bool

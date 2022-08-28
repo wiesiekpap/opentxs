@@ -247,9 +247,6 @@ protected:
         }
 
         dm_known_ = buffer_.back()->position_;
-        std::cerr << ThreadMonitor::get_name()
-                  << " download Manager::update_position to target = "
-                  << dm_known_.first << "\n";
 
         OT_ASSERT(dm_done_.height_ <= dm_known_.height_);
 
@@ -389,13 +386,7 @@ private:
     }
     auto state_machine(const Lock& lock) noexcept -> bool
     {
-        if (caught_up(lock)) {
-            std::cerr << ThreadMonitor::get_name()
-                      << " download Manager::state_machine caught up1 !!!!"
-                      << dm_known_.first << " " << dm_known_.second.asHex()
-                      << "\n";
-            return false;
-        }
+        if (caught_up(lock)) { return false; }
 
         OT_ASSERT(0 < buffer_.size());
 
@@ -465,7 +456,7 @@ private:
         if (caught_up(lock)) {
             std::cerr << ThreadMonitor::get_name()
                       << " download Manager::state_machine caught up2 !!!!"
-                      << dm_known_.first << " " << dm_known_.second.asHex()
+                      << dm_known_.height_ << " " << dm_known_.hash_.asHex()
                       << "\n";
             return false;
         }

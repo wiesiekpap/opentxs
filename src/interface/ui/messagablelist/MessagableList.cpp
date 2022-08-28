@@ -210,6 +210,7 @@ auto MessagableList::process_nym(const Message& message) noexcept -> void
 
 auto MessagableList::startup() noexcept -> void
 {
+    allow_command_processing();
     const auto contacts = Widget::api_.Contacts().ContactList();
     LogDetail()(OT_PRETTY_CLASS())("Loading ")(contacts.size())(" contacts.")
         .Flush();

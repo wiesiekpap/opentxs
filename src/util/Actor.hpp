@@ -134,6 +134,7 @@ protected:
     {
         log_(name_)(" ")(__FUNCTION__)(": initializing").Flush();
         do_startup();
+        allow_command_processing();
     }
 
     // Subclasses use this to trigger off their state machine, typically...
@@ -157,6 +158,7 @@ protected:
         tdiag("obj: ", this);
 
         if (auto previous = running_.exchange(false); previous) {
+            allow_command_processing();
             synchronize([this]() {
                 stop();
                 do_shutdown();

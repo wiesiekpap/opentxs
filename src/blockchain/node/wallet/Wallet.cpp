@@ -90,6 +90,7 @@ Wallet::Wallet(
         UnallocatedCString{shutdown},
     });
     start();
+    allow_command_processing();
 }
 
 auto Wallet::ConstructTransaction(

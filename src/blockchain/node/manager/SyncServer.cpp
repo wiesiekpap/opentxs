@@ -114,6 +114,7 @@ SyncServer::SyncServer(
     , zmq_lock_()
     , zmq_running_(true)
     , zmq_thread_(&SyncServer::zmq_thread, this)
+    , last_job_{}
 {
     init_executor(
         {shutdown,
@@ -167,7 +168,7 @@ auto SyncServer::hello(const Lock&, const block::Position& incoming)
 
     return std::make_tuple(needSync, parent, std::move(state));
 }
-update_tip
+
 auto SyncServer::trigger_state_machine() const noexcept -> void { trigger(); }
 
 auto SyncServer::update_tip(const Position& position, const int&) const noexcept

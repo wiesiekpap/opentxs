@@ -41,6 +41,7 @@ struct Options::Imp::Parser {
     static constexpr auto blockchain_sync_connect_{"blockchain_sync_server"};
     static constexpr auto blockchain_wallet_enable_{"blockchain_wallet"};
     static constexpr auto default_mint_key_bytes_{"mint_key_default_bytes"};
+    static constexpr auto diagnostic_{"diagnostic"};
     static constexpr auto experimental_{"ot_experimental"};
     static constexpr auto home_{"ot_home"};
     static constexpr auto ipv4_connection_mode_{"ipv4_connection_mode"};
@@ -103,6 +104,10 @@ struct Options::Imp::Parser {
                 default_mint_key_bytes_,
                 po::value<std::size_t>(),
                 "Default key size for blinded mints");
+            out.add_options()(
+                diagnostic_,
+                po::value<UnallocatedCString>(),
+                "Development use only");
             out.add_options()(
                 home_,
                 po::value<UnallocatedCString>(),
@@ -208,6 +213,7 @@ Options::Imp::Imp() noexcept
     , blockchain_sync_servers_()
     , blockchain_wallet_enabled_(std::nullopt)
     , default_mint_key_bytes_(std::nullopt)
+    , diagnostic_{"on"}
     , experimental_(std::nullopt)
     , home_(std::nullopt)
     , log_endpoint_(std::nullopt)
@@ -316,6 +322,8 @@ auto Options::Imp::import_value(
             blockchain_wallet_enabled_ = to_bool(value);
         } else if (0 == key.compare(Parser::default_mint_key_bytes_)) {
             default_mint_key_bytes_ = std::stoull(sValue);
+        } else if (0 == key.compare(Parser::diagnostic_)) {
+            diagnostic_ = sValue;
         } else if (0 == key.compare(Parser::experimental_)) {
             experimental_ = to_bool(value);
         } else if (0 == key.compare(Parser::home_)) {
@@ -448,6 +456,11 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
         } else if (name == Parser::default_mint_key_bytes_) {
             try {
                 default_mint_key_bytes_ = value.as<std::size_t>();
+            } catch (...) {
+            }
+        } else if (name == Parser::diagnostic_) {
+            try {
+                diagnostic_ = value.as<UnallocatedCString>();
             } catch (...) {
             }
         } else if (name == Parser::home_) {
@@ -624,6 +637,8 @@ auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options
     if (const auto& v = r.default_mint_key_bytes_; v.has_value()) {
         l.default_mint_key_bytes_ = v.value();
     }
+
+    if (!r.diagnostic_.empty()) { l.diagnostic_ = r.diagnostic_; }
 
     if (const auto& v = r.experimental_; v.has_value()) {
         l.experimental_ = v.value();
@@ -819,6 +834,11 @@ auto Options::DisabledBlockchains() const noexcept
     -> const Set<blockchain::Type>&
 {
     return imp_->blockchain_disabled_chains_;
+}
+
+auto Options::Diagnostic() const noexcept -> const CString&
+{
+    return imp_->diagnostic_;
 }
 
 auto Options::Experimental() const noexcept -> bool

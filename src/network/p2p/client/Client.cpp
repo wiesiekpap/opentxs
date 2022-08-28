@@ -257,10 +257,9 @@ Client::Imp::Imp(
               {wallet_.ID(),
                &wallet_,
                [this](auto&& m) { post(std::move(m), Wallet_IDX); }},
-               }},
           },
           batch_.thread_name_))
-      , diag_{0}
+    , diag_{0}
 {
     OT_ASSERT(nullptr != thread_);
 

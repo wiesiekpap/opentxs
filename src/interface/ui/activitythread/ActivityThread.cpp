@@ -857,6 +857,7 @@ auto ActivityThread::set_participants() noexcept -> void
 
 auto ActivityThread::startup() noexcept -> void
 {
+    allow_command_processing();
     auto thread = proto::StorageThread{};
     auto loaded =
         Widget::api_.Activity().Thread(primary_id_, threadID_, thread);

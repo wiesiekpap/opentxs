@@ -211,6 +211,7 @@ auto FeeSource::Imp::reset_timer() noexcept -> void
 
 auto FeeSource::Imp::startup() noexcept -> void
 {
+    allow_command_processing();
     query();
     reset_timer();
 }

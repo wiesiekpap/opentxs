@@ -70,10 +70,7 @@ auto PeerManager::Jobs::Dispatch(const PeerManagerJobs type) noexcept -> void
 
 auto PeerManager::Jobs::Dispatch(zmq::Message&& work) -> void
 {
-    if (closed_) {
-        std::cerr << ThreadMonitor::get_name() << " Jobs::closed_!!!\n";
-        return;
-    }
+    if (closed_) { return; }
     const auto body = work.Body();
 
     OT_ASSERT(0 < body.size());
@@ -115,7 +112,6 @@ auto PeerManager::Jobs::listen(
 
 auto PeerManager::Jobs::Shutdown() noexcept -> void
 {
-    std::cerr << ThreadMonitor::get_name() << "Jobs::Shutdown\n";
     closed_ = true;
     for (auto [type, socket] : socket_map_) { socket->Close(); }
 }

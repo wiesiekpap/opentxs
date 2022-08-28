@@ -89,7 +89,7 @@ BlockIndexer::Imp::Imp(
           api,
           LogTrace(),
           [&] {
-              auto out = CString{print(chain), alloc};
+              auto out = std::string{print(chain)};
               out.append(" filter oracle block indexer");
 
               return out;
@@ -113,11 +113,10 @@ BlockIndexer::Imp::Imp(
     , filter_type_(type)
     , notify_(std::move(notify))
     , state_(State::normal)
-    , previous_header_()
-    , current_header_()
-    , best_position_(block::Position{})
-    , current_position_(block::Position{})
-    , last_job_{}
+    , previous_header_{}
+    , current_header_{}
+    , best_position_{}
+    , current_position_{}
 {
 }
 
@@ -295,16 +294,15 @@ auto BlockIndexer::Imp::pipeline(
     const BlockIndexerJob work,
     network::zeromq::Message&& msg) noexcept -> void
 {
-    last_job_ = work;
     switch (state_) {
         case State::normal: {
             state_normal(work, std::move(msg));
         } break;
-    case State::shutdown: {
-        shutdown_actor();
+        case State::shutdown: {
+            shutdown_actor();
         } break;
-    default: {
-        OT_FAIL;
+        default: {
+            OT_FAIL;
         }
     }
 }
@@ -362,7 +360,7 @@ auto BlockIndexer::Imp::process_reorg(block::Position&& commonParent) noexcept
 
 auto BlockIndexer::Imp::Reindex() noexcept -> void
 {
-    pipeline_.Push(MakeWork(Work::reindex));
+    pipeline_.Push(MakeWork(BlockIndexerJob::reindex));
 }
 
 auto BlockIndexer::Imp::reset(block::Position&& to) noexcept -> void
@@ -373,41 +371,33 @@ auto BlockIndexer::Imp::reset(block::Position&& to) noexcept -> void
     find_best_position(std::move(to));
 }
 
-auto BlockIndexer::Imp::Shutdown() noexcept -> void
-{
-    // WARNING this function must never be called from with this class's
-    // Actor::worker function or else a deadlock will occur. Shutdown must only
-    // be called by a different Actor.
-    auto lock = std::unique_lock<std::timed_mutex>{reorg_lock_};
-    transition_state_shutdown();
-}
-
-auto BlockIndexer::Imp::state_normal(const Work work, Message&& msg) noexcept
-    -> void
+auto BlockIndexer::Imp::state_normal(
+    const BlockIndexerJob work,
+    Message&& msg) noexcept -> void
 {
     switch (work) {
-        case Work::shutdown: {
+        case BlockIndexerJob::shutdown: {
             shutdown_actor();
         } break;
-        case Work::header: {
+        case BlockIndexerJob::header: {
             // NOTE no action necessary
         } break;
-        case Work::reorg: {
+        case BlockIndexerJob::reorg: {
             process_reorg(std::move(msg));
             do_work();
         } break;
-        case Work::reindex: {
+        case BlockIndexerJob::reindex: {
             process_reindex(std::move(msg));
             do_work();
         } break;
-        case Work::full_block: {
+        case BlockIndexerJob::full_block: {
             process_block(std::move(msg));
             do_work();
         } break;
-        case Work::init: {
+        case BlockIndexerJob::init: {
             do_init();
         } break;
-        case Work::statemachine: {
+        case BlockIndexerJob::statemachine: {
             do_work();
         } break;
         default: {
@@ -455,11 +445,10 @@ auto BlockIndexer::Imp::work() noexcept -> int
 {
     if (current_position_ == best_position_) { return -1; }
 
-    return calculate_next_block() ? SM_BlockIndexer_fast
-                                  : SM_BlockIndexer_slow;
+    return calculate_next_block() ? SM_BlockIndexer_fast : SM_BlockIndexer_slow;
 }
 
-BlockIndexer::Imp::~Imp() = default;
+BlockIndexer::Imp::~Imp() { signal_shutdown(); }
 }  // namespace opentxs::blockchain::node::filteroracle
 
 namespace opentxs::blockchain::node::filteroracle
@@ -500,13 +489,12 @@ auto BlockIndexer::Reindex() noexcept -> void { imp_->Reindex(); }
 
 auto BlockIndexer::Start() noexcept -> void { imp_->Init(imp_); }
 
-BlockIndexer::~BlockIndexer() { imp_->Shutdown(); }
-}  // namespace opentxs::blockchain::node::filteroracle
+BlockIndexer::~BlockIndexer() {}
 
-auto FilterOracle::BlockIndexer::last_job_str() const noexcept -> std::string
+auto BlockIndexer::Imp::to_str(BlockIndexerJob job) const noexcept
+    -> std::string
 {
-    return FilterOracle::to_str(last_job_);
+    return std::string(print(job));
 }
 
-}  // namespace opentxs::blockchain::node::implementation
-
+}  // namespace opentxs::blockchain::node::filteroracle

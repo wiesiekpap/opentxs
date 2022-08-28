@@ -28,8 +28,8 @@
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "util/Thread.hpp"
 #include "util/Reactor.hpp"
+#include "util/Thread.hpp"
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -153,6 +153,7 @@ protected:
     {
         bool can_do = running_.exchange(false);
         if (can_do) {
+            allow_command_processing();
             synchronize([this, funct]() {
                 stop();
                 funct();

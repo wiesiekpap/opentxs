@@ -75,10 +75,8 @@ class Thread final : public zeromq::internal::Thread
 {
 public:
     // Add any number of socket-callback pairs.
-    auto Add(
-        BatchID id,
-        StartArgs&& args,
-        std::string_view threadName) noexcept -> bool;
+    auto Add(BatchID id, StartArgs&& args, std::string_view threadName) noexcept
+        -> bool;
     auto Alloc() noexcept -> alloc::Resource* final { return &alloc_; }
     auto ID() const noexcept -> std::thread::id final
     {

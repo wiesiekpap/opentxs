@@ -222,7 +222,7 @@ auto BlockchainAccountActivity::load_thread() noexcept -> void
             try {
                 auto& chain =
                     Widget::api_.Network().Blockchain().GetChain(chain_);
-                height_ = chain.HeaderOracle().BestChain().first;
+                height_ = chain.HeaderOracle().BestChain().height_;
 
                 return chain.Internal().GetTransactions(primary_id_);
             } catch (...) {
@@ -303,7 +303,7 @@ auto BlockchainAccountActivity::load_thread_portion_p() noexcept -> bool
     using namespace std::chrono;
     std::unique_lock<std::mutex> L(load_lock_);
 
-    constexpr const unsigned threadcount = 3;
+    constexpr const unsigned threadcount = 4;
     constexpr const unsigned stride = 50;
 
     PTimer<Diag>::start(Diag::portion_p);
@@ -344,11 +344,13 @@ auto BlockchainAccountActivity::load_thread_portion_p() noexcept -> bool
         for (auto i = Diag::load_thread; i != Diag::end;
              i = static_cast<Diag>(static_cast<int>(i) + 1)) {
             auto t = PTimer<Diag>::gett(i);
-            if (t.ct_in_) {
+            if (t.ct_out_ > 1) {
                 tdiag(
                     to_string(i) + " avg: " + std::to_string(t.avg_us()) +
                     "us, min: " + std::to_string(t.min_us_) +
                     "us, max: " + std::to_string(t.max_us_));
+            } else if (t.ct_out_ == 1) {
+                tdiag(to_string(i) + " avg: " + std::to_string(t.avg_us()));
             }
         }
         PTimer<Diag>::clear();
@@ -441,7 +443,7 @@ auto BlockchainAccountActivity::pipeline(Message&& in) noexcept -> void
 auto BlockchainAccountActivity::state_machine() noexcept -> int
 {
 
-    return load_thread_portion() ? SM_BlockchainAccountActivity_fast : SM_off;
+    return load_thread_portion_p() ? SM_BlockchainAccountActivity_fast : SM_off;
 }
 
 auto BlockchainAccountActivity::shut_down() noexcept -> void

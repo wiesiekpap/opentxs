@@ -29,6 +29,8 @@ void Scheduler::Start(const api::session::Storage* const storage)
 {
     OT_ASSERT(nullptr != storage);
 
+    // TODO resolve issues
+    /*
     const auto now = std::chrono::seconds(std::time(nullptr));
 
     Schedule(
@@ -102,7 +104,7 @@ void Scheduler::Start(const api::session::Storage* const storage)
             storage->MapUnitDefinitions(unitLambda);
         },
         (now - std::chrono::seconds(unit_refresh_interval_) / 2));
-
+    */
     periodic_ = std::thread(&Scheduler::thread, this);
 }
 

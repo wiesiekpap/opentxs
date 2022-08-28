@@ -44,6 +44,8 @@ auto adjustThreadName(
             .Flush();
     }
 
+    return {};
+
     int diff = static_cast<int>(threadName.size() + appender.size()) -
                MAX_THREAD_NAME_SIZE;
     std::string name{threadName};

@@ -51,6 +51,7 @@
 #include "opentxs/util/PasswordCallback.hpp"
 #include "opentxs/util/PasswordCaller.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/threadutil.hpp"
 
 namespace opentxs::factory
 {
@@ -195,6 +196,14 @@ auto Context::Init() noexcept -> void
     Init_Rlimit();
     Init_CoreDump();
     Init_Zap();
+
+    // TODO WP
+    auto diag = args_.Diagnostic();
+    if (diag == "off") {
+        ThreadDisplay::enable(ThreadDisplay::Tdiag::off);
+    } else if (diag == "selective") {
+        ThreadDisplay::enable(ThreadDisplay::Tdiag::selective);
+    }
 }
 
 auto Context::Init_Asio() -> void

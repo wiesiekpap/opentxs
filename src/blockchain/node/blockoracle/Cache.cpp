@@ -381,9 +381,6 @@ auto Cache::Request(const Vector<block::Hash>& hashes) noexcept
         }
 
         if (auto pBlock = db_.BlockLoadBitcoin(block); bool(pBlock)) {
-            std::cerr
-                << ThreadMonitor::get_name()
-                << " QQQ Cache::Request about to push prefulfilled future\n";
             // TODO this should be checked in the block factory function
             OT_ASSERT(pBlock->ID() == block);
 
@@ -455,7 +452,6 @@ auto Cache::Request(const Vector<block::Hash>& hashes) noexcept
 auto Cache::Shutdown() noexcept -> void
 {
     if (running_) {
-        std::cerr << ThreadMonitor::get_name() << " Cache::Shutdown\n";
         running_ = false;
         mem_.clear();
 

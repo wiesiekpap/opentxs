@@ -457,6 +457,7 @@ auto BlockchainAccountStatus::process_reorg(const Message& in) noexcept -> void
 
 auto BlockchainAccountStatus::startup() noexcept -> void
 {
+    allow_command_processing();
     load();
     finish_startup();
     trigger();

@@ -1331,7 +1331,8 @@ Regtest_fixture_sync::Regtest_fixture_sync()
         alex_.init(client_1_);
 
         OT_ASSERT(
-            alex.payment_code_ == GetPaymentCodeVector3().alice_.payment_code_);
+            alex_.payment_code_ ==
+            GetPaymentCodeVector3().alice_.payment_code_);
 
         init_ = true;
     }
@@ -2531,7 +2532,9 @@ std::optional<ot::OTUnitDefinition> Regtest_fixture_sync::unit_{std::nullopt};
 std::unique_ptr<SyncSubscriber> Regtest_fixture_sync::sync_subscriber_{};
 std::unique_ptr<SyncRequestor> Regtest_fixture_sync::sync_requestor_{};
 Server Regtest_payment_code::server_1_{};
-User Regtest_payment_code::alice_{GetPaymentCodeVector3().alice_.words_, "Alice"};
+User Regtest_payment_code::alice_{
+    GetPaymentCodeVector3().alice_.words_,
+    "Alice"};
 User Regtest_payment_code::bob_{GetPaymentCodeVector3().bob_.words_, "Bob"};
 TXOs Regtest_payment_code::txos_alice_{alice_};
 TXOs Regtest_payment_code::txos_bob_{bob_};

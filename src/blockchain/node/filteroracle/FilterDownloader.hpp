@@ -23,6 +23,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -51,6 +52,8 @@ public:
         const cfilter::Type type,
         const UnallocatedCString& shutdown,
         const filteroracle::NotifyCallback& notify) noexcept;
+
+    ~FilterDownloader() final;
 
 protected:
     auto pipeline(zmq::Message&& in) -> void final;

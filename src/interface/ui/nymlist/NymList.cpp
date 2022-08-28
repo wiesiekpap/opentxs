@@ -187,6 +187,7 @@ auto NymList::process_nym_changed(Message&& in) noexcept -> void
 
 auto NymList::startup() noexcept -> void
 {
+    allow_command_processing();
     load();
     finish_startup();
     trigger();
