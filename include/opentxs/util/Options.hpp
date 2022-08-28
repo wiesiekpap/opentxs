@@ -34,6 +34,7 @@ public:
     auto BlockchainWalletEnabled() const noexcept -> bool;
     auto DefaultMintKeyBytes() const noexcept -> std::size_t;
     auto DisabledBlockchains() const noexcept -> const Set<blockchain::Type>&;
+    auto Diagnostic() const noexcept -> const CString&;
     auto Experimental() const noexcept -> bool;
     auto HelpText() const noexcept -> std::string_view;
     auto Home() const noexcept -> std::string_view;

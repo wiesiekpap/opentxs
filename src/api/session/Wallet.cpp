@@ -111,8 +111,8 @@
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/Exclusive.tpp"
-#include "util/Thread.hpp"
 #include "util/Reactor.hpp"
+#include "util/Thread.hpp"
 
 template class opentxs::Exclusive<opentxs::Account>;
 template class opentxs::Shared<opentxs::Account>;

@@ -441,6 +441,7 @@ auto CustodialAccountActivity::pipeline(Message&& in) noexcept -> void
             tdiag("processing init msg");
             startup();
             finish_startup();
+            allow_command_processing();
         } break;
         case Work::statemachine: {
             do_work();

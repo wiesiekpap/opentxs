@@ -26,6 +26,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::blockoracle
 {
@@ -62,6 +63,7 @@ BlockDownloader::BlockDownloader(
         api_.Endpoints().Internal().BlockchainBlockUpdated(chain_).data());
 
     start();
+    allow_command_processing();
 
     OT_ASSERT(zmq);
 }
@@ -164,7 +166,8 @@ auto BlockDownloader::pipeline(network::zeromq::Message&& in) -> void
 auto BlockDownloader::state_machine() noexcept -> int
 {
     tdiag("BlockDownloader::state_machine");
-    return BlockDMBlock::state_machine() ? 20 : 400;
+    return BlockDMBlock::state_machine() ? SM_BlockDownloader_fast
+                                         : SM_BlockDownloader_slow;
 }
 
 auto BlockDownloader::last_job_str() const noexcept -> std::string

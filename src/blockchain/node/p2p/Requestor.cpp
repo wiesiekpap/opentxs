@@ -162,7 +162,10 @@ auto Requestor::Imp::do_common() noexcept -> void
 
 auto Requestor::Imp::do_run() noexcept -> void { do_common(); }
 
-auto Requestor::Imp::do_shutdown() noexcept -> void {}
+auto Requestor::Imp::do_shutdown() noexcept -> void
+{
+    state_ = State::quitting;
+}
 
 auto Requestor::Imp::do_startup() noexcept -> void
 {
@@ -269,6 +272,10 @@ auto Requestor::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
         case State::run: {
             state_run(work, std::move(msg));
         } break;
+        case State::quitting: {
+            // ignore.
+            break;
+        }
         default: {
             OT_FAIL;
         }
@@ -366,23 +373,6 @@ auto Requestor::Imp::request(const block::Position& position) noexcept -> void
         return msg;
     }());
     last_request_ = Clock::now();
-}
-
-auto Requestor::Imp::reset_timer(
-    const std::chrono::seconds& interval,
-    Timer& timer) noexcept -> void
-{
-    timer.SetRelative(interval);
-    timer.Wait([this](const auto& ec) {
-        if (ec) {
-            if (boost::system::errc::operation_canceled != ec.value()) {
-                LogError()(OT_PRETTY_CLASS())(ec).Flush();
-            }
-        } else {
-            tdiag("Requestor::Imp::reset_timer StateMachine");
-            pipeline_.Push(MakeWork(Work::StateMachine));
-        }
-    });
 }
 
 auto Requestor::Imp::state_init(const Work work, Message&& msg) noexcept -> void
@@ -582,25 +572,26 @@ auto Requestor::Imp::work() noexcept -> int
                                 : "run");
     switch (state_) {
         case State::init: {
-        } break;
+            return SM_Requestor_fast;
+        }
         case State::sync: {
             do_sync();
-        } break;
+            return SM_Requestor_fast;
+        }
         case State::run: {
             do_run();
-        } break;
+            return SM_Requestor_fast;
+        }
+        case State::quitting: {
+            return SM_off;
+        }
         default: {
             OT_FAIL;
         }
     }
-
-    return SM_Requestor_fast;
 }
 
-Requestor::Imp::~Imp()
-{
-    signal_shutdown();
-}
+Requestor::Imp::~Imp() { signal_shutdown(); }
 }  // namespace opentxs::blockchain::node::p2p
 
 namespace opentxs::blockchain::node::p2p

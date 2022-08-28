@@ -69,7 +69,7 @@ public:
 
     Imp(const boost::shared_ptr<const SubchainStateData>& parent,
         const network::zeromq::BatchID batch,
-        allocator_type alloc) noexcept;noexcept
+        allocator_type alloc) noexcept;
     Imp() = delete;
     Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;

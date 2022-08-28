@@ -34,7 +34,7 @@ constexpr static const int SM_off = -1;
 
 // BlockOracle (Cache)
 constexpr static const int SM_Cache_fast = 500;
-constexpr static const int SM_Cache_slow = 1000;
+constexpr static const int SM_Cache_slow = 6200;
 
 // NotificationStateData
 constexpr static const int SM_NotificationStateData_fast = 5;
@@ -58,19 +58,19 @@ constexpr static const int SM_ActivityThread_slow = 500;
 
 // BlockDownloader
 constexpr static const int SM_BlockDownloader_fast = 20;
-constexpr static const int SM_BlockDownloader_slow = 400;
+constexpr static const int SM_BlockDownloader_slow = 5600;
 
 // BlockIndexer
 constexpr static const int SM_BlockIndexer_fast = 20;
-constexpr static const int SM_BlockIndexer_slow = 500;
+constexpr static const int SM_BlockIndexer_slow = 5000;
 
 // HeaderDownloader
 constexpr static const int SM_HeaderDownloader_fast = 20;
-constexpr static const int SM_HeaderDownloader_slow = 400;
+constexpr static const int SM_HeaderDownloader_slow = 5400;
 
 // FilterDownloader
 constexpr static const int SM_FilterDownloader_fast = 20;
-constexpr static const int SM_FilterDownloader_slow = 400;
+constexpr static const int SM_FilterDownloader_slow = 5200;
 
 // FeeSource
 constexpr static const int SM_FeeSource_fast = 20;
@@ -81,11 +81,11 @@ constexpr static const int SM_PeerManager_slow = 1000;
 
 // Wallet
 constexpr static const int SM_Wallet_fast = 10;
-constexpr static const int SM_Wallet_slow = 100;
+constexpr static const int SM_Wallet_slow = 1000;
 
 // SyncServer
 constexpr static const int SM_SyncServer_fast = 20;
-constexpr static const int SM_SyncServer_slow = 400;
+constexpr static const int SM_SyncServer_slow = 6000;
 
 // SubchainStateData
 constexpr static const int SM_SubchainStateData_slow = 60000;

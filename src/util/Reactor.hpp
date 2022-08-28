@@ -14,6 +14,9 @@
 // - post_at() to queue a message for scheduled execution,
 // - synchronize() to queue a parameterless lambda for priority execution, wait
 // for the result or for the completion, if the submitted function returns void.
+// - allow_command_processing() must be called to enable synchronized command
+// processing. Actor calls it after handling the init message. Worker leaves
+// calling it to the subclass.
 //
 // Task execution interface
 // ------------------------
@@ -137,6 +140,10 @@ public:
         }
     }
 
+    // Enable processing of synchronized commands.
+    // To be called after the first init message has been handled.
+    auto allow_command_processing() noexcept -> void;
+
     // Add a message to reactor queue.
     // It fails if the reactor has been stopped or it has not yet been started.
     auto post(network::zeromq::Message&& in, unsigned idx = 0) -> bool;
@@ -158,7 +165,7 @@ public:
     // A stopped reactor cannot be started again.
     auto start() -> bool;
 
-    // Open reactor loop for exit.
+    // Terminate reactor loop.
     // It fails if it has been called already.
     // A stopped reactor cannot be started again.
     auto stop() -> bool;
@@ -196,6 +203,7 @@ protected:
 private:
     using Promises = std::queue<std::promise<void>>;
     std::atomic<bool> active_;
+    std::atomic<bool> can_process_commands_;
     Promises deferred_promises_;
     mutable std::mutex mtx_queue_state;
     mutable std::condition_variable cv_queue_state;

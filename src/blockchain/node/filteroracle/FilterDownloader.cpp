@@ -72,6 +72,7 @@ FilterOracle::FilterDownloader::FilterDownloader(
     , chain_(chain)
     , type_(type)
     , notify_(notify)
+    , last_job_{}
 {
     init_executor({shutdown});
     start();

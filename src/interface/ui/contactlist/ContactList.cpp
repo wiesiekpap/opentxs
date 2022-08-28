@@ -249,6 +249,7 @@ auto ContactList::process_contact(const Identifier& contactID) noexcept -> void
 
 auto ContactList::startup() noexcept -> void
 {
+    allow_command_processing();
     const auto contacts = Widget::api_.Contacts().ContactList();
     LogVerbose()(OT_PRETTY_CLASS())("Loading ")(contacts.size())(" contacts.")
         .Flush();

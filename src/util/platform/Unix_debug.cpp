@@ -15,6 +15,7 @@ namespace opentxs
 
 auto SetThisThreadsName(std::string_view threadName) noexcept -> void
 {
+    return;
     if (!threadName.empty()) {
         pthread_setname_np(pthread_self(), threadName.data());
     }

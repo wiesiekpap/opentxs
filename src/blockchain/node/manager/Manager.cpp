@@ -603,6 +603,7 @@ auto Base::GetVerifiedPeerCount() const noexcept -> std::size_t
 
 auto Base::init() noexcept -> void
 {
+    allow_command_processing();
     local_chain_height_.store(header_.BestChain().height_);
 
     {

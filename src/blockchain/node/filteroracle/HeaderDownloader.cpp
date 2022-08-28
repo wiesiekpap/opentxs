@@ -38,7 +38,7 @@ FilterOracle::HeaderDownloader::HeaderDownloader(
           "cfheader",
           20000,
           10000)
-    , HeaderWorker(api, 20ms)
+    , HeaderWorker(api, "Header Downloader")
     , db_(db)
     , header_(header)
     , node_(node)
@@ -46,6 +46,7 @@ FilterOracle::HeaderDownloader::HeaderDownloader(
     , chain_(chain)
     , type_(type)
     , checkpoint_(std::move(cb))
+    , last_job_{}
 {
     init_executor(
         {shutdown, UnallocatedCString{api_.Endpoints().BlockchainReorg()}});

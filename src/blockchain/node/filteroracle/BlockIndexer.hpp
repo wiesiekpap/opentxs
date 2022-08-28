@@ -77,7 +77,6 @@ class BlockIndexer::Imp final : public Actor<BlockIndexerJob>
 public:
     auto Init(boost::shared_ptr<Imp> me) noexcept -> void;
     auto Reindex() noexcept -> void;
-    auto Shutdown() noexcept -> void;
 
     Imp(const api::Session& api,
         const node::Manager& node,
@@ -97,11 +96,11 @@ public:
 
     ~Imp() final;
 
-    auto last_job_str() const noexcept -> std::string final;
-
 protected:
-    auto pipeline(const BlockIndexerJob work, Message&& msg) noexcept -> void final;
-    auto state_machine() noexcept -> int final;
+    auto pipeline(const BlockIndexerJob work, Message&& msg) noexcept
+        -> void final;
+    auto work() noexcept -> int final;
+    auto to_str(BlockIndexerJob) const noexcept -> std::string final;
 
 private:
     enum class State {
@@ -111,8 +110,7 @@ private:
 
     const api::Session& api_;
     const node::Manager& node_;
-    const node::FilterOracle& parent_;    return BlockDMFilter::state_machine() ? SM_BlockIndexer_fast
-                                          : SM_BlockIndexer_slow;
+    const node::FilterOracle& parent_;
 
     database::Cfilter& db_;
     const blockchain::Type chain_;
@@ -123,7 +121,6 @@ private:
     cfilter::Header current_header_;
     block::Position best_position_;
     block::Position current_position_;
-    BlockIndexerJob last_job_;
 
     auto calculate_next_block() noexcept -> bool;
     auto do_shutdown() noexcept -> void final;
@@ -135,13 +132,13 @@ private:
     auto process_reorg(network::zeromq::Message&& in) noexcept -> void;
     auto process_reorg(block::Position&& commonParent) noexcept -> void;
     auto reset(block::Position&& to) noexcept -> void;
-    auto state_normal(const BlockIndexerJob work, network::zeromq::Message&& msg) noexcept
-        -> void;
+    auto state_normal(
+        const BlockIndexerJob work,
+        network::zeromq::Message&& msg) noexcept -> void;
     auto transition_state_shutdown() noexcept -> void;
     auto update_position(
         const block::Position& previousCfheader,
         const block::Position& previousCfilter,
         const block::Position& newTip) noexcept -> void;
-    auto work() noexcept -> bool final;
 };
 }  // namespace opentxs::blockchain::node::filteroracle

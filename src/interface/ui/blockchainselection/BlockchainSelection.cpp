@@ -150,7 +150,8 @@ auto BlockchainSelection::EnabledCount() const noexcept -> std::size_t
     return enabled_count_.load();
 }
 
-auto BlockchainSelection::EnabledChains() const noexcept -> UnallocatedSet<blockchain::Type>
+auto BlockchainSelection::EnabledChains() const noexcept
+    -> UnallocatedSet<blockchain::Type>
 {
     return Widget::api_.Network().Blockchain().EnabledChains();
 }
@@ -299,6 +300,7 @@ auto BlockchainSelection::Set(EnabledCallback&& cb) const noexcept -> void
 
 auto BlockchainSelection::startup() noexcept -> void
 {
+    allow_command_processing();
     const auto& api = Widget::api_.Network().Blockchain().Internal();
 
     for (const auto& chain : filter_) {

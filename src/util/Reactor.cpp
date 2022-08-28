@@ -181,15 +181,24 @@ bool Reactor::stop()
     }();
     notify();
     if (can_join) {
+        // diagnostic
         auto target = ThreadMonitor::get_name(thread_->native_handle());
         auto me = ThreadMonitor::get_name();
-        std::cerr << me << " about to join " << target << "\n";
+        tdiag(me + " about to join " + target + "\n");
+        // -
         thread_->join();
-        std::cerr << me << " joined " << target << "\n";
+        // diagnostic
+        tdiag(me + " joined " + target + "\n");
+        // -
         std::unique_lock<std::mutex> lck(mtx_queue_state);
         thread_.reset();
     }
     return was_active;
+}
+
+auto Reactor::allow_command_processing() noexcept -> void
+{
+    can_process_commands_ = true;
 }
 
 auto Reactor::notify() -> void { cv_queue_state.notify_one(); }
@@ -233,6 +242,7 @@ auto Reactor::process_scheduled(network::zeromq::Message&& in) -> void
 Reactor::Reactor(std::string name, unsigned qcount) noexcept
     : ThreadDisplay()
     , active_{}
+    , can_process_commands_{}
     , deferred_promises_{}
     , mtx_queue_state{}
     , cv_queue_state{}
@@ -305,29 +315,35 @@ int Reactor::reactor_loop_raw()
             }
         }
 
-        auto cmd = dequeue_command();
-        if (!active_) {
-            break;
-        } else if (cmd) {
-            process_command(std::move(cmd));
-            continue;
+        if (can_process_commands_) {
+            auto cmd = dequeue_command();
+            if (!active_) {
+                break;
+            } else if (cmd) {
+                process_command(std::move(cmd));
+                continue;
+            }
         }
 
-        auto sch_msg = dequeue_scheduled_message();
-        if (!active_) {
-            break;
-        } else if (sch_msg.has_value()) {
-            process_scheduled(std::move(sch_msg.value().first));
-            continue;
+        {
+            auto sch_msg = dequeue_scheduled_message();
+            if (!active_) {
+                break;
+            } else if (sch_msg.has_value()) {
+                process_scheduled(std::move(sch_msg.value().first));
+                continue;
+            }
         }
 
-        auto msg_idx = dequeue_message();
-        if (!active_) {
-            break;
-        } else if (msg_idx.has_value()) {
-            auto& [msg, idx] = msg_idx.value();
-            process_message(std::move(msg), idx);
-            continue;
+        {
+            auto msg_idx = dequeue_message();
+            if (!active_) {
+                break;
+            } else if (msg_idx.has_value()) {
+                auto& [msg, idx] = msg_idx.value();
+                process_message(std::move(msg), idx);
+                continue;
+            }
         }
 
         if (!active_) { break; }

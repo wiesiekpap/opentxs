@@ -471,6 +471,7 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
         } break;
         case Task::Init: {
             tdiag("Peer::pipeline Init");
+            allow_command_processing();
             connection_->on_init(std::move(message));
         } break;
         case Task::StateMachine: {

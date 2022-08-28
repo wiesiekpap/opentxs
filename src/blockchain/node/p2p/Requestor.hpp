@@ -103,7 +103,7 @@ protected:
     auto to_str(Work w) const noexcept -> std::string final;
 
 private:
-    enum class State { init, sync, run };
+    enum class State { init, sync, run, quitting };
 
     static constexpr std::size_t limit_{32_MiB};
     static constexpr auto request_timeout_{45s};
@@ -146,9 +146,6 @@ private:
     auto process_sync_reply(Message&& in) noexcept -> void;
     auto register_chain() noexcept -> void;
     auto request(const block::Position& position) noexcept -> void;
-    auto reset_timer(
-        const std::chrono::seconds& interval,
-        Timer& timer) noexcept -> void;
     auto state_init(const Work work, Message&& msg) noexcept -> void;
     auto state_run(const Work work, Message&& msg) noexcept -> void;
     auto state_sync(const Work work, Message&& msg) noexcept -> void;

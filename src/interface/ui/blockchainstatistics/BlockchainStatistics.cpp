@@ -404,6 +404,7 @@ auto BlockchainStatistics::reset_timer() noexcept -> void
 
 auto BlockchainStatistics::startup() noexcept -> void
 {
+    allow_command_processing();
     for (const auto& chain : blockchain_.EnabledChains()) {
         process_chain(chain);
     }

@@ -516,6 +516,7 @@ auto SeedTree::SetCallbacks(Callbacks&& callbacks) noexcept -> void
 
 auto SeedTree::startup() noexcept -> void
 {
+    allow_command_processing();
     load();
     finish_startup();
     trigger();

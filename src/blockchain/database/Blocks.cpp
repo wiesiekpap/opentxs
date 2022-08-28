@@ -78,8 +78,6 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
             return {};
         }
 
-        std::cerr << ThreadMonitor::get_name()
-                  << " Blocks::LoadBitcoin has block\n";
         return api_.Factory().BitcoinBlock(chain_, bytes.get());
     }
 }

@@ -123,7 +123,6 @@ Job::Job(
     , pending_state_(State::normal)
     , state_(State::normal)
     , reorgs_(alloc)
-    , watchdog_(parent_.api_.Network().Asio().Internal().GetTimer())
 {
     OT_ASSERT(parent_p_);
 }
@@ -193,7 +192,8 @@ auto Job::do_process_update(Message&& msg) noexcept -> void
 }
 
 auto Job::do_shutdown() noexcept -> void {}
-auto Job::do_startup() noexcept -> void {}
+
+auto Job::do_startup() noexcept -> void { process_watchdog(); }
 
 auto Job::last_reorg() const noexcept -> std::optional<StateSequence>
 {
@@ -229,8 +229,6 @@ auto Job::pipeline(const Work work, Message&& msg) noexcept -> void
             OT_FAIL;
         }
     }
-
-    process_watchdog();
 }
 
 auto Job::process_block(Message&& in) noexcept -> void
@@ -372,16 +370,12 @@ auto Job::process_update(Message&& msg) noexcept -> void
 
 auto Job::process_watchdog() noexcept -> void
 {
-    auto work = MakeWork(Work::watchdog_ack);
-    work.AddFrame(job_type_);
+    auto msg = MakeWork(Work::watchdog_ack);
+    msg.AddFrame(job_type_);
+    to_parent_.Send(std::move(msg));
 
-    to_parent_.Send(std::move(work));
     using namespace std::literals;
-    watchdog_.Cancel();
-    watchdog_.SetRelative(10s);
-    watchdog_.Wait([this](const auto& ec) {
-        if (!ec) { pipeline_.Push(MakeWork(Work::watchdog)); }
-    });
+    post_at(MakeWork(Work::watchdog), Clock::now() + 10s);
 }
 
 auto Job::state_normal(const Work work, Message&& msg) noexcept -> void
@@ -530,5 +524,5 @@ auto Job::work() noexcept -> int
     return SM_off;
 }
 
-Job::~Job() { watchdog_.Cancel(); }
+Job::~Job() {}
 }  // namespace opentxs::blockchain::node::wallet::statemachine
