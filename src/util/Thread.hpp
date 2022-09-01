@@ -249,7 +249,7 @@ static_assert(
     "name is too long");
 
 constexpr std::string_view blockchainAccountActivityThreadName{
-    "BCAccountActv\0"};
+    "BCAccActv\0"};
 static_assert(
     blockchainAccountActivityThreadName.size() <= MAX_THREAD_NAME_SIZE,
     "name is too long");
@@ -414,6 +414,164 @@ static_assert(
 constexpr std::string_view asioDataThreadName{"AsioData\0"};
 static_assert(
     asioDataThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view actorThreadName{"Actor\0"};
+static_assert(
+    actorThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view feeSourceThreadName{"FeeSource\0"};
+static_assert(
+    feeSourceThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view blockIndexerThreadName{"BlcInxr\0"};
+static_assert(
+    blockIndexerThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view accountActivityThreadName{"AccActv\0"};
+static_assert(
+    accountActivityThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view pipelineThreadName{"Pipeline\0"};
+static_assert(
+    pipelineThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view blockDownloaderThreadName{"BlockDwnldr\0"};
+static_assert(
+    blockDownloaderThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view filterDownloaderThreadName{"FilterDwnldr\0"};
+static_assert(
+    filterDownloaderThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view headerDownloaderThreadName{"HeaderDwnldr\0"};
+static_assert(
+    headerDownloaderThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view baseThreadName{"Base\0"};
+static_assert(
+    baseThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view syncServerThreadName{"SyncServer\0"};
+static_assert(
+    syncServerThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view peerManagerThreadName{"PeerManager\0"};
+static_assert(
+    peerManagerThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view feeOracleThreadName{"FeeOracle\0"};
+static_assert(
+    feeOracleThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view peerThreadName{"Peer\0"};
+static_assert(
+    peerThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view accountListThreadName{"AccountList\0"};
+static_assert(
+    accountListThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view activityThreadThreadName{"ActivityThread\0"};
+static_assert(
+    activityThreadThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view blockchainAccountStatusThreadName{"BlcchnAccSts\0"};
+static_assert(
+    blockchainAccountStatusThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view blockchainSelectionThreadName{"BlcchnSelect\0"};
+static_assert(
+    blockchainSelectionThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view blockchainStatisticsThreadName{"BlcchnStats\0"};
+static_assert(
+    blockchainStatisticsThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view contactListThreadName{"ContactList\0"};
+static_assert(
+    contactListThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view messagableListThreadName{"MessagableList\0"};
+static_assert(
+    messagableListThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view nymListThreadName{"NymList\0"};
+static_assert(
+    nymListThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view payableListThreadName{"PayableList\0"};
+static_assert(
+    payableListThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view seedTreeThreadName{"SeedTree\0"};
+static_assert(
+    seedTreeThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view clientThreadName{"Client\0"};
+static_assert(
+    clientThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view serverThreadName{"Server\0"};
+static_assert(
+    serverThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view serverSktThreadName{"SvrSkt\0"};
+static_assert(
+    serverSktThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view requestorThreadName{"Requestor\0"};
+static_assert(
+    requestorThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view accountThreadName{"Acc\0"};
+static_assert(
+    accountThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view accountsThreadName{"Accounts\0"};
+static_assert(
+    accountsThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view subchainStateDataThreadName{"SubChSD\0"};
+static_assert(
+    subchainStateDataThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view jobThreadName{"Job\0"};
+static_assert(jobThreadName.size() <= MAX_THREAD_NAME_SIZE, "name is too long");
+
+constexpr std::string_view accountTreeThreadName{"AccountTree\0"};
+static_assert(
+    accountTreeThreadName.size() <= MAX_THREAD_NAME_SIZE,
     "name is too long");
 
 }  // namespace opentxs

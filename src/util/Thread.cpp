@@ -42,9 +42,8 @@ auto adjustThreadName(
     if (auto found = appender.find_first_of(' '); found != std::string::npos) {
         LogError()("Thread name appender contains illegal space: " + appender)
             .Flush();
+        appender.erase(remove_if(appender.begin(), appender.end(), isspace), appender.end());
     }
-
-    return {};
 
     int diff = static_cast<int>(threadName.size() + appender.size()) -
                MAX_THREAD_NAME_SIZE;

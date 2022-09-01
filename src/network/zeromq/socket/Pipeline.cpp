@@ -146,7 +146,7 @@ Pipeline::Imp::Imp(
             ListenCallback::Factory(std::move(callback)));
 
         OT_ASSERT(batch.sockets_.size() == total_socket_count_);
-        batch.thread_name_ = adjustThreadName(threadName, "Pipeline");
+        batch.thread_name_ = adjustThreadName(threadName, pipelineThreadName.data());
 
         return batch;
     }())

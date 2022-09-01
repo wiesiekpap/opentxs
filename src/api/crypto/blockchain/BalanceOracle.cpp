@@ -88,7 +88,7 @@ BalanceOracle::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          "balance oracle",
+          balanceOracleThreadName.data(),
           batch,
           alloc,
           {

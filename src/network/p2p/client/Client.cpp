@@ -84,7 +84,7 @@ namespace opentxs::network::p2p
 Client::Imp::Imp(
     const api::Session& api,
     zeromq::internal::Handle&& handle) noexcept
-    : Reactor("Client", end_IDX)
+    : Reactor(clientThreadName.data(), end_IDX)
     , api_(api)
     , endpoint_(zeromq::MakeArbitraryInproc())
     , monitor_endpoint_(zeromq::MakeArbitraryInproc())

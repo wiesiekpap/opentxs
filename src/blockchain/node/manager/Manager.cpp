@@ -248,7 +248,7 @@ Base::Base(
     const node::internal::Config& config,
     const UnallocatedCString& seednode,
     const UnallocatedCString& syncEndpoint) noexcept
-    : Worker(api, "Base")
+    : Worker(api, baseThreadName.data())
     , chain_(type)
     , filter_type_([&] {
         if (config.generate_cfilters_ || config.use_sync_server_) {

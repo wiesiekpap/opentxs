@@ -58,8 +58,8 @@ Router::Router(
           socket::Type::Router,
           direction,
           false,
-          adjustThreadName(threadName, "Router"))
-    , Bidirectional(context, true, adjustThreadName(threadName, "Router"))
+          adjustThreadName(threadName, routerThreadName.data()))
+    , Bidirectional(context, true, adjustThreadName(threadName, routerThreadName.data()))
     , Client(this->get())
     , Server(this->get())
     , callback_(callback)

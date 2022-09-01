@@ -53,7 +53,7 @@ Peer::Peer(
     const std::size_t headerSize,
     const std::size_t bodySize,
     std::unique_ptr<internal::Address> address) noexcept
-    : Worker(api, "Peer")
+    : Worker(api, peerThreadName.data())
     , network_(network)
     , filter_(filter)
     , block_(block)
