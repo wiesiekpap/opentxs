@@ -62,7 +62,7 @@ NymList::NymList(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     : NymListList(api, api.Factory().Identifier(), cb, false)
-    , Worker(api, "NymList")
+    , Worker(api, nymListThreadName.data())
     , last_job_{}
 {
     init_executor({

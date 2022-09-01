@@ -52,8 +52,8 @@ Subscribe::Subscribe(
           socket::Type::Subscribe,
           Direction::Connect,
           true,
-          threadName.empty() ? "Subscribe"
-                             : adjustThreadName(threadName, "Subscribe"))
+          threadName.empty() ? subscribeThreadName.data()
+                             : adjustThreadName(threadName, subscribeThreadName.data()))
     , Client(this->get())
     , callback_(callback)
 {

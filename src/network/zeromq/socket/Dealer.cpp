@@ -58,8 +58,8 @@ Dealer::Dealer(
           socket::Type::Dealer,
           direction,
           false,
-          adjustThreadName(threadName, "Dealer"))
-    , Bidirectional(context, true, adjustThreadName(threadName, "Dealer"))
+          adjustThreadName(threadName, dealerThreadName.data()))
+    , Bidirectional(context, true, adjustThreadName(threadName, dealerThreadName.data()))
     , Client(this->get())
     , callback_(callback)
 {

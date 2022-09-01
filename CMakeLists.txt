@@ -620,8 +620,8 @@ else()
   add_compile_definitions(
     "OPENTXS_EXPORT=__attribute__((visibility(\"default\")))"
   )
-# TODO remove the following definition when conditional compilation has been
-#      removed from Posix.cpp
+  # TODO remove the following definition when conditional compilation has been
+  # removed from Posix.cpp
   if(UNIX)
     add_definitions(-D_DEBUG)
   endif()
@@ -637,7 +637,7 @@ else()
   add_definitions(-DOT_VALGRIND=0)
 endif()
 
-if (DEFINED ENV{USE_TDIAG})
+if(DEFINED ENV{USE_TDIAG})
   add_definitions(-DTDIAG)
 endif()
 

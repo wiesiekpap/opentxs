@@ -40,6 +40,7 @@
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/P2PBlockchainChainState.pb.h"
+#include "util/Thread.hpp"
 #include "util/Work.hpp"
 #include "util/tuning.hpp"
 
@@ -54,7 +55,9 @@ Requestor::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          std::string(print(chain)) + " p2p requestor",
+          requestorThreadName.data(),
+          // Do we want to add chain here too?std::string(print(chain)) + " p2p
+          // requestor",
           batch,
           alloc,
           {

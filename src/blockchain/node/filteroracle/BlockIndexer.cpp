@@ -88,12 +88,7 @@ BlockIndexer::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          [&] {
-              auto out = std::string{print(chain)};
-              out.append(" filter oracle block indexer");
-
-              return out;
-          }(),
+          adjustThreadName(blockIndexerThreadName.data(), std::string(print(chain))),
           batch,
           alloc,
           {

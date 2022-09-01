@@ -82,8 +82,8 @@ Pair::Pair(
           socket::Type::Pair,
           direction,
           startThread,
-          adjustThreadName(threadName, "Pair"))
-    , Bidirectional(context, true, adjustThreadName(threadName, "Pair"))
+          adjustThreadName(threadName, pairThreadName.data()))
+    , Bidirectional(context, true, adjustThreadName(threadName, pairThreadName.data()))
     , callback_(callback)
     , endpoint_(endpoint)
 {

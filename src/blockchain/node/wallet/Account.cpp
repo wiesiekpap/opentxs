@@ -44,6 +44,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/Thread.hpp"
 #include "util/tuning.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -90,7 +91,8 @@ Account::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          std::string(print(chain)) + " account for " + account.NymID().str(),
+          adjustThreadName(accountThreadName.data(), std::string(print(chain)) +
+                                                         account.NymID().str()),
           batch,
           alloc,
           {

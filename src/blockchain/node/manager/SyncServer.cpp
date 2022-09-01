@@ -101,7 +101,7 @@ SyncServer::SyncServer(
           "sync server",
           2000,
           1000)
-    , SyncWorker(api, "SyncServer")
+    , SyncWorker(api, syncServerThreadName.data())
     , db_(db)
     , header_(header)
     , filter_(filter)

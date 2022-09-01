@@ -33,6 +33,7 @@
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/Thread.hpp"
 #include "util/Work.hpp"
 #include "util/tuning.hpp"
 
@@ -79,6 +80,27 @@ auto print(JobType state) noexcept -> std::string_view
         OT_FAIL;
     }
 }
+
+auto print_short(JobType state) noexcept -> std::string_view
+{
+    try {
+        static const auto map = Map<JobType, std::string_view>{
+            {JobType::scan, "Scan"sv},
+            {JobType::process, "Proc"sv},
+            {JobType::index, "IX"sv},
+            {JobType::rescan, "ReSc"sv},
+            {JobType::progress, "Prog"sv},
+        };
+
+        return map.at(state);
+    } catch (...) {
+        LogError()(__FUNCTION__)(": invalid JobType: ")(
+            static_cast<OTZMQWorkType>(state))
+            .Flush();
+
+        OT_FAIL;
+    }
+}
 }  // namespace opentxs::blockchain::node::wallet
 
 namespace opentxs::blockchain::node::wallet::statemachine
@@ -96,7 +118,7 @@ Job::Job(
     : Actor(
           parent->api_,
           logger,
-          std::string(print(type)) + " job for " + parent->name_,
+          adjustThreadName(jobThreadName.data(), std::string(print_short(type)) + ":" + parent->name_),
           batch,
           alloc,
           [&] {

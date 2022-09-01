@@ -57,7 +57,7 @@ Reply::Reply(
           socket::Type::Reply,
           direction,
           true,
-          threadName.empty() ? "Reply" : adjustThreadName(threadName, "Reply"))
+          threadName.empty() ? replyThreadName.data() : adjustThreadName(threadName, replyThreadName.data()))
     , Server(this->get())
     , callback_(callback)
 {

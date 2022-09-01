@@ -870,7 +870,6 @@ auto RPC::evaluate_transaction_reply(
 auto RPC::get_args(const Args& serialized) -> Options
 {
     auto output = Options{};
-
     for (const auto& arg : serialized) {
         for (const auto& value : arg.value()) {
             output.ImportOption(arg.key().c_str(), value.c_str());

@@ -65,7 +65,7 @@ FilterOracle::FilterDownloader::FilterDownloader(
           "cfilter",
           20000,
           10000)
-    , FilterWorker(api, "FilterDownloader")
+    , FilterWorker(api, filterDownloaderThreadName.data())
     , db_(db)
     , header_(header)
     , node_(node)

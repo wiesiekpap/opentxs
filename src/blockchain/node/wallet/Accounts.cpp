@@ -46,6 +46,7 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/LMDB.hpp"
+#include "util/Thread.hpp"
 #include "util/Work.hpp"
 #include "util/tuning.hpp"
 
@@ -90,7 +91,7 @@ Accounts::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          std::string(print(chain)) + " wallet account manager",
+          adjustThreadName(accountsThreadName.data(), std::string(print(chain))),
           batch,
           alloc,
           {
