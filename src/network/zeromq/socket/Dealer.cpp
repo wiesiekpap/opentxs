@@ -59,7 +59,10 @@ Dealer::Dealer(
           direction,
           false,
           adjustThreadName(threadName, dealerThreadName.data()))
-    , Bidirectional(context, true, adjustThreadName(threadName, dealerThreadName.data()))
+    , Bidirectional(
+          context,
+          true,
+          adjustThreadName(threadName, dealerThreadName.data()))
     , Client(this->get())
     , callback_(callback)
 {

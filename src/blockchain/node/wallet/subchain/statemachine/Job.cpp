@@ -118,7 +118,9 @@ Job::Job(
     : Actor(
           parent->api_,
           logger,
-          adjustThreadName(jobThreadName.data(), std::string(print_short(type)) + ":" + parent->name_),
+          adjustThreadName(
+              jobThreadName.data(),
+              std::string(print_short(type)) + ":" + parent->name_),
           batch,
           alloc,
           [&] {

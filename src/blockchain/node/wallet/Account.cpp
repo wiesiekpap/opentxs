@@ -91,8 +91,9 @@ Account::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          adjustThreadName(accountThreadName.data(), std::string(print(chain)) +
-                                                         account.NymID().str()),
+          adjustThreadName(
+              accountThreadName.data(),
+              std::string(print(chain)) + account.NymID().str()),
           batch,
           alloc,
           {

@@ -49,8 +49,9 @@ Handler::Handler(
           socket::Type::Router,
           socket::Direction::Bind,
           true,
-          threadName.empty() ? handlerThreadName.data()
-                             : adjustThreadName(threadName, handlerThreadName.data()))
+          threadName.empty()
+              ? handlerThreadName.data()
+              : adjustThreadName(threadName, handlerThreadName.data()))
     , Server(this->get())
     , callback_(callback)
 {
