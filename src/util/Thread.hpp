@@ -248,8 +248,7 @@ static_assert(
     RPCTaskThreadName.size() <= MAX_THREAD_NAME_SIZE,
     "name is too long");
 
-constexpr std::string_view blockchainAccountActivityThreadName{
-    "BCAccActv\0"};
+constexpr std::string_view blockchainAccountActivityThreadName{"BCAccActv\0"};
 static_assert(
     blockchainAccountActivityThreadName.size() <= MAX_THREAD_NAME_SIZE,
     "name is too long");

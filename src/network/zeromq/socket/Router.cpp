@@ -59,7 +59,10 @@ Router::Router(
           direction,
           false,
           adjustThreadName(threadName, routerThreadName.data()))
-    , Bidirectional(context, true, adjustThreadName(threadName, routerThreadName.data()))
+    , Bidirectional(
+          context,
+          true,
+          adjustThreadName(threadName, routerThreadName.data()))
     , Client(this->get())
     , Server(this->get())
     , callback_(callback)

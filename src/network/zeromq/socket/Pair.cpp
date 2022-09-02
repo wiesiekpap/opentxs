@@ -83,7 +83,10 @@ Pair::Pair(
           direction,
           startThread,
           adjustThreadName(threadName, pairThreadName.data()))
-    , Bidirectional(context, true, adjustThreadName(threadName, pairThreadName.data()))
+    , Bidirectional(
+          context,
+          true,
+          adjustThreadName(threadName, pairThreadName.data()))
     , callback_(callback)
     , endpoint_(endpoint)
 {

@@ -88,7 +88,9 @@ BlockIndexer::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          adjustThreadName(blockIndexerThreadName.data(), std::string(print(chain))),
+          adjustThreadName(
+              blockIndexerThreadName.data(),
+              std::string(print(chain))),
           batch,
           alloc,
           {
