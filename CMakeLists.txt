@@ -47,10 +47,8 @@ set_rpath()
 # -----------------------------------------------------------------------------
 # Set option defaults
 
-if(CMAKE_BUILD_TYPE
-   STREQUAL
-   "Debug"
-)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
+   CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(OPENTXS_DEBUG_BUILD ON)
   set(OPENTXS_PEDANTIC_DEFAULT ON)
   set(OPENTXS_BUILD_TESTS_DEFAULT ON)
@@ -311,11 +309,9 @@ endif()
 
 if(OPENTXS_BUILD_TESTS
    AND NOT
-       (CMAKE_BUILD_TYPE
-        STREQUAL
-        "Debug")
-)
-  message(FATAL_ERROR "opentxs unit tests require CMAKE_BUILD_TYPE=Debug")
+       ((CMAKE_BUILD_TYPE STREQUAL "Debug") OR
+        (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")))
+  message(FATAL_ERROR "opentxs unit tests require CMAKE_BUILD_TYPE=Debug|RelWithDebInfo")
 endif()
 
 # -----------------------------------------------------------------------------

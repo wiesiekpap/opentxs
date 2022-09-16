@@ -9,5 +9,9 @@
 
 namespace opentxs
 {
+#if defined(_WIN32) || defined(_WIN64)
+// NOTE sorry Windows users, MSVC throws an ICE if we export this symbol
+#else
 template class FixedByteArray<32>;
+#endif
 }  // namespace opentxs

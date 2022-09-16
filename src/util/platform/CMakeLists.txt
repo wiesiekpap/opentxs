@@ -14,6 +14,8 @@ if(WIN32)
 
   if(OPENTXS_DEBUG_BUILD)
     target_sources(opentxs-common PRIVATE "Windows_debug.cpp")
+  else()
+    target_sources(opentxs-common PRIVATE "Windows_release.cpp")
   endif()
 
   target_include_directories(

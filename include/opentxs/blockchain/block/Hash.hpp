@@ -48,7 +48,6 @@ struct OPENTXS_EXPORT less<opentxs::blockchain::block::Hash> {
 
 namespace opentxs::blockchain::block
 {
-// NOTE sorry Windows users, MSVC throws an ICE if we export this symbol
 class OPENTXS_EXPORT_TEMPLATE Hash : virtual public FixedByteArray<32>
 {
 public:

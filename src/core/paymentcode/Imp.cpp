@@ -183,8 +183,8 @@ auto PaymentCode::apply_mask(
 {
     static_assert(34 == sizeof(pre));
 
-    auto* i = std::next(pre.key_.begin());
-    auto* const end = pre.key_.end();
+    auto i = std::next(pre.key_.begin());
+    auto const end = pre.key_.end();
 
     for (const auto& m : mask) {
         auto& byte = *i;
