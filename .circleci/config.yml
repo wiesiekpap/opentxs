@@ -256,7 +256,8 @@ workflows:
           docker-image: <<pipeline.parameters.docker-image-android>>
           matrix:
             parameters:
-              arch: [arm64, arm, x64, x86]
+              #arch: [arm64, arm, x64, x86]
+              arch: [arm64]
   opentxs-linux:
     when: true
     jobs:
@@ -266,20 +267,24 @@ workflows:
           mode: standard
           matrix:
             parameters:
-              compiler: [gcc, clang]
-              flavor: [test01, test02, test03, test04, test05, test06, test07, test08, nopch, full]
+              #compiler: [gcc, clang]
+              #flavor: [test01, test02, test03, test04, test05, test06, test07, test08, nopch, full]
+              compiler: [clang]
+              flavor: [full]
       - test-linux:
           name: test-linux-<<matrix.compiler>>-<<matrix.flavor>>
           docker-image: <<pipeline.parameters.docker-image-ci>>
           ctest-params: <<pipeline.parameters.ctest-config>> -E <<pipeline.parameters.ctest-disabled-tests>>
           matrix:
             parameters:
-              compiler: [gcc, clang]
-              flavor: [nopch, full]
+              #compiler: [gcc, clang]
+              #flavor: [nopch, full]
+              compiler: [clang]
+              flavor: [full]
           requires:
             - build-linux-<<matrix.compiler>>-<<matrix.flavor>>
   opentxs-ccov:
-    when: true
+    when: false
     jobs:
       - ccov-linux:
           name: code-coverage-gcc-full-test
@@ -287,7 +292,7 @@ workflows:
           ctest-params: <<pipeline.parameters.ctest-config>> -E <<pipeline.parameters.ctest-disabled-tests-ccov>>
   #just a reference build, no actual sanitization/tests
   opentxs-sanitizer:
-    when: true
+    when: false
     jobs:
       - sanitizer-linux:
           name: memory-sanitizer-clang-full
