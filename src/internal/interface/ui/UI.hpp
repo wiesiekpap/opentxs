@@ -1848,6 +1848,11 @@ auto BlockchainSelectionModel(
     const api::session::Client& api,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
+    -> std::unique_ptr<ui::internal::BlockchainSelection>;    
+auto BlockchainSelectionModel(
+    const api::session::Client& api,
+    const std::vector<opentxs::blockchain::Type>& chains,
+    const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::BlockchainSelection>;
 auto BlockchainSelectionItem(
     const ui::implementation::BlockchainSelectionInternalInterface& parent,

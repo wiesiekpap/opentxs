@@ -94,6 +94,10 @@ public:
         const api::session::Client& api,
         const ui::Blockchains type,
         const SimpleCallback& cb) noexcept;
+    BlockchainSelection(
+        const api::session::Client& api,
+        const std::vector<opentxs::blockchain::Type>& chains,
+        const SimpleCallback& cb) noexcept;
     BlockchainSelection() = delete;
     BlockchainSelection(const BlockchainSelection&) = delete;
     BlockchainSelection(BlockchainSelection&&) = delete;
@@ -143,6 +147,9 @@ private:
     mutable Callback enabled_callback_;
 
     static auto filter(const ui::Blockchains type) noexcept
+        -> UnallocatedSet<blockchain::Type>;
+
+    static auto filter(const std::vector<opentxs::blockchain::Type>& chains) noexcept
         -> UnallocatedSet<blockchain::Type>;
 
     auto process_state(const blockchain::Type chain, const bool enabled)

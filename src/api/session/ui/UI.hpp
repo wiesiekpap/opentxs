@@ -178,6 +178,11 @@ public:
         const opentxs::ui::Blockchains type,
         const SimpleCallback updateCB) const noexcept
         -> opentxs::ui::BlockchainSelectionQt* final;
+    auto BlockchainSelectionQt(
+        const opentxs::ui::Blockchains type,
+        const std::vector<opentxs::blockchain::Type>& chains,
+        const SimpleCallback updateCB) const noexcept
+        -> opentxs::ui::BlockchainSelectionQt* final;
     auto BlockchainStatistics(const SimpleCallback updateCB) const noexcept
         -> const opentxs::ui::BlockchainStatistics& final;
     auto BlockchainStatisticsQt(const SimpleCallback updateCB) const noexcept

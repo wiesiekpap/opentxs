@@ -256,6 +256,14 @@ public:
     {
         return nullptr;
     }
+    virtual auto BlockchainSelectionQt(
+        const opentxs::ui::Blockchains type,
+        const std::vector<opentxs::blockchain::Type>& chains,
+        const SimpleCallback updateCB) const noexcept
+        -> opentxs::ui::BlockchainSelectionQt*
+    {
+        return nullptr;
+    }
     auto BlockchainStatistics(const SimpleCallback updateCB) const noexcept
         -> const opentxs::ui::BlockchainStatistics&;
     virtual auto BlockchainStatisticsQt(const SimpleCallback updateCB)
@@ -494,6 +502,12 @@ protected:
     auto blockchain_selection(
         const Lock& lock,
         const opentxs::ui::Blockchains type,
+        const SimpleCallback updateCB) const noexcept
+        -> BlockchainSelectionMap::mapped_type&;
+    auto blockchain_selection(
+        const Lock& lock,
+        const opentxs::ui::Blockchains type,
+        const std::vector<opentxs::blockchain::Type>& chains,
         const SimpleCallback updateCB) const noexcept
         -> BlockchainSelectionMap::mapped_type&;
     auto blockchain_statistics(const Lock& lock, const SimpleCallback updateCB)
