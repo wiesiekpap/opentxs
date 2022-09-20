@@ -15,4 +15,13 @@ std::string_view get_pubkey_prefix(
                                           : not_correct_result;
 }
 
+std::string add_leading_zeros(
+    std::string const& value,
+    unsigned int desiredSize)
+{
+    const unsigned int leading_zeros_number = desiredSize - value.size();
+    std::string leading_zeros(leading_zeros_number, '0');
+    return leading_zeros + value;
+}
+
 }  // namespace opentxs::api::crypto::eliptic_curve

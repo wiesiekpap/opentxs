@@ -17,10 +17,18 @@ std::string to_hex(boost::multiprecision::number<T> const& value)
     return value.str(0, std::ios_base::hex);
 }
 
+std::string add_leading_zeros(std::string const& value, unsigned int desiredSize);
+
 template <typename T>
 bool is_even(T value)
 {
     return value % 2 == 0;
+}
+
+template <typename T>
+bool is_odd(T value)
+{
+    return !is_even(value);
 }
 
 std::string_view get_pubkey_prefix(

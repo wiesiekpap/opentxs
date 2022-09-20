@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "internal/api/crypto/eliptic_curve/Secp256k1.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "ottest/data/crypto/Bip32.hpp"
@@ -816,7 +817,7 @@ TEST_F(Test_BlockchainAPI, testBip44_eth_mainnet)
     EXPECT_EQ(address, "c0f76bc0d5debaecc9fa262b2c24116d92e3b589");
 }
 
-TEST_F(Test_BlockchainAPI, testBip44_eth_testnet)
+TEST_F(Test_BlockchainAPI, testBip44_eth_testnet_example_1)
 {
     const int bip44_purpose = 44;
     const opentxs::Bip44Type bip44_coin_type = api_.Crypto().Blockchain().Bip44(
@@ -855,6 +856,202 @@ TEST_F(Test_BlockchainAPI, testBip44_eth_testnet)
         pub_key_data);
 
     EXPECT_EQ(address, "47fd2e4d1887f2a503e6a439139aee378a4788e1");
+}
+
+TEST_F(Test_BlockchainAPI, testBip44_eth_testnet_example_2)
+{
+    const int bip44_purpose = 44;
+    const opentxs::Bip44Type bip44_coin_type = api_.Crypto().Blockchain().Bip44(
+        opentxs::blockchain::Type::Ethereum_ropsten);
+    const int bip44_account = 0;
+    const int bip44_change = 0;
+    const int bip44_address_index = 0;
+    auto reason = api_.Factory().PasswordPrompt("Preparing ETH crypto-context");
+    const auto bip32_path = opentxs::crypto::Bip32::Path{
+        static_cast<opentxs::Bip32Index>(bip44_purpose) |
+            static_cast<opentxs::Bip32Index>(opentxs::Bip32Child::HARDENED),
+        static_cast<opentxs::Bip32Index>(bip44_coin_type) |
+            static_cast<opentxs::Bip32Index>(opentxs::Bip32Child::HARDENED),
+        static_cast<opentxs::Bip32Index>(bip44_account) |
+            static_cast<opentxs::Bip32Index>(opentxs::Bip32Child::HARDENED),
+        static_cast<opentxs::Bip32Index>(bip44_change),
+        static_cast<opentxs::Bip32Index>(bip44_address_index),
+    };
+
+    auto seed_id = api_.InternalClient().Exec().Wallet_ImportSeed(
+        "battle drastic essay photo equip reunion entry ready boring drive "
+        "misery code",
+        "");
+
+    auto eth_key = api_.Crypto().Seed().GetHDKey(
+        seed_id,
+        opentxs::crypto::EcdsaCurve::secp256k1,
+        bip32_path,
+        opentxs::crypto::key::asymmetric::Role::Sign,
+        reason);
+
+    auto pub_key = eth_key->PublicKey();
+    auto pub_key_data = api_.Factory().DataFromBytes(pub_key);
+    auto address = api_.Crypto().Blockchain().CalculateAddress(
+        opentxs::blockchain::Type::Ethereum_ropsten,
+        opentxs::blockchain::crypto::AddressStyle::ChecksummedHex,
+        pub_key_data);
+
+    EXPECT_EQ(address, "0abd1bd2e76ca0fe98ca1b19d2980e25e8d3397e");
+}
+
+TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_1)
+{
+    std::string compressedPubkeyStr(
+        "025f6fdd1fe0f3856df263c6d96cddbfaa9c4747448837f55547a39b86fdc21511");
+    std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
+    auto uncompressedPubkeyStr =
+        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+            compressedPubkeyStrView);
+    EXPECT_EQ(
+        uncompressedPubkeyStr,
+        "045f6fdd1fe0f3856df263c6d96cddbfaa9c4747448837f55547a39b86fdc215115c1a"
+        "8a9a5b9696907228e0afaaf201bf1e24e0b581f8d935347cbbea14785ea2");
+}
+
+TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_2)
+{
+    std::string compressedPubkeyStr(
+        "0357a8ef6d93bda02822a90c7e7631425275745581286197944b0367270eaf8d1c");
+    std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
+    auto uncompressedPubkeyStr =
+        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+            compressedPubkeyStrView);
+    EXPECT_EQ(
+        uncompressedPubkeyStr,
+        "0457a8ef6d93bda02822a90c7e7631425275745581286197944b0367270eaf8d1ca1b9"
+        "1e48b8dd3822d4d74b16676dcd1ded0a5bd990e40a63bf2593e0278f67a3");
+}
+
+TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_3)
+{
+    std::string compressedPubkeyStr(
+        "03c5ade96dc5c4d1b4009d24b986ea2dccd282f20603ea0c493f5b25a466eca747");
+    std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
+    auto uncompressedPubkeyStr =
+        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+            compressedPubkeyStrView);
+    EXPECT_EQ(
+        uncompressedPubkeyStr,
+        "04c5ade96dc5c4d1b4009d24b986ea2dccd282f20603ea0c493f5b25a466eca74752d2"
+        "d6fa58cbfa421b8a8cb9b3787dc1c9946ef99ce9127597cc8b95aa5775d3");
+}
+
+TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_4)
+{
+    std::string compressedPubkeyStr(
+        "026aa1352b899442c7e1a280542cdfd8bc33b82243007d4a429185de8c514b2629");
+    std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
+    auto uncompressedPubkeyStr =
+        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+            compressedPubkeyStrView);
+    EXPECT_EQ(
+        uncompressedPubkeyStr,
+        "046aa1352b899442c7e1a280542cdfd8bc33b82243007d4a429185de8c514b2629dd5b"
+        "a95aa0458d176fade133b8e942206ca140328981ffcabedd54124ec06746");
+}
+
+TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_5)
+{
+    std::string compressedPubkeyStr(
+        "03d1fb99b4b484ab525260e20598f2ac649350fe78ec3f134ccd7c8bc4ca310655");
+    std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
+    auto uncompressedPubkeyStr =
+        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+            compressedPubkeyStrView);
+    EXPECT_EQ(
+        uncompressedPubkeyStr,
+        "04d1fb99b4b484ab525260e20598f2ac649350fe78ec3f134ccd7c8bc4ca310655eb13"
+        "446f0c2adb352cda78e313558a68c24875d272933f35398b5f99c551c78d");
+}
+
+TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_6)
+{
+    std::string compressedPubkeyStr(
+        "02afa1ef03eeab38445c491ff4754f866f736ce1dd6daf0852fd14ca5265fee4e4");
+    std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
+    auto uncompressedPubkeyStr =
+        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+            compressedPubkeyStrView);
+    EXPECT_EQ(
+        uncompressedPubkeyStr,
+        "04afa1ef03eeab38445c491ff4754f866f736ce1dd6daf0852fd14ca5265fee4e40a4b"
+        "d68aa40a9fef950549d0a54d2ad0ecacdfb49889de079c4fc77e4a0e8926");
+}
+
+TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_7)
+{
+    std::string compressedPubkeyStr(
+        "025f37d20e5b18909361e0ead7ed17c69b417bee70746c9e9c2bcb1394d921d4ae");
+    std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
+    auto uncompressedPubkeyStr =
+        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+            compressedPubkeyStrView);
+    EXPECT_EQ(
+        uncompressedPubkeyStr,
+        "045f37d20e5b18909361e0ead7ed17c69b417bee70746c9e9c2bcb1394d921d4ae612d"
+        "83e3487012034792ff36357ee25f382913cfeb54a8622b7ef35d635d8740");
+}
+
+TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_8)
+{
+    std::string compressedPubkeyStr(
+        "03131348c07e8d660e4f049658dfcb5a186b087af676d2dc03854d051d06ccaee9");
+    std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
+    auto uncompressedPubkeyStr =
+        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+            compressedPubkeyStrView);
+    EXPECT_EQ(
+        uncompressedPubkeyStr,
+        "04131348c07e8d660e4f049658dfcb5a186b087af676d2dc03854d051d06ccaee9d314"
+        "04682a26a290d8f06653ba00e14da5da6ee6da09318ce39ca1c81ff1b59b");
+}
+
+TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_9)
+{
+    std::string compressedPubkeyStr(
+        "020b6d9bbab341552f8c2a9d5ca264ccee18cc28d3f8960612a554c1ba7ad681ae");
+    std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
+    auto uncompressedPubkeyStr =
+        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+            compressedPubkeyStrView);
+    EXPECT_EQ(
+        uncompressedPubkeyStr,
+        "040b6d9bbab341552f8c2a9d5ca264ccee18cc28d3f8960612a554c1ba7ad681ae2551"
+        "53941cb001efecca3e0d5903d78c1efc67edbd70a6002f215ab40cf90654");
+}
+
+TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_10)
+{
+    std::string compressedPubkeyStr(
+        "03f36eed18d925eef887b09059a02f0616fc34fdecc8886c1c1d7b06193d7b4451");
+    std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
+    auto uncompressedPubkeyStr =
+        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+            compressedPubkeyStrView);
+    EXPECT_EQ(
+        uncompressedPubkeyStr,
+        "04f36eed18d925eef887b09059a02f0616fc34fdecc8886c1c1d7b06193d7b445122a3"
+        "9bba02b06797aa71dbe3e1fec387c29e1447433a61fe356b6de3afef6a6f");
+}
+
+TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_11)
+{
+    std::string compressedPubkeyStr(
+        "027d550bc2384fd76a47b8b0871165395e4e4d5ab9cb4ee286d1c60d074d7d60ef");
+    std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
+    auto uncompressedPubkeyStr =
+        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+            compressedPubkeyStrView);
+    EXPECT_EQ(
+        uncompressedPubkeyStr,
+        "047d550bc2384fd76a47b8b0871165395e4e4d5ab9cb4ee286d1c60d074d7d60effbb6"
+        "217403fe57ff1b2f84f74086b413c7682027bd6ddde4538c340ba1a25638");
 }
 
 TEST_F(Test_BlockchainAPI, testBip32_SeedA)

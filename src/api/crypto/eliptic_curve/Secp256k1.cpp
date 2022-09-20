@@ -61,68 +61,89 @@ std::string get_uncompressed_pubkey(std::string_view compressed_pubkey_sv)
         get_pubkey_prefix(compressed_pubkey_sv, PUBKEY_PREFIX_LENGTH);
 
     if (!is_pubkey_compressed(key_prefix))
-        opentxs::LogError()(__func__)("Compressed pubkey ")(
+        opentxs::LogError()(__func__)(": ")("Compressed pubkey ")(
             compressed_pubkey_sv)(" is not valid - incorrect prefix")
             .Flush();
     if (!is_compressed_pubkey_correct_size(pubkey_length))
-        opentxs::LogError()(__func__)("Compressed pubkey ")(
+        opentxs::LogError()(__func__)(": ")("Compressed pubkey ")(
             compressed_pubkey_sv)(" has not correct size ")(
             pubkey_length)(" instead of ")(COMPRESSED_PUBKEY_LENGTH)
             .Flush();
 
-    bmp::uint1024_t const x{opentxs::join(
-        "0x", extracted_compressed_key)};
+    bmp::uint1024_t const x{opentxs::join("0x", extracted_compressed_key)};
     bmp::uint1024_t const rhs = (bmp::powm(x, 3, p) + (a * x) + b) % p;
     bmp::uint1024_t const y = bmp::powm(rhs, (p + 1) / 4, p);
-    auto const compressed_y = p - y;
 
-    opentxs::LogDebug()(__func__)("lhs ")(bmp::powm(compressed_y, 2, p).str())(
+    bmp::uint1024_t compressed_y = p - y;
+
+    opentxs::LogDebug()(__func__)(": ")("lhs ")(
+        bmp::powm(compressed_y, 2, p).str())(" = rhs ")(rhs.str())
+        .Flush();
+    opentxs::LogDebug()(__func__)(": ")("lhs ")(bmp::powm(y, 2, p).str())(
         " = rhs ")(rhs.str())
         .Flush();
-    opentxs::LogDebug()(__func__)("lhs ")(bmp::powm(y, 2, p).str())(" = rhs ")(
-        rhs.str())
+
+    opentxs::LogDebug()(__func__)(": ")("x = ")(
+        add_leading_zeros(to_hex(x), 64))
+        .Flush();
+    opentxs::LogDebug()(__func__)(": ")("y = ")(
+        add_leading_zeros(to_hex(y), 64))
+        .Flush();
+    opentxs::LogDebug()(__func__)(": ")("rhs = ")(
+        add_leading_zeros(to_hex(rhs), 64))
+        .Flush();
+    opentxs::LogDebug()(__func__)(": ")("compressed_y= ")(
+        add_leading_zeros(to_hex(compressed_y), 64))
+        .Flush();
+    opentxs::LogDebug()(__func__)(": ")("even = ")(is_even(compressed_y))
         .Flush();
 
-    opentxs::LogDebug()(__func__)("x = ")(to_hex(x)).Flush();
-    opentxs::LogDebug()(__func__)("y = ")(to_hex(y)).Flush();
-    opentxs::LogDebug()(__func__)("rhs = ")(to_hex(rhs)).Flush();
-    opentxs::LogDebug()(__func__)("compressed_y= ")(to_hex(compressed_y)).Flush();
-    opentxs::LogDebug()(__func__)("even = ")(is_even(compressed_y)).Flush();
-
     if (!(bmp::powm(compressed_y, 2, p) == rhs))
-        opentxs::LogError()(__func__)("The equation using compressed y is not correct").Flush();
+        opentxs::LogError()(__func__)(": ")(
+            "The equation using compressed y is not correct")
+            .Flush();
     if (!(bmp::powm(y, 2, p) == rhs))
-        opentxs::LogError()(__func__)("The equation using y is not correct").Flush();
+        opentxs::LogError()(__func__)(": ")(
+            "The equation using y is not correct")
+            .Flush();
     if (is_pubkey_starts_from_even_prefix(key_prefix)) {
         if (is_even(compressed_y))
             uncompressed_key = opentxs::join(
-                "04", extracted_compressed_key, to_hex(compressed_y));
+                "04",
+                extracted_compressed_key,
+                add_leading_zeros(to_hex(compressed_y), 64));
         else if (is_even(y))
             uncompressed_key = opentxs::join(
-                "04", extracted_compressed_key, to_hex(compressed_y));
+                "04",
+                extracted_compressed_key,
+                add_leading_zeros(to_hex(y), 64));
         else
-            opentxs::LogError()(__func__)(
+            opentxs::LogError()(__func__)(": ")(
                 "Uncompressed key cannot be calculated ")(
                 "for pubkey starting from even prefix because ")(
                 "is_even(compressed_y)= ")(is_even(compressed_y))(
                 "is_even(y)= ")(is_even(y))
                 .Flush();
-    }
-    if (is_pubkey_starts_from_odd_prefix(key_prefix)) {
-        if (!is_even(compressed_y))
+    } else if (is_pubkey_starts_from_odd_prefix(key_prefix)) {
+        if (is_odd(compressed_y))
             uncompressed_key = opentxs::join(
-                "04", extracted_compressed_key, to_hex(compressed_y));
-        else if (!is_even(y))
+                "04",
+                extracted_compressed_key,
+                add_leading_zeros(to_hex(compressed_y), 64));
+        else if (is_odd(y)) {
             uncompressed_key = opentxs::join(
-                "04", extracted_compressed_key, to_hex(compressed_y));
-        else
-            opentxs::LogError()(__func__)(
+                "04",
+                extracted_compressed_key,
+                add_leading_zeros(to_hex(y), 64));
+        } else
+            opentxs::LogError()(__func__)(": ")(
                 "Uncompressed key cannot be calculated ")(
                 "for pubkey starting from odd prefix because ")(
-                "is_odd(compressed_y)= ")(!is_even(compressed_y))(
-                "is_odd(y)= ")(!is_even(y)).Flush();
+                "is_odd(compressed_y)= ")(is_odd(compressed_y))("is_odd(y)= ")(
+                is_odd(y))
+                .Flush();
     } else
-        opentxs::LogError()(__func__)("Pubkey prefix is not valid ")(
+        opentxs::LogError()(__func__)(": ")("Pubkey prefix is not valid ")(
             "pubkey doesn't starts from even or odd prefix")
             .Flush();
     return uncompressed_key;
