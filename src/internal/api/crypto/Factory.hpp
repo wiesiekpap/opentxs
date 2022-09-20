@@ -86,6 +86,7 @@ auto Hash(
     const api::crypto::Encode& encode,
     const crypto::HashingProvider& sha,
     const crypto::HashingProvider& blake,
+    const crypto::HashingProvider& keccak,
     const crypto::Pbkdf2& pbkdf2,
     const crypto::Ripemd160& ripe,
     const crypto::Scrypt& scrypt) noexcept

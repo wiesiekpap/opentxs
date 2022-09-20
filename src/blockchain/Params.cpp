@@ -570,6 +570,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, true},
                  {Data::Style::P2WSH, true},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, false},
              },
              {
                  {Data::Style::P2WPKH, "P2WPKH"sv},
@@ -614,6 +615,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, true},
                  {Data::Style::P2WSH, true},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, false},
              },
              {
                  {Data::Style::P2WPKH, "P2WPKH"sv},
@@ -659,6 +661,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, false},
                  {Data::Style::P2WSH, false},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, false},
              },
              {
                  {Data::Style::P2PKH, "P2PKH"sv},
@@ -702,6 +705,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, false},
                  {Data::Style::P2WSH, false},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, false},
              },
              {
                  {Data::Style::P2PKH, "P2PKH"sv},
@@ -736,8 +740,11 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, false},
                  {Data::Style::P2WSH, false},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, true},
              },
-             {},
+             {
+                 {Data::Style::ChecksummedHex, "ChecksummedHex"sv},
+             },
              {},
          }},
         {blockchain::Type::Ethereum_ropsten,
@@ -767,6 +774,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, false},
                  {Data::Style::P2WSH, false},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, true},
              },
              {},
              {},
@@ -798,6 +806,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, false},
                  {Data::Style::P2WSH, false},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, true},
              },
              {},
              {},
@@ -829,8 +838,11 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, false},
                  {Data::Style::P2WSH, false},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, true},
              },
-             {},
+             {
+                 {Data::Style::ChecksummedHex, "ChecksummedHex"sv},
+             },
              {},
          }},
         {blockchain::Type::Litecoin,
@@ -869,6 +881,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, true},
                  {Data::Style::P2WSH, true},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, false},
              },
              {
                  {Data::Style::P2WPKH, "P2WPKH"sv},
@@ -911,6 +924,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, true},
                  {Data::Style::P2WSH, true},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, false},
              },
              {
                  {Data::Style::P2WPKH, "P2WPKH"sv},
@@ -953,6 +967,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, true},
                  {Data::Style::P2WSH, true},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, false},
              },
              {
                  {Data::Style::P2WPKH, "P2WPKH"sv},
@@ -994,6 +1009,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, true},
                  {Data::Style::P2WSH, true},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, false},
              },
              {
                  {Data::Style::P2WPKH, "P2WPKH"sv},
@@ -1036,6 +1052,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, false},
                  {Data::Style::P2WSH, false},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, false},
              },
              {
                  {Data::Style::P2PKH, "P2PKH"sv},
@@ -1077,6 +1094,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, false},
                  {Data::Style::P2WSH, false},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, false},
              },
              {
                  {Data::Style::P2PKH, "P2PKH"sv},
@@ -1122,6 +1140,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, false},
                  {Data::Style::P2WSH, false},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, false},
              },
              {
                  {Data::Style::P2PKH, "P2PKH"sv},
@@ -1166,6 +1185,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, false},
                  {Data::Style::P2WSH, false},
                  {Data::Style::P2TR, false},
+                 {Data::Style::ChecksummedHex, false},
              },
              {
                  {Data::Style::P2PKH, "P2PKH"sv},
@@ -1203,6 +1223,7 @@ auto Chains() noexcept -> const ChainData&
                  {Data::Style::P2WPKH, true},
                  {Data::Style::P2WSH, true},
                  {Data::Style::P2TR, true},
+                 {Data::Style::ChecksummedHex, false},
              },
              {
                  {Data::Style::P2WPKH, "P2WPKH"sv},

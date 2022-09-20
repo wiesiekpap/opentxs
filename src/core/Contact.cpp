@@ -73,6 +73,9 @@ const robin_hood::
             {blockchain::crypto::AddressStyle::P2WPKH,
              std::to_string(
                  static_cast<int>(blockchain::crypto::AddressStyle::P2WPKH))},
+            {blockchain::crypto::AddressStyle::ChecksummedHex,
+             std::to_string(
+                 static_cast<int>(blockchain::crypto::AddressStyle::ChecksummedHex))},
         };
 const robin_hood::
     unordered_flat_map<UnallocatedCString, blockchain::crypto::AddressStyle>

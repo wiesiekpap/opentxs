@@ -774,6 +774,89 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_3)
     EXPECT_EQ(expected.xprv_, root.Xprv(reason_));
 }
 
+TEST_F(Test_BlockchainAPI, testBip44_eth_mainnet)
+{
+    const int bip44_purpose = 44;
+    const opentxs::Bip44Type bip44_coin_type = api_.Crypto().Blockchain().Bip44(
+        opentxs::blockchain::Type::Ethereum_frontier);
+    const int bip44_account = 0;
+    const int bip44_change = 0;
+    const int bip44_address_index = 0;
+    auto reason = api_.Factory().PasswordPrompt("Preparing ETH crypto-context");
+    const auto bip32_path = opentxs::crypto::Bip32::Path{
+        static_cast<opentxs::Bip32Index>(bip44_purpose) |
+            static_cast<opentxs::Bip32Index>(opentxs::Bip32Child::HARDENED),
+        static_cast<opentxs::Bip32Index>(bip44_coin_type) |
+            static_cast<opentxs::Bip32Index>(opentxs::Bip32Child::HARDENED),
+        static_cast<opentxs::Bip32Index>(bip44_account) |
+            static_cast<opentxs::Bip32Index>(opentxs::Bip32Child::HARDENED),
+        static_cast<opentxs::Bip32Index>(bip44_change),
+        static_cast<opentxs::Bip32Index>(bip44_address_index),
+    };
+
+    auto seed_id = api_.InternalClient().Exec().Wallet_ImportSeed(
+        "crack question fog buzz north tide zero install please raven basic "
+        "found",
+        "");
+
+    auto eth_key = api_.Crypto().Seed().GetHDKey(
+        seed_id,
+        opentxs::crypto::EcdsaCurve::secp256k1,
+        bip32_path,
+        opentxs::crypto::key::asymmetric::Role::Sign,
+        reason);
+
+    auto pub_key = eth_key->PublicKey();
+    auto pub_key_data = api_.Factory().DataFromBytes(pub_key);
+    auto address = api_.Crypto().Blockchain().CalculateAddress(
+        opentxs::blockchain::Type::Ethereum_frontier,
+        opentxs::blockchain::crypto::AddressStyle::ChecksummedHex,
+        pub_key_data);
+
+    EXPECT_EQ(address, "c0f76bc0d5debaecc9fa262b2c24116d92e3b589");
+}
+
+TEST_F(Test_BlockchainAPI, testBip44_eth_testnet)
+{
+    const int bip44_purpose = 44;
+    const opentxs::Bip44Type bip44_coin_type = api_.Crypto().Blockchain().Bip44(
+        opentxs::blockchain::Type::Ethereum_ropsten);
+    const int bip44_account = 0;
+    const int bip44_change = 0;
+    const int bip44_address_index = 0;
+    auto reason = api_.Factory().PasswordPrompt("Preparing ETH crypto-context");
+    const auto bip32_path = opentxs::crypto::Bip32::Path{
+        static_cast<opentxs::Bip32Index>(bip44_purpose) |
+            static_cast<opentxs::Bip32Index>(opentxs::Bip32Child::HARDENED),
+        static_cast<opentxs::Bip32Index>(bip44_coin_type) |
+            static_cast<opentxs::Bip32Index>(opentxs::Bip32Child::HARDENED),
+        static_cast<opentxs::Bip32Index>(bip44_account) |
+            static_cast<opentxs::Bip32Index>(opentxs::Bip32Child::HARDENED),
+        static_cast<opentxs::Bip32Index>(bip44_change),
+        static_cast<opentxs::Bip32Index>(bip44_address_index),
+    };
+
+    auto seed_id = api_.InternalClient().Exec().Wallet_ImportSeed(
+        "review boy exile stock nose twin priority acoustic caution below slogan pen",
+        "");
+
+    auto eth_key = api_.Crypto().Seed().GetHDKey(
+        seed_id,
+        opentxs::crypto::EcdsaCurve::secp256k1,
+        bip32_path,
+        opentxs::crypto::key::asymmetric::Role::Sign,
+        reason);
+
+    auto pub_key = eth_key->PublicKey();
+    auto pub_key_data = api_.Factory().DataFromBytes(pub_key);
+    auto address = api_.Crypto().Blockchain().CalculateAddress(
+        opentxs::blockchain::Type::Ethereum_ropsten,
+        opentxs::blockchain::crypto::AddressStyle::ChecksummedHex,
+        pub_key_data);
+
+    EXPECT_EQ(address, "47fd2e4d1887f2a503e6a439139aee378a4788e1");
+}
+
 TEST_F(Test_BlockchainAPI, testBip32_SeedA)
 {
     EXPECT_TRUE(check_hd_account(

@@ -15,6 +15,7 @@
 
 #include "Proto.hpp"
 #include "internal/api/Crypto.hpp"
+#include "internal/crypto/library/Keccak.hpp"
 #include "internal/crypto/library/Null.hpp"
 #include "internal/crypto/library/OpenSSL.hpp"
 #include "internal/crypto/library/Secp256k1.hpp"
@@ -128,6 +129,7 @@ private:
     std::unique_ptr<api::crypto::Config> config_;
     std::unique_ptr<opentxs::crypto::Sodium> sodium_;
     std::unique_ptr<opentxs::crypto::OpenSSL> ssl_;
+    std::unique_ptr<opentxs::crypto::Keccak> kec_;
     const api::crypto::Util& util_;
     std::unique_ptr<opentxs::crypto::Secp256k1> secp256k1_;
     std::unique_ptr<opentxs::crypto::Bip39> bip39_p_;

@@ -24,6 +24,7 @@ class Crypto;
 
 namespace crypto
 {
+class Keccak;
 class OpenSSL;
 class Ripemd160;
 class Secp256k1;
@@ -36,6 +37,7 @@ class Sodium;
 namespace opentxs::factory
 {
 auto OpenSSL() noexcept -> std::unique_ptr<crypto::OpenSSL>;
+auto Keccak() noexcept -> std::unique_ptr<crypto::Keccak>;
 auto Secp256k1(
     const api::Crypto& crypto,
     const api::crypto::Util& util) noexcept

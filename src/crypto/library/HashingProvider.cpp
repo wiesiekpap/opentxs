@@ -102,6 +102,12 @@ auto HashingProvider::HashSize(const crypto::HashType hashType) noexcept
         case crypto::HashType::SipHash24: {
             return 8;
         }
+        case crypto::HashType::Ethereum: {
+            return 20;
+        }
+        case crypto::HashType::Keccak256: {
+            return 32;
+        }
         default: {
 
             return 0;

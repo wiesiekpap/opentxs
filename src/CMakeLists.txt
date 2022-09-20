@@ -3,7 +3,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(opentxs-common OBJECT "")
+add_library(opentxs-common OBJECT ""
+        internal/crypto/library/Keccak.hpp
+        crypto/library/keccak/Keccak.cpp
+        crypto/library/keccak/Keccak.hpp)
 
 if(OT_QT_EXPORT)
   add_library(opentxs-moc OBJECT "")

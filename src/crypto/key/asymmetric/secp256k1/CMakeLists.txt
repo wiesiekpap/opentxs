@@ -5,11 +5,11 @@
 
 if(SECP256K1_EXPORT)
   target_sources(
-    opentxs-common
-    PRIVATE
-      "Factory.cpp"
-      "Secp256k1.cpp"
-      "Secp256k1.hpp"
+          opentxs-common
+          PRIVATE
+          "Factory.cpp"
+          "Secp256k1.cpp"
+          "Secp256k1.hpp"
   )
 
   if(BIP32_EXPORT)

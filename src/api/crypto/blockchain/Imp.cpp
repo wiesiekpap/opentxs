@@ -71,6 +71,7 @@ enum class Prefix : std::uint8_t {
     BitcoinP2SH,
     BitcoinTestnetP2PKH,
     BitcoinTestnetP2SH,
+    EthereumChecksummedHex,
     LitecoinP2PKH,
     LitecoinP2SH,
     LitecoinTestnetP2SH,
@@ -117,6 +118,7 @@ const AddressReverseMap address_prefix_reverse_map_{
     {"6f", Prefix::BitcoinTestnetP2PKH},
     {"c4", Prefix::BitcoinTestnetP2SH},
     {"75", Prefix::PKTP2PKH},
+    {"", Prefix::EthereumChecksummedHex},
 };
 const AddressMap address_prefix_map_{reverse_map(address_prefix_reverse_map_)};
 const StyleMap address_style_map_{
@@ -170,6 +172,10 @@ const StyleMap address_style_map_{
      {Prefix::BitcoinTestnetP2SH, {}}},
     {{Style::P2SH, opentxs::blockchain::Type::BitcoinSV},
      {Prefix::BitcoinP2SH, {}}},
+    {{Style::ChecksummedHex, opentxs::blockchain::Type::Ethereum_frontier},
+     {Prefix::EthereumChecksummedHex, {}}},
+    {{Style::ChecksummedHex, opentxs::blockchain::Type::Ethereum_ropsten},
+     {Prefix::EthereumChecksummedHex, {}}},
 };
 const StyleReverseMap address_style_reverse_map_{reverse(address_style_map_)};
 const HrpMap hrp_map_{
@@ -417,7 +423,8 @@ auto Blockchain::Imp::CalculateAddress(
 
     switch (format) {
         case Style::P2WPKH:
-        case Style::P2PKH: {
+        case Style::P2PKH:
+        case Style::ChecksummedHex: {
             try {
                 data = PubkeyHash(chain, pubkey);
             } catch (...) {
@@ -636,6 +643,10 @@ auto Blockchain::Imp::EncodeAddress(
         case Style::P2SH: {
 
             return p2sh(chain, data);
+        }
+        case Style::ChecksummedHex: {
+
+            return checksummedHex(chain, data);
         }
         default: {
             LogError()(OT_PRETTY_CLASS())("Unsupported address style (")(
@@ -1047,6 +1058,30 @@ auto Blockchain::Imp::p2pkh(
     }
 }
 
+auto Blockchain::Imp::checksummedHex(
+    const opentxs::blockchain::Type chain,
+    const Data& pubkeyHash) const noexcept -> UnallocatedCString
+{
+    try {
+        auto preimage = address_prefix(Style::ChecksummedHex, chain);
+
+        OT_ASSERT(0 == preimage->size());
+
+        preimage += pubkeyHash;
+
+        OT_ASSERT(20 == preimage->size());
+
+        return opentxs::to_hex(
+            reinterpret_cast<const std::byte*>(preimage->data()),
+            preimage->size());
+    } catch (...) {
+        LogError()(OT_PRETTY_CLASS())("Unsupported chain (")(print(chain))(")")
+            .Flush();
+
+        return "";
+    }
+}
+
 auto Blockchain::Imp::p2sh(
     const opentxs::blockchain::Type chain,
     const Data& pubkeyHash) const noexcept -> UnallocatedCString
@@ -1165,7 +1200,7 @@ auto Blockchain::Imp::ProcessTransactions(
 }
 
 auto Blockchain::Imp::PubkeyHash(
-    [[maybe_unused]] const opentxs::blockchain::Type chain,
+    const opentxs::blockchain::Type chain,
     const Data& pubkey) const noexcept(false) -> OTData
 {
     if (pubkey.empty()) { throw std::runtime_error("Empty pubkey"); }
@@ -1176,10 +1211,47 @@ auto Blockchain::Imp::PubkeyHash(
 
     auto output = Data::Factory();
 
+    static const auto chainToHashTypeMap =
+        std::map<opentxs::blockchain::Type, opentxs::crypto::HashType>{
+            {opentxs::blockchain::Type::Unknown,
+             opentxs::crypto::HashType::Error},
+            {opentxs::blockchain::Type::Bitcoin,
+             opentxs::crypto::HashType::Bitcoin},
+            {opentxs::blockchain::Type::Bitcoin_testnet3,
+             opentxs::crypto::HashType::Bitcoin},
+            {opentxs::blockchain::Type::BitcoinCash,
+             opentxs::crypto::HashType::Bitcoin},
+            {opentxs::blockchain::Type::BitcoinCash_testnet3,
+             opentxs::crypto::HashType::Bitcoin},
+            {opentxs::blockchain::Type::Ethereum_frontier,
+             opentxs::crypto::HashType::Ethereum},
+            {opentxs::blockchain::Type::Ethereum_ropsten,
+             opentxs::crypto::HashType::Ethereum},
+            {opentxs::blockchain::Type::Litecoin,
+             opentxs::crypto::HashType::Bitcoin},
+            {opentxs::blockchain::Type::Litecoin_testnet4,
+             opentxs::crypto::HashType::Bitcoin},
+            {opentxs::blockchain::Type::PKT,
+             opentxs::crypto::HashType::Bitcoin},
+            {opentxs::blockchain::Type::PKT_testnet,
+             opentxs::crypto::HashType::Bitcoin},
+            {opentxs::blockchain::Type::BitcoinSV,
+             opentxs::crypto::HashType::Bitcoin},
+            {opentxs::blockchain::Type::BitcoinSV_testnet3,
+             opentxs::crypto::HashType::Bitcoin},
+            {opentxs::blockchain::Type::eCash,
+             opentxs::crypto::HashType::Bitcoin},
+            {opentxs::blockchain::Type::eCash_testnet3,
+             opentxs::crypto::HashType::Bitcoin},
+            {opentxs::blockchain::Type::UnitTest,
+             opentxs::crypto::HashType::Bitcoin}};
+
+    auto hash_type = chainToHashTypeMap.at(chain);
+    if (hash_type == opentxs::crypto::HashType::Error) {
+        throw std::runtime_error("Unsupported chain");
+    }
     if (false == api_.Crypto().Hash().Digest(
-                     opentxs::crypto::HashType::Bitcoin,
-                     pubkey.Bytes(),
-                     output->WriteInto())) {
+                     hash_type, pubkey.Bytes(), output->WriteInto())) {
         throw std::runtime_error("Unable to calculate hash.");
     }
 

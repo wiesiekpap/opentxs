@@ -26,6 +26,8 @@ enum class HashType : std::uint8_t {
     Sha256DC = 10,
     Bitcoin = 11,
     SipHash24 = 12,
+    Ethereum = 13,
+    Keccak256 = 14,
 };
 
 constexpr auto value(const HashType in) noexcept
