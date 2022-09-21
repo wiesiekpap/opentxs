@@ -112,7 +112,7 @@ auto Hash::ethereum_address(
         auto address = destination(eth_address_length);
 
         if (false == address.valid(eth_address_length)) {
-            LogError()(__func__)(": Failed to allocate space for an address")
+            LogError()(__func__)(": ")("Failed to allocate space for an address")
                 .Flush();
 
             return false;
@@ -189,7 +189,8 @@ auto Hash::uncompress_pubkey(const ReadView data, const AllocateOutput output)
             reinterpret_cast<const std::byte*>(data.data()), data.size());
         ReadView hex_data_sv(hex_data.data(), hex_data.size());
         auto uncompressed_pubkey_str =
-            opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(hex_data_sv);
+            opentxs::api::crypto::eliptic_curve::secp256k1::uncompress_pubkey(
+                hex_data_sv);
 
         static const int eth_uncompressed_public_key_prefix_length = 2;
         // convert char to hex - treat 2 char sign as a byte
