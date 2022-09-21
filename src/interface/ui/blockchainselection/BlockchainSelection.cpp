@@ -46,6 +46,17 @@ auto BlockchainSelectionModel(
 
     return std::make_unique<ReturnType>(api, type, cb);
 }
+auto BlockchainSelectionModel(
+    const api::session::Client& api,
+    const std::vector<opentxs::blockchain::Type>& chains,
+    const SimpleCallback& cb) noexcept
+    -> std::unique_ptr<ui::internal::BlockchainSelection>
+{
+    using ReturnType = ui::implementation::BlockchainSelection;
+
+    return std::make_unique<ReturnType>(api, chains, cb);
+}
+
 }  // namespace opentxs::factory
 
 namespace opentxs::ui::implementation
@@ -57,6 +68,28 @@ BlockchainSelection::BlockchainSelection(
     : BlockchainSelectionList(api, Identifier::Factory(), cb, false)
     , Worker(api, {})
     , filter_(filter(type))
+    , chain_state_([&] {
+        auto out = UnallocatedMap<blockchain::Type, bool>{};
+
+        for (const auto chain : filter_) { out[chain] = false; }
+
+        return out;
+    }())
+    , enabled_count_(0)
+    , enabled_callback_()
+{
+    init_executor(
+        {UnallocatedCString{api.Endpoints().BlockchainStateChange()}});
+    pipeline_.Push(MakeWork(Work::init));
+}
+
+BlockchainSelection::BlockchainSelection(
+    const api::session::Client& api,
+    const std::vector<opentxs::blockchain::Type>& chains,
+    const SimpleCallback& cb) noexcept
+    : BlockchainSelectionList(api, Identifier::Factory(), cb, false)
+    , Worker(api, {})
+    , filter_(filter(chains))
     , chain_state_([&] {
         auto out = UnallocatedMap<blockchain::Type, bool>{};
 
@@ -137,6 +170,20 @@ auto BlockchainSelection::EnabledCount() const noexcept -> std::size_t
 auto BlockchainSelection::EnabledChains() const noexcept -> UnallocatedSet<blockchain::Type>
 {
     return Widget::api_.Network().Blockchain().EnabledChains();
+}
+
+auto BlockchainSelection::filter(const std::vector<opentxs::blockchain::Type>& chains) noexcept
+    -> UnallocatedSet<blockchain::Type>
+{
+    auto complete = blockchain::SupportedChains();
+    auto output = decltype(complete){};
+
+    for (const auto& chain : complete) 
+    {
+        if(std::find(std::begin(chains), std::end(chains), chain)!=std::end(chains))
+            output.emplace(chain);
+    }            
+    return output;
 }
 
 auto BlockchainSelection::filter(const ui::Blockchains type) noexcept

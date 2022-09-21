@@ -344,6 +344,27 @@ auto UI::Imp::blockchain_selection(
     return it->second;
 }
 
+auto UI::Imp::blockchain_selection(
+    const Lock& lock,
+    const opentxs::ui::Blockchains type,
+    const std::vector<opentxs::blockchain::Type>& chains,
+    const SimpleCallback cb) const noexcept
+    -> BlockchainSelectionMap::mapped_type&
+{
+    
+    auto it = blockchain_selection_
+                .emplace(
+                    std::piecewise_construct,
+                    std::forward_as_tuple(type),
+                    std::forward_as_tuple(
+                        opentxs::factory::BlockchainSelectionModel(
+                            api_, chains, cb)))
+                .first;
+
+    OT_ASSERT(it->second);
+    
+    return it->second;
+}
 auto UI::Imp::BlockchainSelection(
     const opentxs::ui::Blockchains type,
     const SimpleCallback updateCB) const noexcept

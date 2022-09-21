@@ -261,6 +261,28 @@ auto ImpQt::BlockchainSelectionQt(
     return it->second.get();
 }
 
+auto ImpQt::BlockchainSelectionQt(
+        const opentxs::ui::Blockchains key,
+        const std::vector<opentxs::blockchain::Type>& chains,
+        const SimpleCallback updateCB) const noexcept
+    -> opentxs::ui::BlockchainSelectionQt*
+{
+    auto lock = Lock{lock_};
+
+    auto& native = blockchain_selection(lock, key, chains, updateCB);
+    auto it = blockchain_selection_qt_
+                .emplace(
+                    key,
+                    std::make_unique<opentxs::ui::BlockchainSelectionQt>(
+                        *native))
+                .first;
+
+    OT_ASSERT(it->second);
+
+    return it->second.get();
+}
+
+
 auto ImpQt::BlockchainStatisticsQt(const SimpleCallback cb) const noexcept
     -> opentxs::ui::BlockchainStatisticsQt*
 {
