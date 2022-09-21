@@ -17,9 +17,9 @@ std::string_view get_pubkey_prefix(
 
 std::string add_leading_zeros(
     std::string const& value,
-    unsigned int desiredSize)
+    std::size_t const desired_size)
 {
-    const unsigned int leading_zeros_number = desiredSize - value.size();
+    auto const leading_zeros_number = desired_size - value.size();
     std::string leading_zeros(leading_zeros_number, '0');
     return leading_zeros + value;
 }

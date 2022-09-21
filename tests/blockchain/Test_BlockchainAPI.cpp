@@ -906,7 +906,7 @@ TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_1)
         "025f6fdd1fe0f3856df263c6d96cddbfaa9c4747448837f55547a39b86fdc21511");
     std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
     auto uncompressedPubkeyStr =
-        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+        opentxs::api::crypto::eliptic_curve::secp256k1::uncompress_pubkey(
             compressedPubkeyStrView);
     EXPECT_EQ(
         uncompressedPubkeyStr,
@@ -920,7 +920,7 @@ TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_2)
         "0357a8ef6d93bda02822a90c7e7631425275745581286197944b0367270eaf8d1c");
     std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
     auto uncompressedPubkeyStr =
-        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+        opentxs::api::crypto::eliptic_curve::secp256k1::uncompress_pubkey(
             compressedPubkeyStrView);
     EXPECT_EQ(
         uncompressedPubkeyStr,
@@ -934,7 +934,7 @@ TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_3)
         "03c5ade96dc5c4d1b4009d24b986ea2dccd282f20603ea0c493f5b25a466eca747");
     std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
     auto uncompressedPubkeyStr =
-        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+        opentxs::api::crypto::eliptic_curve::secp256k1::uncompress_pubkey(
             compressedPubkeyStrView);
     EXPECT_EQ(
         uncompressedPubkeyStr,
@@ -948,7 +948,7 @@ TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_4)
         "026aa1352b899442c7e1a280542cdfd8bc33b82243007d4a429185de8c514b2629");
     std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
     auto uncompressedPubkeyStr =
-        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+        opentxs::api::crypto::eliptic_curve::secp256k1::uncompress_pubkey(
             compressedPubkeyStrView);
     EXPECT_EQ(
         uncompressedPubkeyStr,
@@ -962,7 +962,7 @@ TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_5)
         "03d1fb99b4b484ab525260e20598f2ac649350fe78ec3f134ccd7c8bc4ca310655");
     std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
     auto uncompressedPubkeyStr =
-        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+        opentxs::api::crypto::eliptic_curve::secp256k1::uncompress_pubkey(
             compressedPubkeyStrView);
     EXPECT_EQ(
         uncompressedPubkeyStr,
@@ -976,7 +976,7 @@ TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_6)
         "02afa1ef03eeab38445c491ff4754f866f736ce1dd6daf0852fd14ca5265fee4e4");
     std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
     auto uncompressedPubkeyStr =
-        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+        opentxs::api::crypto::eliptic_curve::secp256k1::uncompress_pubkey(
             compressedPubkeyStrView);
     EXPECT_EQ(
         uncompressedPubkeyStr,
@@ -990,7 +990,7 @@ TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_7)
         "025f37d20e5b18909361e0ead7ed17c69b417bee70746c9e9c2bcb1394d921d4ae");
     std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
     auto uncompressedPubkeyStr =
-        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+        opentxs::api::crypto::eliptic_curve::secp256k1::uncompress_pubkey(
             compressedPubkeyStrView);
     EXPECT_EQ(
         uncompressedPubkeyStr,
@@ -1004,7 +1004,7 @@ TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_8)
         "03131348c07e8d660e4f049658dfcb5a186b087af676d2dc03854d051d06ccaee9");
     std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
     auto uncompressedPubkeyStr =
-        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+        opentxs::api::crypto::eliptic_curve::secp256k1::uncompress_pubkey(
             compressedPubkeyStrView);
     EXPECT_EQ(
         uncompressedPubkeyStr,
@@ -1018,7 +1018,7 @@ TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_9)
         "020b6d9bbab341552f8c2a9d5ca264ccee18cc28d3f8960612a554c1ba7ad681ae");
     std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
     auto uncompressedPubkeyStr =
-        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+        opentxs::api::crypto::eliptic_curve::secp256k1::uncompress_pubkey(
             compressedPubkeyStrView);
     EXPECT_EQ(
         uncompressedPubkeyStr,
@@ -1032,7 +1032,7 @@ TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_10)
         "03f36eed18d925eef887b09059a02f0616fc34fdecc8886c1c1d7b06193d7b4451");
     std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
     auto uncompressedPubkeyStr =
-        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+        opentxs::api::crypto::eliptic_curve::secp256k1::uncompress_pubkey(
             compressedPubkeyStrView);
     EXPECT_EQ(
         uncompressedPubkeyStr,
@@ -1046,7 +1046,7 @@ TEST_F(Test_BlockchainAPI, uncompress_pubkey_example_11)
         "027d550bc2384fd76a47b8b0871165395e4e4d5ab9cb4ee286d1c60d074d7d60ef");
     std::string_view compressedPubkeyStrView(compressedPubkeyStr.data());
     auto uncompressedPubkeyStr =
-        opentxs::api::crypto::eliptic_curve::secp256k1::get_uncompressed_pubkey(
+        opentxs::api::crypto::eliptic_curve::secp256k1::uncompress_pubkey(
             compressedPubkeyStrView);
     EXPECT_EQ(
         uncompressedPubkeyStr,

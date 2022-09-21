@@ -17,7 +17,9 @@ std::string to_hex(boost::multiprecision::number<T> const& value)
     return value.str(0, std::ios_base::hex);
 }
 
-std::string add_leading_zeros(std::string const& value, unsigned int desiredSize);
+std::string add_leading_zeros(
+    std::string const& value,
+    std::size_t const desired_size);
 
 template <typename T>
 bool is_even(T value)

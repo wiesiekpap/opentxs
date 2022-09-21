@@ -49,7 +49,7 @@ bool is_pubkey_compressed(std::string_view key_prefix)
            is_pubkey_starts_from_odd_prefix(key_prefix);
 }
 
-std::string get_uncompressed_pubkey(std::string_view compressed_pubkey_sv)
+std::string uncompress_pubkey(std::string_view compressed_pubkey_sv)
 {
     std::string uncompressed_key;
     auto const pubkey_length =
@@ -84,16 +84,13 @@ std::string get_uncompressed_pubkey(std::string_view compressed_pubkey_sv)
         .Flush();
 
     opentxs::LogDebug()(__func__)(": ")("x = ")(
-        add_leading_zeros(to_hex(x), 64))
+        add_leading_zeros(to_hex(x), COMPRESSED_PUBKEY_LENGTH))
         .Flush();
     opentxs::LogDebug()(__func__)(": ")("y = ")(
-        add_leading_zeros(to_hex(y), 64))
-        .Flush();
-    opentxs::LogDebug()(__func__)(": ")("rhs = ")(
-        add_leading_zeros(to_hex(rhs), 64))
+        add_leading_zeros(to_hex(y), COMPRESSED_PUBKEY_LENGTH))
         .Flush();
     opentxs::LogDebug()(__func__)(": ")("compressed_y= ")(
-        add_leading_zeros(to_hex(compressed_y), 64))
+        add_leading_zeros(to_hex(compressed_y), COMPRESSED_PUBKEY_LENGTH))
         .Flush();
     opentxs::LogDebug()(__func__)(": ")("even = ")(is_even(compressed_y))
         .Flush();
@@ -111,12 +108,13 @@ std::string get_uncompressed_pubkey(std::string_view compressed_pubkey_sv)
             uncompressed_key = opentxs::join(
                 "04",
                 extracted_compressed_key,
-                add_leading_zeros(to_hex(compressed_y), 64));
+                add_leading_zeros(
+                    to_hex(compressed_y), COMPRESSED_PUBKEY_LENGTH));
         else if (is_even(y))
             uncompressed_key = opentxs::join(
                 "04",
                 extracted_compressed_key,
-                add_leading_zeros(to_hex(y), 64));
+                add_leading_zeros(to_hex(y), COMPRESSED_PUBKEY_LENGTH));
         else
             opentxs::LogError()(__func__)(": ")(
                 "Uncompressed key cannot be calculated ")(
@@ -129,12 +127,13 @@ std::string get_uncompressed_pubkey(std::string_view compressed_pubkey_sv)
             uncompressed_key = opentxs::join(
                 "04",
                 extracted_compressed_key,
-                add_leading_zeros(to_hex(compressed_y), 64));
+                add_leading_zeros(
+                    to_hex(compressed_y), COMPRESSED_PUBKEY_LENGTH));
         else if (is_odd(y)) {
             uncompressed_key = opentxs::join(
                 "04",
                 extracted_compressed_key,
-                add_leading_zeros(to_hex(y), 64));
+                add_leading_zeros(to_hex(y), COMPRESSED_PUBKEY_LENGTH));
         } else
             opentxs::LogError()(__func__)(": ")(
                 "Uncompressed key cannot be calculated ")(
