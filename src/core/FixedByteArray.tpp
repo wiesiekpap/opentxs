@@ -328,42 +328,42 @@ auto FixedByteArray<N>::operator>=(const Data& rhs) const noexcept -> bool
 }
 
 template <std::size_t N>
-auto FixedByteArray<N>::operator+=(const Data& rhs) -> FixedByteArray&
+auto FixedByteArray<N>::operator+=(const Data& rhs) -> Data&
 {
     return operator+=(rhs.Bytes());
 }
 
 template <std::size_t N>
 auto FixedByteArray<N>::operator+=(const ReadView rhs) noexcept(false)
-    -> FixedByteArray&
+    -> Data&
 {
     throw std::runtime_error{"fixed size container"};
 }
 
 template <std::size_t N>
 auto FixedByteArray<N>::operator+=(const std::uint8_t rhs) noexcept(false)
-    -> FixedByteArray&
+    -> Data&
 {
     throw std::runtime_error{"fixed size container"};
 }
 
 template <std::size_t N>
 auto FixedByteArray<N>::operator+=(const std::uint16_t rhs) noexcept(false)
-    -> FixedByteArray&
+    -> Data&
 {
     throw std::runtime_error{"fixed size container"};
 }
 
 template <std::size_t N>
 auto FixedByteArray<N>::operator+=(const std::uint32_t rhs) noexcept(false)
-    -> FixedByteArray&
+    -> Data&
 {
     throw std::runtime_error{"fixed size container"};
 }
 
 template <std::size_t N>
 auto FixedByteArray<N>::operator+=(const std::uint64_t rhs) noexcept(false)
-    -> FixedByteArray&
+    -> Data&
 {
     throw std::runtime_error{"fixed size container"};
 }
