@@ -86,7 +86,7 @@ BlockchainAccountStatus::BlockchainAccountStatus(
     const blockchain::Type chain,
     const SimpleCallback& cb) noexcept
     : BlockchainAccountStatusType(api, id, cb, false)
-    , Worker(api, blockchainAccountStatusThreadName.data())
+    , Worker(api, "BlockchainAccountStatus")
     , chain_(chain)
     , last_job_{}
 {

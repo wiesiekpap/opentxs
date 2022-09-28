@@ -38,7 +38,7 @@ FilterOracle::HeaderDownloader::HeaderDownloader(
           "cfheader",
           20000,
           10000)
-    , HeaderWorker(api, headerDownloaderThreadName.data())
+    , HeaderWorker(api, "Header Downloader")
     , db_(db)
     , header_(header)
     , node_(node)

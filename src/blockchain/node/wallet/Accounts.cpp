@@ -91,9 +91,7 @@ Accounts::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          adjustThreadName(
-              accountsThreadName.data(),
-              std::string(print(chain))),
+          std::string(print(chain)) + " wallet account manager",
           batch,
           alloc,
           {

@@ -128,7 +128,7 @@ public:
     WalletReactor(
         opentxs::network::zeromq::ListenCallback& callback,
         ReactorClient& rc)
-        : Reactor(walletThreadName.data(), 1)
+        : Reactor("Wallet", 1)
         , callback_(callback)
         , rc_(rc)
     {

@@ -40,7 +40,6 @@
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/P2PBlockchainChainState.pb.h"
-#include "util/Thread.hpp"
 #include "util/Work.hpp"
 #include "util/tuning.hpp"
 
@@ -55,9 +54,7 @@ Requestor::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          requestorThreadName.data(),
-          // Do we want to add chain here too?std::string(print(chain)) + " p2p
-          // requestor",
+          std::string(print(chain)) + " p2p requestor",
           batch,
           alloc,
           {
@@ -172,7 +169,6 @@ auto Requestor::Imp::do_shutdown() noexcept -> void
 
 auto Requestor::Imp::do_startup() noexcept -> void
 {
-    tdiag("RRRR do_startup");
     register_chain();
     do_work();
 }
@@ -258,13 +254,6 @@ auto Requestor::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
     tadiag("pipeline ", std::string{print(work)});
 
-    if (work == Work::Init) {
-        tdiag(
-            "RRRR init, state = ",
-            state_ == State::init   ? "init"
-            : state_ == State::sync ? "sync"
-                                    : "run");
-    }
     switch (state_) {
         case State::init: {
             state_init(work, std::move(msg));
@@ -340,8 +329,6 @@ auto Requestor::Imp::register_chain() noexcept -> void
 
         return out;
     }());
-    static thread_local unsigned rcct = 0;
-    tdiag("RRRR register_chain", ++rcct);
 }
 
 auto Requestor::Imp::request(const block::Position& position) noexcept -> void
@@ -568,11 +555,6 @@ auto Requestor::Imp::update_remote_position(
 
 auto Requestor::Imp::work() noexcept -> int
 {
-    tdiag(
-        "RRRR work(), state = ",
-        state_ == State::init   ? "init"
-        : state_ == State::sync ? "sync"
-                                : "run");
     switch (state_) {
         case State::init: {
             return SM_Requestor_fast;

@@ -141,7 +141,7 @@ PeerManager::PeerManager(
     const UnallocatedCString& seednode,
     const UnallocatedCString& shutdown) noexcept
     : internal::PeerManager()
-    , Worker(api, peerManagerThreadName.data())
+    , Worker(api, "PeerManager")
     , closed_{}
     , node_(node)
     , database_(database)

@@ -81,5 +81,4 @@ auto print(AccountsJobs) noexcept -> std::string_view;
 auto print(AccountJobs) noexcept -> std::string_view;
 auto print(SubchainJobs) noexcept -> std::string_view;
 auto print(JobType) noexcept -> std::string_view;
-auto print_short(JobType) noexcept -> std::string_view;
 }  // namespace opentxs::blockchain::node::wallet

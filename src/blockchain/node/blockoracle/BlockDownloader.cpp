@@ -48,7 +48,7 @@ BlockDownloader::BlockDownloader(
           "block",
           2000,
           1000)
-    , BlockWorkerBlock(api, blockDownloaderThreadName.data())
+    , BlockWorkerBlock(api, "BlockDownloader")
     , db_(db)
     , header_(header)
     , node_(node)

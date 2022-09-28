@@ -97,7 +97,5 @@ private:
     auto process_filter(Message&& in, block::Position&& tip) noexcept
         -> void final;
     auto work() noexcept -> int final;
-
-    network::zeromq::Message make_work(Vector<ScanStatus>&& vec) const noexcept;
 };
 }  // namespace opentxs::blockchain::node::wallet

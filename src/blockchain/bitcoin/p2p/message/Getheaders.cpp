@@ -23,7 +23,6 @@
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
-#include "util/threadutil.hpp"
 
 namespace opentxs::factory
 {

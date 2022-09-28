@@ -85,7 +85,7 @@ auto Server::Imp::to_str(MessageType value, unsigned idx) -> std::string
 }
 
 Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
-    : Reactor(serverThreadName.data(), 2)
+    : Reactor("Server", 2)
     , api_(api)
     , zmq_(zmq)
     , handle_(zmq_.Internal().MakeBatch([&] {
