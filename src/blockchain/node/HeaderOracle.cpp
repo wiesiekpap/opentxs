@@ -32,7 +32,6 @@
 #include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "util/threadutil.hpp"
 
 namespace opentxs::factory
 {

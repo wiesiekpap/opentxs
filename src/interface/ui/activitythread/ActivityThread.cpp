@@ -100,7 +100,7 @@ ActivityThread::ActivityThread(
     const Identifier& threadID,
     const SimpleCallback& cb) noexcept
     : ActivityThreadList(api, nymID, cb, false)
-    , Worker(api, activityThreadThreadName.data())
+    , Worker(api, "ActivityThread")
     , threadID_(threadID)
     , self_contact_(api.Contacts().NymToContact(primary_id_))
     , contacts_()

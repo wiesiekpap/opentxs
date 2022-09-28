@@ -63,7 +63,7 @@ MessagableList::MessagableList(
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : MessagableListList(api, nymID, cb, false)
-    , Worker(api, messagableListThreadName.data())
+    , Worker(api, "MessagableList")
     , owner_contact_id_(Widget::api_.Contacts().ContactID(nymID))
     , last_job_{}
 {

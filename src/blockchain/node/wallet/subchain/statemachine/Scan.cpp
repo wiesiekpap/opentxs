@@ -291,18 +291,6 @@ auto Scan::Imp::work() noexcept -> int
     return !caught_up() ? SM_Scan_fast : SM_Scan_slow;
 }
 
-network::zeromq::Message Scan::Imp::make_work(
-    Vector<ScanStatus>&& vec) const noexcept
-{
-    auto work = MakeWork(Work::update);
-    add_last_reorg(work);
-    encode(vec, work);
-    return work;
-}
-}  // namespace opentxs::blockchain::node::wallet
-
-namespace opentxs::blockchain::node::wallet
-{
 Scan::Scan(const boost::shared_ptr<const SubchainStateData>& parent) noexcept
     : imp_([&] {
         const auto& asio = parent->api_.Network().ZeroMQ().Internal();

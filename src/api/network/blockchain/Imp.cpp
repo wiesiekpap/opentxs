@@ -374,6 +374,7 @@ auto BlockchainImp::Init(
     static const auto defaultServers = Vector<CString>{
         "tcp://metier1.opentransactions.org:8814",
         "tcp://metier2.opentransactions.org:8814",
+        "tcp://ot01.matterfi.net:8814",
     };
 
     const auto servers = GetSyncServers();

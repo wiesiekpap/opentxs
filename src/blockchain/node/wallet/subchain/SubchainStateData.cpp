@@ -446,11 +446,7 @@ SubchainStateData::SubchainStateData(
     : Actor(
           api,
           LogTrace(),
-          adjustThreadName(
-              subchainStateDataThreadName.data(),
-              subaccount.Describe().data()),
-          /* std::string(describe(subaccount,
-subchain, alloc))),*/
+          std::string(describe(subaccount, subchain, alloc)),
           batch,
           alloc,
           {

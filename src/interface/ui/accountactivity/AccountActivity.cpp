@@ -29,7 +29,7 @@ AccountActivity::AccountActivity(
     const AccountType type,
     const SimpleCallback& cb) noexcept
     : AccountActivityList(api, nymID, cb, true)
-    , Worker(api, accountActivityThreadName.data())
+    , Worker(api, "AccountActivity")
     , callbacks_()
     , balance_(0)
     , account_id_(accountID)

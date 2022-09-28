@@ -24,7 +24,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
-#include "util/threadutil.hpp"
 
 namespace opentxs::blockchain::database
 {

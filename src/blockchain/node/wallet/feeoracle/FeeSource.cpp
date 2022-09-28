@@ -75,7 +75,7 @@ FeeSource::Imp::Imp(
     bool https,
     allocator_type&& alloc) noexcept
     : Allocated(std::move(alloc))
-    , Worker(api, feeSourceThreadName.data())
+    , Worker(api, "FeeSource")
     , hostname_(std::move(hostname))
     , path_(std::move(path))
     , https_(https)
