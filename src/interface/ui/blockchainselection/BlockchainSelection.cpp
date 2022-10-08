@@ -113,8 +113,8 @@ BlockchainSelection::BlockchainSelection(
 
         return out;
     }())
-    , enabled_count_(0)
-    , enabled_callback_()
+    , enabled_count_{}
+    , enabled_callback_{}
     , last_job_{}
 {
     init_executor(

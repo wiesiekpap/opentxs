@@ -284,7 +284,7 @@ auto Thread::Remove(BatchID id, UnallocatedVector<socket::Raw*>&& data) noexcept
 auto Thread::snc_remove(
     BatchID id,
     UnallocatedVector<socket::Raw*>&& sockets,
-    std::promise<bool> prom) noexcept -> void
+    std::promise<bool>&& prom) noexcept -> void
 {
     const auto set = [&] {
         auto out = UnallocatedSet<void*>{};

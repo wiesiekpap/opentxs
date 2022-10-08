@@ -113,7 +113,7 @@ private:
     auto snc_remove(
         BatchID id,
         UnallocatedVector<socket::Raw*>&& sockets,
-        std::promise<bool> p) noexcept -> void;
+        std::promise<bool>&& p) noexcept -> void;
     auto from_reactor() const noexcept -> bool
     {
         return reactor_id_ == std::this_thread::get_id();
