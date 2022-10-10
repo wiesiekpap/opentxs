@@ -1,0 +1,9 @@
+
+# This overlay is required to build qt5 with angle for opengl support on
+# windows.  (See portfile.cmake)
+
+# vcpkg will fail to build qt5-base if this patch file contains CR/LF.
+# This attribute will prevent git from converting LF to CR/LF when checked out
+# on windows.
+
+patches/mysql_plugin_include.patch text eol=lf

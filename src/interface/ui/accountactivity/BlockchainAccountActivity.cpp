@@ -308,7 +308,7 @@ auto BlockchainAccountActivity::load_thread_portion_p() noexcept -> bool
 
     PTimer<Diag>::start(Diag::portion_p);
     tdiag("PPP 1");
-    std::vector<std::future<unsigned>> fvec = [this]() {
+    std::vector<std::future<unsigned>> fvec = [=]() {
         std::vector<std::future<unsigned>> v{};
         for (unsigned i = 0; i != threadcount; ++i) {
             auto ib = iload_ + i * stride;

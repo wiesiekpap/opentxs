@@ -223,9 +223,9 @@ auto Legacy::AppendFolder(String& out, const String& base, const String& file)
     const noexcept -> bool
 {
     try {
-        const auto path = fs::path{base.Get()}.remove_trailing_separator() /
-                          fs::path{file.Get()}.remove_trailing_separator() /
-                          fs::path{"/"};
+        auto path = fs::path{ base.Get() }.remove_trailing_separator() /
+                    fs::path{ file.Get() }.remove_trailing_separator();
+        path += fs::path{"/"};
         out.Set(path.string().c_str());
 
         return true;
