@@ -1,9 +1,8 @@
 //
 // Created by PetterFi on 09.08.22.
 //
-#include <string_view>
-
 #include <boost/multiprecision/cpp_int.hpp>
+#include <string_view>
 
 #include "internal/api/crypto/eliptic_curve/Common.hpp"
 #include "internal/api/crypto/eliptic_curve/Secp256k1.hpp"

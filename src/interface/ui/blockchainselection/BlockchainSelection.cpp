@@ -191,17 +191,18 @@ auto BlockchainSelection::EnabledChains() const noexcept
     return Widget::api_.Network().Blockchain().EnabledChains();
 }
 
-auto BlockchainSelection::filter(const std::vector<opentxs::blockchain::Type>& chains) noexcept
+auto BlockchainSelection::filter(
+    const std::vector<opentxs::blockchain::Type>& chains) noexcept
     -> UnallocatedSet<blockchain::Type>
 {
     auto complete = blockchain::SupportedChains();
     auto output = decltype(complete){};
 
-    for (const auto& chain : complete) 
-    {
-        if(std::find(std::begin(chains), std::end(chains), chain)!=std::end(chains))
+    for (const auto& chain : complete) {
+        if (std::find(std::begin(chains), std::end(chains), chain) !=
+            std::end(chains))
             output.emplace(chain);
-    }            
+    }
     return output;
 }
 

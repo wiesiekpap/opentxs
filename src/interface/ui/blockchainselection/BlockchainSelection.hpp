@@ -154,7 +154,8 @@ private:
     static auto filter(const ui::Blockchains type) noexcept
         -> UnallocatedSet<blockchain::Type>;
 
-    static auto filter(const std::vector<opentxs::blockchain::Type>& chains) noexcept
+    static auto filter(
+        const std::vector<opentxs::blockchain::Type>& chains) noexcept
         -> UnallocatedSet<blockchain::Type>;
 
     auto process_state(const blockchain::Type chain, const bool enabled)

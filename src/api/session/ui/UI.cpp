@@ -169,10 +169,10 @@ auto UI::BlockchainSelectionQt(
 }
 
 auto UI::BlockchainSelectionQt(
-        const opentxs::ui::Blockchains type,
-        const std::vector<opentxs::blockchain::Type>& chains,
-        const SimpleCallback updateCB) const noexcept
-        -> opentxs::ui::BlockchainSelectionQt*
+    const opentxs::ui::Blockchains type,
+    const std::vector<opentxs::blockchain::Type>& chains,
+    const SimpleCallback updateCB) const noexcept
+    -> opentxs::ui::BlockchainSelectionQt*
 {
     return imp_->BlockchainSelectionQt(type, chains, updateCB);
 }

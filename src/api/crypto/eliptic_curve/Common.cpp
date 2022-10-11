@@ -12,7 +12,7 @@ std::string_view get_pubkey_prefix(
 {
     static constexpr auto not_correct_result{"O_o"};
     return pubkey_sv.size() > prefix_size ? pubkey_sv.substr(0U, prefix_size)
-                                          : not_correct_result;
+                                        : not_correct_result;
 }
 
 std::string add_leading_zeros(
