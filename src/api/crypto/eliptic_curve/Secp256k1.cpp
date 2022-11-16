@@ -45,7 +45,7 @@ bool is_compressed_pubkey_correct_size(std::size_t const pubkey_length)
 
 bool is_pubkey_compressed(std::string_view key_prefix)
 {
-    return is_pubkey_starts_from_even_prefix(key_prefix) or
+    return is_pubkey_starts_from_even_prefix(key_prefix) ||
            is_pubkey_starts_from_odd_prefix(key_prefix);
 }
 

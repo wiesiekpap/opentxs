@@ -29,7 +29,7 @@ Position::Position(const Height& height, const Hash& hash) noexcept
 }
 
 Position::Position(const Height& height, Hash&& hash) noexcept
-    : Position(Height{height}, std::move(hash))
+    : Position(std::move(Height{height}), std::move(hash))
 {
 }
 
