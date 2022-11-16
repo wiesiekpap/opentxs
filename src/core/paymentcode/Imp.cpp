@@ -167,7 +167,7 @@ auto PaymentCode::apply_mask(const Mask& mask, paymentcode::BinaryPreimage& pre)
 {
     static_assert(80 == sizeof(pre));
 
-    auto* i = reinterpret_cast<std::byte*>(&pre);
+    auto i = reinterpret_cast<std::byte*>(&pre);
     std::advance(i, 3);
 
     for (const auto& m : mask) {

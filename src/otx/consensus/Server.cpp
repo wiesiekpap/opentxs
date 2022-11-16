@@ -50,6 +50,7 @@
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Activity.hpp"

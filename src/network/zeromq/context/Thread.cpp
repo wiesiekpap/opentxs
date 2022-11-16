@@ -129,15 +129,15 @@ auto Thread::Modify(SocketID socket, ModifyCallback cb) noexcept -> AsyncResult
         return {};
     }
 
-    auto prom = std::promise<bool>{};
-    auto result = std::make_pair(true, prom.get_future());
+    auto prom = std::make_shared<std::promise<bool>>();
+    auto result = std::make_pair(true, prom->get_future());
 
     if (from_reactor()) {
-        snc_modify(socket, cb, std::move(prom));
+        snc_modify(socket, cb, prom);
     } else {
         std::unique_lock<std::mutex> task_lock(task_mtx_);
-        tasks_.emplace_back([this, socket, cb, p = std::move(prom)]() mutable {
-            snc_modify(socket, cb, std::move(p));
+        tasks_.emplace_back([this, socket, cb, p = prom]() mutable {
+            snc_modify(socket, cb, p);
         });
         active_cv_.notify_one();
     }
@@ -147,17 +147,17 @@ auto Thread::Modify(SocketID socket, ModifyCallback cb) noexcept -> AsyncResult
 auto Thread::snc_modify(
     SocketID socket,
     ModifyCallback cb,
-    std::promise<bool>&& prom) noexcept -> void
+    std::shared_ptr<std::promise<bool>> prom) noexcept -> void
 {
     if (null_skt_.ID() == socket) {
         try {
             cb(null_skt_);
-            prom.set_value(true);
+            prom->set_value(true);
         } catch (...) {
-            prom.set_value(false);
+            prom->set_value(false);
         }
     } else {
-        prom.set_value(parent_.DoModify(socket, cb));
+        prom->set_value(parent_.DoModify(socket, cb));
     }
 }
 
@@ -263,18 +263,18 @@ auto Thread::Remove(BatchID id, UnallocatedVector<socket::Raw*>&& data) noexcept
 
     if (ticket) { return {}; }
 
-    auto prom = std::promise<bool>{};
-    auto fut = prom.get_future();
+    auto prom = std::make_shared<std::promise<bool>>();
+    auto fut = prom->get_future();
 
     if (from_reactor()) {
-        snc_remove(id, std::move(data), std::move(prom));
+        snc_remove(id, std::move(data), prom);
     } else {
         std::unique_lock<std::mutex> task_lock(task_mtx_);
         tasks_.emplace_back([this,
                              id,
                              sockets = std::move(data),
-                             promise = std::move(prom)]() mutable {
-            snc_remove(id, std::move(sockets), std::move(promise));
+                             promise = prom]() mutable {
+            snc_remove(id, std::move(sockets), promise);
         });
         active_cv_.notify_one();
     }
@@ -284,7 +284,7 @@ auto Thread::Remove(BatchID id, UnallocatedVector<socket::Raw*>&& data) noexcept
 auto Thread::snc_remove(
     BatchID id,
     UnallocatedVector<socket::Raw*>&& sockets,
-    std::promise<bool> prom) noexcept -> void
+    std::shared_ptr<std::promise<bool>> prom) noexcept -> void
 {
     const auto set = [&] {
         auto out = UnallocatedSet<void*>{};
@@ -315,7 +315,7 @@ auto Thread::snc_remove(
     assert(receivers_.socks_.size() == receivers_.rxcallbacks_.size());
 
     parent_.UpdateIndex(id);
-    prom.set_value(true);
+    prom->set_value(true);
 }
 
 auto Thread::run() noexcept -> void

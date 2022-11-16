@@ -82,7 +82,7 @@ public:
     [[nodiscard]] auto DecodeHex(const ReadView hex) -> bool final;
     auto end() -> iterator final;
     [[nodiscard]] auto operator+=(const Data& rhs) noexcept(false)
-        -> Data& final;
+        ->Data& final;
     [[nodiscard]] auto operator+=(const ReadView rhs) noexcept(false)
         ->Data& final;
     [[nodiscard]] auto operator+=(const std::uint8_t rhs) noexcept(false)
