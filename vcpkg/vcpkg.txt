@@ -29,4 +29,4 @@ pthread
 qt5-base
 qt5-declarative
 sqlite3
-zeromq
+zeromq[sodium]
