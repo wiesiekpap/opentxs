@@ -3,10 +3,9 @@
 //
 #pragma once
 
+#include <boost/multiprecision/number.hpp>
 #include <cstdint>
 #include <string_view>
-
-#include <boost/multiprecision/number.hpp>
 
 namespace opentxs::api::crypto::eliptic_curve
 {

@@ -838,7 +838,8 @@ TEST_F(Test_BlockchainAPI, testBip44_eth_testnet_example_1)
     };
 
     auto seed_id = api_.InternalClient().Exec().Wallet_ImportSeed(
-        "review boy exile stock nose twin priority acoustic caution below slogan pen",
+        "review boy exile stock nose twin priority acoustic caution below "
+        "slogan pen",
         "");
 
     auto eth_key = api_.Crypto().Seed().GetHDKey(

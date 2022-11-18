@@ -8,15 +8,15 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "crypto/library/keccak/Keccak.hpp"  // IWYU pragma: associated
 
+#include <cassert>
+
 #include "internal/crypto/library/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
 
-#include <cassert>
-
 using std::size_t;
-using std::uint8_t;
 using std::uint64_t;
+using std::uint8_t;
 
 namespace opentxs::factory
 {

@@ -351,18 +351,16 @@ auto UI::Imp::blockchain_selection(
     const SimpleCallback cb) const noexcept
     -> BlockchainSelectionMap::mapped_type&
 {
-    
-    auto it = blockchain_selection_
-                .emplace(
-                    std::piecewise_construct,
-                    std::forward_as_tuple(type),
-                    std::forward_as_tuple(
-                        opentxs::factory::BlockchainSelectionModel(
-                            api_, chains, cb)))
-                .first;
+
+    auto it =
+        blockchain_selection_
+            .try_emplace(
+                type,
+                opentxs::factory::BlockchainSelectionModel(api_, chains, cb))
+            .first;
 
     OT_ASSERT(it->second);
-    
+
     return it->second;
 }
 auto UI::Imp::BlockchainSelection(

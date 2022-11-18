@@ -15,8 +15,8 @@
 #include <stdexcept>
 #include <string_view>
 
-#include "internal/api/crypto/eliptic_curve/Secp256k1.hpp"
 #include "internal/api/crypto/Factory.hpp"
+#include "internal/api/crypto/eliptic_curve/Secp256k1.hpp"
 #include "internal/crypto/library/Pbkdf2.hpp"
 #include "internal/crypto/library/Ripemd160.hpp"
 #include "internal/crypto/library/Scrypt.hpp"
@@ -112,7 +112,8 @@ auto Hash::ethereum_address(
         auto address = destination(eth_address_length);
 
         if (false == address.valid(eth_address_length)) {
-            LogError()(__func__)(": ")("Failed to allocate space for an address")
+            LogError()(__func__)(": ")(
+                "Failed to allocate space for an address")
                 .Flush();
 
             return false;
