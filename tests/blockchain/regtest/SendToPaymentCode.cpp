@@ -15,13 +15,14 @@
 namespace ottest
 {
 
-TEST_F(Regtest_fixture_simple, send_to_client)
+TEST_F(Regtest_fixture_simple, send_to_payment_code)
 {
     EXPECT_TRUE(Start());
     EXPECT_TRUE(Connect());
 
     const std::string name_alice = "Alice";
     const std::string name_bob = "Bob";
+
     Height begin = 0;
     const auto blocks_number = 2;
     auto coin_to_send = 100000;
@@ -72,7 +73,16 @@ TEST_F(Regtest_fixture_simple, send_to_client)
     for (size_t number_of_test = 0; number_of_test < numbers_of_test;
          number_of_test++) {
 
-        SendCoins(*receiver, *sender, target_height, coin_to_send);
+        const auto& network =
+            sender->api_->Network().Blockchain().GetChain(test_chain_);
+
+        auto future = network.SendToPaymentCode(
+            sender->nym_id_,
+            receiver->PaymentCode(),
+            coin_to_send,
+            "memo for outgoing transaction");
+
+        MineTransaction(*sender, future.get().second, target_height);
 
         auto loaded_transactions = CollectTransactionsForFeeCalculations(
             *sender, send_transactions_, transactions_ptxid_);
@@ -81,6 +91,7 @@ TEST_F(Regtest_fixture_simple, send_to_client)
 
         sender->expected_balance_ -= Amount{coin_to_send} + fee;
         receiver->expected_balance_ += coin_to_send;
+
         WaitForSynchro(*sender, target_height, sender->expected_balance_);
         WaitForSynchro(*receiver, target_height, receiver->expected_balance_);
 
@@ -92,5 +103,4 @@ TEST_F(Regtest_fixture_simple, send_to_client)
 
     Shutdown();
 }
-
 }  // namespace ottest

@@ -35,6 +35,10 @@ add_opentx_test(
 add_opentx_test(ottest-blockchain-regtest-restart-early RestartEarly.cpp)
 add_opentx_test(ottest-blockchain-regtest-simple-transfer SimpleTransfer.cpp)
 add_opentx_test(
+  ottest-blockchain-regtest-send-to-payment-code SendToPaymentCode.cpp
+)
+
+add_opentx_test(
   ottest-blockchain-regtest-round-robin-distribution-transactions
   RoundRobinDistributionTransactions.cpp
 )
